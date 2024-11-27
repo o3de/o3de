@@ -62,6 +62,11 @@ namespace AzToolsFramework
             bool AreComponentRequiredServicesMet(const AZ::Component* component, const AZ::Entity::ComponentArrayType& existingComponents)
             {
                 auto componentDescriptor = GetComponentDescriptor(component);
+                if (!componentDescriptor)
+                {
+                    AZ_Error("Editor", false, "failed to get ComponentDescriptor for component %s.", component->RTTI_GetTypeName());
+                    return false;
+                }
 
                 AZ::ComponentDescriptor::DependencyArrayType requiredServices;
                 componentDescriptor->GetRequiredServices(requiredServices, component);
@@ -101,7 +106,7 @@ namespace AzToolsFramework
                     providedService != providedServices.end(); ++providedService)
                 {
                     AZ::EntityUtils::RemoveDuplicateServicesOfAndAfterIterator(
-                        providedService, 
+                        providedService,
                         providedServices,
                         component ? component->GetEntity() : nullptr);
                     for (auto existingComponent : existingComponents)
@@ -247,7 +252,7 @@ namespace AzToolsFramework
         }
 
 
-        void EditorEntityActionComponent::CutComponents(const AZStd::vector<AZ::Component*>& components)
+        void EditorEntityActionComponent::CutComponents(AZStd::span<AZ::Component* const> components)
         {
             // Create the mime data object which will have a serialized copy of the components
             AZStd::unique_ptr<QMimeData> mimeData = ComponentMimeData::Create(components);
@@ -266,7 +271,7 @@ namespace AzToolsFramework
             }
         }
 
-        void EditorEntityActionComponent::CopyComponents(const AZStd::vector<AZ::Component*>& components)
+        void EditorEntityActionComponent::CopyComponents(AZStd::span<AZ::Component* const> components)
         {
             // Create the mime data object
             AZStd::unique_ptr<QMimeData> mimeData = ComponentMimeData::Create(components);
@@ -293,7 +298,7 @@ namespace AzToolsFramework
             }
 
             // Create components from mime data
-            AZStd::vector<AZ::Component*> components;
+            AZ::Entity::ComponentArrayType components;
             ComponentMimeData::GetComponentDataFromMimeData(mimeData, components);
 
             auto addComponentsOutcome = AddExistingComponentsToEntityById(entityId, components);
@@ -324,7 +329,7 @@ namespace AzToolsFramework
             return ComponentMimeData::GetComponentMimeDataFromClipboard() != nullptr;
         }
 
-        void EditorEntityActionComponent::EnableComponents(const AZStd::vector<AZ::Component*>& components)
+        void EditorEntityActionComponent::EnableComponents(AZStd::span<AZ::Component* const> components)
         {
             ScopedUndoBatch undoBatch("Enable Component(s)");
 
@@ -381,7 +386,7 @@ namespace AzToolsFramework
             }
         }
 
-        void EditorEntityActionComponent::DisableComponents(const AZStd::vector<AZ::Component*>& components)
+        void EditorEntityActionComponent::DisableComponents(AZStd::span<AZ::Component* const> components)
         {
             ScopedUndoBatch undoBatch("Disable Component(s)");
 
@@ -438,14 +443,14 @@ namespace AzToolsFramework
             }
         }
 
-        EditorEntityActionComponent::RemoveComponentsOutcome EditorEntityActionComponent::RemoveComponents(const AZStd::vector<AZ::Component*>& componentsToRemove)
+        EditorEntityActionComponent::RemoveComponentsOutcome EditorEntityActionComponent::RemoveComponents(AZStd::span<AZ::Component* const> componentsToRemove)
         {
             EntityToRemoveComponentsResultMap resultMap;
             {
                 ScopedUndoBatch undoBatch("Remove Component(s)");
 
                 // Only remove, do not delete components until we know it was successful
-                AZStd::vector<AZ::Component*> removedComponents;
+                AZ::Entity::ComponentArrayType removedComponents;
                 AZStd::vector<AZ::EntityId> entityIds;
                 for (auto component : componentsToRemove)
                 {
@@ -507,7 +512,7 @@ namespace AzToolsFramework
                 {
                     delete removedComponent;
                 }
-                
+
                 EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityCompositionChanged, entityIds);
             }
 
@@ -526,7 +531,7 @@ namespace AzToolsFramework
             }
 
             // Check for pending component
-            AZStd::vector<AZ::Component*> pendingComponents;
+            AZ::Entity::ComponentArrayType pendingComponents;
             AzToolsFramework::EditorPendingCompositionRequestBus::Event(entity->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
             if (AZStd::find(pendingComponents.begin(), pendingComponents.end(), componentToRemove) != pendingComponents.end())
             {
@@ -538,7 +543,7 @@ namespace AzToolsFramework
             }
 
             // Check for disabled component
-            AZStd::vector<AZ::Component*> disabledComponents;
+            AZ::Entity::ComponentArrayType disabledComponents;
             AzToolsFramework::EditorDisabledCompositionRequestBus::Event(entity->GetId(), &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
             if (AZStd::find(disabledComponents.begin(), disabledComponents.end(), componentToRemove) != disabledComponents.end())
             {
@@ -593,7 +598,7 @@ namespace AzToolsFramework
 
                     auto& entityComponentsResult = entityToAddedComponentsMap[entityId];
 
-                    AZStd::vector<AZ::Component*> componentsToAddToEntity;
+                    AZ::Entity::ComponentArrayType componentsToAddToEntity;
                     for (auto& componentClassData : componentsToAddClassData)
                     {
                         AZ_Assert(componentClassData, "null component class data provided to AddComponentsToEntities");
@@ -627,7 +632,7 @@ namespace AzToolsFramework
                         // Repackage the single-entity result into the overall result
                         entityComponentsResult = addExistingComponentsResult.GetValue();
                     }
-                    
+
                 }
             }
 
@@ -636,7 +641,7 @@ namespace AzToolsFramework
             return AZ::Success(AZStd::move(entityToAddedComponentsMap));
         }
 
-        EditorEntityActionComponent::AddExistingComponentsOutcome EditorEntityActionComponent::AddExistingComponentsToEntityById(const AZ::EntityId& entityId, const AZStd::vector<AZ::Component*>& componentsToAdd)
+        EditorEntityActionComponent::AddExistingComponentsOutcome EditorEntityActionComponent::AddExistingComponentsToEntityById(const AZ::EntityId& entityId, AZStd::span<AZ::Component* const> componentsToAdd)
         {
             AZ::Entity* entity = GetEntityById(entityId);
             if (!entity)
@@ -679,7 +684,7 @@ namespace AzToolsFramework
                         skipped = true;
                     }
                 }
-                
+
                 if (!skipped)
                 {
                     // If it's not an "editor component" then wrap it in a GenericComponentWrapper.
@@ -687,7 +692,7 @@ namespace AzToolsFramework
                     {
                         component = aznew Components::GenericComponentWrapper(component);
                     }
-                
+
                     // Obliterate any existing component id to allow the entity to set the id
                     component->SetId(AZ::InvalidComponentId);
 
@@ -952,12 +957,12 @@ namespace AzToolsFramework
             }
 
             // Same looping algorithm as the scrubber, but we'll also get the list of added components so we can clean up the pending list if we were successful
-            AZStd::vector<AZ::Component*> pendingComponents;
+            AZ::Entity::ComponentArrayType pendingComponents;
             pendingCompositionHandler->GetPendingComponents(pendingComponents);
 
             AZ::Entity::ComponentArrayType addedPendingComponents;
             AZ::Entity::ComponentArrayType currentComponents = entity->GetComponents();
-            while (AddAnyValidComponentsToList(currentComponents, pendingComponents, &addedPendingComponents)); // <- Intential semicolon
+            while (AddAnyValidComponentsToList(currentComponents, pendingComponents, &addedPendingComponents)); // <- Intentional semicolon
 
             if (!addedPendingComponents.empty())
             {
@@ -994,7 +999,7 @@ namespace AzToolsFramework
             }
 
             ObtainComponentWarnings(component, pendingComponentInfo.m_warnings);
-            AZStd::vector<AZ::Component*> pendingComponents;
+            AZ::Entity::ComponentArrayType pendingComponents;
             AzToolsFramework::EditorPendingCompositionRequestBus::Event(component->GetEntityId(), &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
             auto iterPendingComponent = AZStd::find(pendingComponents.begin(), pendingComponents.end(), component);
 

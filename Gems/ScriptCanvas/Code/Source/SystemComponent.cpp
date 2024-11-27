@@ -30,19 +30,15 @@
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Contracts/MathOperatorContract.h>
 
+#include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
+#include <ScriptCanvas/Libraries/Spawning/DespawnNodeable.h>
+#include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
+
+
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
-
-#include <AutoGenDataRegistry.generated.h>
-#include <AutoGenFunctionRegistry.generated.h>
-#include <AutoGenNodeableRegistry.generated.h>
-#include <AutoGenGrammarRegistry.generated.h>
-
-REGISTER_SCRIPTCANVAS_AUTOGEN_DATA(ScriptCanvasStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(ScriptCanvasStatic);
+#include <AutoGen/ScriptCanvasAutoGenRegistry.h>
 
 namespace ScriptCanvasSystemComponentCpp
 {
@@ -84,7 +80,8 @@ namespace ScriptCanvas
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        ScriptCanvas::AutoGenRegistryManager::Reflect(context);
+        ScriptCanvasModel::Instance().Reflect(context);
+
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
         SourceHandle::Reflect(context);

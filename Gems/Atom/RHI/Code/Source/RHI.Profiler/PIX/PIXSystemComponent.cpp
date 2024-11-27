@@ -7,6 +7,7 @@
  */
 
 #include <RHI.Profiler/PIX/PIXSystemComponent.h>
+#include <RHI.Profiler/Utils.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/PlatformIncl.h>
@@ -27,7 +28,7 @@ namespace AZ::RHI
         auto GetCaptureFolderPath() -> AZ::IO::FixedMaxPathString
         {
             auto fileIO = AZ::IO::FileIOBase::GetInstance();
-            constexpr const char* capturePath = "@user@/PIXCaptures";
+            constexpr const char* capturePath = "@user@/PIX";
             AZ::IO::FixedMaxPath resolvedPath;
             fileIO->ResolvePath(resolvedPath, capturePath);
             return AZ::IO::FixedMaxPathString(AZStd::move(resolvedPath));
@@ -79,11 +80,11 @@ namespace AZ::RHI
 
     void PIXSystemComponent::Activate()
     {
-        bool loadPIX = AzFramework::StringFunc::Equal(RHI::GetCommandLineValue("rhi-gpu-profiler"), "PIX");
+        bool loadPIX = RHI::ShouldLoadProfiler("PIX");
         // Get the path to the latest pix install directory
         m_dynamicModule = DynamicModuleHandle::Create(Internal::GetLatestWinPixGpuCapturerPath().c_str());
-        AZ_Assert(m_dynamicModule, "Failed to create RenderDoc dynamic module");
-        if (m_dynamicModule->Load(false, !loadPIX))
+        AZ_Assert(m_dynamicModule, "Failed to create PIX dynamic module");
+        if (m_dynamicModule->Load(loadPIX ? DynamicModuleHandle::LoadFlags::None : DynamicModuleHandle::LoadFlags::NoLoad))
         {
             GraphicsProfilerBus::Handler::BusConnect();
             AZ_Printf("PIXSystemComponent", "PIX profiler connected. Capture path is %s.\n", Internal::GetCaptureFolderPath().c_str());
@@ -118,6 +119,6 @@ namespace AZ::RHI
     {
         auto filePath = Internal::GenerateCaptureName();
         PIXGpuCaptureNextFrames(filePath.c_str(), 1);
-        AZ_Printf("PIXSystemComponent", "Saving PIX capture to %s", filePath.c_str());
+        AZ_Printf("PIXSystemComponent", "Saving PIX capture to %s\n", filePath.c_str());
     }
 } // namespace AZ::RHI

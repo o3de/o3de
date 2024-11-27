@@ -37,8 +37,8 @@ namespace AZ
             void Deactivate() override;
 
             // BoundsRequestBus overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
 
         private:
             // AzFramework::EntityDebugDisplayEventBus::Handler overrides...

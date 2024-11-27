@@ -201,11 +201,29 @@ namespace MaterialCanvas
                 const auto& nodeConfig = dynamicNode->GetConfig();
                 for (const auto& slotDataTypeGroup : nodeConfig.m_slotDataTypeGroups)
                 {
-                    unsigned int vectorSize = 0;
-
                     // The slot data group string is separated by vertical bars and can be treated like a regular expression to compare
                     // against slot names. The largest vector size is recorded for each slot group.
                     const AZStd::regex slotDataTypeGroupRegex(slotDataTypeGroup, AZStd::regex::flag_type::icase);
+
+                    // Some nodes might specify a minimum vector size needed to up convert slot values for azsl snippet or output slot
+                    // requirements. Search all slots in the data type group for the minimum vector size setting to update the default
+                    // minimum vector size.
+                    unsigned int vectorSize = 0;
+                    AtomToolsFramework::VisitDynamicNodeSlotConfigs(
+                        nodeConfig,
+                        [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
+                        {
+                            if (AZStd::regex_match(slotConfig.m_name, slotDataTypeGroupRegex))
+                            {
+                                const AZStd::string vectorSizeStr =
+                                    AtomToolsFramework::GetSettingValueByName(slotConfig.m_settings, "materialPropertyMinVectorSize");
+                                if (!vectorSizeStr.empty())
+                                {
+                                    vectorSize = AZStd::max(vectorSize, static_cast<unsigned int>(AZStd::stoi(vectorSizeStr)));
+                                }
+                            }
+                        });
+
                     for (const auto& currentSlotPair : currentNode->GetSlots())
                     {
                         const auto& currentSlot = currentSlotPair.second;
@@ -767,6 +785,10 @@ namespace MaterialCanvas
         if (auto v = AZStd::any_cast<const bool>(&slotValue))
         {
             return AZStd::string::format("%u", *v ? 1 : 0);
+        }
+        if (auto v = AZStd::any_cast<const AZStd::string>(&slotValue))
+        {
+            return *v;
         }
         return AZStd::string();
     }

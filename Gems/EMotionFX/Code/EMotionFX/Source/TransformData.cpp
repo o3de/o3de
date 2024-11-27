@@ -26,7 +26,7 @@ namespace EMotionFX
 
     // default constructor
     TransformData::TransformData()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_skinningMatrices   = nullptr;
         m_bindPose           = nullptr;

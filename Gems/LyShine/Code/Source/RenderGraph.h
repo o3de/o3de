@@ -65,7 +65,7 @@ namespace LyShine
     };
 
     //! This custom allocator class is used to provide runtime type information
-    //! so we can differentiate this allocator from other PoolAllocators
+    //! so we can differentiate this allocator from other PoolAllocators 
     class LyShinePoolAllocator final
         : public AZ::PoolAllocator
     {

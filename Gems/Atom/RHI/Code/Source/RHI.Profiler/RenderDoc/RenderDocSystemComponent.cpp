@@ -7,11 +7,11 @@
  */
 
 #include <RHI.Profiler/RenderDoc/RenderDocSystemComponent.h>
+#include <RHI.Profiler/Utils.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <Atom/RHI/RHIUtils.h>
 #include <Atom_RHI_Traits_Platform.h>
 
 namespace AZ::RHI
@@ -31,17 +31,16 @@ namespace AZ::RHI
 
     void RenderDocSystemComponent::Activate()
     {
-        bool loadRenderDoc = AzFramework::StringFunc::Equal(RHI::GetCommandLineValue("rhi-gpu-profiler"), "RenderDoc");
+        bool loadRenderDoc = RHI::ShouldLoadProfiler("RenderDoc");
         AZStd::string filePath = ATOM_RENDERDOC_RUNTIME_PATH;
         if (!filePath.empty())
         {
             AzFramework::StringFunc::Path::AppendSeparator(filePath);
         }
         filePath += AZ_TRAIT_RENDERDOC_MODULE;
-        AZ_Printf("RenderDocSystemComponent", "Loading shared library from %s", filePath.c_str());
         m_dynamicModule = DynamicModuleHandle::Create(filePath.c_str());
         AZ_Assert(m_dynamicModule, "Failed to create RenderDoc dynamic module");
-        if (m_dynamicModule->Load(false, !loadRenderDoc))
+        if (m_dynamicModule->Load(loadRenderDoc ? DynamicModuleHandle::LoadFlags::None : DynamicModuleHandle::LoadFlags::NoLoad))
         {
             pRENDERDOC_GetAPI renderDocGetAPIFunc = m_dynamicModule->GetFunction<pRENDERDOC_GetAPI>("RENDERDOC_GetAPI");
             if (renderDocGetAPIFunc)
@@ -85,13 +84,14 @@ namespace AZ::RHI
     bool RenderDocSystemComponent::EndCapture(const AzFramework::NativeWindowHandle window)
     {
         AZ_Assert(m_renderDocApi, "Null RenderDoc API");
+        AZ_Printf("RenderDocSystemComponent", "Saving RenderDoc capture to %s\n", m_renderDocApi->GetCaptureFilePathTemplate());
         return m_renderDocApi->EndFrameCapture(nullptr, window) == 1;
     }
 
     void RenderDocSystemComponent::TriggerCapture()
     {
         AZ_Assert(m_renderDocApi, "Null RenderDoc API");
-        AZ_Printf("RenderDocSystemComponent", "Triggering RenderDoc capture");
+        AZ_Printf("RenderDocSystemComponent", "Saving RenderDoc capture to %s\n", m_renderDocApi->GetCaptureFilePathTemplate());
         m_renderDocApi->TriggerCapture();
     }
 } // namespace AZ::RHI

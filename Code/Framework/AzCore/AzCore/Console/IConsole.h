@@ -109,6 +109,10 @@ namespace AZ
         //! Clear out any deferred console commands queue
         virtual void ClearDeferredConsoleCommands() = 0;
 
+#if defined (CARBONATED)
+        //! Enable to dispatch console command
+        virtual void EnableToDispatchConsoleCommands() = 0;
+#endif
         //! HasCommand is used to determine if the console knows about a command.
         //! @param command the command we are checking for
         //! @return boolean true on if the command is registered, false otherwise

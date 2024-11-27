@@ -98,7 +98,7 @@ namespace AzToolsFramework
         return "application/x-amazon-o3de-editorcomponentdata";
     }
 
-    AZStd::unique_ptr<QMimeData> ComponentMimeData::Create(const ComponentDataContainer& components)
+    AZStd::unique_ptr<QMimeData> ComponentMimeData::Create(AZStd::span<AZ::Component* const> components)
     {
         AZ::SerializeContext* context;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -126,7 +126,7 @@ namespace AzToolsFramework
 
         // Pack the components into a helper class for serialization
         ComponentMimeData componentMimeData;
-        componentMimeData.m_components = components;
+        componentMimeData.m_components.assign(components.begin(), components.end());
 
         // Save the helper class into a buffer to pack into mime data
         AZStd::vector<char> buffer;

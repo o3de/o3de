@@ -204,6 +204,14 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
+        void SimplePointLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetLightingChannelMask().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
         const Data::Instance<RPI::Buffer> SimplePointLightFeatureProcessor::GetLightBuffer() const
         {
             return m_lightBufferHandler.GetBuffer();
@@ -220,14 +228,13 @@ namespace AZ
             RPI::ViewPtr newView,
             RPI::ViewPtr previousView)
         {
-            
-            Render::LightCommon::CacheGPUCullingPipelineInfo(renderPipeline, newView, previousView, m_hasGPUCulling);
+            Render::LightCommon::CacheCPUCulledPipelineInfo(renderPipeline, newView, previousView, m_cpuCulledPipelinesPerView);
         }
 
         void SimplePointLightFeatureProcessor::CullLights(const RPI::ViewPtr& view)
         {
             if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) ||
-                Render::LightCommon::HasGPUCulling(GetParentScene(), view, m_hasGPUCulling))
+                !Render::LightCommon::NeedsCPUCulling(view, m_cpuCulledPipelinesPerView))
             {
                 return;
             }

@@ -136,7 +136,7 @@ namespace ScriptCanvasEditor
         ExecutionLogTreeItem
             ( const LoggingDataId& loggingDataId
             , const ScriptCanvas::NodeTypeIdentifier& nodeType
-            , const SourceHandle& graphInfo
+            , const ScriptCanvas::GraphInfo& graphInfo
             , const ScriptCanvas::NamedNodeId& nodeId);
 
         ~ExecutionLogTreeItem() override = default;
@@ -191,8 +191,7 @@ namespace ScriptCanvasEditor
 
         LoggingDataId                       m_loggingDataId;
         ScriptCanvas::NodeTypeIdentifier    m_nodeType;
-        SourceHandle          m_graphInfo;
-        ScriptCanvas::GraphIdentifier       m_graphIdentifier;
+        ScriptCanvas::GraphInfo             m_graphInfo;
         QString                             m_sourceEntityName;
         QString                             m_graphName;
         QString                             m_relativeGraphPath;

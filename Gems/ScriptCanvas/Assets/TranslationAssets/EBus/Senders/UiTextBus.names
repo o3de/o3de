@@ -523,6 +523,7 @@
                     },
                     "details": {
                         "name": "Set Text",
+                        "subtitle": "UI Text",
                         "tooltip": "Sets the text string being displayed by the element"
                     },
                     "params": [

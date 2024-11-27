@@ -3118,8 +3118,6 @@ void UiTextComponent::OnAtlasUnloaded(const TextureAtlasNamespace::TextureAtlas*
     }
 }
 
-// carbonated begin (alukyanov/lyshine-UiTextNotifications)
-#if defined(CARBONATED)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiTextNotificationsBusBehaviorHandler Behavior context handler class
 class UiTextNotificationsBusBehaviorHandler
@@ -3135,8 +3133,6 @@ public:
         Call(FN_OnLayoutInvalidated);
     }
 };
-#endif //#if defined(CARBONATED)
-// carbonated end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC STATIC MEMBER FUNCTIONS
@@ -3302,11 +3298,7 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
 
         behaviorContext->Class<UiTextComponent>()->RequestBus("UiTextBus");
 
-// carbonated begin (alukyanov/lyshine-UiTextNotifications)
-#if defined(CARBONATED)
         behaviorContext->EBus<UiTextNotificationsBus>("UiTextNotificationsBus")->Handler<UiTextNotificationsBusBehaviorHandler>();
-#endif
-// carbonated end
 
         behaviorContext->EBus<UiClickableTextBus>("UiClickableTextBus")
             ->Event("SetClickableTextColor", &UiClickableTextBus::Events::SetClickableTextColor);
@@ -3384,7 +3376,7 @@ void UiTextComponent::Activate()
 #if defined(CARBONATED)
     // Reload the font families if they were deleted while this UiTextComponent was inactive.
     // It is important for UiTextComponent which can be activated and deactivated many times.
-    if (!m_fontFamily->normal || !m_fontFamily->bold || !m_fontFamily->italic || !m_fontFamily->boldItalic)
+    if (m_fontFamily && (!m_fontFamily->normal || !m_fontFamily->bold || !m_fontFamily->italic || !m_fontFamily->boldItalic))
     {
         ChangeFont(m_fontFilename.GetAssetPath());
     }
@@ -3906,13 +3898,9 @@ void UiTextComponent::MarkDrawBatchLinesDirty(bool invalidateLayout)
     {
         InvalidateLayout();
 
-// carbonated begin (alukyanov/lyshine-UiTextNotifications)
-#if defined(CARBONATED)
         EBUS_EVENT_ID(GetEntityId(), UiTextNotificationsBus, OnLayoutInvalidated);
-#endif // #if defined(CARBONATED)
     }
 }
-// carbonated end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 const UiTextComponent::DrawBatchLines& UiTextComponent::GetDrawBatchLines()

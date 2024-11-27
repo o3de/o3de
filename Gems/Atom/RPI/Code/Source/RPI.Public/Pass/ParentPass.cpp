@@ -396,6 +396,24 @@ namespace AZ
             }
         }
 
+        void ParentPass::UpdateConnectedBindings()
+        {
+            // Update parent pass inputs first...
+            UpdateConnectedInputBindings();
+
+            /// ... then update children, which may depend on inputs...
+            if (IsEnabled())
+            {
+                for (const Ptr<Pass>& child : m_children)
+                {
+                    child->UpdateConnectedBindings();
+                }
+            }
+
+            // ... then update outputs, which may depend on children.
+            UpdateConnectedOutputBindings();
+        }
+
         void ParentPass::FrameBeginInternal(FramePrepareParams params)
         {
             for (const Ptr<Pass>& child : m_children)

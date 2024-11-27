@@ -384,7 +384,7 @@ bool UiCanvasFileObject::CreateRootSliceNodeAndCopyInEntities(
     }
 
     // create the components vector node (which is a generic vector)
-    using componentsVector = AZStd::vector<AZ::Component*>;
+    using componentsVector = AZ::Entity::ComponentArrayType;
     AZ::SerializeContext::ClassData* componentVectorClassData = AZ::SerializeGenericTypeInfo<componentsVector>::GetGenericInfo()->GetClassData();
     int componentsIndex = entityNode.AddElement(context, "Components", *componentVectorClassData);
     if (componentsIndex == -1)

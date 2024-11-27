@@ -119,6 +119,8 @@ namespace AZ::RHI
         //! Get the compile flags being used during the allocation of resources.
         TransientAttachmentPoolCompileFlags GetCompileFlags() const;
 
+        static bool ValidateInitParameters(const TransientAttachmentPoolDescriptor& descriptor);
+
     protected:
         // Adds the stats of a list of heaps into the Pool's TransientAttachmentStatistics.
         void CollectHeapStats(AliasedResourceTypeFlags typeMask, AZStd::span<const TransientAttachmentStatistics::Heap> heapStats);
@@ -140,8 +142,6 @@ namespace AZ::RHI
         virtual void ShutdownInternal() = 0;
 
         //////////////////////////////////////////////////////////////////////////
-
-        bool ValidateInitParameters(const TransientAttachmentPoolDescriptor& descriptor) const;
 
         TransientAttachmentPoolDescriptor m_descriptor;
         TransientAttachmentPoolCompileFlags m_compileFlags = TransientAttachmentPoolCompileFlags::None;

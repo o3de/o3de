@@ -105,6 +105,8 @@ namespace AZ
             //! Sets the multiplier on the contribution to diffuse global illumination.
             virtual void SetAffectsGIFactor(float affectsGIFactor) = 0;
 
+            //! Set the lighting channel mask
+            virtual void SetLightingChannelMask(uint32_t lightingChannelMask) = 0;
             // Debug Visualization
 
             //! Returns the Aabb for the debug visualization of the light.

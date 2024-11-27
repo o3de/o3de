@@ -13,7 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Distance.h>
 #include "ThreadData.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 
 #include <AzCore/Module/Environment.h>
 
@@ -55,7 +55,7 @@ namespace EMotionFX
      * the EMotionFX related memory categories to the Core memory manager.
      */
     class EMFX_API EMotionFXManager
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class Initializer;

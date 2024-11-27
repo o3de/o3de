@@ -8,8 +8,6 @@
 
 #include <Core/EditorActionsHandler.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
-
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
@@ -236,15 +234,6 @@ void EditorActionsHandler::OnActionUpdaterRegistrationHook()
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::RecentFilesChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::UndoRedoUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::ViewportDisplayInfoStateChangedUpdaterIdentifier);
-
-    // If the Prefab system is not enabled, have a backup to update actions based on level loading.
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        m_isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!m_isPrefabSystemEnabled)
-    {
-        m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
-    }
 }
 
 void EditorActionsHandler::OnActionRegistrationHook()
@@ -2167,14 +2156,6 @@ void EditorActionsHandler::OnStopPlayInEditor()
             actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier);
         }
     );
-}
-
-void EditorActionsHandler::OnEntityStreamLoadSuccess()
-{
-    if (!m_isPrefabSystemEnabled)
-    {
-        m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
-    }
 }
 
 void EditorActionsHandler::AfterEntitySelectionChanged(

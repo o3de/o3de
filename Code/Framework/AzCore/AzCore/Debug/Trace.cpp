@@ -477,7 +477,7 @@ namespace AZ::Debug
 
         va_list mark;
         va_start(mark, format);
-        azvsnprintf(message, g_maxMessageLength-1, format, mark); // -1 to make room for the "/n" that will be appended below
+        azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below
         va_end(mark);
 
         TraceMessageResult result;
@@ -508,8 +508,7 @@ namespace AZ::Debug
     // Warning
     // [8/3/2009]
     //=========================================================================
-    void
-    Trace::Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+    void Trace::Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
     {
         if (!IsTraceLoggingEnabledForLevel(LogLevel::Warnings))
         {
@@ -545,8 +544,7 @@ namespace AZ::Debug
     // Printf
     // [8/3/2009]
     //=========================================================================
-    void
-    Trace::Printf(const char* window, const char* format, ...)
+    void Trace::Printf(const char* window, const char* format, ...)
     {
         if (window == nullptr)
         {
@@ -581,12 +579,6 @@ namespace AZ::Debug
             window = NoWindow;
         }
 
-#if defined(CARBONATED)
-        // Remove to avoid duplicating logs in debugger console
-#else
-        Platform::OutputToDebugger(window, message);
-#endif
-
         if (!DebugInternal::g_suppressEBusCalls)
         {
             // only call into Ebusses if we are not in a recursive-exception situation as that
@@ -616,13 +608,15 @@ namespace AZ::Debug
 
     void Trace::RawOutput(const char* window, const char* message)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
-        
+
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
         // Therefore fwrite is used directly to write the window and message to stdout or stderr
+
+        // Wrapping the NoWindow constant in a string_view to allow use of string_view::operator== for string compare
         AZStd::string_view windowView{ window };
         AZStd::string_view messageView{ message };
         constexpr AZStd::string_view windowMessageSeparator{ ": " };

@@ -10,6 +10,7 @@
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -38,6 +39,9 @@ namespace AZ
 
     Console::Console()
         : m_head(nullptr)
+#if defined (CARBONATED)
+        , m_enableToDispatchConsoleCommands(false)
+#endif
     {
     }
 
@@ -237,6 +241,14 @@ namespace AZ
     {
         m_deferredCommands = {};
     }
+
+#if defined (CARBONATED)
+    void Console::EnableToDispatchConsoleCommands()
+    {
+        AZLOG_INFO("Number of registered commands : %lu", m_commands.size());
+        m_enableToDispatchConsoleCommands = true;
+    }
+#endif
 
     bool Console::HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
@@ -468,6 +480,16 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
+#if defined (CARBONATED)
+        if (!m_enableToDispatchConsoleCommands)
+        {
+            return false;
+        }
+#endif
+
+        // incoming commands are assumed to be in the "C" locale as they might be from portable data files
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
         bool result = false;
         ConsoleFunctorFlags flags = ConsoleFunctorFlags::Null;
 
@@ -514,9 +536,23 @@ namespace AZ
                     result = true;
                     if ((silentMode == ConsoleSilentMode::NotSilent) && (curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) != ConsoleFunctorFlags::IsInvisible)
                     {
-                        CVarFixedString value;
-                        curr->GetValue(value);
-                        AZLOG_INFO("> %s : %s", curr->GetName(), value.empty() ? "<empty>" : value.c_str());
+                        // First use the ConsoleFunctorBase::GetValue function
+                        // to retrieve the value of the type of the first template parameter to the ConsoleFunctor class template
+                        // This is populated for non-void types and is set for Console Variables(CVars) and Console Commands
+                        // which are member functions
+                        // See `ConsoleFunctor<_TYPE, _REPLICATES_VALUE>::GetValueAsString`
+                        CVarFixedString inputStr;
+                        if (GetValueResult getCVarValue = curr->GetValue(inputStr);
+                            getCVarValue != GetValueResult::Success)
+                        {
+                            // In this case the ConsoleFunctorBase pointer references a `ConsoleFunctor<void, _REPLICATES_VALUE>` object
+                            // which has no type associated with it.
+                            // This is used for Console Commands which are free functions
+                            // The `ConsoleFunctor<void, _REPLICATES_VALUE>::GetValueAsString` returns NotImplemented
+                            // Instead the input arguments to the console command will be logged
+                            AZ::StringFunc::Join(inputStr, inputs, ' ');
+                        }
+                        AZLOG_INFO("> %s : %s", curr->GetName(), inputStr.empty() ? "<no-args>" : inputStr.c_str());
                     }
                     flags = curr->GetFlags();
                 }

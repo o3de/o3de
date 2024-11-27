@@ -10,6 +10,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Utils/LogNotification.h>
 #include <AzCore/Time/ITime.h>
 #include <CryCommon/ISystem.h>
 #include "IConsole.h"
@@ -247,7 +248,7 @@ void LoadScreenComponent::GameStart()
             {
                 m_loadScreenState = LoadScreenState::ShowingMultiThreaded;
 
-                AZ_ErrorOnce(nullptr, false, "StartLoadtimePlayback for loading thread is not supported as unused for the current game");
+                AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "StartLoadtimePlayback for loading thread is not supported as unused for the current game");
                 //FIXME: GetGlobalEnv()->pRenderer->StartLoadtimePlayback(this);
             }
             else
@@ -298,7 +299,7 @@ void LoadScreenComponent::LevelStart()
             {
                 m_loadScreenState = LoadScreenState::ShowingMultiThreaded;
 
-                AZ_ErrorOnce(nullptr, false, "StartLoadtimePlayback for loading thread is not supported as unused for the current game");
+                AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "StartLoadtimePlayback for loading thread is not supported as unused for the current game");
                 //FIXME: GetGlobalEnv()->pRenderer->StartLoadtimePlayback(this);
             }
             else
@@ -353,6 +354,10 @@ void LoadScreenComponent::Stop()
             if (m_loadScreenState == LoadScreenState::Showing)
             {
                 EBUS_EVENT(LoadScreenBus, UpdateAndRender);
+#if defined(CARBONATED)
+                // deliver the log messages
+                AZ::LogNotification::LogNotificationBus::Broadcast(&AZ::LogNotification::LogNotificationBus::Events::Update);
+#endif
             }
 
             CrySleep(0);
@@ -365,7 +370,7 @@ void LoadScreenComponent::Stop()
     if (m_loadScreenState == LoadScreenState::ShowingMultiThreaded)
     {
         // This will block until the other thread completes.
-        AZ_ErrorOnce(nullptr, false, "StopLoadtimePlayback for loading thread is not supported as unused for the current game");
+        AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "StopLoadtimePlayback for loading thread is not supported as unused for the current game");
         // FIXME: GetGlobalEnv()->pRenderer->StopLoadtimePlayback();
     }
 

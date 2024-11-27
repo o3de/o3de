@@ -338,21 +338,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             }
         });
 
-    connect(
-        m_ui->m_assetBrowserTreeViewWidget,
-        &QAbstractItemView::clicked,
-        this,
-        [this](const QModelIndex& idx)
-        {
-            using namespace AzToolsFramework::AssetBrowser;
-            auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-            {
-                AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
-            }
-            m_ui->m_searchWidget->ClearStringFilter();
-        });
-
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearStringFilter,
@@ -672,8 +657,9 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
 
     if (hasFilter)
     {
-        m_ui->m_assetBrowserTreeViewWidget->selectionModel()->select(
-            m_ui->m_assetBrowserTreeViewWidget->model()->index(0, 0, {}), QItemSelectionModel::ClearAndSelect);
+        // Clear the selection when the filter is applied.
+        m_ui->m_assetBrowserTreeViewWidget->selectionModel()->clearSelection();
+        m_ui->m_searchWidget->SetSelectionCount(0);
     }
 
     if (ed_useNewAssetBrowserListView)
@@ -1071,10 +1057,34 @@ void AzAssetBrowserWindow::SetFavoritesWindowHeight(int height)
     m_ui->m_leftsplitter->setSizes(sizes);
 }
 
-void AzAssetBrowserWindow::SelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+void AzAssetBrowserWindow::SelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
 {
     OnFilterCriteriaChanged();
-}
 
+    // if we select 1 thing, give the previewer a chance to view it.
+    QModelIndexList selectedIndices = selected.indexes();
+
+    // Note that the selected indices might be different columns of the same rows.  Its still a valid "single selection"
+    // if there is only one unique row, even if there's more than 1 column
+    // we also don't care to actually count how many rows there are that are unique, we just need to know if there is exactly
+    // one row, so we can stop after finding more than one.
+
+    if (QtUtil::ModelIndexListHasExactlyOneRow(selectedIndices))
+    {
+        QModelIndex selectedIndex = selectedIndices[0];
+        if (selectedIndex.isValid())
+        {
+            auto* entry = selectedIndex.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            if (entry)
+            {
+                AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
+                return;
+            }
+        }
+    }
+    // if we get here, we have no selection or multiple selection, clear preview.
+    // Note the above code SHOULD early return if more cases appear.
+    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
+}
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>

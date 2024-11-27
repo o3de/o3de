@@ -84,12 +84,15 @@ set(FILES
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
     API/EditorPythonScriptNotificationsBus.h
+    API/EntityPropertyEditorNotificationBus.h
     API/EntityPropertyEditorRequestsBus.h
     API/EditorWindowRequestBus.h
     API/EntityCompositionRequestBus.h
     API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
     API/PythonLoader.h
+    API/PythonLoader.cpp
+    API/SettingsRegistryUtils.h
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h
@@ -166,7 +169,6 @@ set(FILES
     Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h
     Editor/ActionManagerUtils.cpp
     Editor/ActionManagerUtils.h
-    Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
     Editor/RichTextHighlighter.h
     Editor/RichTextHighlighter.cpp
@@ -201,9 +203,6 @@ set(FILES
     Entity/PrefabEditorEntityOwnershipInterface.h
     Entity/PrefabEditorEntityOwnershipService.h
     Entity/PrefabEditorEntityOwnershipService.cpp
-    Entity/SliceEditorEntityOwnershipService.h
-    Entity/SliceEditorEntityOwnershipService.cpp
-    Entity/SliceEditorEntityOwnershipServiceBus.h
     Entity/EntityTypes.h
     Entity/EntityUtilityComponent.h
     Entity/EntityUtilityComponent.cpp
@@ -227,6 +226,7 @@ set(FILES
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
     Manipulators/CapsuleManipulatorRequestBus.h
+    Manipulators/CylinderManipulatorRequestBus.h
     Manipulators/EditorVertexSelection.h
     Manipulators/EditorVertexSelection.cpp
     Manipulators/EditorVertexSelectionBus.h
@@ -358,11 +358,6 @@ set(FILES
     ToolsComponents/EditorEntityIconComponent.h
     ToolsComponents/EditorEntityIconComponent.cpp
     ToolsComponents/EditorEntityIconComponentBus.h
-    ToolsComponents/EditorLayerComponent.h
-    ToolsComponents/EditorLayerComponent.cpp
-    ToolsComponents/EditorLayerComponentBus.h
-    ToolsComponents/LayerResult.cpp
-    ToolsComponents/LayerResult.h
     ToolsComponents/EditorLockComponent.cpp
     ToolsComponents/EditorLockComponent.h
     ToolsComponents/EditorLockComponentBus.h
@@ -430,8 +425,6 @@ set(FILES
     UI/DPEDebugViewer/DPEDebugWindow.cpp
     UI/DPEDebugViewer/DPEDebugWindow.h
     UI/DPEDebugViewer/DPEDebugWindow.ui
-    UI/Layer/AddToLayerMenu.cpp
-    UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
     UI/Logging/LogEntry.h
     UI/Logging/LogEntry.cpp
@@ -461,8 +454,6 @@ set(FILES
     UI/ComponentPalette/ComponentPaletteModel.cpp
     UI/ComponentPalette/ComponentPaletteUtil.hxx
     UI/ComponentPalette/ComponentPaletteUtil.cpp
-    UI/Layer/NameConflictWarning.hxx
-    UI/Layer/NameConflictWarning.cpp
     UI/PropertyEditor/EntityPropertyEditor.ui
     UI/PropertyEditor/ComponentEditor.hxx
     UI/PropertyEditor/ComponentEditor.cpp
@@ -576,22 +567,8 @@ set(FILES
     Commands/ComponentModeCommand.h
     Commands/EntityManipulatorCommand.h
     Commands/EntityManipulatorCommand.cpp
-    Commands/EntityStateCommand.cpp
-    Commands/EntityStateCommand.h
     Commands/SelectionCommand.cpp
     Commands/SelectionCommand.h
-    Commands/PreemptiveUndoCache.cpp
-    Commands/PreemptiveUndoCache.h
-    Commands/BaseSliceCommand.cpp
-    Commands/BaseSliceCommand.h
-    Commands/SliceDetachEntityCommand.cpp
-    Commands/SliceDetachEntityCommand.h
-    Commands/DetachSubSliceInstanceCommand.cpp
-    Commands/DetachSubSliceInstanceCommand.h
-    Commands/PushToSliceCommand.cpp
-    Commands/PushToSliceCommand.h
-    Commands/CreateSliceCommand.cpp
-    Commands/CreateSliceCommand.h
     Viewport/ActionBus.h
     Viewport/EditorContextMenu.h
     Viewport/EditorContextMenu.cpp
@@ -662,6 +639,10 @@ set(FILES
     ComponentModes/CapsuleComponentMode.cpp
     ComponentModes/CapsuleViewportEdit.h
     ComponentModes/CapsuleViewportEdit.cpp
+    ComponentModes/CylinderComponentMode.cpp 
+    ComponentModes/CylinderComponentMode.h 
+    ComponentModes/CylinderViewportEdit.cpp 
+    ComponentModes/CylinderViewportEdit.h 
     ComponentModes/ShapeComponentModeBus.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
@@ -884,6 +865,7 @@ set(FILES
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
     Prefab/PrefabPublicRequestHandler.cpp
+    Prefab/PrefabSettings.h
     Prefab/PrefabUndoCache.cpp
     Prefab/PrefabUndoCache.h
     Prefab/PrefabUndoHelpers.cpp
@@ -932,6 +914,8 @@ set(FILES
     Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoAddEntityAsOverride.h
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoApplyOverrides.h
+    Prefab/Undo/PrefabUndoApplyOverrides.cpp
     Prefab/Undo/PrefabUndoComponentPropertyEdit.h
     Prefab/Undo/PrefabUndoComponentPropertyEdit.cpp
     Prefab/Undo/PrefabUndoComponentPropertyOverride.h
@@ -973,8 +957,6 @@ set(FILES
     UI/EditorEntityUi/EditorEntityUiHandlerBase.cpp
     UI/EditorEntityUi/EditorEntityUiSystemComponent.h
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
-    UI/Layer/LayerUiHandler.h
-    UI/Layer/LayerUiHandler.cpp
     UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp

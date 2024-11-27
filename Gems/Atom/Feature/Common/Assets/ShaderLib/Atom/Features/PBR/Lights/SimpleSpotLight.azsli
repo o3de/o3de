@@ -92,6 +92,10 @@ void ApplySimpleSpotLightInternal(uint lightIndex, Surface surface, inout Lighti
     if (o_enableSimpleSpotLights)
     {
         ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
+        if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+        {
+            return;
+        }
         ApplySimpleSpotLight(light, surface, lightingData);
     }
 }

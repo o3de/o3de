@@ -802,7 +802,7 @@ namespace AZ
             return CanInvokeFromDomArray<C*, Args...>(arguments);
         }
 
-        AZ::Dom::Value DomInvoke(const AZ::Dom::Value& instanceAndArguments) override
+        virtual AZ::Dom::Value DomInvoke(const AZ::Dom::Value& instanceAndArguments)
         {
             AZStd::function RawInvoker = [this](C* classInst, Args... args) -> R
             {

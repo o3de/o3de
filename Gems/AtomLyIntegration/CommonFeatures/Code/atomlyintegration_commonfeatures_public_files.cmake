@@ -35,9 +35,17 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomBus.h
-    Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h    
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h
-    Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h    
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/PaniniProjection/PaniniProjectionBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/PaniniProjection/PaniniProjectionComponentConfig.h    
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/FilmGrain/FilmGrainBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/FilmGrain/FilmGrainComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/WhiteBalance/WhiteBalanceComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/Vignette/VignetteBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/Vignette/VignetteComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentBus.h

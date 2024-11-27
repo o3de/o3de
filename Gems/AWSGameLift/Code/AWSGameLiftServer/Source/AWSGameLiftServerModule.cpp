@@ -42,4 +42,8 @@ namespace AWSGameLift
     };
 }// namespace AWSGameLift
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Servers), AWSGameLift::AWSGameLiftServerModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_AWSGameLift_Servers, AWSGameLift::AWSGameLiftServerModule)
+#endif

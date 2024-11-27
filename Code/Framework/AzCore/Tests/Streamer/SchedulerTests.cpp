@@ -378,4 +378,54 @@ namespace AZ::IO
 
         EXPECT_EQ(Iterations + 1, counter);
     }
+
+    TEST_F(Streamer_SchedulerTest, RequestSorting)
+    {
+        //////////////////////////////////////////////////////////////
+        // Test equal priority requests that are past their deadlines (aka panic)
+        //////////////////////////////////////////////////////////////
+        IStreamerTypes::Deadline panicDeadline(IStreamerTypes::Deadline::min());
+        auto estimatedCompleteTime = AZStd::chrono::steady_clock::now();
+        char fakeBuffer[8];
+        FileRequestPtr panicRequest = m_streamer->Read("PanicRequest", fakeBuffer, sizeof(fakeBuffer), 8, panicDeadline);
+        panicRequest->m_request.SetEstimatedCompletion(estimatedCompleteTime);
+
+        // Passed deadline, same object (same pointer)
+        EXPECT_EQ(
+            m_streamer->m_streamStack->Thread_PrioritizeRequests(&panicRequest->m_request, &panicRequest->m_request),
+            Scheduler::Order::Equal);
+
+        // Passed deadline, different object
+        FileRequestPtr panicRequest2 = m_streamer->Read("PanicRequest2", fakeBuffer, sizeof(fakeBuffer), 8, panicDeadline);
+        panicRequest2->m_request.SetEstimatedCompletion(estimatedCompleteTime);
+        EXPECT_EQ(
+            m_streamer->m_streamStack->Thread_PrioritizeRequests(&panicRequest->m_request, &panicRequest2->m_request),
+            Scheduler::Order::Equal);
+
+
+        //////////////////////////////////////////////////////////////
+        // Test equal priority requests that are both reading the same file
+        //////////////////////////////////////////////////////////////
+        FileRequestPtr readRequest = m_streamer->Read("SameFile", fakeBuffer, sizeof(fakeBuffer), 8, panicDeadline);
+        FileRequestPtr sameFileRequest = m_streamer->CreateRequest();
+        sameFileRequest->m_request.CreateRead(&sameFileRequest->m_request, fakeBuffer, 8, RequestPath(), 0, 8);
+        sameFileRequest->m_request.m_parent = &readRequest->m_request;
+        sameFileRequest->m_request.m_dependencies = 0;
+
+        // Same file read, same object (same pointer)
+        EXPECT_EQ(
+            m_streamer->m_streamStack->Thread_PrioritizeRequests(&sameFileRequest->m_request, &sameFileRequest->m_request),
+            Scheduler::Order::Equal);
+
+        FileRequestPtr readRequest2 = m_streamer->Read("SameFile2", fakeBuffer, sizeof(fakeBuffer), 8, panicDeadline);
+        FileRequestPtr sameFileRequest2 = m_streamer->CreateRequest();
+        sameFileRequest2->m_request.CreateRead(&sameFileRequest2->m_request, fakeBuffer, 8, RequestPath(), 0, 8);
+        sameFileRequest2->m_request.m_parent = &readRequest2->m_request;
+        sameFileRequest2->m_request.m_dependencies = 0;
+
+        // Same file read, different objects
+        EXPECT_EQ(
+            m_streamer->m_streamStack->Thread_PrioritizeRequests(&sameFileRequest->m_request, &sameFileRequest2->m_request),
+            Scheduler::Order::Equal);
+    }
 } // namespace AZ::IO

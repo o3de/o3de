@@ -13,6 +13,11 @@
 #include <netinet/tcp.h>
 #include <fcntl.h>
 
+#if defined(CARBONATED) && AZ_TRAIT_SOCKETS_USE_POLL
+#include <sys/poll.h>
+typedef pollfd AZPOLLFD;
+#endif
+    
 #define SD_RECEIVE  SHUT_RD
 #define SD_SEND     SHUT_WR
 #define SD_BOTH     SHUT_RDWR

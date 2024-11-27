@@ -58,20 +58,13 @@ namespace AZ
 
         LuaMaterialBehaviorContext::LuaMaterialBehaviorContext()
         {
-            m_sriptBehaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
-            ReflectScriptContext(m_sriptBehaviorContext.get());
         }
 
         void LuaMaterialBehaviorContext::ReflectScriptContext(AZ::BehaviorContext* behaviorContext)
         {
-            AZ::MathReflect(behaviorContext);
-
             // We don't need any functions in Image, but just need BehaviorContext to be aware of this
             // type so we can pass around image pointers within lua scripts.
             behaviorContext->Class<Image>();
-
-            MaterialPropertyDescriptor::Reflect(behaviorContext);
-            ReflectMaterialDynamicMetadata(behaviorContext);
 
             LuaMaterialFunctorAPI::RenderStates::Reflect(behaviorContext);
             LuaMaterialFunctorAPI::ShaderItem::Reflect(behaviorContext);
@@ -79,11 +72,6 @@ namespace AZ
             LuaMaterialFunctorAPI::RuntimeContext::Reflect(behaviorContext);
             LuaMaterialFunctorAPI::PipelineRuntimeContext::Reflect(behaviorContext);
             LuaMaterialFunctorAPI::EditorContext::Reflect(behaviorContext);
-        }
-
-        AZ::BehaviorContext* LuaMaterialBehaviorContext::GetBehaviorContext()
-        {
-            return m_sriptBehaviorContext.get();
         }
 
         void LuaMaterialFunctor::Reflect(ReflectContext* context)
@@ -96,14 +84,14 @@ namespace AZ
                     ->Field("materialNameContext", &LuaMaterialFunctor::m_materialNameContext)
                     ;
             }
+
+            if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            {
+                LuaMaterialBehaviorContext::GetInstance()->ReflectScriptContext(behaviorContext);
+            }
         }
 
-        LuaMaterialFunctor::LuaMaterialFunctor()
-        {
-            m_scriptContext = AZStd::make_unique<AZ::ScriptContext>(AZ_CRC_CE("MaterialFunctor"), &AZ::AllocatorInstance<AZ::SystemAllocator>::Get());
-            AZ::BehaviorContext* bc = LuaMaterialBehaviorContext::GetInstance()->GetBehaviorContext();
-            m_scriptContext->BindTo(bc);
-        }
+        LuaMaterialFunctor::LuaMaterialFunctor() = default;
 
         const AZStd::vector<char>& LuaMaterialFunctor::GetScriptBuffer() const
         {
@@ -141,11 +129,26 @@ namespace AZ
 
         void LuaMaterialFunctor::InitScriptContext()
         {
-            if (m_scriptStatus == ScriptStatus::Uninitialized)
+            ScriptContext* scriptContext{};
+            ScriptSystemRequestBus::BroadcastResult(scriptContext, &ScriptSystemRequests::GetContext, ScriptContextIds::DefaultScriptContextId);
+            if (scriptContext == nullptr)
+            {
+                AZ_ErrorOnce(LuaScriptUtilities::DebugName, false, "Global script context is not available. Cannot initialize scripts");
+                m_scriptStatus = ScriptStatus::Uninitialized;
+                return;
+            }
+
+            if (m_scriptStatus != ScriptStatus::Error)
             {
                 auto scriptBuffer = GetScriptBuffer();
 
-                if (!m_scriptContext->Execute(scriptBuffer.data(), GetScriptDescription(), scriptBuffer.size()))
+                // Remove any existing Process or ProcessEditor from the global table
+                // This prevents the case where the Lua ScriptContext could contain a Process/ProcessEditor
+                // from a previous call to ScriptContext::Execute, if current script doesn't provide those functions
+                scriptContext->RemoveGlobal("Process");
+                scriptContext->RemoveGlobal("ProcessEditor");
+
+                if (!scriptContext->Execute(scriptBuffer.data(), GetScriptDescription(), scriptBuffer.size()))
                 {
                     AZ_Error(LuaScriptUtilities::DebugName, false, "Error initializing script '%s'.", m_scriptAsset.ToString<AZStd::string>().c_str());
                     m_scriptStatus = ScriptStatus::Error;
@@ -165,9 +168,11 @@ namespace AZ
 
             if (m_scriptStatus == ScriptStatus::Ready)
             {
+                ScriptContext* scriptContext{};
+                ScriptSystemRequestBus::BroadcastResult(scriptContext, &ScriptSystemRequests::GetContext, ScriptContextIds::DefaultScriptContextId);
                 LuaMaterialFunctorAPI::RuntimeContext luaContext{&context, &GetMaterialPropertyDependencies(), &m_materialNameContext};
                 AZ::ScriptDataContext call;
-                if (m_scriptContext->Call("Process", call))
+                if (scriptContext->Call("Process", call))
                 {
                     call.PushArg(luaContext);
                     call.CallExecute();
@@ -183,9 +188,11 @@ namespace AZ
 
             if (m_scriptStatus == ScriptStatus::Ready)
             {
+                ScriptContext* scriptContext{};
+                ScriptSystemRequestBus::BroadcastResult(scriptContext, &ScriptSystemRequests::GetContext, ScriptContextIds::DefaultScriptContextId);
                 LuaMaterialFunctorAPI::PipelineRuntimeContext luaContext{&context, &GetMaterialPropertyDependencies(), &m_materialNameContext};
                 AZ::ScriptDataContext call;
-                if (m_scriptContext->Call("Process", call))
+                if (scriptContext->Call("Process", call))
                 {
                     call.PushArg(luaContext);
                     call.CallExecute();
@@ -201,9 +208,11 @@ namespace AZ
 
             if (m_scriptStatus == ScriptStatus::Ready)
             {
+                ScriptContext* scriptContext{};
+                ScriptSystemRequestBus::BroadcastResult(scriptContext, &ScriptSystemRequests::GetContext, ScriptContextIds::DefaultScriptContextId);
                 LuaMaterialFunctorAPI::EditorContext luaContext{&context, &m_materialNameContext};
                 AZ::ScriptDataContext call;
-                if (m_scriptContext->Call("ProcessEditor", call))
+                if (scriptContext->Call("ProcessEditor", call))
                 {
                     call.PushArg(luaContext);
                     call.CallExecute();
@@ -831,8 +840,6 @@ namespace AZ
 
         void LuaMaterialFunctorAPI::RenderStates::Reflect(AZ::BehaviorContext* behaviorContext)
         {
-            RHI::ReflectRenderStateEnums(behaviorContext);
-
             auto classBuilder = behaviorContext->Class<LuaMaterialFunctorAPI::RenderStates>();
 
             #define TEMP_REFLECT_RENDERSTATE_METHODS(PropertyName) \

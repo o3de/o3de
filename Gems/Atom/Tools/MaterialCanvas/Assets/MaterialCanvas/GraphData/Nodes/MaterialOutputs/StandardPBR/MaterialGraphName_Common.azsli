@@ -43,6 +43,9 @@
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli>
 COMMON_OPTIONS_PARALLAX()
 #endif
+ 
+// O3DE_GENERATED_INCLUDES_BEGIN
+// O3DE_GENERATED_INCLUDES_END
 
 option bool o_normal_override_enabled = false;
 option bool o_opacity_affects_specular_factor = true;
@@ -57,9 +60,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     // O3DE_GENERATED_MATERIAL_SRG_BEGIN
     // O3DE_GENERATED_MATERIAL_SRG_END
 }
- 
-// O3DE_GENERATED_INCLUDES_BEGIN
-// O3DE_GENERATED_INCLUDES_END
 
 // O3DE_GENERATED_CLASSES_BEGIN
 // O3DE_GENERATED_CLASSES_END

@@ -95,7 +95,6 @@ namespace AzFramework
     namespace ApplicationInternal
     {
         static constexpr const char s_editorModeFeedbackKey[] = "/Amazon/Preferences/EnableEditorModeFeedback";
-        static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
         static constexpr const char* DeprecatedFileIOAliasesRoot = "/O3DE/AzCore/FileIO/DeprecatedAliases";
@@ -106,14 +105,25 @@ namespace AzFramework
     }
 
     Application::Application()
-        : Application(nullptr, nullptr)
+        : Application(nullptr, nullptr, {})
+    {
+    }
+
+    Application::Application(AZ::ComponentApplicationSettings componentAppSettings)
+        : Application(nullptr, nullptr, AZStd::move(componentAppSettings))
     {
     }
 
     Application::Application(int* argc, char*** argv)
+        : Application(argc, argv, {})
+    {
+    }
+
+    Application::Application(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : ComponentApplication(
             argc ? *argc : 0,
-            argv ? *argv : nullptr
+            argv ? *argv : nullptr,
+            AZStd::move(componentAppSettings)
         )
     {
         // Startup default local FileIO (hits OSAllocator) if not already setup.
@@ -677,7 +687,7 @@ namespace AzFramework
         if (attemptNumber >= maxAttempts)
         {
             userCachePath.ReplaceFilename(userCachePathFilename);
-            AZ_TracePrintf("Application", "Couldn't find a valid asset cache folder after %i attempts."
+            AZ_WarningOnce("Application", false, "Couldn't find a valid asset cache folder after %i attempts."
                 " Setting cache folder to %s\n", maxAttempts, userCachePath.c_str());
         }
 #endif
@@ -832,12 +842,8 @@ namespace AzFramework
 
     bool Application::IsPrefabSystemEnabled() const
     {
-        bool value = true;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(value, ApplicationInternal::s_prefabSystemKey);
-        }
-        return value;
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        return true;
     }
 
     bool Application::ArePrefabWipFeaturesEnabled() const
@@ -850,18 +856,15 @@ namespace AzFramework
         return value;
     }
 
-    void Application::SetPrefabSystemEnabled(bool enable)
+    void Application::SetPrefabSystemEnabled(bool /* enable */)
     {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(ApplicationInternal::s_prefabSystemKey, enable);
-        }
+        AZ_WarningOnce("Application", false, "'SetPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
     }
 
     bool Application::IsPrefabSystemForLevelsEnabled() const
     {
-        AZ_Warning("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, please use 'IsPrefabSystemEnabled' instead.");
-        return IsPrefabSystemEnabled();
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        return true;
     }
 
     bool Application::ShouldAssertForLegacySlicesUsage() const

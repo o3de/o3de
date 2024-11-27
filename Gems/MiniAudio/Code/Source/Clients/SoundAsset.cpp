@@ -17,17 +17,13 @@ namespace MiniAudio
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SoundAsset, AZ::Data::AssetData>()
-                ->Version(1)
-                ->Field("Data", &SoundAsset::m_data)
-                ;
+            serializeContext->Class<SoundAsset, AZ::Data::AssetData>()->Version(1)->Field("Data", &SoundAsset::m_data);
 
             serializeContext->RegisterGenericType<AZ::Data::Asset<SoundAsset>>();
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SoundAsset>("MiniSound SoundAsset", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "");
+                editContext->Class<SoundAsset>("MiniSound SoundAsset", "")->ClassElement(AZ::Edit::ClassElements::EditorData, "");
             }
         }
     }

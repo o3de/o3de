@@ -47,7 +47,6 @@ set(FILES
     EntityInspectorTests.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.cpp
     EntityOwnershipService/EntityOwnershipServiceTestFixture.h
-    EntityOwnershipService/SliceEditorEntityOwnershipTests.cpp
     EntityOwnershipService/SliceEntityOwnershipTests.cpp
     EntityTestbed.h
     FileFunc.cpp
@@ -111,6 +110,7 @@ set(FILES
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDeleteAsOverrideTests.cpp
     Prefab/PrefabDetachPrefabTests.cpp
+    Prefab/PrefabDetachPrefabAndRemoveContainerTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabEditorEntityNotificationTests.cpp
@@ -169,23 +169,16 @@ set(FILES
     PropertyIntSpinCtrlTests.cpp
     PropertyTreeEditorTests.cpp
     PythonBindingTests.cpp
+    PythonLoaderTests.cpp
     QtWidgetLimitsTests.cpp
     Script/LuaEditorSystemComponentTests.cpp
     Script/ScriptComponentTests.cpp
     Script/ScriptEntityTests.cpp
-    Slice.cpp
-    Slices.cpp
-    SliceStabilityTests/SliceStabilityCreateTests.cpp
-    SliceStabilityTests/SliceStabilityPushTests.cpp
-    SliceStabilityTests/SliceStabilityReParentTests.cpp
-    SliceStabilityTests/SliceStabilityTestFramework.cpp
-    SliceStabilityTests/SliceStabilityTestFramework.h
     SliceUpgradeTests.cpp
     SliceUpgradeTestsData.h
     SpinBoxTests.cpp
     SQLiteConnectionTests.cpp
     ThumbnailerTests.cpp
-    ToolsComponents/EditorLayerComponentTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
     UI/EntityIdQLineEditTests.cpp

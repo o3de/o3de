@@ -53,7 +53,6 @@ namespace AzToolsFramework
             , private AZ::Data::AssetBus::MultiHandler
             , private AzFramework::AssetCatalogEventBus::Handler
             , private AzToolsFramework::IPropertyEditorNotify
-            , private AZ::SystemTickBus::Handler
         {
             Q_OBJECT
 
@@ -89,6 +88,11 @@ namespace AzToolsFramework
             void ExpandAll();
             void CollapseAll();
 
+        private Q_SLOTS:
+            // note, intentionally not a reference to a QString - we want to make a copy of the string since this could be a queued thread call
+            // Also note, QStrings are reference counted copy-on-write, so this is not as expensive as it seems (++incref cost)
+            void ApplyStatusText(QString newStatus);
+
             // For subscribing to document property editor adapter property specific changes
             void OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo);
         Q_SIGNALS:
@@ -119,15 +123,9 @@ namespace AzToolsFramework
             void DirtyAsset();
 
             void SetStatusText(const QString& assetStatus);
-            void ApplyStatusText();
             void SetupHeader();
 
             void SaveAssetImpl(const AZStd::function<void()>& savedCallback);
-
-            QString m_queuedAssetStatus;
-
-            // AZ::SystemTickBus
-            void OnSystemTick() override;
 
             AZ::Data::AssetId m_sourceAssetId;
             AZ::Data::Asset<AZ::Data::AssetData> m_inMemoryAsset;

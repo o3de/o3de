@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "AzCore/Math/MathUtils.h"
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -27,5 +28,16 @@ namespace MiniAudio
         AZ::EntityId m_followEntity;
 
         AZ::u32 m_listenerIndex = 0;
+
+        //! Global volume
+        float m_globalVolume = 100.0f;
+        //! Inner cone angle
+        float m_innerAngleInRadians = 3.f/5.f * AZ::Constants::TwoPi;
+        float m_innerAngleInDegrees = AZ::RadToDeg(m_innerAngleInRadians);
+        //! Outer cone angle
+        float m_outerAngleInRadians = 1.5f * AZ::Constants::Pi;
+        float m_outerAngleInDegrees = AZ::RadToDeg(m_outerAngleInRadians);
+        //! Volume outside of outer cone
+        float m_outerVolume = 50.0f;
     };
 } // namespace MiniAudio

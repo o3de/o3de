@@ -177,7 +177,7 @@ namespace UnitTest
         jobDetails.m_jobEntry.m_jobKey = "ACS_Test";
         AssetProcessor::RCJob rcJob {&parent};
         rcJob.Init(jobDetails);
-        AZ::ComponentDescriptor::StringWarningArray sourceFileList;
+        AZStd::vector<AZStd::string> sourceFileList;
         AssetProcessor::BuilderParams builderParams {&rcJob};
         builderParams.m_serverKey = m_fakeFilename;
         builderParams.m_processJobRequest.m_sourceFile = (m_tempFolder + m_fakeFullname).toUtf8().toStdString().c_str();

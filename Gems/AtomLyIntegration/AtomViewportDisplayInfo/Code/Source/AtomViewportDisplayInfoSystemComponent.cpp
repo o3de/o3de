@@ -250,14 +250,44 @@ namespace AZ::Render
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
         const RHI::MultisampleState& multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
-        DrawLine(AZStd::string::format(
-            "Resolution: %dx%d (%s)",
-            viewportContext->GetViewportSize().m_width,
-            viewportContext->GetViewportSize().m_height,
-            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA"
-        ));
-                
-        DrawLine(AZStd::string::format("Render pipeline: %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
+        AZ::RPI::ScenePtr pScene = viewportContext->GetRenderScene();
+       
+        AZStd::string defaultAA = "MSAA";
+        bool hasAAMethod = false;
+        if (pScene != nullptr)
+        {
+            AZ::RPI::RenderPipelinePtr pPipeline = pScene->GetDefaultRenderPipeline();
+ 
+            AZ::RPI::AntiAliasingMode defaultAAMethod = pPipeline->GetActiveAAMethod();
+            defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
+            hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
+        }
+        auto resolutionStr =
+            AZStd::string::format(
+                "Resolution: %dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
+        auto msaaStr =
+            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples) : AZStd::string("NoMSAA");
+ 
+        if (hasAAMethod)
+        {
+            if (multisampleState.m_samples > 1)
+            {
+                DrawLine(AZStd::string::format("%s (%s + %s)", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()));
+            }
+            else
+            {
+                DrawLine(AZStd::string::format("%s (%s)", resolutionStr.c_str(), defaultAA.c_str()));
+            }
+        }
+        else
+        {
+            DrawLine(AZStd::string::format("%s (%s)", resolutionStr.c_str(), msaaStr.c_str()));
+        }
+
+        if(viewportContext->GetCurrentPipeline())   // avoid VR crash on nullptr
+        {
+            DrawLine(AZStd::string::format("Render pipeline: %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
+        }
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo()

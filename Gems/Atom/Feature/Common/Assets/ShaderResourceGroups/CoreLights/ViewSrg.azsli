@@ -43,7 +43,8 @@ partial ShaderResourceGroup ViewSrg
         float3 m_rgbIntensityCandelas;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
         [[pad_to(16)]]  // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
@@ -65,6 +66,7 @@ partial ShaderResourceGroup ViewSrg
         uint m_goboTexIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
+        uint m_lightingChannelMask;
         [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
@@ -73,7 +75,7 @@ partial ShaderResourceGroup ViewSrg
     Buffer<uint> m_visibleSimpleSpotLightIndices;
     uint m_visibleSimpleSpotLightCount;
     
-    static const uint MaxGoboTextureCount = 4;
+    static const uint MaxGoboTextureCount = 5;
     Texture2D<float> m_goboTextures[MaxGoboTextureCount];
 
 #if !defined(FORCE_SMALL_SRGS) || ENABLE_SPHERE_LIGHTS
@@ -88,7 +90,8 @@ partial ShaderResourceGroup ViewSrg
         uint3 m_shadowIndices;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
 
     StructuredBuffer<PointLight> m_pointLights;
@@ -172,7 +175,8 @@ partial ShaderResourceGroup ViewSrg
         uint m_shadowIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     StructuredBuffer<DiskLight> m_diskLights;
@@ -192,7 +196,8 @@ partial ShaderResourceGroup ViewSrg
         float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     StructuredBuffer<CapsuleLight> m_capsuleLights;
@@ -214,7 +219,8 @@ partial ShaderResourceGroup ViewSrg
         uint m_flags; // See QuadLightFlag enum
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     StructuredBuffer<QuadLight> m_quadLights;
@@ -231,7 +237,8 @@ partial ShaderResourceGroup ViewSrg
         float3 m_rgbIntensityNits;
         float m_invAttenuationRadiusSquared; // negative sign bit indicates double sided.
         float3 m_direction;
-        float m_padding0;
+        uint m_lightingChannelMask;
+
     };
 
     StructuredBuffer<PolygonLight> m_polygonLights;

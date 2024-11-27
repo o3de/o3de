@@ -7,6 +7,7 @@
  */
 
 #include "HttpTypes.h"
+#include <aws/core/client/ClientConfiguration.h>
 #include <sstream>
 
 namespace HttpRequestor
@@ -21,25 +22,38 @@ namespace HttpRequestor
         //! @param URI A universal resource indicator representing an endpoint.
         //! @param method The HTTP method to configure.
         //! @param callback The callback method to receive a HTTP call's response.
-        TextParameters(const AZStd::string& URI, Aws::Http::HttpMethod method, const TextCallback& callback);
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
+        TextParameters(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const TextCallback& callback,
+            const Aws::Client::ClientConfiguration& clientConfiguration = Aws::Client::ClientConfiguration());
 
         //! @param URI A universal resource indicator representing an endpoint.
         //! @param method The HTTP method to configure.
         //! @param headers A map of header names and values to use.
         //! @param callback The callback method to receive a HTTP call's response.
-        TextParameters(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const TextCallback& callback);
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
+        TextParameters(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const TextCallback& callback,
+            const Aws::Client::ClientConfiguration& clientConfiguration = Aws::Client::ClientConfiguration());
 
         //! @param URI A universal resource indicator representing an endpoint.
         //! @param method The HTTP method to configure.
         //! @param headers A map of header names and values to use.
         //! @param body An data to associate with an HTTP call.
         //! @param callback The callback method to receive a HTTP call's response.
+        //! @param clientConfiguration The client configuration to use for the HTTP request.
         TextParameters(
             const AZStd::string& URI,
             Aws::Http::HttpMethod method,
             const Headers& headers,
             const AZStd::string& body,
-            const TextCallback& callback);
+            const TextCallback& callback,
+            const Aws::Client::ClientConfiguration& clientConfiguration = Aws::Client::ClientConfiguration());
 
         // Defaults
         ~TextParameters() = default;
@@ -84,27 +98,45 @@ namespace HttpRequestor
             return m_callback;
         }
 
+        //! Get the client configuration to use for the HTTP request.
+        //! @return The client configuration to use for the HTTP request.
+        const Aws::Client::ClientConfiguration& GetClientConfiguration() const
+        {
+            return m_clientConfiguration;
+        }
+
     private:
         Aws::String m_URI;
         Aws::Http::HttpMethod m_method;
         Headers m_headers;
         std::shared_ptr<std::stringstream> m_bodyStream;
         TextCallback m_callback;
+        Aws::Client::ClientConfiguration m_clientConfiguration;
     };
 
-    inline TextParameters::TextParameters(const AZStd::string& URI, Aws::Http::HttpMethod method, const TextCallback& callback)
+    inline TextParameters::TextParameters(
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const TextCallback& callback,
+        const Aws::Client::ClientConfiguration& clientConfiguration)
         : m_URI(URI.c_str())
         , m_method(method)
         , m_callback(callback)
+        , m_clientConfiguration(clientConfiguration)
     {
     }
 
     inline TextParameters::TextParameters(
-        const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const TextCallback& callback)
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const Headers& headers,
+        const TextCallback& callback,
+        const Aws::Client::ClientConfiguration& clientConfiguration)
         : m_URI(URI.c_str())
         , m_method(method)
         , m_headers(headers)
         , m_callback(callback)
+        , m_clientConfiguration(clientConfiguration)
     {
     }
 
@@ -113,12 +145,14 @@ namespace HttpRequestor
         Aws::Http::HttpMethod method,
         const Headers& headers,
         const AZStd::string& body,
-        const TextCallback& callback)
+        const TextCallback& callback,
+        const Aws::Client::ClientConfiguration& clientConfiguration)
         : m_URI(URI.c_str())
         , m_method(method)
         , m_headers(headers)
         , m_bodyStream(std::make_shared<std::stringstream>(body.c_str()))
         , m_callback(callback)
+        , m_clientConfiguration(clientConfiguration)
     {
     }
 } // namespace HttpRequestor

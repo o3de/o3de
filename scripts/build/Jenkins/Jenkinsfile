@@ -47,7 +47,7 @@ def doit()
 doit()
 
 // Branches with build snapshots
-BUILD_SNAPSHOTS = ['development', 'stabilization', 'hotfix', 'point-release']
+BUILD_SNAPSHOTS = ['development', 'stabilization/2305']
 
 // Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline parameter)
 BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
@@ -388,7 +388,9 @@ def NoControlFile(repoName, processed_repos, o3de_project, defer_enable_gems) {
         }
         else if(fileExists("gem.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || echo>nul", "Registering gem in ${workspace}/${repoName}")
-            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project} || echo>nul", ECHO: "Enabling ${gemName} in ${o3de_project}"])
+            if(o3de_project) {
+                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project}", ECHO: "Enabling ${gemName} in ${o3de_project}"])
+            }
         }
         else if(fileExists("project.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName} || echo>nul", "Registering project in ${workspace}/${repoName}")
@@ -414,7 +416,9 @@ def NoControlFile(repoName, processed_repos, o3de_project, defer_enable_gems) {
             }
             if(fileExists("Gems")) {
                 PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || echo>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
-                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project} || dir>nul", ECHO: "Enabling all gems in ${o3de_project}"])
+                if(o3de_project) {
+                    defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project}", ECHO: "Enabling all gems in ${o3de_project}"])
+                }
                 found = true
             }
             if(fileExists("Projects")) {
@@ -481,9 +485,11 @@ def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project, def
         }
     }
     //queue enable all gems specified in the control file
-    if(controlFile.ENABLE_GEMS) {
+    if(controlFile.ENABLE_GEMS && o3de_project) {
         controlFile.ENABLE_GEMS.each { gemName ->
-            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || echo>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
+            if(o3de_project) {
+                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project}", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
+            }
         }
     }
 
@@ -670,7 +676,8 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
                     project_path = project_path.replace("\\", "/")
                     workspace_path = "${workspace}"
                     workspace_path = workspace_path.replace("\\", "/")
-                    project_path = project_path.replace("${workspace}", "..")
+                    project_path = project_path.replace("${workspace}", "..") // Set the relative path to the project from the engine path
+                    project_path = (project_path =~ /\.\.\/[\/a-zA-Z0-9-_]+/)[0] // Ensure only the path is assigned to the variable
                     env.CMAKE_LY_PROJECTS = project_path
                     echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
                 }
@@ -1205,27 +1212,18 @@ try {
                         }
                         if(env.CHANGE_TARGET) {
                             // PR builds
-                            def branchRoot = env.CHANGE_TARGET.tokenize('/')[0] // get target branch root
-                            def match = BUILD_SNAPSHOTS.find { it.startsWith(branchRoot) }
-                            if(match) {
+                            if(BUILD_SNAPSHOTS.contains(env.CHANGE_TARGET)) {
                                 snapshot = env.CHANGE_TARGET
-                                echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found as \"${snapshot}\"."
+                                echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found."
                             } else { 
                                 snapshot = DEFAULT_BUILD_SNAPSHOT
                                 echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
                             }
                         } else {
                             // Non-PR builds
-                            def branchInput = env.SNAPSHOT ? env.SNAPSHOT.tokenize('/')[0] : null
-                            def match = branchInput ? BUILD_SNAPSHOTS.find { it.startsWith(branchInput) } : null
-                            if(match) {
-                                snapshot = env.CHANGE_BRANCH
-                                echo "Snapshot \"${snapshot}\" selected based on user input."
-                            } else {
-                                pipelineParameters.add(choice(name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
-                                snapshot = DEFAULT_BUILD_SNAPSHOT // Default if no input or no match
-                                echo "No valid snapshot selected or provided; defaulting to \"${snapshot}\"."
-                            }
+                            pipelineParameters.add(choice(name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS_WITH_EMPTY, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
+                            snapshot = env.SNAPSHOT
+                            echo "Snapshot \"${snapshot}\" selected."
                         }
                         pipelineProperties.add(disableConcurrentBuilds())
 

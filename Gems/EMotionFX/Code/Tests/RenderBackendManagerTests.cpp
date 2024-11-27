@@ -52,18 +52,21 @@ namespace EMotionFX
                 const EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<ActorAsset>& asset,
                 SkinningMethod skinningMethod,
-                const AZ::Transform& worldTransform)
+                const AZ::Transform& worldTransform,
+                bool rayTracingEnabled)
                 : RenderActorInstance(asset, actorInstance.get(), entityId)
                 , m_entityId(entityId)
                 , m_actorAsset(asset)
                 , m_actorInstance(actorInstance)
                 , m_skinningMethod(skinningMethod)
                 , m_worldTransform(worldTransform)
+                , m_rayTracingEnabled(rayTracingEnabled)
             {
             }
 
             MOCK_METHOD1(OnTick, void(float));
             MOCK_METHOD1(DebugDraw, void(const EMotionFX::ActorRenderFlags&));
+            MOCK_METHOD1(SetRayTracingEnabled, void(bool));
             MOCK_CONST_METHOD0(IsVisible, bool());
             MOCK_METHOD1(SetIsVisible, void(bool));
             MOCK_METHOD0(UpdateBounds, void());
@@ -77,6 +80,7 @@ namespace EMotionFX
             EMotionFXPtr<EMotionFX::ActorInstance> m_actorInstance;
             SkinningMethod m_skinningMethod = SkinningMethod::Linear;
             AZ::Transform m_worldTransform = AZ::Transform::CreateIdentity();
+            bool m_rayTracingEnabled = true;
         };
 
         class TestRenderBackend
@@ -95,9 +99,10 @@ namespace EMotionFX
                 const EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<ActorAsset>& asset,
                 SkinningMethod skinningMethod,
-                const AZ::Transform& worldTransform) override
+                const AZ::Transform& worldTransform,
+                bool rayTracingEnabled) override
             {
-                return aznew TestRenderActorInstance(entityId, actorInstance, asset, skinningMethod, worldTransform);
+                return aznew TestRenderActorInstance(entityId, actorInstance, asset, skinningMethod, worldTransform, rayTracingEnabled);
             }
         };
 
@@ -158,7 +163,8 @@ namespace EMotionFX
                     m_actorInstance,
                     m_actorAsset,
                     SkinningMethod::Linear,
-                    /*transform=*/{}));
+                    /*transform=*/{},
+                    /*rayTracingEnabled*/true));
             }
 
             void Deactivate() override
@@ -215,6 +221,7 @@ namespace EMotionFX
             EXPECT_EQ(renderActorInstance->m_entityId, entityId);
             EXPECT_EQ(renderActorInstance->m_actorInstance, testActorComponent->m_actorInstance);
             EXPECT_EQ(renderActorInstance->GetActor(), actorAsset->GetActor());
+            EXPECT_EQ(renderActorInstance->m_rayTracingEnabled, true);
         }
     } // namespace Integration
 } // namespace EMotionFX

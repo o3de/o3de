@@ -22,6 +22,11 @@
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
 
+// individual menus
+#include "ImGuiLYAssetExplorer.h"
+#include "ImGuiLYCameraMonitor.h"
+#include "ImGuiLYEntityOutliner.h"
+
 namespace ImGui
 {
     // Resolution Widths to recommend for usage for both O3DE Rendering and/or ImGui Rendering
@@ -48,6 +53,7 @@ namespace ImGui
         m_assetExplorer.Initialize();
         m_cameraMonitor.Initialize();
         m_entityOutliner.Initialize();
+        m_inputMonitor.Initialize();
 
         m_deltaTimeHistogram.Init("onTick Delta Time (Milliseconds)", 250, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f, 60.0f);
         AZ::TickBus::Handler::BusConnect();
@@ -60,6 +66,7 @@ namespace ImGui
         ImGuiUpdateListenerBus::Handler::BusDisconnect();
 
         // shutdown sub menu objects
+        m_inputMonitor.Shutdown();
         m_assetExplorer.Shutdown();
         m_cameraMonitor.Shutdown();
         m_entityOutliner.Shutdown();
@@ -274,6 +281,11 @@ namespace ImGui
                     m_cameraMonitor.ToggleEnabled();
                 }
 
+                if (ImGui::MenuItem("Input Monitor"))
+                {
+                    m_inputMonitor.ToggleEnabled();
+                }
+
                 // LY Entity Outliner
                 if (ImGui::SmallButton("Launch"))
                 {
@@ -335,73 +347,61 @@ namespace ImGui
                             AzFramework::LevelSystemLifecycleInterface::Get()->GetCurrentLevelName());
                     }
 
-                    bool usePrefabSystemForLevels = false;
-                    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+                    // Run through all the assets in the asset catalog and gather up the list of level assets
 
-                    if (usePrefabSystemForLevels)
+                    AZ::Data::AssetType levelAssetType = lvlSystem->GetLevelAssetType();
+                    AZStd::vector<AZStd::string> levelNames;
+                    AZStd::set<AZStd::string> networkedLevelNames;
+                    auto enumerateCB =
+                        [levelAssetType, &levelNames, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                     {
-                        // Run through all the assets in the asset catalog and gather up the list of level assets
-
-                        AZ::Data::AssetType levelAssetType = lvlSystem->GetLevelAssetType();
-                        AZStd::vector<AZStd::string> levelNames;
-                        AZStd::set<AZStd::string> networkedLevelNames;
-                        auto enumerateCB =
-                            [levelAssetType, &levelNames, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
+                        if (assetInfo.m_assetType == levelAssetType)
                         {
-                            if (assetInfo.m_assetType == levelAssetType)
+#if defined(CARBONATED)
+                            // Ignore levels outside of the "levels" folder, as this function will pull every spawnable object in the entire project.
+                            constexpr AZStd::fixed_string<32> levelsFolder("levels");
+                            if (!assetInfo.m_relativePath.starts_with(levelsFolder))
                             {
-                                // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
-                                // Filter out network spawnables from the level list, 
-                                // but keep track of which levels require networking so they can be recognized in the level selection menu. 
-                                constexpr AZStd::fixed_string<32> networkSpawnablePrefix(".network");
-                                constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + AzFramework::Spawnable::DotFileExtension;
-
-                                if (assetInfo.m_relativePath.ends_with(networkSpawnableFileExtension))
-                                {   
-                                    AZStd::string spawnablePath(assetInfo.m_relativePath); 
-                                    AZ::StringFunc::Replace(spawnablePath, networkSpawnablePrefix.c_str(), "");
-                                    networkedLevelNames.emplace(spawnablePath);
-                                }
-                                else
-                                {
-                                    levelNames.emplace_back(assetInfo.m_relativePath);
-                                }
+                                return;
                             }
-                        };
+#endif
+                            // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
+                            // Filter out network spawnables from the level list, 
+                            // but keep track of which levels require networking so they can be recognized in the level selection menu. 
+                            constexpr AZStd::fixed_string<32> networkSpawnablePrefix(".network");
+                            constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + AzFramework::Spawnable::DotFileExtension;
 
-                        AZ::Data::AssetCatalogRequestBus::Broadcast(
-                            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
-
-                        AZStd::sort(levelNames.begin(), levelNames.end());
-
-                        // Create a menu item for each level asset, with an action to load it if selected.
-
-                        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
-                        for (int i = 0; i < levelNames.size(); i++)
-                        {
-                            bool isNetworked = networkedLevelNames.contains(levelNames[i]);
-                            if (ImGui::MenuItem(AZStd::string::format("%d- %s%s", i, levelNames[i].c_str(), isNetworked ? " (Multiplayer)":"").c_str()))
+                            if (assetInfo.m_relativePath.ends_with(networkSpawnableFileExtension))
+                            {   
+                                AZStd::string spawnablePath(assetInfo.m_relativePath); 
+                                AZ::StringFunc::Replace(spawnablePath, networkSpawnablePrefix.c_str(), "");
+                                networkedLevelNames.emplace(spawnablePath);
+                            }
+                            else
                             {
-                                AZ::TickBus::QueueFunction(
-                                    [lvlSystem, levelNames, i]()
-                                    {
-                                        lvlSystem->LoadLevel(levelNames[i].c_str());
-                                    });
+                                levelNames.emplace_back(assetInfo.m_relativePath);
                             }
                         }
-                    }
-                    else
+                    };
+
+                    AZ::Data::AssetCatalogRequestBus::Broadcast(
+                        &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
+
+                    AZStd::sort(levelNames.begin(), levelNames.end());
+
+                    // Create a menu item for each level asset, with an action to load it if selected.
+
+                    ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
+                    for (int i = 0; i < levelNames.size(); i++)
                     {
-                        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
-                        for (int i = 0; i < lvlSystem->GetLevelCount(); i++)
+                        bool isNetworked = networkedLevelNames.contains(levelNames[i]);
+                        if (ImGui::MenuItem(AZStd::string::format("%d- %s%s", i, levelNames[i].c_str(), isNetworked ? " (Multiplayer)":"").c_str()))
                         {
-                            if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, lvlSystem->GetLevelInfo(i)->GetName()).c_str()))
-                            {
-                                AZ::TickBus::QueueFunction([lvlSystem, i]() {
-                                    lvlSystem->LoadLevel(lvlSystem->GetLevelInfo(i)->GetName());
+                            AZ::TickBus::QueueFunction(
+                                [lvlSystem, levelNames, i]()
+                                {
+                                    lvlSystem->LoadLevel(levelNames[i].c_str());
                                 });
-                            }
                         }
                     }
 
@@ -751,6 +751,7 @@ namespace ImGui
         // Update sub menus
         m_assetExplorer.ImGuiUpdate();
         m_cameraMonitor.ImGuiUpdate();
+        m_inputMonitor.ImGuiUpdate();
         m_entityOutliner.ImGuiUpdate();
         if (m_showDeltaTimeGraphs)
         {

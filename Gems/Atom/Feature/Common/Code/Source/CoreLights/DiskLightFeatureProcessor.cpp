@@ -428,6 +428,14 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
+        void DiskLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetLightingChannelMask().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
         void DiskLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
             const DiskLightData& diskLight = m_lightData.GetData<0>(handle.GetIndex());

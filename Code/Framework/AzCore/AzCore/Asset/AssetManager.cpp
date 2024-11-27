@@ -350,7 +350,7 @@ namespace AZ::Data
 // Gruber patch begin // AE -- update log while waiting for assets
 #if defined(CARBONATED)
                         // if we are here then it is the main thread, let deliver the log messages
-                        AZ::LogNotification::LogNotificatorBus::Broadcast(&AZ::LogNotification::LogNotificatorBus::Events::Update);
+                        AZ::LogNotification::LogNotificationBus::Broadcast(&AZ::LogNotification::LogNotificationBus::Events::Update);
                         // update subscribers while waiting for assets
                         currentWaitForAssetUpdate += MaxWaitBetweenDispatchMs;
                         if (currentWaitForAssetUpdate >= MaxWaitForAssetUpdateMs)
@@ -1835,35 +1835,7 @@ namespace AZ::Data
                         }
                     }
                 }
-// Gruber patch begin // AE -- FIXME delay for motion assets, they are blocking, but a request might be not ready yet
-#if defined(CARBONATED) && defined(AZ_PLATFORM_LINUX)
-                const AZStd::string& assetName = loadingAsset.GetHint();
-                if (!jobQueued && (assetName.ends_with(".motion") || (assetName.ends_with(".spawnable") && assetName.starts_with("levels"))))
-                {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));  // 2ms is not enough for local
 
-                    {
-                        AZStd::scoped_lock<AZStd::recursive_mutex> requestLock(m_activeBlockingRequestMutex);
-                        auto newRange = m_activeBlockingRequests.equal_range(assetId);
-
-                        for (auto blockingRequest = newRange.first; blockingRequest != newRange.second; ++blockingRequest)
-                        {
-                            if (blockingRequest->second->QueueAssetLoadJob(loadJob))
-                            {
-                                AZ_Printf("assetdbg", "fixed %s", loadingAsset.GetHint().c_str());
-                                jobQueued = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!jobQueued)
-                    {
-                        AZ_Printf("assetdbg", "not fixed %s", loadingAsset.GetHint().c_str());
-                    }
-                }
-#endif
-// Gruber patch end // AE -- FIXME delay for motion assets, they are blocking, but a request might be not ready yet
                 if (!jobQueued)
                 {
                     loadJob->Start();

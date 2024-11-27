@@ -8,6 +8,8 @@
 
 #include "Vector4.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/VectorN.generated.h>
+
 namespace ScriptCanvas
 {
     namespace VectorNFunctions

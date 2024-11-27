@@ -238,7 +238,7 @@ namespace AZ
                 ExecuteSimulateJobQueue(initJobQueue, parentJob);
                 // Per-InstanceGroup work must be done after the Init jobs are complete, because the init jobs will determine which instance
                 // group each mesh belongs to and populate those instance groups
-                // Note: the Per-InstanceGroup jobs need to be created after init jobs because it's possible new instance groups created in init jobs
+                // Note: the Per-InstanceGroup jobs need to be created after init jobs because it's possible new instance groups are created in init jobs
                 AZStd::vector<Job*> perInstanceGroupJobQueue = CreatePerInstanceGroupJobQueue();
                 ExecuteSimulateJobQueue(perInstanceGroupJobQueue, parentJob);
                 // Updating the culling scene must happen after the per-instance group work is done
@@ -277,7 +277,6 @@ namespace AZ
                 const auto perInstanceGroupJobLambda = [this, scene, iteratorRange]() -> void
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: PerInstanceGroupUpdate");
-
 #if defined(CARBONATED)
                     MEMORY_TAG(Mesh);
 #endif
@@ -654,6 +653,29 @@ namespace AZ
             }
         }
 
+
+        void MeshFeatureProcessor::SetLightingChannelMask(const MeshHandle& meshHandle, uint32_t lightingChannelMask)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->SetLightingChannelMask(lightingChannelMask);
+            }
+        }
+
+        uint32_t MeshFeatureProcessor::GetLightingChannelMask(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->GetLightingChannelMask();
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return 1;
+            }
+        }        
+
+
         void MeshFeatureProcessor::AddVisibleObjectsToBuckets(
             TaskGraph& addVisibleObjectsToBucketsTG, size_t viewIndex, const RPI::ViewPtr& view)
         {
@@ -682,9 +704,10 @@ namespace AZ
 
                     addVisibleObjectsToBucketsTG.AddTask(
                         addVisibleObjectsToBucketsTaskDescriptor,
-                        [this, view, viewIndex, batchStart, currentBatchCount]()
+                        // Don't capture the shared_ptr because that causes incorrect ref counting when copying/moving the lambda
+                        [this, viewPtr = view.get(), viewIndex, batchStart, currentBatchCount]()
                         {
-                            RPI::VisibleObjectListView visibilityList = view->GetVisibleObjectList();
+                            RPI::VisibleObjectListView visibilityList = viewPtr->GetVisibleObjectList();
                             AZStd::vector<InstanceGroupBucket>& currentViewInstanceGroupBuckets = m_perViewInstanceGroupBuckets[viewIndex];
                             for (size_t i = batchStart; i < batchStart + currentBatchCount; ++i)
                             {
@@ -917,6 +940,13 @@ namespace AZ
                             continue;
                         }
 
+#if defined (CARBONATED)
+                        if (!modelHandle.m_model)
+                        {
+                            continue; // model not loaded yet
+                        }
+#endif
+
                         if (!r_meshInstancingEnabled)
                         {
                             for (RPI::MeshDrawPacketList& drawPacketList : modelHandle.m_drawPacketListsByLod)
@@ -1015,8 +1045,7 @@ namespace AZ
             }
         }
 
-        MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const MeshHandleDescriptor& descriptor, const CustomMaterialMap& materials)
+        MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(const MeshHandleDescriptor& descriptor)
         {
             AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: AcquireMesh");
 #if defined(CARBONATED)
@@ -1028,7 +1057,6 @@ namespace AZ
 
             meshDataHandle->m_descriptor = descriptor;
             meshDataHandle->m_scene = GetParentScene();
-            meshDataHandle->m_customMaterials = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
@@ -1043,18 +1071,6 @@ namespace AZ
             }
 
             return meshDataHandle;
-        }
-
-        MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const MeshHandleDescriptor& descriptor, const Data::Instance<RPI::Material>& material)
-        {
-            Render::CustomMaterialMap materials;
-            if (material)
-            {
-                materials[AZ::Render::DefaultCustomMaterialId] = { material };
-            }
-
-            return AcquireMesh(descriptor, materials);
         }
 
         bool MeshFeatureProcessor::ReleaseMesh(MeshHandle& meshHandle)
@@ -1077,7 +1093,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return AcquireMesh(meshHandle->m_descriptor, meshHandle->m_customMaterials);
+                return AcquireMesh(meshHandle->m_descriptor);
             }
             return MeshFeatureProcessor::MeshHandle();
         }
@@ -1146,23 +1162,7 @@ namespace AZ
 
         const CustomMaterialMap& MeshFeatureProcessor::GetCustomMaterials(const MeshHandle& meshHandle) const
         {
-            return meshHandle.IsValid() ? meshHandle->m_customMaterials : DefaultCustomMaterialMap;
-        }
-
-        void MeshFeatureProcessor::ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler)
-        {
-            if (meshHandle.IsValid())
-            {
-                handler.Connect(meshHandle->m_meshLoader->GetModelChangedEvent());
-            }
-        }
-
-        void MeshFeatureProcessor::ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler)
-        {
-            if (meshHandle.IsValid())
-            {
-                handler.Connect(meshHandle->GetObjectSrgCreatedEvent());
-            }
+            return meshHandle.IsValid() ? meshHandle->m_descriptor.m_customMaterials : DefaultCustomMaterialMap;
         }
 
         void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
@@ -1280,6 +1280,11 @@ namespace AZ
             }
         }
 
+        void ModelDataInstance::SetLightingChannelMask(uint32_t lightingChannelMask)
+        {
+            m_lightingChannelMask = lightingChannelMask;
+        }
+
         void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig)
         {
             if (meshHandle.IsValid())
@@ -1344,17 +1349,17 @@ namespace AZ
             return false;
         }
 
-        void MeshFeatureProcessor::SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled)
+        void MeshFeatureProcessor::SetRayTracingEnabled(const MeshHandle& meshHandle, bool enabled)
         {
             if (meshHandle.IsValid())
             {
                 // update the ray tracing data based on the current state and the new state
-                if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
+                if (enabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
                     meshHandle->m_flags.m_needsSetRayTracingData = true;
                 }
-                else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
+                else if (!enabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // remove from ray tracing
                     if (m_rayTracingFeatureProcessor)
@@ -1364,7 +1369,7 @@ namespace AZ
                 }
 
                 // set new state
-                meshHandle->m_descriptor.m_isRayTracingEnabled = rayTracingEnabled;
+                meshHandle->m_descriptor.m_isRayTracingEnabled = enabled;
             }
         }
 
@@ -1570,12 +1575,6 @@ namespace AZ
         }
 
         // ModelDataInstance::MeshLoader...
-
-        MeshFeatureProcessorInterface::ModelChangedEvent& ModelDataInstance::MeshLoader::GetModelChangedEvent()
-        {
-            return m_modelChangedEvent;
-        }
-
         ModelDataInstance::MeshLoader::MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, ModelDataInstance* parent)
             : m_modelAsset(modelAsset)
             , m_parent(parent)
@@ -1599,23 +1598,21 @@ namespace AZ
         {
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
+            SystemTickBus::Handler::BusDisconnect();
         }
 
-        //! AssetBus::Handler overrides...
-        void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        void ModelDataInstance::MeshLoader::OnSystemTick()
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-#endif
-            Data::Asset<RPI::ModelAsset> modelAsset = asset;
-
-            // Update our model asset reference to contain the latest loaded version.
-            m_modelAsset = asset;
+#endif        	
+            SystemTickBus::Handler::BusDisconnect();
+            m_parent->m_originalModelAsset = m_modelAsset;
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
             m_parent->m_originalModelAsset = asset;
 
-            if (const auto& modelTags = modelAsset->GetTags(); !modelTags.empty())
+            if (const auto& modelTags = m_modelAsset->GetTags(); !modelTags.empty())
             {
                 RPI::AssetQuality highestLodBias = RPI::AssetQualityLowest;
                 for (const AZ::Name& tag : modelTags)
@@ -1626,16 +1623,16 @@ namespace AZ
                     highestLodBias = AZStd::min(highestLodBias, tagQuality);
                 }
 
-                if (highestLodBias >= modelAsset->GetLodCount())
+                if (highestLodBias >= m_modelAsset->GetLodCount())
                 {
-                    highestLodBias = aznumeric_caster(modelAsset->GetLodCount() - 1);
+                    highestLodBias = aznumeric_caster(m_modelAsset->GetLodCount() - 1);
                 }
 
                 m_parent->m_lodBias = highestLodBias;
 
                 for (const AZ::Name& tag : modelTags)
                 {
-                    RPI::ModelTagBus::Broadcast(&RPI::ModelTagBus::Events::RegisterAsset, tag, modelAsset->GetId());
+                    RPI::ModelTagBus::Broadcast(&RPI::ModelTagBus::Events::RegisterAsset, tag, m_modelAsset->GetId());
                 }
             }
             else
@@ -1645,57 +1642,67 @@ namespace AZ
 
             Data::Instance<RPI::Model> model;
             // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
-            if (m_parent->m_descriptor.m_requiresCloneCallback &&
-                m_parent->m_descriptor.m_requiresCloneCallback(modelAsset))
+            if (m_parent->m_descriptor.m_requiresCloneCallback && m_parent->m_descriptor.m_requiresCloneCallback(m_modelAsset))
             {
                 // Clone the model asset to force create another model instance.
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);
                 Data::Asset<RPI::ModelAsset> clonedAsset;
                 // Assume cloned models will involve some kind of geometry deformation
                 m_parent->m_flags.m_isAlwaysDynamic = true;
-                if (AZ::RPI::ModelAssetCreator::Clone(modelAsset, clonedAsset, newId))
+                if (AZ::RPI::ModelAssetCreator::Clone(m_modelAsset, clonedAsset, newId))
                 {
                     model = RPI::Model::FindOrCreate(clonedAsset);
                 }
                 else
                 {
-                    AZ_Error("ModelDataInstance", false, "Cannot clone model for '%s'. Cloth simulation results won't be individual per entity.", modelAsset->GetName().GetCStr());
-                    model = RPI::Model::FindOrCreate(modelAsset);
+                    AZ_Error("ModelDataInstance", false, "Cannot clone model for '%s'. Cloth simulation results won't be individual per entity.", m_modelAsset->GetName().GetCStr());
+                    model = RPI::Model::FindOrCreate(m_modelAsset);
                 }
             }
             else
             {
                 // Static mesh, no cloth buffer present.
-                model = RPI::Model::FindOrCreate(modelAsset);
+                model = RPI::Model::FindOrCreate(m_modelAsset);
             }
-            
+
             if (model)
             {
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor =
                     m_parent->m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
                 m_parent->RemoveRayTracingData(rayTracingFeatureProcessor);
                 m_parent->QueueInit(model);
-                m_modelChangedEvent.Signal(AZStd::move(model));
+                m_parent->m_modelChangedEvent.Signal(AZStd::move(model));
 
-                if (m_parent->m_flags.m_keepBufferAssetsInMemory)
-                {
-                    model->GetModelAsset()->AddRefBufferAssets();
-                }
-                else
+                // we always start out with a refcount of 1
+                model->GetModelAsset()->AddRefBufferAssets();
+
+                // if we don't want to keep them, this will drop the refcount to 0.
+                if (!m_parent->m_flags.m_keepBufferAssetsInMemory)
                 {
                     model->GetModelAsset()->ReleaseRefBufferAssets();
                 }
             }
             else
             {
-                //when running with null renderer, the RPI::Model::FindOrCreate(...) is expected to return nullptr, so suppress this error.
-                AZ_Error(
-                    "ModelDataInstance::OnAssetReady", RHI::IsNullRHI(), "Failed to create model instance for '%s'",
-                    asset.GetHint().c_str());
+                // when running with null renderer, the RPI::Model::FindOrCreate(...) is expected to return nullptr, so suppress this error.
+                AZ_Error("ModelDataInstance::OnAssetReady", RHI::IsNullRHI(), "Failed to create model instance for '%s'", m_modelAsset.GetHint().c_str());
             }
         }
 
-        
+        //! AssetBus::Handler overrides...
+        void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            // Update our model asset reference to contain the latest loaded version.
+            m_modelAsset = asset;
+
+            // The mesh loader queues the model asset to be loaded then connects to the asset bus. If the asset is already loaded
+            // OnAssetReady will be called before returning from the acquire function. Many callers connect handlers for model change
+            // events. Some of the handlers attempt to access their stored mesh handle member, which will not be up to date if the acquire
+            // function hasn't returned. This postpones sending the event until the next tick, allowing the acquire function to return and
+            // update and he stored mesh handles.
+            SystemTickBus::Handler::BusConnect();
+        }
+
         void ModelDataInstance::MeshLoader::OnModelReloaded(Data::Asset<Data::AssetData> asset)
         {
             OnAssetReady(asset);
@@ -1717,7 +1724,7 @@ namespace AZ
         {
             OnCatalogAssetChanged(assetId);
         }
-        
+
         void ModelDataInstance::MeshLoader::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
         {
             // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
@@ -1800,17 +1807,17 @@ namespace AZ
                 m_postCullingInstanceDataByLod.clear();
             }
 
-            m_customMaterials.clear();
+            m_descriptor.m_customMaterials.clear();
             m_objectSrgList = {};
             m_model = {};
         }
 
         void ModelDataInstance::ReInit(MeshFeatureProcessor* meshFeatureProcessor)
         {
-            CustomMaterialMap customMaterials = m_customMaterials;
+            CustomMaterialMap customMaterials = m_descriptor.m_customMaterials;
             const Data::Instance<RPI::Model> model = m_model;
             DeInit(meshFeatureProcessor);
-            m_customMaterials = customMaterials;
+            m_descriptor.m_customMaterials = customMaterials;
             m_model = model;
             QueueInit(m_model);
         }
@@ -1843,7 +1850,7 @@ namespace AZ
                 BuildDrawPacketList(meshFeatureProcessor, modelLodIndex);
             }
 
-            for(auto& objectSrg : m_objectSrgList)
+            for (auto& objectSrg : m_objectSrgList)
             {
                 // Set object Id once since it never changes
                 RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
@@ -1893,7 +1900,8 @@ namespace AZ
                 {
                     if (shaderItem.IsEnabled())
                     {
-                        // Check to see if the shaderItem has the o_meshInstancingEnabled option. All shader items in the draw packet must support this option
+                        // Check to see if the shaderItem has the o_meshInstancingEnabled option. All shader items in the draw packet must
+                        // support this option
                         RPI::ShaderOptionIndex index = shaderItem.GetShaderOptionGroup().GetShaderOptionLayout()->FindShaderOptionIndex(
                             s_o_meshInstancingIsEnabled_Name);
                         if (!index.IsValid())
@@ -2278,6 +2286,7 @@ namespace AZ
 
                 // set the SubMesh data to pass to the RayTracingFeatureProcessor, starting with vertex/index data
                 RayTracingFeatureProcessor::SubMesh subMesh;
+                RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
                 subMesh.m_positionFormat = PositionStreamFormat;
                 subMesh.m_positionVertexBufferView = streamBufferViews[0];
                 subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
@@ -2322,27 +2331,27 @@ namespace AZ
                     propertyIndex = material->FindPropertyIndex(s_baseColor_color_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_baseColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                        subMeshMaterial.m_baseColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                     }
 
                     propertyIndex = material->FindPropertyIndex(s_baseColor_factor_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_baseColor *= material->GetPropertyValue<float>(propertyIndex);
+                        subMeshMaterial.m_baseColor *= material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // metallic
                     propertyIndex = material->FindPropertyIndex(s_metallic_factor_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_metallicFactor = material->GetPropertyValue<float>(propertyIndex);
+                        subMeshMaterial.m_metallicFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // roughness
                     propertyIndex = material->FindPropertyIndex(s_roughness_factor_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
+                        subMeshMaterial.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
                     }
 
                     // emissive color
@@ -2354,7 +2363,7 @@ namespace AZ
                             propertyIndex = material->FindPropertyIndex(s_emissive_color_Name);
                             if (propertyIndex.IsValid())
                             {
-                                subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                                subMeshMaterial.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                             }
 
                             // When we have an emissive intensity, the unit of the intensity is defined in the material settings.
@@ -2393,7 +2402,7 @@ namespace AZ
                                         material->GetAsset()->GetId().ToFixedString().c_str());
                                     if (foundEmissiveUnitFunctor)
                                     {
-                                        subMesh.m_emissiveColor *= intensity;
+                                        subMeshMaterial.m_emissiveColor *= intensity;
                                     }
                                 }
                             }
@@ -2408,8 +2417,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
-                            subMesh.m_baseColorImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
+                            subMeshMaterial.m_baseColorImageView = image->GetImageView();
                             baseColorImage = image;
                         }
                     }
@@ -2420,8 +2429,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Normal;
-                            subMesh.m_normalImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Normal;
+                            subMeshMaterial.m_normalImageView = image->GetImageView();
                         }
                     }
 
@@ -2431,8 +2440,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Metallic;
-                            subMesh.m_metallicImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Metallic;
+                            subMeshMaterial.m_metallicImageView = image->GetImageView();
                         }
                     }
 
@@ -2442,8 +2451,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Roughness;
-                            subMesh.m_roughnessImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Roughness;
+                            subMeshMaterial.m_roughnessImageView = image->GetImageView();
                         }
                     }
 
@@ -2453,8 +2462,8 @@ namespace AZ
                         Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
                         if (image.get())
                         {
-                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
-                            subMesh.m_emissiveImageView = image->GetImageView();
+                            subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
+                            subMeshMaterial.m_emissiveImageView = image->GetImageView();
                         }
                     }
 
@@ -2470,6 +2479,10 @@ namespace AZ
             rayTracingMesh.m_assetId = m_model->GetModelAsset()->GetId();
             rayTracingMesh.m_transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
             rayTracingMesh.m_nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
+            rayTracingMesh.m_isSkinnedMesh = m_descriptor.m_isSkinnedMesh;
+            rayTracingMesh.m_instanceMask |= (rayTracingMesh.m_isSkinnedMesh)
+                ? static_cast<uint32_t>(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::SKINNED_MESH)
+                : static_cast<uint32_t>(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH);
 
             // setup the reflection probe data, and track if this mesh is currently affected by a reflection probe
             SetRayTracingReflectionProbeData(meshFeatureProcessor, rayTracingMesh.m_reflectionProbe);
@@ -2501,7 +2514,7 @@ namespace AZ
                 propertyIndex = material->FindPropertyIndex(s_irradiance_manualColor_Name);
                 if (propertyIndex.IsValid())
                 {
-                    subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                    subMeshMaterial.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                 }
                 else
                 {
@@ -2510,21 +2523,21 @@ namespace AZ
                     propertyIndex = material->FindPropertyIndex(s_irradiance_color_Name);
                     if (propertyIndex.IsValid())
                     {
-                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                        subMeshMaterial.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                     }
                     else
                     {
                         AZ_Warning(
                             "MeshFeatureProcessor", false,
                             "No irradiance.manualColor or irradiance.color field found. Defaulting to 1.0f.");
-                        subMesh.m_irradianceColor = AZ::Colors::White;
+                        subMeshMaterial.m_irradianceColor = AZ::Colors::White;
                     }
                 }
             }
             else if (irradianceColorSource == s_BaseColorTint_Name)
             {
                 // Use only the baseColor, no texture on top of it
-                subMesh.m_irradianceColor = subMesh.m_baseColor;
+                subMeshMaterial.m_irradianceColor = subMeshMaterial.m_baseColor;
             }
             else if (irradianceColorSource == s_BaseColor_Name)
             {
@@ -2561,27 +2574,27 @@ namespace AZ
 
                         // We do a simple 'multiply' blend with the base color
                         // Note: other blend modes are currently not supported
-                        subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
+                        subMeshMaterial.m_irradianceColor = avgColor * subMeshMaterial.m_baseColor;
                     }
                     else
                     {
                         AZ_Warning("MeshFeatureProcessor", false, "Using BaseColor as irradianceColorSource "
                                 "is currently only supported for textures of type StreamingImage");
                         // Default to the flat base color
-                        subMesh.m_irradianceColor = subMesh.m_baseColor;
+                        subMeshMaterial.m_irradianceColor = subMeshMaterial.m_baseColor;
                     }
                 }
                 else
                 {
                     // No texture, simply copy the baseColor
-                    subMesh.m_irradianceColor = subMesh.m_baseColor;
+                    subMeshMaterial.m_irradianceColor = subMeshMaterial.m_baseColor;
                 }
             }
             else
             {
                 AZ_Warning("MeshFeatureProcessor", false, "Unknown irradianceColorSource value: %s, "
                         "defaulting to 1.0f.", irradianceColorSource.GetCStr());
-                subMesh.m_irradianceColor = AZ::Colors::White;
+                subMeshMaterial.m_irradianceColor = AZ::Colors::White;
             }
 
 
@@ -2589,7 +2602,7 @@ namespace AZ
             propertyIndex = material->FindPropertyIndex(s_irradiance_factor_Name);
             if (propertyIndex.IsValid())
             {
-                subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
+                subMeshMaterial.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
             }
 
             // set the raytracing transparency from the material opacity factor
@@ -2609,7 +2622,7 @@ namespace AZ
                 }
             }
 
-            subMesh.m_irradianceColor.SetA(opacity);
+            subMeshMaterial.m_irradianceColor.SetA(opacity);
         }
 
         void ModelDataInstance::SetRayTracingReflectionProbeData(
@@ -2703,9 +2716,7 @@ namespace AZ
         void ModelDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
             AZ_Assert(!r_meshInstancingEnabled, "If mesh instancing is enabled, the draw packet update should be going through the MeshInstanceManager.");
-#if defined(CARBONATED)
-            MEMORY_TAG(Mesh);
-#endif
+
             // Only enable draw motion if model is dynamic and draw motion was disabled
             bool enableDrawMotion = !m_flags.m_isDrawMotion && m_flags.m_dynamic;
             RHI::DrawListTag meshMotionDrawListTag;
@@ -2741,7 +2752,7 @@ namespace AZ
             RPI::Cullable::LodData& lodData = m_cullable.m_lodData;
 
             const Aabb& localAabb = m_aabb;
-            lodData.m_lodSelectionRadius = 0.5f*localAabb.GetExtents().GetMaxElement();
+            lodData.m_lodSelectionRadius = 0.5f * localAabb.GetExtents().GetMaxElement();
 
             const size_t modelLodCount = m_model->GetLodCount();
             const auto& lodAssets = m_model->GetModelAsset()->GetLodAssets();
@@ -3018,7 +3029,7 @@ namespace AZ
             const CustomMaterialId ignoreLodId(DefaultCustomMaterialLodIndex, id.second);
             for (const auto& currentId : { id, ignoreLodId, DefaultCustomMaterialId })
             {
-                if (auto itr = m_customMaterials.find(currentId); itr != m_customMaterials.end() && itr->second.m_material)
+                if (auto itr = m_descriptor.m_customMaterials.find(currentId); itr != m_descriptor.m_customMaterials.end() && itr->second.m_material)
                 {
                     return itr->second;
                 }
@@ -3034,4 +3045,3 @@ namespace AZ
 
     } // namespace Render
 } // namespace AZ
-

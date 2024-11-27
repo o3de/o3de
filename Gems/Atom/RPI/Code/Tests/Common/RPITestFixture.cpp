@@ -13,7 +13,9 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/AzCore_Traits_Platform.h>
+#include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/Utils.h>
@@ -40,6 +42,9 @@ namespace UnitTest
             AssetManagerComponent::Reflect(reflection);
         }
     };
+
+    RPITestFixture::RPITestFixture() = default;
+    RPITestFixture::~RPITestFixture() = default;
 
     JsonRegistrationContext* RPITestFixture::GetJsonRegistrationContext()
     {
@@ -70,10 +75,14 @@ namespace UnitTest
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetPath.c_str());
 
         m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
-        m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();
-        m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
+
+        m_scriptSystemComponentDescriptor.reset(AZ::ScriptSystemComponent::CreateDescriptor());
+        // Reflect the ScriptSystemComponent
+        m_scriptSystemComponentDescriptor->Reflect(GetBehaviorContext());
 
         Reflect(GetSerializeContext());
+        Reflect(GetBehaviorContext());
         Reflect(m_jsonRegistrationContext.get());
 
         NameDictionary::Create();
@@ -84,6 +93,20 @@ namespace UnitTest
         m_rpiSystem = AZStd::make_unique<RPI::RPISystem>();
         m_rpiSystem->Initialize(rpiSystemDescriptor);
         m_rpiSystem->InitializeSystemAssetsForTests();
+
+        // Create the system entity
+        m_systemEntity = AZStd::make_unique<AZ::Entity>(AZ::SystemEntityId);
+        // Add the Lua Script System Component to add a Global Script Context
+        m_systemEntity->CreateComponent<AZ::ScriptSystemComponent>();
+        // Activate the System Entity
+        m_systemEntity->Init();
+        m_systemEntity->Activate();
+
+        // Bind the reflected BehaviorContext functions to the ScriptContext
+        AZ::ScriptContext* scriptContext{};
+        AZ::ScriptSystemRequestBus::BroadcastResult(scriptContext, &AZ::ScriptSystemRequests::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+        ASSERT_NE(nullptr, scriptContext);
+        scriptContext->BindTo(GetBehaviorContext());
 
         // Setup job context for job system
         JobManagerDesc desc;
@@ -120,6 +143,9 @@ namespace UnitTest
         m_jobContext = nullptr;
         m_jobManager = nullptr;
 
+        // Deactivate and deletes the System Entity
+        m_systemEntity.reset();
+
         m_rpiSystem->Shutdown();
         m_rpiSystem = nullptr;
         m_rhiFactory = nullptr;
@@ -127,12 +153,24 @@ namespace UnitTest
         NameDictionary::Destroy();
 
         m_jsonRegistrationContext->EnableRemoveReflection();
-        m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
         Reflect(m_jsonRegistrationContext.get());
         m_jsonRegistrationContext->DisableRemoveReflection();
 
+        auto serializeContext = GetSerializeContext();
+        serializeContext->EnableRemoveReflection();
+        Reflect(serializeContext);
+        serializeContext->DisableRemoveReflection();
+
+        auto behaviorContext = GetBehaviorContext();
+        behaviorContext->EnableRemoveReflection();
+        Reflect(behaviorContext);
+        m_scriptSystemComponentDescriptor->Reflect(behaviorContext);
+        behaviorContext->DisableRemoveReflection();
+
+        m_scriptSystemComponentDescriptor.reset();
+
         m_jsonRegistrationContext.reset();
-        m_jsonSystemComponent.reset();
 
         AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
         m_localFileIO.reset();

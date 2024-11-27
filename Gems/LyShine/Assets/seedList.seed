@@ -8,35 +8,35 @@
                 "guid": "{44E2934E-9CB7-568F-A59C-D72D83E642F0}",
                 "subId": 1000
             },
-            "platformFlags": 255,
+            "platformFlags": 383,
             "pathHint": "textures/cursor_default.tif.streamingimage"
         },
         {
             "assetId": {
                 "guid": "{298A76AE-02DE-5AFB-9DCD-E652DFB6BB33}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "lyshine_dependencies.xml"
         },
         {
             "assetId": {
                 "guid": "{C7BCB5E8-3E6B-5531-A3D9-CEE93E103F69}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "lyshine/shaders/lyshineui.azshader"
         },
         {
             "assetId": {
                 "guid": "{B8873FC2-DD55-560C-B933-868784D39F58}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "passes/lyshinepasstemplates.azasset"
         },
         {
             "assetId": {
                 "guid": "{B101FFC7-F9F6-544E-ABA2-84CDD54F293C}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "passes/lyshinepassrequest.azasset"
         }
     ]

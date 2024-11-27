@@ -116,7 +116,7 @@ namespace XInput
         }
 
         AZStd::shared_ptr<AZ::DynamicModuleHandle> handle = AZ::DynamicModuleHandle::Create(DynamicModuleName);
-        const bool loaded = handle->Load(false);
+        const bool loaded = handle->Load();
         if (!loaded)
         {
             // Could not load XInput9_1_0, this is most likely a Windows Server 2012 machine.

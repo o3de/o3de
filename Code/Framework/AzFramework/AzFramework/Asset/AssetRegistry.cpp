@@ -81,9 +81,11 @@ namespace AzFramework
                 ->Field("flags", &AZ::Data::ProductDependency::m_flags);
 
             serializeContext->Class<AssetRegistry>()
-                ->Version(8)
+                ->Version(6)
                 ->Field("m_assetIdToInfo", &AssetRegistry::m_assetIdToInfo)
                 ->Field("m_assetPathToIdMap", &AssetRegistry::m_assetPathToId)
+                ->Field("m_legacyAssetIdToRealAssetId", &AssetRegistry::m_legacyAssetIdToRealAssetId)
+                ->Field("m_realAssetIdToLegacyAssetIdMap", &AssetRegistry::m_realAssetIdToLegacyAssetIdMap)
                 ->Field("m_assetDependencies", &AssetRegistry::m_assetDependencies);
             // note that the above m_assetPathToIdMap used to be called m_assetPathToId in prior serialization
             // and m_assetPathToIdByUUID prior to that, so do not rename it to those more obvious fields in the future.
@@ -140,6 +142,26 @@ namespace AzFramework
         m_assetDependencies.erase(id);
     }
 
+    void AssetRegistry::RegisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId, const AZ::Data::AssetId& newId)
+    {
+        m_legacyAssetIdToRealAssetId[legacyId] = newId;
+        m_realAssetIdToLegacyAssetIdMap.emplace(newId, legacyId);
+    }
+
+    void AssetRegistry::UnregisterLegacyAssetMappingsForAsset(const AZ::Data::AssetId& id)
+    {
+        auto range = m_realAssetIdToLegacyAssetIdMap.equal_range(id);
+
+        // Use the realId -> legacyId map to find and erase all the legacyId -> realId entries
+        for (auto rangeItr = range.first; rangeItr != range.second; ++rangeItr)
+        {
+            m_legacyAssetIdToRealAssetId.erase(rangeItr->second);
+        }
+
+        // Erase the realId -> legacyId lookup
+        m_realAssetIdToLegacyAssetIdMap.erase(id);
+    }
+
     void AssetRegistry::SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies)
     {
 #if defined(CARBONATED)
@@ -166,6 +188,33 @@ namespace AzFramework
         }
 
         return itr->second;
+    }
+
+    AZ::Data::AssetId AssetRegistry::GetAssetIdByLegacyAssetId(const AZ::Data::AssetId& legacyAssetId) const
+    {
+        auto found = m_legacyAssetIdToRealAssetId.find(legacyAssetId);
+        if (found != m_legacyAssetIdToRealAssetId.end())
+        {
+            return found->second;
+        }
+        return AZ::Data::AssetId();
+    }
+
+    AzFramework::AssetRegistry::LegacyAssetIdToRealAssetIdMap AssetRegistry::GetLegacyMappingSubsetFromRealIds(const AZStd::vector<AZ::Data::AssetId>& realIds) const
+    {
+        LegacyAssetIdToRealAssetIdMap subset;
+
+        for(AZ::Data::AssetId assetId : realIds)
+        {
+            auto range = m_realAssetIdToLegacyAssetIdMap.equal_range(assetId);
+
+            for(auto itr = range.first; itr != range.second; ++itr)
+            {
+                subset.emplace(itr->second, itr->first);
+            }
+        }
+
+        return subset;
     }
 
     AZ::Data::AssetId AssetRegistry::GetAssetIdByPath(const char* assetPath) const
@@ -218,6 +267,13 @@ namespace AzFramework
         {
             m_assetPathToId[element.first] = element.second;
         }
+        for (const auto& element : assetRegistry->m_legacyAssetIdToRealAssetId)
+        {
+            m_legacyAssetIdToRealAssetId[element.first] = element.second;
+        }
+
+        m_realAssetIdToLegacyAssetIdMap.insert(
+            assetRegistry->m_realAssetIdToLegacyAssetIdMap.begin(), assetRegistry->m_realAssetIdToLegacyAssetIdMap.end());
     }
 
 } // namespace AzFramework

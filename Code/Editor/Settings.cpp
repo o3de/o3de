@@ -6,7 +6,6 @@
  *
  */
 
-
 #include "EditorDefs.h"
 
 #include "Settings.h"
@@ -24,7 +23,6 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
-
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -35,7 +33,6 @@
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
-
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
@@ -107,9 +104,7 @@ SEditorSettings::SEditorSettings()
     bSettingsManagerMode = false;
 
     undoLevels = 50;
-    m_undoSliceOverrideSaveValue = false;
     bShowDashboardAtStartup = true;
-    m_showCircularDependencyError = true;
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
 
@@ -218,7 +213,6 @@ SEditorSettings::SEditorSettings()
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
 
-    sliceSettings.dynamicByDefault = false;
     levelSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
 }
 
@@ -423,9 +417,7 @@ void SEditorSettings::Save(bool isEditorClosing)
 
     // Save settings to registry.
     SaveValue("Settings", "UndoLevels", undoLevels);
-    SaveValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     SaveValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
-    SaveValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     SaveValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
     SaveValue("Settings", "MuteAudio", bMuteAudio);
     SaveValue("Settings", "AutoBackup", autoBackupEnabled);
@@ -563,17 +555,9 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings\\SmartFileOpen", "DlgRect.Right", smartOpenSettings.rect.right());
     SaveValue("Settings\\SmartFileOpen", "DlgRect.Bottom", smartOpenSettings.rect.bottom());
 
-    //////////////////////////////////////////////////////////////////////////
-    // Slice settings
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
-
     s_editorSettings()->sync();
 
     // --- Settings Registry values
-
-    // Prefab System UI
-    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
@@ -592,12 +576,7 @@ void SEditorSettings::Load()
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     levelSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
 
-    // Load from Settings Registry
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     const int settingsVersion = s_editorSettings()->value(QStringLiteral("Settings/EditorSettingsVersion"), 0).toInt();
-
     if (settingsVersion != EditorSettingsVersion)
     {
         s_editorSettings()->setValue(QStringLiteral("Settings/EditorSettingsVersion"), EditorSettingsVersion);
@@ -608,9 +587,7 @@ void SEditorSettings::Load()
     QString     strPlaceholderString;
     // Load settings from registry.
     LoadValue("Settings", "UndoLevels", undoLevels);
-    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     LoadValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
-    LoadValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     LoadValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
     LoadValue("Settings", "MuteAudio", bMuteAudio);
     LoadValue("Settings", "AutoBackup", autoBackupEnabled);
@@ -776,11 +753,6 @@ void SEditorSettings::Load()
         smartOpenSettings.rect.setRight(soRcRight);
         smartOpenSettings.rect.setBottom(soRcBottom);
     }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Slice settings
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
 
     //////////////////////////////////////////////////////////////////////////
     // Load paths.

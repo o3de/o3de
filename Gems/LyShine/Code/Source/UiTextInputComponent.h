@@ -95,6 +95,10 @@ public: // member functions
     bool GetIsClipboardEnabled() override;
     void SetIsClipboardEnabled(bool enableClipboard) override;
 
+#if defined(CARBONATED)
+    void SetNativeTextFieldEnabled(bool enabled) override;
+#endif
+
     // ~UiTextInputInterface
 
 protected: // member functions
@@ -211,4 +215,9 @@ private: // data
     bool m_clipInputText;               //!< True if input text should be visually clipped to child text element, false otherwise.
 
     bool m_enableClipboard;             //!< True if copy/cut/paste should be supported, false otherwise.
+
+#if defined(CARBONATED)
+    bool m_showSendOnReturnKey;         //!< True if return key on virtual keyboard should show send, false otherwise.
+    bool m_showNativeTextField;         //!< True if the native text field should be shown, false otherwise.
+#endif
 };

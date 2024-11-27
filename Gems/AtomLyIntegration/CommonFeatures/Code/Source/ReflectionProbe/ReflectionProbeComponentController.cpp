@@ -317,12 +317,12 @@ namespace AZ
             return m_shapeBus ? m_shapeBus->GetEncompassingAabb() : AZ::Aabb();
         }
 
-        AZ::Aabb ReflectionProbeComponentController::GetWorldBounds()
+        AZ::Aabb ReflectionProbeComponentController::GetWorldBounds() const
         {
             return GetAabb();
         }
 
-        AZ::Aabb ReflectionProbeComponentController::GetLocalBounds()
+        AZ::Aabb ReflectionProbeComponentController::GetLocalBounds() const
         {
             if (!m_shapeBus)
             {

@@ -187,9 +187,6 @@ public:
 private:
     static void GoToFrameCmd(IConsoleCmdArgs* pArgs);
 
-    // Updates the animation time of lights animated by the light animation set.
-    void UpdateAnimatedLights();
-
     void NotifyTimeChangedListenersUsingCurrTime() const;
 
     virtual void BeginUndoTransaction() override;

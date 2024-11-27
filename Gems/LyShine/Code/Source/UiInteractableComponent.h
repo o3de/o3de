@@ -82,14 +82,8 @@ public: // member functions
     void SetPressedActionName(const LyShine::ActionName& actionName) override;
     const LyShine::ActionName& GetReleasedActionName() override;
     void SetReleasedActionName(const LyShine::ActionName& actionName) override;
-
-// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
-#if defined(CARBONATED)
     const LyShine::ActionName& GetOutsideReleasedActionName() const override;
     void SetOutsideReleasedActionName(const LyShine::ActionName& actionName) override;
-#endif
-// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
-
     OnActionCallback GetHoverStartActionCallback() override;
     void SetHoverStartActionCallback(OnActionCallback onActionCallback) override;
     OnActionCallback GetHoverEndActionCallback() override;
@@ -126,14 +120,7 @@ protected: // member functions
     void TriggerHoverStartAction();
     void TriggerHoverEndAction();
     void TriggerPressedAction();
-// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
-#if defined(CARBONATED)
     void TriggerReleasedAction(bool releasedOutside = false);
-#else
-    void TriggerReleasedAction();
-#endif
-// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
-
     void TriggerReceivedHoverByNavigatingFromDescendantAction(AZ::EntityId descendantEntityId);
 
     virtual bool IsAutoActivationSupported();
@@ -164,12 +151,8 @@ protected: // data members
     //! Action triggered on release
     LyShine::ActionName m_releasedActionName;
 
-// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
-#if defined(CARBONATED)
     //! Action triggered on release outside
     LyShine::ActionName m_outsideReleasedActionName;
-#endif
-// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
 
     //! If true, the interactable automatically becomes active when navigated to via gamepad/keyboard.
     //! Otherwise, a key press is needed to put the interactable in an active state 
@@ -192,12 +175,10 @@ protected: // data members
 
     //! the viewport position at which the press event occured (only valid if m_isPressed is true)
     AZ::Vector2 m_pressedPoint;
-// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
-#if defined(CARBONATED)
+
     //! the multitouch position at which the press event occured (only valid if m_isPressed is true)
     int m_pressedMultiTouchIndex;
-#endif
-// Carbonated end
+
     //! The current interactable state. This is stored so that we can detect state changes.
     UiInteractableStatesInterface::State m_state;
 

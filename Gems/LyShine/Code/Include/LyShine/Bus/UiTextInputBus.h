@@ -131,6 +131,11 @@ public: // member functions
     //! Allows copy/cut/paste support for this text input
     virtual void SetIsClipboardEnabled(bool enableClipboard) = 0;
 
+#if defined(CARBONATED)
+    //! Sets the native text field enabled or disabled
+    virtual void SetNativeTextFieldEnabled(bool enabled) = 0;
+#endif
+
 public: // static member data
 
     //! Only one component on a entity can implement the events

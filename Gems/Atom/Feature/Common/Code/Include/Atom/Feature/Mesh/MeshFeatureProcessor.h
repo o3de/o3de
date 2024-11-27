@@ -39,14 +39,12 @@ namespace AZ
             friend class MeshLoader;
 
         public:
-            using ObjectSrgCreatedEvent = MeshFeatureProcessorInterface::ObjectSrgCreatedEvent;
-
             ModelDataInstance();
 
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }
             const RPI::Cullable& GetCullable() { return m_cullable; }
 
-            ObjectSrgCreatedEvent& GetObjectSrgCreatedEvent() { return m_objectSrgCreatedEvent; }
+            const uint32_t GetLightingChannelMask() { return m_lightingChannelMask; }
 
             using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
 
@@ -60,24 +58,25 @@ namespace AZ
             };
 
             using PostCullingInstanceDataList = AZStd::vector<PostCullingInstanceData>;
+            const bool IsSkinnedMesh() { return m_descriptor.m_isSkinnedMesh; }
 
             //! called when a DrawPacket used by this ModelDataInstance was updated. 
             void HandleDrawPacketUpdate();
 
         private:
             class MeshLoader
-                : private Data::AssetBus::Handler
+                : private SystemTickBus::Handler
+                , private Data::AssetBus::Handler
                 , private AzFramework::AssetCatalogEventBus::Handler
             {
             public:
-                using ModelChangedEvent = MeshFeatureProcessorInterface::ModelChangedEvent;
-
                 MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, ModelDataInstance* parent);
                 ~MeshLoader();
 
-                ModelChangedEvent& GetModelChangedEvent();
-
             private:
+                // SystemTickBus::Handler overrides...
+                void OnSystemTick() override;
+
                 // AssetBus::Handler overrides...
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
@@ -92,7 +91,6 @@ namespace AZ
                                                                          {
                                                                              OnModelReloaded(modelAsset);
                                                                          } };
-                MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
                 ModelDataInstance* m_parent = nullptr;
             };
@@ -116,6 +114,7 @@ namespace AZ
                 RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe);
             void SetSortKey(MeshFeatureProcessor* meshFeatureProcessor, RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
+            void SetLightingChannelMask(uint32_t lightingChannelMask);
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
             void UpdateDrawPackets(bool forceUpdate = false);
@@ -137,7 +136,6 @@ namespace AZ
             size_t m_lodBias = 0;
 
             RPI::Cullable m_cullable;
-            CustomMaterialMap m_customMaterials;
             MeshHandleDescriptor m_descriptor;
             Data::Instance<RPI::Model> m_model;
 
@@ -146,12 +144,18 @@ namespace AZ
 
             //! List of object SRGs used by meshes in this model 
             AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
-            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
+            //! Event that gets triggered whenever the model is changed, loaded, or reloaded.
+            MeshHandleDescriptor::ModelChangedEvent m_modelChangedEvent;
+
+            //! Event that triggers whenever the ObjectSrg is created.
+            MeshHandleDescriptor::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
+
             // MeshLoader is a shared pointer because it can queue a reference to itself on the SystemTickBus. The reference
             // needs to stay alive until the queued function is executed.
             AZStd::shared_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
             RHI::DrawItemSortKey m_sortKey = 0;
+            uint32_t m_lightingChannelMask = 1;
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
             AZ::Uuid m_rayTracingUuid;
@@ -208,11 +212,12 @@ namespace AZ
             void OnEndPrepareRender() override;
 
             TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const override;
-            MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor, const CustomMaterialMap& materials = {}) override;
-            MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor, const Data::Instance<RPI::Material>& material) override;
+            MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor) override;
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
+            void PrintDrawPacketInfo(const MeshHandle& meshHandle) override;
+            void SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled) override;
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
             const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
@@ -221,8 +226,6 @@ namespace AZ
             void SetCustomMaterials(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials) override;
             const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const override;
-            void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
-            void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) override;
 
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
@@ -235,6 +238,9 @@ namespace AZ
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) const override;
 
+            void SetLightingChannelMask(const MeshHandle& meshHandle, uint32_t lightingChannelMask) override;
+            uint32_t GetLightingChannelMask(const MeshHandle& meshHandle) const override;
+
             void SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig) override;
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const override;
 
@@ -242,7 +248,7 @@ namespace AZ
             bool GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const override;
             void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) override;
             bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const override;
-            void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
+            void SetRayTracingEnabled(const MeshHandle& meshHandle, bool enabled) override;
             bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
             bool GetVisible(const MeshHandle& meshHandle) const override;
@@ -320,22 +326,18 @@ namespace AZ
             // then they are sorted within the bucket.
             struct InstanceGroupBucket
             {
-                AZStd::atomic<uint32_t> m_currentElementIndex = 0;
-                AZStd::vector<SortInstanceData> m_sortInstanceData = {};
+                AZStd::atomic<uint32_t> m_currentElementIndex{};
+                AZStd::vector<SortInstanceData> m_sortInstanceData{};
 
-                InstanceGroupBucket()
-                    : m_currentElementIndex(0)
-                    , m_sortInstanceData({})
-                {
-                }
+                InstanceGroupBucket() = default;
 
                 InstanceGroupBucket(const InstanceGroupBucket& rhs)
+                    : m_currentElementIndex(rhs.m_currentElementIndex.load())
+                    , m_sortInstanceData(rhs.m_sortInstanceData)
                 {
-                    m_currentElementIndex = rhs.m_currentElementIndex.load();
-                    m_sortInstanceData = rhs.m_sortInstanceData;
                 }
 
-                 void operator=(const InstanceGroupBucket& rhs)
+                void operator=(const InstanceGroupBucket& rhs)
                 {
                     m_currentElementIndex = rhs.m_currentElementIndex.load();
                     m_sortInstanceData = rhs.m_sortInstanceData;
@@ -346,7 +348,7 @@ namespace AZ
             AZStd::vector<AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>> m_perViewInstanceData;
             AZStd::vector<GpuBufferHandler> m_perViewInstanceDataBufferHandlers;
             
-            TransformServiceFeatureProcessor* m_transformService;
+            TransformServiceFeatureProcessor* m_transformService = nullptr;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;

@@ -39,6 +39,7 @@
 #include <BuilderComponent.h>
 #include <Common/AnyAssetBuilder.h>
 #include <Material/MaterialBuilder.h>
+#include <Material/MaterialPipelineScriptRunner.h>
 #include <Material/MaterialTypeBuilder.h>
 #include <ResourcePool/ResourcePoolBuilder.h>
 #include <Pass/PassBuilder.h>
@@ -70,6 +71,7 @@ namespace AZ
             AssetAliasesSourceData::Reflect(context);
             ShaderSourceData::Reflect(context);
             ShaderVariantListSourceData::Reflect(context);
+            MaterialPipelineScriptRunner::Reflect(context);
         }
 
         BuilderComponent::BuilderComponent()
@@ -80,6 +82,21 @@ namespace AZ
         BuilderComponent::~BuilderComponent()
         {
             m_materialFunctorRegistration.Shutdown();
+        }
+
+        void BuilderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        {
+            provided.push_back(AZ_CRC_CE("RPIBuilderService"));
+        }
+
+        void BuilderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            required.push_back(AZ_CRC_CE("ScriptService"));
+        }
+
+        void BuilderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        {
+            incompatible.push_back(AZ_CRC_CE("RPIBuilderService"));
         }
 
         void BuilderComponent::Activate()

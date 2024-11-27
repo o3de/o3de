@@ -8,6 +8,7 @@
 #ifndef AZCORE_OS_ALLOCATOR_H
 #define AZCORE_OS_ALLOCATOR_H
 
+#include <AzCore/Memory/AllocatorBase.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/allocator.h>
 
@@ -45,9 +46,9 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // IAllocator
-        pointer    allocate(size_type byteSize, size_type alignment) override;
-        void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
-        pointer         reallocate(pointer ptr, size_type newSize, align_type newAlignment) override;
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override;
+        size_type       deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        AllocateAddress reallocate(pointer ptr, size_type newSize, align_type newAlignment) override;
         size_type       get_allocated_size(pointer ptr, align_type alignment = 1) const override;
 
         size_type       NumAllocatedBytes() const override       { return m_numAllocatedBytes; }

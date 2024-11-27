@@ -371,8 +371,6 @@ public: // member functions
 
     //! Called when the canvas sends an action to the listener
     virtual void OnAction(AZ::EntityId entityId, const LyShine::ActionName& actionName) = 0;
-// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
-#if defined(CARBONATED)
     //! Called when the canvas sends an action to the listener (With bonus multitouch info)
     virtual void OnActionMultitouch(
         [[maybe_unused]] AZ::EntityId entityId,
@@ -381,8 +379,6 @@ public: // member functions
         [[maybe_unused]] int multiTouchIndex){};
     //! Called when the canvas's enabled state changed
     virtual void OnEnableStateChanged([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] bool state){};
-#endif
-// Carbonated end
 };
 
 typedef AZ::EBus<UiCanvasActionNotification> UiCanvasNotificationBus;

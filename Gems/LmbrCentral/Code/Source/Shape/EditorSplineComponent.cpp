@@ -398,7 +398,7 @@ namespace LmbrCentral
         return m_splineCommon.m_spline;
     }
 
-    void EditorSplineComponent::ChangeSplineType(const AZ::u64 splineType)
+    void EditorSplineComponent::ChangeSplineType(const SplineType splineType)
     {
         m_splineCommon.ChangeSplineType(splineType);
     }
@@ -475,14 +475,14 @@ namespace LmbrCentral
         return m_splineCommon.m_spline->m_vertexContainer.Empty();
     }
 
-    AZ::Aabb EditorSplineComponent::GetWorldBounds()
+    AZ::Aabb EditorSplineComponent::GetWorldBounds() const
     {
         AZ::Aabb aabb = AZ::Aabb::CreateNull();
         m_splineCommon.m_spline->GetAabb(aabb, m_cachedUniformScaleTransform);
         return aabb;
     }
 
-    AZ::Aabb EditorSplineComponent::GetLocalBounds()
+    AZ::Aabb EditorSplineComponent::GetLocalBounds() const
     {
         AZ::Aabb aabb = AZ::Aabb::CreateNull();
         m_splineCommon.m_spline->GetAabb(aabb, AZ::Transform::CreateIdentity());

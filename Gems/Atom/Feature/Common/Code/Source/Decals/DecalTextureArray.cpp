@@ -123,7 +123,6 @@ namespace AZ
 
         void DecalTextureArray::RemoveMaterial(const int index)
         {
-            m_materials[index] = {};
             m_materials.erase(index);
         }
 
@@ -213,14 +212,14 @@ namespace AZ
 
                 const auto mipChainAsset = BuildPackedMipChainAsset(mapType, numTexturesToCreate);
                 
-                // Gruber patch begin // VMED // error for missing mipmap (MADPORT-459)
+#if defined(CARBONATED)
                 if (!mipChainAsset.GetData())
                 {
                     AZ_Error("DecalTextureArray", false, "Missing decal texture mipmaps for %s. Please make sure all mipmaps of this type are present.\n", GetMapName(mapType).GetCStr());
                     m_textureArrayPacked[i] = nullptr;
                     continue;
                 }
-                // Gruber patch end // VMED
+#endif
                 
                 RHI::ImageViewDescriptor imageViewDescriptor;
                 imageViewDescriptor.m_isArray = true;
@@ -298,7 +297,7 @@ namespace AZ
             {
                 return {};
             }
-#if defined(CARBONATED) // detailed error log and exit to prevent crash
+#if defined(CARBONATED)
             if (mip >= image->GetImageDescriptor().m_mipLevels)
             {
                 AZ_Error("DecalTextureArray", false,
@@ -313,7 +312,7 @@ namespace AZ
                 mip < image->GetImageDescriptor().m_mipLevels,
                 "It is expected that all decals in a texture array must have the same number of mips which may not be the case here. "
                 "Please ensure that all the materials within m_materials are pointing to textures with same mips.");
-#endif // defined(CARBONATED)
+#endif
 
             const auto srcData = image->GetSubImageData(mip, 0);
             return srcData;

@@ -122,6 +122,8 @@ namespace RemoteTools
 
         void ClearReceivedMessages(AZ::Crc32 key) override;
 
+        void ClearReceivedMessagesForNextTick(AZ::Crc32 key) override;
+
         void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler& handler) override;
 
         void RegisterRemoteToolsEndpointLeftHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler& handler) override;
@@ -151,5 +153,10 @@ namespace RemoteTools
 
         AZStd::unordered_map<AZ::Crc32, AzFramework::ReceivedRemoteToolsMessages> m_inbox;
         AZStd::mutex m_inboxMutex;
+
+        AZStd::set<AZ::Crc32> m_messageTypesToClearForNextTick;
+
+    private:
+        AzFramework::RemoteToolsMessage* DeserializeMessage(const AZ::Crc32& key, AZStd::vector<AZStd::byte>& buffer, const uint32_t& totalBufferSize);
     };
 } // namespace RemoteTools

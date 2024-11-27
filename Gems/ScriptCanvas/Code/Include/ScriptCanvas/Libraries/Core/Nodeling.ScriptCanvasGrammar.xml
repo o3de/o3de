@@ -8,6 +8,7 @@
         BaseClass="True"
         Category="Core"
         Version="1"
+        EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
         Description="Represents either an execution entry or exit node">
         <SerializedProperty Name="m_displayName" />
         <SerializedProperty Name="m_identifier" />

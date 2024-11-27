@@ -13,6 +13,7 @@
 
 #ifdef IMGUI_ENABLED
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -22,6 +23,9 @@
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#if defined(CARBONATED)
+#include <LyShine/Bus/UiCursorBus.h>
+#endif
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
@@ -89,6 +93,14 @@ namespace
         const auto& it = AZStd::find(touches.cbegin(), touches.cend(), inputChannelId);
         return it != touches.cend() ? static_cast<unsigned int>(it - touches.cbegin()) : UINT_MAX;
     }
+
+#if defined(CARBONATED)
+    bool IsAnyWindowFocusedExcludingMainMenuBar()
+    {
+        ImGuiWindow* window = ImGui::GetCurrentContext()->NavWindow;
+        return !(window && (window->Flags & ImGuiWindowFlags_MenuBar) && strcmp(window->Name, "##MainMenuBar") == 0);
+    }
+#endif
 }
 
 void ImGuiManager::Initialize()
@@ -108,7 +120,7 @@ void ImGuiManager::Initialize()
     // Let the application process the path
     AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, imgGuiLibPath);
     m_imgSharedLib = AZ::DynamicModuleHandle::Create(imgGuiLibPath.c_str());
-    if (!m_imgSharedLib->Load(false))
+    if (!m_imgSharedLib->Load())
     {
         AZ_Warning("ImGuiManager", false, "%s %s", __func__, "Unable to load " AZ_DYNAMIC_LIBRARY_PREFIX "imguilib" AZ_DYNAMIC_LIBRARY_EXTENSION "-- Skipping ImGui Initialization.");
         return;
@@ -268,6 +280,16 @@ ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
         } 
         return nullptr;
     }
+    else if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+    {
+        int consoleDeactivated = 0;
+        console->GetCvarValue("sys_DeactivateConsole", consoleDeactivated);
+        if (consoleDeactivated != 0)
+        {
+            ToggleToImGuiVisibleState(DisplayState::Hidden);
+            return nullptr;
+        }
+    }
 
     ImGui::ImGuiContextScope contextScope(m_imguiContext);
 
@@ -358,13 +380,6 @@ ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
 
     // Start New Frame
     ImGui::NewFrame();
-
-    //// START FROM PREUPDATE
-    ICVar* consoleDisabled = gEnv->pConsole->GetCVar("sys_DeactivateConsole");
-    if (consoleDisabled && consoleDisabled->GetIVal() != 0)
-    {
-        m_clientMenuBarState = DisplayState::Hidden;
-    }
 
     // Advance ImGui by Elapsed Frame Time
     const AZ::TimeUs gameTickTimeUs = AZ::GetSimulationTickDeltaTimeUs();
@@ -460,8 +475,8 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         // Handle Keyboard Hotkeys
         if (inputChannel.IsStateBegan())
         {
-            // Cycle through ImGui Menu Bar States on ~ button press
-            if (inputChannelId == InputDeviceKeyboard::Key::PunctuationTilde)
+            // Cycle through ImGui Menu Bar States on Home button press
+            if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
             {
                 ToggleThroughImGuiVisibleState();
             }
@@ -596,6 +611,14 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
             return true;
         }
 
+#if defined(CARBONATED)
+        // If we have the Discrete Input Mode Disabled but any window is focused (excluding MainMenuBar).. then consume the input here.
+        if (IsAnyWindowFocusedExcludingMainMenuBar())
+        {
+            return true;
+        }
+#endif
+
         return consumeEvent;
     }
 
@@ -687,6 +710,10 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
     {
         case DisplayState::Hidden:
             m_clientMenuBarState = DisplayState::Visible;
+
+#if defined(CARBONATED)
+            UiCursorBus::Broadcast(&UiCursorBus::Events::DecrementVisibleCounter);
+#endif
             
             if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
             {
@@ -724,6 +751,10 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         default:
         case DisplayState::Visible:
             m_clientMenuBarState = DisplayState::Hidden;
+
+#if defined(CARBONATED)
+            UiCursorBus::Broadcast(&UiCursorBus::Events::IncrementVisibleCounter);
+#endif
 
             // Avoid hiding the cursor when in the Editor and not in game mode
             const bool inGame = !gEnv->IsEditor() || gEnv->IsEditorGameMode(); 

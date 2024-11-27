@@ -23,6 +23,8 @@
 
 #include <Source/LUA/ui_LUAEditorSettingsDialog.h>
 
+#include <QPushButton>
+
 namespace
 {
 }
@@ -51,7 +53,6 @@ namespace LUAEditor
 
         m_gui->propertyEditor->Setup(context, nullptr, true, 420);
         m_gui->propertyEditor->AddInstance(syntaxStyleSettings.get(), syntaxStyleSettings->RTTI_GetType());
-
         m_gui->propertyEditor->setObjectName("m_gui->propertyEditor");
         m_gui->propertyEditor->setMinimumHeight(500);
         m_gui->propertyEditor->setMaximumHeight(1000);
@@ -61,17 +62,24 @@ namespace LUAEditor
 
         m_gui->propertyEditor->InvalidateAll();
         m_gui->propertyEditor->ExpandAll();
-
         m_gui->propertyEditor->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
-        QVBoxLayout* layout = new QVBoxLayout(this);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->setSpacing(0);
-
+        auto* layout = new QVBoxLayout(this);
         layout->addWidget(m_gui->propertyEditor);
-        layout->addWidget(m_gui->cancelButton);
-        layout->addWidget(m_gui->saveButton);
-        layout->addWidget(m_gui->saveCloseButton);
+
+        auto* hlayout = new QHBoxLayout(this);
+        hlayout->addWidget(m_gui->applyButton);
+        hlayout->addItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+        hlayout->addWidget(m_gui->saveButton);
+        hlayout->addWidget(m_gui->saveCloseButton);
+        hlayout->addWidget(m_gui->cancelButton);
+
+        layout->addLayout(hlayout);
+
+        QObject::connect(m_gui->saveButton, &QPushButton::clicked, this, &LUAEditorSettingsDialog::OnSave);
+        QObject::connect(m_gui->saveCloseButton, &QPushButton::clicked, this, &LUAEditorSettingsDialog::OnSaveClose);
+        QObject::connect(m_gui->cancelButton, &QPushButton::clicked, this, &LUAEditorSettingsDialog::OnCancel);
+        QObject::connect(m_gui->applyButton, &QPushButton::clicked, this, &LUAEditorSettingsDialog::OnApply);
 
         setLayout(layout);
     }
@@ -101,6 +109,11 @@ namespace LUAEditor
         close();
     }
 
+    void LUAEditorSettingsDialog::OnApply()
+    {
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
+    }
+
     LUAEditorSettingsDialog::~LUAEditorSettingsDialog()
     {
         m_gui->propertyEditor->ClearInstances();
@@ -112,13 +125,10 @@ namespace LUAEditor
         if (event->key() == Qt::Key_Escape)
         {
             OnCancel();
-            return;
         }
-        else
-        if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+        else if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
         {
             OnSaveClose();
-            return;
         }
     }
 }//namespace LUAEditor

@@ -25,6 +25,13 @@ namespace AZ
     namespace RPI
     {
         class Shader;
+        class WindowContext;
+
+        // Returns the default viewport context (retrieved through the ViewportContextManager)
+        ViewportContextPtr GetDefaultViewportContext();
+
+        // Returns the default window context (retrieved through the default viewport context)
+        AZStd::shared_ptr<WindowContext> GetDefaultWindowContext();
 
         // If the RPI system using null renderer
         bool IsNullRenderer();

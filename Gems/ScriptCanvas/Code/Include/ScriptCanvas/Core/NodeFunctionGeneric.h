@@ -104,7 +104,8 @@ namespace ScriptCanvas
         AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option"); // 'function' : Symbol involving type with internal linkage not defined
         AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGenericMultiReturnImpl);
-        AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturnImpl, Node);
+        AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturnImpl);
+        AZ_CLASS_ALLOCATOR(NodeFunctionGenericMultiReturnImpl, AZ::ComponentAllocator);
         AZ_POP_DISABLE_WARNING;
 
         static constexpr void DeprecatedTypeNameVisitor(

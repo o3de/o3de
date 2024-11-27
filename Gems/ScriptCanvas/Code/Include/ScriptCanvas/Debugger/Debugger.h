@@ -32,6 +32,7 @@ namespace ScriptCanvas
             : public AZ::Component
             , public Message::RequestVisitor
             , public ExecutionNotificationsBus::Handler
+            , public AZ::SystemTickBus::Handler
         {
            using Lock = AZStd::lock_guard<AZStd::recursive_mutex>;
 
@@ -54,21 +55,27 @@ namespace ScriptCanvas
             void Deactivate() override;
             //////////////////////////////////////////////////////////////////////////
 
+            //////////////////////////////////////////////////////////////////////////
+            // AZ::SystemTickBus::Handler
+            void OnSystemTick() override;
+            //////////////////////////////////////////////////////////////////////////
+
             void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);
 
             //////////////////////////////////////////////////////////////////////////
-            // TargetManagerClient::Bus::Handler
-            void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
+            // IRemoteTools handlers
+            void RemoteToolsEndpointLeft(const AzFramework::RemoteToolsEndpointInfo& info);
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // ExecutionNotifications
             void GraphActivated(const GraphActivation&) override;
-            void GraphDeactivated(const GraphActivation&) override;
-            bool IsGraphObserved(const ExecutionState& executionState) override;
+            void GraphDeactivated(const GraphDeactivation&) override;
+            bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier) override;
             bool IsVariableObserved(const VariableId& variableId) override;
             void NodeSignaledOutput(const OutputSignal&) override;
             void NodeSignaledInput(const InputSignal&) override;
+            void GraphSignaledReturn(const ReturnSignal&) override;
             void NodeStateUpdated(const NodeStateChange&) override;
             void RuntimeError(const ExecutionState& executionState, const AZStd::string_view& description) override;
             void VariableChanged(const VariableChange&) override;
@@ -188,6 +195,7 @@ namespace ScriptCanvas
             AZStd::recursive_mutex m_msgMutex;
             AzFramework::RemoteToolsMessageQueue m_msgQueue;
             AzFramework::IRemoteTools* m_remoteTools = nullptr;
+            AzFramework::RemoteToolsEndpointStatusEvent::Handler m_endpointLeftEventHandler;
         };
     }
 }

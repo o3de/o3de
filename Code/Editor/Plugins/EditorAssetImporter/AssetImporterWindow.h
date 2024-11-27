@@ -119,6 +119,7 @@ private slots:
     
     void OverlayLayerAdded();
     void OverlayLayerRemoved();
+    void UpdateDefaultSceneDisplay();
     void UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene = {}) const;
 
     void FileChanged(QString path);

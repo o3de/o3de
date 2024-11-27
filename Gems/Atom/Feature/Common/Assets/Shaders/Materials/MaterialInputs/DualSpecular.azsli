@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/PBR/MaterialUtils.azsli>
+
+option bool o_enableDualSpecular = false;
+
+#define COMMON_SRG_INPUTS_DUAL_SPECULAR(prefix)     \
+float prefix##m_dualSpecFactor;                     \
+float prefix##m_dualSpecRoughnessExponent;          \
+float prefix##m_dualSpecRoughnessMultiplier;        \
+float prefix##m_dualSpecF0Multiplier;               \
+
+void GetDualSpecularInput(float3 normal, float roughnessLinear, float specularF0, float inDualSpecFactor,
+                          float dualSpecF0Multiplier, float dualSpecRoughnessExponent, float dualSpecRoughnessMultiplier,
+                          out float outDualSpecRoughness, out float outDualSpecRoughnessA2, out float outDualSpecF0, out float outDualSpecFactor)
+{
+    if(o_enableDualSpecular)
+    {
+        float dummyRoughnessA = 0;
+        outDualSpecFactor = inDualSpecFactor;
+        outDualSpecRoughness = pow(roughnessLinear, dualSpecRoughnessExponent) * dualSpecRoughnessMultiplier;
+        CalculateRoughnessValues(normal, outDualSpecRoughness, dummyRoughnessA, outDualSpecRoughnessA2);
+        outDualSpecF0 = specularF0 * dualSpecF0Multiplier;
+    }
+    else
+    {
+        outDualSpecRoughness = 0;
+        outDualSpecRoughnessA2 = 0;
+        outDualSpecF0 = 0;
+        outDualSpecFactor = 0;
+    }
+}

@@ -209,7 +209,7 @@ namespace LUAEditor
 
         connect(m_gui->m_searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &LUAEditorMainWindow::luaClassFilterTextChanged);
 
-        connect(m_gui->actionAssetBrowser, SIGNAL(triggered(bool)), this, SLOT(assetBrowserPressed()));
+        connect(m_gui->actionOpen, SIGNAL(triggered(bool)), this, SLOT(OnFileMenuOpen()));
 
         connect(m_gui->actionAutocomplete, SIGNAL(triggered(bool)), this, SLOT(OnAutocompleteChanged(bool)));
 
@@ -222,7 +222,14 @@ namespace LUAEditor
             newState->m_bAutoReloadUnmodifiedFiles = newValue;
         });
 
-        connect(this, &LUAEditorMainWindow::OnReferenceDataChanged, this, [this]() { luaClassFilterTextChanged(m_ClassReferenceFilter->GetFilter()); });
+        connect(this, &LUAEditorMainWindow::OnReferenceDataChanged, this, [this]() {
+            luaClassFilterTextChanged(m_ClassReferenceFilter->GetFilter());
+            if (auto* view = GetCurrentView())
+            {
+                // Update syntax highlighting now that the project libraries are loaded
+                view->UpdateFont();
+            }
+         });
 
         // preset our running state based on outside conditions when we are created
         if (connectedState)
@@ -241,7 +248,7 @@ namespace LUAEditor
 
             HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUALinesUpTranspose", 0xafc899ef), m_gui->actionLinesUpTranspose);
             HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUALinesDnTranspose", 0xf9d733bf), m_gui->actionLinesDnTranspose);
-            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44), m_gui->actionAssetBrowser);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44), m_gui->actionOpen);
             HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAFind", 0xc62d8078), m_gui->actionFind);
             HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAQuickFindLocal", 0x115cbcda), m_gui->actionFindLocal);
             HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, AZ_CRC("LUAQuickFindLocalReverse", 0xdd8a0c22), m_gui->actionFindLocalReverse);
@@ -809,25 +816,19 @@ namespace LUAEditor
 
     //file menu
 
-    void LUAEditorMainWindow::assetBrowserPressed()
+    void LUAEditorMainWindow::OnFileMenuOpen()
     {
-        // w/out pulling in headers, AssetBrowserUI::AB_DEFAULT_CRC := 0
-        //EditorFramework::ShowAssetBrowserView( AZ::ScriptAsset::StaticAssetType(), AZ_CRC("LUA CONTEXT", 0xec76567e) );
-        //AZ_Assert(false, "No asset browser yet!");
-        const char* rootDirString;
-        AZ::ComponentApplicationBus::BroadcastResult(rootDirString, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
-
-        QDir rootDir;
-        rootDir.setPath(rootDirString);
-        rootDir.cdUp();
-
-        QString name = QFileDialog::getOpenFileName(this, "Open lua file", m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(), "Lua files (*.lua)");
+        const QDir rootDir { AZ::Utils::GetProjectPath().c_str() };
+        const QString name = QFileDialog::getOpenFileName(this,
+                                                          "Open lua file",
+                                                          m_lastOpenFilePath.empty() ? rootDir.absolutePath() : m_lastOpenFilePath.c_str(),
+                                                          "Lua files (*.lua)");
         if (name.isEmpty())
         {
             return;
         }
 
-        AZStd::string assetId(name.toUtf8().data());
+        const AZStd::string assetId(name.toUtf8().data());
         Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
 
         AzFramework::StringFunc::Path::Split(assetId.c_str(), nullptr, &m_lastOpenFilePath);

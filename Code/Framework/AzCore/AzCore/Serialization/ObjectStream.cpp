@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/DataOverlayInstanceMsgs.h>
 #include <AzCore/Serialization/DataOverlayProviderMsgs.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Debug/Profiler.h>
@@ -122,6 +123,7 @@ namespace AZ
                 , m_pending(0)
                 , m_inStream(&m_buffer1)
                 , m_outStream(&m_buffer2)
+                , m_localeScope(false) // do not automatically activate the locale.
             {
                 // Assign default asset filter if none was provided by the user.
                 m_filterDesc = filterDesc;
@@ -244,6 +246,7 @@ namespace AZ
             // completed successfully to make sure the equivalent amount
             // of CloseElements are called
             AZStd::vector<bool>                           m_writeElementResultStack;
+            Locale::ScopedSerializationLocale             m_localeScope;
         };
 
         //=========================================================================
@@ -1967,6 +1970,8 @@ namespace AZ
 
             bool result = true;
 
+            m_localeScope.Activate();
+
             if (m_flags & OPF_SAVING)
             {
                 if (m_type == ST_XML)
@@ -2187,6 +2192,7 @@ namespace AZ
                     m_stream->Write(sizeof(u8), &endTag);
                 }
             }
+            m_localeScope.Deactivate();
             delete this;
             return success;
         }

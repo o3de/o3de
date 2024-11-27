@@ -127,7 +127,7 @@ The DCCsi helps with aspects such as, configuration and settings, launching DCC 
 Many IDEs such as Wing allow you to configure one or more launch configurations, each configuration can be used to define an interpretter as well as other aspects such as a environment or additional commands.  With the DCCsi, we can use these to define each DCC applications python, so we can test code by running it in that iterpretter.  These are defined in a data-driven way by an EVAR in the launch environment. The ENVAR is set to a path string of the interpretter location:
 
 The project default is currently configured like this inside of wing:
-  - `${O3DE_DEV}` = '${O3DE_DEV}\python\runtime\python-3.10.5-rev1-windows\python\python.exe'
+  - `${O3DE_DEV}` = '${O3DE_DEV}\python\python.cmd'
 
 You can inspect the project default settings:
 
@@ -235,7 +235,7 @@ In the root of the DCCsi, one of the files will start O3DE python, you can start
 
 The actual interpreter that runs is somewhere like
 
-    `o3de\python\runtime\python-3.10.5-rev1-windows\python\python.exe`
+    `o3de\python\python.cmd`
 
 The folder for Wing developers is here:
 

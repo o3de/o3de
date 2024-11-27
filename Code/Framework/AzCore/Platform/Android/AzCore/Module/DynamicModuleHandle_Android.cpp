@@ -17,17 +17,6 @@ namespace AZ::Platform
         return {};
     }
 
-    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen, bool noLoad)
-    {
-        void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
-        alreadyOpen = (handle != nullptr);
-        if (!alreadyOpen && !noLoad)
-        {
-            handle = dlopen(fileName.c_str(), RTLD_NOW);
-        }
-        return handle;
-    }
-
     void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
     {
     }

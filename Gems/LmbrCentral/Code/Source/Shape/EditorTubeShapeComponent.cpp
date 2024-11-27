@@ -156,6 +156,9 @@ namespace LmbrCentral
         ShapeComponentNotificationsBus::Event(
             GetEntityId(), &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+
+        // refresh the UI for this component, too
+        InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values);
     }
 
     void EditorTubeShapeComponent::OnSplineChanged()
@@ -165,30 +168,22 @@ namespace LmbrCentral
 
     void EditorTubeShapeComponent::OnAttributeAdded([[maybe_unused]] size_t index)
     {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+       InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorTubeShapeComponent::OnAttributeRemoved([[maybe_unused]] size_t index)
     {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorTubeShapeComponent::OnAttributesSet([[maybe_unused]] size_t size)
     {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorTubeShapeComponent::OnAttributesCleared()
     {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorTubeShapeComponent::BuildGameEntity(AZ::Entity* gameEntity)

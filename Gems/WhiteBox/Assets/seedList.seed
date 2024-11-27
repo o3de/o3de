@@ -7,9 +7,8 @@
             "assetId": {
                 "guid": "{69FE164E-0656-5AEE-9CE7-B954A44A519F}"
             },
-            "platformFlags": 255,
+            "platformFlags": 511,
             "pathHint": "materials/whiteboxdefault.azmaterial"
         }
     ]
 }
-

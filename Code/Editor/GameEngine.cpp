@@ -19,6 +19,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -36,11 +37,9 @@
 
 // CryCommon
 #include <CryCommon/MainThreadRenderRequestBus.h>
-// carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
 #include <CryCommon/IEditorGameEvents.h>
 #endif
-//carbonated end
 
 // Editor
 #include "CryEdit.h"
@@ -50,7 +49,7 @@
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
 
-#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+#if defined(CARBONATED)  // aefimov MAD-10299 assert modal dialog fix
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #endif
@@ -163,22 +162,6 @@ struct SSystemUserCallback
         }
     }
 
-    void ShowMessage(const char* text, const char* caption, unsigned int uType) override
-    {
-        if (CCryEditApp::instance()->IsInAutotestMode())
-        {
-            return;
-        }
-
-        const UINT kMessageBoxButtonMask = 0x000f;
-        if (!GetIEditor()->IsInGameMode() && (uType == 0 || uType == MB_OK || !(uType & kMessageBoxButtonMask)))
-        {
-            static_cast<CEditorImpl*>(GetIEditor())->AddErrorMessage(text, caption);
-            return;
-        }
-        CryMessageBox(text, caption, uType);
-    }
-
     void OnSplashScreenDone()
     {
         m_pLogo = nullptr;
@@ -248,11 +231,9 @@ CGameEngine::CGameEngine()
     : m_bIgnoreUpdates(false)
     , m_ePendingGameMode(ePGM_NotPending)
     , m_modalWindowDismisser(nullptr)
-    // carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
     , m_pEditorGame(nullptr)
 #endif
-    // carbonated end
 
 AZ_POP_DISABLE_WARNING
 {
@@ -310,6 +291,9 @@ void KillMemory(IConsoleCmdArgs* /* pArgs */)
 
 static void CmdGotoEditor(IConsoleCmdArgs* pArgs)
 {
+    // Console commands are assumed to be in the culture invariant locale since they can come from data files.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     // feature is mostly useful for QA purposes, this works with the game "goto" command
     // this console command actually is used by the game command, the editor command shouldn't be used by the user
     int iArgCount = pArgs->GetArgCount();
@@ -351,7 +335,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
 
     m_hSystemHandle = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
-    if (!m_hSystemHandle->Load(true))
+    if (!m_hSystemHandle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired))
     {
         auto errorMessage = AZStd::string::format("%s Loading Failed", crySystemLibraryName);
         Error(errorMessage.c_str());
@@ -458,11 +442,9 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
 bool CGameEngine::InitGame(const char*)
 {
-    // carbonated begin (akostin/mp226): broadcast OnCryEditorGameInitialize
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp226): broadcast OnCryEditorGameInitialize
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorGameInitialize);
 #endif
-    // carbonated end
 
     m_pISystem->ExecuteCommandLine();
 
@@ -503,25 +485,6 @@ bool CGameEngine::LoadLevel(
     // directory is wrong
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 
-
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!usePrefabSystemForLevels)
-    {
-        QString pakFile = m_levelPath + "/level.pak";
-
-        // Open Pak file for this level.
-        if (!m_pISystem->GetIPak()->OpenPack(m_levelPath.toUtf8().data(), pakFile.toUtf8().data()))
-        {
-            CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "Level Pack File %s Not Found", pakFile.toUtf8().data());
-        }
-    }
-
-    // Audio: notify audio of level loading start?
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_REFRESH);
-
     m_bLevelLoaded = true;
 
     return true;
@@ -554,9 +517,6 @@ void CGameEngine::SwitchToInGame()
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
 
-    //! Send event to switch into game.
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_INGAME);
-
     m_pISystem->GetIMovieSystem()->Reset(true, false);
 
     // Transition to runtime entity context.
@@ -588,10 +548,6 @@ void CGameEngine::SwitchToInEditor()
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(m_bSimulationMode);
-
-    // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
-    //! Send event to switch out of game.
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
 
     m_bInGameMode = false;
 
@@ -674,8 +630,6 @@ void CGameEngine::SetGameMode(bool bInGame)
         SwitchToInEditor();
     }
 
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_PHYSICS_APPLYSTATE);
-
     // Enables engine to know about that.
     if (MainWindow::instance())
     {
@@ -712,19 +666,6 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
 
     // Enables engine to know about simulation mode.
     gEnv->SetIsEditorSimulationMode(enabled);
-
-    if (m_bSimulationMode)
-    {
-        // [Anton] the order of the next 3 calls changed, since, EVENT_INGAME loads physics state (if any),
-        // and Reset should be called before it
-        GetIEditor()->GetObjectManager()->SendEvent(EVENT_INGAME);
-    }
-    else
-    {
-        GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
-    }
-
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_PHYSICS_APPLYSTATE);
 
     // Execute all queued events before switching modes.
     ExecuteQueuedEvents();
@@ -775,7 +716,7 @@ void CGameEngine::Update()
         return;
     }
 
-#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+#if defined(CARBONATED)  // aefimov MAD-10299 assert modal dialog fix
     if (gEnv->IsEditor())
     {
         bool result = false;
@@ -872,8 +813,7 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     break;
     }
 
-    // carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
-#if defined(CARBONATED)
+#if defined(CARBONATED) // (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
     if (!m_pEditorGame)
     {
         EditorGameRequestBus::BroadcastResult(m_pEditorGame, &EditorGameRequestBus::Events::GetEditorGame);
@@ -916,7 +856,6 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     break;
     }
 #endif
-    // carbonated end
 }
 
 void CGameEngine::OnAreaModified([[maybe_unused]] const AABB& modifiedArea)

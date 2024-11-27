@@ -31,20 +31,9 @@ namespace AZ::RHI
     public:
         AZ_CLASS_ALLOCATOR(MultiDeviceQueryPool, AZ::SystemAllocator, 0);
         AZ_RTTI(MultiDeviceQueryPool, "{F46A756D-99F1-4A2A-AE4C-A2A8BE6845CC}", MultiDeviceResourcePool)
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(QueryPool);
         MultiDeviceQueryPool() = default;
         virtual ~MultiDeviceQueryPool() override = default;
-
-        //! Returns the device-specific QueryPool for the given index
-        inline Ptr<QueryPool> GetDeviceQueryPool(int deviceIndex) const
-        {
-            AZ_Error(
-                "MultiDeviceQueryPool",
-                m_deviceQueryPools.find(deviceIndex) != m_deviceQueryPools.end(),
-                "No DeviceQueryPool found for device index %d\n",
-                deviceIndex);
-
-            return m_deviceQueryPools.at(deviceIndex);
-        }
 
         //!  Initialize the MultiDeviceQueryPool by initializing all device-specific QueryPools for each device mentioned in the deviceMask.
         ResultCode Init(MultiDevice::DeviceMask deviceMask, const QueryPoolDescriptor& descriptor);
@@ -107,7 +96,5 @@ namespace AZ::RHI
         ResultCode ValidateQueries(MultiDeviceQuery** queries, uint32_t queryCount);
 
         QueryPoolDescriptor m_descriptor;
-        //! A map of all device-specific QueryPools, indexed by the device index
-        AZStd::unordered_map<int, Ptr<QueryPool>> m_deviceQueryPools;
     };
 } // namespace AZ::RHI

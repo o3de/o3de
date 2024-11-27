@@ -16,9 +16,7 @@ namespace AZ
             : m_EventHandle(nullptr)
             , m_name(name)
         {
-            AZStd::wstring nameW;
-            AZStd::to_wstring(nameW, name);
-            m_EventHandle = CreateEvent(nullptr, false, false, nameW.c_str());
+            m_EventHandle = CreateEvent(nullptr, false, false, nullptr);
         }
 
         FenceEvent::~FenceEvent()

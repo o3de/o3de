@@ -57,6 +57,23 @@ namespace AzToolsFramework
         // you may not cache the pointer to anything.
         bool ReadValuesIntoGUI(size_t index, WidgetType* GUI, const PropertyType& instance, InstanceDataNode* node) override = 0;
 
+        // Sometimes the widget is reused but its attributes and values are refreshed, for example
+        // when the property tree is refreshed with only the "attributes and values" being asked for rebuild instead
+        // of the entire tree, which is cheaper than destroying and resetting the widget.
+        // You should only need to override this function in the situation where your widget
+        // has stored state from attributes that can affect how other attributes or values are set.
+        // An example of this would be a slider having a min and max attribute, and then being reused
+        // for a different min and max range.  Because it gets ConsumeAttribute called one by one
+        // it might receive a new min value that is outside the range for the max value it has cached state for
+        // and might clamp it, causing a different behavior compared to a fresh new instance.  
+        // Do as little as possible in your overrides of this function as it is called frequently.  
+        // The only requirement is that you reset any internal state that would cause it to behave differently
+        // compared to a fresh instance.
+        // You can assume that every time this function is called, all attributes are re-sent to your handler via
+        // ConsumeAttribute, one at a time, followed by a call to ReadValuesIntoGUI
+        // see documentation in PropertyEditorAPI.h in the base class.
+        void BeforeConsumeAttributes(WidgetType* /*widget*/, InstanceDataNode* /*attrValue*/) override {}
+
         // this will be called in order to initialize or refresh your gui.  Your class will be fed one attribute at a time
         // you may override this to interpret the attributes as you wish - use attrValue->Read<int>() for example, to interpret it as an int.
         // all attributes can either be a flat value, or a function which returns that same type.  In the case of the function
@@ -70,7 +87,7 @@ namespace AzToolsFramework
         //     if (attrValue->Read<int>(maxValue)) GUI->SetMax(maxValue);
         // }
         // you may not cache the pointer to anything.
-        //virtual void ConsumeAttribute(WidgetType* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        virtual void ConsumeAttribute(WidgetType* /*widget*/, AZ::u32 /*attrib*/, PropertyAttributeReader* /*attrValue*/, const char* /*debugName*/) override {}
 
         // override GetFirstInTabOrder, GetLastInTabOrder in your base class to define which widget gets focus first when pressing tab,
         // and also what widget is last.
@@ -161,6 +178,12 @@ namespace AzToolsFramework
             (void)value;
             (void)propertyType;
             return false;
+        }
+
+        void BeforeConsumeAttributes(WidgetType* widget, InstanceDataNode* attrValue) override
+        {
+            (void)widget;
+            (void)attrValue;
         }
 
         QWidget* GetFirstInTabOrder(WidgetType* widget) override { return widget; }

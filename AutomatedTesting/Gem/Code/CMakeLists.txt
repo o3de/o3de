@@ -9,7 +9,7 @@
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME AutomatedTesting ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         automatedtesting_files.cmake
@@ -36,14 +36,23 @@ ly_add_target(
         *.AutoComponent.xml,AutoComponentTypes_Source.jinja,$path/AutoComponentTypes.cpp
 )
 
-# if enabled, AutomatedTesting is used by all kinds of applications
-ly_create_alias(NAME AutomatedTesting.Builders NAMESPACE Gem TARGETS Gem::AutomatedTesting)
-ly_create_alias(NAME AutomatedTesting.Tools    NAMESPACE Gem TARGETS Gem::AutomatedTesting)
-ly_create_alias(NAME AutomatedTesting.Clients  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
-ly_create_alias(NAME AutomatedTesting.Servers  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
-ly_create_alias(NAME AutomatedTesting.Unified  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AutomatedTestingModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
-# Add project to the list server projects to create the AutomatedTesting.ServerLauncher
+# if enabled, AutomatedTesting is used by all kinds of applications
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
+
+# Add project to the list server projects to create the ${gem_name}.ServerLauncher
 if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS AutomatedTesting)
 endif()

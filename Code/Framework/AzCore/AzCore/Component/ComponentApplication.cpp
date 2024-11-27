@@ -38,6 +38,8 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#include <AzCore/Settings/CommandLineParser.h>
+#include <AzCore/Settings/ConfigParser.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
@@ -113,8 +115,9 @@ namespace AZ::Internal
     {
         None, // 0 = no overrides are allowed
         CommandLineOnly, // 1 = registry overrides are allowed from the command line
-        CommandLineAndProject, // 2 = registry overrides are allowed from the command line, engine, gem, and project files
-        CommandLineProjectAndUser // 3 = registry overrides are allowed from the command line, engine, gem, project, and user files
+        ProjectOnly, // 2 = registry overrides are allowed from the engine, gem and project registry files
+        CommandLineAndProject, // 3 = registry overrides are allowed from the command line, engine, gem, and project files
+        CommandLineProjectAndUser // 4 = registry overrides are allowed from the command line, engine, gem, project, and user files
     };
 
     //! Determines which development settings (user registry files, project registry files, etc) should
@@ -127,14 +130,24 @@ namespace AZ::Internal
         // is a debug, profile, or release build.
         return static_cast<DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
 #elif AZ_RELEASE_BUILD
-        // By default, if no compile setting was provided, turn off all overrides in release builds.
-        return DevelopmentSettingsOverrides::None;
+        // By default, if no compile setting was provided, allow overrides from the engine, gem and project registry files in release builds.
+        return DevelopmentSettingsOverrides::ProjectOnly;
 #else
         // By default, if no compile setting was provided, turn on all overrides in non-release builds.
         return DevelopmentSettingsOverrides::CommandLineProjectAndUser;
 #endif
     }
 
+    static constexpr bool CanUseStartupCfgFile()
+    {
+#if defined(O3DE_STARTUP_CFG_FILE_CHECK_OVERRIDE)
+        return bool{ O3DE_STARTUP_CFG_FILE_CHECK_OVERRIDE };
+#elif AZ_RELEASE_BUILD
+        return false;
+#else
+        return true;
+#endif
+    }
 } // namespace AZ::Internal
 
 namespace AZ
@@ -198,7 +211,7 @@ namespace AZ
         m_enableScriptReflection = true;
 
         m_memoryBlocksByteSize = 0;
-        m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
+        m_recordingMode = Debug::AllocationRecords::Mode::RECORD_STACK_IF_NO_FILE_LINE;
     }
 
     bool AppDescriptorConverter(SerializeContext& serialize, SerializeContext::DataElementNode& node)
@@ -377,10 +390,10 @@ namespace AZ
             if (EditContext* ec = serializeContext->GetEditContext())
             {
                 ec->Enum<Debug::AllocationRecords::Mode>("Debug::AllocationRecords::Mode", "Allocator recording mode")
-                    ->Value("No records", Debug::AllocationRecords::RECORD_NO_RECORDS)
-                    ->Value("No stack trace", Debug::AllocationRecords::RECORD_STACK_NEVER)
-                    ->Value("Stack trace when file/line missing", Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
-                    ->Value("Stack trace always", Debug::AllocationRecords::RECORD_FULL);
+                    ->Value("No records", Debug::AllocationRecords::Mode::RECORD_NO_RECORDS)
+                    ->Value("No stack trace", Debug::AllocationRecords::Mode::RECORD_STACK_NEVER)
+                    ->Value("Stack trace when file/line missing", Debug::AllocationRecords::Mode::RECORD_STACK_IF_NO_FILE_LINE)
+                    ->Value("Stack trace always", Debug::AllocationRecords::Mode::RECORD_FULL);
                 ec->Class<Descriptor>("System memory settings", "Settings for managing application memory usage")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
@@ -416,11 +429,20 @@ namespace AZ
     // [5/30/2012]
     //=========================================================================
     ComponentApplication::ComponentApplication()
-        : ComponentApplication(0, nullptr)
+        : ComponentApplication(0, nullptr, {})
     {
     }
 
+    ComponentApplication::ComponentApplication(ComponentApplicationSettings componentAppSettings)
+        : ComponentApplication(0, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
     ComponentApplication::ComponentApplication(int argC, char** argV)
+        : ComponentApplication(argC, argV, {})
+    {
+    }
+
+    ComponentApplication::ComponentApplication(int argC, char** argV, ComponentApplicationSettings componentAppSettings)
         : m_timeSystem(AZStd::make_unique<TimeSystem>())
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
@@ -441,6 +463,9 @@ namespace AZ
             m_argC = 1;
             m_argV = &m_commandLineBufferAddress;
         }
+
+        // Check for a bootstrap config file that contains settings for configuring the allocator tracking settings
+        InitializeAllocatorSettings(m_argC, m_argV);
 
         // we are about to create allocators, so make sure that
         // the descriptor is filled with at least the defaults:
@@ -463,7 +488,7 @@ namespace AZ
             m_nameDictionary->LoadDeferredNames(AZ::Name::GetDeferredHead());
         }
 
-        InitializeSettingsRegistry();
+        InitializeSettingsRegistry(componentAppSettings);
 
         InitializeEventLoggerFactory();
 
@@ -550,7 +575,7 @@ namespace AZ
         AZ::Debug::Trace::Instance().Destroy();
     }
 
-    void ComponentApplication::InitializeSettingsRegistry()
+    void ComponentApplication::InitializeSettingsRegistry(const ComponentApplicationSettings& componentAppSettings)
     {
         SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
 
@@ -558,6 +583,8 @@ namespace AZ
         // This is done after the AppRoot has been calculated so that the Bootstrap.cfg
         // can be read to determine the Game folder and the asset platform
         m_settingsRegistry = AZStd::make_unique<SettingsRegistryImpl>();
+        // Merge the bootstrap settings to the root of the Settings Registry
+        m_settingsRegistry->MergeSettings(componentAppSettings.m_setregBootstrapJson, componentAppSettings.m_setregFormat);
 
         // Register the Settings Registry with the AZ Interface if there isn't one registered already
         if (SettingsRegistry::Get() == nullptr)
@@ -632,6 +659,100 @@ namespace AZ
             m_settingsRegistryConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(settingsRegistry, *m_console);
             m_settingsRegistryOriginTrackerConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistryOriginTracker, *m_console);
             ComponentApplicationLifecycle::SignalEvent(settingsRegistry, "ConsoleAvailable", R"({})");
+        }
+    }
+
+    void ComponentApplication::InitializeAllocatorSettings(int argc, char** argv)
+    {
+        if constexpr (Internal::CanUseStartupCfgFile())
+        {
+            AZ::IO::FixedMaxPath startupCfgPath;
+
+            // First check if there is an "O3DE_STARTUP_CFG_FILE" environment variable set
+            // in the OS and use that as the startup cfg path
+            auto QueryStartupEnv = [](char* buffer, size_t size) -> size_t
+            {
+                constexpr const char* StartupCfgEnvKey = "O3DE_STARTUP_CFG_FILE";
+                auto getEnvOutcome = AZ::Utils::GetEnv(AZStd::span(buffer, size), StartupCfgEnvKey);
+                return getEnvOutcome ? getEnvOutcome.GetValue().size() : 0;
+            };
+            startupCfgPath.Native().resize_and_overwrite(startupCfgPath.Native().max_size(), QueryStartupEnv);
+
+            if (startupCfgPath.empty())
+            {
+                // Default to looking for startup config file at "<exe-directory>/startup.cfg" if the O3DE_STARTUP_CFG_FILE env is not set
+                startupCfgPath =
+                    AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / SettingsRegistryInterface::RegistryFolder / "startup.cfg";
+                if (!AZ::IO::SystemFile::Exists(startupCfgPath.c_str()))
+                {
+                    // If a <exe-directory>/startup.cfg doesn't exist, try to locate the startup config file at "~/.o3de/Registry/startup.cfg"
+                    startupCfgPath =
+                        AZ::IO::FixedMaxPath(AZ::Utils::GetO3deManifestDirectory()) / SettingsRegistryInterface::RegistryFolder / "startup.cfg";
+                }
+            }
+
+            Settings::CommandLineParserSettings commandLineParserSettings;
+            commandLineParserSettings.m_parseCommandLineEntryFunc = [&startupCfgPath](const Settings::CommandLineArgument& argument) -> bool
+            {
+                constexpr AZStd::string_view StartupFileOption = "startup-cfg-file";
+                if (argument.m_option == StartupFileOption)
+                {
+                    // Remove any double quotes surrounding the startup cfg path
+                    // and store it in the path variable
+                    startupCfgPath = Settings::UnquoteArgument(argument.m_value);
+                }
+
+                return true;
+            };
+
+            // Parses the command line arguments without using any heap allocations
+            // This attempts to read the startup config file from the command line
+            Settings::ParseCommandLine(argc, argv, commandLineParserSettings);
+
+            // Try to the open up the Startup config file
+            constexpr auto openMode = AZ::IO::OpenMode::ModeRead;
+            AZ::IO::SystemFileStream startupCfgStream(startupCfgPath.c_str(), openMode);
+            if (!startupCfgStream.IsOpen())
+            {
+                return;
+            }
+
+            auto& allocatorManager = AZ::AllocatorManager::Instance();
+            // Now parse the config file settings without using heap allocations as well
+            Settings::ConfigParserSettings configParserSettings;
+            configParserSettings.m_parseConfigEntryFunc =
+                [&allocatorManager](const Settings::ConfigParserSettings::ConfigEntry& configEntry) -> bool
+            {
+                // If a key in the config file is of the form with "allocator_tracking_<allocator_name>,
+                // try to convert the value into a boolean. If the value is true
+                // An entry of the allocator name is registered with the AllocatorManager
+                // which is used to turn on Allocator Tracking when an allocator with the specified
+                // name is registered
+                constexpr AZStd::string_view AllocatorTrackingPrefix = "allocator_tracking_";
+                if (AZ::StringFunc::StartsWith(configEntry.m_keyValuePair.m_key, AllocatorTrackingPrefix))
+                {
+                    AZStd::string_view allocatorName = configEntry.m_keyValuePair.m_key.substr(AllocatorTrackingPrefix.size());
+                    if (!allocatorName.empty())
+                    {
+                        // Attempt to convert the string directly to an AllocationRecords::Mode enum
+                        // This occurs in the case when the string matches the name of an enum option
+                        AZ::Debug::AllocationRecords::Mode mode = allocatorManager.GetDefaultTrackingMode();
+                        if (!AZ::ConsoleTypeHelpers::ToValue(mode, configEntry.m_keyValuePair.m_value))
+                        {
+                            // The tracking value was unable to be converted to an enum, so return true
+                            // to parse the next command line entry
+                            return true;
+                        }
+
+                        allocatorManager.SetTrackingForAllocator(allocatorName, mode);
+                    }
+                }
+
+                return true;
+            };
+
+            // Now uses the ConfigParser to parse the allocator settings
+            AZ::Settings::ParseConfigFile(startupCfgStream, configParserSettings);
         }
     }
 
@@ -836,6 +957,13 @@ namespace AZ
 
         // Load the actual modules
         LoadModules();
+
+#if defined (CARBONATED)
+        // Enable to dispatch console commands when all modules are loaded and all their commands are registered.
+        AZ::Interface<AZ::IConsole>::Get()->EnableToDispatchConsoleCommands();
+        AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
+#endif
+
         ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsLoaded", R"({})");
 
         // Execute user.cfg after modules have been loaded but before processing any command-line overrides
@@ -965,7 +1093,11 @@ namespace AZ
         const AZ::SettingsRegistryInterface::Specializations& specializations,
         AZStd::vector<char>& scratchBuffer)
     {
-        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
+        constexpr bool overridesAllowedFromCommandLine =
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+        if constexpr (overridesAllowedFromCommandLine)
         {
             if constexpr (
                 AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
@@ -1009,8 +1141,11 @@ namespace AZ
             registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 
 #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        if constexpr (
-            AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject)
+        constexpr bool overridesAllowedFromProjectRegistries =
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::ProjectOnly ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+        if constexpr (overridesAllowedFromProjectRegistries)
         {
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(
                 registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
@@ -1027,7 +1162,11 @@ namespace AZ
         const AZ::SettingsRegistryInterface::Specializations& specializations,
         AZStd::vector<char>& scratchBuffer)
     {
-        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
+        constexpr bool overridesAllowedFromCommandLine =
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+        if constexpr (overridesAllowedFromCommandLine)
         {
             if constexpr (
                 AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)

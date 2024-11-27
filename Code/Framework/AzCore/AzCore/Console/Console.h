@@ -63,6 +63,9 @@ namespace AZ
         bool ExecuteDeferredConsoleCommands() override;
 
         void ClearDeferredConsoleCommands() override;
+#if defined (CARBONATED)
+        void EnableToDispatchConsoleCommands() override;
+#endif
 
         bool HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) override;
         ConsoleFunctorBase* FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) override;
@@ -114,6 +117,10 @@ namespace AZ
         };
         using DeferredCommandQueue = AZStd::deque<DeferredCommand>;
         DeferredCommandQueue m_deferredCommands;
+
+#if defined (CARBONATED)
+        bool m_enableToDispatchConsoleCommands;
+#endif
 
         friend struct ConsoleCommandKeyNotificationHandler;
         friend class ConsoleFunctorBase;

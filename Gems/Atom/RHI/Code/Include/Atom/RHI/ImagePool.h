@@ -15,17 +15,22 @@
 namespace AZ::RHI
 {
     //! @brief The data structure used to initialize an RHI::Image on an RHI::ImagePool.
-    struct ImageInitRequest
+    template <typename ImageClass>
+    struct ImageInitRequestTemplate
     {
-        ImageInitRequest() = default;
+        ImageInitRequestTemplate() = default;
 
-        ImageInitRequest(
-            Image& image,
+        ImageInitRequestTemplate(
+            ImageClass& image,
             const ImageDescriptor& descriptor,
-            const ClearValue* optimizedClearValue = nullptr);
+            const ClearValue* optimizedClearValue = nullptr)
+            : m_image{&image}
+            , m_descriptor{descriptor}
+            , m_optimizedClearValue{optimizedClearValue}
+        {}
 
         /// The image to initialize.
-        Image* m_image = nullptr;
+        ImageClass* m_image = nullptr;
 
         /// The descriptor used to initialize the image.
         ImageDescriptor m_descriptor;
@@ -37,12 +42,13 @@ namespace AZ::RHI
     };
 
     //!@brief The data structure used to update contents of an RHI::Image on an RHI::ImagePool.
-    struct ImageUpdateRequest
+    template <typename ImageClass, typename ImageSubresourceLayoutClass>
+    struct ImageUpdateRequestTemplate
     {
-        ImageUpdateRequest() = default;
+        ImageUpdateRequestTemplate() = default;
 
         /// A pointer to an initialized image, whose contents will be updated.
-        Image* m_image = nullptr;
+        ImageClass* m_image = nullptr;
 
         /// The image subresource to update.
         ImageSubresource m_imageSubresource;
@@ -54,8 +60,11 @@ namespace AZ::RHI
         const void* m_sourceData = nullptr;
 
         /// The source sub-resource layout.
-        ImageSubresourceLayout m_sourceSubresourceLayout;
+        ImageSubresourceLayoutClass m_sourceSubresourceLayout;
     };
+
+    using ImageInitRequest = ImageInitRequestTemplate<Image>;
+    using ImageUpdateRequest = ImageUpdateRequestTemplate<Image, ImageSubresourceLayout>;
 
     //! ImagePool is a pool of images that will be bound as attachments to the frame scheduler.
     //! As a result, they are intended to be produced and consumed by the GPU. Persistent Color / Depth Stencil / Image

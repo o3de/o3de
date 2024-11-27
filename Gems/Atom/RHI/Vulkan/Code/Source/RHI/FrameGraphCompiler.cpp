@@ -9,10 +9,11 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/FrameGraph.h>
+#include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversion.h>
@@ -22,6 +23,7 @@
 #include <RHI/ImageView.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
+
 
 namespace AZ
 {
@@ -47,13 +49,14 @@ namespace AZ
 
             AZ_Assert(request.m_frameGraph, "FrameGraph is null.");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
-            
             CompileResourceBarriers(frameGraph.GetAttachmentDatabase());
 
             if (!RHI::CheckBitsAny(request.m_compileFlags, RHI::FrameSchedulerCompileFlags::DisableAsyncQueues))
             {
                 CompileAsyncQueueSemaphores(frameGraph);
             }
+
+            CompileSemaphoreSynchronization(frameGraph);
 
             return AZ::Success();
         }
@@ -238,7 +241,6 @@ namespace AZ
                 imageBarrier.oldLayout = GetImageAttachmentLayout(*lastScopeAttachment);
                 imageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                 imageBarrier.subresourceRange = VkImageSubresourceRange{ image.GetImageAspectFlags(), 0, 1, 0, 1 };
-                
                 lastScope.QueueAttachmentBarrier(
                     *lastScopeAttachment,
                     Scope::BarrierSlot::Epilogue,
@@ -414,5 +416,70 @@ namespace AZ
             const auto* bufferView = scopeAttachment.GetBufferView();
             return RHI::BufferSubresourceRange(bufferView->GetDescriptor());
         }
-    }
-}
+
+        void FrameGraphCompiler::CompileSemaphoreSynchronization(const RHI::FrameGraph& frameGraph)
+        {
+            // We need to synchronize submissions of binary semaphores/fences to the queues:
+            // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkQueuePresentKHR.html#VUID-vkQueuePresentKHR-pWaitSemaphores-03268
+            // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkQueueSubmit.html#VUID-vkQueueSubmit-pWaitSemaphores-03238
+            // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkQueueSubmit.html#VUID-vkQueueSubmit-fence-00063
+            // The wait operation of a binary semaphore/fence cannot be submitted before the respective signal operation is submitted.
+            // Timeline semaphores don't have that limitation,
+            //   but all dependent semaphores of a binary semaphore must be signalled before waiting (including timeline semaphore)
+            // Here every semaphore (scope) gets assigned an index in a bitfield, and which other semaphores it depends on
+            // There is one bit set for every scope, instead of every semaphore/fence
+            //   because all semaphores of a scope are waited-for/signalled at the same time
+            AZStd::shared_ptr<SignalEvent> signalEvent = AZStd::make_shared<SignalEvent>();
+            int currentBitToSignal{ 0 };
+            SignalEvent::BitSet currentDependencies{};
+            AZStd::unordered_set<Fence*> signalledFences;
+
+            for (RHI::Scope* scopeBase : frameGraph.GetScopes())
+            {
+                bool hasSemaphoreSignal = false;
+                Scope* scope = static_cast<Scope*>(scopeBase);
+                for (auto& fence : scope->GetWaitFences())
+                {
+                    fence->SetSignalEvent(signalEvent);
+                    fence->SetSignalEventDependencies(currentDependencies);
+                    if (!signalledFences.contains(fence.get()))
+                    {
+                        // We assume the fence is signalled on the CPU
+                        fence->SetSignalEventBitToSignal(currentBitToSignal);
+                        hasSemaphoreSignal = true;
+                    }
+                }
+                for (auto& semaphore : scope->GetWaitSemaphores())
+                {
+                    semaphore.second->SetSignalEvent(signalEvent);
+                    semaphore.second->SetSignalEventDependencies(currentDependencies);
+                }
+
+                for (auto& fence : scope->GetSignalFences())
+                {
+                    fence->SetSignalEvent(signalEvent);
+                    fence->SetSignalEventBitToSignal(currentBitToSignal);
+                    signalledFences.insert(fence.get());
+                    // The fence wait might not be on the framegraph (wait on CPU)
+                    // In this case we want wait for the current scopes dependencies (i.e. for signalling of the fence itself)
+                    // If the Fence is waited-for on the framegraph at a later scope, we overwrite the dependencies later
+                    SignalEvent::BitSet fenceDependencies = currentDependencies;
+                    fenceDependencies.set(currentBitToSignal);
+                    fence->SetSignalEventDependencies(fenceDependencies);
+                    hasSemaphoreSignal = true;
+                }
+                for (auto& semaphore : scope->GetSignalSemaphores())
+                {
+                    semaphore->SetSignalEvent(signalEvent);
+                    semaphore->SetSignalEventBitToSignal(currentBitToSignal);
+                    hasSemaphoreSignal = true;
+                }
+                if (hasSemaphoreSignal)
+                {
+                    currentDependencies.set(currentBitToSignal);
+                    currentBitToSignal++;
+                }
+            }
+        }
+    } // namespace Vulkan
+} // namespace AZ

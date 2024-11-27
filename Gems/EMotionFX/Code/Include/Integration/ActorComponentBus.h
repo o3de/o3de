@@ -87,8 +87,11 @@ namespace EMotionFX
 
             /// Enables rendering of the actor.
             virtual bool GetRenderCharacter() const = 0;
-            virtual void SetRenderCharacter(bool enable) = 0;
+            virtual void SetRenderCharacter(bool enabled) = 0;
             virtual bool GetRenderActorVisible() const = 0;
+
+            /// Enables raytracing for the actor
+            virtual void SetRayTracingEnabled(bool enabled) = 0;
 
 #if defined(CARBONATED)
             virtual void SetForceJointUpdate(bool force) = 0;
@@ -101,8 +104,10 @@ namespace EMotionFX
             // Use this to alter the actor asset.
             virtual void SetActorAsset(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) = 0;
 
+#if defined(CARBONATED)
             // Returns actor asset
-            virtual AZ::Data::Asset<AZ::Data::AssetData> GetActorAsset() = 0; // carbonated EMotionFX_port
+            virtual AZ::Data::Asset<AZ::Data::AssetData> GetActorAsset() = 0;
+#endif
 
             // Use this bus to enable or disable the actor instance update in the job scheduler system.
             // This could be useful if you want to manually update the actor instance.

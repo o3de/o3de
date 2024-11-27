@@ -57,4 +57,8 @@ namespace Archive
     };
 }// namespace Archive
 
-AZ_DECLARE_MODULE_CLASS(Gem_Archive, Archive::ArchiveEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), Archive::ArchiveEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Archive_Editor, Archive::ArchiveEditorModule)
+#endif

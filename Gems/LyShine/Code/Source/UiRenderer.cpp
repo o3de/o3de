@@ -117,6 +117,10 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
         AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath, AZStd::string::format("_%i", viewportContext->GetId()));
     AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
 
+    const AZ::RHI::MultisampleState multiSampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+    renderPipelineDesc.value().m_renderSettings.m_multisampleState = multiSampleState;
+    AZ_Printf("UiRenderer", "UI renderer starting with multi sample %d", multiSampleState.m_samples);
+
     auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *viewportContext->GetWindowContext().get());
     atomScene->AddRenderPipeline(renderPipeline);
 

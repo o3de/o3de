@@ -46,8 +46,9 @@ for componentKey, componentValue in components.items():
         for variable in variableData:
             variableDatum = variable.get('Value', {}).get('Datum', {})
             if isSpawnableAsset(variableDatum):
-                asset = variableDatum['value'].pop('Asset')
-                variableDatum['value']['asset'] = asset
+                if 'value' in variableDatum:
+                    asset = variableDatum['value'].pop('Asset')
+                    variableDatum['value']['asset'] = asset
 
 filedata = json.dumps(prefab_dom, indent=4)
 

@@ -135,6 +135,9 @@ namespace AzToolsFramework
         //! Replace ComponentModeSwitcher with overridden ComponentModeSwitcher
         virtual void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) = 0;
 
+        //! Deselect all entities
+        virtual void DeselectEntities() = 0;
+
     protected:
         ~EditorTransformComponentSelectionRequests() = default;
     };

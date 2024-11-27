@@ -223,7 +223,7 @@ namespace AZ
             OpacityChanged();
         }
 
-        #if defined(CARBONATED)
+#if defined(CARBONATED)
         bool DecalComponentController::GetVisibility() const
         {
             return !mIsHidden;
@@ -234,7 +234,7 @@ namespace AZ
             mIsHidden = !show;
             OpacityChanged();
         }
-        #endif
+#endif
 
         float DecalComponentController::GetNormalMapOpacity() const
         {
@@ -290,11 +290,11 @@ namespace AZ
             DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnOpacityChanged, m_configuration.m_opacity);
             if (m_featureProcessor)
             {
-                #if defined(CARBONATED)
+#if defined(CARBONATED)
                 m_featureProcessor->SetDecalOpacity(m_handle, mIsHidden ? 0.0f : m_configuration.m_opacity);
-                #else
+#else
                 m_featureProcessor->SetDecalOpacity(m_handle, m_configuration.m_opacity);
-                #endif
+#endif
             }
         }
 

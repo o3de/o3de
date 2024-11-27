@@ -425,10 +425,10 @@ namespace AzFramework
                 AZ::u32 m_digitalButtonStates;     //!< The state of all digital buttons
                 float   m_triggerButtonLState;     //!< The state of the left trigger button
                 float   m_triggerButtonRState;     //!< The state of the right trigger button
-                float   m_thumbStickLeftXState;    //!< The state of the left thumb-stick x-axis
-                float   m_thumbStickLeftYState;    //!< The state of the left thumb-stick y-axis
-                float   m_thumbStickRightXState;   //!< The state of the right thumb-stick x-axis
-                float   m_thumbStickRightYState;   //!< The state of the right thumb-stick y-axis
+                float   m_thumbStickLeftXState;    //!< The state of the left thumb-stick x-axis.  Positive is to the right of the controller
+                float   m_thumbStickLeftYState;    //!< The state of the left thumb-stick y-axis.  Positive is towards the back of the controller
+                float   m_thumbStickRightXState;   //!< The state of the right thumb-stick x-axis. Positive is to the right of the controller
+                float   m_thumbStickRightYState;   //!< The state of the right thumb-stick y-axis. Positive is towards the back of the controller
                 float   m_triggerMaximumValue;     //!< The analog trigger maximum value
                 float   m_triggerDeadZoneValue;    //!< The analog trigger dead zone value
                 float   m_thumbStickMaximumValue;  //!< The thumb-stick maximum radius value

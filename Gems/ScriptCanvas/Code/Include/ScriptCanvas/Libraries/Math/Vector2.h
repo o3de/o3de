@@ -11,6 +11,7 @@
 #include <AzCore/std/tuple.h>
 #include <ScriptCanvas/Data/NumericData.h>
 
+
 namespace ScriptCanvas
 {
     namespace Vector2Functions
@@ -70,3 +71,5 @@ namespace ScriptCanvas
         AZStd::tuple<Vector2Type, NumberType> DirectionTo(const Vector2Type from, const Vector2Type to, NumberType optionalScale = 1.f);
     } // namespace Vector2Functions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Vector2.generated.h>
