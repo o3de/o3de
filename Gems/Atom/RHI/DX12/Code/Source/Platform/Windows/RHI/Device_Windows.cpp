@@ -84,10 +84,13 @@ namespace AZ
 
         void EnableDebugDeviceFeatures(Microsoft::WRL::ComPtr<ID3D12DeviceX>& dx12Device)
         {
-            Microsoft::WRL::ComPtr<ID3D12DebugDevice> debugDevice;
+            Microsoft::WRL::ComPtr<ID3D12DebugDevice2> debugDevice;
             if (SUCCEEDED(dx12Device->QueryInterface(debugDevice.GetAddressOf())))
             {
-                debugDevice->SetFeatureMask(D3D12_DEBUG_FEATURE_ALLOW_BEHAVIOR_CHANGING_DEBUG_AIDS | D3D12_DEBUG_FEATURE_CONSERVATIVE_RESOURCE_STATE_TRACKING);
+                D3D12_DEBUG_FEATURE featureFlags{ D3D12_DEBUG_FEATURE_ALLOW_BEHAVIOR_CHANGING_DEBUG_AIDS };
+                debugDevice->SetDebugParameter(D3D12_DEBUG_DEVICE_PARAMETER_FEATURE_FLAGS, &featureFlags, sizeof(featureFlags));
+                featureFlags = D3D12_DEBUG_FEATURE_CONSERVATIVE_RESOURCE_STATE_TRACKING;
+                debugDevice->SetDebugParameter(D3D12_DEBUG_DEVICE_PARAMETER_FEATURE_FLAGS, &featureFlags, sizeof(featureFlags));
             }
         }
 
