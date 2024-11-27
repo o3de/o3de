@@ -73,7 +73,7 @@ ${OVERRIDE_JAVA_SOURCESET}
         noCompress 'pak'
     }
 
-    // CARBONATED -- begin
+    // CARBONATED -- begin: assetPacks = [...]
     ${CARBONATED_ASSET_PACK_LIST}
     // CARBONATED -- end    
 }

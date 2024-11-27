@@ -836,6 +836,10 @@ class AndroidProjectGenerator(object):
         gradle_build_env['OVERRIDE_JAVA_SOURCESET'] = OVERRIDE_JAVA_SOURCESET_STR.format(absolute_azandroid_path=absolute_azandroid_path)
 
         gradle_build_env['OPTIONAL_JNI_SRC_LIB_SET'] = ', "outputs/native-lib"'
+        
+# CARBONATED -- begin
+        gradle_build_env['CARBONATED_ASSET_PACK_LIST'] = ''
+# CARBONATED -- end
 
         for native_config in BUILD_CONFIGURATIONS:
 
