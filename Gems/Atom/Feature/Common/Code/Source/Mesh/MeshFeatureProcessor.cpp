@@ -1092,8 +1092,7 @@ namespace AZ
 
         void MeshFeatureProcessor::SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled)
         {
-            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod =
-                meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
 
             for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
             {
@@ -1122,8 +1121,7 @@ namespace AZ
         {
             AZStd::string stringOutput = "\n------- MESH INFO -------\n";
 
-            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod =
-                meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
 
             u32 lodCounter = 0;
             for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
@@ -1651,12 +1649,6 @@ namespace AZ
 
             m_modelAsset.QueueLoad();
             Data::AssetBus::Handler::BusConnect(m_modelAsset.GetId());
-            if (!m_modelAsset.IsReady())
-            {
-                m_modelAsset.QueueLoad();
-            }
-
-            Data::AssetBus::Handler::BusConnect(modelAsset.GetId());
             AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         }
 
@@ -1901,7 +1893,7 @@ namespace AZ
             MEMORY_TAG(Mesh);
 #endif
             const size_t modelLodCount = m_model->GetLodCount();
-            
+
             if (!r_meshInstancingEnabled)
             {
                 m_drawPacketListsByLod.resize(modelLodCount);
@@ -2279,7 +2271,7 @@ namespace AZ
             shaderInputContract.m_streamChannels.emplace_back(bitangentStreamChannelInfo);
             shaderInputContract.m_streamChannels.emplace_back(uvStreamChannelInfo);
 
-            // setup the raytracing data for each sub-mesh 
+            // setup the raytracing data for each sub-mesh
             const size_t meshCount = modelLod->GetMeshes().size();
             RayTracingFeatureProcessor::SubMeshVector subMeshes;
             for (uint32_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
