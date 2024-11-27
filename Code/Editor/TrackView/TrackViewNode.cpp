@@ -17,7 +17,6 @@
 // AzCore
 #include <AzCore/std/sort.h>
 
-
 // Editor
 #include "TrackView/TrackViewTrack.h"
 #include "TrackView/TrackViewSequence.h"
