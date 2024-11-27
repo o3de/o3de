@@ -8,10 +8,6 @@
 
 #pragma once
 
-#ifndef ENABLE_SPECULARAA
-#define ENABLE_SPECULARAA 1
-#endif
-
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/PBR/SpecularAA.azsli>
 
