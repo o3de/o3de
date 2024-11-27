@@ -293,7 +293,7 @@ private:
     void QueueNotifications();
     // Used to cancel a previously queued notification.
     void DequeueNotifications();
-    void SubmitPendingNotifcations(bool force = false);
+    void SubmitPendingNotifications(bool force = false);
 
     /////////////////////////////////////////////////////////////////////////
     // overrides for ITrackViewSequenceManagerListener
@@ -356,7 +356,7 @@ public:
     {
         if (m_pSequence)
         {
-            m_pSequence->SubmitPendingNotifcations();
+            m_pSequence->SubmitPendingNotifications();
         }
     }
 

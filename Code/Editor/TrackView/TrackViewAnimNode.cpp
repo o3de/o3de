@@ -733,7 +733,7 @@ bool CTrackViewAnimNode::GetExpanded() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewAnimNode::GetSelectedKeys()
+CTrackViewKeyBundle CTrackViewAnimNode::GetSelectedKeys() const
 {
     CTrackViewKeyBundle bundle;
 
@@ -746,7 +746,7 @@ CTrackViewKeyBundle CTrackViewAnimNode::GetSelectedKeys()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewAnimNode::GetAllKeys()
+CTrackViewKeyBundle CTrackViewAnimNode::GetAllKeys() const
 {
     CTrackViewKeyBundle bundle;
 
@@ -759,7 +759,7 @@ CTrackViewKeyBundle CTrackViewAnimNode::GetAllKeys()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewAnimNode::GetKeysInTimeRange(const float t0, const float t1)
+CTrackViewKeyBundle CTrackViewAnimNode::GetKeysInTimeRange(const float t0, const float t1) const
 {
     CTrackViewKeyBundle bundle;
 

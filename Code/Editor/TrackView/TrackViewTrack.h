@@ -107,9 +107,9 @@ public:
     virtual CTrackViewKeyHandle GetKeyByTime(const float time);
     virtual CTrackViewKeyHandle GetNearestKeyByTime(const float time);
 
-    virtual CTrackViewKeyBundle GetSelectedKeys() override;
-    virtual CTrackViewKeyBundle GetAllKeys() override;
-    virtual CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) override;
+    CTrackViewKeyBundle GetSelectedKeys() const override;
+    CTrackViewKeyBundle GetAllKeys() const override;
+    CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) const override;
 
     // Key modifications
     virtual CTrackViewKeyHandle CreateKey(const float time);
@@ -215,11 +215,11 @@ private:
     void RemoveKey(const int index);
     int CloneKey(const int index);
 
-    CTrackViewKeyBundle GetKeys(bool bOnlySelected, float t0, float t1);
+    CTrackViewKeyBundle GetKeys(bool bOnlySelected, float t0, float t1) const;
     CTrackViewKeyHandle GetSubTrackKeyHandle(unsigned int index) const;
 
     // Copy selected keys to XML representation for clipboard
-    virtual void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
+    void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
 
     bool m_bIsCompoundTrack;
     bool m_bIsSubTrack;

@@ -198,7 +198,7 @@ CTrackViewKeyHandle CTrackViewTrack::GetNextKey(const float time)
 
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys()
+CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys() const
 {
     CTrackViewKeyBundle bundle;
 
@@ -218,7 +218,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewTrack::GetAllKeys()
+CTrackViewKeyBundle CTrackViewTrack::GetAllKeys() const
 {
     CTrackViewKeyBundle bundle;
 
@@ -238,7 +238,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetAllKeys()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const float t0, const float t1)
+CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const float t0, const float t1) const
 {
     CTrackViewKeyBundle bundle;
 
@@ -258,7 +258,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const float t0, const fl
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const float t0, const float t1)
+CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const float t0, const float t1) const
 {
     CTrackViewKeyBundle bundle;
 
@@ -268,9 +268,9 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const flo
         const float keyTime = m_pAnimTrack->GetKeyTime(keyIndex);
         const bool timeRangeOk = (t0 <= keyTime && keyTime <= t1);
 
-        if ((!bOnlySelected || IsKeySelected(keyIndex)) && timeRangeOk)
+        if (timeRangeOk && (!bOnlySelected || IsKeySelected(keyIndex)))
         {
-            CTrackViewKeyHandle keyHandle(this, keyIndex);
+            CTrackViewKeyHandle keyHandle(const_cast<CTrackViewTrack*>(this), keyIndex);
             bundle.AppendKey(keyHandle);
         }
     }
@@ -612,7 +612,7 @@ void CTrackViewTrack::SelectKeys(const bool bSelected)
         }
     }
 
-    m_pTrackAnimNode->GetSequence()->SubmitPendingNotifcations();
+    m_pTrackAnimNode->GetSequence()->SubmitPendingNotifications();
 }
 
 

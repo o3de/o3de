@@ -151,9 +151,9 @@ public:
     virtual CTrackViewTrackBundle GetTracksByParam(const CAnimParamType& paramType) const;
 
     // Key getters
-    virtual CTrackViewKeyBundle GetAllKeys() override;
-    virtual CTrackViewKeyBundle GetSelectedKeys() override;
-    virtual CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) override;
+    CTrackViewKeyBundle GetAllKeys() const override;
+    CTrackViewKeyBundle GetSelectedKeys() const override;
+    CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) const override;
 
     // Type getters
     AnimNodeType GetType() const;

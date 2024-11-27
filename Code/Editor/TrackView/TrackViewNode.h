@@ -111,7 +111,7 @@ public:
     bool AreAllKeysOfSameType() const { return m_bAllOfSameType; }
 
     unsigned int GetKeyCount() const { return static_cast<unsigned int>(m_keys.size()); }
-    CTrackViewKeyHandle GetKey(unsigned int index) { return m_keys[index]; }
+    CTrackViewKeyHandle GetKey(unsigned int index) const { return m_keys[index]; }
 
     void SelectKeys(const bool bSelected);
 
@@ -189,9 +189,9 @@ public:
     bool IsHidden() const;
 
     // Key getters
-    virtual CTrackViewKeyBundle GetSelectedKeys() = 0;
-    virtual CTrackViewKeyBundle GetAllKeys() = 0;
-    virtual CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) = 0;
+    virtual CTrackViewKeyBundle GetSelectedKeys() const = 0;
+    virtual CTrackViewKeyBundle GetAllKeys() const = 0;
+    virtual CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) const = 0;
 
     // Check if node itself is obsolete, or any child is an obsolete track
     bool HasObsoleteTrack() const;
