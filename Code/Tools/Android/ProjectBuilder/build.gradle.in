@@ -74,7 +74,7 @@ ${OVERRIDE_JAVA_SOURCESET}
     }
 
     // CARBONATED -- begin: assetPacks = [...]
-    ${CARBONATED_ASSET_PACK_LIST}
+    ${AAB_ASSET_PACK_LIST}
     // CARBONATED -- end    
 }
 

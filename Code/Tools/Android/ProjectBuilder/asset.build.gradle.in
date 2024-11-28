@@ -14,9 +14,9 @@ plugins {
 
 assetPack {
     // Directory name for the asset pack
-    packName = '${CARBONATED_ASSET_PACK_NAME}'
+    packName = '${AAB_ASSET_PACK_NAME}'
     dynamicDelivery {
-        deliveryType = '${CARBONATED_ASSET_PACK_DELIVERY_TYPE}'
+        deliveryType = '${AAB_ASSET_PACK_DELIVERY_TYPE}'
     }
 }
 // CARBONATED -- end

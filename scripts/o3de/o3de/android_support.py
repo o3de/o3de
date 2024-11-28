@@ -74,6 +74,11 @@ ANDROID_RESOLUTION_SETTINGS = ('mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi')
 ANDROID_SETTINGS_FILE = '.command_settings'
 ANDROID_SETTINGS_SECTION_NAME = 'android'
 
+# CARBONATED -- begin : asset pack definitions
+AAB_ASSET_PACK_NAME = 'app_asset_pack'
+AAB_ASSET_PACK_DELIVERY_TYPE = 'install-time'
+# CARBONATED -- end
+
 SUPPORTED_ANDROID_SETTINGS = []
 
 def register_setting(key: str, description: str, default: str= None,  is_password:bool = False, is_boolean = False, restricted_regex: str = None, restricted_regex_description: str = None) -> command_utils.SettingsDescription:
@@ -170,10 +175,11 @@ SETTINGS_ASSET_BUNDLE_SUBPATH   = register_setting(key='asset.bundle.subpath',
 SETTINGS_EXTRA_CMAKE_ARGS       = register_setting(key='extra.cmake.args',
                                                    description='Optional string to set additional cmake arguments during the native project generation within the android gradle build process')
 
-# CARBONATED -- begin : currently we support a sole install-time asset pack with size up to 1.5 Gb
-CARBONATED_AAB_ASSET_PACK_NAME  = register_setting(key='carbonated.aab.asset.pack.name',
-                                                   description='Optional: the name of play asset delivery pack name in AAB file. If it is empty, the separate asset module is not created'
-                                                   '(ref https://developer.android.com/guide/playcore/asset-delivery/integrate-native)')
+# CARBONATED -- begin : supported a sole install-time asset pack with size up to 1.5 Gb
+SETTINGS_INTEGRATE_AAB_ASSET_PACK = register_setting(key='integrate.aab.asset.pack',
+                                                   description='Integrate Play Asset Delivery pack into your project Android App Bundle.'
+                                                   '(ref https://developer.android.com/guide/playcore/asset-delivery/integrate-native)',
+                                                   is_boolean=False)
 # CARBONATED -- end
 
 def get_android_config(project_path: Path or None) -> command_utils.O3DEConfig:
@@ -993,7 +999,7 @@ NATIVE_CMAKE_SECTION_ANDROID_FORMAT = """
 """
 
 # CARBONATED -- begin : asset list description for the app/build.gradle
-CARBONATED_ASSET_PACK_LIST_FORMAT = """
+AAB_ASSET_PACK_LIST_FORMAT = """
             assetPacks = [':{asset_pack_name}']
 """
 # CARBONATED -- end
@@ -1355,7 +1361,7 @@ class AndroidProjectGenerator(object):
         self._android_replacement_map_env = {}
         
 # CARBONATED -- begin : get the play delivery asset pack name
-        self._aab_asset_pack_name = get_android_config(project_path=self._project_path).get_value(CARBONATED_AAB_ASSET_PACK_NAME.key)
+        self._integrate_aab_asset_pack = get_android_config(project_path=self._project_path).get_value(SETTINGS_INTEGRATE_AAB_ASSET_PACK.key)
 # CARBONATED -- end 
 
     def execute(self):
@@ -1392,10 +1398,10 @@ class AndroidProjectGenerator(object):
 
         project_names.extend(self.create_lumberyard_app(project_names))
 
-# CARBONATED -- begin : create/append asset module to project list 
-        if self._aab_asset_pack_name is not None:
-            self.create_play_asset_delivery_module()            
-            project_names.append(self._aab_asset_pack_name)
+# CARBONATED -- begin : generate/append asset pack project to the project list 
+        if self._integrate_aab_asset_pack:
+            self.generate_aab_asset_pack_project()            
+            project_names.append(AAB_ASSET_PACK_NAME)
 # CARBONATED -- end
 
         root_gradle_env = {
@@ -1598,15 +1604,15 @@ class AndroidProjectGenerator(object):
         except OSError as os_err:
             logger.error(f"Error trying to link  {tgt} => {src} : {os_err}")
 
-    def create_play_asset_delivery_module(self):
+    def generate_aab_asset_pack_project(self):
         """
-        This will create the asset module '{self._aab_asset_pack_name}' which will be packaged as an extra assets.
+        This will create the asset module '{AAB_ASSET_PACK_NAME}' which will be packaged as an extra assets.
         """
        
-        if self._aab_asset_pack_name is None:
+        if not self._integrate_aab_asset_pack:
             return
         
-        aab_asset_pack_path = self._build_dir / self._aab_asset_pack_name
+        aab_asset_pack_path = self._build_dir / AAB_ASSET_PACK_NAME
             
         logging.debug("Create Play Asset Delivery pack to '%s'", aab_asset_pack_path.resolve())        
         
@@ -1632,9 +1638,9 @@ class AndroidProjectGenerator(object):
         # Prepare the 'build.gradle' template generation
         gradle_build_env = dict()
        
-        gradle_build_env['CARBONATED_ASSET_PACK_NAME'] = self._aab_asset_pack_name            
-        gradle_build_env['CARBONATED_ASSET_PACK_DELIVERY_TYPE'] = "install-time" # supported 'install-time' asset delivery pack only         
-
+        gradle_build_env['AAB_ASSET_PACK_NAME'] = AAB_ASSET_PACK_NAME            
+        gradle_build_env['AAB_ASSET_PACK_DELIVERY_TYPE'] = AAB_ASSET_PACK_DELIVERY_TYPE
+        
         app_asset_pack_gradle_file = aab_asset_pack_path / 'build.gradle'
         self.create_file_from_project_template(src_template_file='asset.build.gradle.in',
                                                template_env=gradle_build_env,
@@ -1698,11 +1704,11 @@ class AndroidProjectGenerator(object):
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
 
 # CARBONATED -- begin : get the play delivery asset pack name        
-        if self._aab_asset_pack_name is not None:
-            gradle_build_env['CARBONATED_ASSET_PACK_LIST'] = CARBONATED_ASSET_PACK_LIST_FORMAT.format(asset_pack_name=self._aab_asset_pack_name)            
-            az_asset_android_dst_path = self._build_dir / self._aab_asset_pack_name
+        if self._integrate_aab_asset_pack:
+            gradle_build_env['AAB_ASSET_PACK_LIST'] = AAB_ASSET_PACK_LIST_FORMAT.format(asset_pack_name=AAB_ASSET_PACK_NAME)            
+            az_asset_android_dst_path = self._build_dir / AAB_ASSET_PACK_NAME
         else:
-            gradle_build_env['CARBONATED_ASSET_PACK_LIST'] = ''
+            gradle_build_env['AAB_ASSET_PACK_LIST'] = ''
             az_asset_android_dst_path = az_android_dst_path
 # CARBONATED -- end
 
@@ -2215,7 +2221,7 @@ class AndroidProjectGenerator(object):
                 'NATIVE_CMAKE_SECTION_PROFILE_CONFIG': '',
                 'NATIVE_CMAKE_SECTION_RELEASE_CONFIG': '',
 # CARBONATED -- begin : the play delivery asset pack list is empty by default            
-                'CARBONATED_ASSET_PACK_LIST': '',
+                'AAB_ASSET_PACK_LIST': '',
 # CARBONATED -- end                
                 'OVERRIDE_JAVA_SOURCESET': '',
                 'OPTIONAL_JNI_SRC_LIB_SET': '',
