@@ -451,6 +451,7 @@ void CTrackViewDialog::InitToolbar()
     {
         QMenu* buttonMenu = new QMenu(this);
         toolButton->setMenu(buttonMenu);
+
         buttonMenu->addAction(qaction);
         qaction = buttonMenu->addAction("Stop with Hard Reset");
         qaction->setData(ID_TV_STOP_HARD_RESET);
