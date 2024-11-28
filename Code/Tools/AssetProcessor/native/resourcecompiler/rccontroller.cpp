@@ -32,7 +32,7 @@ namespace AssetProcessor
         maxJobs = qMax<int>(maxJobs - 1, 1);
 
 #if defined(CARBONATED)
-        if (cfg_maxJobs > 0)
+        if (cfg_maxJobs >= 0)
         {
             // if the user has specified max jobs in the cfg file, then we obey their request
             // regardless of whether they have chosen something bad or not - they would have had to explicitly
