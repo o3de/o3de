@@ -189,9 +189,9 @@ public:
     bool IsHidden() const;
 
     // Key getters
-    virtual CTrackViewKeyBundle GetSelectedKeys() const = 0;
-    virtual CTrackViewKeyBundle GetAllKeys() const = 0;
-    virtual CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) const = 0;
+    virtual CTrackViewKeyBundle GetSelectedKeys() = 0;
+    virtual CTrackViewKeyBundle GetAllKeys() = 0;
+    virtual CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) = 0;
 
     // Check if node itself is obsolete, or any child is an obsolete track
     bool HasObsoleteTrack() const;

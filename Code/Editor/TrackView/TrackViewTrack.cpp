@@ -198,7 +198,7 @@ CTrackViewKeyHandle CTrackViewTrack::GetNextKey(const float time)
 
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys() const
+CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys()
 {
     CTrackViewKeyBundle bundle;
 
@@ -218,7 +218,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewTrack::GetAllKeys() const
+CTrackViewKeyBundle CTrackViewTrack::GetAllKeys()
 {
     CTrackViewKeyBundle bundle;
 
@@ -238,7 +238,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetAllKeys() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const float t0, const float t1) const
+CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const float t0, const float t1)
 {
     CTrackViewKeyBundle bundle;
 
@@ -258,7 +258,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const float t0, const fl
 }
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const float t0, const float t1) const
+CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const float t0, const float t1)
 {
     CTrackViewKeyBundle bundle;
 
@@ -270,7 +270,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const flo
 
         if (timeRangeOk && (!bOnlySelected || IsKeySelected(keyIndex)))
         {
-            CTrackViewKeyHandle keyHandle(const_cast<CTrackViewTrack*>(this), keyIndex);
+            CTrackViewKeyHandle keyHandle(this, keyIndex);
             bundle.AppendKey(keyHandle);
         }
     }
