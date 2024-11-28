@@ -524,16 +524,18 @@ float3 GetViewSpacePosition(float2 tileUv, float depth)
 // The AABB is built by taking the four corners of the tile and the center of the tile, and transforming them to view space
 void BuildAabb(TileLightData tileLightData, uint2 tileId, out float3 aabbCenter, out float3 aabbExtents, out float2 tileCenterUv)
 {
-    float2 tile_uv = float2(tileId) * PassSrg::m_constantData.m_gridPixel;
-    tileCenterUv = tile_uv + PassSrg::m_constantData.m_gridHalfPixel;
+    float2 tileUvMin = float2(tileId) * PassSrg::m_constantData.m_gridPixel;
+    float2 tileUvMax = tileUvMin + PassSrg::m_constantData.m_gridPixel;
+
+    tileCenterUv = tileUvMin + PassSrg::m_constantData.m_gridHalfPixel;
 
     const float depthMin = ViewSpaceToDepthBuffer(-tileLightData.zNear);;
     const float depthMax = ViewSpaceToDepthBuffer(-tileLightData.zFar);
 
-    float3 pt0 = GetViewSpacePosition(tile_uv, depthMin);
-    float3 pt1 = GetViewSpacePosition(tile_uv, depthMax);
-    float3 pt2 = GetViewSpacePosition(tileCenterUv, depthMin);
-    float3 pt3 = GetViewSpacePosition(tileCenterUv, depthMax);
+    float3 pt0 = GetViewSpacePosition(tileUvMin, depthMin);
+    float3 pt1 = GetViewSpacePosition(tileUvMin, depthMax);
+    float3 pt2 = GetViewSpacePosition(tileUvMax, depthMin);
+    float3 pt3 = GetViewSpacePosition(tileUvMax, depthMax);
 
     float3 aabbMin = min(min(pt0, pt1), min(pt2, pt3));
     float3 aabbMax = max(max(pt0, pt1), max(pt2, pt3));
