@@ -31,10 +31,25 @@ namespace AssetProcessor
 
         maxJobs = qMax<int>(maxJobs - 1, 1);
 
+#if defined(CARBONATED)
+        if (cfg_maxJobs >= 0)
+        {
+            // if the user has specified max jobs in the cfg file, then we obey their request
+            // regardless of whether they have chosen something bad or not - they would have had to explicitly
+            // pick this value (we ship with default 0 meaning auto), so if they've changed it, they intend it that way
+            m_maxJobs = cfg_maxJobs ? qMax(cfg_minJobs, cfg_maxJobs) : maxJobs;
+        }
+        else if (cfg_maxJobs == -1) 
+        {
+            // -1 indicates half of the ideal thread count
+            m_maxJobs = maxJobs / 2;
+        }
+#else
         // if the user has specified max jobs in the cfg file, then we obey their request
         // regardless of whether they have chosen something bad or not - they would have had to explicitly
         // pick this value (we ship with default 0 meaning auto), so if they've changed it, they intend it that way
         m_maxJobs = cfg_maxJobs ? qMax(cfg_minJobs, cfg_maxJobs) :  maxJobs;
+#endif
 
         m_RCQueueSortModel.AttachToModel(&m_RCJobListModel);
 
