@@ -135,7 +135,6 @@ CTVNewSequenceDialog::CTVNewSequenceDialog(QWidget* parent)
 
 CTVNewSequenceDialog::~CTVNewSequenceDialog()
 {
-    delete m_validator;
 }
 
 void CTVNewSequenceDialog::OnInitDialog()
