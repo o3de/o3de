@@ -82,7 +82,6 @@ class CTVNewSequenceDialogValidator : public QValidator
                         break;
                     }
                 }
-
                 if (!isNewName)
                 {
                     SetToolTip("Sequence with this name already exists");
