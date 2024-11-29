@@ -107,6 +107,22 @@ bool TestSphereVsCone(float3 spherePos, float sphereRadius, float3 origin, float
     return angleOk && backOk && frontOk;
 }
 
+bool TestAabbVsLightHemisphere(float3 aabbCenter, float3 aabbExtents, float3 lightPosition, float lightRadiusSqr, float3 lightDirection)
+{
+    bool potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabbCenter, aabbExtents / 2.0);
+    if (potentiallyIntersects)
+    {
+        float3 aabbRadiuses = aabbExtents / 2.0;
+        float aabbRadius = max(max(aabbRadiuses.x, aabbRadiuses.y), aabbRadiuses.z);
+        // Only one side is visible, check that we are above the hemisphere
+        float3 toAABBCenter = aabbCenter - lightPosition;
+        float distanceToLightPlane = dot(lightDirection, toAABBCenter);
+            
+        potentiallyIntersects = (distanceToLightPlane >= -aabbRadius);
+    }
+    return potentiallyIntersects;
+}
+
 uint NextPowerTwo(uint x)
 {
     // https://wickedengine.net/2018/01/05/next-power-of-two-in-hlsl/
@@ -253,7 +269,7 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         // ATOM-4224 - try AABB-AABB 
         float boundingSphereRadiusSqr = dot(decal.m_halfSize, decal.m_halfSize);
           
-        bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents);
+        bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents / 2.0);
         
         if (potentiallyIntersects) 
         {                                           
@@ -270,7 +286,7 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
 void CullPointLight(uint lightIndex, float3 lightPosition, float invLightRadius, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
 {
     lightPosition = WorldToView_Point(lightPosition); 
-    bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, invLightRadius, aabb_center, aabb_extents);
+    bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, invLightRadius, aabb_center, aabb_extents / 2.0);
     if (potentiallyIntersects)
     {                                           
         // Implement and profile fine-grained light culling testing
@@ -303,6 +319,7 @@ void CullPointLights(uint groupIndex, TileLightData tileLightData, float3 aabb_c
     }  
 }
 
+
 void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_simpleSpotLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
@@ -310,20 +327,29 @@ void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 a
         SimpleSpotLight light = PassSrg::m_simpleSpotLights[lightIndex];
         float3 lightPosition = WorldToView_Point(light.m_position);
         float3 lightDirection = WorldToView_Vector(light.m_direction);
+        float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared);
+        float lightRadiusSqr = lightRadius * lightRadius;
         
-        bool potentiallyIntersects = TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared));
-        if (potentiallyIntersects)
+        // This check works great if aabb is tall (in z) and light angle is wide.
+        if (!TestAabbVsLightHemisphere(aabb_center, aabb_extents, lightPosition, lightRadiusSqr, lightDirection))
         {
-            // Implement and profile fine-grained light culling testing
-            // ATOM-3732
+            continue;
+        }
+        // This check works great if aabb is short (in z) and light angle is narrow.
+        if (!TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared)))
+        {
+            continue;
+        }
 
-            uint inside = 0;
-            float2 minmax = ComputeSimpleSpotLightMinMax(light, lightPosition);
-            if (IsObjectInsideTile(tileLightData, minmax, inside))
-            {
-                MarkLightAsVisibleInSharedMemory(lightIndex, inside);            
-            }
-        }                                    
+        // Implement and profile fine-grained light culling testing
+        // ATOM-3732
+
+        uint inside = 0;
+        float2 minmax = ComputeSimpleSpotLightMinMax(light, lightPosition);
+        if (IsObjectInsideTile(tileLightData, minmax, inside))
+        {
+            MarkLightAsVisibleInSharedMemory(lightIndex, inside);            
+        }
     }   
 }
 
@@ -335,40 +361,31 @@ void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
         float3 lightPosition = WorldToView_Point(light.m_position - light.m_bulbPositionOffset * light.m_direction);
         float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared) + light.m_diskRadius;
         float lightRadiusSqr = lightRadius * lightRadius;
-        float aabbRadius = length(aabb_extents);
         float3 lightDirection = WorldToView_Vector(light.m_direction);
 
-        bool potentiallyIntersects;
+        // This check works great if aabb is tall (in z) and light angle is wide.
+        if (!TestAabbVsLightHemisphere(aabb_center, aabb_extents, lightPosition, lightRadiusSqr, lightDirection))
+        {
+            continue;
+        }
+        // This check works great if aabb is short (in z) and light angle is narrow.
         if ((light.m_flags & DiskLightFlag::UseConeAngle) > 0)
         {
-            potentiallyIntersects = TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset);
-        }
-        else
-        {
-            potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabb_center, aabb_extents);
-
-            if (potentiallyIntersects)
+            if (!TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset))
             {
-                // Only one side is visible, check that we are above the hemisphere
-                float3 toAABBCenter = aabb_center - lightPosition;
-                float distanceToLightPlane = dot(lightDirection, toAABBCenter);
-                
-                potentiallyIntersects = distanceToLightPlane >= -aabbRadius;
+                continue;
             }
         }
 
-        if (potentiallyIntersects)
-        {
-            // Implement and profile fine-grained light culling testing
-            // ATOM-3732
+        // Implement and profile fine-grained light culling testing
+        // ATOM-3732
 
-            uint inside = 0;
-            float2 minmax = ComputeDiskLightMinMax(light, lightPosition);
-            if (IsObjectInsideTile(tileLightData, minmax, inside))
-            {
-                MarkLightAsVisibleInSharedMemory(lightIndex, inside);            
-            } 
-        }                                      
+        uint inside = 0;
+        float2 minmax = ComputeDiskLightMinMax(light, lightPosition);
+        if (IsObjectInsideTile(tileLightData, minmax, inside))
+        {
+            MarkLightAsVisibleInSharedMemory(lightIndex, inside);            
+        } 
     }   
 }
 
@@ -383,7 +400,7 @@ void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabb
         float lightFalloffRadius = rsqrt(light.m_invAttenuationRadiusSquared);
         float lightConservativeBoundingRadius = lightFalloffRadius + light.m_length * 0.5f;
         
-        bool potentiallyIntersects = TestSphereVsAabb(lightMiddleView, lightConservativeBoundingRadius * lightConservativeBoundingRadius, aabb_center, aabb_extents);            
+        bool potentiallyIntersects = TestSphereVsAabb(lightMiddleView, lightConservativeBoundingRadius * lightConservativeBoundingRadius, aabb_center, aabb_extents / 2.0);            
     
         if (potentiallyIntersects)
         {
@@ -410,7 +427,7 @@ void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
         const QuadLight light = PassSrg::m_quadLights[lightIndex];
         const float3 lightPosition = WorldToView_Point(light.m_position);             
         
-        bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, light.m_invAttenuationRadiusSquared, aabb_center, aabb_extents);
+        bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, light.m_invAttenuationRadiusSquared, aabb_center, aabb_extents / 2.0);
 
         if (potentiallyIntersects)
         {           
