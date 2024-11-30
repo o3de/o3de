@@ -591,8 +591,7 @@ namespace
         nodeOrder[static_cast<int>(AnimNodeType::ScreenFader)] = 15;
         nodeOrder[static_cast<int>(AnimNodeType::Light)] = 16;
         nodeOrder[static_cast<int>(AnimNodeType::ShadowSetup)] = 17;
-        nodeOrder[static_cast<int>(AnimNodeType::Environment)] = 18;
-        nodeOrder[static_cast<int>(AnimNodeType::Group)] = 19;
+        nodeOrder[static_cast<int>(AnimNodeType::Group)] = 18;
 
         return nodeOrder[static_cast<int>(nodeType)];
     }
