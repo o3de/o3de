@@ -17,7 +17,7 @@
 #include "TrackViewDialog.h"
 
 //////////////////////////////////////////////////////////////////////////
-bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {
