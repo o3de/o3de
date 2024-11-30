@@ -26,7 +26,6 @@ EXCLUDED_COPYRIGHT_VALIDATION_PATTERNS = [
     '*/Code/Framework/AzCore/AzCore/std/string/utf8/unchecked.h',                       # Copyright 2006 Nemanja Trifunovic
     '*/Gems/Atom/Feature/Common/Assets/ShaderLib/Atom/Features/PBR/Lights/Ltc.azsli',   # Copyright (c) 2017, Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt.
     '*/Code/Legacy/CryCommon/MTPseudoRandom.h',                                         # Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura
-    '*/Code/Legacy/CryCommon/PNoise3.h',                                                # Copyright(c) Ken Perlin
     '*/Code/Framework/AzQtComponents/AzQtComponents/Components/FlowLayout.*'            # Copyright (C) 2015 The Qt Company Ltd.
 ] + EXCLUDED_VALIDATION_PATTERNS
 

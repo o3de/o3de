@@ -9,8 +9,8 @@
 #pragma once
 
 #include <Atom/RHI/ObjectCollector.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -30,6 +30,7 @@
 #include <RHI/MetalViewController.h>
 #include <RHI/MetalView_Platform.h>
 #include <RHI/NullDescriptorManager.h>
+#include <RHI/ClearAttachments.h>
 
 namespace AZ
 {
@@ -155,6 +156,8 @@ namespace AZ
             
             BindlessArgumentBuffer& GetBindlessArgumentBuffer();
             
+            RHI::ResultCode ClearRenderAttachments(CommandList& commandList, MTLRenderPassDescriptor* renderpassDesc, const AZStd::vector<ClearAttachments::ClearData>& clearAttachmentData);
+            
         private:
             Device();
             
@@ -205,6 +208,9 @@ namespace AZ
             // This object helps manage the global bindless argument buffer that stores
             // all the bindless views
             BindlessArgumentBuffer m_bindlessArgumentBuffer;
+
+            // Used for clearing attachments when using subpasses.
+            ClearAttachments m_clearAttachments;
         };
     }
 }

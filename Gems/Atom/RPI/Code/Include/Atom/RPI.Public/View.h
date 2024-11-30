@@ -66,6 +66,9 @@ namespace AZ
             RHI::DrawListMask GetDrawListMask() const { return m_drawListMask; }
             void Reset();
 
+            //! Prints the draw list mask for this view. Useful for printf debugging.
+            void PrintDrawListMask();
+
             RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
@@ -99,10 +102,10 @@ namespace AZ
             void ClearAllFlags();
 
             //! Returns the boolean & combination of all flags provided with ApplyFlags() since the last frame.
-            uint32_t GetAndFlags();
+            uint32_t GetAndFlags() const;
 
             //! Returns the boolean | combination of all flags provided with ApplyFlags() since the last frame.
-            uint32_t GetOrFlags();
+            uint32_t GetOrFlags() const;
 
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);
@@ -130,6 +133,17 @@ namespace AZ
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
             const AZ::Matrix4x4* GetWorldToClipExcludeMatrix() const;
             const AZ::Matrix4x4& GetClipToWorldMatrix() const;
+            const AZ::Matrix4x4& GetClipToViewMatrix() const;
+
+            //! Functions for getting the matrices that are used in the view srg
+            //! These are different from the matrices returned above as they take clip space offset into account
+            //! They are updated in the UpdateSrg function
+            //! Calling these functions before UpdateSrg will return the last frames values
+            const Matrix4x4& GetWorldToClipPrevMatrixWithOffset() const;
+            const Matrix4x4& GetWorldToClipMatrixWithOffset() const;
+            const Matrix4x4& GetViewToClipMatrixWithOffset() const;
+            const Matrix4x4& GetClipToWorldMatrixWithOffset() const;
+            const Matrix4x4& GetClipToViewMatrixWithOffset() const;
 
             AZ::Matrix3x4 GetWorldToViewMatrixAsMatrix3x4() const;
             AZ::Matrix3x4 GetViewToWorldMatrixAsMatrix3x4() const;
@@ -158,10 +172,10 @@ namespace AZ
             //! Value returned is 1.0f when an area equal to the viewport height squared is covered. Useful for accurate LOD decisions.
             float CalculateSphereAreaInClipSpace(const AZ::Vector3& sphereWorldPosition, float sphereRadius) const;
 
-            const AZ::Name& GetName() const { return m_name; }
-            const UsageFlags GetUsageFlags() { return m_usageFlags; }
+            const AZ::Name& GetName() const;
+            UsageFlags GetUsageFlags() const;
 
-            void SetPassesByDrawList(PassesByDrawList* passes) { m_passesByDrawList = passes; }
+            void SetPassesByDrawList(PassesByDrawList* passes);
 
             //! Update View's SRG values and compile. This should only be called once per frame before execute command lists.
             void UpdateSrg();
@@ -176,6 +190,8 @@ namespace AZ
 
             //! Returns the masked occlusion culling interface
             MaskedOcclusionCulling* GetMaskedOcclusionCulling();
+            void SetMaskedOcclusionCullingDirty(bool dirty);
+            bool GetMaskedOcclusionCullingDirty() const;
 
             //! This is called by RenderPipeline when this view is added to the pipeline.
             void OnAddToRenderPipeline();
@@ -236,6 +252,12 @@ namespace AZ
             Matrix4x4 m_clipToWorldMatrix;
             AZStd::optional<Matrix4x4> m_worldToClipExcludeMatrix;
 
+            Matrix4x4 m_worldToClipPrevMatrixWithOffset;
+            Matrix4x4 m_worldToClipMatrixWithOffset;
+            Matrix4x4 m_viewToClipMatrixWithOffset;
+            Matrix4x4 m_clipToWorldMatrixWithOffset;
+            Matrix4x4 m_clipToViewMatrixWithOffset;
+
             // Cached View transform from ViewToWorld matrix 
             AZ::Transform m_viewTransform;
 
@@ -262,6 +284,7 @@ namespace AZ
 
             // Masked Occlusion Culling interface
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
+            AZStd::atomic_bool m_maskedOcclusionCullingDirty = true;
 
             AZStd::atomic_uint32_t m_andFlags{ 0xFFFFFFFF };
             AZStd::atomic_uint32_t m_orFlags { 0x00000000 };

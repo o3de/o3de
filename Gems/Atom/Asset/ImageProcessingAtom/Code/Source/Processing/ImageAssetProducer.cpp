@@ -197,9 +197,10 @@ namespace ImageProcessingAtom
             // Add all the mip chain assets as dependencies except the tail mip chain since its embedded in the StreamingImageAsset
             if (it->Get() != mipChains.begin()->Get())
             {
-                // Use PreLoad for mipchain assets for now.
-                // [GFX TODO] [ATOM-14467] Remove unnecessary code in StreamingImage::OnAssetReloaded when runtime switching dependency load behavior is supported
-                product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(it->GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad)));
+                // Note: we don't want to preload the mipchain assets here to reduce loading time and memory footprint.
+                // The mipchain assets will be loaded by StreamingImage automatically or loaded when user is accessing the mipmap data via
+                // StreamingImageAsset::GetSubImageData() function
+                product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(it->GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad)));
             }
         }
 
@@ -279,7 +280,7 @@ namespace ImageProcessingAtom
             const auto mipSize = (m_imageObject->GetDepth(0) == 1)
                 ? RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1)
                 : RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip), m_imageObject->GetDepth(mip));
-            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(mipSize, format);
+            RHI::DeviceImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(mipSize, format);
             const auto mipSizeInBytes = layout.m_bytesPerImage * mipSize.m_depth;
             builder.BeginMip(layout);
 

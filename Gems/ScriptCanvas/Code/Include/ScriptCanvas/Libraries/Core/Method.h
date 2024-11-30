@@ -40,7 +40,7 @@ namespace ScriptCanvas
 
                 Method() = default;
 
-                ~Method() = default;
+                ~Method() override = default;
 
                 bool BranchesOnResult() const;
 

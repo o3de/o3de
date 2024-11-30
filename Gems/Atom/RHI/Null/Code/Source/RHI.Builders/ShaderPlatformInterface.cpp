@@ -100,7 +100,8 @@ namespace AZ
             [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform, [[maybe_unused]] const AZStd::string& shaderSourcePath,
             [[maybe_unused]] const AZStd::string& functionName, [[maybe_unused]] RHI::ShaderHardwareStage shaderStage,
             [[maybe_unused]] const AZStd::string& tempFolderPath, [[maybe_unused]] StageDescriptor& outputDescriptor,
-            [[maybe_unused]] const RHI::ShaderBuildArguments& shaderBuildArguments) const
+            [[maybe_unused]] const RHI::ShaderBuildArguments& shaderBuildArguments,
+            [[maybe_unused]] const bool useSpecializationConstants) const
         {
             outputDescriptor.m_stageType = shaderStage;
             return true;

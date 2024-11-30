@@ -12,15 +12,8 @@
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
-                    "Name": "VRSTextureInput",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "ShadingRate",
-                    "LoadStoreAction": {
-                        "StoreAction": "DontCare"
-                    }
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
                 },
                 // Outputs...
                 {
@@ -52,19 +45,7 @@
                     }
                 }
             ],
-            "ImageAttachments": [
-                {
-                    "Name": "VRSTexture",
-                    "Lifetime": "Imported",
-                    "AssetRef": {
-                        "FilePath": "Textures/VRSTexture.attimage"
-                    },
-                    "ImageDescriptor": {
-                        "BindFlags": [
-                            "ShadingRate"
-                        ]
-                    }
-                },
+            "ImageAttachments": [               
                 {
                     "Name": "LightingAttachment",
                     "SizeSource": {
@@ -123,13 +104,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
-                    }
-                },
-                {
-                    "LocalSlot": "VRSTextureInput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "VRSTexture"
                     }
                 }
             ]

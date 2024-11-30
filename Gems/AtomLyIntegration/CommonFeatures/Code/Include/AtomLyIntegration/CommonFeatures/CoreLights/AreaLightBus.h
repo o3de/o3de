@@ -55,6 +55,10 @@ namespace AZ
             virtual PhotometricUnit GetIntensityMode() const = 0;
 
             //! Sets an area light's intensity and intensity mode. This value is independent from its color.
+            virtual void SetIntensityAndMode(float intensity, PhotometricUnit intensityMode) = 0;
+            
+            //! Sets an area light's intensity and intensity mode. This value is independent from its color.
+            //! O3DE_DEPRECATION_NOTICE(GHI-16553)
             virtual void SetIntensity(float intensity, PhotometricUnit intensityMode) = 0;
 
             //! Sets an area light's intensity. This value is independent from its color.
@@ -167,6 +171,11 @@ namespace AZ
             //! Sets the contribution multiplier for global illumination.
             virtual void SetAffectsGIFactor(float affectsGIFactor) const = 0;
 
+            //! Gets lighting channel mask of Area Light.
+            virtual uint32_t GetLightingChannelMask() const = 0;
+
+            //! Gets lighting channel mask of Area Light
+            virtual void SetLightingChannelMask(uint32_t lightingChannelMask) = 0;
             // Debug Visualization
 
             //! Returns the Aabb for the debug visualization of the light.

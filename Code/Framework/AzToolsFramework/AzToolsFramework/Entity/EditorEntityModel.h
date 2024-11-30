@@ -27,7 +27,6 @@
 #include <AzToolsFramework/Entity/EditorEntitySortBus.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/EditorEntityModelBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -41,7 +40,6 @@ namespace AzToolsFramework
     class EditorEntityModel
         : public AzFramework::EntityContextEventBus::Handler
         , public EditorEntityContextNotificationBus::Handler
-        , public SliceEditorEntityOwnershipServiceNotificationBus::Handler
         , public EditorEntitySortNotificationBus::MultiHandler
         , public ToolsApplicationEvents::Bus::Handler
         , public EditorOnlyEntityComponentNotificationBus::Handler
@@ -62,7 +60,6 @@ namespace AzToolsFramework
             Disable
         };
 
-
         EditorEntityModel();
         ~EditorEntityModel();
         EditorEntityModel(const EditorEntityModel&) = delete;
@@ -80,14 +77,6 @@ namespace AzToolsFramework
         // EditorEntitySortNotificationBus
         ///////////////////////////////////
         void ChildEntityOrderArrayUpdated() override;
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
-        //////////////////////////////////////////////////////////////////////////
-        void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId,
-            const AzFramework::SliceInstantiationTicket& ticket) override;
-        void OnEditorEntitiesPromotedToSlicedEntities(const AzToolsFramework::EntityIdList& promotedEntities) override;
-        void OnEditorEntitiesSliceOwnershipChanged(const AzToolsFramework::EntityIdList& entityIdList) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EditorEntityContextNotificationBus::Handler
@@ -126,7 +115,6 @@ namespace AzToolsFramework
         void OnEntityComponentRemoved(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
         void OnEntityComponentEnabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
         void OnEntityComponentDisabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
-
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::EntityBus
@@ -319,11 +307,6 @@ namespace AzToolsFramework
             void DetectInitialOverrides();
             void ModifyParentsOverriddenChildren(AZ::EntityId entityId, AZ::u8 lastFlags, bool hasOverrides);
             void UpdateCyclicDependencyInfo();
-
-            using EntityInHierarchyConditionFunction = bool(*)(AZ::EntityId);
-            bool DoesEntityHierarchyOverrideState(EntityInHierarchyConditionFunction stateCheckFunction) const;
-            bool DoesEntityHierarchyOverrideVisibility() const;
-            bool DoesEntityHierarchyOverrideLock() const;
 
             void SetStartActiveStatus(bool isActive);
 

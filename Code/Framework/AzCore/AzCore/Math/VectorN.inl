@@ -233,19 +233,19 @@ namespace AZ
         return returnValue;
     }
 
-    AZ_MATH_INLINE float VectorN::GetLengthSq() const
+    AZ_MATH_INLINE float VectorN::L1Norm() const
     {
-        float lengthSquared = 0.0f;
+        AZ::Vector4 partialLengths = AZ::Vector4::CreateZero();
         for (AZStd::size_t i = 0; i < m_values.size(); ++i)
         {
-            lengthSquared += m_values[i].GetLengthSq();
+            partialLengths += m_values[i].GetAbs();
         }
-        return lengthSquared;
+        return partialLengths.Dot(AZ::Vector4::CreateOne());
     }
 
-    AZ_MATH_INLINE float VectorN::GetLength() const
+    AZ_MATH_INLINE float VectorN::L2Norm() const
     {
-        return AZ::Sqrt(GetLengthSq());
+        return AZ::Sqrt(Dot(*this));
     }
 
     AZ_MATH_INLINE VectorN VectorN::GetNormalized() const
@@ -257,7 +257,7 @@ namespace AZ
 
     AZ_MATH_INLINE void VectorN::Normalize()
     {
-        const float length = GetLength();
+        const float length = L2Norm();
         *this /= length;
     }
 
@@ -300,12 +300,12 @@ namespace AZ
     AZ_MATH_INLINE float VectorN::Dot(const VectorN& rhs) const
     {
         AZ_Assert(m_numElements == rhs.m_numElements, "Dimensionality must be equal");
-        float dot = 0.0f;
+        AZ::Vector4 partialSums = AZ::Vector4::CreateZero();
         for (AZStd::size_t i = 0; i < m_values.size(); ++i)
         {
-            dot += m_values[i].Dot(rhs.m_values[i]);
+            partialSums.SetSimdValue(Simd::Vec4::Madd(m_values[i].GetSimdValue(), rhs.m_values[i].GetSimdValue(), partialSums.GetSimdValue()));
         }
-        return dot;
+        return partialSums.Dot(AZ::Vector4::CreateOne());
     }
 
     AZ_MATH_INLINE void VectorN::SetZero()
@@ -488,6 +488,11 @@ namespace AZ
 
     AZ_MATH_INLINE void VectorN::FixLastVectorElement()
     {
+        if (m_values.empty())
+        {
+            return;
+        }
+
         const uint32_t masks[] =
         {
             0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,

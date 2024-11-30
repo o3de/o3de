@@ -102,7 +102,7 @@ public:
     void SetValue(float time, const AZ::Vector4& value, bool bDefault = false) override;
     void SetValue(float time, const AZ::Color& value, bool bDefault = false) override;
 
-    void OffsetKeyPosition(const Vec3& value) override;
+    void OffsetKeyPosition(const AZ::Vector3& value) override;
 
     void SetTimeRange(const Range& timeRange) override;
 

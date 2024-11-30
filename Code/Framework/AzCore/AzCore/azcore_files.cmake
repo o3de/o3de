@@ -86,7 +86,6 @@ set(FILES
     Debug/PerformanceCollector.h
     Debug/PerformanceCollector.cpp
     Debug/Profiler.cpp
-    Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
     Debug/ProfilerReflection.cpp
@@ -401,7 +400,9 @@ set(FILES
     Math/VertexContainer.h
     Math/VertexContainer.cpp
     Math/VertexContainerInterface.h
+    Math/PackedVector2.h
     Math/PackedVector3.h
+    Math/PackedVector4.h
     Math/Color.h
     Math/Color.cpp
     Math/ColorSerializer.h
@@ -550,16 +551,22 @@ set(FILES
     Serialization/AZStdAnyDataContainer.inl
     Serialization/DynamicSerializableField.cpp
     Serialization/DynamicSerializableField.h
+    Serialization/EnumConstantJsonSerializer.cpp
+    Serialization/EnumConstantJsonSerializer.h
     Serialization/EditContext.cpp
     Serialization/EditContext.h
     Serialization/EditContext.inl
     Serialization/EditContextConstants.inl
     Serialization/IdUtils.inl
     Serialization/IdUtils.h
+    Serialization/Locale.h
+    Serialization/Locale.cpp
     Serialization/Utils.h
     Serialization/SerializationUtils.cpp
     Serialization/ObjectStream.cpp
     Serialization/ObjectStream.h
+    Serialization/PointerObject.h
+    Serialization/PointerObject.cpp
     Serialization/SerializeContext.cpp
     Serialization/SerializeContext.h
     Serialization/SerializeContext_fwd.h
@@ -581,7 +588,6 @@ set(FILES
     Serialization/Json/BoolSerializer.h
     Serialization/Json/BoolSerializer.cpp
     Serialization/Json/ByteStreamSerializer.h
-    Serialization/Json/ByteStreamSerializer.cpp
     Serialization/Json/CastingHelpers.h
     Serialization/Json/DoubleSerializer.h
     Serialization/Json/DoubleSerializer.cpp
@@ -611,6 +617,8 @@ set(FILES
     Serialization/Json/MapSerializer.cpp
     Serialization/Json/PathSerializer.h
     Serialization/Json/PathSerializer.cpp
+    Serialization/Json/PointerJsonSerializer.h
+    Serialization/Json/PointerJsonSerializer.cpp
     Serialization/Json/RegistrationContext.h
     Serialization/Json/RegistrationContext.cpp
     Serialization/Json/SmartPointerSerializer.h
@@ -628,6 +636,8 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/CommandLineParser.cpp
+    Settings/CommandLineParser.h
     Settings/ConfigParser.cpp
     Settings/ConfigParser.h
     Settings/ConfigurableStack.cpp

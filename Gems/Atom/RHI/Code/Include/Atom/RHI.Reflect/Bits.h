@@ -143,6 +143,13 @@ namespace AZ::RHI
         return v & (~bits);
     }
 
+    //! Sets the bit at bitIndex in v to 0.
+    template<typename T, typename U>
+    inline T ResetBit(T v, U bitIndex)
+    {
+        return v & static_cast<T>(~AZ_BIT(bitIndex));
+    }
+
     //! Reset any zero bits in bits in v to 0.
     template <typename T>
     inline T FilterBits(T v, T bits)
@@ -158,17 +165,17 @@ namespace AZ::RHI
     }
 
     //! Sets the bit at bitIndex in v to 1.
-    template <typename T>
-    inline T SetBit(T v, u8 bitIndex)
+    template<typename T, typename U>
+    inline T SetBit(T v, U bitIndex)
     {
-        return v | AZ_BIT(bitIndex);
+        return v | static_cast<T>(AZ_BIT(bitIndex));
     }
 
-    //! Returns the value of the bit at bitIndex (1 if the bit is 1, 0 if 0)
-    template <typename T>
-    inline T CheckBit(T v, u8 bitIndex)
+    //! Returns whether the bit at bitIndex is set.
+    template<typename T, typename U>
+    inline bool CheckBit(T v, U bitIndex)
     {
-        return (v >> bitIndex) & 1;
+        return (v & static_cast<T>(AZ_BIT(bitIndex))) != static_cast<T>(0);
     }
 
     //! Returns whether all the set bits in bits are set in v.

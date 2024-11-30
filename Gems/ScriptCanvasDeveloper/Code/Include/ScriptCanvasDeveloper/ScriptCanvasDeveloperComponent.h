@@ -11,19 +11,14 @@
 #include <AzCore/Component/Component.h>
 
 #include <ScriptCanvas/PerformanceStatistician.h>
-
-#ifdef IMGUI_ENABLED
-#include <imgui/imgui.h>
 #include <ImGuiBus.h>
-#endif // IMGUI_ENABLED
+
 
 namespace ScriptCanvas::Developer
 {
     class SystemComponent
         : public AZ::Component
-#ifdef IMGUI_ENABLED
         , public ImGui::ImGuiUpdateListenerBus::Handler
-#endif // IMGUI_ENABLED
     {
     public:
         AZ_COMPONENT(SystemComponent, "{46BDD372-8E86-4C0F-B12C-DC271C5DCED1}");
@@ -39,17 +34,17 @@ namespace ScriptCanvas::Developer
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////
 
-#ifdef IMGUI_ENABLED
-
+        // Avoid using IMGUI_ENABLED in any situation that could alter the final vtable or size of this
+        // object, as this header may be compiled in different compile units with different defines
         void OnImGuiMainMenuUpdate() override;
 
+#if defined(IMGUI_ENABLED)  
+        // Non-overrides / non-virtuals are ok
         void GraphHistoryListBox();
-
         void FullPerformanceWindow();
-
 #endif // IMGUI_ENABLED
+
     private:
         ScriptCanvas::Execution::PerformanceStatistician  m_perfStatistician;
     };

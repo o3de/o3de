@@ -251,9 +251,9 @@ namespace ScriptCanvasEditor
             GraphVariablesTableView::CopyVariableToClipboard(dockWidget->GetActiveScriptCanvasId(), varId);
         });
 
-        QAction* pasteAction = new QAction(QObject::tr("Paste").arg(variableName.c_str()), this);
-        pasteAction->setToolTip(QObject::tr("Pastes the variable currently on the clipboard").arg(variableName.c_str()));
-        pasteAction->setStatusTip(QObject::tr("Pastes the variable currently on the clipboard").arg(variableName.c_str()));
+        QAction* pasteAction = new QAction(QObject::tr("Paste %1").arg(variableName.c_str()), this);
+        pasteAction->setToolTip(QObject::tr("Pastes the variable %1 currently on the clipboard").arg(variableName.c_str()));
+        pasteAction->setStatusTip(QObject::tr("Pastes the variable %1 currently on the clipboard").arg(variableName.c_str()));
 
         pasteAction->setEnabled(GraphVariablesTableView::HasCopyVariableData());
 
@@ -678,7 +678,7 @@ namespace ScriptCanvasEditor
         QAction* sortByType = actionGroup.addAction("Sort by type");
         sortByType->setCheckable(true);
 
-        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
 
         if (settings->m_variablePanelSorting == GraphVariablesModel::ColumnIndex::Name)
         {
@@ -763,7 +763,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            ResetPool();            
+            ResetPool();
         }
 
         AZStd::vector<AZ::EntityId> selection;

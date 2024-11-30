@@ -36,15 +36,15 @@ namespace AZ::DocumentPropertyEditor
         return {};
     }
 
-    AZStd::shared_ptr<AZ::Attribute> TypeIdAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value) const
+    AZStd::shared_ptr<AZ::Attribute> TypeIdAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool) const
     {
         AZ::Uuid uuidValue = DomToValue(value).value_or(AZ::Uuid::CreateNull());
         return AZStd::make_shared<AZ::AttributeData<AZ::Uuid>>(AZStd::move(uuidValue));
     }
 
-    AZ::Dom::Value TypeIdAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const
+    AZ::Dom::Value TypeIdAttributeDefinition::LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const
     {
-        AZ::AttributeReader reader(instance, attribute);
+        AZ::AttributeReader reader(instanceObject.m_address, attribute);
         AZ::Uuid value;
         if (!reader.Read<AZ::Uuid>(value))
         {
@@ -67,7 +67,7 @@ namespace AZ::DocumentPropertyEditor
         return {};
     }
 
-    AZStd::shared_ptr<AZ::Attribute> NamedCrcAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value) const
+    AZStd::shared_ptr<AZ::Attribute> NamedCrcAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool) const
     {
         AZ::Crc32 crc = 0;
         if (value.IsString())
@@ -78,10 +78,10 @@ namespace AZ::DocumentPropertyEditor
         return AZStd::make_shared<AZ::AttributeData<AZ::Crc32>>(crc);
     }
 
-    AZ::Dom::Value NamedCrcAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const
+    AZ::Dom::Value NamedCrcAttributeDefinition::LegacyAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute) const
     {
         AZ::Name result;
-        AZ::AttributeReader reader(instance, attribute);
+        AZ::AttributeReader reader(instanceObject.m_address, attribute);
 
         AZ::Crc32 valueCrc = 0;
         if (!reader.Read<AZ::Crc32>(valueCrc))

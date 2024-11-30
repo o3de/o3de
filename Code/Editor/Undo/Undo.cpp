@@ -13,8 +13,6 @@
 
 #include "Settings.h"
 #include "IUndoManagerListener.h"
-#include "Objects/ObjectManager.h"
-#include <Include/ILogFile.h>
 #include <list>
 
 #include <QString>
@@ -308,7 +306,7 @@ void CUndoManager::Redo(int numSteps)
 
     if (m_bRecording || m_bSuperRecording)
     {
-        GetIEditor()->GetLogFile()->FormatLine("Cannot Redo while Recording");
+        AZ_Warning("CUndoManager", false, "Cannot Redo while Recording");
         return;
     }
 
@@ -325,7 +323,7 @@ void CUndoManager::Redo(int numSteps)
             CUndoStep* redo = m_redoStack.back();
             redo->Redo();
 
-            GetIEditor()->GetLogFile()->FormatLine(
+            AZ_Printf("CUndoManager",
                 "(Undo: %d, Redo: %d) - Redo last operation: '%s'",
                 m_undoStack.size(),
                 m_redoStack.size(),
@@ -342,7 +340,6 @@ void CUndoManager::Redo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bRedoing = true;
     EndUndoTransaction();
@@ -369,7 +366,7 @@ void CUndoManager::Undo(int numSteps)
 
     if (m_bRecording || m_bSuperRecording)
     {
-        GetIEditor()->GetLogFile()->FormatLine("Cannot Undo while Recording");
+        AZ_Warning("CUndoManager", false, "Cannot Undo while Recording");
         return;
     }
 
@@ -386,7 +383,7 @@ void CUndoManager::Undo(int numSteps)
             CUndoStep* undo = m_undoStack.back();
             undo->Undo(true);
 
-            GetIEditor()->GetLogFile()->FormatLine(
+            AZ_Printf("CUndoManager",
                 "(Undo: %d, Redo: %d) - Undo last operation: '%s'",
                 m_undoStack.size(),
                 m_redoStack.size(),
@@ -404,7 +401,6 @@ void CUndoManager::Undo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bUndoing = true;
     EndUndoTransaction();

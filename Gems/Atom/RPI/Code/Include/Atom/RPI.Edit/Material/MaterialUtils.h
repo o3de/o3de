@@ -91,6 +91,11 @@ namespace AZ
             bool CheckIsValidPropertyName(AZStd::string_view name);
             bool CheckIsValidGroupName(AZStd::string_view name);
 
+            //! Convert an intermediate material type path back to the original source material type path.
+            //! @param materialTypeSourcePath Path to material type source in intermediate asset folder.
+            //! @return Absolute path to original material type or original input path.
+            AZStd::string PredictOriginalMaterialTypeSourcePath(const AZStd::string& materialTypeSourcePath);
+
             //! Returns the file path that would be used for an intermediate .materialtype, if there were one, for the given .materialtype path.
             //! @param originalMaterialTypeSourcePath the path to the .materialtype
             //! @param referencingFilePath The @originalMaterialTypeSourcePath can be relative to this path in addition to the asset root.

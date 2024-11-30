@@ -12,7 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/optional.h>
 
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <pybind11/pybind11.h>
 
 namespace EditorPythonBindings

@@ -65,7 +65,7 @@ namespace AZ::SerializeContextAttributes
 {
     // Attribute used to set an override function on a SerializeContext::ClassData attribute array
     // which can be used to override the ObjectStream WriteElement call to write out reflected data differently
-    static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f);
+    static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC_CE("ObjectStreamWriteElementOverride");
 }
 namespace AZ
 {
@@ -202,6 +202,10 @@ namespace AZ
 
         //! Function Pointer which is used to construct an AZStd::any for a registered type using the Serialize Context
         using CreateAnyFunc = AZStd::any(*)(SerializeContext*);
+        //! Function object which is used to create an instance of an ActionHandler function which can be supplied
+        //! to the AZStd::any::type_info handler object to allow type erased operations such as construct/destruct, copy/move
+        using CreateAnyActionHandler = AZStd::function<AZStd::any::action_handler_for_t(SerializeContext* serializeContext)>;
+
         //! Allows registration of a TypeId without the need to supply a C++ type
         //! If the type is not already registered, then the ClassData is moved into the SerializeContext
         //! internal structure
@@ -457,7 +461,8 @@ namespace AZ
         using DeprecatedNameVisitWrapper = void(*)(const DeprecatedTypeNameCallback&);
         ClassBuilder ReflectClassInternal(const char* className, const AZ::TypeId& classId,
             IObjectFactory* factory, const DeprecatedNameVisitWrapper& callback,
-            IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc);
+            IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc,
+            CreateAnyActionHandler createAnyActionHandlerFunc);
 
         ClassBuilder UnreflectClassInternal(const char* className, const AZ::TypeId& classId,
             const DeprecatedNameVisitWrapper& callback
@@ -976,10 +981,18 @@ namespace AZ::Serialize
         /// which while it inherits from IAllocator, does not work as function pointers do not support covariant return types
         AZStd::vector<AttributeSharedPair, AZStdFunctorAllocator> m_attributes{ AZStdFunctorAllocator(&GetSystemAllocator) };
 
+        //! Functor object which can be used to initialize the AZStd::any::type_info in order
+        //! to allow it to construct, destruct, copy/move instances of the stored type
+        //! in a type-erased manner
+        //! This can be used with the `any(const void* pointer, const type_info& typeInfo)` extension constructor
+        //! to construct an AZStd::any without access to the C++ type at that point
+        //! @param pointer to SerializeContext which is used for type-erased operations for non-copyable types
+        SerializeContext::CreateAnyActionHandler m_createAzStdAnyActionHandler;
+
     private:
         static ClassData CreateImpl(const char* name, const Uuid& typeUuid, IObjectFactory* factory,
             IDataSerializer* serializer, IDataContainer* container,
-            IRttiHelper* rttiHelper);
+            IRttiHelper* rttiHelper, SerializeContext::CreateAnyActionHandler createAzStdAnyActionHandler);
         static IAllocator& GetSystemAllocator()
         {
             return AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
@@ -1041,13 +1054,14 @@ namespace AZ::Serialize
     };
 
     /**
-         * Interface for a data container. This might be an AZStd container or just a class with
-         * elements defined in some template manner (usually with templates :) )
-         */
+    * Interface for a data container. This might be an AZStd container or just a class with
+    * elements defined in some template manner (usually with templates :) )
+    */
     class IDataContainer
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(IDataContainer);
+        AZ_RTTI_NO_TYPE_INFO_DECL()
 
         using ElementCB = AZStd::function< bool(void* /* instance pointer */, const Uuid& /*elementClassId*/, const ClassData* /* elementGenericClassData */, const ClassElement* /* genericClassElement */) >;
         using ElementTypeCB = AZStd::function< bool(const Uuid& /*elementClassId*/, const ClassElement* /* genericClassElement */) >;
@@ -1063,6 +1077,16 @@ namespace AZ::Serialize
             virtual void    FreeKey(void* key) = 0;
 
         public:
+            //! Stores the type structure of container the associative type represents
+            //! The valid values are an ordered set(Set, Map) or a hash table structure(UnorderedSet, UnorderedMap)
+            enum class AssociativeType
+            {
+                Unknown,
+                Set,
+                Map,
+                UnorderedSet,
+                UnorderedMap
+            };
             AZ_TYPE_INFO_WITH_NAME_DECL(IAssociativeDataContainer);
             virtual ~IAssociativeDataContainer() {}
 
@@ -1085,18 +1109,20 @@ namespace AZ::Serialize
             {
                 return AZStd::shared_ptr<void>(AllocateKey(), KeyPtrDeleter(this));
             }
-            /// Get an element's address by its key. Not used for serialization.
-            virtual void* GetElementByKey(void* instance, const ClassElement* classElement, const void* key) = 0;
-            /// Populates element with key (for associative containers). Not used for serialization.
-            virtual void    SetElementKey(void* element, void* key) = 0;
-            /// Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is the key itself
-            virtual void* GetValueByKey(void* instance, const void* key) = 0;
+            //! Get an element's address by its key. Not used for serialization.
+            virtual void* GetElementByKey(void* instance, const ClassElement* classElement, const void* key) const = 0;
+            //! Populates element with key (for associative containers). Not used for serialization.
+            virtual void    SetElementKey(void* element, void* key) const = 0;
+            //! Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is the key itself
+            virtual void* GetValueByKey(void* instance, const void* key) const = 0;
+            //! Queries the type structure(Set vs. Map, Ordered vs. Hash Table) represented by the AssociativeDataContainer
+            virtual AssociativeType GetAssociativeType() const = 0;
         };
 
         /// Return default element generic name (used by most containers).
         static inline const char* GetDefaultElementName() { return "element"; }
         /// Return default element generic name crc (used by most containers).
-        static inline u32 GetDefaultElementNameCrc() { return AZ_CRC("element", 0x41405e39); }
+        static inline u32 GetDefaultElementNameCrc() { return AZ_CRC_CE("element"); }
 
         // Returns default element generic name unless overridden by an IDataContainer
         virtual const char* GetElementName([[maybe_unused]] int index = 0) { return GetDefaultElementName(); }
@@ -1126,7 +1152,14 @@ namespace AZ::Serialize
         /// Returns true if elements can be retrieved by index.
         virtual bool    CanAccessElementsByIndex() const = 0;
         /// Returns the associative interface for this container (e.g. the container itself if it inherits it) if available, otherwise null.
+        virtual bool SwapElements([[maybe_unused]] void* instance, [[maybe_unused]] size_t firstIndex, [[maybe_unused]] size_t secondIndex)
+        {
+            return false;
+        }
         virtual IAssociativeDataContainer* GetAssociativeContainerInterface() { return nullptr; }
+        virtual const IAssociativeDataContainer* GetAssociativeContainerInterface() const { return nullptr; }
+        //! Returns true if the IDataContainer represents a reflected sequence type(AZStd array, (fixed)vector, list)
+        virtual bool IsSequenceContainer() const { return false; }
         /// Reserve an element and get its address (called before the element is loaded).
         virtual void* ReserveElement(void* instance, const ClassElement* classElement) = 0;
         /// Free an element that was reserved using ReserveElement, but was not stored by calling StoreElement.
@@ -1497,6 +1530,11 @@ namespace AZ
         {
             return AZStd::any(ValueType());
         }
+
+        static AZStd::any::action_handler_for_t GetAnyActionHandler(SerializeContext*)
+        {
+            return AZStd::any::get_action_handler_for_t<ValueType>();
+        }
     };
 
     template<typename ValueType>
@@ -1532,7 +1570,7 @@ namespace AZ
             }
         }
         // The SerializeContext CloneObject function is used to copy data between Any
-        static AZStd::any::type_info::HandleFnT NonCopyableAnyHandler(SerializeContext* serializeContext)
+        static AZStd::any::action_handler_for_t NonCopyableAnyHandler(SerializeContext* serializeContext)
         {
             return [serializeContext](AZStd::any::Action action, AZStd::any* dest, const AZStd::any* source)
             {
@@ -1597,6 +1635,11 @@ namespace AZ
             };
         }
 
+        static AZStd::any::action_handler_for_t GetAnyActionHandler(SerializeContext* serializeContext)
+        {
+            return NonCopyableAnyHandler(serializeContext);
+        }
+
         static AZStd::any CreateAny(SerializeContext* serializeContext)
         {
             AZStd::any::type_info typeinfo;
@@ -1621,6 +1664,13 @@ namespace AZ
         static AZStd::any CreateAny(SerializeContext*)
         {
             return {};
+        }
+
+        static AZStd::any::action_handler_for_t GetAnyActionHandler(SerializeContext*)
+        {
+            return [](AZStd::any::Action, AZStd::any*, const AZStd::any*)
+            {
+            };
         }
     };
 
@@ -1927,8 +1977,7 @@ namespace AZ
     // [10/31/2012]
     //=========================================================================
     template<class T, class... TBaseClasses>
-    SerializeContext::ClassBuilder
-    SerializeContext::Class()
+    SerializeContext::ClassBuilder SerializeContext::Class()
     {
         return Class<T, TBaseClasses...>(&Serialize::StaticInstance<Serialize::InstanceFactory<T> >::s_instance);
     }
@@ -1938,8 +1987,7 @@ namespace AZ
     // [10/31/2012]
     //=========================================================================
     template<class T, class... TBaseClasses>
-    SerializeContext::ClassBuilder
-    SerializeContext::Class(IObjectFactory* factory)
+    SerializeContext::ClassBuilder SerializeContext::Class(IObjectFactory* factory)
     {
         static_assert((AZStd::negation_v<AZStd::disjunction<AZStd::is_same<T, TBaseClasses>...> >), "You cannot reflect a type as its own base");
         static_assert(sizeof...(TBaseClasses) <= c_serializeMaxNumBaseClasses, "Only " AZ_STRINGIZE(c_serializeMaxNumBaseClasses) " base classes are supported. You can add more in c_serializeBaseClassStrings.");
@@ -1958,9 +2006,13 @@ namespace AZ
         }
         else
         {
+            auto createAnyActionHandler = [](SerializeContext* serializeContext) -> AZStd::any::action_handler_for_t
+            {
+                return AnyTypeInfoConcept<T>::GetAnyActionHandler(serializeContext);
+            };
             ClassBuilder builder = ReflectClassInternal(name, typeUuid,
                 factory, deprecatedNameVisitor,
-                GetRttiHelper<T>(), &AnyTypeInfoConcept<T>::CreateAny);
+                GetRttiHelper<T>(), &AnyTypeInfoConcept<T>::CreateAny, AZStd::move(createAnyActionHandler));
             AddClassData<T, TBaseClasses...>(&builder.m_classData->second);
 
             return builder;
@@ -2061,7 +2113,7 @@ namespace AZ
                 AZ_Assert(element.m_typeId != AzTypeInfo<BaseType>::Uuid(),
                     "You can not reflect %s as base class of %s with Class<%s,%s> and then reflect the some of it's fields with FieldFromBase! Either use FieldFromBase or just reflect the entire base class!",
                     AzTypeInfo<BaseType>::Name(), AzTypeInfo<ClassType>::Name(), AzTypeInfo<ClassType>::Name(), AzTypeInfo<BaseType>::Name()
-                    );
+                );
             }
             else
             {
@@ -2523,7 +2575,12 @@ namespace AZ::Serialize
     template<class T>
     ClassData ClassData::Create(const char* name, const Uuid& typeUuid, IObjectFactory* factory, IDataSerializer* serializer, IDataContainer* container)
     {
-        return CreateImpl(name, typeUuid, factory, serializer, container, GetRttiHelper<T>());
+        ClassData createdClassData = CreateImpl(name, typeUuid, factory, serializer, container, GetRttiHelper<T>(),
+            [](SerializeContext* serializeContext) -> AZStd::any::action_handler_for_t
+        {
+            return AnyTypeInfoConcept<T>::GetAnyActionHandler(serializeContext);
+        });
+        return createdClassData;
     }
 }
 

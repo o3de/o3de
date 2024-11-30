@@ -75,8 +75,14 @@ namespace UnitTest
             auto& subpassLayout = expected.m_subpassLayouts[0];
             subpassLayout.m_rendertargetCount = 2;
             subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 0;
+            subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 1;
+            subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 2;
+            subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
         }
         
         RenderAttachmentLayout actual;
@@ -110,13 +116,21 @@ namespace UnitTest
                 auto& subpassLayout = expected.m_subpassLayouts[0];
                 subpassLayout.m_rendertargetCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 0;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 1;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             }
             {
                 auto& subpassLayout = expected.m_subpassLayouts[1];
                 subpassLayout.m_rendertargetCount = 1;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 2;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 3;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
             }
         }
 
@@ -151,21 +165,35 @@ namespace UnitTest
                 auto& subpassLayout = expected.m_subpassLayouts[0];
                 subpassLayout.m_rendertargetCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 0;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 1;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             }
             {
                 auto& subpassLayout = expected.m_subpassLayouts[1];
                 subpassLayout.m_rendertargetCount = 1;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 2;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 3;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
             }
             {
                 auto& subpassLayout = expected.m_subpassLayouts[2];
                 subpassLayout.m_rendertargetCount = 1;
                 subpassLayout.m_subpassInputCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 1;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_subpassInputDescriptors[0] = RHI::SubpassInputDescriptor{ 2, ImageAspectFlags::Color };
+                subpassLayout.m_subpassInputDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Read;
+                subpassLayout.m_subpassInputDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::FragmentShader;
                 subpassLayout.m_subpassInputDescriptors[1] = RHI::SubpassInputDescriptor{ 0, ImageAspectFlags::Color };
+                subpassLayout.m_subpassInputDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Read;
+                subpassLayout.m_subpassInputDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::FragmentShader;
             }
         }
 
@@ -205,8 +233,14 @@ namespace UnitTest
             subpassLayout.m_rendertargetCount = 2;
             subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 1;
             subpassLayout.m_rendertargetDescriptors[0].m_resolveAttachmentIndex = 0;
+            subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 2;
+            subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 3;
+            subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
         }
 
         RenderAttachmentLayout actual;
@@ -239,14 +273,24 @@ namespace UnitTest
                 auto& subpassLayout = expected.m_subpassLayouts[0];
                 subpassLayout.m_rendertargetCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 0;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 1;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 2;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
             }
             {
                 auto& subpassLayout = expected.m_subpassLayouts[1];
                 subpassLayout.m_rendertargetCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 0;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 1;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             }
         }
 
@@ -283,12 +327,20 @@ namespace UnitTest
                 auto& subpassLayout = expected.m_subpassLayouts[0];
                 subpassLayout.m_rendertargetCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 0;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 1;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 2;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
             }
             {
                 auto& subpassLayout = expected.m_subpassLayouts[1];
                 subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 2;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
             }
         }
 
@@ -325,8 +377,14 @@ namespace UnitTest
             subpassLayout.m_rendertargetCount = 2;
             subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 1;
             subpassLayout.m_rendertargetDescriptors[0].m_resolveAttachmentIndex = 0;
+            subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 2;
+            subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 3;
+            subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+            subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
         }
 
         RenderAttachmentLayout actual;
@@ -362,13 +420,21 @@ namespace UnitTest
                 subpassLayout.m_rendertargetCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 1;
                 subpassLayout.m_rendertargetDescriptors[0].m_resolveAttachmentIndex = 0;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 2;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
             }
             {
                 auto& subpassLayout = expected.m_subpassLayouts[1];
                 subpassLayout.m_subpassInputCount = 1;
                 subpassLayout.m_subpassInputDescriptors[0] = RHI::SubpassInputDescriptor{ 0, ImageAspectFlags::Color };
+                subpassLayout.m_subpassInputDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Read;
+                subpassLayout.m_subpassInputDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::FragmentShader;
                 subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 3;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
             }
         }
 
@@ -408,9 +474,15 @@ namespace UnitTest
                 subpassLayout.m_rendertargetCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0].m_attachmentIndex = 0;
                 subpassLayout.m_rendertargetDescriptors[0].m_loadStoreAction = renderTargetLoadStoreAction;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[0].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_rendertargetDescriptors[1].m_attachmentIndex = 1;
                 subpassLayout.m_rendertargetDescriptors[1].m_loadStoreAction = depthStencilLoadStoreAction;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_rendertargetDescriptors[1].m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::ColorAttachmentOutput;
                 subpassLayout.m_depthStencilDescriptor.m_attachmentIndex = 2;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentAccess = AZ::RHI::ScopeAttachmentAccess::Write;
+                subpassLayout.m_depthStencilDescriptor.m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::EarlyFragmentTest | AZ::RHI::ScopeAttachmentStage::LateFragmentTest;
             }
         }
 

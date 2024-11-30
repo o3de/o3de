@@ -353,7 +353,7 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiMask.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiMask.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_enableMasking, "Enable masking",
@@ -372,7 +372,7 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
                 "If true, this element's content and the mask are rendered to separate render targets\n"
                 "and then rendered to the screen using the mask render target as an alpha gradient mask.\n"
                 "This allows soft-edged masking. The effect is limited to the rect of this element.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnRenderTargetChange);
 
              editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualBehindChildren, "Draw behind",

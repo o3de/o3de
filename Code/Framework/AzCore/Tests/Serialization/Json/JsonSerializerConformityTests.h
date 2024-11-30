@@ -286,7 +286,7 @@ namespace JsonSerializationTests
         }
 
     protected:
-        void Load_InvalidType_ReturnsUnsupported(rapidjson::Type type)
+        void Load_InvalidType_ReturnsUnsupportedOrInvalid(rapidjson::Type type)
         {
             using namespace AZ::JsonSerializationResult;
 
@@ -306,8 +306,17 @@ namespace JsonSerializationTests
 
                 ResultCode result = serializer->Load(instance.get(), azrtti_typeid(*original), 
                     testValue, *this->m_jsonDeserializationContext);
-                EXPECT_EQ(Outcomes::Unsupported, result.GetOutcome());
-                EXPECT_EQ(Processing::Altered, result.GetProcessing());
+
+                if (this->m_features.m_mandatoryFields.empty())
+                {
+                    EXPECT_EQ(Outcomes::Unsupported, result.GetOutcome());
+                    EXPECT_EQ(Processing::Altered, result.GetProcessing());
+                }
+                else
+                {
+                    EXPECT_THAT(result.GetOutcome(), ::testing::AnyOf(Outcomes::Unsupported, Outcomes::Invalid));
+                    EXPECT_THAT(result.GetProcessing(), ::testing::AnyOf(Processing::Altered, Processing::Halted));
+                }
                 EXPECT_TRUE(this->m_description.AreEqual(*original, *instance));
             }
         }
@@ -345,37 +354,37 @@ namespace JsonSerializationTests
 
     TYPED_TEST_P(JsonSerializerConformityTests, Load_InvalidTypeOfNullType_ReturnsUnsupported)
     { 
-        this->Load_InvalidType_ReturnsUnsupported(rapidjson::kNullType);
+        this->Load_InvalidType_ReturnsUnsupportedOrInvalid(rapidjson::kNullType);
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Load_InvalidTypeOfFalseType_ReturnsUnsupported)
     { 
-        this->Load_InvalidType_ReturnsUnsupported(rapidjson::kFalseType);
+        this->Load_InvalidType_ReturnsUnsupportedOrInvalid(rapidjson::kFalseType);
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Load_InvalidTypeOfTrueType_ReturnsUnsupported)
     {
-        this->Load_InvalidType_ReturnsUnsupported(rapidjson::kTrueType);
+        this->Load_InvalidType_ReturnsUnsupportedOrInvalid(rapidjson::kTrueType);
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Load_InvalidTypeOfObjectType_ReturnsUnsupported)
     {
-        this->Load_InvalidType_ReturnsUnsupported(rapidjson::kObjectType);
+        this->Load_InvalidType_ReturnsUnsupportedOrInvalid(rapidjson::kObjectType);
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Load_InvalidTypeOfArrayType_ReturnsUnsupported)
     {
-        this->Load_InvalidType_ReturnsUnsupported(rapidjson::kArrayType);
+        this->Load_InvalidType_ReturnsUnsupportedOrInvalid(rapidjson::kArrayType);
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Load_InvalidTypeOfStringType_ReturnsUnsupported)
     {
-        this->Load_InvalidType_ReturnsUnsupported(rapidjson::kStringType);
+        this->Load_InvalidType_ReturnsUnsupportedOrInvalid(rapidjson::kStringType);
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Load_InvalidTypeOfNumberType_ReturnsUnsupported) 
     {
-        this->Load_InvalidType_ReturnsUnsupported(rapidjson::kNumberType);
+        this->Load_InvalidType_ReturnsUnsupportedOrInvalid(rapidjson::kNumberType);
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Load_DeserializeUnreflectedType_ReturnsUnsupported)
@@ -421,10 +430,10 @@ namespace JsonSerializationTests
             }
             else
             {
-                EXPECT_EQ(Outcomes::Unsupported, result.GetOutcome());
+                EXPECT_EQ(Outcomes::Missing, result.GetOutcome());
                 bool validProcessing =
                     result.GetProcessing() == Processing::Altered ||
-                    result.GetProcessing() == Processing::PartialAlter;
+                    result.GetProcessing() == Processing::Halted;
                 EXPECT_TRUE(validProcessing);
             }
             EXPECT_TRUE(this->m_description.AreEqual(*original, *instance));
@@ -457,10 +466,10 @@ namespace JsonSerializationTests
             }
             else
             {
-                EXPECT_EQ(Outcomes::Unsupported, result.GetOutcome());
+                EXPECT_EQ(Outcomes::Missing, result.GetOutcome());
                 bool validProcessing =
                     result.GetProcessing() == Processing::Altered ||
-                    result.GetProcessing() == Processing::PartialAlter;
+                    result.GetProcessing() == Processing::Halted;
                 EXPECT_TRUE(validProcessing);
             }
             EXPECT_TRUE(this->m_description.AreEqual(*original, *instance));
@@ -683,7 +692,7 @@ namespace JsonSerializationTests
         EXPECT_TRUE(this->m_description.AreEqual(*instance, *compare));
     }
 
-    TYPED_TEST_P(JsonSerializerConformityTests, Load_DeserializeWithMissingMandatoryField_LoadFailedAndUnsupportedReported)
+    TYPED_TEST_P(JsonSerializerConformityTests, Load_DeserializeWithMissingMandatoryField_LoadFailedAndMissingReported)
     {
         using namespace AZ::JsonSerializationResult;
 
@@ -707,10 +716,10 @@ namespace JsonSerializationTests
                 ResultCode result = serializer->Load(instance.get(), azrtti_typeid(*instance),
                     *this->m_jsonDocument, *this->m_jsonDeserializationContext);
 
-                EXPECT_EQ(Outcomes::Unsupported, result.GetOutcome());
+                EXPECT_EQ(Outcomes::Missing, result.GetOutcome());
                 bool validProcessing =
                     result.GetProcessing() == Processing::Altered ||
-                    result.GetProcessing() == Processing::PartialAlter;
+                    result.GetProcessing() == Processing::Halted;
                 EXPECT_TRUE(validProcessing);
                 EXPECT_TRUE(this->m_description.AreEqual(*instance, *compare));
             }
@@ -1360,7 +1369,7 @@ namespace JsonSerializationTests
         Load_DeserializeFullInstanceOnTopOfPartialDefaulted_SucceedsAndObjectMatchesParialInstance,
         Load_DefaultToPointer_SucceedsAndValueIsInitialized,
         Load_InitializeNewInstance_SucceedsAndValueIsInitialized,
-        Load_DeserializeWithMissingMandatoryField_LoadFailedAndUnsupportedReported,
+        Load_DeserializeWithMissingMandatoryField_LoadFailedAndMissingReported,
         Load_InsertAdditionalData_SucceedsAndObjectMatchesFullySetInstance,
         Load_HaltedThroughCallback_LoadFailsAndHaltReported,
         Load_CorruptedValue_SucceedsWithDefaultValuesUsed,

@@ -424,16 +424,12 @@ namespace ConsoleSettingsRegistryTests
             AZ::SettingsRegistry::Register(m_registry.get());
 
             // Create a TestFile in the Test Directory
-            m_testFolder = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "ConsoleTestFolder";
             auto configFileParams = GetParam();
-            CreateTestFile(m_testFolder / configFileParams.m_testConfigFileName, configFileParams.m_testConfigContents);
+            AZ::Test::CreateTestFile(m_tempDirectory, configFileParams.m_testConfigFileName, configFileParams.m_testConfigContents);
         }
 
         void TearDown() override
         {
-            // Remove the Test Directory
-            DeleteFolderRecursive(m_testFolder);
-
             // Restore the old global settings registry
             AZ::SettingsRegistry::Unregister(m_registry.get());
             if (m_oldSettingsRegistry != nullptr)
@@ -451,53 +447,10 @@ namespace ConsoleSettingsRegistryTests
 
         AZ_CONSOLEFUNC(ConsoleSettingsRegistryFixture, TestClassFunc, AZ::ConsoleFunctorFlags::Null, "");
 
-        static void DeleteFolderRecursive(const AZ::IO::PathView& path)
-        {
-            auto callback = [&path](AZStd::string_view filename, bool isFile) -> bool
-            {
-                if (isFile)
-                {
-                    auto filePath = AZ::IO::FixedMaxPath(path) / filename;
-                    AZ::IO::SystemFile::Delete(filePath.c_str());
-                }
-                else
-                {
-                    if (filename != "." && filename != "..")
-                    {
-                        auto folderPath = AZ::IO::FixedMaxPath(path) / filename;
-                        DeleteFolderRecursive(folderPath);
-                    }
-                }
-                return true;
-            };
-            auto searchPath = AZ::IO::FixedMaxPath(path) / "*";
-            AZ::IO::SystemFile::FindFiles(searchPath.c_str(), callback);
-            AZ::IO::SystemFile::DeleteDir(AZ::IO::FixedMaxPathString(path.Native()).c_str());
-        }
-
-        static bool CreateTestFile(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
-        {
-            AZ::IO::SystemFile file;
-            if (!file.Open(testPath.c_str(), AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-                | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-            {
-                AZ_Assert(false, "Unable to open test file for writing: %s", testPath.c_str());
-                return false;
-            }
-
-            if (file.Write(content.data(), content.size()) != content.size())
-            {
-                AZ_Assert(false, "Unable to write content to test file: %s", testPath.c_str());
-                return false;
-            }
-
-            return true;
-        }
-
     protected:
         size_t m_stringArgCount{};
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_registry;
-        AZ::IO::FixedMaxPath m_testFolder;
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
 
     private:
         AZ::SettingsRegistryInterface* m_oldSettingsRegistry{};
@@ -535,7 +488,7 @@ namespace ConsoleSettingsRegistryTests
         AZ::testString = {};
 
         auto configFileParams = GetParam();
-        auto testFilePath = m_testFolder / configFileParams.m_testConfigFileName;
+        auto testFilePath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / configFileParams.m_testConfigFileName;
         EXPECT_TRUE(AZ::IO::SystemFile::Exists(testFilePath.c_str()));
         testConsole.ExecuteConfigFile(testFilePath.Native());
         EXPECT_TRUE(s_consoleFreeFunctionInvoked);
@@ -576,7 +529,7 @@ namespace ConsoleSettingsRegistryTests
 
         // Invoke the Commands for Scoped CVar variables above
         auto configFileParams = GetParam();
-        auto testFilePath = m_testFolder / configFileParams.m_testConfigFileName;
+        auto testFilePath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / configFileParams.m_testConfigFileName;
         EXPECT_TRUE(AZ::IO::SystemFile::Exists(testFilePath.c_str()));
         testConsole.ExecuteConfigFile(testFilePath.Native());
 

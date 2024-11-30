@@ -12,6 +12,7 @@
 #include <AzCore/Math/Crc.h>
 // For attributes
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/deque.h>
@@ -248,6 +249,17 @@ namespace AZ
             return false;
         }
 
+        //! Returns the AZ::TypeId for attribute if it potentially an attribute referencing
+        //! a class member such as a member function pointer or member data pointer.
+        //! This also returns the TypeId for the first argument of an AttributeInvocable if it contains a function
+        //! or function object that is a class type.
+        //! If the attribute is not referencing any type of potential function object or member pointer
+        //! that requires a class instance(i.e AttributeData or AttributeFunction), then a Null TypeId is returned
+        virtual AZ::TypeId GetPotentialClassTypeId() const
+        {
+            return {};
+        }
+
         virtual AttributeUniquePtr GetVoidInstanceAttributeInvocable()
         {
             constexpr bool deleteAttribute = false;
@@ -263,8 +275,9 @@ namespace AZ
 
         /// Attempts to execute this attribute given an array of Dom::Values as parameters.
         /// @param arguments A Dom::Value that must contain an Array of arguments for this invokable attribute.
+        /// The first argument will be the instance argument if the function being invoked is a member function
         /// @return A Dom::Value containing the marshalled result of the function call (null if the call returned void)
-        virtual AZ::Dom::Value DomInvoke([[maybe_unused]] void* instance, [[maybe_unused]] const AZ::Dom::Value& arguments)
+        virtual AZ::Dom::Value DomInvoke([[maybe_unused]] const AZ::Dom::Value& arguments)
         {
             return {};
         }
@@ -272,7 +285,7 @@ namespace AZ
         /// Gets a marshalled Dom::Value representation of this attribute bound to a given instance.
         /// By default this is just abbreviated to a marshalled version of the data stored in the attribute,
         /// but for invokable attributes, override this method to serializes a pointer to the instance and this attribute
-        virtual AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance)
+        virtual AZ::Dom::Value GetAsDomValue([[maybe_unused]] AZ::PointerObject instanceObject)
         {
             AZ::Dom::Value result(AZ::Dom::Type::Object);
             result[s_typeField] = Dom::Value(GetTypeName(), false);
@@ -349,7 +362,7 @@ namespace AZ
         T& operator = (T& data) { m_data = data; return m_data; }
         T& operator = (const T& data) { m_data = data; return m_data; }
 
-        AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance) override
+        AZ::Dom::Value GetAsDomValue([[maybe_unused]] AZ::PointerObject instanceObject) override
         {
             if constexpr (AZStd::is_copy_constructible_v<T>)
             {
@@ -388,9 +401,22 @@ namespace AZ
         const T& Get(const void* instance) const override { return (reinterpret_cast<const C*>(instance)->*m_dataPtr); }
         DataPtr GetMemberDataPtr() const { return m_dataPtr; }
 
-        AZ::Dom::Value GetAsDomValue(void* instance) override
+        AZ::TypeId GetPotentialClassTypeId() const override
         {
-            return AZ::Dom::Utils::ValueFromType(Get(instance));
+            return AzTypeInfo<C>::Uuid();
+        }
+
+        AZ::Dom::Value GetAsDomValue(AZ::PointerObject instanceObject) override
+        {
+            // Check if the instanceObject type is either the class type or derived from the class type
+            // associated with the member data pointer
+            auto rttiHelper = AZ::GetRttiHelper<C>();
+            if (void* classInstance = rttiHelper != nullptr ? rttiHelper->Cast(instanceObject.m_address, instanceObject.m_typeId) : nullptr)
+            {
+                return AZ::Dom::Utils::ValueFromType(Get(classInstance));
+            }
+
+            return {};
         }
     private:
         DataPtr m_dataPtr;
@@ -533,15 +559,17 @@ namespace AZ
 
         virtual bool CanDomInvoke([[maybe_unused]] const AZ::Dom::Value& arguments) const
         {
-            return CanInvokeFromDomArray<Args...>(arguments);
+            return CanInvokeFromDomArray<void*, Args...>(arguments);
         }
 
-        virtual AZ::Dom::Value DomInvoke(void* instance, const AZ::Dom::Value& arguments)
+        virtual AZ::Dom::Value DomInvoke(const AZ::Dom::Value& instanceAndArguments)
         {
-            return InvokeFromDomArray<R, Args...>(AZStd::function<R(Args...)>([&](Args... args) -> R
+            // For a raw function, there is no class instance associated with it, so map it to void*
+            AZStd::function RawInvoker = [this](void* instance, Args... args) -> R
             {
                 return Invoke(instance, args...);
-            }), arguments);
+            };
+            return InvokeFromDomArray(AZStd::move(RawInvoker), instanceAndArguments);
         }
 
         FunctionPtr m_function;
@@ -601,19 +629,112 @@ namespace AZ
             }
         }
 
-        virtual bool IsInvokable() const
+        AZ::TypeId GetPotentialClassTypeId() const override
+        {
+            if constexpr (AZStd::function_traits<Invocable>::value)
+            {
+                // The Invocable is a function like object
+                // Either
+                // 1. a raw function pointer e.g. `void(*)(int)`
+                // 2. member function pointer e.g. `void(Entity::*)(int)`
+                // 3. member data pointer e.g. `int Entity::*`
+                // 4. class type with an operator() e.g a lambda `[](int) -> void {};`
+                //    or class with operator() `struct functor { void operator()(int); };`
+
+                AZ::TypeId classTypeId;
+
+                // First check if the function traits class_type member points to a valid class type
+                if constexpr (!AZStd::is_same_v<typename AZStd::function_traits<Invocable>::class_type, AZStd::Internal::error_type>)
+                {
+                    classTypeId = AzTypeInfo<typename AZStd::function_traits<Invocable>::class_type>::Uuid();
+                }
+                // This check is to catch the case where a function object such as a lambda or AZStd::function is stored in this attribute
+                // If the function_object accepts at least one parameter and that first parameter is a class type
+                // then return the AZ TypeId of that parameter as a "potential" class type for the invocable
+                // The reason it is "potential" class type is that intent of the Attribute creator might not be
+                // that the invocable is meant to be for a specific class instance. However how the invocation logic occurs
+                // for the function object can all intents and purposes be treated like a wrapper around a member function call
+                // For example given a struct such as `struct Foo { void Member(int); };`
+                // Making a lambda such as `auto MemberCaller = [](Foo* foo, int value) { foo->Member(value); };`
+                // Can be treated as if MemberCaller is a member function of Foo
+                else if constexpr (AZStd::function_traits<Invocable>::arity > 0)
+                {
+                    using FirstArgType = AZStd::function_traits_get_arg_t<Invocable, 0>;
+                    using CandidateClassType = AZStd::remove_pointer_t<AZStd::remove_cvref_t<FirstArgType>>;
+                    if constexpr (AZStd::is_class_v<CandidateClassType>)
+                    {
+                        classTypeId = AzTypeInfo<CandidateClassType>::Uuid();
+                    }
+                }
+
+                return classTypeId;
+            }
+            else
+            {
+                // The Invocable is just a raw type such a `int` or `Entity` and therefore it not associated
+                // with a class instance. A Null Uuid is return for that case
+                return {};
+            }
+        }
+
+        bool IsInvokable() const override
         {
             return AZStd::function_traits<Invocable>::value;
         }
 
-        virtual bool CanDomInvoke(const AZ::Dom::Value& arguments) const
+        bool CanDomInvoke(const AZ::Dom::Value& arguments) const override
         {
             return DomInvokeHelper<Callable>::CanInvoke(arguments);
         }
 
-        virtual AZ::Dom::Value DomInvoke(void*, const AZ::Dom::Value& arguments)
+        AZ::Dom::Value DomInvoke(const AZ::Dom::Value& arguments) override
         {
             return DomInvokeHelper<Callable>::Invoke(m_callable, arguments);
+        }
+
+        AZ::Dom::Value GetAsDomValue(AZ::PointerObject instanceObject) override
+        {
+            AZ::Dom::Value result(AZ::Dom::Type::Object);
+            result[Attribute::s_typeField] = Dom::Value(Attribute::GetTypeName(), false);
+            result[Attribute::s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
+
+            // For the instance field, the logic in GetPotentialClassTypeId is replicated here
+            // to determine the class type to use for the class Instance
+            if constexpr (AZStd::function_traits<Invocable>::value)
+            {
+                if constexpr (!AZStd::is_same_v<typename AZStd::function_traits<Invocable>::class_type, AZStd::Internal::error_type>)
+                {
+                    using ClassType = typename AZStd::function_traits<Invocable>::class_type;
+
+                    // Now check if the instanceObject is derived from the function traits class type using the AZ Rtti system
+                    auto rttiHelper = AZ::GetRttiHelper<ClassType>();
+                    if (void* castAddress = rttiHelper != nullptr ? rttiHelper->Cast(instanceObject.m_address, instanceObject.m_typeId) : nullptr;
+                        castAddress != nullptr)
+                    {
+                        auto classInstance = reinterpret_cast<ClassType*>(castAddress);
+                        result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
+                    }
+                }
+                else if constexpr (AZStd::function_traits<Invocable>::arity > 0)
+                {
+                    // Grab the first argument and check if it the class type
+                    using FirstArgType = AZStd::function_traits_get_arg_t<Invocable, 0>;
+                    using CandidateClassType = AZStd::remove_pointer_t<AZStd::remove_cvref_t<FirstArgType>>;
+                    if constexpr (AZStd::is_class_v<CandidateClassType>)
+                    {
+                        // Now check if the instanceObject is derived from the first argument of the function object
+                        // If so, it will be assumed to be the instance field in the created Dom::Value
+                        auto rttiHelper = AZ::GetRttiHelper<CandidateClassType>();
+                        if (void* castAddress = rttiHelper != nullptr ? rttiHelper->Cast(instanceObject.m_address, instanceObject.m_typeId) : nullptr;
+                            castAddress != nullptr)
+                        {
+                            auto classInstance = reinterpret_cast<CandidateClassType*>(castAddress);
+                            result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         const Callable& GetCallable() const
@@ -678,24 +799,31 @@ namespace AZ
 
         virtual bool CanDomInvoke([[maybe_unused]] const AZ::Dom::Value& arguments) const
         {
-            return CanInvokeFromDomArray<Args...>(arguments);
+            return CanInvokeFromDomArray<C*, Args...>(arguments);
         }
 
-        virtual AZ::Dom::Value DomInvoke(void* instance, const AZ::Dom::Value& arguments)
+        virtual AZ::Dom::Value DomInvoke(const AZ::Dom::Value& instanceAndArguments)
         {
-            return InvokeFromDomArray<R, Args...>(AZStd::function<R(Args...)>([&](Args... args) -> R
+            AZStd::function RawInvoker = [this](C* classInst, Args... args) -> R
             {
-                return Invoke(instance, args...);
-            }), arguments);
+                return Invoke(classInst, args...);
+            };
+            return InvokeFromDomArray(AZStd::move(RawInvoker), instanceAndArguments);
         }
 
-        AZ::Dom::Value GetAsDomValue(void* instance) override
+        AZ::Dom::Value GetAsDomValue(AZ::PointerObject instanceObject) override
         {
-            auto classInstance = reinterpret_cast<C*>(instance);
             AZ::Dom::Value result(AZ::Dom::Type::Object);
             result[Attribute::s_typeField] = Dom::Value(Attribute::GetTypeName(), false);
-            result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
             result[Attribute::s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
+
+            // Verify the instance object pointer is either class C or derived from C
+            auto rttiHelper = AZ::GetRttiHelper<C>();
+            if (auto castAddress = rttiHelper != nullptr ? rttiHelper->Cast(instanceObject.m_address, instanceObject.m_typeId) : nullptr)
+            {
+                auto classInstance = reinterpret_cast<C*>(castAddress);
+                result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
+            }
             return result;
         }
     private:
@@ -728,13 +856,19 @@ namespace AZ
             return AzTypeInfo<C>::Uuid();
         }
 
-        AZ::Dom::Value GetAsDomValue(void* instance) override
+        AZ::Dom::Value GetAsDomValue(AZ::PointerObject instanceObject) override
         {
-            auto classInstance = reinterpret_cast<C*>(instance);
             AZ::Dom::Value result(AZ::Dom::Type::Object);
             result[Attribute::s_typeField] = Dom::Value(Attribute::GetTypeName(), false);
-            result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
             result[Attribute::s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
+
+            // Verify the instance object pointer is either class C or derived from C
+            auto rttiHelper = AZ::GetRttiHelper<C>();
+            if (auto castAddress = rttiHelper != nullptr ? rttiHelper->Cast(instanceObject.m_address, instanceObject.m_typeId) : nullptr)
+            {
+                auto classInstance = reinterpret_cast<C*>(castAddress);
+                result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
+            }
             return result;
         }
 

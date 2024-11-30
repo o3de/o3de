@@ -79,6 +79,7 @@ namespace AZ
             //! @param optionType     Type hint for the option - bool, enum, integer range, etc.
             //! @param bitOffset      Bit offset must match the ShaderOptionGroupLayout where this Option will be added
             //! @param order          The order (rank) of the shader option. Must be unique within a group. Lower order is higher priority.
+            //! @param cost           The cost is the statically-analyzed estimated performance impact
             //! @param nameIndexList  List of valid (valueName, value) pairs for this Option. See "Create*ShaderOptionValues" utility functions above.
             //! @param defaultValue   Default value name, which must also be in the nameIndexList. In the cases where the list
             //!                       defines a range (IntegerRange for instance) defaultValue must be within the range instead.
@@ -88,7 +89,9 @@ namespace AZ
                                    uint32_t bitOffset,
                                    uint32_t order,
                                    const ShaderOptionValues& nameIndexList,
-                                   const Name& defaultValue = {});
+                                   const Name& defaultValue = {},
+                                   uint32_t cost = 0,
+                                   int specializationId = -1);
 
             AZ_DEFAULT_COPY_MOVE(ShaderOptionDescriptor);
 
@@ -100,6 +103,11 @@ namespace AZ
 
             //! Returns the order (rank) for this option. Lower order means higher priority.
             uint32_t GetOrder() const;
+
+            uint32_t GetCostEstimate() const;
+
+            //! Return the specialization id. -1 if this option can't be specialize.
+            int GetSpecializationId() const;
 
             //! Returns the mask comprising bits specific to this option.
             ShaderVariantKey GetBitMask() const;
@@ -171,7 +179,7 @@ namespace AZ
             uint32_t DecodeBits(ShaderVariantKey key) const;
 
         private:
-            static const char* DebugCategory;
+            static constexpr const char* DebugCategory = "ShaderOption";
 
             //! Adds a new option value to the (name, index) map. Only to use from the constructor.
             void AddValue(const Name& name, const ShaderOptionValue value);
@@ -187,6 +195,8 @@ namespace AZ
             uint32_t m_bitOffset = 0;
             uint32_t m_bitCount = 0;
             uint32_t m_order = 0;          //!< The order (or rank) of the shader option dictates its priority. Lower order (rank) is higher priority.
+            uint32_t m_costEstimate = 0;
+            int m_specializationId = -1; //< Specialization id. A value of -1 means no specialization.
             ShaderVariantKey m_bitMask;
             ShaderVariantKey m_bitMaskNot;
 
@@ -258,6 +268,13 @@ namespace AZ
 
             HashValue64 GetHash() const;
 
+            //! Returns true if all shader options of the layout are using specialization constants. Please note that each
+            //! supervariant can have specialization constants off even if the layout is IsFullySpecialized.
+            bool IsFullySpecialized() const;
+
+            //! Returns true if at least one shader option is using specialization constant.
+            bool UseSpecializationConstants() const;
+
         private:
             ShaderOptionGroupLayout() = default;
 
@@ -266,7 +283,7 @@ namespace AZ
             template <typename, bool, bool>
             friend struct Serialize::InstanceFactory;
 
-            static const char* DebugCategory;
+            static constexpr const char* DebugCategory = "ShaderOption";
 
             bool ValidateIsFinalized() const;
             bool ValidateIsNotFinalized() const;
@@ -276,6 +293,11 @@ namespace AZ
             using NameReflectionMapForOptions = RHI::NameIdReflectionMap<ShaderOptionIndex>;
             NameReflectionMapForOptions m_nameReflectionForOptions;
             HashValue64 m_hash = HashValue64{ 0 };
+
+            // True if all shader options are using specialization constants
+            bool m_isFullySpecialized = false;
+            // True if at least one shader options is using specialization constants
+            bool m_useSpecializationConstants = false;
         };
     } // namespace RPI
 

@@ -382,14 +382,18 @@ void LtcQuadEvaluate(
     out float diffuseOut,
     out float3 specularOut)
 {
-    
+    diffuseOut = 0.0f;
+    specularOut = 0.0f;
+
     // Initialize quad with dummy point at end in case one corner is clipped (resulting in 5 sided polygon)
     float3 polygon[5];
 
     // Transform the points of the light into the space of the normal's hemisphere and clip to the hemisphere
-    int vertexCount = LtcQuadTransformAndClip(surface.normal, lightingData.dirToCamera, p, polygon);
+    int vertexCount = LtcQuadTransformAndClip(surface.GetDefaultNormal(), lightingData.dirToCamera, p, polygon);
     if (vertexCount == 0)
     {
+        diffuseOut = 0.0f;
+        specularOut = float3(0.0f, 0.0f, 0.0f);
         // Entire light is below the horizon.
         return;
     }
@@ -397,12 +401,12 @@ void LtcQuadEvaluate(
     // IntegrateQuadDiffuse is a cheap approximation compared to specular.
     float diffuse = IntegrateQuadDiffuse(polygon, vertexCount, doubleSided);
 
-    float2 ltcCoords = LtcCoords(dot(surface.normal, lightingData.dirToCamera), surface.roughnessLinear);
+    float2 ltcCoords = LtcCoords(dot(surface.GetDefaultNormal(), lightingData.dirToCamera), surface.roughnessLinear);
     float specular = LtcEvaluateSpecularUnscaled(ltcCoords, ltcMatrix, polygon, vertexCount, doubleSided);
 
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
     float2 schlick = ltcAmpMatrix.Sample(SceneSrg::LtcSampler, ltcCoords).xy;
-    float3 specularRgb = specular * (schlick.x * surface.specularF0 + (1.0 - surface.specularF0) * schlick.y);
+    float3 specularRgb = specular * (schlick.x * surface.GetSpecularF0() + (1.0 - surface.GetSpecularF0()) * schlick.y);
     
 #if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
@@ -580,14 +584,19 @@ void LtcPolygonEvaluate(
     out float3 specularRgbOut
 )
 {
+    diffuseOut = 0.0f;
+    specularRgbOut = 0.0f;
+
     if (endIdx - startIdx < 3)
     {
+        diffuseOut = 0.0f;
+        specularRgbOut = float3(0.0f, 0.0f, 0.0f);
         return; // Must have at least 3 points to form a polygon.
     }
     uint originalEndIdx = endIdx; // Original endIdx may be needed for clearcoat
 
     // Rotate ltc matrix
-    float3x3 orthonormalMat = BuildViewAlignedOrthonormalBasis(surface.normal, lightingData.dirToCamera);
+    float3x3 orthonormalMat = BuildViewAlignedOrthonormalBasis(surface.GetDefaultNormal(), lightingData.dirToCamera);
 
     // Evaluate the starting point (p0), previous point, and point used to close the polygon
     float3 p0, prevClipPoint, closePoint;
@@ -596,13 +605,15 @@ void LtcPolygonEvaluate(
     // Check if all points below horizon
     if (endIdx == startIdx + 1)
     {
+        diffuseOut = 0.0f;
+        specularRgbOut = float3(0.0f, 0.0f, 0.0f);
         return; 
     }
     
     float diffuse = 0.0;
     float specular = 0.0;
 
-    float2 ltcCoords = LtcCoords(dot(surface.normal, lightingData.dirToCamera), surface.roughnessLinear);
+    float2 ltcCoords = LtcCoords(dot(surface.GetDefaultNormal(), lightingData.dirToCamera), surface.roughnessLinear);
     float3x3 ltcMat = LtcMatrix(ltcMatrix, ltcCoords);
     
     // Evaluate all the points
@@ -621,7 +632,7 @@ void LtcPolygonEvaluate(
 
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
     float2 schlick = ltcAmpMatrix.Sample(SceneSrg::LtcSampler, ltcCoords).xy;
-    float3 specularRgb = specular * ((schlick.x * surface.specularF0) + (1.0 - surface.specularF0) * schlick.y);
+    float3 specularRgb = specular * ((schlick.x * surface.GetSpecularF0()) + (1.0 - surface.GetSpecularF0()) * schlick.y);
 
 #if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)

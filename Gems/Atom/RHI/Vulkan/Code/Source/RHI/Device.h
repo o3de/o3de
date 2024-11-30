@@ -7,27 +7,29 @@
  */
 #pragma once
 
+#include <Atom/RHI.Loader/LoaderContext.h>
+#include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/ThreadLocalContext.h>
-#include <Atom/RHI.Reflect/BufferDescriptor.h>
+#include <AtomCore/std/containers/lru_cache.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/utils.h>
-#include <AtomCore/std/containers/lru_cache.h>
+#include <RHI/BindlessDescriptorPool.h>
 #include <RHI/Buffer.h>
 #include <RHI/CommandList.h>
-#include <RHI/CommandPool.h>
 #include <RHI/CommandListAllocator.h>
+#include <RHI/CommandPool.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Framebuffer.h>
@@ -38,7 +40,6 @@
 #include <RHI/RenderPass.h>
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
-#include <RHI/BindlessDescriptorPool.h>
 
 namespace AZ
 {
@@ -75,10 +76,10 @@ namespace AZ
             AZ_RTTI(Device, "C77D578F-841F-41B0-84BB-EE5430FCF8BC", Base);
 
             static RHI::Ptr<Device> Create();
-            ~Device() = default;
+            ~Device();
 
-            static RawStringList GetRequiredLayers();
-            static RawStringList GetRequiredExtensions();
+            static StringList GetRequiredLayers();
+            static StringList GetRequiredExtensions();
 
             VkDevice GetNativeDevice() const;
 
@@ -102,6 +103,7 @@ namespace AZ
             CommandQueueContext& GetCommandQueueContext();
             const CommandQueueContext& GetCommandQueueContext() const;
             SemaphoreAllocator& GetSemaphoreAllocator();
+            SwapChainSemaphoreAllocator& GetSwapChainSemaphoreAllocator();
 
             const AZStd::vector<VkQueueFamilyProperties>& GetQueueFamilyProperties() const;
 
@@ -177,6 +179,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
             RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
+            RHI::Ptr<RHI::XRDeviceDescriptor> BuildXRDescriptor() const override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
@@ -205,12 +208,13 @@ namespace AZ
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
             VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
-            GladVulkanContext m_context = {};
+            AZStd::unique_ptr<LoaderContext> m_loaderContext;
 
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
             CommandListAllocator m_commandListAllocator;
             SemaphoreAllocator m_semaphoreAllocator;
+            SwapChainSemaphoreAllocator m_swapChainSemaphoreAllocator;
 
             // New VkImageUsageFlags are inserted in the map in a lazy way.
             // Because of this, the map containing the usages per formar is mutable to keep the
@@ -241,7 +245,6 @@ namespace AZ
             RHI::ThreadLocalContext<AZStd::lru_cache<uint64_t, VkMemoryRequirements>> m_bufferMemoryRequirementsCache;
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
-            bool m_isXrNativeDevice = false;
 
             BindlessDescriptorPool m_bindlessDescriptorPool;
             ShadingRateImageMode m_imageShadingRateMode = ShadingRateImageMode::None;

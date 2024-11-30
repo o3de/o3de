@@ -29,8 +29,7 @@ namespace AZ
         Data::Instance<StreamingImage> StreamingImage::FindOrCreate(const Data::Asset<StreamingImageAsset>& streamingImageAsset)
         {
             return Data::InstanceDatabase<StreamingImage>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(streamingImageAsset.GetId()),
-                streamingImageAsset);
+                Data::InstanceId::CreateFromAsset(streamingImageAsset), streamingImageAsset);
         }
 
         Data::Instance<StreamingImage> StreamingImage::CreateFromCpuData(
@@ -42,7 +41,8 @@ namespace AZ
             size_t imageDataSize,
             Uuid id)
         {
-            Data::Instance<StreamingImage> existingImage = Data::InstanceDatabase<StreamingImage>::Instance().Find(Data::InstanceId::CreateFromAssetId(id));
+            const Data::InstanceId instanceId = Data::InstanceId::CreateUuid(id);
+            Data::Instance<StreamingImage> existingImage = Data::InstanceDatabase<StreamingImage>::Instance().Find(instanceId);
             AZ_Error("StreamingImage", !existingImage, "StreamingImage::CreateFromCpuData found an existing entry in the instance database for the provided id.");
 
             RHI::ImageDescriptor imageDescriptor;
@@ -51,7 +51,8 @@ namespace AZ
             imageDescriptor.m_size = imageSize;
             imageDescriptor.m_format = imageFormat;
 
-            const RHI::ImageSubresourceLayout imageSubresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
+            const RHI::DeviceImageSubresourceLayout imageSubresourceLayout =
+                RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
 
             const size_t expectedImageDataSize = imageSubresourceLayout.m_bytesPerImage * imageDescriptor.m_size.m_depth;
             if (expectedImageDataSize != imageDataSize)
@@ -93,20 +94,14 @@ namespace AZ
                 }
             }
 
-            return StreamingImage::FindOrCreate(streamingImageAsset);
+            return Data::InstanceDatabase<StreamingImage>::Instance().FindOrCreate(instanceId, streamingImageAsset);
         }
 
         Data::Instance<StreamingImage> StreamingImage::CreateInternal(StreamingImageAsset& streamingImageAsset)
         {
             Data::Instance<StreamingImage> streamingImage = aznew StreamingImage();
             const RHI::ResultCode resultCode = streamingImage->Init(streamingImageAsset);
-
-            if (resultCode == RHI::ResultCode::Success)
-            {
-                return streamingImage;
-            }
-
-            return nullptr;
+            return resultCode == RHI::ResultCode::Success ? streamingImage : nullptr;
         }
 
         RHI::ResultCode StreamingImage::Init(StreamingImageAsset& imageAsset)
@@ -155,7 +150,10 @@ namespace AZ
 
             if (resultCode == RHI::ResultCode::Success)
             {
-                m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());
+                // Set rhi image name
+                m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+                m_image->SetName(Name(m_imageAsset.GetHint()));
+                m_imageView = m_image->BuildImageView(imageAsset.GetImageViewDescriptor());
                 if(!m_imageView.get())
                 {
                    AZ_Error("Image", false, "Failed to initialize RHI image view. This is not a recoverable error and is likely a bug.");
@@ -183,13 +181,9 @@ namespace AZ
                 m_mipChainState.m_maskReady |= mipChainBit;
 
                 // Take references on dependent assets
-                m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
                 m_rhiPool = rhiPool;
                 m_pool = pool;
                 m_pool->AttachImage(this);
-
-                // Set rhi image name
-                m_image->SetName(Name(m_imageAsset.GetHint()));
 
                 // queue expand mipmaps if it's not managed by the streaming controller
                 if (!m_streamingController)
@@ -242,7 +236,7 @@ namespace AZ
 
         StreamingImage::~StreamingImage()
         {
-            Shutdown(); 
+            Shutdown();
         }
 
         void StreamingImage::SetTargetMip(uint16_t targetMipLevel)

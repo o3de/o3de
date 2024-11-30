@@ -77,7 +77,6 @@ namespace EMotionFX
         };
 
     protected:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         AZ::Quaternion m_param;
         BlendTree* m_blendTree = nullptr;
         BlendTreeParameterNode* m_paramNode = nullptr;

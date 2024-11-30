@@ -102,7 +102,7 @@ namespace AZ
                 }
             }
 
-            void OnResourceShutdown(const RHI::Resource& resource) override
+            void OnResourceShutdown(const RHI::DeviceResource& resource) override
             {
                 const Image& image = static_cast<const Image&>(resource);
                 if (!image.m_pendingResolves)
@@ -439,11 +439,13 @@ namespace AZ
                 if (imageDescriptor.m_arraySize > 1)
                 {
                     // get smallest mip size
-                    uint32_t formatDiemensionAlignment = RHI::GetFormatDimensionAlignment(imageDescriptor.m_format);
+                    RHI::Size formatDimensionAlignment = RHI::GetFormatDimensionAlignment(imageDescriptor.m_format);
                     uint32_t minMipWidth = AZStd::max(imageDescriptor.m_size.m_width >> (imageDescriptor.m_mipLevels-1), 1u);
                     uint32_t minMipHeight = AZStd::max(imageDescriptor.m_size.m_height >> (imageDescriptor.m_mipLevels-1), 1u);
-                    uint32_t minMipSize = AZ::DivideAndRoundUp(minMipWidth, formatDiemensionAlignment) * AZ::DivideAndRoundUp(minMipHeight, formatDiemensionAlignment)
-                        * RHI::GetFormatSize(imageDescriptor.m_format);
+                    uint32_t minMipSize =
+                        AZ::DivideAndRoundUp(minMipWidth, formatDimensionAlignment.m_width) *
+                        AZ::DivideAndRoundUp(minMipHeight, formatDimensionAlignment.m_height) *
+                        RHI::GetFormatSize(imageDescriptor.m_format);
                     if (minMipSize < TileSizeInBytes)
                     {
                         return false;
@@ -455,7 +457,7 @@ namespace AZ
             return false;
         }
 
-        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
+        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::DeviceStreamingImageInitRequest& request)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -525,8 +527,8 @@ namespace AZ
             image.m_minimumResidentSizeInBytes = image.m_residentSizeInBytes;
 
             // Queue upload tail mip slices
-            RHI::StreamingImageExpandRequest uploadMipRequest;
-            uploadMipRequest.m_image = &image;
+            RHI::DeviceStreamingImageExpandRequest uploadMipRequest;
+            uploadMipRequest.m_image = request.m_image;
             uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
             uploadMipRequest.m_waitForUpload = true;
             GetDevice().GetAsyncUploadQueue().QueueUpload(uploadMipRequest, request.m_descriptor.m_mipLevels);
@@ -536,7 +538,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void StreamingImagePool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             Image& image = static_cast<Image&>(resourceBase);
 
@@ -574,7 +576,7 @@ namespace AZ
             image.m_pendingResolves = 0;
         }
 
-        RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::StreamingImageExpandRequest& request)
+        RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::DeviceStreamingImageExpandRequest& request)
         {
             Image& image = static_cast<Image&>(*request.m_image);
 
@@ -587,7 +589,7 @@ namespace AZ
             }
 
             // Create new expend request and append callback from the StreamingImagePool
-            RHI::StreamingImageExpandRequest newRequest = request;
+            RHI::DeviceStreamingImageExpandRequest newRequest = request;
             newRequest.m_completeCallback = [=]() 
             {
                 Image& dxImage = static_cast<Image&>(*request.m_image);
@@ -605,7 +607,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel)
+        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::DeviceImage& image, uint32_t targetMipLevel)
         {
             Image& imageImpl = static_cast<Image&>(image);
 

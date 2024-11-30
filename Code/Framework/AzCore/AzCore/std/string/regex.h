@@ -1647,16 +1647,16 @@ namespace AZStd
         typedef typename RegExTraits::string_type string_type;
         typedef regex_constants::syntax_option_type flag_type;
 
-        static const flag_type icase = regex_constants::icase;
-        static const flag_type nosubs = regex_constants::nosubs;
-        static const flag_type optimize = regex_constants::optimize;
-        static const flag_type collate = regex_constants::collate;
-        static const flag_type ECMAScript = regex_constants::ECMAScript;
-        static const flag_type basic = regex_constants::basic;
-        static const flag_type extended = regex_constants::extended;
-        static const flag_type awk = regex_constants::awk;
-        static const flag_type grep = regex_constants::grep;
-        static const flag_type egrep = regex_constants::egrep;
+        inline static constexpr flag_type icase = regex_constants::icase;
+        inline static constexpr flag_type nosubs = regex_constants::nosubs;
+        inline static constexpr flag_type optimize = regex_constants::optimize;
+        inline static constexpr flag_type collate = regex_constants::collate;
+        inline static constexpr flag_type ECMAScript = regex_constants::ECMAScript;
+        inline static constexpr flag_type basic = regex_constants::basic;
+        inline static constexpr flag_type extended = regex_constants::extended;
+        inline static constexpr flag_type awk = regex_constants::awk;
+        inline static constexpr flag_type grep = regex_constants::grep;
+        inline static constexpr flag_type egrep = regex_constants::egrep;
 
         basic_regex()
             : m_rootNode(nullptr)
@@ -1829,9 +1829,9 @@ namespace AZStd
         //locale_type getloc() const    { return (m_traits.getloc()); }
 
         // exchange contents with right
-        void swap(this_type& right)     
-        { 
-            AZStd::swap(m_rootNode, right.m_rootNode); 
+        void swap(this_type& right)
+        {
+            AZStd::swap(m_rootNode, right.m_rootNode);
             AZStd::swap(m_error, right.m_error);
         }
 

@@ -68,8 +68,8 @@ namespace ScriptCanvas
             {
 #if defined(SC_EXECUTION_TRACE_ENABLED) 
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Logging: %s", loggableEvent.ToString().data());
-                m_logAsset.GetData().m_events.emplace_back(loggableEvent.Duplicate());
 #endif
+                m_logAsset.GetData().m_events.emplace_back(loggableEvent.Duplicate());
             }
 
         private:
@@ -78,9 +78,7 @@ namespace ScriptCanvas
             bool m_logExecutionOverrideEnabled = false;
             bool m_logExecutionOverride = false;
 
-#if defined(SC_EXECUTION_TRACE_ENABLED) 
             ExecutionLogAsset m_logAsset;
-#endif
             ScriptCanvas::Debugger::Target m_target;
         };
     }

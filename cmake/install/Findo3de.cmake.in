@@ -38,7 +38,9 @@ set_property(GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER "${engine_root_folder}")
 # then the PAL_TRAIT_BUILD_TESTS_SUPPORTED value needs to be propagated as FALSE
 set(disable_test_modules @LY_DISABLE_TEST_MODULES@)
 if (disable_test_modules)
-    set(PAL_TRAIT_BUILD_TESTS_SUPPORTED FALSE)
+    set_property(GLOBAL PROPERTY PAL_TRAIT_BUILD_TESTS_SUPPORTED_DEFAULT FALSE)
+else()
+    set_property(GLOBAL PROPERTY PAL_TRAIT_BUILD_TESTS_SUPPORTED_DEFAULT TRUE)
 endif()
 
 if ($ENV{O3DE_SNAP})

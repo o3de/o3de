@@ -136,7 +136,7 @@ def pull_files_to_pc(package_name, logs_path, device=None):
     """
     directory = os.path.join(logs_path, device)
     if not os.path.exists(directory):
-        os.makedirs(directory)
+        os.makedirs(directory, exist_ok=True)
 
     pull_cmd = ['adb']
     if device is not None:

@@ -121,18 +121,17 @@ namespace AZ
         Outcome<Data::Asset<MaterialAsset>> MaterialSourceData::CreateMaterialAsset(
             Data::AssetId assetId, const AZStd::string& materialSourceFilePath, bool elevateWarnings) const
         {
-            MaterialAssetCreator materialAssetCreator;
-            materialAssetCreator.SetElevateWarnings(elevateWarnings);
-
             if (m_materialType.empty())
             {
                 AZ_Error("MaterialSourceData", false, "materialType was not specified");
                 return Failure();
             }
 
-            Outcome<Data::AssetId> materialTypeAssetId = MaterialUtils::GetFinalMaterialTypeAssetId(materialSourceFilePath, m_materialType);
-            if (!materialTypeAssetId)
+            const auto& materialTypeSourcePath =
+                MaterialUtils::GetFinalMaterialTypeSourcePath(materialSourceFilePath, m_materialType);
+            if (materialTypeSourcePath.empty())
             {
+                AZ_Error("MaterialSourceData", false, "Could not find material type file: '%s'.", m_materialType.c_str());
                 return Failure();
             }
 
@@ -141,61 +140,58 @@ namespace AZ
             // So we use this filter to ignore the image assets
             Data::AssetLoadParameters dontLoadImageAssets{ [](const AZ::Data::AssetFilterInfo& filterInfo)
                                                            {
-                                                               if (filterInfo.m_assetType == AZ::AzTypeInfo<StreamingImageAsset>::Uuid() ||
-                                                                   filterInfo.m_assetType == AZ::AzTypeInfo<AttachmentImageAsset>::Uuid() ||
-                                                                   filterInfo.m_assetType == AZ::AzTypeInfo<ImageAsset>::Uuid())
-                                                               {
-                                                                   return false;
-                                                               }
-
-                                                               return true;
+                                                               return
+                                                                   filterInfo.m_assetType != AZ::AzTypeInfo<StreamingImageAsset>::Uuid() &&
+                                                                   filterInfo.m_assetType != AZ::AzTypeInfo<AttachmentImageAsset>::Uuid() &&
+                                                                   filterInfo.m_assetType != AZ::AzTypeInfo<ImageAsset>::Uuid();
                                                            } };
 
             // In this case we need to load the material type data in preparation for the material->Finalize() step below.
-            auto materialTypeAssetOutcome = AssetUtils::LoadAsset<MaterialTypeAsset>(
-                materialTypeAssetId.GetValue(), m_materialType.c_str(), AssetUtils::TraceLevel::Error, dontLoadImageAssets);
+            const auto& materialTypeAssetOutcome =
+                AssetUtils::LoadAsset<MaterialTypeAsset>(materialTypeSourcePath, 0, AssetUtils::TraceLevel::Error, dontLoadImageAssets);
             if (!materialTypeAssetOutcome)
             {
                 return Failure();
             }
 
-            Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeAssetOutcome.GetValue();
+            const auto& materialTypeAsset = materialTypeAssetOutcome.GetValue();
+            const auto& materialTypeAssetId = materialTypeAsset.GetId();
 
+            MaterialAssetCreator materialAssetCreator;
+            materialAssetCreator.SetElevateWarnings(elevateWarnings);
             materialAssetCreator.Begin(assetId, materialTypeAsset);
-
             materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
 
             if (!m_parentMaterial.empty())
             {
-                constexpr uint32_t subId = 0;
-                auto parentMaterialAsset = AssetUtils::LoadAsset<MaterialAsset>(
-                    materialSourceFilePath, m_parentMaterial, subId, AssetUtils::TraceLevel::Error, dontLoadImageAssets);
-                if (!parentMaterialAsset.IsSuccess())
+                const auto& parentMaterialAssetOutcome = AssetUtils::LoadAsset<MaterialAsset>(
+                    materialSourceFilePath, m_parentMaterial, 0, AssetUtils::TraceLevel::Error, dontLoadImageAssets);
+                if (!parentMaterialAssetOutcome.IsSuccess())
                 {
                     return Failure();
                 }
 
-                // Make sure the parent material has the same material type
-                {
-                    Data::AssetId parentsMaterialTypeId = parentMaterialAsset.GetValue()->GetMaterialTypeAsset().GetId();
+                const auto& parentMaterialAsset = parentMaterialAssetOutcome.GetValue();
+                const auto& parentMaterialTypeAsset = parentMaterialAsset->GetMaterialTypeAsset();
+                const auto& parentsMaterialTypeId = parentMaterialTypeAsset.GetId();
 
-                    if (materialTypeAssetId.GetValue() != parentsMaterialTypeId)
-                    {
-                        AZ_Error("MaterialSourceData", false, "This material and its parent material do not share the same material type.");
-                        return Failure();
-                    }
+                // Make sure the parent material has the same material type
+                if (materialTypeAssetId != parentsMaterialTypeId)
+                {
+                    AZ_Error("MaterialSourceData", false, "This material and its parent material do not share the same material type.");
+                    return Failure();
                 }
 
                 // Inherit the parent's property values...
-                const MaterialPropertiesLayout* propertiesLayout = parentMaterialAsset.GetValue()->GetMaterialPropertiesLayout();
+                const MaterialPropertiesLayout* propertiesLayout = parentMaterialAsset->GetMaterialPropertiesLayout();
 
-                if (parentMaterialAsset.GetValue()->GetPropertyValues().size() != propertiesLayout->GetPropertyCount())
+                if (parentMaterialAsset->GetPropertyValues().size() != propertiesLayout->GetPropertyCount())
                 {
                     AZ_Assert(
                         false,
                         "The parent material should have been finalized with %zu properties but it has %zu. Something is out of sync.",
                         propertiesLayout->GetPropertyCount(),
-                        parentMaterialAsset.GetValue()->GetPropertyValues().size());
+                        parentMaterialAsset->GetPropertyValues().size());
                     return Failure();
                 }
 
@@ -203,7 +199,7 @@ namespace AZ
                 {
                     materialAssetCreator.SetPropertyValue(
                         propertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex{ propertyIndex })->GetName(),
-                        parentMaterialAsset.GetValue()->GetPropertyValues()[propertyIndex]);
+                        parentMaterialAsset->GetPropertyValues()[propertyIndex]);
                 }
             }
 
@@ -214,10 +210,8 @@ namespace AZ
             {
                 return Success(material);
             }
-            else
-            {
-                return Failure();
-            }
+
+            return Failure();
         }
 
         Outcome<Data::Asset<MaterialAsset>> MaterialSourceData::CreateMaterialAssetFromSourceData(
@@ -232,8 +226,8 @@ namespace AZ
                 return Failure();
             }
 
-            const AZStd::string materialTypeSourcePath = MaterialUtils::GetFinalMaterialTypeSourcePath(materialSourceFilePath, m_materialType);
-            const auto materialTypeAssetId = MaterialUtils::GetFinalMaterialTypeAssetId(materialSourceFilePath, m_materialType);
+            const auto& materialTypeSourcePath = MaterialUtils::GetFinalMaterialTypeSourcePath(materialSourceFilePath, m_materialType);
+            const auto& materialTypeAssetId = MaterialUtils::GetFinalMaterialTypeAssetId(materialSourceFilePath, m_materialType);
 
             if (!materialTypeAssetId.IsSuccess() || materialTypeSourcePath.empty())
             {
@@ -241,16 +235,17 @@ namespace AZ
                 return Failure();
             }
 
-            auto materialTypeLoadOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourcePath, nullptr, sourceDependencies);
+            const auto& materialTypeLoadOutcome =
+                MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourcePath, nullptr, sourceDependencies);
             if (!materialTypeLoadOutcome)
             {
                 AZ_Error("MaterialSourceData", false, "Failed to load MaterialTypeSourceData: '%s'.", materialTypeSourcePath.c_str());
                 return Failure();
             }
 
-            MaterialTypeSourceData materialTypeSourceData = materialTypeLoadOutcome.TakeValue();
+            const auto& materialTypeSourceData = materialTypeLoadOutcome.GetValue();
 
-            const auto materialTypeAsset =
+            const auto& materialTypeAsset =
                 materialTypeSourceData.CreateMaterialTypeAsset(materialTypeAssetId.GetValue(), materialTypeSourcePath, elevateWarnings);
             if (!materialTypeAsset.IsSuccess())
             {
@@ -278,17 +273,17 @@ namespace AZ
                     return Failure();
                 }
 
-                auto loadParentResult = MaterialUtils::LoadMaterialSourceData(parentSourceAbsPath);
+                const auto& loadParentResult = MaterialUtils::LoadMaterialSourceData(parentSourceAbsPath);
                 if (!loadParentResult)
                 {
                     AZ_Error("MaterialSourceData", false, "Failed to load MaterialSourceData for parent material: '%s'.", parentSourceAbsPath.c_str());
                     return Failure();
                 }
                 
-                MaterialSourceData parentSourceData = loadParentResult.TakeValue();
+                const auto& parentSourceData = loadParentResult.GetValue();
 
                 // Make sure that all materials in the hierarchy share the same material type
-                const auto parentTypeAssetId = MaterialUtils::GetFinalMaterialTypeAssetId(parentSourceAbsPath, parentSourceData.m_materialType);
+                const auto& parentTypeAssetId = MaterialUtils::GetFinalMaterialTypeAssetId(parentSourceAbsPath, parentSourceData.m_materialType);
                 if (!parentTypeAssetId)
                 {
                     AZ_Error("MaterialSourceData", false, "Parent material asset ID wasn't found: '%s'.", parentSourceAbsPath.c_str());
@@ -313,7 +308,6 @@ namespace AZ
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
             materialAssetCreator.Begin(assetId, materialTypeAsset.GetValue());
-            
             materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
 
             // Traverse the parent source data stack in reverse, applying properties from each material parent source data on to the asset
@@ -349,7 +343,7 @@ namespace AZ
         void MaterialSourceData::ApplyPropertiesToAssetCreator(
             AZ::RPI::MaterialAssetCreator& materialAssetCreator, const AZStd::string_view& materialSourceFilePath) const
         {
-            for (auto& [propertyId, propertyValue] : m_propertyValues)
+            for (const auto& [propertyId, propertyValue] : m_propertyValues)
             {
                 if (!propertyValue.IsValid())
                 {

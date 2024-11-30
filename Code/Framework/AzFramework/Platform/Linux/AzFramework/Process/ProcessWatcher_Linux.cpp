@@ -368,6 +368,10 @@ namespace AzFramework
             {
                 AZ_TracePrintf("Process Watcher", "ProcessLauncher::LaunchProcess: Unable to launch process %s : errno = %s\n", commandAndArgs[0], strerror(errorCodeFromChild));
                 processData.m_childProcessIsDone = true;
+                if (errorCodeFromChild == ENOENT)
+                {
+                    processLaunchInfo.m_launchResult = PLR_MissingFile; // Note for future maintainers, m_launchResult is mutable
+                }
                 child_pid = -1;
             }
         }
@@ -382,7 +386,13 @@ namespace AzFramework
         delete [] commandAndArgs;
 
         // If an error occurs, exit the application.
-        return child_pid >= 0;
+        if (child_pid >= 0)
+        {
+            processLaunchInfo.m_launchResult = PLR_Success; // Note for future maintainers, m_launchResult is mutable
+            return true;
+        }
+        
+        return false;
     }
 
     StdProcessCommunicator* ProcessWatcher::CreateStdCommunicator()

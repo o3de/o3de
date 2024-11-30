@@ -26,12 +26,23 @@ namespace AZ::RHI
         m_deviceMask = deviceMask;
     }
 
+    void MultiDeviceObject::SetNameInternal(const AZStd::string_view& name)
+    {
+        IterateObjects<DeviceObject>(
+            [&name]([[maybe_unused]] auto deviceIndex, auto deviceObject)
+            {
+                AZStd::string deviceName{ AZStd::string{ name } + AZStd::to_string(deviceIndex) };
+                deviceObject->SetName(Name(deviceName));
+            });
+    }
+
     void MultiDeviceObject::Shutdown()
     {
         m_deviceMask = static_cast<MultiDevice::DeviceMask>(0u);
+        m_deviceObjects.clear();
     }
 
-    int MultiDeviceObject::GetDeviceCount() const
+    int MultiDeviceObject::GetDeviceCount()
     {
         return RHI::RHISystemInterface::Get()->GetDeviceCount();
     }

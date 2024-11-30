@@ -49,10 +49,22 @@ static const qint64 s_ReservedDiskSpaceInBytes = 256 * 1024;
 //! Maximum number of temp folders allowed
 static const int s_MaximumTempFolders = 10000;
 
+
 ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject* parent)
-    : ApplicationManager(argc, argv, parent)
+    : ApplicationManagerBase(argc, argv, parent, {})
+{
+}
+
+ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManagerBase(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManager(argc, argv, parent, AZStd::move(componentAppSettings))
 {
     qRegisterMetaType<AZ::u32>("AZ::u32");
+    qRegisterMetaType<AZ::u32>("AZ::s64");
     qRegisterMetaType<AZ::Uuid>("AZ::Uuid");
 }
 
@@ -397,17 +409,14 @@ void ApplicationManagerBase::InitAssetScanner()
     using namespace AssetProcessor;
     m_assetScanner = new AssetScanner(m_platformConfiguration);
 
-    // asset processor manager
+    // // wait until file cache is ready before attempting to build the catalog.
     QObject::connect(
-        m_assetScanner,
-        &AssetScanner::AssetScanningStatusChanged,
         m_assetProcessorManager,
-        [this](auto status)
+        &AssetProcessorManager::FileCacheIsReady, 
+        m_assetProcessorManager,
+        [this]()
         {
-            if (status == AssetProcessor::AssetScanningStatus::Completed)
-            {
-                InitAssetCatalog();
-            }
+            InitAssetCatalog();
         });
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_assetProcessorManager, &AssetProcessorManager::OnAssetScannerStatusChange);
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound,                 m_assetProcessorManager, &AssetProcessorManager::RecordFilesFromScanner);
@@ -822,7 +831,7 @@ void ApplicationManagerBase::InitAssetRequestHandler(AssetProcessor::AssetReques
     QObject::connect(GetRCController(), &RCController::CompileGroupCreated, m_assetRequestHandler, &AssetRequestHandler::OnCompileGroupCreated);
     QObject::connect(GetRCController(), &RCController::CompileGroupFinished, m_assetRequestHandler, &AssetRequestHandler::OnCompileGroupFinished);
 
-    QObject::connect(GetAssetProcessorManager(), &AssetProcessor::AssetProcessorManager::NumRemainingJobsChanged, this, [this](int newNum)
+    QObject::connect(GetAssetProcessorManager(), &AssetProcessor::AssetProcessorManager::NumRemainingJobsChanged, this, [this](int newNum, QString extraInfo)
         {
             if (!m_assetProcessorManagerIsReady)
             {
@@ -839,7 +848,7 @@ void ApplicationManagerBase::InitAssetRequestHandler(AssetProcessor::AssetReques
                 }
             }
 
-            AssetProcessor::AssetProcessorStatusEntry entry(AssetProcessor::AssetProcessorStatus::Analyzing_Jobs, newNum);
+            AssetProcessor::AssetProcessorStatusEntry entry(AssetProcessor::AssetProcessorStatus::Analyzing_Jobs, newNum, extraInfo);
             Q_EMIT AssetProcessorStatusChanged(entry);
         });
 }
@@ -1524,9 +1533,8 @@ bool ApplicationManagerBase::Activate()
 
     auto notifyUuidManagerAndFileProcessor = [this](QString changedFile)
     {
-        // these are not necessarily time sensitive.
+        // this is not necessarily time sensitive.
         m_uuidManager->FileChanged(changedFile.toUtf8().constData());
-        m_fileProcessor->AssessAddedFile(changedFile);
     };
 
     QObject::connect(

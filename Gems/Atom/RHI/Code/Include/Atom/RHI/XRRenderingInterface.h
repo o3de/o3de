@@ -95,9 +95,6 @@ namespace AZ::RHI
         XRRenderingInterface() = default;
         virtual ~XRRenderingInterface() = default;
 
-        //! Rendering api to create a native instance.
-        virtual AZ::RHI::ResultCode InitNativeInstance(AZ::RHI::XRInstanceDescriptor* instanceDescriptor) = 0;
-
         //! Rendering api to get the number of physical devices
         virtual AZ::u32 GetNumPhysicalDevices() const = 0;
 
@@ -111,7 +108,7 @@ namespace AZ::RHI
         //! Rendering api to create a XR Session
         virtual AZ::RHI::ResultCode CreateSession(AZ::RHI::XRSessionDescriptor* sessionDescriptor) = 0;
 
-        //! Rendering api to create a XR SwapChain which should internally create a xr swapchain per view as 
+        //! Rendering api to create a XR DeviceSwapChain which should internally create a xr swapchain per view as 
         //! well as multiple swapchain images per xr swapchain
         virtual AZ::RHI::ResultCode CreateSwapChain() = 0;
 

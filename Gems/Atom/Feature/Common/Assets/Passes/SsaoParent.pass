@@ -129,7 +129,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/PostProcessing/ModulateTexture.shader"
                         },
-                        "Make Fullscreen Pass": true
+                        "FullscreenDispatch": true
                     }
                 }
             ]

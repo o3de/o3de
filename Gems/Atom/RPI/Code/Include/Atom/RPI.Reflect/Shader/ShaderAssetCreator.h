@@ -73,6 +73,9 @@ namespace AZ
             //! [Required] There's always a root variant for each supervariant.
             void SetRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
 
+            //! Set if the supervariant uses specialization constants for shader options.
+            void SetUseSpecializationConstants(bool value);
+
             bool EndSupervariant();
 
             bool EndAPI();

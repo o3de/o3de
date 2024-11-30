@@ -84,19 +84,12 @@ namespace AZ::RPI
             return;
         }
 
-        RHI::ResultCode result = RHI::ResultCode::Success;
         RHI::ImageViewDescriptor imageViewDescriptor;
         for (uint32_t mipIndex = 0; mipIndex < GetMin(mipLevelCount, SpdMipLevelCountMax); ++mipIndex)
         {
             imageViewDescriptor.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
             imageViewDescriptor.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
-            Ptr<RHI::ImageView> imageView = RHI::Factory::Get().CreateImageView();
-            result = imageView->Init(*rhiImage, imageViewDescriptor);
-            if (result != RHI::ResultCode::Success)
-            {
-                AZ_Assert(false, "DownsampleSingelPassMipChainPass failed to create RHI::ImageView.");
-                return;
-            }
+            Ptr<RHI::ImageView> imageView = const_cast<RHI::Image*>(rhiImage)->BuildImageView(imageViewDescriptor);
             srg.SetImageView(m_imageDestinationIndex, imageView.get(), mipIndex);
             m_imageViews[mipIndex] = imageView;
         }

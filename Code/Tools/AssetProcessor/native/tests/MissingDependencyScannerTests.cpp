@@ -73,6 +73,13 @@ namespace AssetProcessor
             {
                 return AZ::Failure(AZStd::string::format("Could not set create scan folder %s", scanFolderName.c_str()));
             }
+            // update the mock scan folder info as well, or else it will be using the default "c:/somepath" as the scan folder
+            // which only works if we are using a mock file IO, which this test is not using.  It would fail on posix systems otherwise.
+            ScanFolderInfo info{QString::fromUtf8(scanFolderPath.c_str()),
+                                QString::fromUtf8(scanFolderName.c_str()),
+                                QString::fromUtf8(scanFolderName.c_str()),
+                                true, true, { AssetBuilderSDK::PlatformInfo{ "pc", {} } }, 0, 1 };
+            m_data->m_pathConversion.SetScanFolder(info);
             return AZ::Success(scanFolder.m_scanFolderID);
         }
 

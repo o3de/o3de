@@ -35,11 +35,14 @@ namespace AZ
         AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
 
         // AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler overrides ...
-        bool PreviewSceneSettings(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
+        void PreviewSceneSettings(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
+        bool HandleSource(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const override;
         QMainWindow* GetSceneSettings() override;
         bool SaveBeforeClosing() override;
 
     protected:
         bool HandlesSource(const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry) const; // return true if we care about this kind of source file.
+
+        const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* m_currentEntry = nullptr;
     };
 }

@@ -1,0 +1,78 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{65F174D6-8D10-4E64-ABF1-1B8861E14063}",
+        "category": "Vertex",
+        "title": "Vertex Color",
+        "titlePaletteName": "VertexNodeTitlePalette",
+        "description": "The color the current vertex",
+        "slotDataTypeGroups": [
+            "outColor",
+            "outR|outG|outB|outA"
+        ],
+        "settings": {
+            "instructions": [
+                "float4 outColor = O3DE_MC_COLOR;"
+            ]
+        },
+        "outputSlots": [
+            {
+                "name": "outColor",
+                "displayName": "Color",
+                "description": "Color",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4"
+            },
+            {
+                "name": "outR",
+                "displayName": "R",
+                "description": "R",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.r;"
+                    ]
+                }
+            },
+            {
+                "name": "outB",
+                "displayName": "B",
+                "description": "B",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outUV.g;"
+                    ]
+                }
+            },
+            {
+                "name": "outG",
+                "displayName": "G",
+                "description": "G",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outUV.b;"
+                    ]
+                }
+            },
+            {
+                "name": "outA",
+                "displayName": "A",
+                "description": "A",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outUV.a;"
+                    ]
+                }
+            }
+        ]
+    }
+}

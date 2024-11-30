@@ -18,6 +18,9 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/WindowContext.h>
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/containers/array.h>
@@ -538,6 +541,26 @@ namespace AZ
             }
         } // namespace Internal
 
+        ViewportContextPtr GetDefaultViewportContext()
+        {
+            RPI::ViewportContextRequestsInterface* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            if (viewportContextManager)
+            {
+                return viewportContextManager->GetDefaultViewportContext();
+            }
+            return nullptr;
+        }
+
+        WindowContextSharedPtr GetDefaultWindowContext()
+        {
+            ViewportContextPtr viewportContext = GetDefaultViewportContext();
+            if (viewportContext)
+            {
+                return viewportContext->GetWindowContext();
+            }
+            return nullptr;
+        }
+
         bool IsNullRenderer()
         {
             return RPI::RPISystemInterface::Get()->IsNullRenderer();
@@ -604,7 +627,7 @@ namespace AZ
             Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath, const AZStd::string& supervariantName)
         {
             auto shaderAsset = FindShaderAsset(shaderAssetId, shaderFilePath);
-            if (!shaderAsset)
+            if (!shaderAsset.IsReady())
             {
                 return nullptr;
             }
@@ -657,6 +680,38 @@ namespace AZ
             }
 
             return RPI::StreamingImage::FindOrCreate(streamingImageAsset);
+        }
+
+        // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
+        RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect)
+        {
+            RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(format);
+
+            // only need to convert if the source contains two aspects
+            if (imageAspectFlags == RHI::ImageAspectFlags::DepthStencil)
+            {
+                switch (imageAspect)
+                {
+                case RHI::ImageAspect::Stencil:
+                    return RHI::Format::R8_UINT;
+                case RHI::ImageAspect::Depth:
+                {
+                    switch (format)
+                    {
+                    case RHI::Format::D32_FLOAT_S8X24_UINT:
+                        return RHI::Format::R32_FLOAT;
+                    case RHI::Format::D24_UNORM_S8_UINT:
+                        return RHI::Format::R32_UINT;
+                    case RHI::Format::D16_UNORM_S8_UINT:
+                        return RHI::Format::R16_UNORM;
+                    default:
+                        AZ_Assert(false, "Unknown DepthStencil format. Please update this function");
+                        return RHI::Format::R32_FLOAT;
+                    }
+                }
+                }
+            }
+            return format;
         }
 
         //! A helper function for GetComputeShaderNumThreads(), to consolidate error messages, etc.

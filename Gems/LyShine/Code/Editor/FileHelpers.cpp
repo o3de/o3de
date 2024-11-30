@@ -73,7 +73,9 @@ namespace FileHelpers
             return SourceControlResult::kSourceControlResult_NoSourceControl;
         }
 
-        if (!GetIEditor()->IsSourceControlConnected())
+        AzToolsFramework::SourceControlState sourceControlState = AzToolsFramework::SourceControlState::Disabled;
+        AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(sourceControlState, &AzToolsFramework::SourceControlConnectionRequests::GetSourceControlState);
+        if (sourceControlState != AzToolsFramework::SourceControlState::Active)
         {
             // Not connected to source control provider.
             return SourceControlResult::kSourceControlResult_NotConnected;

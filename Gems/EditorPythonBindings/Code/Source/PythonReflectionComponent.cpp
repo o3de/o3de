@@ -9,13 +9,12 @@
 #include <AzCore/PlatformDef.h>
 #include <PythonReflectionComponent.h>
 
-
-#include <Source/PythonCommon.h>
-#include <Source/PythonUtility.h>
-#include <Source/PythonTypeCasters.h>
+#include <EditorPythonBindings/PythonUtility.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonProxyBus.h>
 #include <Source/PythonProxyObject.h>
 #include <Source/PythonSymbolsBus.h>
+#include <Source/PythonTypeCasters.h>
 #include <pybind11/embed.h>
 
 #include <AzCore/IO/SystemFile.h>

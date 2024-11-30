@@ -46,7 +46,7 @@ namespace AZ
             const MaterialComponentConfig& GetConfiguration() const;
 
             //! MaterialComponentRequestBus overrides...
-            MaterialAssignmentMap GetDefautMaterialMap() const override;
+            MaterialAssignmentMap GetDefaultMaterialMap() const override;
             MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             AZStd::string GetMaterialLabel(const MaterialAssignmentId& materialAssignmentId) const override;
@@ -66,6 +66,7 @@ namespace AZ
             AZ::Data::AssetId GetMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             void ClearMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) override;
             bool IsMaterialAssetIdOverridden(const MaterialAssignmentId& materialAssignmentId) const override;
+            bool HasPropertiesOverridden(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value) override;
             AZStd::any GetPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const override;
             void ClearPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) override;

@@ -10,8 +10,8 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/Buffer.h>
 
 //! Struct used as a key for m_imageReverseLookupHash map below. The reason for using a struct instead of a hash directly is
 //! so that the map can handle hash collision correctly by using the == operator. This struct contains
@@ -82,6 +82,7 @@ namespace AZ::RHI
     class FrameGraphAttachmentDatabase;
     class ResourcePoolFrameAttachment;
     class TransientAttachmentPool;
+    class Scope;
 
     /**
         * @brief Fill this request structure and pass to FrameGraphCompiler::Compile.
@@ -139,7 +140,7 @@ namespace AZ::RHI
     //!      == Transient Attachments ==
     //!
     //! Transient attachments are intra-frame and do not persist after the frame ends and can take the form of
-    //! buffers or images. These attachments are owned by a TransientAttachmentPool; every frame, the pool
+    //! buffers or images. These attachments are owned by a DeviceTransientAttachmentPool; every frame, the pool
     //! is reset. Since attachments are always declared for usage on scopes, its full usage chain--and thus its
     //! lifetime across the frame--is immediately available.
     //!
@@ -168,12 +169,12 @@ namespace AZ::RHI
     //!  1) Derive transition barriers by walking the scope attachment chain on each frame attachment.
     //!  2) Derive queue fence values by walking the queue-centric scope graph.
     class FrameGraphCompiler
-        : public DeviceObject
+        : public Object
     {
     public:
         AZ_RTTI(FrameGraphCompiler, "{A126F362-C163-432E-94DE-61AA4DFDF102}", Object);
 
-        ResultCode Init(Device& device);
+        ResultCode Init();
 
         void Shutdown() override final;
 
@@ -190,7 +191,7 @@ namespace AZ::RHI
         // Platform API
 
         /// Called when the compiler is initializing.
-        virtual ResultCode InitInternal(Device& device) = 0;
+        virtual ResultCode InitInternal() = 0;
 
         /// Called when the compiler is shutting down.
         virtual void ShutdownInternal() = 0;
@@ -211,9 +212,30 @@ namespace AZ::RHI
             FrameGraph& frameGraph,
             FrameSchedulerCompileFlags compileFlags);
 
+        //! Extends the life of transient attachments to the end of the graph group.
+        void ExtendTransientAttachmentGroupLifetimes(
+            FrameGraph& frameGraph,
+            FrameSchedulerCompileFlags compileFlags);
+
+        //! Helper function for doing ExtendTransientAttachmentGroupLifetimes
+        template<class T>
+        void ExtendTransientAttachmentGroupLifetimesHelper(
+            const AZStd::vector<Scope*>& scopes,
+            const AZStd::vector<T*>& frameAttachments);
+
+        //! Optimize the load store action of the first and last usage of the a transient attachments.
+        void OptimizeTransientLoadStoreActions(
+            FrameGraph& frameGraph,
+            FrameSchedulerCompileFlags compileFlags);
+
+        //! Helper function for OptimizeTransientLoadStoreActions
+        template<class T>
+        void OptimizeTransientLoadStoreActionsHelper(
+             const AZStd::vector<T*>& frameAttachments);
+
         void CompileTransientAttachments(
             FrameGraph& frameGraph,
-            TransientAttachmentPool& transientAttachmentPool,
+            AZ::RHI::TransientAttachmentPool& transientAttachmentPool,
             FrameSchedulerCompileFlags compileFlags,
             FrameSchedulerStatisticsFlags statisticsFlags);
 
@@ -224,10 +246,10 @@ namespace AZ::RHI
         void RemoveFromCache(ReverseLookupObjectType objectToRemove,
                                 AZStd::unordered_map<ReverseLookupObjectType, HashValue64>& reverseHashLookupMap,
                                 ObjectCache<ObjectCacheType>& objectCache);
-            
+
         // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
-        ImageView* GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor);
-        BufferView* GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
+        ImageView* GetImageViewFromLocalCache(AZ::RHI::Image* image, const ImageViewDescriptor& imageViewDescriptor);
+        BufferView* GetBufferViewFromLocalCache(AZ::RHI::Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
             
         // This cache is mainly for transient resources. It adds a dependency to the resource views and hence they wont be
         // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.  

@@ -90,7 +90,6 @@ class CTrackViewSequence
     // Undo friends
     friend class CUndoAnimNodeReparent;
     friend class CUndoTrackObject;
-    friend class CUndoComponentEntityTrackObject;
 
 public:
     CTrackViewSequence(IAnimSequence* pSequence);
@@ -184,9 +183,6 @@ public:
     // Deletes all selected keys
     void DeleteSelectedKeys();
 
-    // Sync from/to base
-    void SyncSelectedTracksToBase();
-    void SyncSelectedTracksFromBase();
 
     // Listeners
     void AddListener(ITrackViewSequenceListener* pListener);
@@ -297,7 +293,7 @@ private:
     void QueueNotifications();
     // Used to cancel a previously queued notification.
     void DequeueNotifications();
-    void SubmitPendingNotifcations(bool force = false);
+    void SubmitPendingNotifications(bool force = false);
 
     /////////////////////////////////////////////////////////////////////////
     // overrides for ITrackViewSequenceManagerListener
@@ -360,7 +356,7 @@ public:
     {
         if (m_pSequence)
         {
-            m_pSequence->SubmitPendingNotifcations();
+            m_pSequence->SubmitPendingNotifications();
         }
     }
 

@@ -328,26 +328,26 @@ namespace EMotionFX
     {
         if (classElement.GetVersion() == 2)
         {
-            classElement.RemoveElementByName(AZ_CRC("ragdoll", 0x74a28c4f));
+            classElement.RemoveElementByName(AZ_CRC_CE("ragdoll"));
         }
 
         // Convert legacy hit detection colliders to shape configurations in the animation config from AzFramework.
-        if (classElement.GetVersion() < 4 && classElement.FindSubElement(AZ_CRC("hitDetectionColliders", 0x8675a818)))
+        if (classElement.GetVersion() < 4 && classElement.FindSubElement(AZ_CRC_CE("hitDetectionColliders")))
         {
-            AZ::SerializeContext::DataElementNode* animationConfigElement = classElement.FindSubElement(AZ_CRC("config", 0xd48a2f7c));
+            AZ::SerializeContext::DataElementNode* animationConfigElement = classElement.FindSubElement(AZ_CRC_CE("config"));
             if (!animationConfigElement)
             {
                 // Create animation config in case it didn't exist before.
                 classElement.AddElement(context, "config", azrtti_typeid<Physics::AnimationConfiguration>());
-                animationConfigElement = classElement.FindSubElement(AZ_CRC("config", 0xd48a2f7c));
+                animationConfigElement = classElement.FindSubElement(AZ_CRC_CE("config"));
             }
 
-            AZ::SerializeContext::DataElementNode* hitDetectionConfigElement = animationConfigElement->FindSubElement(AZ_CRC("hitDetectionConfig", 0xf55ba0c6));
+            AZ::SerializeContext::DataElementNode* hitDetectionConfigElement = animationConfigElement->FindSubElement(AZ_CRC_CE("hitDetectionConfig"));
             if (!hitDetectionConfigElement)
             {
                 // Create hit detection config in case it didn't exist before.
                 animationConfigElement->AddElement(context, "hitDetectionConfig", azrtti_typeid<Physics::CharacterColliderConfiguration>());
-                hitDetectionConfigElement = animationConfigElement->FindSubElement(AZ_CRC("hitDetectionConfig", 0xf55ba0c6));
+                hitDetectionConfigElement = animationConfigElement->FindSubElement(AZ_CRC_CE("hitDetectionConfig"));
             }
 
             Physics::CharacterColliderConfiguration hitDetectionConfig;
@@ -356,13 +356,13 @@ namespace EMotionFX
                 return false;
             }
 
-            AZ::SerializeContext::DataElementNode* oldColliderSetElement = classElement.FindSubElement(AZ_CRC("hitDetectionColliders", 0x8675a818));
+            AZ::SerializeContext::DataElementNode* oldColliderSetElement = classElement.FindSubElement(AZ_CRC_CE("hitDetectionColliders"));
             if (!oldColliderSetElement)
             {
                 return false;
             }
 
-            AZ::SerializeContext::DataElementNode* oldCollidersElement = oldColliderSetElement->FindSubElement(AZ_CRC("colliders", 0x0373b539));
+            AZ::SerializeContext::DataElementNode* oldCollidersElement = oldColliderSetElement->FindSubElement(AZ_CRC_CE("colliders"));
             if (oldCollidersElement)
             {
                 const int numColliders = oldCollidersElement->GetNumSubElements();
@@ -380,11 +380,11 @@ namespace EMotionFX
 
                     AZ::Vector3 position = AZ::Vector3::CreateZero();
                     AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
-                    AZ::SerializeContext::DataElementNode* colliderBaseElement = colliderElement.FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
+                    AZ::SerializeContext::DataElementNode* colliderBaseElement = colliderElement.FindSubElement(AZ_CRC_CE("BaseClass1"));
                     if (colliderBaseElement)
                     {
-                        colliderBaseElement->FindSubElementAndGetData(AZ_CRC("position", 0x462ce4f5), position);
-                        colliderBaseElement->FindSubElementAndGetData(AZ_CRC("rotation", 0x297c98f1), rotation);
+                        colliderBaseElement->FindSubElementAndGetData(AZ_CRC_CE("position"), position);
+                        colliderBaseElement->FindSubElementAndGetData(AZ_CRC_CE("rotation"), rotation);
                     }
 
                     Physics::CharacterColliderNodeConfiguration* nodeConfig = hitDetectionConfig.FindNodeConfigByName(nodeName);
@@ -411,7 +411,7 @@ namespace EMotionFX
                     {
                         Physics::BoxShapeConfiguration* boxShape = aznew Physics::BoxShapeConfiguration();
 
-                        colliderElement.FindSubElementAndGetData(AZ_CRC("Dimensions", 0xe27d8ba5), boxShape->m_dimensions);
+                        colliderElement.FindSubElementAndGetData(AZ_CRC_CE("Dimensions"), boxShape->m_dimensions);
 
                         collisionShapes.emplace_back(AZStd::pair<AZStd::shared_ptr<Physics::ColliderConfiguration>,
                             AZStd::shared_ptr<Physics::ShapeConfiguration> >(colliderConfig, boxShape));
@@ -420,8 +420,8 @@ namespace EMotionFX
                     {
                         Physics::CapsuleShapeConfiguration* capsuleShape = aznew Physics::CapsuleShapeConfiguration();
 
-                        colliderElement.FindSubElementAndGetData(AZ_CRC("radius", 0x3b7c6e5a), capsuleShape->m_radius);
-                        colliderElement.FindSubElementAndGetData(AZ_CRC("height", 0xf54de50f), capsuleShape->m_height);
+                        colliderElement.FindSubElementAndGetData(AZ_CRC_CE("radius"), capsuleShape->m_radius);
+                        colliderElement.FindSubElementAndGetData(AZ_CRC_CE("height"), capsuleShape->m_height);
 
                         collisionShapes.emplace_back(AZStd::pair<AZStd::shared_ptr<Physics::ColliderConfiguration>,
                             AZStd::shared_ptr<Physics::ShapeConfiguration> >(colliderConfig, capsuleShape));
@@ -430,7 +430,7 @@ namespace EMotionFX
                     {
                         Physics::SphereShapeConfiguration* sphereShape = aznew Physics::SphereShapeConfiguration();
 
-                        colliderElement.FindSubElementAndGetData(AZ_CRC("radius", 0x3b7c6e5a), sphereShape->m_radius);
+                        colliderElement.FindSubElementAndGetData(AZ_CRC_CE("radius"), sphereShape->m_radius);
 
                         collisionShapes.emplace_back(AZStd::pair<AZStd::shared_ptr<Physics::ColliderConfiguration>,
                             AZStd::shared_ptr<Physics::ShapeConfiguration> >(colliderConfig, sphereShape));
@@ -444,14 +444,14 @@ namespace EMotionFX
                 }
             }
 
-            if (!classElement.RemoveElementByName(AZ_CRC("hitDetectionColliders", 0x8675a818)))
+            if (!classElement.RemoveElementByName(AZ_CRC_CE("hitDetectionColliders")))
             {
                 return false;
             }
 
             // Remove the hit detection config in case one was present before converting (All colliders are still there in the ported version).
-            AZ::SerializeContext::DataElementNode* newcharacterConfigElement = classElement.FindSubElement(AZ_CRC("config", 0xd48a2f7c));
-            if (!newcharacterConfigElement->RemoveElementByName(AZ_CRC("hitDetectionConfig", 0xf55ba0c6)))
+            AZ::SerializeContext::DataElementNode* newcharacterConfigElement = classElement.FindSubElement(AZ_CRC_CE("config"));
+            if (!newcharacterConfigElement->RemoveElementByName(AZ_CRC_CE("hitDetectionConfig")))
             {
                 return false;
             }

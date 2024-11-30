@@ -115,6 +115,7 @@ namespace AZ
                 size_t m_capSize;
                 QString m_helpUrl;
                 QMenu* m_editMenu;
+                bool m_scrollToBottomQueued = false;
             };
         } // namespace UI
     } // namespace SceneAPI

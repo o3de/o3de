@@ -72,7 +72,7 @@ namespace AzToolsFramework
         emit dataChanged(index(0, 0), index(rowCount(), columnCount()));
     }
 
-    void AssetCompleterModel::SearchStringHighlight(QString searchString)
+    void AssetCompleterModel::SearchStringHighlight(const QString& searchString)
     {
         m_highlightString = searchString;
     }

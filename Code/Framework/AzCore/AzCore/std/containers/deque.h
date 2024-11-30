@@ -340,7 +340,7 @@ namespace AZStd
             size_type block = --newOffset / NumElementsPerBlock;
             if (m_map[block] == 0)
             {
-                m_map[block] = reinterpret_cast<pointer>(m_allocator.allocate(sizeof(block_node_type), alignment_of<block_node_type>::value));
+                m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
 
             // copy construct
@@ -384,11 +384,11 @@ namespace AZStd
             size_type block = newOffset / NumElementsPerBlock;
             if (m_mapSize <= block)
             {
-                block  -= m_mapSize;
+                block -= m_mapSize;
             }
             if (m_map[block] == 0)
             {
-                m_map[block] =  reinterpret_cast<pointer>(m_allocator.allocate(sizeof(block_node_type), alignment_of<block_node_type>::value));
+                m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
 
             // copy construct
@@ -649,7 +649,7 @@ namespace AZStd
             {   // free storage for a block and destroy pointer
                 if (*(m_map + --i) != 0)
                 {
-                    deallocate_memory(*(m_map + i), sizeof(block_node_type), alignment_of<block_node_type>::value);
+                    deallocate_memory(*(m_map + i), sizeof(block_node_type), alignof(block_node_type));
                 }
                 map_node_ptr_type toDestroy = m_map + i;
                 Internal::destroy<map_node_ptr_type>::single(toDestroy);
@@ -745,7 +745,7 @@ namespace AZStd
             size_type block = --newOffset / NumElementsPerBlock;
             if (m_map[block] == 0)
             {
-                m_map[block] = reinterpret_cast<pointer>(m_allocator.allocate(sizeof(block_node_type), alignment_of<block_node_type>::value));
+                m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
 
             map_node_type ptr = m_map[block] + newOffset % NumElementsPerBlock;
@@ -768,11 +768,11 @@ namespace AZStd
             size_type block = newOffset / NumElementsPerBlock;
             if (m_mapSize <= block)
             {
-                block  -= m_mapSize;
+                block -= m_mapSize;
             }
             if (m_map[block] == 0)
             {
-                m_map[block] =  reinterpret_cast<pointer>(m_allocator.allocate(sizeof(block_node_type), alignment_of<block_node_type>::value));
+                m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
 
             map_node_type ptr = m_map[block] + newOffset % NumElementsPerBlock;
@@ -794,7 +794,7 @@ namespace AZStd
             size_type block = --newOffset / NumElementsPerBlock;
             if (m_map[block] == 0)
             {
-                m_map[block] = reinterpret_cast<pointer>(m_allocator.allocate(sizeof(block_node_type), alignment_of<block_node_type>::value));
+                m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
 
             map_node_type ptr = m_map[block] + newOffset % NumElementsPerBlock;
@@ -818,11 +818,11 @@ namespace AZStd
             size_type block = newOffset / NumElementsPerBlock;
             if (m_mapSize <= block)
             {
-                block  -= m_mapSize;
+                block -= m_mapSize;
             }
             if (m_map[block] == 0)
             {
-                m_map[block] =  reinterpret_cast<pointer>(m_allocator.allocate(sizeof(block_node_type), alignment_of<block_node_type>::value));
+                m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
 
             map_node_type ptr = m_map[block] + newOffset % NumElementsPerBlock;

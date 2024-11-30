@@ -41,6 +41,8 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <System/PhysXSystem.h>
 
 #include <AzCore/Jobs/JobCompletion.h>
@@ -126,6 +128,8 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, bg_captureTransportPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "How often in milliseconds to record transport metrics.");
 
+    AZ_CVAR(bool, sv_multithreadedConnectionUpdates, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, the server will send updates to clients on different threads, which improves performance with large number of clients");
     AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "If true, OnPreRender events will be sent in parallel from job threads. Please make sure the handlers of the event are thread safe.");
     
@@ -204,6 +208,7 @@ namespace Multiplayer
         }
 
         MultiplayerComponent::Reflect(context);
+        NetworkTime::Reflect(context);
     }
 
     void MultiplayerSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -476,7 +481,8 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const SessionConfig& sessionConfig)
     {
         // Check if session manager has a certificate for us and pass it along if so
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        auto console = AZ::Interface<AZ::IConsole>::Get();
+        if (console != nullptr)
         {
             bool tcpUseEncryption = false;
             console->GetCvarValue("net_TcpUseEncryption", tcpUseEncryption);
@@ -496,6 +502,15 @@ namespace Multiplayer
 
         Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
         InitializeMultiplayer(serverType);
+
+        // Load a multiplayer level if there's a session property called the "level"...
+        if (const auto& levelName = sessionConfig.m_sessionProperties.find("level");
+            console != nullptr && levelName != sessionConfig.m_sessionProperties.end())
+        {
+            AZStd::string loadLevelCommand = "loadlevel " + levelName->second;
+            console->PerformCommand(loadLevelCommand.c_str());
+        }
+
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 
@@ -582,30 +597,12 @@ namespace Multiplayer
         stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
         stats.m_serverConnectionCount = 0;
         stats.m_clientConnectionCount = 0;
+        
+        // Metrics calculation, as update calls are threaded.
+        UpdatedMetricsConnectionCount();
 
         // Send out the game state update to all connections
-        {            
-            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
-
-            auto sendNetworkUpdates = [&stats](IConnection& connection)
-            {
-                if (connection.GetUserData() != nullptr)
-                {
-                    IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
-                    connectionData->Update();
-                    if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
-                    {
-                        stats.m_clientConnectionCount++;
-                    }
-                    else
-                    {
-                        stats.m_serverConnectionCount++;
-                    }
-                }
-            };
-
-            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
-        }
+        UpdateConnections();
 
         MultiplayerPackets::SyncConsole packet;
         AZ::ThreadSafeDeque<AZStd::string>::DequeType cvarUpdates;
@@ -639,6 +636,72 @@ namespace Multiplayer
         const auto duration =
             AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - startMultiplayerTickTime);
         stats.RecordFrameTime(AZ::TimeUs{ duration.count() });
+    }
+
+    void MultiplayerSystemComponent::UpdatedMetricsConnectionCount()
+    {
+        MultiplayerStats& stats = GetStats();
+        auto updateMetrics = [&stats](IConnection& connection)
+        {
+            if (connection.GetUserData() != nullptr)
+            {
+                IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
+                if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
+                {
+                    stats.m_clientConnectionCount++;
+                }
+                else
+                {
+                    stats.m_serverConnectionCount++;
+                }
+            }
+        };
+        m_networkInterface->GetConnectionSet().VisitConnections(updateMetrics);
+    }
+
+    void MultiplayerSystemComponent::UpdateConnections()
+    {
+        if (sv_multithreadedConnectionUpdates && (GetAgentType() == MultiplayerAgentType::ClientServer ||
+                                                  GetAgentType() == MultiplayerAgentType::DedicatedServer))
+        {
+            // Threaded update calls.
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: UpdateConnections");
+
+            AZ::JobCompletion jobCompletion;
+
+            auto sendNetworkUpdates = [&jobCompletion](IConnection& connection)
+            {
+                AZ::Job* job = AZ::CreateJobFunction([&connection]()
+                    {
+                        if (connection.GetUserData() != nullptr)
+                        {
+                            IConnectionData* connectionData = static_cast<IConnectionData*>(connection.GetUserData());
+                            connectionData->Update();
+                        }
+                    }, true /*auto delete*/, nullptr);
+
+                job->SetDependent(&jobCompletion);
+                job->Start();
+            };
+
+            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+            jobCompletion.StartAndWaitForCompletion();
+        }
+        else // On clients (including the Editor) run in a single threaded mode to avoid issues in UI asset loading
+        {
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
+
+            auto sendNetworkUpdates = [](IConnection& connection)
+            {
+                if (connection.GetUserData() != nullptr)
+                {
+                    IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
+                    connectionData->Update();
+                }
+            };
+
+            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+        }
     }
 
     int MultiplayerSystemComponent::GetTickOrder()
@@ -695,6 +758,17 @@ namespace Multiplayer
     {
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
+        const char* levelName = AZ::Interface<AzFramework::ILevelSystemLifecycle>::Get()->GetCurrentLevelName();
+        if (!levelName || *levelName == '\0')
+        {
+            AZLOG_WARN(
+                "Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
+            m_noServerLevelLoadedEvent.Signal();
+
+            connection->Disconnect(DisconnectReason::ServerNoLevelLoaded, TerminationEndpoint::Local);
+            return true;
+        }
+
         // Hosts will handle spawning for a player on connect
         if (GetAgentType() == MultiplayerAgentType::ClientServer
             || GetAgentType() == MultiplayerAgentType::DedicatedServer)
@@ -732,18 +806,21 @@ namespace Multiplayer
             }
             else
             {
-                AZLOG_ERROR("No IMultiplayerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
+                // There's no player spawner, maybe the level's entities aren't finished activating
+                if (!m_levelEntitiesActivated)
+                {
+                    // Remember this player, and spawn it once the level entities finish activating
+                    MultiplayerAgentDatum datum;
+                    datum.m_agentType = MultiplayerAgentType::Client;
+                    datum.m_id = connection->GetConnectionId();
+                    const uint64_t userId = packet.GetTemporaryUserId();
+                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, connection);
+                }
+                else
+                {
+                    AZLOG_ERROR("No IMultiplayerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
+                }
             }
-        }
-
-        const char* levelName = AZ::Interface<AzFramework::ILevelSystemLifecycle>::Get()->GetCurrentLevelName();
-        if (!levelName || strlen(levelName) == 0)
-        {
-            AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
-            m_noServerLevelLoadedEvent.Signal();
-
-            connection->Disconnect(DisconnectReason::ServerNoLevelLoaded, TerminationEndpoint::Local);
-            return true;
         }
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(levelName)))
@@ -1663,9 +1740,17 @@ namespace Multiplayer
             }
         }
     }
-
-    void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    void MultiplayerSystemComponent::OnRootSpawnableAssigned(
+        [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
+        m_levelEntitiesActivated = false;
+    }
+
+    void MultiplayerSystemComponent::OnRootSpawnableReady(
+        [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    {
+        m_levelEntitiesActivated = true;
+
         // Ignore level loads if not in multiplayer mode
         if (m_agentType == MultiplayerAgentType::Uninitialized)
         {
@@ -1701,6 +1786,11 @@ namespace Multiplayer
         }
 
         m_playersWaitingToBeSpawned.clear();
+    }
+
+    void MultiplayerSystemComponent::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
+    {
+        m_levelEntitiesActivated = false;
     }
 
     bool MultiplayerSystemComponent::ShouldBlockLevelLoading(const char* levelName)
@@ -1897,4 +1987,4 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
-}
+} // namespace Multiplayer

@@ -33,13 +33,14 @@ namespace AZ
             : public Data::AssetData
         {
             friend class ModelLodAssetCreator;
+            friend class ModelAsset;
 
         public:
             static constexpr size_t LodCountMax = 10;
 
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "ModelLodAsset" };
+            static constexpr const char* Group{ "Model" };
+            static constexpr const char* Extension{ "azlod" };
 
             AZ_RTTI(ModelLodAsset, "{65B5A801-B9B9-4160-9CB4-D40DAA50B15C}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(ModelLodAsset, AZ::SystemAllocator);
@@ -54,6 +55,8 @@ namespace AZ
             class Mesh final
             {
                 friend class ModelLodAssetCreator;
+                friend class ModelLodAsset;
+
             public:
                 AZ_TYPE_INFO(Mesh, "{55A91F9A-2F71-4B75-B2F7-565087DD2DBD}");
                 AZ_CLASS_ALLOCATOR(Mesh, AZ::SystemAllocator);
@@ -122,6 +125,10 @@ namespace AZ
             private:
                 template<class T>
                 AZStd::span<const T> GetBufferTyped(const BufferAssetView& bufferAssetView) const;
+                                
+                // Load/Release all the buffer assets referenced by this mesh
+                void LoadBufferAssets();
+                void ReleaseBufferAssets();
 
                 AZ::Name m_name;
                 AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
@@ -149,6 +156,10 @@ namespace AZ
             const AZ::Aabb& GetAabb() const;
 
             Data::Asset<BufferAsset> GetIndexBufferAsset() const { return m_indexBuffer; }
+
+            //! A helper method for returning a specific buffer asset view related to mesh associated with mesh index.
+            const BufferAssetView* GetSemanticBufferAssetView(const AZ::Name& semantic, uint32_t meshIndex = 0) const;
+
         private:
             // AssetData overrides...
             bool HandleAutoReload() override
@@ -160,6 +171,10 @@ namespace AZ
                 // to by using MeshFeatureProcessor::ConnectModelChangeEventHandler().
                 return false;
             }
+
+            // Load/release all BufferAssets used by this ModelLodAsset
+            void LoadBufferAssets();
+            void ReleaseBufferAssets();
             
             AZStd::vector<Mesh> m_meshes;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();

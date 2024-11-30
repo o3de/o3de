@@ -129,7 +129,6 @@ namespace EMotionFX
         }
 
     public:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         AnimGraphObject::ESyncMode m_syncMode;
         AnimGraphMotionNode* m_motionNodeA = nullptr;
         AnimGraphMotionNode* m_motionNodeB = nullptr;

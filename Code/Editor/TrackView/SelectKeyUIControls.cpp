@@ -23,7 +23,7 @@ CSelectKeyUIControls::~CSelectKeyUIControls()
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CSelectKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CSelectKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

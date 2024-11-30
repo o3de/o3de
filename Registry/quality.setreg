@@ -1,0 +1,19 @@
+{
+    "O3DE": {
+        "Quality": {
+            "DefaultGroup": "q_general",
+            "Groups": {
+                "q_general": {
+                    "Description" : "Default quality group. 0 : Low, 1 : Medium, 2 : High, 3 : VeryHigh",
+                    "Levels": [
+                        "Low",
+                        "Medium",
+                        "High",
+                        "VeryHigh"
+                    ],
+                    "Default": 3
+                }
+            }
+        }
+    }
+}

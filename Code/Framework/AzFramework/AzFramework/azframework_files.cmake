@@ -78,6 +78,15 @@ set(FILES
     Asset/Benchmark/BenchmarkSettingsAsset.h
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
+    Device/DeviceAttributeDeviceModel.cpp
+    Device/DeviceAttributeDeviceModel.h
+    Device/DeviceAttributeInterface.h
+    Device/DeviceAttributeRAM.cpp
+    Device/DeviceAttributeRAM.h
+    Device/DeviceAttributeGPUModel.cpp
+    Device/DeviceAttributeGPUModel.h
+    Device/DeviceAttributesSystemComponent.cpp
+    Device/DeviceAttributesSystemComponent.h
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -103,7 +112,6 @@ set(FILES
     Viewport/ClickDetector.h
     Viewport/ClickDetector.cpp
     Viewport/CursorState.h
-    Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
     Entity/GameEntityContextComponent.cpp
@@ -328,6 +336,11 @@ set(FILES
     Process/ProcessUtils.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
+    Quality/QualityCVarGroup.cpp
+    Quality/QualityCVarGroup.h
+    Quality/QualitySystemComponent.cpp
+    Quality/QualitySystemComponent.h
+    Quality/QualitySystemBus.h
     Render/GameIntersectorComponent.h
     Render/GameIntersectorComponent.cpp
     Render/GeometryIntersectionBus.h
@@ -468,16 +481,20 @@ set(FILES
     Slice/SliceInstantiationBus.h
     Slice/SliceInstantiationTicket.h
     Slice/SliceInstantiationTicket.cpp
-    Visibility/IVisibilitySystem.h
-    Visibility/OctreeSystemComponent.h
-    Visibility/OctreeSystemComponent.cpp
-    Visibility/BoundsBus.h
     Visibility/BoundsBus.cpp
-    Visibility/VisibilityDebug.h
-    Visibility/VisibilityDebug.cpp
+    Visibility/BoundsBus.h
     Visibility/EntityBoundsUnionBus.h
-    Visibility/EntityVisibilityBoundsUnionSystem.h
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
-    Visibility/EntityVisibilityQuery.h
+    Visibility/EntityVisibilityBoundsUnionSystem.h
     Visibility/EntityVisibilityQuery.cpp
+    Visibility/EntityVisibilityQuery.h
+    Visibility/IVisibilitySystem.h
+    Visibility/OcclusionBus.cpp
+    Visibility/OcclusionBus.h
+    Visibility/OctreeSystemComponent.cpp
+    Visibility/OctreeSystemComponent.h
+    Visibility/VisibilityDebug.cpp
+    Visibility/VisibilityDebug.h
+    Visibility/VisibleGeometryBus.cpp
+    Visibility/VisibleGeometryBus.h
 )

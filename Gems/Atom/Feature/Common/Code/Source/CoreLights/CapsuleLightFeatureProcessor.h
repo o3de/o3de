@@ -49,10 +49,11 @@ namespace AZ
             void SetCapsuleRadius(LightHandle handle, float radius) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
             void SetCapsuleData(LightHandle handle, const CapsuleLightData& data) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer()const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            uint32_t GetLightCount() const override;
 
         private:
             CapsuleLightFeatureProcessor(const CapsuleLightFeatureProcessor&) = delete;

@@ -14,7 +14,7 @@ endif()
 
 
 ly_add_target(
-    NAME AWSCore.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         awscore_files.cmake
@@ -35,7 +35,7 @@ ly_add_target(
 )
 
 ly_add_target( 
-    NAME AWSCore ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         awscore_shared_files.cmake
@@ -46,29 +46,38 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
         PUBLIC
-            Gem::AWSCore.Static
+            Gem::${gem_name}.Static
 )
 
-# clients and servers will use the above Gem::AWSCore module.
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AWSCoreModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# clients and servers will use the above Gem::${gem_name} module.
 ly_create_alias(
-    NAME AWSCore.Servers
+    NAME ${gem_name}.Servers
     NAMESPACE Gem
     TARGETS
-        Gem::AWSCore
+        Gem::${gem_name}
 )
 
 ly_create_alias(
-    NAME AWSCore.Clients
+    NAME ${gem_name}.Clients
     NAMESPACE Gem
     TARGETS
-        Gem::AWSCore
+        Gem::${gem_name}
 )
 
 ly_create_alias(
-    NAME AWSCore.Unified
+    NAME ${gem_name}.Unified
     NAMESPACE Gem
     TARGETS
-        Gem::AWSCore
+        Gem::${gem_name}
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -76,7 +85,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     include(${pal_dir}/PAL_traits_editor_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
     ly_add_target(
-        NAME AWSCore.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             awscore_editor_files.cmake
@@ -92,14 +101,14 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzQtComponents
                 3rdParty::Qt::Core
                 3rdParty::Qt::Widgets
-                Gem::AWSCore.Static
+                Gem::${gem_name}.Static
             PUBLIC
                 ${additional_tool_deps}
                 3rdParty::AWSNativeSDK::AWSCore
     )
 
     ly_add_target(
-        NAME AWSCore.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             awscore_editor_shared_files.cmake
@@ -109,15 +118,24 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                Gem::AWSCore.Editor.Static
+                Gem::${gem_name}.Editor.Static
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/AWSCoreEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
 
     if (PAL_TRAIT_ENABLE_RESOURCE_MAPPING_TOOL)
 
         # This target is not a real gem module
         # It is not meant to be loaded by the ModuleManager in C++
         ly_add_target(
-            NAME AWSCore.ResourceMappingTool MODULE
+            NAME ${gem_name}.ResourceMappingTool MODULE
             NAMESPACE Gem
             OUTPUT_SUBDIRECTORY AWSCoreEditorQtBin
             FILES_CMAKE
@@ -127,32 +145,32 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                     Source
             BUILD_DEPENDENCIES
                 PRIVATE
-                    Gem::AWSCore.Editor.Static
+                    Gem::${gem_name}.Editor.Static
             RUNTIME_DEPENDENCIES
                 3rdParty::pyside2
 
         )
-        ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
+        ly_add_dependencies(${gem_name}.Editor ${gem_name}.ResourceMappingTool)
 
         ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)
         
     endif()
 
-    # Builders and Tools (such as the Editor use AWSCore.Editor) use the .Editor module above.
+    # Builders and Tools (such as the Editor use ${gem_name}.Editor) use the .Editor module above.
     ly_create_alias(
-        NAME AWSCore.Tools
+        NAME ${gem_name}.Tools
         NAMESPACE Gem
         TARGETS
-            Gem::AWSCore
-            Gem::AWSCore.Editor
+            Gem::${gem_name}
+            Gem::${gem_name}.Editor
     )
 
     ly_create_alias(
-        NAME AWSCore.Builders
+        NAME ${gem_name}.Builders
         NAMESPACE Gem
         TARGETS
-            Gem::AWSCore
-            Gem::AWSCore.Editor
+            Gem::${gem_name}
+            Gem::${gem_name}.Editor
     )
 
 endif()
@@ -162,7 +180,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME AWSCore.Tests MODULE
+        NAME ${gem_name}.Tests MODULE
         NAMESPACE Gem
         FILES_CMAKE
             awscore_tests_files.cmake
@@ -176,26 +194,26 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AWSNativeSDKTestLibs
-                Gem::AWSCore.Static
+                Gem::${gem_name}.Static
     )
 
     ly_add_googletest(
-        NAME Gem::AWSCore.Tests
+        NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf
     )
 
     ly_add_target_files(
         TARGETS
-            AWSCore.Tests
+            ${gem_name}.Tests
         FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/resource_mapping_schema.json
         OUTPUT_SUBDIRECTORY
-            Gems/AWSCore
+            Gems/${gem_name}
     )
 
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME AWSCore.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 awscore_editor_tests_files.cmake
@@ -216,13 +234,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Widgets
                     AZ::AzTest
                     AZ::AWSNativeSDKTestLibs
-                    Gem::AWSCore.Static
-                    Gem::AWSCore.Editor.Static
+                    Gem::${gem_name}.Static
+                    Gem::${gem_name}.Editor.Static
         )
         set(SUPPORTED_PLATFORMS "Windows")
         if ("${PAL_PLATFORM_NAME}" IN_LIST SUPPORTED_PLATFORMS)
             ly_add_googletest(
-                NAME Gem::AWSCore.Editor.Tests
+                NAME Gem::${gem_name}.Editor.Tests
                 LABELS REQUIRES_tiaf
             )
         endif()
@@ -231,11 +249,11 @@ endif()
 
 ly_add_target_files(
     TARGETS
-        AWSCore
+        ${gem_name}
     FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/resource_mapping_schema.json
     OUTPUT_SUBDIRECTORY
-        Gems/AWSCore
+        Gems/${gem_name}
 )
 
 ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)

@@ -19,7 +19,7 @@ class QGraphicsWidget;
 
 namespace GraphCanvas
 {
-    static const AZ::Crc32 NodeTitleServiceCrc = AZ_CRC("GraphCanvas_TitleService", 0xfe6d63bc);
+    static const AZ::Crc32 NodeTitleServiceCrc = AZ_CRC_CE("GraphCanvas_TitleService");
 
     //! NodeTitleRequests
     //! Requests that get/set an entity's Node Title

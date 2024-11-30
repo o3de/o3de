@@ -35,6 +35,7 @@ set(FILES
     AzCore/Debug/StackTracer_Windows.cpp
     ../Common/WinAPI/AzCore/Debug/Trace_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
+    ../Common/WinAPI/AzCore/IO/FileIO_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.h
     ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp
@@ -62,6 +63,10 @@ set(FILES
     AzCore/Platform_Windows.cpp
     AzCore/PlatformIncl_Platform.h
     AzCore/PlatformIncl_Windows.h
+    AzCore/Serialization/Locale_Platform.h
+    ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.h
+    ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.cpp
+    ../Common/WinAPI/AzCore/Settings/CommandLineParser_WinAPI.cpp
     ../Common/WinAPI/AzCore/Socket/AzSocket_fwd_WinAPI.h
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.cpp
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.h

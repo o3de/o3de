@@ -35,6 +35,7 @@ namespace AzToolsFramework
                     ->Event("InstantiatePrefab", &PrefabPublicRequests::InstantiatePrefab)
                     ->Event("DeleteEntitiesAndAllDescendantsInInstance", &PrefabPublicRequests::DeleteEntitiesAndAllDescendantsInInstance)
                     ->Event("DetachPrefab", &PrefabPublicRequests::DetachPrefab)
+                    ->Event("DetachPrefabAndRemoveContainerEntity", &PrefabPublicRequests::DetachPrefabAndRemoveContainerEntity)
                     ->Event("DuplicateEntitiesInInstance", &PrefabPublicRequests::DuplicateEntitiesInInstance)
                     ->Event("GetOwningInstancePrefabPath", &PrefabPublicRequests::GetOwningInstancePrefabPath)
                     ->Event("CreateInMemorySpawnableAsset", &PrefabPublicRequests::CreateInMemorySpawnableAsset)
@@ -79,6 +80,11 @@ namespace AzToolsFramework
         PrefabOperationResult PrefabPublicRequestHandler::DetachPrefab(const AZ::EntityId& containerEntityId)
         {
             return m_prefabPublicInterface->DetachPrefab(containerEntityId);
+        }
+
+        PrefabOperationResult PrefabPublicRequestHandler::DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId)
+        {
+            return m_prefabPublicInterface->DetachPrefabAndRemoveContainerEntity(containerEntityId);
         }
 
         DuplicatePrefabResult PrefabPublicRequestHandler::DuplicateEntitiesInInstance(const EntityIdList& entityIds)

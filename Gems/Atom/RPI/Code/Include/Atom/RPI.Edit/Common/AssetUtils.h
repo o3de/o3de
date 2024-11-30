@@ -69,19 +69,6 @@ namespace AZ
             //! @return A full path for referencedSourceFilePath, if a full path was found. If a full path could not be constructed, returns referencedSourceFilePath unmodified.
             AZStd::string ResolvePathReference(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
 
-            //! Returns the list of paths where a source asset file could possibly appear.
-            //! This is intended for use by AssetBuilders when reporting dependencies, to support relative paths between source files.
-            //! When a source data file references another file using a relative path, the path might be relative to the originating
-            //! file or it might be a standard source asset path (i.e. relative to the logical asset-root). This function will help reporting
-            //! dependencies on all possible locations where that file may appear at some point in the future.
-            //! For example a file MyGem/Assets/Foo/a.json might reference another file as "Bar/b.json". In this case, calling
-            //! GetPossibleDepenencyPaths("Foo/a.json", "Bar/b.json") might return {"Foo/Bar/b.json", and "Bar/b.json"} because
-            //! it's possible that b.json could be found in either MyGem/Assets/Foo/Bar/a.json or in MyGem/Assets/Bar/a.json.
-            //! @param originatingSourceFilePath  Path to a file that references referencedSourceFilePath. May be absolute or relative to asset-root.
-            //! @param referencedSourceFilePath   The referenced path as it appears in the originating file. May be relative to the originating file location or relative to asset-root.
-            //! @return the list of possible paths, ordered from highest priority to lowest priority
-            AZStd::vector<AZStd::string> GetPossibleDependencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
-
             //! Takes an arbitrary string and replaces some characters to make it a valid filename. The result will be compatible with AzQtComponents::FileDialog.
             //! Ex. SanitizeFileName("Left=>Right.txt") == "Left_Right.txt"
             //! Ex. SanitizeFileName("Material::Red#1") == "Material_Red_1"

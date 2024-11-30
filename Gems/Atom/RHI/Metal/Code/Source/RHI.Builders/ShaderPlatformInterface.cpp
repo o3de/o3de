@@ -13,6 +13,8 @@
 #include <Atom/RHI.Reflect/Metal/Base.h>
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
+#include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
@@ -119,11 +121,12 @@ namespace AZ
 
             const Metal::ShaderSourceCode& sourceCode = stageDescriptor.m_sourceCode;
 
-            //Metal sourceCode is great for debugging but it is not needed as we are also packing the bytecode. This
-            //can be removed for more optimized shader assets
-            newShaderStageFunction->SetSourceCode(sourceCode);
-
-            const Metal::ShaderByteCode& byteCode = stageDescriptor.m_byteCode;
+            if (!sourceCode.empty())
+            {
+                newShaderStageFunction->SetSourceCode(sourceCode);
+            }
+            
+            const auto& byteCode = stageDescriptor.m_byteCode;
             const AZStd::string& entryFunctionName = stageDescriptor.m_entryFunctionName;
             newShaderStageFunction->SetByteCode(byteCode);
             newShaderStageFunction->SetEntryFunctionName(entryFunctionName);
@@ -171,7 +174,8 @@ namespace AZ
            RHI::ShaderHardwareStage shaderStage,
            const AZStd::string& tempFolderPath,
            StageDescriptor& outputDescriptor,
-           const RHI::ShaderBuildArguments& shaderBuildArguments) const
+           const RHI::ShaderBuildArguments& shaderBuildArguments,
+           [[maybe_unused]] const bool useSpecializationConstants) const
         {
             for ([[maybe_unused]] auto srgLayout : m_srgLayouts)
             {
@@ -181,6 +185,9 @@ namespace AZ
             AZStd::vector<char> shaderSourceCode;
             AZStd::vector<uint8_t> shaderByteCode;
 
+            bool isGraphicsDevModeEnabled = RHI::IsGraphicsDevModeEnabled();
+            isGraphicsDevModeEnabled |= BuildHasDebugInfo(shaderBuildArguments);
+                
             // Compile HLSL shader to METAL source code
             bool compiledSucessfully = CompileHLSLShader(
                 shaderSourcePath,                // shader source filename
@@ -191,6 +198,7 @@ namespace AZ
                 shaderSourceCode,                // cross-compiled shader output
                 shaderByteCode,                  // compiled byte code
                 platform,                        // target platform
+                isGraphicsDevModeEnabled,        //Embed debug symbols
                 outputDescriptor.m_byProducts);  // debug objects
 
             if (!compiledSucessfully)
@@ -202,9 +210,14 @@ namespace AZ
             if (shaderSourceCode.size() > 0)
             {
                 outputDescriptor.m_stageType = shaderStage;
-                outputDescriptor.m_sourceCode = AZStd::move(shaderSourceCode);
                 outputDescriptor.m_byteCode = AZStd::move(shaderByteCode);
                 outputDescriptor.m_entryFunctionName = AZStd::move(functionName);
+
+                if (isGraphicsDevModeEnabled)
+                {
+                    //Metal sourceCode is great for debugging at runtime but it is not needed as we are also packing the bytecode.
+                    outputDescriptor.m_sourceCode = AZStd::move(shaderSourceCode);
+                }
             }
             else
             {
@@ -227,10 +240,11 @@ namespace AZ
             AZStd::vector<char>& sourceMetalShader,
             AZStd::vector<uint8_t>& compiledByteCode,
             const AssetBuilderSDK::PlatformInfo& platform,
+            const bool isGraphicsDevModeEnabled,
             ByProducts& byProducts) const
         {
             // Shader compiler executable
-            static const char* dxcRelativePath = "Builders/DirectXShaderCompiler/bin/dxc";
+            const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/bin/dxc");
 
             // Output file
             AZStd::string shaderMSLOutputFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
@@ -288,7 +302,7 @@ namespace AZ
                                                                     dxcInputFile.c_str());         // 5
 
             // Run dxc Compiler
-            if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, "DXC"))
+            if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, tempFolder, "DXC"))
             {
                 AZ_Error(MetalShaderPlatformName, false, "DXC failed to create the spirv file");
                 return false;
@@ -319,9 +333,9 @@ namespace AZ
             AZStd::string spirvCrossCommandOptions = AZStd::string::format("%s --output \"%s\" \"%s\"", userDefinedSpirvCrossAgs.c_str(), shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
 
             // Run spirv cross
-            if (!RHI::ExecuteShaderCompiler(spirvCrossRelativePath, spirvCrossCommandOptions, shaderSpirvOutputFile, "SpirvCross"))
+            if (!RHI::ExecuteShaderCompiler(spirvCrossRelativePath, spirvCrossCommandOptions, shaderSpirvOutputFile, tempFolder, "SpirvCross"))
             {
-                AZ_Error(MetalShaderPlatformName, false, "SPIRV-Cross failed to cross compil to metal source.");
+                AZ_Error(MetalShaderPlatformName, false, "SPIRV-Cross failed to cross compile to metal source.");
                 spirvOutFileStream.Close();
                 return false;
             }
@@ -336,7 +350,7 @@ namespace AZ
                 byProducts.m_intermediatePaths.emplace(AZStd::move(shaderMSLOutputFile));   // .msl metal out of sv-cross
             }
 
-            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform, shaderBuildArguments);
+            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform, shaderBuildArguments, isGraphicsDevModeEnabled, shaderType);
             if (!compileMetalSL)
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to create bytecode");
@@ -375,7 +389,9 @@ namespace AZ
                                                      AZStd::vector<uint8_t>& compiledByteCode,
                                                      AZStd::vector<char>& sourceMetalShader,
                                                      const AssetBuilderSDK::PlatformInfo& platform,
-                                                     const RHI::ShaderBuildArguments& shaderBuildArguments) const
+                                                     const RHI::ShaderBuildArguments& shaderBuildArguments,
+                                                     const bool isGraphicsDevModeEnabled,
+                                                     RHI::ShaderHardwareStage shaderStageType) const
         {
             AZStd::string inputMetalFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
 
@@ -387,6 +403,7 @@ namespace AZ
             }
 
             AZStd::string mtlSource = AZStd::string(sourceMetalShader.begin(), sourceMetalShader.end());
+            UpdateMetalSource(mtlSource, shaderStageType);
             sourceMtlfileStream.Write(mtlSource.size(), mtlSource.data());
             sourceMtlfileStream.Close();
 
@@ -394,9 +411,16 @@ namespace AZ
             AZStd::string outMetalLibFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metallib");
 
             //Convert to air file
-            const auto metalAirArgumentsStr = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_metalAirArguments);
+            auto metalAirArguments = shaderBuildArguments.m_metalAirArguments;
+            if (isGraphicsDevModeEnabled)
+            {
+                //Embed debug symbols into the bytecode
+                RHI::ShaderBuildArguments::AppendArguments(metalAirArguments, { "-gline-tables-only", "-MO" });
+            }
+            
+            const auto metalAirArgumentsStr = RHI::ShaderBuildArguments::ListAsString(metalAirArguments);
             const auto mslToAirCommandOptions = AZStd::string::format("%s \"%s\" -o \"%s\"", metalAirArgumentsStr.c_str(), inputMetalFile.c_str(), outputAirFile.c_str());
-            if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", mslToAirCommandOptions, inputMetalFile, "MslToAir"))
+            if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", mslToAirCommandOptions, inputMetalFile, tempFolder, "MslToAir"))
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to convert to AIR file %s", inputMetalFile.c_str());
                 return false;
@@ -405,7 +429,7 @@ namespace AZ
             //convert to metallib
             const auto metalLibArgumentsStr = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_metalLibArguments);
             const auto airToMetalLibCommandOptions = AZStd::string::format("%s \"%s\" -o \"%s\"", metalLibArgumentsStr.c_str(), outputAirFile.c_str(), outMetalLibFile.c_str());
-            if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", airToMetalLibCommandOptions, outputAirFile, "AirToMetallib"))
+            if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", airToMetalLibCommandOptions, outputAirFile, tempFolder, "AirToMetallib"))
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to convert to metallib file");
                 return false;
@@ -418,6 +442,97 @@ namespace AZ
             fileStream.Close();
 
             return true;
+        }
+    
+        void ShaderPlatformInterface::UpdateMetalSource(AZStd::string& metalSource, RHI::ShaderHardwareStage shaderStageType) const
+        {
+            // In order to support subpasses on Metal we need to be able to change the index for a color output in the fragment shader.
+            // For example, you have 1 pass that is rendering to color0 and color1, and another pass rendering to also color0 and color1 (but
+            // not to the same textures). If we merge the two passes, and both are sharing one color attachment, then we would have 3 color
+            // attachments for both passes. Because of the rearrangement of the color attachments, the shaders of the second pass would need to
+            // output to color1 and color2 for example, hence we would need to change the indices for the outputs that were specified in the shader.
+            // Luckily Metal supports using function specialization for specifying the color index of an output at runtime.
+            //
+            // constant int colorAttachment0 [[function_constant(0)]];  <-------- This can be any index. Decided at runtime
+            // constant int colorAttachment0_tmp = is_function_constant_defined(colorAttachment0) ? colorAttachment0 : 0;
+            // constant int colorAttachment1 [[function_constant(1)]];  <-------- This can be any index. Decided at runtime
+            // constant int colorAttachment1_tmp = is_function_constant_defined(colorAttachment1) ? colorAttachment1 : 1;
+            // struct PSOut
+            // {
+            //     float4 m_color0 [[color(colorAttachment0_tmp)]];
+            //     float4 m_color1 [[color(colorAttachment1_tmp)]];
+            // };
+            if(shaderStageType != RHI::ShaderHardwareStage::Fragment)
+            {
+                return;
+            }
+            
+            // Base function constant id so it doesn't clash with function constant id's for shader options
+            // We don't really care about the id because at runtime we use the name for updating the constant.
+            constexpr int BaseFunctionConstantId = 1000;
+            // We need a way to identify an input attachment from a normal color output (to transform it to a function specialization).
+            // After SPIR-V cross they both look the same. We use an offset for input attachments to differentiate them.
+            constexpr int BaseInputAttachmentId = 100;
+            int functionConstantId = BaseFunctionConstantId;
+            AZStd::bitset<RHI::Limits::Pipeline::AttachmentColorCountMax> foundColorAttachments;
+            AZStd::bitset<RHI::Limits::Pipeline::AttachmentColorCountMax> foundInputAttachments;
+            AZStd::string functionConstants = "\n";
+            const char* colorFindString = "[[color(";
+            const char* endFindString = ")";
+            for(auto findPos = metalSource.find(colorFindString);
+                findPos != AZStd::string::npos;
+                findPos = metalSource.find(colorFindString, findPos + 1))
+            {
+                int colorIndex = -1;
+                auto endColorPos = metalSource.find(endFindString, findPos);
+                AZ_Assert(endColorPos != AZStd::string::npos, "Could not find end of [[color(X)]]");
+                endColorPos += ::strlen(endFindString);
+                size_t len = endColorPos - findPos;
+                azsscanf(metalSource.substr(findPos, len).c_str(), "[[color(%d)", &colorIndex);
+                AZ_Assert(colorIndex >= 0, "Invalid index for color attachment %d", colorIndex);
+                AZStd::string constantString;
+                int inputAttachmentIndex = colorIndex - BaseInputAttachmentId;
+                if (colorIndex < BaseInputAttachmentId)
+                {
+                    constantString = AZStd::string::format("[[color(colorAttachment%d_tmp)", colorIndex);
+                }
+                else
+                {
+                    constantString = AZStd::string::format("[[color(inputAttachment%d_tmp)", inputAttachmentIndex);
+                }
+                metalSource.replace(findPos, len, constantString);
+                // We use 2 constants. One is the function specialization, and the other is a normal constant that has a default value
+                // since Metal doesn't support default values for function specialization.
+                if (inputAttachmentIndex >= 0)
+                {
+                    if(!foundInputAttachments.test(inputAttachmentIndex))
+                    {
+                        functionConstants.append(AZStd::string::format("constant int inputAttachment%d [[function_constant(%d)]];\n", inputAttachmentIndex, functionConstantId));
+                        functionConstants.append(AZStd::string::format("constant int inputAttachment%d_tmp = is_function_constant_defined(inputAttachment%d) ? inputAttachment%d : %d;\n", inputAttachmentIndex, inputAttachmentIndex, inputAttachmentIndex, inputAttachmentIndex));
+                        functionConstantId++;
+                        foundInputAttachments.set(inputAttachmentIndex);
+                    }
+                }
+                else if (!foundColorAttachments.test(colorIndex))
+                {
+                    functionConstants.append(AZStd::string::format("constant int colorAttachment%d [[function_constant(%d)]];\n", colorIndex, functionConstantId));
+                    functionConstants.append(AZStd::string::format("constant int colorAttachment%d_tmp = is_function_constant_defined(colorAttachment%d) ? colorAttachment%d : %d;\n", colorIndex, colorIndex, colorIndex, colorIndex));
+                    functionConstantId++;
+                    foundColorAttachments.set(colorIndex);
+                }
+                
+            }
+            
+            if(foundColorAttachments.any())
+            {
+                // Insert the function specialization at the top of the shader
+                AZStd::string startOfShaderTag = "using namespace metal;";
+                const size_t startOfShaderPos = metalSource.find(startOfShaderTag);
+                if (startOfShaderPos != AZStd::string::npos)
+                {
+                    metalSource.insert(startOfShaderPos + startOfShaderTag.length() + 1, functionConstants);
+                }
+            }
         }
 
         bool ShaderPlatformInterface::AddUnusedResources(AZStd::vector<char>& compiledShader) const
@@ -605,6 +720,9 @@ namespace AZ
                             textureType = "texturecube_array";
                             break;
                         }
+                        case RHI::ShaderInputImageType::SubpassInput:
+                            // SubpassInputs do not use a texture. The value is read from the framebuffer directly.
+                            continue;
                         default:
                         {
                             AZ_Assert(false, "Invalid texture type.");
@@ -715,7 +833,20 @@ namespace AZ
                     structuredBufferTempStructs += AZStd::string::format("struct type_RWStructuredDummyBuffer%i_DescSet%i\n{\n    DummySRG_%s_DescSet%i _m0[%i];\n};\n", regId, groupLayoutIndex, shaderInputBuffer.m_name.GetCStr(), groupLayoutIndex, shaderInputBuffer.m_count);
 
                     //Create the final resource entry to be added to the set
-                    AZStd::string dummyResource = AZStd::string::format("device type_RWStructuredDummyBuffer%i_DescSet%i* dummyStructuredBuffer%i [[id(%i)]];", regId, groupLayoutIndex, regId, regId);
+                    AZStd::string dummyResource;
+                    switch(shaderInputBuffer.m_type)
+                    {
+                        case RHI::ShaderInputBufferType::Typed:
+                        {
+                            dummyResource = AZStd::string::format("texture_buffer<float> TypedDummyBuffer%i [[id(%i)]];", regId, regId);
+                            break;
+                        }
+                        default:
+                        {
+                            dummyResource = AZStd::string::format("device type_RWStructuredDummyBuffer%i_DescSet%i* dummyStructuredBuffer%i [[id(%i)]];", regId, groupLayoutIndex, regId, regId);
+                            break;
+                        }
+                    }
                     m_argBufferEntries.insert(AZStd::make_pair(dummyResource, regId));
                 }
                 else

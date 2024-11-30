@@ -55,6 +55,16 @@ include(cmake/O3DEJson.cmake)
 include(cmake/Subdirectories.cmake)
 include(cmake/TestImpactFramework/LYTestImpactFramework.cmake) # Put at end as nothing else depends on it
 
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+if (O3DE_SCRIPT_ONLY AND NOT INSTALLED_ENGINE)
+    get_property(engine_root GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER)
+    message(FATAL_ERROR "Script-only projects require pre-built versions of O3DE.\n\
+                        The project being compiled (${PROJECT_NAME}) is a script-only project (see project.json) \
+                        but the engine being used to build it is a compile-from-source engine using c++ code \
+                        (${engine_root}).  Please use a pre-built (installer) O3DE to build script-only projects.")
+endif()
+
+
 # Gather the list of o3de_manifest external Subdirectories
 # into the O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST_PROPERTY
 add_o3de_manifest_json_external_subdirectories()

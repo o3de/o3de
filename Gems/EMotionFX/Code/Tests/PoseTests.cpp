@@ -9,7 +9,7 @@
 #include <AzCore/Math/Random.h>
 #include <Tests/SystemComponentFixture.h>
 #include <Tests/Matchers.h>
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Mesh.h>
@@ -69,6 +69,7 @@ namespace EMotionFX
         void TearDown() override
         {
             m_actorInstance->Destroy();
+            m_actor.reset();
             SystemComponentFixture::TearDown();
         }
 

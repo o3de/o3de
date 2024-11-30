@@ -39,6 +39,7 @@ set(FILES
     Include/Atom/RPI.Public/Buffer/BufferPool.h
     Include/Atom/RPI.Public/Buffer/BufferSystem.h
     Include/Atom/RPI.Public/Buffer/BufferSystemInterface.h
+    Include/Atom/RPI.Public/Buffer/RingBuffer.h
     Include/Atom/RPI.Public/ColorManagement/TransformColor.h
     Include/Atom/RPI.Public/DynamicDraw/DynamicBuffer.h
     Include/Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h
@@ -75,6 +76,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/PassFilter.h
     Include/Atom/RPI.Public/Pass/PassLibrary.h
     Include/Atom/RPI.Public/Pass/PassSystem.h
+    Include/Atom/RPI.Public/Pass/PassSystemBus.h
     Include/Atom/RPI.Public/Pass/PassSystemInterface.h
     Include/Atom/RPI.Public/Pass/PassUtils.h
     Include/Atom/RPI.Public/Pass/RasterPass.h
@@ -106,7 +108,9 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/TimestampQueryPool.h
     Include/Atom/RPI.Public/GpuQuery/GpuPassProfiler.h
     Include/Atom/RPI.Public/XR/XRRenderingInterface.h
+    Include/Atom/RPI.Public/XR/XRSpaceNotificationBus.h
     Source/RPI.Public/Culling.cpp
+    Source/RPI.Public/DllMain.cpp
     Source/RPI.Public/FeatureProcessor.cpp
     Source/RPI.Public/FeatureProcessorFactory.cpp
     Source/RPI.Public/MeshDrawPacket.cpp
@@ -126,6 +130,7 @@ set(FILES
     Source/RPI.Public/Buffer/Buffer.cpp
     Source/RPI.Public/Buffer/BufferPool.cpp
     Source/RPI.Public/Buffer/BufferSystem.cpp
+    Source/RPI.Public/Buffer/RingBuffer.cpp
     Source/RPI.Public/DynamicDraw/DynamicBuffer.cpp
     Source/RPI.Public/DynamicDraw/DynamicBufferAllocator.cpp
     Source/RPI.Public/DynamicDraw/DynamicDrawContext.cpp

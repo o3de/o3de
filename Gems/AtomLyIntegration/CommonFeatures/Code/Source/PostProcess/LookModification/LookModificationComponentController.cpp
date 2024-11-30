@@ -54,7 +54,7 @@ namespace AZ
 
         void LookModificationComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("LookModificationService"));
+            incompatible.push_back(AZ_CRC_CE("LookModificationService"));
         }
 
         void LookModificationComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

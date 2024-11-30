@@ -185,12 +185,12 @@ namespace AzFramework
 
     void LogComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LoggingService", 0x64b9f716));
+        provided.push_back(AZ_CRC_CE("LoggingService"));
     }
 
     void LogComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LoggingService", 0x64b9f716));
+        incompatible.push_back(AZ_CRC_CE("LoggingService"));
     }
 
     void LogComponent::SetMachineReadable(bool newValue)

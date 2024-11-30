@@ -6,6 +6,7 @@
         "PassTemplate": {
             "Name": "ForwardCheckerboardPassTemplate",
             "PassClass": "CheckerboardPass",
+            "DefaultShaderAttachmentStage":  "FragmentShader",
             "Slots": [
                 {
                     "Name": "BRDFTextureInput",

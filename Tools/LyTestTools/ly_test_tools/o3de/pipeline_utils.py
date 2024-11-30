@@ -197,7 +197,7 @@ def create_asset_processor_backup_directories(backup_root_directory: str, test_b
     :return: None
     """
     if not os.path.exists(os.path.join(backup_root_directory, test_backup_directory)):
-        os.makedirs(os.path.join(backup_root_directory, test_backup_directory))
+        os.makedirs(os.path.join(backup_root_directory, test_backup_directory), exist_ok=True)
 
 
 def backup_asset_processor_logs(bin_directory: str, backup_directory: str) -> None:

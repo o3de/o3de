@@ -68,7 +68,7 @@ namespace UnitTest
 
     TEST_F(VegetationComponentFilterTests, SurfaceMaskFilterComponent)
     {
-        const auto maskValue = AZ_CRC("test_mask", 0x7a16e9ff);
+        const auto maskValue = AZ_CRC_CE("test_mask");
 
         Vegetation::SurfaceMaskFilterConfig config;
         config.m_inclusiveSurfaceMasks.push_back(maskValue);

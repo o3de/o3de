@@ -33,6 +33,7 @@
 
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Quality/QualitySystemBus.h>
 
 #include "AZCoreLogSink.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -41,7 +42,6 @@
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
@@ -1068,19 +1068,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
         //////////////////////////////////////////////////////////////////////////
         // LEVEL SYSTEM
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (usePrefabSystemForLevels)
-        {
-            m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
-        }
-        else
-        {
-            // [LYN-2376] Remove once legacy slice support is removed
-            m_pLevelSystem = new LegacyLevelSystem::CLevelSystem(this, ILevelSystem::GetLevelsDirectoryName());
-        }
+        m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
 
         InlineInitializationProcessing("CSystem::Init Level System");
 
@@ -1111,6 +1099,12 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     }
 
     InlineInitializationProcessing("CSystem::Init End");
+
+    // All CVARs should now be registered, load and apply quality settings for the default quality group
+    // using device rules to auto-detected the correct quality level 
+    AzFramework::QualitySystemEvents::Bus::Broadcast(
+        &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
+        AzFramework::QualityLevel::LevelFromDeviceRules);
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);

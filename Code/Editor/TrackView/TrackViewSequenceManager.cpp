@@ -19,11 +19,13 @@
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
 #include <CryCommon/Maestro/Types/SequenceType.h>
 
+// AzCore
+#include <AzCore/std/sort.h>
+
+
 // Editor
 #include "AnimationContext.h"
 #include "GameEngine.h"
-#include "Include/IObjectManager.h"
-#include "Objects/ObjectManager.h"
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -382,7 +384,7 @@ void CTrackViewSequenceManager::OnDeleteSequenceEntity(const AZ::EntityId& entit
 ////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::SortSequences()
 {
-    std::stable_sort(m_sequences.begin(), m_sequences.end(),
+    AZStd::stable_sort(m_sequences.begin(), m_sequences.end(),
         [](const std::unique_ptr<CTrackViewSequence>& a, const std::unique_ptr<CTrackViewSequence>& b) -> bool
         {
             QString aName = QString::fromUtf8(a.get()->GetName().c_str());

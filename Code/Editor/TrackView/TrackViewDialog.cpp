@@ -44,7 +44,6 @@
 // Editor
 #include "Settings.h"
 #include "Util/fastlib.h"
-#include "Objects/SelectionGroup.h"
 #include "TVSequenceProps.h"
 #include "TrackViewFindDlg.h"
 #include "SequenceBatchRenderDialog.h"
@@ -452,11 +451,11 @@ void CTrackViewDialog::InitToolbar()
     {
         QMenu* buttonMenu = new QMenu(this);
         toolButton->setMenu(buttonMenu);
-        qaction = buttonMenu->addAction("Stop");
-        connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnStop);
-        toolButton->addAction(qaction);
+
+        buttonMenu->addAction(qaction);
         qaction = buttonMenu->addAction("Stop with Hard Reset");
-        qaction->setData(true);
+        qaction->setData(ID_TV_STOP_HARD_RESET);
+        m_actions[ID_TV_STOP_HARD_RESET] = qaction;
         connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnStopHardReset);
     }
     m_playToolBar->addWidget(toolButton);
@@ -596,14 +595,6 @@ void CTrackViewDialog::InitToolbar()
     m_actions[ID_TV_SNAP_TICK] = qaction;
     connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnSnapTick);
     m_keysToolBar->addSeparator();
-    qaction = m_keysToolBar->addAction(QIcon(":/Trackview/keys/tvkeys-11.png"), "Sync Selected Entity Nodes to Base Position");
-    qaction->setData(ID_TV_SYNC_TO_BASE);
-    m_actions[ID_TV_SYNC_TO_BASE] = qaction;
-    connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnSyncSelectedTracksToBase);
-    qaction = m_keysToolBar->addAction(QIcon(":/Trackview/keys/tvkeys-12.png"), "Sync Selected Entity Nodes from Base Position");
-    qaction->setData(ID_TV_SYNC_FROM_BASE);
-    m_actions[ID_TV_SYNC_FROM_BASE] = qaction;
-    connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnSyncSelectedTracksFromBase);
     QActionGroup* ag = new QActionGroup(this);
     ag->addAction(m_actions[ID_TV_ADDKEY]);
     ag->addAction(m_actions[ID_TV_MOVEKEY]);
@@ -997,27 +988,6 @@ void CTrackViewDialog::OnScaleKey()
 {
     m_wndDopeSheet->SetMouseActionMode(eTVActionMode_ScaleKey);
 }
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewDialog::OnSyncSelectedTracksToBase()
-{
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-    if (sequence)
-    {
-        sequence->SyncSelectedTracksToBase();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewDialog::OnSyncSelectedTracksFromBase()
-{
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-    if (sequence)
-    {
-        sequence->SyncSelectedTracksFromBase();
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAddSequence()
 {
@@ -2214,7 +2184,6 @@ void CTrackViewDialog::OnEntityDestruction(const AZ::EntityId& entityId)
     if (m_currentSequenceEntityId == entityId)
     {
         // The currently selected sequence is about to be deleted, make sure to clear the selection right now.
-        // Clearing it here will make sure it is clear in slice work flow edge cases.
         GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
 
         // Refresh the records in m_wndNodesCtrl, the sequence will not be selected in Track View

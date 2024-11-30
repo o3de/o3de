@@ -66,7 +66,7 @@ namespace LyShine
         {
             serialize->Class<LyShineSystemComponent, AZ::Component>()
                 ->Version(1)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ->Field("CursorImagePath", &LyShineSystemComponent::m_cursorImagePathname);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
@@ -106,28 +106,28 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LyShineService", 0xae98ab29));
+        provided.push_back(AZ_CRC_CE("LyShineService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LyShineService", 0xae98ab29));
+        incompatible.push_back(AZ_CRC_CE("LyShineService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
 #if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        required.push_back(AZ_CRC_CE("RPISystem"));
 #endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-        dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

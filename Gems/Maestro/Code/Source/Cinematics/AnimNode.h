@@ -75,9 +75,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Space position/orientation scale.
     //////////////////////////////////////////////////////////////////////////
-    void SetPos([[maybe_unused]] float time, [[maybe_unused]] const Vec3& pos) override {};
-    void SetRotate([[maybe_unused]] float time, [[maybe_unused]] const Quat& quat) override {};
-    void SetScale([[maybe_unused]] float time, [[maybe_unused]] const Vec3& scale) override {};
+    void SetPos([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& pos) override {};
+    void SetRotate([[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& quat) override {};
+    void SetScale([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& scale) override {};
 
     Vec3 GetPos() override { return Vec3(0, 0, 0); };
     Quat GetRotate() override { return Quat(0, 0, 0, 0); };
@@ -94,11 +94,11 @@ public:
     unsigned int GetParamCount() const override { return 0; };
 
     bool SetParamValue(float time, CAnimParamType param, float val) override;
-    bool SetParamValue(float time, CAnimParamType param, const Vec3& val) override;
-    bool SetParamValue(float time, CAnimParamType param, const Vec4& val) override;
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& val) override;
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& val) override;
     bool GetParamValue(float time, CAnimParamType param, float& val) override;
-    bool GetParamValue(float time, CAnimParamType param, Vec3& val) override;
-    bool GetParamValue(float time, CAnimParamType param, Vec4& val) override;
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& val) override;
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& val) override;
 
     void SetTarget([[maybe_unused]] IAnimNode* node) {};
     IAnimNode* GetTarget() const { return 0; };

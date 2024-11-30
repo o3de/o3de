@@ -50,7 +50,7 @@
                 {
                     // This buffer is used as the render target and should be at non-MSAA screen resolution
                     // to make sure no overwork is done.
-                    "Name": "InverseAlphaRTOutput",
+                    "Name": "InverseAlphaRTImage",
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
@@ -83,6 +83,15 @@
                             "ShaderWrite",
                             "ShaderRead"
                         ]
+                    }
+                }
+            ],
+             "Connections": [
+                {
+                    "LocalSlot": "InverseAlphaRTOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "InverseAlphaRTImage"
                     }
                 }
             ],

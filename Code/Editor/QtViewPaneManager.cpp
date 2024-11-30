@@ -32,8 +32,6 @@
 #include <algorithm>
 #include <QScopedValueRollback>
 
-#include <AzFramework/API/ApplicationAPI.h>
-
 #include <AzAssetBrowser/AzAssetBrowserWindow.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzQtComponents/Utilities/AutoSettingsGroup.h>
@@ -46,6 +44,7 @@
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <IXml.h>
 
 // Helper for EditorComponentModeNotifications to be used
 // as a member instead of inheriting from EBus directly.
@@ -1042,11 +1041,6 @@ bool QtViewPaneManager::ClosePanesWithRollback(const QVector<QString>& panesToKe
  */
 void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
 {
-    // Get whether the prefab system is enabled
-    bool isPrefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     if (resetSettings)
     {
         // We're going to do something destructive (removing all of the viewpane settings). Better confirm with the user
@@ -1087,11 +1081,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         state.viewPanes.push_back(LyViewPane::AssetBrowser);
         state.viewPanes.push_back(LyViewPane::Console);
 
-        if (!isPrefabSystemEnabled)
-        {
-            state.viewPanes.push_back(LyViewPane::LevelInspector);
-        }
-
         state.mainWindowState = m_defaultMainWindowState;
 
         {
@@ -1117,10 +1106,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     const QtViewPane* consoleViewPane = OpenPane(LyViewPane::Console, QtViewPane::OpenMode::UseDefaultState);
 
     const QtViewPane* levelInspectorPane = nullptr;
-    if (!isPrefabSystemEnabled)
-    {
-        levelInspectorPane = OpenPane(LyViewPane::LevelInspector, QtViewPane::OpenMode::UseDefaultState);
-    }
 
     // This class does all kinds of behind the scenes magic to make docking / restore work, especially with groups
     // so instead of doing our special default layout attach / docking right now, we want to make it happen

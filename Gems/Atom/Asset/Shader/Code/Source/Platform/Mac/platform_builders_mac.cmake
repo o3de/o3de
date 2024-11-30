@@ -8,7 +8,7 @@
 
 # Shader Headers
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Windows/DX12/AzslcHeader.azsli
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Windows/DX12/PlatformHeader.hlsli
@@ -17,7 +17,7 @@ ly_add_target_files(
 )
 
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Windows/Vulkan/AzslcHeader.azsli
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Windows/Vulkan/PlatformHeader.hlsli
@@ -26,7 +26,7 @@ ly_add_target_files(
 )
 
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Windows/Null/AzslcHeader.azsli
    OUTPUT_SUBDIRECTORY
@@ -34,7 +34,7 @@ ly_add_target_files(
 )
 
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Mac/Metal/AzslcHeader.azsli
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Mac/Metal/PlatformHeader.hlsli
@@ -43,7 +43,7 @@ ly_add_target_files(
 )
 
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Mac/Null/AzslcHeader.azsli
    OUTPUT_SUBDIRECTORY
@@ -51,7 +51,7 @@ ly_add_target_files(
 )
 
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/iOS/Metal/AzslcHeader.azsli
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/iOS/Metal/PlatformHeader.hlsli
@@ -60,7 +60,7 @@ ly_add_target_files(
 )
 
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Android/Vulkan/AzslcHeader.azsli
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Android/Vulkan/PlatformHeader.hlsli
@@ -69,7 +69,7 @@ ly_add_target_files(
 )
 
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/Vulkan/AzslcHeader.azsli
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/Vulkan/PlatformHeader.hlsli
@@ -78,7 +78,7 @@ ly_add_target_files(
 )
 
 ly_add_target_files(
-   TARGETS Atom_Asset_Shader.Builders
+   TARGETS ${gem_name}.Builders
    FILES 
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/Null/AzslcHeader.azsli
    OUTPUT_SUBDIRECTORY

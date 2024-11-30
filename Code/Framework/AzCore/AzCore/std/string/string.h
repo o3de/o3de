@@ -730,7 +730,7 @@ namespace AZStd
                     // If the input string is a sub-string and it would cause
                     // this string to need to re-allocated as it doesn't fit in the capacity
                     // Then the  input string is needs to be copied into a local buffer
-                    inputStringCopy = reinterpret_cast<pointer>(get_allocator().allocate(ptrCount * sizeof(value_type), alignof(value_type)));
+                    inputStringCopy = reinterpret_cast<pointer>(static_cast<void*>(get_allocator().allocate(ptrCount * sizeof(value_type), alignof(value_type))));
                     Traits::copy(inputStringCopy, ptr, ptrCount);
                     // Updated the input string pointer to point to the local buffer
                     ptr = inputStringCopy;
@@ -1332,7 +1332,7 @@ namespace AZStd
                     allocator_type newAllocator = allocator;
                     pointer data = m_storage.first().GetData();
 
-                    pointer newData = reinterpret_cast<pointer>(newAllocator.allocate(sizeof(node_type) * (capacity() + 1), alignof(node_type)));
+                    pointer newData = reinterpret_cast<pointer>(static_cast<void*>(newAllocator.allocate(sizeof(node_type) * (capacity() + 1), alignof(node_type))));
 
                     Traits::copy(newData, data, size() + 1);  // copy elements and terminator
 
@@ -1439,7 +1439,7 @@ namespace AZStd
                 }
                 else
                 {
-                    pointer newData = reinterpret_cast<pointer>(m_storage.second().allocate(sizeof(node_type) * (numElements + 1), alignof(node_type)));
+                    pointer newData = reinterpret_cast<pointer>(static_cast<void*>(m_storage.second().allocate(sizeof(node_type) * (numElements + 1), alignof(node_type))));
                     AZSTD_CONTAINER_ASSERT(newData != nullptr, "AZStd::string allocation failed!");
 
                     size_type newSize = numElements < m_storage.first().GetSize() ? numElements : m_storage.first().GetSize();
@@ -1659,7 +1659,7 @@ namespace AZStd
             }
             if (newCapacity >= ShortStringData::Capacity)
             {
-                pointer newData = reinterpret_cast<pointer>(m_storage.second().allocate(sizeof(node_type) * (newCapacity + 1), alignof(node_type)));
+                pointer newData = reinterpret_cast<pointer>(static_cast<void*>(m_storage.second().allocate(sizeof(node_type) * (newCapacity + 1), alignof(node_type))));
                 AZSTD_CONTAINER_ASSERT(newData != nullptr, "AZStd::string allocation failed!");
                 if (newData)
                 {

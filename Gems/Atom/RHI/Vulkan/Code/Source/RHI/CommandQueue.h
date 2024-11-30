@@ -9,7 +9,7 @@
 
 #include <Atom/RHI/CommandQueue.h>
 #include <Atom/RHI/Object.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <RHI/CommandList.h>
 #include <RHI/Semaphore.h>
 #include <RHI/Queue.h>
@@ -34,6 +34,9 @@ namespace AZ
 
             /// Fence to signal after execution of commands
             AZStd::vector<RHI::Ptr<Fence>> m_fencesToSignal;
+
+            /// Fence to wait for before execution of command
+            AZStd::vector<RHI::Ptr<Fence>> m_fencesToWaitFor;
 
             /// Debug label to insert during work execution
             AZStd::string m_debugLabel;

@@ -11,8 +11,10 @@
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
@@ -77,16 +79,18 @@ namespace AZ
             // RHI::CommandList
             void SetViewports(const RHI::Viewport* rhiViewports, uint32_t count) override;
             void SetScissors(const RHI::Scissor* rhiScissors, uint32_t count) override;
-            void SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
-            void SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
-            void Submit(const RHI::CopyItem& copyItems, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::DrawItem& itemList, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::DispatchItem& dispatchItems, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
-            void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
+            void SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup) override;
+            void SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup) override;
+            void Submit(const RHI::DeviceCopyItem& copyItems, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceDrawItem& itemList, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceDispatchItem& dispatchItems, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
+            void BeginPredication(const RHI::DeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
-            void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
-            void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
+            void BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
+            void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
+            void BuildTopLevelAccelerationStructure(
+                const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList) override;
             void SetFragmentShadingRate(
                 RHI::ShadingRate rate,
                 const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override;
@@ -130,6 +134,8 @@ namespace AZ
             {
                 const PipelineState* m_pipelineState = nullptr;
                 AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_SRGByAzslBindingSlot = { {} };
+                // Used for better debugging (VS Natvis)
+                AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_SRGByVulkanBindingIndex = { {} };
                 AZStd::array<VkDescriptorSet, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_descriptorSets = { {VK_NULL_HANDLE} };
                 AZStd::bitset<RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_dirtyShaderResourceGroupFlags;
             };
@@ -157,9 +163,9 @@ namespace AZ
 
             RHI::ResultCode BuildNativeCommandBuffer();
 
-            void SetShaderResourceGroup(const RHI::ShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
-            void SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count);
-            void SetIndexBuffer(const RHI::IndexBufferView& indexBufferView);
+            void SetShaderResourceGroup(const RHI::DeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
+            void SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices);
+            void SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView);
             void SetStencilRef(uint8_t stencilRef);
             void BindPipeline(const PipelineState* pipelineState);
             void CommitViewportState();
@@ -191,12 +197,14 @@ namespace AZ
             AZ_Assert(pipelineState, "Pipeline state is null.");
             if(!pipelineState)
             {
+                AZ_Warning("CommandList", false, "Pipeline state is null.");
                 return false;
             }
             
             AZ_Assert(pipelineState->GetPipelineLayout(), "Pipeline layout is null.");
             if(!pipelineState->GetPipelineLayout())
             {
+                AZ_Warning("CommandList", false, "Pipeline layout is null.");
                 return false;
             }
             

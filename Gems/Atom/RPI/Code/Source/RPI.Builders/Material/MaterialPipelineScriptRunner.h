@@ -10,7 +10,6 @@
 
 #include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
@@ -27,6 +26,8 @@ namespace AZ
 
             MaterialPipelineScriptRunner();
 
+            static void Reflect(ReflectContext* context);
+
             bool RunScript(const AZ::IO::Path& materialPipelineFile, const MaterialPipelineSourceData& materialPipeline, const MaterialTypeSourceData& materialType);
             void Reset();
 
@@ -39,7 +40,7 @@ namespace AZ
             public:
                 AZ_TYPE_INFO(ScriptExecutionContext, "{DB3E5775-40FB-4F68-BCF4-4E21649F2316}");
 
-                static void Reflect(ReflectContext* behaviorContext);
+                static void Reflect(ReflectContext* context);
 
                 ScriptExecutionContext(const MaterialTypeSourceData& materialType, const ShaderTemplatesList& availableShaderTemplates);
 
@@ -74,7 +75,6 @@ namespace AZ
             // what it's really configuring is the behavior of the MaterialTypeBuilder.
             static constexpr char const MainFunctionName[] = "MaterialTypeSetup";
 
-            BehaviorContext m_scriptBehaviorContext;
             ShaderTemplatesList m_relevantShaderTemplates;
         };
 

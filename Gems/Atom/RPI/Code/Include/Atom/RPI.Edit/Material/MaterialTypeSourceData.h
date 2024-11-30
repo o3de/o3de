@@ -299,6 +299,9 @@ namespace AZ
             //! See enum Format
             Format GetFormat() const;
 
+            //! Return a concatenated list of shader references from all collections
+            AZStd::vector<ShaderVariantReferenceData> GetShaderReferences() const;
+
         private:
                 
             const PropertyGroup* FindPropertyGroup(AZStd::span<const AZStd::string_view> parsedPropertyGroupId, AZStd::span<const AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList) const;

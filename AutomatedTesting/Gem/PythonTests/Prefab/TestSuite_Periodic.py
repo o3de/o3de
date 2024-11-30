@@ -16,7 +16,7 @@ from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorSingleTest, 
 class TestAutomationNoOverrides(EditorTestSuite):
 
     # These tests will execute with prefab outliner overrides disabled
-    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement=false")
+    EditorTestSuite.global_extra_cmdline_args.append("--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableOutlinerOverrideManagement=false")
 
     @pytest.mark.skip(reason="Single test case to avoid suite failure. Can be removed when other tests are added.")
     class test_DummyTest(EditorSingleTest):

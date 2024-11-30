@@ -54,7 +54,7 @@ namespace ScriptCanvasTests
     {
         using namespace ScriptCanvas;
         t_NodeType* node{};
-        SystemRequestBus::BroadcastResult(node, &SystemRequests::GetNode<t_NodeType>, nodeID);
+        ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::GetNode<t_NodeType>, nodeID);
         EXPECT_TRUE(node != nullptr);
         return node;
     }
@@ -68,7 +68,7 @@ namespace ScriptCanvasTests
         entity->Init();
         entityOut = entity->GetId();
         EXPECT_TRUE(entityOut.IsValid());
-        SystemRequestBus::Broadcast(&SystemRequests::CreateNodeOnEntity, entityOut, scriptCanvasId, azrtti_typeid<t_NodeType>());
+        ScriptCanvas::SystemRequestBus::Broadcast(&ScriptCanvas::SystemRequests::CreateNodeOnEntity, entityOut, scriptCanvasId, azrtti_typeid<t_NodeType>());
         return GetTestNode<t_NodeType>(scriptCanvasId, entityOut);
     }
 
@@ -754,11 +754,11 @@ namespace ScriptCanvasTests
         {
             if (condition)
             {
-                ExecutionOut(AZ_CRC("BranchTrue", 0xd49f121c), true, AZStd::string("called the true version!"));
+                ExecutionOut(AZ_CRC_CE("BranchTrue"), true, AZStd::string("called the true version!"));
             }
             else
             {
-                ExecutionOut(AZ_CRC("BranchFalse", 0xaceca8bc), false, AZStd::string("called the false version!"), AZ::Vector3(1, 2, 3));
+                ExecutionOut(AZ_CRC_CE("BranchFalse"), false, AZStd::string("called the false version!"), AZ::Vector3(1, 2, 3));
             }
         }
 

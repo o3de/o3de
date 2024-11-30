@@ -111,7 +111,7 @@ namespace AzToolsFramework
 
         AZ::u32 GetHandlerName(void) const override
         {
-            return AZ_CRC("Vector_Flex_Handler", 0x47a7620c);
+            return AZ_CRC_CE("Vector_Flex_Handler");
         }
 
         bool IsDefaultHandler() const override

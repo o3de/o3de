@@ -104,12 +104,12 @@ namespace ScriptCanvas
         //! GraphCanvas nodes adding a reference to the ScriptCanvas node in it's user data field
         if (classElement.GetVersion() <= 1)
         {
-            if (!classElement.RemoveElementByName(AZ_CRC("m_id", 0x7108ece0)))
+            if (!classElement.RemoveElementByName(AZ_CRC_CE("m_id")))
             {
                 return false;
             }
 
-            if (classElement.RemoveElementByName(AZ_CRC("m_name", 0xc08c4427)))
+            if (classElement.RemoveElementByName(AZ_CRC_CE("m_name")))
             {
                 return false;
             }
@@ -242,7 +242,8 @@ namespace ScriptCanvas
     {
         return m_data && m_data == other.m_data
             || !m_id.IsNull() && m_id == other.m_id
-            || !m_relativePath.empty() && m_relativePath == other.m_relativePath;
+            || !m_relativePath.empty() && m_relativePath == other.m_relativePath
+            || !m_absolutePath.empty() && m_absolutePath == other.m_absolutePath;
     }
 
     void SourceHandle::Clear()

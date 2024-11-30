@@ -6,6 +6,7 @@
  *
  */
 #include <RHI/FrameGraphExecuteGroupMerged.h>
+#include <RHI/Device.h>
 #include <RHI/SwapChain.h>
 
 namespace AZ
@@ -39,7 +40,7 @@ namespace AZ
                     auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
 
                     swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-                    for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
+                    for (RHI::DeviceSwapChain* swapChain : scope->GetSwapChainsToPresent())
                     {
                         swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
                     }
@@ -51,12 +52,23 @@ namespace AZ
                     fencesToSignal.reserve(fencesToSignal.size() + scope->GetFencesToSignal().size());
                     for (const RHI::Ptr<RHI::Fence>& fence : scope->GetFencesToSignal())
                     {
-                        fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                        fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope->GetDeviceIndex())).Get());
+                    }
+                }
+
+                {
+                    auto& fencesToWaitFor = m_workRequest.m_userFencesToWaitFor;
+
+                    fencesToWaitFor.reserve(fencesToWaitFor.size() + scope->GetFencesToWaitFor().size());
+                    for (const RHI::Ptr<RHI::Fence>& fence : scope->GetFencesToWaitFor())
+                    {
+                        fencesToWaitFor.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope->GetDeviceIndex())).Get());
                     }
                 }
             }
 
             InitMergedRequest request;
+            request.m_deviceIndex = device.GetDeviceIndex();
             request.m_scopeEntries = scopeEntries.data();
             request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
             Base::Init(request);

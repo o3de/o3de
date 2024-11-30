@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 
@@ -47,6 +47,11 @@ namespace AZ
                 m_filterMethod = method;
             }
 
+            void SetFilteringSampleCountMode(AZ::Render::ShadowFilterSampleCount filteringSampleCount)
+            {
+                m_filteringSampleCountMode = filteringSampleCount;
+            }
+
             void SetReceiverShadowPlaneBiasEnable(bool enable)
             {
                 m_receiverShadowPlaneBiasEnable = enable;
@@ -63,6 +68,7 @@ namespace AZ
             bool m_blendBetweenCascadesEnable = false;
             bool m_receiverShadowPlaneBiasEnable = false;
             ShadowFilterMethod m_filterMethod = ShadowFilterMethod::None;
+            ShadowFilterSampleCount m_filteringSampleCountMode = ShadowFilterSampleCount::PcfTap16;
 
             FullscreenShadowPass(const RPI::PassDescriptor& descriptor);
 

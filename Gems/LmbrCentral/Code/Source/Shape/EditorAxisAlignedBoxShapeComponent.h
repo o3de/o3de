@@ -37,7 +37,7 @@ namespace LmbrCentral
         void Deactivate() override;
 
         // BoundsRequestBus overrides ...
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetLocalBounds() const override;
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);

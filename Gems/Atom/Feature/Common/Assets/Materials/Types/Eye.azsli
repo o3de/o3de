@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-    
+
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
 #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_MaterialSrg.azsli>
 
@@ -23,7 +23,8 @@
     COMMON_OPTIONS_NORMAL(o_sclera_)
     COMMON_OPTIONS_ROUGHNESS(o_sclera_)
     COMMON_OPTIONS_SPECULAR_F0()
-    
+    COMMON_OPTIONS_OCCLUSION()
+
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_VertexEval.azsli>
 

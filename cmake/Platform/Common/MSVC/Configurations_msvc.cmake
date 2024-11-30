@@ -6,11 +6,15 @@
 #
 #
 
-set(minimum_supported_toolset 142)
-if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
-    message(FATAL_ERROR "MSVC toolset ${MSVC_TOOLSET_VERSION} is too old, minimum supported toolset is ${minimum_supported_toolset}")
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+
+if (NOT O3DE_SCRIPT_ONLY)
+    set(minimum_supported_toolset 142)
+    if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
+        message(FATAL_ERROR "MSVC toolset ${MSVC_TOOLSET_VERSION} is too old, minimum supported toolset is ${minimum_supported_toolset}")
+    endif()
+    unset(minimum_supported_toolset)
 endif()
-unset(minimum_supported_toolset)
 
 include(cmake/Platform/Common/Configurations_common.cmake)
 include(cmake/Platform/Common/MSVC/VisualStudio_common.cmake)
@@ -26,6 +30,7 @@ endif()
 ly_append_configurations_options(
     DEFINES
         _ENABLE_EXTENDED_ALIGNED_STORAGE # Enables support for extended alignment for the MSVC std::aligned_storage class
+        _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING # Prevents triggering of STL4043 when checked iterators are used in 3rdParty libraries(QT and AWSNativeSDK)
     COMPILATION
         /fp:fast        # allows the compiler to reorder, combine, or simplify floating-point operations to optimize floating-point code for speed and space
         /Gd             # Use _cdecl calling convention for all functions

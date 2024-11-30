@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI/XRRenderingInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <AtomCore/Instance/Instance.h>
 
 namespace AZ::RHI
@@ -22,8 +23,8 @@ namespace AZ::RHI
 
 namespace AZ::RPI
 {
-    static const int XRMaxNumControllers = 2;
-    static const int XRMaxNumViews = 2;
+    static constexpr int XRMaxNumControllers = 2;
+    static constexpr int XRMaxNumViews = 2;
     class PassTemplate;
     class AttachmentImage;
 
@@ -87,6 +88,9 @@ namespace AZ::RPI
         //! Return the controller Pose data associated with provided hand Index.
         virtual RHI::ResultCode GetControllerPose(const AZ::u32 handIndex, PoseData& outPoseData) const = 0;
 
+        //! Same as above, but conveniently returns a transform.
+        virtual RHI::ResultCode GetControllerTransform(const AZ::u32 handIndex, AZ::Transform& outTransform) const = 0;
+
         //! Return the Pose data associated with front view.
         virtual RHI::ResultCode GetViewFrontPose(PoseData& outPoseData) const = 0;
 
@@ -131,12 +135,6 @@ namespace AZ::RPI
 
         //! Return the X button state from the controller.
         virtual float GetTriggerState(const AZ::u32 handIndex) const = 0;
-
-        //! Initialize a shading rate image attachment of a pass template with contents suitable for a foveated level.
-        //! Returns the image that was created and initialized.
-        //! If no foveated level is specified, the value will be retrieved from the settings registry.
-        virtual AZ::Data::Instance<AZ::RPI::AttachmentImage> InitPassFoveatedAttachment(
-            const PassTemplate& passTemplate, const RHI::XRFoveatedLevel* level = nullptr) const = 0;
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI.

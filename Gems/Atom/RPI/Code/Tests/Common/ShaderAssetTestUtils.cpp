@@ -107,7 +107,6 @@ namespace UnitTest
         creator.Begin(shaderAssetId);
         creator.SetName(shaderName);
         creator.SetDrawListName(drawListName);
-        creator.SetDrawListName(drawListName);
         creator.SetShaderOptionGroupLayout(optionalShaderOptions);
 
         creator.BeginAPI(RHI::Factory::Get().GetType());

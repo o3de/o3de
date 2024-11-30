@@ -96,11 +96,11 @@ namespace AZ
         VectorN GetClamp(const VectorN& min, const VectorN& max) const;
         //! @}
 
-        //! Returns squared length of the vector.
-        float GetLengthSq() const;
+        //! Returns L1 norm (Manhattan distance) of the vector, full accuracy.
+        float L1Norm() const;
 
-        //! Returns length of the vector, full accuracy.
-        float GetLength() const;
+        //! Returns L2 norm (Euclidean distance) of the vector, full accuracy.
+        float L2Norm() const;
 
         //! Returns normalized vector, full accuracy.
         VectorN GetNormalized() const;

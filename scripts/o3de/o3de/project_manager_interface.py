@@ -308,7 +308,15 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     # it's easier to determine which gems are engine gems here rather than in c++
     # because the project might be using a different engine than the one Project Manager is
     # running out of
-    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+
+    # Attempt to get the engine path from the project path if possible (except when the project path
+    # is a template). If not, then default to attempting to get engine path from the registered 
+    # '--this-engine' value from the manifest
+    engine_path = None
+    if project_path and utils.find_ancestor_dir_containing_file('template.json', project_path) is None:
+        engine_path = manifest.get_project_engine_path(project_path=project_path)
+    if not engine_path:
+        engine_path = manifest.get_this_engine_path()
     if not engine_path:
         logger.error("Failed to get engine path for gem info retrieval")
         return [] 
@@ -435,7 +443,14 @@ def get_gem_infos_from_all_repos(project_path:pathlib.Path = None, enabled_only:
     if not remote_gem_json_data_list:
         return list()
 
-    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+    # Attempt to get the engine path from the project path if possible (except when the project path
+    # is a template). If not, then default to attempting to get engine path from the registered 
+    # '--this-engine' value from the manifest
+    engine_path = None
+    if project_path and utils.find_ancestor_dir_containing_file('template.json', project_path) is None:
+        engine_path = manifest.get_project_engine_path(project_path=project_path)
+    if not engine_path:
+        engine_path = manifest.get_this_engine_path()
     if not engine_path:
         logger.error("Failed to get engine path for remote gem compatibility checks")
         return list() 

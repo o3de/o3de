@@ -236,7 +236,6 @@ struct IMovieCallback
     virtual ~IMovieCallback(){}
     // Called by movie system.
     virtual void OnMovieCallback(ECallbackReason reason, IAnimNode* pNode) = 0;
-    virtual void OnSetCamera(const SCameraParams& Params) = 0;
     virtual bool IsSequenceCamUsed() const = 0;
     // </interfuscator:shuffle>
 };
@@ -383,59 +382,25 @@ struct IAnimTrack
     // Applies a scale multiplier set in SetMultiplier(), if requested
     //////////////////////////////////////////////////////////////////////////
     virtual void GetValue(float time, float& value, bool applyMultiplier=false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Vector3
-     **/
-    virtual void GetValue(float time, Vec3& value, bool applyMultiplier = false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Vector4
-     **/
-    virtual void GetValue(float time, Vec4& value, bool applyMultiplier = false) = 0;
-        /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent GetValue that accepts AZ::Quaternion
-     **/
-    virtual void GetValue(float time, Quat& value) = 0;
+    virtual void GetValue(float time, AZ::Vector3& value, bool applyMultiplier = false) = 0;
+    virtual void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false) = 0;
+    virtual void GetValue(float time, AZ::Quaternion& value) = 0;
     virtual void GetValue(float time, bool& value) = 0;
     virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) = 0;
-
-    // support for AZ:: vector types - re-route to legacy types
-    void GetValue(float time, AZ::Vector3& value, bool applyMultiplier = false);
-    void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false);
-    void GetValue(float time, AZ::Quaternion& value);
 
     //////////////////////////////////////////////////////////////////////////
     // Set track value at specified time.
     // Adds new keys if required.
     //////////////////////////////////////////////////////////////////////////
     virtual void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Vector3
-     **/
-    virtual void SetValue(float time, const Vec3& value, bool bDefault = false, bool applyMultiplier = false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Vector4
-     **/
-    virtual void SetValue(float time, const Vec4& value, bool bDefault = false, bool applyMultiplier = false) = 0;
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9133)
-     * use equivalent SetValue that accepts AZ::Quaternion
-     **/
-    virtual void SetValue(float time, const Quat& value, bool bDefault = false) = 0;
+    virtual void SetValue(float time, const AZ::Vector3& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    virtual void SetValue(float time, const AZ::Vector4& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    virtual void SetValue(float time, const AZ::Quaternion& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) = 0;
 
-    // support for AZ:: vector types - re-route to legacy types
-    void SetValue(float time, AZ::Vector4& value, bool bDefault = false, bool applyMultiplier = false);
-    void SetValue(float time, AZ::Vector3& value, bool bDefault = false, bool applyMultiplier = false);
-    void SetValue(float time, AZ::Quaternion& value, bool bDefault = false);
-
     // Only for position tracks, offset all track keys by this amount.
-    virtual void OffsetKeyPosition(const Vec3& value) = 0;
+    virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
 
     // Used to update the data in tracks after the parent entity has been changed.
     virtual void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM) = 0;
@@ -587,31 +552,9 @@ public:
     // Return movie system that created this node.
     virtual IMovieSystem*   GetMovieSystem() const = 0;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Space position/orientation scale.
-    //////////////////////////////////////////////////////////////////////////
-    //! Translate entity node.
-    virtual void SetPos(float time, const Vec3& pos) = 0;
-    //! Rotate entity node.
-    virtual void SetRotate(float time, const Quat& quat) = 0;
-    //! Scale entity node.
-    virtual void SetScale(float time, const Vec3& scale) = 0;
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetPos that accepts AZ::Vector3
-     **/
-    void SetPos(float time, const AZ::Vector3& pos);
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetRotate that accepts AZ::Quaternion
-     **/
-    void SetRotate(float time, const AZ::Quaternion& rot);
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetScale that accepts AZ::Vector3
-     **/
-    void SetScale(float time, const AZ::Vector3& scale);
+    virtual void SetPos(float time, const AZ::Vector3& pos) = 0;
+    virtual void SetRotate(float time, const AZ::Quaternion& rot) = 0;
+    virtual void SetScale(float time, const AZ::Vector3& scale) = 0;
 
     //! Compute and return the offset which brings the current position to the given position
     virtual Vec3 GetOffsetPosition(const Vec3& position);
@@ -629,38 +572,14 @@ public:
     // Set float/vec3/vec4 parameter at given time.
     // @return true if parameter set, false if this parameter not exist in node.
     virtual bool SetParamValue(float time, CAnimParamType param, float value) = 0;
-    virtual bool SetParamValue(float time, CAnimParamType param, const Vec3& value) = 0;
-    virtual bool SetParamValue(float time, CAnimParamType param, const Vec4& value) = 0;
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetParamValue that accepts AZ::Vector3
-     **/
-    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value);
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent SetParamValue that accepts AZ::Vector4
-     **/
-    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value);
+    virtual bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value) = 0;
+    virtual bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value) = 0;
 
     // Get float/vec3/vec4 parameter at given time.
     // @return true if parameter exist, false if this parameter not exist in node.
     virtual bool GetParamValue(float time, CAnimParamType param, float& value) = 0;
-    virtual bool GetParamValue(float time, CAnimParamType param, Vec3& value) = 0;
-    virtual bool GetParamValue(float time, CAnimParamType param, Vec4& value) = 0;
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent GetParamValue that accepts AZ::Vector4
-     **/
-    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value);
-
-    /**
-     * O3DE_DEPRECATION_NOTICE(GHI-9326)
-     * use equivalent GetParamValue that accepts AZ::Vector4
-     **/
-    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value);
+    virtual bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value) = 0;
+    virtual bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value) = 0;
 
     //! Evaluate animation node while not playing animation.
     virtual void StillUpdate() = 0;
@@ -1278,8 +1197,6 @@ struct IMovieSystem
     // While in recording mode any changes made to node will be added as keys to tracks.
     virtual void SetRecording(bool recording) = 0;
     virtual bool IsRecording() const = 0;
-
-    virtual void EnableCameraShake(bool bEnabled) = 0;
 
     // Pause any playing sequences.
     virtual void Pause() = 0;

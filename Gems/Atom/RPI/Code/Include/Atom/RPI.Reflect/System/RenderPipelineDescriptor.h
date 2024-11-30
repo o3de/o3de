@@ -18,6 +18,16 @@ namespace AZ
 
     namespace RPI
     {
+         // Rendering Settings
+        enum class AntiAliasingMode
+        {
+            MSAA,
+            SMAA,
+            TAA,
+            Default = -1
+        };
+
+
         //! A descriptor used to create a render pipeline
         struct RenderPipelineDescriptor final
         {
@@ -49,6 +59,12 @@ namespace AZ
 
             //! Flag indicating if this pipeline can accept modifications from scene's feature processors
             bool m_allowModification = false;
+
+            //! Flag indicating if this pipeline can accept subpass merging.
+            bool m_allowSubpassMerging = false;
+
+            //! Include(MSAA, TAA, SMAA)
+            AZStd::string m_defaultAAMethod = "MSAA";
         };
 
     } // namespace RPI

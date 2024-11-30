@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -28,8 +28,15 @@ namespace AZ
 {
     namespace Render
     {
+        static const char* const FogModeOptionName{ "o_fogMode" };
+
+        AZ_CVAR(bool, r_enableFog, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog");
+        AZ_CVAR(bool, r_fogLayerSupport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog layer support");
+        AZ_CVAR(bool, r_fogTurbulenceSupport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable fog turbulence support");
+
         DeferredFogPass::DeferredFogPass(const RPI::PassDescriptor& descriptor)
             : RPI::FullscreenTrianglePass(descriptor)
+            , m_fogModeOptionName(FogModeOptionName)
         {
         }
 
@@ -38,6 +45,14 @@ namespace AZ
             RPI::Ptr<DeferredFogPass> pass = aznew DeferredFogPass(descriptor);
             pass->SetSrgBindIndices();
 
+            // The following will ensure that in the case of data driven pass, the settings will get
+            // updated by the pass enable state.
+            // When code is involved or editor component comes to action, this value will be overriden
+            // in the following frames.
+            DeferredFogSettings* fogSettings = pass->GetPassFogSettings();
+            bool isEnabled = pass->Pass::IsEnabled(); // retrieves the state from the data driven pass
+            fogSettings->SetEnabled(isEnabled); // Set it and mark for update
+
             return AZStd::move(pass);
         }
 
@@ -45,14 +60,6 @@ namespace AZ
         void DeferredFogPass::InitializeInternal()
         {
             FullscreenTrianglePass::InitializeInternal();
-
-            // The following will ensure that in the case of data driven pass, the settings will get
-            // updated by the pass enable state.
-            // When code is involved or editor component comes to action, this value will be overriden
-            // in the following frames.
-            DeferredFogSettings* fogSettings = GetPassFogSettings();
-            bool isEnabled = Pass::IsEnabled();     // retrieves the state from the data driven pass
-            fogSettings->SetEnabled(isEnabled);     // Set it and mark for update
         }
 
         //---------------------------------------------------------------------
@@ -106,6 +113,8 @@ namespace AZ
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             fogSettings->SetInitialized(true);
+
+            m_depthTextureDimensionsIndex = srg->FindShaderInputConstantIndex(Name("m_depthTextureDimentions"));
         }
 
 
@@ -141,21 +150,45 @@ namespace AZ
 
             // The Srg constants value settings
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                          \
-            srg->SetConstant( fogSettings->MemberName##SrgIndex, fogSettings->MemberName );     \
+            if (fogSettings->MemberName##SrgIndex.IsValid())                                    \
+            {   \
+                srg->SetConstant( fogSettings->MemberName##SrgIndex, fogSettings->MemberName ); \
+            }   \
 
 #include <Atom/Feature/ParamMacros/MapParamCommon.inl>
 
             // The following macro overrides the regular macro defined above, loads an image and bind it
 #undef AZ_GFX_TEXTURE2D_PARAM
 #define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)                      \
-            if (!srg->SetImage(fogSettings->MemberName##SrgIndex, fogSettings->MemberName##Image ))           \
-            {                                                                       \
-                AZ_Error( "DeferredFogPass::SetSrgConstants", false, "Failed to bind SRG image for %s = %s",  \
-                    #MemberName, fogSettings->MemberName.c_str() );                                      \
-            }                                                                       \
+            if (fogSettings->MemberName##SrgIndex.IsValid())            \
+            {   \
+                if (!srg->SetImage(fogSettings->MemberName##SrgIndex, fogSettings->MemberName##Image))  \
+                {   \
+                    AZ_Error(                                                                                                                      \
+                        "DeferredFogPass::SetSrgConstants",                                                                                        \
+                        false,                                                                                                                     \
+                        "Failed to bind SRG image for %s = %s",                                                                                    \
+                        #MemberName,                                                                                                               \
+                        fogSettings->MemberName.c_str());                                                                                          \
+                }   \
+            }   \
+       
 
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
+
+            if (m_depthTextureDimensionsIndex.IsValid())
+            {
+                
+                auto attachment = GetInputOutputBinding(0).GetAttachment();
+                if (attachment)
+                {
+                    const auto& descriptor = attachment->GetTransientImageDescriptor().m_imageDescriptor;
+                    float depthTextureDimensions[] = { static_cast<float>(descriptor.m_size.m_width),
+                                                       static_cast<float>(descriptor.m_size.m_height) };
+                    srg->SetConstant(m_depthTextureDimensionsIndex, depthTextureDimensions);
+                }
+            }
         }
         //---------------------------------------------------------------------
 
@@ -180,26 +213,48 @@ namespace AZ
 
         bool DeferredFogPass::IsEnabled() const 
         {
+            if (!r_enableFog)
+            {
+                return false;
+            }
+
             const DeferredFogSettings* constFogSettings = const_cast<DeferredFogPass*>(this)->GetPassFogSettings();
             return constFogSettings->GetEnabled();
         }
 
         void DeferredFogPass::UpdateShaderOptions()
         {
-            RPI::ShaderOptionGroup shaderOption = m_shader->CreateShaderOptionGroup();
+            RPI::ShaderOptionGroup shaderOptions = m_shader->CreateShaderOptionGroup();
             DeferredFogSettings* fogSettings = GetPassFogSettings();
 
             // [TODO][ATOM-13659] - AZ::Name all over our code base should use init with string and
             // hash key for the iterations themselves.
-            shaderOption.SetValue(AZ::Name("o_enableFogLayer"),
-                fogSettings->GetEnableFogLayerShaderOption() ? AZ::Name("true") : AZ::Name("false"));
-            shaderOption.SetValue(AZ::Name("o_useNoiseTexture"),
-                fogSettings->GetUseNoiseTextureShaderOption() ? AZ::Name("true") : AZ::Name("false"));
-
-            // The following method returns the specified options, as well as fall back values for all 
-            // non-specified options.  If all were set you can use the method GetShaderVariantKey that is 
-            // cheaper but will not make sure the populated values has the default fall back for any unset bit.
-            m_ShaderOptions = shaderOption.GetShaderVariantKeyFallbackValue();
+            shaderOptions.SetValue(
+                AZ::Name("o_enableFogLayer"),
+                r_fogLayerSupport && fogSettings->GetEnableFogLayerShaderOption() ? AZ::Name("true") : AZ::Name("false"));
+            shaderOptions.SetValue(
+                AZ::Name("o_useNoiseTexture"),
+                r_fogTurbulenceSupport && fogSettings->GetUseNoiseTextureShaderOption() ? AZ::Name("true") : AZ::Name("false"));
+            switch (fogSettings->GetFogMode())
+            {
+            case FogMode::Linear:
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::LinearMode"));
+                break;
+            case FogMode::Exponential:
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialMode"));
+                break;
+            case FogMode::ExponentialSquared:
+                shaderOptions.SetValue(m_fogModeOptionName, AZ::Name("FogMode::ExponentialSquaredMode"));
+                break;
+            default:
+                AZ_Error("DeferredFogPass", false, "Invalid fog mode %d", fogSettings->GetFogMode());
+                break;
+            }
+            shaderOptions.SetUnspecifiedToDefaultValues();
+            if (m_pipelineStateForDraw.GetShaderVariantId() != shaderOptions.GetShaderVariantId())
+            {
+                FullscreenTrianglePass::UpdateShaderOptions(shaderOptions.GetShaderVariantId());
+            }
         }
 
         void DeferredFogPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -210,25 +265,10 @@ namespace AZ
             DeferredFogSettings* fogSettings = GetPassFogSettings();
 
             UpdateEnable(fogSettings);
-
             // Update and set the per pass shader options - this will update the current required
             // shader variant and if doesn't exist, it will be created via the compile stage
-            if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
-            {
-                UpdateShaderOptions();
-            }
-
+            UpdateShaderOptions();
             SetSrgConstants();
-        }
-  
-        void DeferredFogPass::CompileResources(const RHI::FrameGraphCompileContext& context)
-        {
-            if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
-            {
-                m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_ShaderOptions);
-            }
-
-            FullscreenTrianglePass::CompileResources(context);
         }
     }   // namespace Render
 }   // namespace AZ

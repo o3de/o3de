@@ -202,6 +202,26 @@ namespace DPEDebugView
             return m_toggle ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
         }
 
+        double DoubleMin() const
+        {
+            return -9.0;
+        }
+
+        double DoubleMax() const
+        {
+            return 9.0;
+        }
+
+        int IntMin() const
+        {
+            return -8;
+        }
+
+        int IntMax() const
+        {
+            return 8;
+        }
+
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -248,11 +268,13 @@ namespace DPEDebugView
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_toggle, "toggle switch", "")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleInt, "simple int", "")
+                        ->Attribute(AZ::Edit::Attributes::Min, &TestContainer::IntMin)
+                        ->Attribute(AZ::Edit::Attributes::Max, &TestContainer::IntMax)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &TestContainer::m_doubleSlider, "double slider", "")
+                        ->Attribute(AZ::Edit::Attributes::Min, &TestContainer::DoubleMin)
+                        ->Attribute(AZ::Edit::Attributes::Max, &TestContainer::DoubleMax)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleString, "simple string", "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &TestContainer::IsToggleEnabled)
-                        ->Attribute(AZ::Edit::Attributes::Min, -10.0)
-                        ->Attribute(AZ::Edit::Attributes::Max, 10.0)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Containers")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_vector, "vector<string>", "")

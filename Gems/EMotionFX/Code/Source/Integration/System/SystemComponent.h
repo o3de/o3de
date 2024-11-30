@@ -36,6 +36,11 @@ namespace AZ
     }
 }
 
+namespace AzToolsFramework
+{
+    class PropertyHandlerBase;
+}
+
 namespace EMotionFX
 {
     namespace Integration

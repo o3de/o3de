@@ -34,7 +34,7 @@ void CAssetBlendKeyUIControls::ResetStartEndLimits(float assetBlendKeyDuration)
     mv_blendOutTime.GetVar()->SetLimits(time_zero, assetBlendKeyDuration, step, true, true);
 }
 
-bool CAssetBlendKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CAssetBlendKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

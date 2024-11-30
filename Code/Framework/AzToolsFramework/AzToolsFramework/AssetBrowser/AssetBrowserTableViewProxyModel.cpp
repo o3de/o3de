@@ -12,7 +12,6 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
-#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 namespace AzToolsFramework
 {
@@ -27,7 +26,24 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserTableViewProxyModel::data(const QModelIndex& index, int role) const
         {
-            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            if (!index.isValid())
+            {
+                return QVariant();
+            }
+
+            QModelIndex currentIndex = mapToSource(index);
+            if (!currentIndex.isValid())
+            {
+                return QVariant(); 
+            }
+
+            QVariant entryVariant = currentIndex.data(AssetBrowserModel::Roles::EntryRole);
+            if (!entryVariant.isValid())
+            {
+                return QVariant(); // table might be temporarily empty or busy repopulating.
+            }
+
+            auto assetBrowserEntry = entryVariant.value<const AssetBrowserEntry*>();
             AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
             if (!assetBrowserEntry)
             {
@@ -42,14 +58,7 @@ namespace AzToolsFramework
                     {
                     case Name:
                         {
-                            QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
-
-                            if (!m_searchString.empty())
-                            {
-                                // highlight characters in filter
-                                name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
-                            }
-                            return name;
+                            return AssetBrowserViewUtils::GetAssetBrowserEntryNameWithHighlighting(assetBrowserEntry, m_searchString);
                         }
                     case Type:
                         {
@@ -146,11 +155,7 @@ namespace AzToolsFramework
             {
                 return (rowCount(parent) > 0) && (columnCount(parent) > 0);
             }
-            if (parent != m_rootIndex)
-            {
-                return false;
-            }
-            return true;
+            return parent == m_rootIndex;
         }
 
         int AssetBrowserTableViewProxyModel::columnCount([[maybe_unused]]const QModelIndex& parent) const
@@ -183,7 +188,6 @@ namespace AzToolsFramework
             }
         }
         
-
         bool AssetBrowserTableViewProxyModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
         {
             if (action == Qt::IgnoreAction)
@@ -244,7 +248,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTableViewProxyModel::SetSearchString(const QString& searchString)
         {
-             m_searchString = searchString.toUtf8().data();
+            m_searchString = searchString;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

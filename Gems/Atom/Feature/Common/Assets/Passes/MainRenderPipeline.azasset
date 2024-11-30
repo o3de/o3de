@@ -12,6 +12,7 @@
             "MultisampleState": {
                 "samples": 2
             }
-        }
+        },
+        "DefaultAAMethod": "MSAA"
     }
 }

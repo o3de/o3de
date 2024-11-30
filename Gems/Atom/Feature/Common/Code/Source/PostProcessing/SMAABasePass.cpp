@@ -19,7 +19,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -70,11 +70,6 @@ namespace AZ
             if (m_needToUpdateSRG)
             {
                 UpdateSRG();
-
-                if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
-                {
-                    m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_currentShaderVariantKeyFallbackValue);
-                }
                 m_needToUpdateSRG = false;
             }
 
@@ -86,8 +81,8 @@ namespace AZ
             auto shaderOption = m_shader->CreateShaderOptionGroup();
 
             GetCurrentShaderOption(shaderOption);
-
-            m_currentShaderVariantKeyFallbackValue = shaderOption.GetShaderVariantKeyFallbackValue();
+            shaderOption.SetUnspecifiedToDefaultValues();
+            UpdateShaderOptions(shaderOption.GetShaderVariantId());
             m_needToUpdateShaderVariant = false;
             InvalidateSRG();
         }

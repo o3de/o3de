@@ -43,7 +43,7 @@ namespace GraphCanvas
     
         static ActionGroupId GetAlignmentContextMenuActionGroupId()
         {
-            return AZ_CRC("AlignmentActionGroup", 0xd31bdeab);
+            return AZ_CRC_CE("AlignmentActionGroup");
         }
     
         ActionGroupId GetActionGroupId() const override

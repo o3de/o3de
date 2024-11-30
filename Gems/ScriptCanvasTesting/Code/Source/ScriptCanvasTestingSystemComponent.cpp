@@ -14,11 +14,10 @@
 #include "Framework/ScriptCanvasTestVerify.h"
 #include "Nodes/BehaviorContextObjectTestNode.h"
 
-#include <TestAutoGenFunctionRegistry.generated.h>
-#include <TestAutoGenNodeableRegistry.generated.h>
+#include "Nodes/Nodeables/SharedDataSlotExample.h"
+#include "Nodes/Nodeables/ValuePointerReferenceExample.h"
 
-REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
+#include "Nodes/TestAutoGenFunctions.h"
 
 namespace ScriptCanvasTestingNodes
 {
@@ -84,12 +83,12 @@ namespace ScriptCanvasTesting
 
     void ScriptCanvasTestingSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasTestingService", 0xd2b424fc));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasTestingService"));
     }
 
     void ScriptCanvasTestingSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptCanvasTestingService", 0xd2b424fc));
+        incompatible.push_back(AZ_CRC_CE("ScriptCanvasTestingService"));
     }
 
     void ScriptCanvasTestingSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

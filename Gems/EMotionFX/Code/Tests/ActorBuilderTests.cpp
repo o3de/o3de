@@ -76,6 +76,8 @@ namespace EMotionFX
 
         void TearDown() override
         {
+            m_actor.reset();
+
             delete m_scene;
             m_scene = nullptr;
 

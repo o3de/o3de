@@ -82,7 +82,6 @@ namespace EMotionFX
         }
 
     protected:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         BlendTree* m_blendTree = nullptr;
         BlendTreeFloatConstantNode* m_floatConstantNodeOne = nullptr;
         BlendTreeFloatConstantNode* m_floatConstantNodeTwo = nullptr;

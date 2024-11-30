@@ -34,6 +34,19 @@
                     }
                 }
             },
+            "VirtualGamepad": {
+                "Targets": {
+                    "VirtualGamepad": {
+                        "AutoLoad": false
+                    },
+                    "VirtualGamepad.Clients": {
+                        "AutoLoad": false
+                    },
+                    "VirtualGamepad.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "LyShine": {
                 "Targets": {
                     "LyShine": {
@@ -231,6 +244,20 @@
             "PhysXDebug": {
                 "Targets": {
                     "PhysXDebug.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysX5": {
+                "Targets": {
+                    "PhysX5.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysX5Debug": {
+                "Targets": {
+                    "PhysX5Debug.Editor": {
                         "AutoLoad": false
                     }
                 }

@@ -30,7 +30,7 @@ function(get_default_third_party_folder output_third_party_path)
     
     # 1. Highest priority, cache variable, that will override the value of any of the cases below
     # 2. if defined in an env variable, take it from there
-    if($ENV{LY_3RDPARTY_PATH})
+    if(DEFINED ENV{LY_3RDPARTY_PATH})
         set(${output_third_party_path} $ENV{LY_3RDPARTY_PATH} PARENT_SCOPE)
         return()
     endif()

@@ -74,6 +74,7 @@ namespace AZ
             Scene* GetScene(const SceneId& sceneId) const override;
             Scene* GetSceneByName(const AZ::Name& name) const override;
             ScenePtr GetDefaultScene() const override;
+            uint32_t GetNumScenes() const override;
             RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
             Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSceneSrgLayout() const override;
@@ -107,6 +108,9 @@ namespace AZ
             void OnSystemTick() override;
 
             float GetCurrentTime() const;
+
+            // Initializes XR resources (session, device, swapchain, etc).
+            void InitXRSystem();
 
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;

@@ -464,6 +464,32 @@ namespace ScriptCanvasEditor::Nodes
                     GraphCanvas::TranslationRequestBus::BroadcastResult(
                         details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
                 }
+                else
+                {
+                    AZStd::string direction = (slot.IsInput()) ? "entry" : "exit";
+
+                    // Get the translated value for the execution slot
+                    key.clear();
+                    key << context << className << "methods" << updatedMethodName << direction << "name";
+
+                    bool success = false;
+                    AZStd::string result;
+                    GraphCanvas::TranslationRequestBus::BroadcastResult(success, &GraphCanvas::TranslationRequests::Get, key, result);
+                    if (success)
+                    {
+                        details.m_name = result;
+                    }
+
+                    key.clear();
+                    key << context << className << "methods" << updatedMethodName << direction << "tooltip";
+
+                    GraphCanvas::TranslationRequestBus::BroadcastResult(success, &GraphCanvas::TranslationRequests::Get, key, result);
+                    if (success)
+                    {
+                        details.m_tooltip = result;
+                    }
+
+                }
 
                 GraphCanvas::SlotRequestBus::Event(
                     graphCanvasSlotId, &GraphCanvas::SlotRequests::SetDetails, details.m_name, details.m_tooltip);

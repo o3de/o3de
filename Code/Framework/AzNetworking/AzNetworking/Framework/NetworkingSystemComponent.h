@@ -13,6 +13,7 @@
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <AzNetworking/TcpTransport/TcpListenThread.h>
+#include <AzNetworking/UdpTransport/UdpHeartbeatThread.h>
 #include <AzNetworking/UdpTransport/UdpReaderThread.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -78,6 +79,7 @@ namespace AzNetworking
         NetworkInterfaces m_networkInterfaces;
         AZStd::unique_ptr<TcpListenThread> m_listenThread;
         AZStd::unique_ptr<UdpReaderThread> m_readerThread;
+        AZStd::unique_ptr<UdpHeartbeatThread> m_heartbeatThread;
 
         using CompressionFactories = AZStd::unordered_map<AZ::Crc32, AZStd::unique_ptr<ICompressorFactory>>;
         CompressionFactories m_compressorFactories;

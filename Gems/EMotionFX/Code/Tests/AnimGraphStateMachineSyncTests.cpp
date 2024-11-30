@@ -91,6 +91,17 @@ namespace EMotionFX
             GetEMotionFX().Update(0.0f);
         }
 
+        void TearDown() override
+        {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->Destroy();
+                m_animGraphInstance = nullptr;
+            }
+            m_motionNodeAnimGraph.reset();
+            AnimGraphFixture::TearDown();
+        }
+
     public:
         AZStd::unique_ptr<TwoMotionNodeAnimGraph> m_motionNodeAnimGraph;
         AnimGraphMotionNode* m_stateA = nullptr;

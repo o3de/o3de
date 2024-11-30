@@ -16,6 +16,7 @@
 #include "Maestro/Types/AnimNodeType.h"
 #include "Maestro/Types/AnimParamType.h"
 #include "Maestro/Types/AnimValueType.h"
+#include "MathConversion.h"
 
 //////////////////////////////////////////////////////////////////////////
 //!
@@ -342,7 +343,7 @@ void CAnimPostFXNode::CreateDefaultTracks()
             CCompoundSplineTrack* pCompoundTrack = static_cast<CCompoundSplineTrack*>(pTrack);
             Vec4 val(0.0f, 0.0f, 0.0f, 0.0f);
             m_pDescription->m_controlParams[i]->GetDefault(val);
-            pCompoundTrack->SetValue(0.0f, val, true);
+            pCompoundTrack->SetValue(0.0f, LYVec4ToAZVec4(val), true);
         }
     }
 }
@@ -388,7 +389,7 @@ void CAnimPostFXNode::Animate(SAnimContext& ac)
         }
         else if (valueType == AnimValueType::Vector4)
         {
-            Vec4 val(0.0f, 0.0f, 0.0f, 0.0f);
+            AZ::Vector4 val(0.0f, 0.0f, 0.0f, 0.0f);
             static_cast<CCompoundSplineTrack*>(pTrack)->GetValue(ac.time, val);
         }
     }

@@ -24,10 +24,11 @@
 #include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/string/regex.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/string/regex.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace AZ
@@ -271,26 +272,75 @@ namespace AZ
                 return CheckIsValidName(name, "Group name");
             }
 
+            AZStd::string PredictOriginalMaterialTypeSourcePath(const AZStd::string& materialTypeSourcePath)
+            {
+                constexpr const char* generatedMaterialTypeSuffix = "_generated.materialtype";
+                if (materialTypeSourcePath.ends_with(generatedMaterialTypeSuffix))
+                {
+                    // Separate the input material type path into a relative path and root folder. This should work for both intermediate,
+                    // generated material types and original material types.
+                    bool pathFound = false;
+                    AZStd::string relativePath;
+                    AZStd::string rootFolder;
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        pathFound,
+                        &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                        materialTypeSourcePath.c_str(),
+                        relativePath,
+                        rootFolder);
+
+                    if (pathFound)
+                    {
+                        // Replace the generated suffix if present
+                        AZ::StringFunc::Replace(relativePath, generatedMaterialTypeSuffix, ".materialtype");
+
+                        // Search for the original material type file using the stripped generated material type path.
+                        pathFound = false;
+                        AZ::Data::AssetInfo sourceInfo;
+                        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                            pathFound,
+                            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                            relativePath.c_str(),
+                            sourceInfo,
+                            rootFolder);
+
+                        if (pathFound)
+                        {
+                            const AZ::IO::Path result = AZ::IO::Path(rootFolder) / sourceInfo.m_relativePath;
+                            if (!result.empty())
+                            {
+                                return result.LexicallyNormal().String();
+                            }
+                        }
+                    }
+                }
+
+                // Conversion failed. Return the input path.
+                return materialTypeSourcePath;
+            }
+
             AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& originalMaterialTypeSourcePath)
             {
-                bool pathFound = false;
-                AZ::Data::AssetInfo assetInfo;
-                AZStd::string watchFolder;
-
                 // This just normalizes the original path into a relative path that can be easily converted into relative path
                 // to the intermediate .materialtype file
+                bool pathFound = false;
+                AZ::Data::AssetInfo sourceInfo;
+                AZStd::string rootFolder;
                 AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                    originalMaterialTypeSourcePath.c_str(), assetInfo, watchFolder);
+                    pathFound,
+                    &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                    originalMaterialTypeSourcePath.c_str(),
+                    sourceInfo,
+                    rootFolder);
 
                 if (!pathFound)
                 {
                     return {};
                 }
 
-                IO::Path intermediatePath = assetInfo.m_relativePath;
-                const AZStd::string materialTypeFilename = AZStd::string::format("%.*s_generated.materialtype",
-                    AZ_STRING_ARG(intermediatePath.Stem().Native()));
+                IO::Path intermediatePath = sourceInfo.m_relativePath;
+                const AZStd::string materialTypeFilename =
+                    AZStd::string::format("%.*s_generated.materialtype", AZ_STRING_ARG(intermediatePath.Stem().Native()));
                 intermediatePath.ReplaceFilename(materialTypeFilename.c_str());
 
                 AZStd::string intermediatePathString = intermediatePath.Native();
@@ -300,10 +350,7 @@ namespace AZ
                 intermediateMaterialTypePath /= "Cache";
                 intermediateMaterialTypePath /= "Intermediate Assets";
                 intermediateMaterialTypePath /= intermediatePathString;
-
-                intermediatePathString = intermediateMaterialTypePath.Native();
-
-                return intermediatePathString;
+                return intermediateMaterialTypePath.LexicallyNormal().String();
             }
 
             AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath)
@@ -315,14 +362,7 @@ namespace AZ
             AZStd::string GetIntermediateMaterialTypeSourcePath(const AZStd::string& forOriginalMaterialTypeSourcePath)
             {
                 const AZStd::string intermediatePathString = PredictIntermediateMaterialTypeSourcePath(forOriginalMaterialTypeSourcePath);
-                if (IO::LocalFileIO::GetInstance()->Exists(intermediatePathString.c_str()))
-                {
-                    return intermediatePathString;
-                }
-                else
-                {
-                    return {};
-                }
+                return IO::LocalFileIO::GetInstance()->Exists(intermediatePathString.c_str()) ? intermediatePathString : AZStd::string{};
             }
 
             Outcome<Data::AssetId> GetFinalMaterialTypeAssetId(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath)
@@ -333,10 +373,7 @@ namespace AZ
                 {
                     return AssetUtils::MakeAssetId(intermediateMaterialTypePath, MaterialTypeSourceData::IntermediateMaterialTypeSubId);
                 }
-                else
-                {
-                    return AssetUtils::MakeAssetId(resolvedPath, MaterialTypeAsset::SubId);
-                }
+                return AssetUtils::MakeAssetId(resolvedPath, MaterialTypeAsset::SubId);
             }
 
             AZStd::string GetFinalMaterialTypeSourcePath(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath)
@@ -347,10 +384,7 @@ namespace AZ
                 {
                     return resolvedPath;
                 }
-                else
-                {
-                    return intermediateMaterialTypePath;
-                }
+                return intermediateMaterialTypePath;
             }
 
         }

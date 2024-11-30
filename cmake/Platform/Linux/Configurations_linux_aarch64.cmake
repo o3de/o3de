@@ -26,6 +26,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -fpie
             -Wl,-z,relro,-z,now
             -Wl,-z,noexecstack
+            -Wl,--disable-new-dtags
     )
 
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
@@ -52,6 +53,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             ${LY_GCC_GPROF_LFLAGS}
             -Wl,--no-undefined
             -lpthread
+            -Wl,--disable-new-dtags
     )
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
 

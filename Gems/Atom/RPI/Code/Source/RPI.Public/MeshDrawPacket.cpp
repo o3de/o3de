@@ -182,6 +182,20 @@ namespace AZ
 
         bool MeshDrawPacket::Update(const Scene& parentScene, bool forceUpdate /*= false*/)
         {
+            // Setup the Shader variant handler when update this MeshDrawPacket the first time .
+            // This is because the MeshDrawPacket data can be copied or moved right after it's created.
+            // The m_shaderVariantHandler won't be copied correctly due to the capture of 'this' pointer.
+            // Instead of override all the copy and move operators, this might be a better solution.
+            if (!m_shaderVariantHandler.IsConnected())
+            {
+                m_shaderVariantHandler = Material::OnMaterialShaderVariantReadyEvent::Handler(
+                    [this]()
+                    {
+                        this->m_needUpdate = true;
+                    });
+                m_material->ConnectEvent(m_shaderVariantHandler);
+            }
+
             // Why we need to check "!m_material->NeedsCompile()"...
             //    Frame A:
             //      - Material::SetPropertyValue("foo",...). This bumps the material's CurrentChangeId()
@@ -202,6 +216,8 @@ namespace AZ
                 DoUpdate(parentScene);
                 m_materialChangeId = m_material->GetCurrentChangeId();
                 m_needUpdate = false;
+
+                DebugOutputShaderVariants();
                 return true;
             }
 
@@ -213,10 +229,26 @@ namespace AZ
             return rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0;
         }
 
+        void MeshDrawPacket::DebugOutputShaderVariants()
+        {
+#ifdef DEBUG_MESH_SHADERVARIANTS
+            uint32_t index = 0;
+
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, m_modelLod->GetAssetId());
+
+            AZ_TracePrintf("MeshDrawPacket", "Mesh: %s", assetInfo.m_relativePath.data());
+            for (const auto& variant : m_shaderVariantNames)
+            {
+                AZ_TracePrintf("MeshDrawPacket", "%d: %s", index++, variant.data());
+            }
+#endif
+        }
+
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
-            const auto meshes = m_modelLod->GetMeshes();
-            const ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
+            auto meshes = m_modelLod->GetMeshes();
+            ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
 
             if (!m_material)
             {
@@ -226,11 +258,9 @@ namespace AZ
 
             ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
-            RHI::DrawPacketBuilder drawPacketBuilder;
+            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
             drawPacketBuilder.Begin(nullptr);
-
-            drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
-            drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView);
+            drawPacketBuilder.SetGeometryView(&mesh);
             drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
             drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
@@ -239,11 +269,6 @@ namespace AZ
             MeshDrawPacket::ShaderList shaderList;
             shaderList.reserve(m_activeShaders.size());
 
-            // We have to keep a list of these outside the loops that collect all the shaders because the DrawPacketBuilder
-            // keeps pointers to StreamBufferViews until DrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
-            // that the memory won't be relocated when new entries are added.
-            AZStd::fixed_vector<ModelLod::StreamBufferViewList, RHI::DrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
-
             // The root constants are shared by all draw items in the draw packet. We must populate them with default values.
             // The draw packet builder needs to know where the data is coming from during appendShader, but it's not actually read
             // until drawPacketBuilder.End(), so store the default data out here.
@@ -251,6 +276,10 @@ namespace AZ
             bool isFirstShaderItem = true;
 
             m_perDrawSrgs.clear();
+
+#ifdef DEBUG_MESH_SHADERVARIANTS
+            m_shaderVariantNames.clear();
+#endif
 
             auto appendShader = [&](const ShaderCollection::Item& shaderItem, const Name& materialPipelineName)
             {
@@ -335,21 +364,24 @@ namespace AZ
                 const ShaderVariantId requestedVariantId = shaderOptions.GetShaderVariantId();
                 const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(requestedVariantId);
 
+#ifdef DEBUG_MESH_SHADERVARIANTS
+                m_shaderVariantNames.push_back(variant.GetShaderVariantAsset().GetHint());
+#endif
+
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                variant.ConfigurePipelineState(pipelineStateDescriptor);
+                variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
 
                 // Render states need to merge the runtime variation.
                 // This allows materials to customize the render states that the shader uses.
                 const RHI::RenderStates& renderStatesOverlay = *shaderItem.GetRenderStatesOverlay();
                 RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
 
-                auto& streamBufferViews = streamBufferViewsPerShader.emplace_back();
-
                 UvStreamTangentBitmask uvStreamTangentBitmask;
+                RHI::StreamBufferIndices streamIndices;
 
                 if (!m_modelLod->GetStreamsForMesh(
                     pipelineStateDescriptor.m_inputStreamLayout,
-                    streamBufferViews,
+                    streamIndices,
                     &uvStreamTangentBitmask,
                     shader->GetInputContract(),
                     m_modelLodMeshIndex,
@@ -413,7 +445,7 @@ namespace AZ
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;
-                drawRequest.m_streamBufferViews = streamBufferViews;
+                drawRequest.m_streamIndices = streamIndices;
                 drawRequest.m_stencilRef = m_stencilRef;
                 drawRequest.m_sortKey = m_sortKey;
                 if (drawSrg)
@@ -478,14 +510,10 @@ namespace AZ
             }
         }
 
-        const RHI::DrawPacket* MeshDrawPacket::GetRHIDrawPacket() const
-        {
-            return m_drawPacket.get();
-        }
-
         const RHI::ConstPtr<RHI::ConstantsLayout> MeshDrawPacket::GetRootConstantsLayout() const
         {
             return m_rootConstantsLayout;
         }
     } // namespace RPI
 } // namespace AZ
+

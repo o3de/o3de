@@ -139,7 +139,6 @@ namespace EMotionFX
         }
 
     public:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         std::vector<AnimGraphMotionNode*> m_motionNodes;
         std::vector<Motion*> m_motions;
         BlendTree* m_blendTree = nullptr;

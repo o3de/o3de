@@ -42,7 +42,6 @@ namespace AzToolsFramework
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
             , public AssetBrowserInteractionNotificationBus::Handler
-
         {
             Q_OBJECT
 
@@ -141,6 +140,7 @@ namespace AzToolsFramework
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+            void itemClicked(const QModelIndex& index);
 
         private:
             QPointer<AssetBrowserModel> m_assetBrowserModel;
@@ -150,6 +150,7 @@ namespace AzToolsFramework
             bool m_expandToEntriesByDefault = false;
 
             bool m_applySnapshot = true;
+            bool m_updateRequested = false;
 
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;
@@ -160,7 +161,7 @@ namespace AzToolsFramework
             QString m_name;
 
             QModelIndex m_indexToSelectAfterUpdate;
-            AZStd::string m_fileToSelectAfterUpdate = "";
+            AZStd::string m_fileToSelectAfterUpdate;
 
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
             bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t lastFolderIndex = 0, const uint32_t entryPathIndex = 0, bool useDisplayName = false);
