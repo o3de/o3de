@@ -101,7 +101,6 @@ void CMovieSystem::RegisterNodeTypes()
     REGISTER_NODE_TYPE(ShadowSetup)
     REGISTER_NODE_TYPE(Alembic)
     REGISTER_NODE_TYPE(GeomCache)
-    REGISTER_NODE_TYPE(Environment)
     REGISTER_NODE_TYPE(AzEntity)
     REGISTER_NODE_TYPE(Component)
 }
