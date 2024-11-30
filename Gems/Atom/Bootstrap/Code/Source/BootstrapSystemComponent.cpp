@@ -607,7 +607,10 @@ namespace AZ
                     {
                         renderPipeline->SetActiveAAMethod(antiAliasing.c_str());
                     }
+                }
 
+                // BRDF Texture Pipeline
+                {
                     // As part of our initialization we need to create the BRDF texture generation pipeline
 
                     // Save a reference to the generated BRDF texture so it doesn't get deleted if all the passes refering to it get deleted
