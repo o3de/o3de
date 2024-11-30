@@ -179,7 +179,8 @@ SETTINGS_EXTRA_CMAKE_ARGS       = register_setting(key='extra.cmake.args',
 SETTINGS_INTEGRATE_AAB_ASSET_PACK = register_setting(key='integrate.aab.asset.pack',
                                                    description='Integrate Play Asset Delivery pack into your project Android App Bundle.'
                                                    '(ref https://developer.android.com/guide/playcore/asset-delivery/integrate-native)',
-                                                   is_boolean=False)
+                                                   is_boolean=True,
+                                                   default='False')
 # CARBONATED -- end
 
 def get_android_config(project_path: Path or None) -> command_utils.O3DEConfig:
@@ -1361,7 +1362,7 @@ class AndroidProjectGenerator(object):
         self._android_replacement_map_env = {}
         
 # CARBONATED -- begin : get the play delivery asset pack name
-        self._integrate_aab_asset_pack = get_android_config(project_path=self._project_path).get_value(SETTINGS_INTEGRATE_AAB_ASSET_PACK.key)
+        self._integrate_aab_asset_pack = get_android_config(project_path=self._project_path).get_boolean_value(SETTINGS_INTEGRATE_AAB_ASSET_PACK.key)
 # CARBONATED -- end 
 
     def execute(self):
