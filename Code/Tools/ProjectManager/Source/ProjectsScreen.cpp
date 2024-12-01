@@ -253,6 +253,11 @@ namespace O3DE::ProjectManager
     {
         PythonBindingsInterface::Get()->RemoveInvalidProjects();
 
+        if(projects.isEmpty() && !m_projectButtons.empty())
+        {
+            RemoveProjectButtonsFromFlowLayout(projects);
+        }
+
         if (!projects.isEmpty())
         {
             // Remove all existing buttons before adding them back in the correct order
