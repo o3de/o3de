@@ -7,6 +7,7 @@
  */
 
 #include <scenesrg.srgi>
+#include <viewsrg.srgi>
 
 // Perform light culling on a compute shader
 
@@ -19,8 +20,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     struct LightCullingConstants
     {
-        float4x4        m_worldToView;
-        float4          m_screenUVToRay;
         float2          m_gridPixel;
         float2          m_gridHalfPixel;
         uint            m_gridWidth;
@@ -65,13 +64,13 @@ bool IsVectorPointingTowardsEye(const float3 dir)
 
 float3 WorldToView_Point(float3 p)
 {
-    float3 result = mul(PassSrg::m_constantData.m_worldToView, float4(p, 1.0)).xyz;    
+    float3 result = mul(ViewSrg::m_viewMatrix, float4(p, 1.0)).xyz;    
     return result;
 }
 
 float3 WorldToView_Vector(float3 v)
 {
-    float3 result = mul((float3x3)PassSrg::m_constantData.m_worldToView, v);
+    float3 result = mul((float3x3)ViewSrg::m_viewMatrix, v);
     return result;
 }
 
@@ -106,32 +105,6 @@ bool TestSphereVsCone(float3 spherePos, float sphereRadius, float3 origin, float
     bool angleOk = distanceClosestPoint <= sphereRadius* rsina;
 
     return angleOk && backOk && frontOk;
-}
-
-
-float2 ScreenUvToRay(float2 uv)
-{
-    return uv * PassSrg::m_constantData.m_screenUVToRay.xy + PassSrg::m_constantData.m_screenUVToRay.zw;
-}
-
-// Returns screen rays
-// xy contains the top left corner 
-// zw contains the bottom right corner
-// These rays are constructed assuming distance to them along z is 1.0
-// This lets us simply multiply the numbers by an actual depth value to get a position in the tile in view space
-
-// we also return: tileCenterUv which is 2D screenCoordinates of the center of the tile
-float4 ComputeScreenRays(uint2 tileId, out float2 tileCenterUv)
-{
-    float2 tile_uv = float2(tileId) * PassSrg::m_constantData.m_gridPixel;
-
-    tileCenterUv = tile_uv + PassSrg::m_constantData.m_gridHalfPixel;
-
-    float4 tileRect;
-    tileRect.xy = ScreenUvToRay(tile_uv);
-    tileRect.zw = ScreenUvToRay(tile_uv + PassSrg::m_constantData.m_gridPixel);
-
-    return tileRect;
 }
 
 uint NextPowerTwo(uint x)
@@ -527,6 +500,50 @@ uint WriteCullingDataToMainMemory(uint lightCount, uint groupIndex, uint3 groupI
     return lightCount;
 }
 
+// Converts depth in view space to depth buffer depth 
+// It is used when depth is in view space and we want to use it as depth for projection matrix
+float ViewSpaceToDepthBuffer(float depth)
+{
+    float a = ViewSrg::m_projectionMatrix[2][3];
+    float b = ViewSrg::m_projectionMatrix[2][2];
+
+    return a / depth - b;
+}
+
+float3 GetViewSpacePosition(float2 tileUv, float depth)
+{
+    // Map UV from [0, 1] to NDC [-1, 1]
+    tileUv = tileUv * 2.0f - 1.0f;
+    float4 clipPos = float4(tileUv.x, -tileUv.y, depth, 1.0f);
+    float4 viewPos = mul(ViewSrg::m_projectionMatrixInverse, clipPos);
+
+    return viewPos.xyz / viewPos.w;
+}
+
+// This function builds an AABB in view space that encompasses the tile
+// The AABB is built by taking the four corners of the tile and the center of the tile, and transforming them to view space
+void BuildAabb(TileLightData tileLightData, uint2 tileId, out float3 aabbCenter, out float3 aabbExtents, out float2 tileCenterUv)
+{
+    float2 tileUvMin = float2(tileId) * PassSrg::m_constantData.m_gridPixel;
+    float2 tileUvMax = tileUvMin + PassSrg::m_constantData.m_gridPixel;
+
+    tileCenterUv = tileUvMin + PassSrg::m_constantData.m_gridHalfPixel;
+
+    const float depthMin = ViewSpaceToDepthBuffer(-tileLightData.zNear);;
+    const float depthMax = ViewSpaceToDepthBuffer(-tileLightData.zFar);
+
+    float3 pt0 = GetViewSpacePosition(tileUvMin, depthMin);
+    float3 pt1 = GetViewSpacePosition(tileUvMin, depthMax);
+    float3 pt2 = GetViewSpacePosition(tileUvMax, depthMin);
+    float3 pt3 = GetViewSpacePosition(tileUvMax, depthMax);
+
+    float3 aabbMin = min(min(pt0, pt1), min(pt2, pt3));
+    float3 aabbMax = max(max(pt0, pt1), max(pt2, pt3));
+
+    aabbCenter = (aabbMin + aabbMax) * 0.5f;
+    aabbExtents = (aabbMax - aabbMin);
+}
+
 // This shader is invoke one thread-group per on-screen tile
 // e.g. if the screen resolution is 1920x1080, with 16x16 tiles, there will be 120x68 tiles (and 120x68 thread groups)
 // Each thread-group is dedicated to culling all lights against that screen-tile.
@@ -566,9 +583,8 @@ void MainCS(
     TileLightData tileLightData = ReadTileLightData(groupID);
   
     float2 tileCenterUv;
-    float4 tileRect = ComputeScreenRays(groupID.xy, tileCenterUv);   
     float3 aabb_center, aabb_extents;
-    BuildAabb(tileRect, tileLightData, aabb_center, aabb_extents);                
+    BuildAabb(tileLightData, groupID.xy, aabb_center, aabb_extents, tileCenterUv);
     GroupMemoryBarrierWithGroupSync();
     
     CullDecals(groupIndex, tileLightData, aabb_center, aabb_extents, tileCenterUv); 
