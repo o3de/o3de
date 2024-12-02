@@ -279,13 +279,14 @@ namespace UnitTest
             // to simulate this, we're going to start 8 threads
             // those 8 threads will continuously create files in a folder, then archive them, then add additional files to that archive.
 
-            const int numDummyFiles = 5;
             const int numThreads = 8;
             const int numIterationsPerThread = 100; // takes about 20sec in debug on good HW with ASAN, much faster in profile.
 
             auto threadFn =
-                [this, numDummyFiles](int threadIndex, int iterations)
+                [this](int threadIndex, int iterations)
             {
+                const int numDummyFiles = 5;
+
                 for (int iteration = 0; iteration < iterations; ++iteration)
                 {
                     // create a temp folder and then 5 dummy files in that folder to represent the files that will be archived
