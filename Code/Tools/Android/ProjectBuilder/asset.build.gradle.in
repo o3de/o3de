@@ -14,7 +14,7 @@ plugins {
 
 assetPack {
     // Directory name for the asset pack
-    packName = '${AAB_ASSET_PACK_NAME}'
+    packName = '${AAB_ASSET_PACK_DELIVERY_NAME}'
     dynamicDelivery {
         deliveryType = '${AAB_ASSET_PACK_DELIVERY_TYPE}'
     }
