@@ -947,15 +947,22 @@ AllocatorManager::ThreadLocalData& AllocatorManager::FindThreadData()
 // GetCodePoint
 // [4/8/2024]
 //=========================================================================
-AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> AllocatorManager::GetCodePointAndTags()
+AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int, const char*> AllocatorManager::GetCodePointMaskTagAsset()
 {
     ThreadLocalData& tld = FindThreadData();
 
     const AZ::AllocatorManager::CodePoint* point = !tld.m_allocationMarkers.IsEmpty() ? &tld.m_allocationMarkers.Get() : nullptr;
+
     const uint64_t mask = tld.m_tagMask;
     const unsigned int tag = ((!tld.m_allocationTags.IsOverflow() && !tld.m_allocationTags.IsEmpty()) ? tld.m_allocationTags.Get() : 0u) & 63u;  // drop the other service bits
 
-    return AZStd::make_tuple(point, mask, tag);
+    const char* assetName = nullptr;
+    if (!tld.m_assetItems.IsEmpty())
+    {
+        assetName = tld.m_assetItems.Get()->GetName();
+    }
+
+    return AZStd::make_tuple(point, mask, tag, assetName);
 }
 
 //=========================================================================
@@ -982,7 +989,8 @@ void AllocatorManager::PushMemoryTag(unsigned int tag)
 
     if (tld.m_allocationTags.IsFull())
     {
-        tld.m_allocationTags.SimulatePush();  // just increase the index to enable pop
+        tld.m_allocationTags.SimulatePush(); // just increase the index to enable pop
+        return;
     }
 
     const uint64_t mask = 1ull << tag;
@@ -1012,6 +1020,47 @@ void AllocatorManager::PopMemoryTag()
     }
     tld.m_allocationTags.Pop();
 }
+
+void AllocatorManager::PushAssetMemoryTag(const char* name)
+{
+    AssetMemoryItem* item = nullptr;
+    {
+        m_assetMapLock.lock();
+
+        auto it = m_assetMap.find(name);
+        if (it == m_assetMap.end())
+        {
+            item = aznew AssetMemoryItem(name);
+            m_assetMap[name] = item;
+        }
+        else
+        {
+            item = it->second;
+        }
+
+        m_assetMapLock.unlock();
+    }
+
+    ThreadLocalData& tld = FindThreadData();
+    AZ_Assert(!tld.m_allocationTags.IsEmpty(), "Push asset tag, but empty");
+
+    if (tld.m_assetItems.IsFull())
+    {
+        tld.m_assetItems.SimulatePush(); // just increase the index to enable pop
+        return;
+    }
+
+    tld.m_assetItems.Push(item);
+}
+
+void AllocatorManager::PopAssetMemoryTag()
+{
+    ThreadLocalData& tld = FindThreadData();
+    AZ_Assert(!tld.m_allocationTags.IsEmpty(), "Pop asset tag, but empty");
+
+    tld.m_assetItems.Pop();
+}
+
 
 #endif // CARBONATED
 

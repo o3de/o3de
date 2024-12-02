@@ -29,4 +29,13 @@ AZ::MemoryTagMarker::~MemoryTagMarker()
     AZ::AllocatorManager::Instance().PopMemoryTag();
 }
 
+AZ::AssetMemoryTagMarker::AssetMemoryTagMarker(const char* name)
+{
+    AZ::AllocatorManager::Instance().PushAssetMemoryTag(name);
+}
+AZ::AssetMemoryTagMarker::~AssetMemoryTagMarker()
+{
+    AZ::AllocatorManager::Instance().PopAssetMemoryTag();
+}
+
 #endif  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED

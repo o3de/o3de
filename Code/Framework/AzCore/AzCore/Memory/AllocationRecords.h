@@ -40,6 +40,7 @@ namespace AZ
 
             AZ::u64         m_timeStamp{}; ///< Timestamp for sorting/tracking allocations
 #if defined(CARBONATED)
+            const char*     m_assetName{}; ///< Asset being loaded (if any)
             uint64_t        m_tagMask; ///< Tag bit mask for identifying memory consumption per feature
             unsigned int    m_tag;     ///< Latest memory tag
 #endif

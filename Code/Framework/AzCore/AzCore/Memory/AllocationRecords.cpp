@@ -135,10 +135,11 @@ namespace AZ::Debug
 
 #if defined(CARBONATED)
         AllocatorManager& manager = AllocatorManager::Instance();
-        AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> data = manager.GetCodePointAndTags();
+        AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int, const char*> data = manager.GetCodePointMaskTagAsset();
         const AZ::AllocatorManager::CodePoint* point = AZStd::get<0>(data);
         ai.m_tagMask = AZStd::get<1>(data);
         ai.m_tag = AZStd::get<2>(data);
+        ai.m_assetName = AZStd::get<3>(data);
         if (point)
         {
             ai.m_name = point->m_name;

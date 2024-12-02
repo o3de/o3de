@@ -56,6 +56,13 @@ namespace AZ
         MemoryTagMarker(MemoryTagValue v);
         ~MemoryTagMarker();
     };
+
+    class AssetMemoryTagMarker
+    {
+    public:
+        AssetMemoryTagMarker(const char* name);
+        ~AssetMemoryTagMarker();
+    };
 }
 
 #define MEMORY_ALLOCATION_MARKER AZ::MemoryAllocationMarker(nullptr, __FILE__, __LINE__)
@@ -70,6 +77,8 @@ namespace AZ
 #define MEMORY_TAG(x) AZ::MemoryTagMarker CONCATENATION_MACRO_2(memoryTagMarker_, __LINE__)(AZ::MemoryTagValue::x)
 #define MEMORY_TAG_GAME(x) AZ::MemoryTagMarker CONCATENATION_MACRO_2(memoryTagMarkerGame_, __LINE__)(static_cast<AZ::MemoryTagValue>((unsigned int)(x)))
 
+#define ASSET_TAG(x) AZ::AssetMemoryTagMarker CONCATENATION_MACRO_2(assetMemoryTagMarker_, __LINE__)(x)
+
 #else  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED
 
 #define MEMORY_ALLOCATION_MARKER
@@ -77,5 +86,7 @@ namespace AZ
 
 #define MEMORY_TAG(x)
 #define MEMORY_TAG_GAME(x)
+
+#define ASSET_TAG(x)
 
 #endif  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED

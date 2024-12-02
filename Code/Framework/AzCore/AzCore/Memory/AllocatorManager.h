@@ -168,7 +168,7 @@ namespace AZ
         };
 
         /// Returns current thread's top stack registered code point
-        AZStd::tuple<const CodePoint*, uint64_t, unsigned int> GetCodePointAndTags();
+        AZStd::tuple<const CodePoint*, uint64_t, unsigned int, const char*> GetCodePointMaskTagAsset();
 
         /// Pushes memory marker to stack, this speeds up memory tracking by dropping callstack symbolication, see MEMORY_ALLOCATION_MARKER_NAME macro
         void PushMemoryMarker(const CodePoint& point);
@@ -181,6 +181,12 @@ namespace AZ
 
         /// Pop memory tag from stack
         void PopMemoryTag();
+
+        /// Pushes asset memory tag to stack, see ASSET_TAG macro
+        void PushAssetMemoryTag(const char* name);
+
+        /// Pop asset memory tag from stack
+        void PopAssetMemoryTag();
 
         /// Protection from a recursive call by the same thread
         bool IsRecursive()
@@ -280,16 +286,55 @@ namespace AZ
             int m_numItems = 0;
         };
 
+        class AssetMemoryItem
+        {
+        public:
+            AssetMemoryItem(const char* name)
+            {
+                const size_t size = strlen(name) + 1;
+                mName = aznew char[size];
+                memcpy(mName, name, size);
+            }
+
+            const char* GetName() const
+            {
+                return mName;
+            }
+
+        private:
+            char* mName;
+        };
+
         struct ThreadLocalData
         {
             DataStack<CodePoint, 64> m_allocationMarkers;
             DataStack<unsigned int, 64> m_allocationTags;
             uint64_t m_tagMask = 0;
+
+            DataStack<AssetMemoryItem*, 64> m_assetItems;
         };
         AZStd::unordered_map<std::thread::id, ThreadLocalData, std::hash<std::thread::id>, AZStd::equal_to<std::thread::id>, AZStd::stateless_allocator>
             m_threadData;
         volatile bool m_recursive = false;
         AZStd::mutex m_threadDataLock;
+
+        class hash_string
+        {
+        public:
+            size_t operator()(const char* p) const
+            {
+                // FNV hash 64 (maybe tryMurmurHash3 ?)
+                size_t h = 14695981039346656037llu;  // 32bit 2166136261u;
+                while (*p)
+                {
+                    h ^= *(p++);
+                    h *= 1099511628211llu;  // 32bit 16777619u;
+                }
+                return h;
+            }
+        };
+        AZStd::unordered_map<const char*, AssetMemoryItem*, hash_string> m_assetMap;
+        AZStd::mutex m_assetMapLock;
 
         ThreadLocalData& FindThreadData();
 #endif // CARBONATED
