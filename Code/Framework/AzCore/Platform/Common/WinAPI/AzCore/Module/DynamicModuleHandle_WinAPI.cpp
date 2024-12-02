@@ -108,7 +108,7 @@ namespace AZ
                 if (m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
                 {
                     // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
-                    m_handle = LoadLibraryW(fileNameW);
+                    m_handle = LoadLibraryExW(fileNameW, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
                 }
             }
             else
