@@ -77,9 +77,11 @@ namespace AZ
             return dataT;
         }
 
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API AnyAssetHandler
             : public AssetHandler<AnyAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<AnyAsset>;
         public:
             Data::AssetHandler::LoadResult LoadAssetData(

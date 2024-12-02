@@ -123,9 +123,11 @@ namespace AZ
             AZStd::vector<uint8_t, Allocator> m_imageData;
         };
 
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ImageMipChainAssetHandler final
             : public AssetHandler<ImageMipChainAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ImageMipChainAsset>;
         public:
             ImageMipChainAssetHandler() = default;

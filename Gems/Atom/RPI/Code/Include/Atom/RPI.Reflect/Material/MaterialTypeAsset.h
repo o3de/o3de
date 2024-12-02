@@ -209,8 +209,10 @@ namespace AZ
             bool m_isNonSerializedDataInitialized = false;
         };
 
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<MaterialTypeAsset>;
         public:
             AZ_RTTI(MaterialTypeAssetHandler, "{08568C59-CB7A-4F8F-AFCD-0B69F645B43F}", Base);

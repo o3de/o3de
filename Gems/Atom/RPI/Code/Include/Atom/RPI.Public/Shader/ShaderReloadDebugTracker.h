@@ -73,7 +73,7 @@ namespace AZ
             }
 
             //! Use this utility to call BeginSection(), and automatically call EndSection() when the object goes out of scope.
-            class ScopedSection final
+            class ATOM_RPI_PUBLIC_API ScopedSection final
             {
             public:
                 static constexpr uint32_t MaxSectionNameLength = 1024;

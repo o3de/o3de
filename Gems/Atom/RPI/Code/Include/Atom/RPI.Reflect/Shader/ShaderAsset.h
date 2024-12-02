@@ -336,9 +336,11 @@ namespace AZ
             bool m_isFullySpecialized = false;
         };
 
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ShaderAssetHandler final
             : public AssetHandler<ShaderAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ShaderAsset>;
         public:
             ShaderAssetHandler() = default;

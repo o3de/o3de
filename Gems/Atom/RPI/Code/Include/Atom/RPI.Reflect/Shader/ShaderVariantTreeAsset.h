@@ -101,9 +101,11 @@ namespace AZ
             AZStd::vector<ShaderVariantTreeNode> m_nodes;
         };
 
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ShaderVariantTreeAssetHandler final
             : public AssetHandler<ShaderVariantTreeAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ShaderVariantTreeAsset>;
         public:
             ShaderVariantTreeAssetHandler() = default;
