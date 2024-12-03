@@ -114,7 +114,7 @@ namespace AZ
                 FinalizeShaderInputContract();
             }
 
-            AZStd::unique_ptr<ShaderStreamBufferViews> shaderStreamBufferViews = AZStd::make_unique<ShaderStreamBufferViews>();
+            AZStd::unique_ptr<ShaderStreamBufferViews> shaderStreamBufferViews = AZStd::make_unique<ShaderStreamBufferViews>(lodIndex, meshIndex);
 
             const auto& modelInstance = (*m_meshHandle)->GetModel();
             if (!modelInstance)
