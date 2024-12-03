@@ -74,6 +74,11 @@ ANDROID_RESOLUTION_SETTINGS = ('mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi')
 ANDROID_SETTINGS_FILE = '.command_settings'
 ANDROID_SETTINGS_SECTION_NAME = 'android'
 
+# CARBONATED -- begin : asset pack definitions
+AAB_ASSET_PACK_DELIVERY_NAME = 'app_asset_pack'
+AAB_ASSET_PACK_DELIVERY_TYPE = 'install-time'
+# CARBONATED -- end
+
 SUPPORTED_ANDROID_SETTINGS = []
 
 def register_setting(key: str, description: str, default: str= None,  is_password:bool = False, is_boolean = False, restricted_regex: str = None, restricted_regex_description: str = None) -> command_utils.SettingsDescription:
@@ -170,6 +175,13 @@ SETTINGS_ASSET_BUNDLE_SUBPATH   = register_setting(key='asset.bundle.subpath',
 SETTINGS_EXTRA_CMAKE_ARGS       = register_setting(key='extra.cmake.args',
                                                    description='Optional string to set additional cmake arguments during the native project generation within the android gradle build process')
 
+# CARBONATED -- begin : supported a sole install-time asset pack with size up to 1.5 Gb
+SETTINGS_AAB_ENABLE_ASSET_PACK = register_setting(key='aab.enable.asset.pack',
+                                                   description='Integrate Play Asset Delivery pack into your project Android App Bundle.'
+                                                   '(ref https://developer.android.com/guide/playcore/asset-delivery/integrate-native)',
+                                                   is_boolean=True,
+                                                   default='False')
+# CARBONATED -- end
 
 def get_android_config(project_path: Path or None) -> command_utils.O3DEConfig:
     """
@@ -987,6 +999,12 @@ NATIVE_CMAKE_SECTION_ANDROID_FORMAT = """
     }}
 """
 
+# CARBONATED -- begin : asset list description for the app/build.gradle
+AAB_ASSET_PACK_LIST_FORMAT = """
+            assetPacks = [':{asset_pack_name}']
+"""
+# CARBONATED -- end
+
 NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR = """
         ndk {{
             abiFilters '{abi}'
@@ -1342,6 +1360,10 @@ class AndroidProjectGenerator(object):
 
         self._overwrite_existing = overwrite_existing
         self._android_replacement_map_env = {}
+        
+# CARBONATED -- begin : get the play delivery asset pack name
+        self._aab_enable_asset_pack = get_android_config(project_path=self._project_path).get_boolean_value(SETTINGS_AAB_ENABLE_ASSET_PACK.key)
+# CARBONATED -- end 
 
     def execute(self):
         """
@@ -1376,6 +1398,12 @@ class AndroidProjectGenerator(object):
         project_names = self.patch_and_transfer_android_libs()
 
         project_names.extend(self.create_lumberyard_app(project_names))
+
+# CARBONATED -- begin : generate/append asset pack project to the project list 
+        if self._aab_enable_asset_pack:
+            self.generate_aab_asset_pack_project()            
+            project_names.append(AAB_ASSET_PACK_DELIVERY_NAME)
+# CARBONATED -- end
 
         root_gradle_env = {
             'ANDROID_GRADLE_PLUGIN_VERSION': str(self._gradle_plugin_version),
@@ -1558,6 +1586,79 @@ class AndroidProjectGenerator(object):
             patched_lib_names.append(lib.name)
 
         return patched_lib_names
+    
+# CARBONATED -- begin : generate the play asset delivery pack with template file 'asset.build.gradle.in'
+
+    def create_dir_link(self, src: Path, tgt: Path):
+
+        assert src.exists()
+        assert not tgt.exists()
+
+        try:
+            if platform.system() == 'Windows':
+                import _winapi
+                _winapi.CreateJunction(str(src.resolve().absolute()), str(tgt.resolve().absolute()))
+                logger.info(f'Created Junction {str(tgt)} => {str(src)}')
+            else:
+                tgt.symlink_to(src, target_is_directory=True)
+                logger.info(f'Created symbolic link {str(tgt)} => {str(src)}')
+        except OSError as os_err:
+            logger.error(f"Error trying to link  {tgt} => {src} : {os_err}")
+
+    def generate_aab_asset_pack_project(self):
+        """
+        This will create the asset module '{AAB_ASSET_PACK_DELIVERY_NAME}' which will be packaged as an extra assets.
+        """
+       
+        if not self._aab_enable_asset_pack:
+            return
+        
+        aab_asset_pack_path = self._build_dir / AAB_ASSET_PACK_DELIVERY_NAME
+            
+        logging.debug("Create Play Asset Delivery pack to '%s'", aab_asset_pack_path.resolve())        
+        
+        # Declare subfolders
+        aab_asset_pack_src_path = aab_asset_pack_path / 'src'
+        aab_asset_pack_src_main_path = aab_asset_pack_path / 'src' / 'main'
+        aab_asset_pack_src_main_assets_path = aab_asset_pack_path / 'src' / 'main' / 'assets'
+        aab_build_pack_path = aab_asset_pack_path / 'build'
+
+        # We must always delete 'src' any existing copied assests
+        if aab_asset_pack_src_path.exists():
+            # special case the 'assets' directory before cleaning the whole directory tree
+            utils.remove_link(aab_asset_pack_src_main_assets_path)
+            utils.remove_dir_path(aab_asset_pack_src_path)
+            
+        # We must always delete 'build' any existing build data
+        if aab_build_pack_path.exists():
+            utils.remove_dir_path(aab_build_pack_path)
+
+        # Prepare the target folder
+        aab_asset_pack_src_main_path.mkdir(parents=True, exist_ok=True)
+
+        # Prepare the 'build.gradle' template generation
+        gradle_build_env = dict()
+       
+        gradle_build_env['AAB_ASSET_PACK_DELIVERY_NAME'] = AAB_ASSET_PACK_DELIVERY_NAME            
+        gradle_build_env['AAB_ASSET_PACK_DELIVERY_TYPE'] = AAB_ASSET_PACK_DELIVERY_TYPE
+        
+        app_asset_pack_gradle_file = aab_asset_pack_path / 'build.gradle'
+        self.create_file_from_project_template(src_template_file='asset.build.gradle.in',
+                                               template_env=gradle_build_env,
+                                               dst_file=app_asset_pack_gradle_file)
+        
+        # Create '<asset_pack>/build' to pass verification in android_post_build.py
+        aab_build_pack_path.mkdir(parents=True)
+        
+        # Create '<asset_pack>/src/main/assets' link to pass verification in com.android.build.gradle.internal.tasks.AssetPackPreBundleTaskRunnable       
+        if self._asset_mode == 'PAK':
+            self.create_dir_link(self._project_path / self._src_pak_file_path, aab_asset_pack_src_main_assets_path)
+        elif self._asset_mode == 'LOOSE':
+            self.create_dir_link(self._project_path / 'Cache' / 'android', aab_asset_pack_src_main_assets_path)
+        else:
+            logger.error(f"Invalid Asset Mode '{self._asset_mode}'.")       
+
+# CARBONATED -- end
 
     def create_lumberyard_app(self, project_dependencies):
         """
@@ -1602,6 +1703,15 @@ class AndroidProjectGenerator(object):
         gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies))
         gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self._cmake_version), native_build_path=native_build_path, absolute_cmakelist_path=absolute_cmakelist_path)
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
+
+# CARBONATED -- begin : get the play delivery asset pack name        
+        if self._aab_enable_asset_pack:
+            gradle_build_env['AAB_ASSET_PACK_LIST'] = AAB_ASSET_PACK_LIST_FORMAT.format(asset_pack_name=AAB_ASSET_PACK_DELIVERY_NAME)            
+            az_asset_android_dst_path = self._build_dir / AAB_ASSET_PACK_DELIVERY_NAME
+        else:
+            gradle_build_env['AAB_ASSET_PACK_LIST'] = ''
+            az_asset_android_dst_path = az_android_dst_path
+# CARBONATED -- end
 
         gradle_build_env['OVERRIDE_JAVA_SOURCESET'] = OVERRIDE_JAVA_SOURCESET_STR.format(absolute_azandroid_path=absolute_azandroid_path)
 
@@ -1664,7 +1774,7 @@ class AndroidProjectGenerator(object):
             # copied into the APK.
             python_full_path = self._engine_root / 'python' / PYTHON_SCRIPT
             sync_layout_command_line_source = [f'{python_full_path.resolve().as_posix()}',
-                                            'android_post_build.py', az_android_dst_path.resolve().as_posix(),  # android_app_root
+                                            'android_post_build.py', az_asset_android_dst_path.resolve().as_posix(),  # android_app_root # CARBONATED -- modified
                                             '--project-root', self._project_path.as_posix(),
                                             '--gradle-version', self._gradle_version,
                                             '--asset-mode', self._asset_mode,
@@ -2111,6 +2221,9 @@ class AndroidProjectGenerator(object):
                 'NATIVE_CMAKE_SECTION_DEBUG_CONFIG': '',
                 'NATIVE_CMAKE_SECTION_PROFILE_CONFIG': '',
                 'NATIVE_CMAKE_SECTION_RELEASE_CONFIG': '',
+# CARBONATED -- begin : the play delivery asset pack list is empty by default            
+                'AAB_ASSET_PACK_LIST': '',
+# CARBONATED -- end                
                 'OVERRIDE_JAVA_SOURCESET': '',
                 'OPTIONAL_JNI_SRC_LIB_SET': '',
 
