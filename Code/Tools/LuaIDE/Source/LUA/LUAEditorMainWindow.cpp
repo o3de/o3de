@@ -842,7 +842,7 @@ namespace LUAEditor
 
         auto* result = selection.GetResult();
 
-        if (result == nullptr)
+        if (!result)
         {
             AZ_Assert(false, "Lua script - Incorrect entry type selected during script instantiation.");
             return;
