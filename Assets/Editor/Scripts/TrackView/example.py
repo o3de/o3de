@@ -27,12 +27,5 @@ print(f"Number of Sequences: {num_sequences}")
 
 for i in range(0, num_sequences):
     returned_name = track_view.EditorLayerTrackViewRequestBus(bus.Broadcast, 'GetSequenceName', i)
-    print(f"Sequence: {returned_name}")
     time_range = track_view.EditorLayerTrackViewRequestBus(bus.Broadcast, 'GetSequenceTimeRange', returned_name)
-    print(f"Time Range - Start: {time_range.start} End: {time_range.end}")
-
-<<<<<<< Updated upstream
-for i in range(numTracks):
-    print(f"Sequence '{trackview.get_sequence_name(i)}':")
-=======
->>>>>>> Stashed changes
+    print(f"Sequence {i}: {returned_name} | Start: {time_range.start} End: {time_range.end}")
