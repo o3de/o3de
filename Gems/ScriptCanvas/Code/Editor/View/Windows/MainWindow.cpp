@@ -1892,7 +1892,7 @@ namespace ScriptCanvasEditor
         AssetSelectionModel selection;
 
         StringFilter* stringFilter = new StringFilter();
-        stringFilter->SetName("Script canvas (*.scriptcanvas)");
+        stringFilter->SetName("Script Canvas (*.scriptcanvas)");
         stringFilter->SetFilterString(".scriptcanvas");
         stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
         auto stringFilterPtr = FilterConstType(stringFilter);
