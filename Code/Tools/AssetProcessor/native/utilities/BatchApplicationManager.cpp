@@ -84,7 +84,7 @@ void BatchApplicationManager::Reflect()
 {
     ApplicationManagerBase::Reflect();
 
-    AZ::SerializeContext* context;
+    AZ::SerializeContext* context = nullptr;
     AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
 
