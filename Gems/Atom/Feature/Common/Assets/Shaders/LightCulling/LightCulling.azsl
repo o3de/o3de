@@ -109,10 +109,10 @@ bool TestSphereVsCone(float3 spherePos, float sphereRadius, float3 origin, float
 
 bool TestAabbVsLightHemisphere(float3 aabbCenter, float3 aabbExtents, float3 lightPosition, float lightRadiusSqr, float3 lightDirection)
 {
-    bool potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabbCenter, aabbExtents / 2.0);
+    bool potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabbCenter, aabbExtents);
     if (potentiallyIntersects)
     {
-        float3 aabbRadiuses = aabbExtents / 2.0;
+        float3 aabbRadiuses = aabbExtents;
         float aabbRadius = max(max(aabbRadiuses.x, aabbRadiuses.y), aabbRadiuses.z);
         // Only one side is visible, check that we are above the hemisphere
         float3 toAABBCenter = aabbCenter - lightPosition;
@@ -269,7 +269,7 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         // ATOM-4224 - try AABB-AABB 
         float boundingSphereRadiusSqr = dot(decal.m_halfSize, decal.m_halfSize);
           
-        bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents / 2.0);
+        bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents);
         
         if (potentiallyIntersects) 
         {                                           
@@ -286,7 +286,7 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
 void CullPointLight(uint lightIndex, float3 lightPosition, float invLightRadius, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
 {
     lightPosition = WorldToView_Point(lightPosition); 
-    bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, invLightRadius, aabb_center, aabb_extents / 2.0);
+    bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, invLightRadius, aabb_center, aabb_extents);
     if (potentiallyIntersects)
     {                                           
         // Implement and profile fine-grained light culling testing
@@ -340,9 +340,6 @@ void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 a
         {
             continue;
         }
-
-        // Implement and profile fine-grained light culling testing
-        // ATOM-3732
 
         uint inside = 0;
         float2 minmax = ComputeSimpleSpotLightMinMax(light, lightPosition);
@@ -400,7 +397,7 @@ void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabb
         float lightFalloffRadius = rsqrt(light.m_invAttenuationRadiusSquared);
         float lightConservativeBoundingRadius = lightFalloffRadius + light.m_length * 0.5f;
         
-        bool potentiallyIntersects = TestSphereVsAabb(lightMiddleView, lightConservativeBoundingRadius * lightConservativeBoundingRadius, aabb_center, aabb_extents / 2.0);            
+        bool potentiallyIntersects = TestSphereVsAabb(lightMiddleView, lightConservativeBoundingRadius * lightConservativeBoundingRadius, aabb_center, aabb_extents);            
     
         if (potentiallyIntersects)
         {
@@ -427,7 +424,7 @@ void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
         const QuadLight light = PassSrg::m_quadLights[lightIndex];
         const float3 lightPosition = WorldToView_Point(light.m_position);             
         
-        bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, light.m_invAttenuationRadiusSquared, aabb_center, aabb_extents / 2.0);
+        bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, light.m_invAttenuationRadiusSquared, aabb_center, aabb_extents);
 
         if (potentiallyIntersects)
         {           
@@ -558,7 +555,7 @@ void BuildAabb(TileLightData tileLightData, uint2 tileId, out float3 aabbCenter,
     float3 aabbMax = max(max(pt0, pt1), max(pt2, pt3));
 
     aabbCenter = (aabbMin + aabbMax) * 0.5f;
-    aabbExtents = (aabbMax - aabbMin);
+    aabbExtents = (aabbCenter - aabbMin);
 }
 
 // This shader is invoke one thread-group per on-screen tile
