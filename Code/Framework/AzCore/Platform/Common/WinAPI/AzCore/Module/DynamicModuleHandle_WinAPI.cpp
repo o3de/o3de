@@ -109,6 +109,13 @@ namespace AZ
                 {
                     // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
                     m_handle = LoadLibraryExW(fileNameW, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+                    if (!m_handle)
+                    {
+                        // If the first time failed, most likely occurred because @fileNameW is not a fully qualified path.
+                        // Per API spec, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR requires a fully qualified path.
+                        // Cases like "XInput9_1_0.dll" should be loaded without LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR.
+                        m_handle = LoadLibraryExW(fileNameW, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                    }
                 }
             }
             else
