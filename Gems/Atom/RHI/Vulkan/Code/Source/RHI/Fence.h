@@ -55,6 +55,7 @@ namespace AZ
             void WaitOnCpuInternal() const override;
             void ResetInternal() override;
             RHI::FenceState GetFenceStateInternal() const override;
+            void SetExternallySignalled() override;
             //////////////////////////////////////////////////////////////////////
 
             RHI::Ptr<FenceBase> m_fenceImpl;

@@ -9,6 +9,8 @@
 #include <RHI/PhysicalDevice_Windows.h>
 #include <AzCore/std/string/conversions.h>
 
+#include <Atom/RHI/RHIBus.h>
+
 namespace AZ
 {
     namespace DX12
@@ -39,6 +41,9 @@ namespace AZ
                 physicalDevice->Init(dxgiFactory.Get(), dxgiAdapterX.Get());
                 physicalDeviceList.emplace_back(physicalDevice);
             }
+
+            RHI::RHIRequirementRequestBus::Broadcast(
+                &RHI::RHIRequirementsRequest::FilterSupportedPhysicalDevices, physicalDeviceList, RHI::APIIndex::DX12);
 
             return physicalDeviceList;
         }
