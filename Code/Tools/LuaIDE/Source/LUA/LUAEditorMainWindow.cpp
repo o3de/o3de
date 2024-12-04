@@ -24,12 +24,15 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 #include <AzToolsFramework/UI/UICore/SaveChangesDialog.hxx>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
 #include <AzToolsFramework/UI/UICore/TargetSelectorButton.hxx>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusAPI.h>
 #include <Source/LUA/TargetContextButton.hxx>
 #include <Source/LUA/LUAEditorDebuggerMessages.h>
@@ -818,19 +821,35 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::OnFileMenuOpen()
     {
-        const QDir rootDir { AZ::Utils::GetProjectPath().c_str() };
-        const QString name = QFileDialog::getOpenFileName(this,
-                                                          "Open lua file",
-                                                          m_lastOpenFilePath.empty() ? rootDir.absolutePath() : m_lastOpenFilePath.c_str(),
-                                                          "Lua files (*.lua)");
-        if (name.isEmpty())
+        AssetSelectionModel selection;
+
+        StringFilter* stringFilter = new StringFilter();
+        stringFilter->SetName("Lua file (*.lua)");
+        stringFilter->SetFilterString(".lua");
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
+
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+
+        AssetBrowserComponentRequestBus::Broadcast(
+            &AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
             return;
         }
 
-        const AZStd::string assetId(name.toUtf8().data());
-        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
+        auto* result = selection.GetResult();
 
+        if (!result)
+        {
+            AZ_Assert(false, "Lua script - Incorrect entry type selected during script instantiation.");
+            return;
+        }
+
+        const AZStd::string assetId(result->GetFullPath().data());
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
         AzFramework::StringFunc::Path::Split(assetId.c_str(), nullptr, &m_lastOpenFilePath);
     }
 

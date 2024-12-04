@@ -85,6 +85,8 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -1887,22 +1889,33 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnFileOpen()
     {
-        const auto sourcePath = AZ::IO::FixedMaxPath(AZ::Utils::GetProjectPath()) / "scriptcanvas";
-        const QStringList nameFilters = { "All ScriptCanvas Files (*.scriptcanvas)" };
+        AssetSelectionModel selection;
 
-        QFileDialog dialog(nullptr, tr("Open..."), sourcePath.c_str());
-        dialog.setFileMode(QFileDialog::ExistingFiles);
-        dialog.setNameFilters(nameFilters);
+        StringFilter* stringFilter = new StringFilter();
+        stringFilter->SetName("Script Canvas (*.scriptcanvas)");
+        stringFilter->SetFilterString(".scriptcanvas");
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
 
-        if (dialog.exec() == QDialog::Accepted)
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+        selection.SetMultiselect(true);
+
+        AssetBrowserComponentRequestBus::Broadcast(
+            &AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
-            m_filesToOpen = dialog.selectedFiles();
-
-            OpenNextFile();
+            return;
         }
 
-        EnableOpenDocumentActions(true);
+        for (const auto& result : selection.GetResults())
+        {
+            m_filesToOpen.push_back(result->GetFullPath().c_str());
+        }
 
+        OpenNextFile();
+        EnableOpenDocumentActions(true);
     }
 
     void MainWindow::EnableOpenDocumentActions(bool enable)
