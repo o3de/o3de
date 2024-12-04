@@ -223,6 +223,8 @@ namespace AZ
 
                 GetRHIImage()->Shutdown();
 
+                // make sure we aren't iterrupting an active upload-callback
+                AZStd::scoped_lock<AZStd::mutex> guard(m_mipChainMutex);
                 // Evict all active mip chains
                 for (size_t mipChainIndex = 0; mipChainIndex < m_mipChains.size(); ++mipChainIndex)
                 {
@@ -400,6 +402,11 @@ namespace AZ
 
         void StreamingImage::EvictMipChainAsset(size_t mipChainIndex)
         {
+            if (m_mipChains.empty())
+            {
+                // it's possible we get here from a callback after the image was already destroyed
+                return;
+            }
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded total number of mip chains.");
 
             const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
@@ -490,12 +497,16 @@ namespace AZ
                 request.m_image = GetRHIImage();
                 request.m_mipSlices = mipSlices;
 
-                request.m_completeCallback = [=]()
+                // thisPtr makes sure the request holds an intrusive ptr to the current StreamingImage, so it doesn't get destroyed before
+                // the callback is executed
+                request.m_completeCallback = [=, thisPtr = RHI::Ptr<StreamingImage>(this)]()
                 {
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                     AZ_TracePrintf("StreamingImage", "Upload mipchain done [%s]\n", mipChainAsset.GetHint().c_str());
 #endif
-                    EvictMipChainAsset(mipChainIndex); 
+                    // make sure the callback isn't interrupted by Shutdown(), which could remove mipchains mid-processing
+                    AZStd::scoped_lock<AZStd::mutex> guard(m_mipChainMutex);
+                    EvictMipChainAsset(mipChainIndex);
                 };
 
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
