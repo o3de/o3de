@@ -450,6 +450,7 @@ namespace AZ
                 {
                     AZ::ApplicationTypeQuery appType;
                     AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                    // Run BRDF pipeline for the app in console mode, to use it in render-to-texture pipelines.
                     if (appType.IsConsoleMode())
                     {
                         RunBRDFPipeline(m_defaultScene, nullptr);
