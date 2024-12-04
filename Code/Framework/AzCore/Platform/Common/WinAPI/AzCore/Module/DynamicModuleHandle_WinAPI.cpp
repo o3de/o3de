@@ -108,7 +108,16 @@ namespace AZ
                 if (m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
                 {
                     // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
-                    m_handle = LoadLibraryExW(fileNameW, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+                    AZ::IO::PathView modulePathView{ m_fileName };
+                    DWORD loadFlags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
+                    if (modulePathView.HasRootPath())
+                    {
+                        // This flag only works if fileNameW is a fully qualified path.
+                        // In other words, this flag can NOT be used when the dll path is relative
+                        // to the SYSTEM32 directory like the case of "XInput9_1_0.dll".
+                        loadFlags |= LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR;
+                    }
+                    m_handle = LoadLibraryExW(fileNameW, NULL, loadFlags);
                 }
             }
             else
