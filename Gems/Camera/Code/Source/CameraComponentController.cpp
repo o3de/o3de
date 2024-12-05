@@ -92,7 +92,7 @@ namespace Camera
     AZ::u32 CameraComponentConfig::GetAllowPipelineChangesVisibility() const
     {
         bool experimentalFeaturesEnabled = false;
-        const auto registry = AZ::SettingsRegistry::Get();
+        const auto* registry = AZ::SettingsRegistry::Get();
         if (registry)
         {
             registry->Get(experimentalFeaturesEnabled, "/O3DE/Atom/ExperimentalFeaturesEnabled");
