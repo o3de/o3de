@@ -42,6 +42,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
             AZ::EntityUtils::EnumerateEntityIds<AZ::Entity>(
                 runtimeEntity,
+#if defined(CARBONATED)
                 [&editorOnlyEntityIds, &result, runtimeEntity, &entities](
                     const AZ::EntityId& id, bool /*isEntityId*/, const AZ::SerializeContext::ClassElement* elementData)
                 {
@@ -60,6 +61,24 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
                     return true;
                 },
+#else
+                [&editorOnlyEntityIds, &result, runtimeEntity](const AZ::EntityId& id, bool /*isEntityId*/, const AZ::SerializeContext::ClassElement* /*elementData*/)
+                {
+                    if (editorOnlyEntityIds.end() != editorOnlyEntityIds.find(id))
+                    {
+                        result = AZ::Failure(
+                            AZStd::string::format(
+                                "A runtime entity (%s) contains references to an entity marked as editor-only.",
+                                runtimeEntity->GetName().c_str()
+                            )
+                        );
+
+                        return false;
+                    }
+
+                    return true;
+                },
+#endif
                 &serializeContext
             );
 

@@ -603,7 +603,6 @@ namespace AzToolsFramework
                 clonedFilter->AddFilter(FilterConstType(customTypeFilter));
 
                 clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-                m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
                 m_tableViewWidget->expandAll();
                 m_tableViewProxyModel->setSourceModel(m_treeToTableProxyModel);
                 m_treeToTableProxyModel->ConnectSignals();
