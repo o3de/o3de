@@ -156,7 +156,7 @@ namespace AZ
                 RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::ImageView* const> imageViews,
-                uint32_t* outIndices,
+                AZStd::unordered_map<int, uint32_t*> outIndices,
                 AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
 
@@ -187,10 +187,10 @@ namespace AZ
                 RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::BufferView* const> bufferViews,
-                uint32_t* outIndices,
+                AZStd::unordered_map<int, uint32_t*> outIndices,
                 AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
-            
+
             /// Returns a single buffer view associated with the buffer shader input index and array offset.
             const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
