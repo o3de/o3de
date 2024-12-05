@@ -234,10 +234,35 @@ namespace Maestro
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void EditorSequenceComponent::RemoveEntityToAnimate(AZ::EntityId removedEntityId)
     {
+        if (!GetEntity())
+        {
+            // This check removes ambiguous warning in Component::GetEntityId()
+            // while destroying an instance when sanitizing a prefab DOM :
+            // entities are not activated, components have no pointers to parent entities,
+            // buses are not connected -> no need to try fetching owner EntityId from m_sequence.
+            return;
+        }
+
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), removedEntityId);
 
         // Notify the SequenceAgentComponent that we're disconnecting from it
         Maestro::SequenceAgentComponentRequestBus::Event(ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::DisconnectSequence);
+
+        // A linked animation agent in a referenced entity disconnects with the above code.
+        // Removing the node disables next calls to EditorSequenceAgentComponent::DisconnectSequence()
+        // and thus fixes ambiguous warnings on missing owner instance in ToolsApplication::CreateUndosForDirtyEntities()
+        // while destroying a prefab instance
+        if (m_sequence.get())
+        {
+            for (int i = m_sequence->GetNodeCount(); --i >= 0;)
+            {
+                IAnimNode* animNode = m_sequence->GetNode(i);
+                if (animNode->GetType() == AnimNodeType::AzEntity && animNode->GetAzEntityId() == removedEntityId)
+                {
+                    m_sequence->RemoveNode(animNode, true);
+                }
+            }
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
