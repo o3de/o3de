@@ -7,8 +7,7 @@
  */
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
-#include <RayTracing/RayTracingPass.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingPass.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -16,7 +15,6 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
@@ -24,6 +22,7 @@
 #include <CoreLights/DiskLightFeatureProcessor.h>
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
 #include <CoreLights/QuadLightFeatureProcessor.h>
+#include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 
 namespace AZ
 {
@@ -49,7 +48,7 @@ namespace AZ
                 return;
             }
             
-            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
+            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessorInterface>();
 
             // initialize the ray tracing buffer pools
             m_bufferPools = aznew RHI::RayTracingBufferPools;
@@ -748,6 +747,65 @@ namespace AZ
             }
         }
 
+        uint32_t RayTracingFeatureProcessor::BeginFrame()
+        {
+            if (m_tlasRevision != m_revision)
+            {
+                m_tlasRevision = m_revision;
+
+                // create the TLAS descriptor
+                RHI::RayTracingTlasDescriptor tlasDescriptor;
+                RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+
+                uint32_t instanceIndex = 0;
+                for (auto& subMesh : m_subMeshes)
+                {
+                    tlasDescriptorBuild->Instance()
+                        ->InstanceID(instanceIndex)
+                        ->InstanceMask(subMesh.m_mesh->m_instanceMask)
+                        ->HitGroupIndex(0)
+                        ->Blas(subMesh.m_blas)
+                        ->Transform(subMesh.m_mesh->m_transform)
+                        ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
+                        ->Transparent(subMesh.m_material.m_irradianceColor.GetA() < 1.0f);
+
+                    instanceIndex++;
+                }
+
+                unsigned proceduralHitGroupIndex = 1; // Hit group 0 is used for normal meshes
+                AZStd::unordered_map<Name, unsigned> geometryTypeMap;
+                geometryTypeMap.reserve(m_proceduralGeometryTypes.size());
+                for (auto it = m_proceduralGeometryTypes.cbegin(); it != m_proceduralGeometryTypes.cend(); ++it)
+                {
+                    geometryTypeMap[it->m_name] = proceduralHitGroupIndex++;
+                }
+
+                for (const auto& proceduralGeometry : m_proceduralGeometry)
+                {
+                    tlasDescriptorBuild->Instance()
+                        ->InstanceID(instanceIndex)
+                        ->InstanceMask(proceduralGeometry.m_instanceMask)
+                        ->HitGroupIndex(geometryTypeMap[proceduralGeometry.m_typeHandle->m_name])
+                        ->Blas(proceduralGeometry.m_blas)
+                        ->Transform(proceduralGeometry.m_transform)
+                        ->NonUniformScale(proceduralGeometry.m_nonUniformScale);
+                    instanceIndex++;
+                }
+
+                // create the TLAS buffers based on the descriptor
+                RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = m_tlas;
+                rayTracingTlas->CreateBuffers(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &tlasDescriptor, *m_bufferPools);
+            }
+
+            // update and compile the RayTracingSceneSrg and RayTracingMaterialSrg
+            // Note: the timing of this update is very important, it needs to be updated after the TLAS is allocated so it can
+            // be set on the RayTracingSceneSrg for this frame, and the ray tracing mesh data in the RayTracingSceneSrg must
+            // exactly match the TLAS.  Any mismatch in this data may result in a TDR.
+            UpdateRayTracingSrgs();
+
+            return m_revision;
+        }
+
         void RayTracingFeatureProcessor::UpdateRayTracingSrgs()
         {
             AZ_PROFILE_SCOPE(AzRender, "RayTracingFeatureProcessor::UpdateRayTracingSrgs");
@@ -1067,19 +1125,63 @@ namespace AZ
                 return;
             }
 
-            // only enable the RayTracingAccelerationStructurePass on the first pipeline in this scene, this will avoid multiple updates to the same AS
-            bool enabled = true;
-            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
-                || changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
-            {
-                AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("RayTracingAccelerationStructurePass"), GetParentScene());
-                AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&enabled](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
-                    {
-                        pass->SetEnabled(enabled);
-                        enabled = false;
+            // determine which devices need RayTracingAccelerationStructurePasses and distribute multiple existing ones to the devices
+            AZ::RPI::Pass* firstRayTracingAccelerationStructurePass{ nullptr };
+            auto rayTracingDeviceMask{ RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
+            AZ::RHI::MultiDevice::DeviceMask devicesToAdd{ rayTracingDeviceMask };
 
-                        return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
-                    });
+            // only enable the RayTracingAccelerationStructurePass for each device on the first pipeline in this scene, this will avoid
+            // multiple updates to the same AS
+            AZ::RPI::PassFilter passFilter =
+                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("RayTracingAccelerationStructurePassTemplate"), GetParentScene());
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(
+                passFilter,
+                [&devicesToAdd, &firstRayTracingAccelerationStructurePass, &rayTracingDeviceMask](
+                    AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                {
+                    if (!firstRayTracingAccelerationStructurePass)
+                    {
+                        firstRayTracingAccelerationStructurePass = pass;
+                    }
+
+                    // we always set an invalid device index to the first available device
+                    if (pass->GetDeviceIndex() == RHI::MultiDevice::InvalidDeviceIndex)
+                    {
+                        pass->SetDeviceIndex(az_ctz_u32(AZStd::to_underlying(rayTracingDeviceMask)));
+                    }
+
+                    auto mask = RHI::MultiDevice::DeviceMask(AZ_BIT(pass->GetDeviceIndex()));
+
+                    // only have one RayTracingAccelerationStructurePass per device
+                    pass->SetEnabled((mask & devicesToAdd) != RHI::MultiDevice::NoDevices);
+                    devicesToAdd &= ~mask;
+
+                    return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
+
+            // we only add the passes on the other devices if the pipeline contains one in the first place
+            if (firstRayTracingAccelerationStructurePass && changeType != RPI::SceneNotification::RenderPipelineChangeType::Removed &&
+                renderPipeline->FindFirstPass(firstRayTracingAccelerationStructurePass->GetName()))
+            {
+                // add passes for the remaining devices
+                while (devicesToAdd != RHI::MultiDevice::NoDevices)
+                {
+                    auto deviceIndex{ az_ctz_u32(AZStd::to_underlying(devicesToAdd)) };
+
+                    AZStd::shared_ptr<RPI::PassRequest> passRequest = AZStd::make_shared<RPI::PassRequest>();
+                    passRequest->m_templateName = Name("RayTracingAccelerationStructurePassTemplate");
+                    passRequest->m_passName = Name("RayTracingAccelerationStructurePass" + AZStd::to_string(deviceIndex));
+
+                    AZStd::shared_ptr<RPI::PassData> passData = AZStd::make_shared<RPI::PassData>();
+                    passData->m_deviceIndex = deviceIndex;
+                    passRequest->m_passData = passData;
+
+                    auto pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest.get());
+
+                    renderPipeline->AddPassAfter(pass, firstRayTracingAccelerationStructurePass->GetName());
+
+                    devicesToAdd &= RHI::MultiDevice::DeviceMask(~AZ_BIT(deviceIndex));
+                }
             }
         }
 

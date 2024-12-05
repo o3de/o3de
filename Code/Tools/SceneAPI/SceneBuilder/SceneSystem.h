@@ -9,7 +9,6 @@
  */
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <SceneAPI/SceneBuilder/SceneBuilderConfiguration.h>
 #include <SceneAPI/SceneCore/DataTypes/MatrixType.h>
 
 namespace AZ
@@ -23,7 +22,7 @@ namespace AZ
 
     namespace SceneAPI
     {
-        class SCENE_BUILDER_API SceneSystem
+        class SceneSystem
         {
         public:
             SceneSystem();

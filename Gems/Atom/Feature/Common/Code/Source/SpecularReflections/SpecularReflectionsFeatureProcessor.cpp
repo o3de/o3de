@@ -7,10 +7,10 @@
  */
 
 #include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingPass.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
-#include <RayTracing/RayTracingPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpacePass.h>
 
 namespace AZ
@@ -85,7 +85,6 @@ namespace AZ
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpacePass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {
@@ -141,7 +140,6 @@ namespace AZ
                             for (const auto& attachmentName : attachmentNames)
                             {
                                 RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                                AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceRayTracingPass", attachmentName.GetCStr());
 
                                 if (attachmentBinding)
                                 {
@@ -171,7 +169,6 @@ namespace AZ
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceTracePass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {
@@ -197,8 +194,7 @@ namespace AZ
                     {
                         // size multiplier
                         RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(AZ::Name("DownsampledDepthLinearInputOutput"));
-                        AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [DownsampledDepthLinearInputOutput] on ReflectionScreenSpaceDownsampleDepthLinearPass");
-            
+
                         if (attachmentBinding)
                         {
                             RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
@@ -225,7 +221,6 @@ namespace AZ
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceFilterPass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {

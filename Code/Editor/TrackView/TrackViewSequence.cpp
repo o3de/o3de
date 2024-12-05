@@ -604,14 +604,14 @@ void CTrackViewSequence::DequeueNotifications()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTrackViewSequence::SubmitPendingNotifcations(bool force)
+void CTrackViewSequence::SubmitPendingNotifications(bool force)
 {
     if (force)
     {
         m_selectionRecursionLevel = 1;
     }
 
-    AZ_Assert(m_selectionRecursionLevel > 0, "Dangling SubmitPendingNotifcations()");
+    AZ_Assert(m_selectionRecursionLevel > 0, "Dangling SubmitPendingNotifications()");
     if (m_selectionRecursionLevel > 0)
     {
         --m_selectionRecursionLevel;
@@ -656,7 +656,7 @@ void CTrackViewSequence::OnSequenceRemoved(CTrackViewSequence* removedSequence)
         // submit any queued notifications before removing
         if (m_bQueueNotifications)
         {
-            SubmitPendingNotifcations(true);
+            SubmitPendingNotifications(true);
         }
 
         // remove ourselves as listeners from the undo manager
@@ -1443,7 +1443,7 @@ void CTrackViewSequence::EndUndoTransaction()
     // if we're queued
     if (m_bQueueNotifications)
     {
-        SubmitPendingNotifcations();
+        SubmitPendingNotifications();
     }
 }
 
@@ -1461,7 +1461,7 @@ void CTrackViewSequence::EndRestoreTransaction()
     // if we're queued
     if (m_bQueueNotifications)
     {
-        SubmitPendingNotifcations();
+        SubmitPendingNotifications();
     }
 }
 

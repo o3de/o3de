@@ -12,8 +12,8 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/GeometryView.h>
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -37,7 +37,9 @@ namespace AZ
             : public Data::InstanceData
         {
             friend class ModelSystem;
+
         public:
+
             //! Describes a single stream buffer/channel in a single mesh. For example position, normal, or UV.
             //! ModelLod always uses a separate stream buffer for each stream channel (no interleaving) so
             //! this struct contains information about both the stream buffer and the stream channel.
@@ -56,23 +58,13 @@ namespace AZ
                 
                 //! Indicates a ModelLod::m_buffers entry
                 uint32_t m_bufferIndex;
-                
-                //! Indicates a range within the ModelLod::m_buffers entry (because each buffer contains vertex data for all meshes in the LOD)
-                uint32_t m_byteOffset;           
-                uint32_t m_byteCount;
-                
-                //! Number of bytes in one element of the stream. This corresponds to m_format.
-                uint32_t m_stride;
             };
 
             using StreamInfoList = AZStd::fixed_vector<StreamBufferInfo, RHI::Limits::Pipeline::StreamCountMax>;
 
             //! Mesh data associated with a specific material.
-            struct Mesh final
+            struct Mesh final : public RHI::GeometryView
             {
-                RHI::DrawArguments m_drawArguments;
-                RHI::IndexBufferView m_indexBufferView;
-
                 StreamInfoList m_streamInfo;
 
                 ModelMaterialSlot::StableId m_materialSlotStableId = ModelMaterialSlot::InvalidStableId;
@@ -94,7 +86,7 @@ namespace AZ
             //! Blocks the CPU until pending buffer uploads have completed.
             void WaitForUpload();
 
-            AZStd::span<const Mesh> GetMeshes() const;
+            AZStd::span<Mesh> GetMeshes();
 
             //! Compares a ShaderInputContract to the mesh's available streams, and if any of them are optional, sets the corresponding "*_isBound" shader option.
             //! Call this function to update the ShaderOptionKey before fetching a ShaderVariant, to find a variant that is compatible with this mesh's streams.
@@ -117,12 +109,15 @@ namespace AZ
             // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
-                ModelLod::StreamBufferViewList& streamBufferViewsOut,
+                RHI::StreamBufferIndices& streamIndicesOut,
                 UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
                 const ShaderInputContract& contract,
                 size_t meshIndex,
                 const MaterialModelUvOverrideMap& materialModelUvMap = {},
-                const MaterialUvNameMap& materialUvNameMap = {}) const;
+                const MaterialUvNameMap& materialUvNameMap = {});
+
+            // Releases all the buffer dependencies that were added through TrackBuffer
+            void ReleaseTrackedBuffers();
 
         private:
             ModelLod() = default;

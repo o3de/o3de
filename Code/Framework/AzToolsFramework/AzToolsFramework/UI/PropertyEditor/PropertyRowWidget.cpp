@@ -577,12 +577,12 @@ namespace AzToolsFramework
                         }
                         else
                         {
-                            m_defaultLabel->setText(QString("%1 elements").arg(m_containerSize));
+                            m_defaultLabel->setText(QString("%1 element%2").arg(m_containerSize).arg(m_containerSize > 1 ? "s" : ""));
                         }
                     }
                     else
                     {
-                        m_defaultLabel->setText(QString("%1 elements").arg(m_containerSize));
+                        m_defaultLabel->setText(QString("%1 element%2").arg(m_containerSize).arg(m_containerSize > 1 ? "s" : ""));
                     }
                 }
                 else

@@ -77,6 +77,14 @@ namespace AZ
             Output
         };
 
+        // Type of changes done by a descendant.
+        enum class PassDescendantChangeFlags : uint16_t
+        {
+            None = 0,
+            Build = AZ_BIT(0),          // A descendant has rebuilt itself
+            Hierarchy = AZ_BIT(1)       // A descendant has change his hierarchy
+        };
+
         //! Atom's base pass class (every pass class in Atom must derive from this class).
         //! 
         //! Passes are organized into a tree hierarchy with the derived ParentPass class.
@@ -199,8 +207,11 @@ namespace AZ
             //! Adds an attachment binding to the list of this Pass' attachment bindings
             void AddAttachmentBinding(PassAttachmentBinding attachmentBinding);
 
-            // Binds all attachments from the pass 
-            void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType = PassSlotType::Uninitialized) const;
+            // Binds all attachments from the pass
+            void DeclareAttachmentsToFrameGraph(
+                RHI::FrameGraphInterface frameGraph,
+                PassSlotType slotType = PassSlotType::Uninitialized,
+                RHI::ScopeAttachmentAccess accessMask = RHI::ScopeAttachmentAccess::ReadWrite) const;
 
             // Returns a reference to the N-th input binding, where N is the index passed to the function
             PassAttachmentBinding& GetInputBinding(uint32_t index);
@@ -316,6 +327,12 @@ namespace AZ
 
             PassState GetPassState() const { return m_state; }
 
+            //! Alter the connection of an Input or InputOutput attachment
+            void ChangeConnection(const Name& localSlot, const Name& passName, const Name& attachment, RenderPipeline* pipeline);
+
+            //! Alter the connection of an Input or InputOutput attachment
+            void ChangeConnection(const Name& localSlot, Pass* pass, const Name& attachment);
+
             // Update all bindings on this pass that are connected to bindings on other passes
             virtual void UpdateConnectedBindings();
 
@@ -325,11 +342,11 @@ namespace AZ
             // Update output bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedOutputBindings();
 
-        protected:
-            explicit Pass(const PassDescriptor& descriptor);
-
             // Creates a pass descriptor for creating a duplicate pass. Used for hot reloading.
             PassDescriptor GetPassDescriptor() const;
+
+        protected:
+            explicit Pass(const PassDescriptor& descriptor);
 
             // Imports owned imported attachments into the FrameGraph
             // Called in pass's frame prepare function
@@ -393,6 +410,11 @@ namespace AZ
             void OnInitializationFinished();
             virtual void OnInitializationFinishedInternal() { };
 
+            // Called after the pass has finished building. Allows passes to do operations that involve all attachments being added
+            // or all children being built (e.g. creating a RenderAttachmentConfiguration that includes the children).
+            void OnBuildFinished();
+            virtual void OnBuildFinishedInternal() { };
+
             // The Pass's 'Render' function. Called every frame, here the pass sets up it's rendering logic with
             // the FrameGraphBuilder. This is where your derived pass needs to call ImportScopeProducer on
             // the FrameGraphBuilder if it's a ScopeProducer (see ForwardPass::FrameBeginInternal for example).
@@ -413,6 +435,13 @@ namespace AZ
             bool UpdateImportedAttachmentImage(Ptr<PassAttachment>& attachment, 
                 RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite,
                 RHI::ImageAspectFlags aspectFlags = RHI::ImageAspectFlags::Color);
+
+            // Returns the super variant name that this pass should be using.
+            AZ::Name GetSuperVariantName() const;
+
+            // Replaces all SubpassInput attachment for Shader attachments.
+            // @param supportedTypes The subpass input supported types by the device
+            void ReplaceSubpassInputs(RHI::SubpassInputSupportType supportedTypes);
 
             // --- Protected Members ---
 
@@ -503,9 +532,17 @@ namespace AZ
                         uint64_t m_parentDeviceIndexCached : 1;
 
                         // If this is a parent pass, indicates whether the child passes should be merged as subpasses.
-                        // If this is a child pass, indicates whether it is a subpass.
                         // Please read about PassData::m_mergeChildrenAsSubpasses for more details.
                         uint64_t m_mergeChildrenAsSubpasses : 1;
+
+                        // If the pass can be included as a subpass.
+                        uint64_t m_canBecomeASubpass : 1;
+
+                        // If the pass is using a subpass input attachment.
+                        uint64_t m_hasSubpassInput : 1;
+
+                        // Whether the pass was enabled last frame
+                        uint64_t m_lastFrameEnabled : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
@@ -569,6 +606,12 @@ namespace AZ
 
             // The pass removes itself from its parent.
             void RemoveFromParent();
+
+            // -- Descendant related functions ---
+
+            // Called when any of the descendant has changed. The "flags" attribute describes the type of change.
+            // Usefull for detecting changes for rebuilds (e.g. subpass groups).
+            virtual void OnDescendantChange(PassDescendantChangeFlags flags);
 
             // --- Template related setup ---
 

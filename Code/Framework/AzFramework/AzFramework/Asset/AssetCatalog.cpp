@@ -185,13 +185,6 @@ namespace AzFramework
             return foundIter->second.m_relativePath;
         }
 
-        // we did not find it - try the backup mapping!
-        AZ::Data::AssetId legacyMapping = m_registry->GetAssetIdByLegacyAssetId(id);
-        if (legacyMapping.IsValid())
-        {
-            return GetAssetPathByIdInternal(legacyMapping);
-        }
-
         return AZStd::string();
     }
 
@@ -219,13 +212,6 @@ namespace AzFramework
         if (foundIter != m_registry->m_assetIdToInfo.end())
         {
             return foundIter->second;
-        }
-
-        // we did not find it - try the backup mapping!
-        AZ::Data::AssetId legacyMapping = m_registry->GetAssetIdByLegacyAssetId(id);
-        if (legacyMapping.IsValid())
-        {
-            return GetAssetInfoByIdInternal(legacyMapping);
         }
 
         return AZ::Data::AssetInfo();
@@ -860,11 +846,6 @@ namespace AzFramework
 
                     m_registry->RegisterAsset(assetId, newData);
                     m_registry->SetAssetDependencies(assetId, message.m_dependencies);
-
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        m_registry->RegisterLegacyAssetMapping(mapping, assetId);
-                    }
                 }
                 if (!isNewAsset)
                 {
@@ -875,17 +856,6 @@ namespace AzFramework
                             AzFramework::AssetCatalogEventBus::Broadcast(
                                 &AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, assetId);
                         });
-
-                    // in case someone has an ancient reference, notify on that too.
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        AZ::SystemTickBus::QueueFunction(
-                            [mapping]()
-                            {
-                                AzFramework::AssetCatalogEventBus::Broadcast(
-                                    &AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, mapping);
-                            });
-                    }
                 }
                 // This can happen when running with VFS, where the AP connection is done first
                 // and it's too early to send messages since catalog is not initialized yet.
@@ -897,15 +867,6 @@ namespace AzFramework
                             AzFramework::AssetCatalogEventBus::Broadcast(
                                 &AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, assetId);
                         });
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        AZ::SystemTickBus::QueueFunction(
-                            [mapping]()
-                            {
-                                AzFramework::AssetCatalogEventBus::Broadcast(
-                                    &AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, mapping);
-                            });
-                    }
                 }
 
                 // This can happen when running with VFS, where the AP connection is done first
@@ -952,10 +913,7 @@ namespace AzFramework
                 AZStd::string extension;
                 AzFramework::StringFunc::Path::GetExtension(relativePath.c_str(), extension, false);
                 UnregisterAsset(assetId);
-                {
-                    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
-                    m_registry->UnregisterLegacyAssetMappingsForAsset(assetId);
-                }
+
                 // queue this for later delivery, since we are not on the main thread:
                 AzFramework::LegacyAssetEventBus::QueueEvent(
                     AZ::Crc32(extension.c_str()), &AzFramework::LegacyAssetEventBus::Events::OnFileRemoved, relativePath);
@@ -1309,10 +1267,6 @@ namespace AzFramework
             {
                 deltaRegistry.RegisterAssetDependency(asset, dependency);
             }
-        }
-        for (auto legacyToRealPair : m_registry->GetLegacyMappingSubsetFromRealIds(deltaPakAssetIds))
-        {
-            deltaRegistry.RegisterLegacyAssetMapping(legacyToRealPair.first, legacyToRealPair.second);
         }
 
         // serialize the registry

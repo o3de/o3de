@@ -224,7 +224,7 @@ namespace AZ
                 footprint.Footprint.Width = descriptor.m_sourceSize.m_width;
                 footprint.Footprint.Height = descriptor.m_sourceSize.m_height;
                 footprint.Footprint.Depth = descriptor.m_sourceSize.m_depth;
-                footprint.Footprint.Format = ConvertFormat(destinationImage->GetDescriptor().m_format);
+                footprint.Footprint.Format = ConvertFormat(descriptor.m_sourceFormat);
                 footprint.Footprint.RowPitch = descriptor.m_sourceBytesPerRow;
 
                 const CD3DX12_TEXTURE_COPY_LOCATION sourceLocation(sourceBuffer->GetMemoryView().GetMemory(), footprint);
@@ -564,13 +564,19 @@ namespace AZ
         {
             ValidateSubmitIndex(submitIndex);
 
+            if (drawItem.m_geometryView == nullptr)
+            {
+                AZ_Assert(false, "DrawItem being submitted without GeometryView, i.e. without draw arguments, index buffer or stream buffers!");
+                return;
+            }
+
             if (!CommitShaderResources<RHI::PipelineStateType::Draw>(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");
                 return;
             }
 
-            SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+            SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
             SetStencilRef(drawItem.m_stencilRef);
 
             RHI::CommandListScissorState scissorState;
@@ -591,49 +597,49 @@ namespace AZ
             CommitViewportState();
             CommitShadingRateState();
 
-            switch (drawItem.m_arguments.m_type)
+            switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
             {
-                AZ_Assert(drawItem.m_indexBufferView, "Index buffer view is null!");
+                AZ_Assert(drawItem.m_geometryView->GetIndexBufferView().GetBuffer(), "Index buffer view is null!");
 
-                const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-                SetIndexBuffer(*drawItem.m_indexBufferView);
+                const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
 
                 GetCommandList()->DrawIndexedInstanced(
                     indexed.m_indexCount,
-                    indexed.m_instanceCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
                     indexed.m_indexOffset,
                     indexed.m_vertexOffset,
-                    indexed.m_instanceOffset);
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
 
             case RHI::DrawType::Linear:
             {
-                const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
                 GetCommandList()->DrawInstanced(
                     linear.m_vertexCount,
-                    linear.m_instanceCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
                     linear.m_vertexOffset,
-                    linear.m_instanceOffset);
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
 
             case RHI::DrawType::Indirect:
             {
-                const auto& indirect = drawItem.m_arguments.m_indirect;
+                const auto& indirect = drawItem.m_geometryView->GetDrawArguments().m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
                 if (layout.GetType() == RHI::IndirectBufferLayoutType::IndexedDraw)
                 {
-                    AZ_Assert(drawItem.m_indexBufferView, "Index buffer view is null!");
-                    SetIndexBuffer(*drawItem.m_indexBufferView);
+                    AZ_Assert(drawItem.m_geometryView->GetIndexBufferView().GetBuffer(), "Index buffer view is null!");
+                    SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
                 }
                 ExecuteIndirect(indirect);
                 break;
             }
             default:
-                AZ_Assert(false, "Invalid draw type %d", drawItem.m_arguments.m_type);
+                AZ_Assert(false, "Invalid draw type %d", drawItem.m_geometryView->GetDrawArguments().m_type);
                 break;
             }
 
@@ -858,15 +864,17 @@ namespace AZ
             );
         }
 
-        void CommandList::SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryBufferViews, const RHI::StreamBufferIndices& streamIndices)
         {
+            auto streamIter = geometryBufferViews.CreateStreamIterator(streamIndices);
+
             bool needsBinding = false;
 
-            for (uint32_t i = 0; i < count; ++i)
+            for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
             {
-                if (m_state.m_streamBufferHashes[i] != static_cast<uint64_t>(streams[i].GetHash()))
+                if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streamIter->GetHash()))
                 {
-                    m_state.m_streamBufferHashes[i] = static_cast<uint64_t>(streams[i].GetHash());
+                    m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streamIter->GetHash());
                     needsBinding = true;
                 }
             }
@@ -874,15 +882,16 @@ namespace AZ
             if (needsBinding)
             {
                 D3D12_VERTEX_BUFFER_VIEW views[RHI::Limits::Pipeline::StreamCountMax];
+                streamIter.Reset();
 
-                for (uint32_t i = 0; i < count; ++i)
+                for (u8 i = 0; !streamIter.HasEnded(); ++streamIter, ++i)
                 {
-                    if (streams[i].GetBuffer())
+                    if (streamIter->GetBuffer())
                     {
-                        const Buffer* buffer = static_cast<const Buffer*>(streams[i].GetBuffer());
-                        views[i].BufferLocation = buffer->GetMemoryView().GetGpuAddress() + streams[i].GetByteOffset();
-                        views[i].SizeInBytes = streams[i].GetByteCount();
-                        views[i].StrideInBytes = streams[i].GetByteStride();
+                        const Buffer* buffer = static_cast<const Buffer*>(streamIter->GetBuffer());
+                        views[i].BufferLocation = buffer->GetMemoryView().GetGpuAddress() + streamIter->GetByteOffset();
+                        views[i].SizeInBytes = streamIter->GetByteCount();
+                        views[i].StrideInBytes = streamIter->GetByteStride();
                     }
                     else
                     {
@@ -890,7 +899,7 @@ namespace AZ
                     }
                 }
 
-                GetCommandList()->IASetVertexBuffers(0, count, views);
+                GetCommandList()->IASetVertexBuffers(0, streamIndices.Size(), views);
             }
         }
 

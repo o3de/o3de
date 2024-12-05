@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-    
+
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
 #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_MaterialSrg.azsli>
 

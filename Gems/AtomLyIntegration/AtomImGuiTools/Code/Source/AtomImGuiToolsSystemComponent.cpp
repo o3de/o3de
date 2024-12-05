@@ -104,7 +104,6 @@ namespace AtomImGuiTools
                 m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(transientStats);
             }
         }
-
         m_showMaterialDetails = m_imguiMaterialDetails.Tick(m_materialDetailsController.GetMeshDrawPackets(), m_materialDetailsController.GetSelectionName().c_str());
     }
 

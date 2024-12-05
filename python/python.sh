@@ -16,7 +16,6 @@ while [[ -h "$SOURCE" ]]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-
 # Locate and make sure cmake is in the path
 if [[ "$OSTYPE" = *"darwin"* ]];
 then
@@ -43,6 +42,26 @@ if ! [ -x "$(command -v cmake)" ]; then
         echo "ERROR: Could not find cmake on the PATH or at the known location: $LY_CMAKE_PATH"
         echo "Please add cmake to the environment PATH or place it at the above known location."
         exit 1
+    fi
+fi
+
+# Special Case: If we are using the export-project script in a ROS2 enabled environment, then we cannot use the O3DE embedded python
+# for the export scripts because the ROS2 projects may require ros-specific python modules to exist for validation to build the project
+# which is installed as part of the ROS2 system packages. These packages are not available in the embedded O3DE python so in this
+# case we must call the system installed python3
+if [[ $ROS_DISTRO != ""  && ( $1 == "export-project" || $2 == "export-project" ) ]]
+then
+    which python3 > /dev/null 2>&1
+    if [ $? -eq 0 ]
+    then
+        # Make sure the required 'resolvelib' is installed which is required for project export
+        python3 -m pip install resolvelib || true
+
+        # Run the python command through the ROS-installed python3
+        python3 "$@"
+        exit $?
+    else
+        echo "Warning. Detected ROS but cannot locate python3 for ROS, this may cause issues with O3DE."
     fi
 fi
 
@@ -96,11 +115,11 @@ then
 fi
 
 # Activate the venv environment
-source $PYTHON_VENV_ACTIVATE
+source "$PYTHON_VENV_ACTIVATE"
 
 # Make sure that python shared library that is loaded by the python linked in the venv folder
 # is the one that is loaded by injecting the shared lib path before invoking python. Otherwise,
 # the shared library may not be found or it could load it from a different location.
 PYTHON_LIB_PATH=$PYTHON_VENV/lib
-PYTHONNOUSERSITE=1 LD_LIBRARY_PATH="$PYTHON_LIB_PATH:$LD_LIBRARY_PATH" PYTHONPATH= "$PYTHON_VENV_PYTHON" "$@"
+PYTHONNOUSERSITE=1 LD_LIBRARY_PATH="$PYTHON_LIB_PATH:$LD_LIBRARY_PATH" PYTHONPATH= "$PYTHON_VENV_PYTHON" -B "$@"
 exit $?

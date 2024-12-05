@@ -18,7 +18,9 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    Texture2D<float4> m_framebuffer;
+    [[input_attachment_index(0)]]
+    SubpassInput m_framebuffer;
+
     Texture3D<float4> m_lut;
     Sampler LinearSampler
     {
@@ -64,8 +66,7 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     // Fetch the pixel color from the input texture
-    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
-
+    float3 color = PassSrg::m_framebuffer.SubpassLoad(int3(IN.m_position.x, IN.m_position.y, 0)).rgb;
 #if MERGE_MANUAL_EXPOSURE
     // Apply manual exposure compensation
     color = ApplyManualExposure(color, float(ViewSrg::GetExposureValueCompensation()));

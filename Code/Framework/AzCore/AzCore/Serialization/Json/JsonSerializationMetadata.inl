@@ -59,5 +59,3 @@ namespace AZ
         return const_cast<JsonSerializationMetadata*>(this)->Find<MetadataT>();
     }
 } // namespace AZ
-
-#include <AzCore/Serialization/Json/JsonSerializationMetadata.inl>

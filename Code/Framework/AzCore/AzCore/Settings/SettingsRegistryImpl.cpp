@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -613,6 +614,9 @@ namespace AZ
     bool SettingsRegistryImpl::MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey,
         const CommandLineArgumentSettings& commandLineSettings)
     {
+        // Incoming data is always in "C" locale.
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
         if (!commandLineSettings.m_delimiterFunc)
         {
             AZ_Error("SettingsRegistry", false,
@@ -671,6 +675,7 @@ namespace AZ
             // function is used, there wouldn't need to be a limitation
             return false;
         }
+
         valueString = value;
         const char* valueStringEnd = valueString.c_str() + valueString.size();
 

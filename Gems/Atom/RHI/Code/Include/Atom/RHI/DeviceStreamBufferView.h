@@ -52,6 +52,8 @@ namespace AZ::RHI
         //! This must match the stride value in StreamBufferDescriptor.
         uint32_t GetByteStride() const;
 
+        bool operator==(const DeviceStreamBufferView& other) const;
+
     private:
         HashValue64 m_hash = HashValue64{ 0 };
         const DeviceBuffer* m_buffer = nullptr;

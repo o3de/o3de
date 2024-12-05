@@ -24,7 +24,9 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    Texture2D<float2>   m_depthStencilTexture;
+    [[input_attachment_index(0)]]
+    SubpassInputDS      m_depthStencilTexture;  // Need to use SubpassInputDS to signal that we are reading from a depth/stencil texture
+                                                // since some platforms don't support reading from it.
     Texture2D<float>    m_linearDepthTexture;
     float3              m_fogColor;
     float               m_fogStartDistance; // Distance at which the fog starts to appear
@@ -46,6 +48,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float               m_octavesBlendFactor;
 
     Texture2D           m_noiseTexture;     // Defines fog pattern 
+
+    float2              m_depthTextureDimentions;
 #endif //ENABLE_FOG_LAYER
 
     Sampler DepthSampler
@@ -119,19 +123,19 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
     
     float linearDepth;
-
+    
 #if HAS_LINEAR_DEPTH
     linearDepth = PassSrg::m_linearDepthTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
 #else
-    linearDepth = PassSrg::m_depthStencilTexture.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    linearDepth = PassSrg::m_depthStencilTexture.SubpassLoad(int3(IN.m_position.x, IN.m_position.y, 0)).r;
     linearDepth = abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * linearDepth - ViewSrg::GetFarZ()))); 
 #endif
 
 #if ENABLE_FOG_LAYER
     if (o_enableFogLayer)
     {
-        float zDepth = PassSrg::m_depthStencilTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
-        float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_depthStencilTexture, zDepth, IN.m_position.xy).xyz;
+        float zDepth = PassSrg::m_depthStencilTexture.SubpassLoad(int3(IN.m_position.x, IN.m_position.y, 0)).r;
+        float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_depthTextureDimentions, zDepth, IN.m_position.xy).xyz;
 
         // Fog layer deltas
         const float layerThickness = PassSrg::m_fogMaxHeight - PassSrg::m_fogMinHeight;

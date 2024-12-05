@@ -29,7 +29,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode Fence::Init(MultiDevice::DeviceMask deviceMask, FenceState initialState)
+    ResultCode Fence::Init(MultiDevice::DeviceMask deviceMask, FenceState initialState, bool usedForWaitingOnDevice)
     {
         if (Validation::IsEnabled())
         {
@@ -45,13 +45,13 @@ namespace AZ::RHI
         ResultCode resultCode = ResultCode::Success;
 
         IterateDevices(
-            [this, initialState, &resultCode](int deviceIndex)
+            [this, initialState, usedForWaitingOnDevice, &resultCode](int deviceIndex)
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
 
-                resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState);
+                resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState, usedForWaitingOnDevice);
 
                 return resultCode == ResultCode::Success;
             });
@@ -73,15 +73,7 @@ namespace AZ::RHI
 
     void Fence::Shutdown()
     {
-        if (IsInitialized())
-        {
-            IterateObjects<DeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
-            {
-                deviceFence->Shutdown();
-            });
-
-            MultiDeviceObject::Shutdown();
-        }
+        MultiDeviceObject::Shutdown();
     }
 
     ResultCode Fence::SignalOnCpu()

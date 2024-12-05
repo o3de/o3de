@@ -47,6 +47,17 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
+    # For installed SDKs, only the release monolithic android artifacts are installed with the SDK
+    if is_installer_sdk:
+        # Make sure monolithic artifacts are present
+        if not exp.has_monolithic_artifacts(ctx):
+            logger.error("No monolithic artifacts are detected in the engine installation.")
+            raise exp.ExportProjectError("Trying to build monolithic without libraries.")
+
+        if build_config != exp.BUILD_CONFIG_RELEASE:
+            logger.warning("Only release packages are supported for Android in the O3DE SDK.")
+        build_config = exp.BUILD_CONFIG_RELEASE
+
     android_arg_parser = argparse.ArgumentParser()
     android_subparser = android_arg_parser.add_subparsers(title="Android sub-commands")
     android.add_args(android_subparser)
@@ -124,7 +135,8 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         except FileNotFoundError:
             logger.error("Unable to open build.gradle file. Aborting deployment...")
     
-    logger.info(f"Exporting finished. Output Android Project generated at {target_android_project_path}")
+    logger.info(f"Project exported to '{target_android_project_path}'.")
+    
         
 
 def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
@@ -252,5 +264,5 @@ if "o3de_context" in globals():
     args = export_source_android_parse_args(o3de_context, export_config)
 
     export_source_android_run_command(o3de_context, args, export_config, o3de_logger)
-    o3de_logger.info(f"Finished exporting android project to {args.android_build_path}")
+    o3de_logger.info(f"Finished exporting.")
     sys.exit(0)

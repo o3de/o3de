@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Render/DiffuseProbeGrid.h>
@@ -14,7 +15,6 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <AzCore/Math/MathUtils.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -84,21 +84,14 @@ namespace AZ
                         m_sortKey = sortKey;
 
                         RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
-
-                        RHI::DrawIndexed drawIndexed;
-                        drawIndexed.m_indexCount = aznumeric_cast<uint32_t>(m_renderData->m_boxIndexCount);
-                        drawIndexed.m_indexOffset = 0;
-                        drawIndexed.m_vertexOffset = 0;
-
                         drawPacketBuilder.Begin(nullptr);
-                        drawPacketBuilder.SetDrawArguments(drawIndexed);
-                        drawPacketBuilder.SetIndexBufferView(m_renderData->m_boxIndexBufferView);
+                        drawPacketBuilder.SetGeometryView(&m_renderData->m_geometryView);
                         drawPacketBuilder.AddShaderResourceGroup(m_renderObjectSrg->GetRHIShaderResourceGroup());
 
                         RHI::DrawPacketBuilder::DrawRequest drawRequest;
+                        drawRequest.m_streamIndices = m_renderData->m_geometryView.GetFullStreamBufferIndices();
                         drawRequest.m_listTag = m_renderData->m_drawListTag;
                         drawRequest.m_pipelineState = m_renderData->m_pipelineState->GetRHIPipelineState();
-                        drawRequest.m_streamBufferViews = m_renderData->m_boxPositionBufferView;
                         drawRequest.m_sortKey = m_sortKey;
                         drawPacketBuilder.AddDrawItem(drawRequest);
 
@@ -337,6 +330,19 @@ namespace AZ
 
             if (m_mode == DiffuseProbeGridMode::RealTime)
             {
+                AZStd::vector<uint8_t> initData;
+                auto initImage = [&](const RHI::ImageInitRequest& request)
+                {
+                    initData.resize(
+                        request.m_descriptor.m_size.m_width * request.m_descriptor.m_size.m_height *
+                            RHI::GetFormatSize(request.m_descriptor.m_format),
+                        0);
+                    RHI::ImageUpdateRequest updateRequest;
+                    updateRequest.m_image = request.m_image;
+                    updateRequest.m_image->GetSubresourceLayout(updateRequest.m_sourceSubresourceLayout);
+                    updateRequest.m_sourceData = initData.data();
+                    m_renderData->m_imagePool->UpdateImageContents(updateRequest);
+                };
                 // advance to the next image in the frame image array
                 m_currentImageIndex = (m_currentImageIndex + 1) % ImageFrameCount;
 
@@ -352,6 +358,8 @@ namespace AZ
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRayTraceImage image");
+                    m_rayTraceImage[m_currentImageIndex]->SetName(AZ::Name("ProbeRaytrace"));
+                    initImage(request);
                 }
 
                 // probe irradiance
@@ -368,6 +376,8 @@ namespace AZ
                     request.m_optimizedClearValue = &clearValue;
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeIrradianceImage image");
+                    m_irradianceImage[m_currentImageIndex]->SetName(AZ::Name("ProbeIrradiance"));
+                    initImage(request);
                 }
 
                 // probe distance
@@ -382,6 +392,8 @@ namespace AZ
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDistanceImage image");
+                    m_distanceImage[m_currentImageIndex]->SetName(AZ::Name("ProbeDistance"));
+                    initImage(request);
                 }
 
                 // probe data
@@ -396,6 +408,8 @@ namespace AZ
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::ProbeDataImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDataImage image");
+                    m_probeDataImage[m_currentImageIndex]->SetName(AZ::Name("ProbeData"));
+                    initImage(request);
                 }
 
                 // probes need to be relocated since the textures changed
@@ -406,9 +420,6 @@ namespace AZ
 
             // textures have changed so we need to update the render Srg to bind the new ones
             m_updateRenderObjectSrg = true;
-
-            // we need to clear the Irradiance, Distance, and ProbeData textures
-            m_textureClearRequired = true;
         }
 
         void DiffuseProbeGrid::ComputeProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing, uint32_t& probeCountX, uint32_t& probeCountY, uint32_t& probeCountZ)

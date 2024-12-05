@@ -40,10 +40,14 @@ namespace AZ::Vulkan
         m_renderPassContext.SetName(AZ::Name(name));
 
         // Set the RenderPassContext for each group.
+        uint32_t subpassIndex = 0;
         for (uint32_t i = 0; i < executeGroups.size(); ++i)
         {
             auto executeGroup = azrtti_cast<FrameGraphExecuteGroupSecondary*>(executeGroups[i]);
-            executeGroup->SetRenderContext(m_renderPassContext, i);
+            if (executeGroup->GetScope()->UsesRenderpass())
+            {
+                executeGroup->SetRenderContext(m_renderPassContext, subpassIndex++);
+            }
         }
 
         return RHI::ResultCode::Success;
@@ -51,11 +55,43 @@ namespace AZ::Vulkan
 
     void FrameGraphExecuteGroupSecondaryHandler::EmitScopeBarriers(CommandList& commandList, Scope::BarrierSlot slot) const
     {
+        // Group all memory barriers of the scopes into one memory barrier.
+        VkMemoryBarrier2 collectedMemoryBarrier = {};
+        // Emit all barriers except the memory ones.
+        BarrierTypeFlags emitMask = RHI::ResetBits(BarrierTypeFlags::All, BarrierTypeFlags::Memory);
         for (auto group : m_executeGroups)
         {
             const FrameGraphExecuteGroupSecondary* executeGroup = static_cast<const FrameGraphExecuteGroupSecondary*>(group);
             // There's only one scope in this type of handler.
-            executeGroup->GetScopes()[0]->EmitScopeBarriers(commandList, slot);
+            auto scope = executeGroup->GetScopes()[0];
+            scope->EmitScopeBarriers(commandList, slot, emitMask);
+            auto scopeMemoryBarrier = scope->CollectMemoryBarriers(slot);
+            collectedMemoryBarrier.srcAccessMask |= scopeMemoryBarrier.srcAccessMask;
+            collectedMemoryBarrier.srcStageMask |= scopeMemoryBarrier.srcStageMask;
+            collectedMemoryBarrier.dstStageMask |= scopeMemoryBarrier.dstStageMask;
+            collectedMemoryBarrier.dstAccessMask |= scopeMemoryBarrier.dstAccessMask;
+        }
+
+        if (collectedMemoryBarrier.srcAccessMask != 0 || collectedMemoryBarrier.dstAccessMask != 0)
+        {
+            // Now emit the grouped memory barrier.
+            VkMemoryBarrier memoryBarrier{};
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.srcAccessMask = aznumeric_caster(collectedMemoryBarrier.srcAccessMask);
+            memoryBarrier.dstAccessMask = aznumeric_caster(collectedMemoryBarrier.dstAccessMask);
+            static_cast<Device&>(commandList.GetDevice())
+                .GetContext()
+                .CmdPipelineBarrier(
+                    commandList.GetNativeCommandBuffer(),
+                    aznumeric_caster(collectedMemoryBarrier.srcStageMask),
+                    aznumeric_caster(collectedMemoryBarrier.dstStageMask),
+                    VK_DEPENDENCY_BY_REGION_BIT,
+                    1,
+                    &memoryBarrier,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr);
         }
     }
 
@@ -84,13 +120,15 @@ namespace AZ::Vulkan
     void FrameGraphExecuteGroupSecondaryHandler::EndInternal()
     {
         RHI::Ptr<CommandList> commandList = m_device->AcquireCommandList(m_hardwareQueueClass);
-        const Scope* scope = static_cast<const FrameGraphExecuteGroupSecondary*>(m_executeGroups[0])->GetScopes()[0];
 
+        bool usePrimaryDebugLabel = m_executeGroups.size() > 1;
         commandList->BeginCommandBuffer();
-        commandList->BeginDebugLabel(scope->GetMarkerLabel().data());
+        if (usePrimaryDebugLabel)
+        {
+            commandList->BeginDebugLabel("Subpass Group");
+        }
 
         // First emit all scope barriers outside of the renderpass.
-        EmitScopeBarriers(*commandList, Scope::BarrierSlot::Aliasing);
         ProcessClearRequests(*commandList);
         EmitScopeBarriers(*commandList, Scope::BarrierSlot::Prologue);
         // Reset the RHI QueryPools.
@@ -111,13 +149,14 @@ namespace AZ::Vulkan
         {
             FrameGraphExecuteGroup* group = static_cast<FrameGraphExecuteGroup*>(m_executeGroups[i]);
             auto commandLists = group->GetCommandLists();
+            commandList->BeginDebugLabel(group->GetScopes().front()->GetMarkerLabel().data());
             commandList->ExecuteSecondaryCommandLists(commandLists);
             if (usesRenderPass)
             {
                 // Move to the next subpass. If this is the last one, the NextSubpass function will do nothing.
                 commandList->NextSubpass(VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
             }
-
+            commandList->EndDebugLabel();
             AddWorkRequest(group->GetWorkRequest());
         }
 
@@ -129,7 +168,10 @@ namespace AZ::Vulkan
         // Emit epilogue barriers outside the renderpass.
         EmitScopeBarriers(*commandList, Scope::BarrierSlot::Epilogue);
 
-        commandList->EndDebugLabel();
+        if (usePrimaryDebugLabel)
+        {
+            commandList->EndDebugLabel();
+        }
         commandList->EndCommandBuffer();
 
         m_workRequest.m_commandList = commandList;

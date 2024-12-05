@@ -5,15 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/TransientAttachmentPool.h>
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
+#include <Atom/RHI/RHIBus.h>
+#include <AzCore/std/sort.h>
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/Scope.h>
-#include <AzCore/std/sort.h>
+#include <RHI/TransientAttachmentPool.h>
+
+#include <Atom/RHI.Reflect/DX12/DX12Bus.h>
 
 //#define DX12_TRANSIENT_ATTACHMENT_POOL_DEBUG_LOG
 
@@ -43,10 +46,24 @@ namespace AZ
                 AliasedAttachmentAllocator::Descriptor heapAllocatorDesc;
                 heapAllocatorDesc.m_cacheSize = ObjectCacheSize;
                 heapAllocatorDesc.m_heapFlags = D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
-                heapAllocatorDesc.m_budgetInBytes = descriptor.m_bufferBudgetInBytes + descriptor.m_imageBudgetInBytes + descriptor.m_renderTargetBudgetInBytes;
-                heapAllocatorDesc.m_alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+
+                DX12RequirementBus::Broadcast(
+                    &DX12RequirementBus::Events::CollectTransientAttachmentPoolHeapFlags, heapAllocatorDesc.m_heapFlags);
+
+                heapAllocatorDesc.m_budgetInBytes =
+                    descriptor.m_bufferBudgetInBytes + descriptor.m_imageBudgetInBytes + descriptor.m_renderTargetBudgetInBytes;
                 heapAllocatorDesc.m_resourceTypeMask = RHI::AliasedResourceTypeFlags::All;
                 heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
+                struct
+                {
+                    size_t m_alignment = 0;
+                    void operator=(size_t value)
+                    {
+                        m_alignment = AZStd::max(m_alignment, value);
+                    }
+                } alignment;
+                RHI::RHIRequirementRequestBus::BroadcastResult(alignment, &RHI::RHIRequirementsRequest::GetRequiredAlignment, device);
+                heapAllocatorDesc.m_alignment = AZStd::max<size_t>(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT, alignment.m_alignment);
 
                 RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
                 allocator->SetName(Name("TransientAttachmentPool_[Shared]"));

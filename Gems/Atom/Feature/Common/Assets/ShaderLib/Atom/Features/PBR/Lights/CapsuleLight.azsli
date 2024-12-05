@@ -14,7 +14,7 @@
 #if ENABLE_CAPSULE_LIGHTS
 // Get a uniformly distributed point on the surface of a capsule from the provided uniformly distributed 2d point. Uses
 // capsRatio to determine if the point should be on the caps or cylinder to ensure an even distribution. 
-void SampleCapsule(float2 randomPoint, ViewSrg::CapsuleLight light, float capToCylinderAreaRatio, float3x3 localToWorld, out float3 outPosition, out float3 outDirection)
+void SampleCapsule(float2 randomPoint, CapsuleLight light, float capToCylinderAreaRatio, float3x3 localToWorld, out float3 outPosition, out float3 outDirection)
 {
     float3 startToEnd = light.m_direction * light.m_length;
     float3 endPoint = light.m_startPoint + startToEnd;
@@ -54,7 +54,7 @@ void SampleCapsule(float2 randomPoint, ViewSrg::CapsuleLight light, float capToC
     }
 }
 
-void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout LightingData lightingData)
+void ApplyCapsuleLight(CapsuleLight light, Surface surface, inout LightingData lightingData)
 {
     float lightLength = light.m_length;
     float3 startPoint = light.m_startPoint;
@@ -180,7 +180,7 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Light
     }
 }
 
-void ValidateCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout LightingData lightingData)
+void ValidateCapsuleLight(CapsuleLight light, Surface surface, inout LightingData lightingData)
 {
     const uint sampleCount = 1024;
 
@@ -232,7 +232,7 @@ void ApplyCapsuleLightInternal(uint lightIndex, Surface surface, inout LightingD
 {
     if (o_enableCapsuleLights)
     {
-        ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[lightIndex];
+        CapsuleLight light = ViewSrg::m_capsuleLights[lightIndex];
         if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
         {
             return;

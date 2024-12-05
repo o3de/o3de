@@ -25,7 +25,8 @@ namespace AZ::RHI
         virtual ~DeviceFence() = 0;
 
         /// Initializes the fence using the provided device and initial state.
-        ResultCode Init(Device& device, FenceState initialState);
+        /// Set usedForWaitingOnDevice to true if the Fence shoud be signaled on the CPU and waited for on the device.
+        ResultCode Init(Device& device, FenceState initialState, bool usedForWaitingOnDevice = false);
 
         /// Shuts down the fence.
         void Shutdown() override final;
@@ -48,6 +49,10 @@ namespace AZ::RHI
         /// is invoked when the fence completes.
         ResultCode WaitOnCpuAsync(SignalCallback callback);
 
+        /// BinaryFences in Vulkan need their dependent TimelineSemaphore Fences to be
+        /// signalled. This is currently only implemented in Vulkan
+        virtual void SetExternallySignalled(){};
+
     protected:
         bool ValidateIsInitialized() const;
 
@@ -55,7 +60,7 @@ namespace AZ::RHI
         // Platform API
 
         /// Called when the fence is being initialized.
-        virtual ResultCode InitInternal(Device& device, FenceState initialState) = 0;
+        virtual ResultCode InitInternal(Device& device, FenceState initialState, bool usedForWaitingOnDevice) = 0;
 
         /// Called when the PSO is being shutdown.
         virtual void ShutdownInternal() = 0;

@@ -45,11 +45,6 @@ namespace AZ::RHI
 
     void Buffer::Shutdown()
     {
-        IterateObjects<DeviceBuffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
-        {
-            deviceBuffer->Shutdown();
-        });
-
         Resource::Shutdown();
     }
 
@@ -95,7 +90,9 @@ namespace AZ::RHI
                 return new_iterator->second;
             }
         }
-        else if (&iterator->second->GetBuffer() != m_buffer->GetDeviceBuffer(deviceIndex).get())
+        // TODO: Figure out why `iterator->second` is sometimes null given that `m_buffer` is non-null
+        // Add null check for `iterator->second` to avoid empty pointer
+        else if (!iterator->second || &iterator->second->GetBuffer() != m_buffer->GetDeviceBuffer(deviceIndex).get())
         {
             iterator->second = m_buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(m_descriptor);
         }

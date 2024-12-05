@@ -144,6 +144,7 @@ namespace AZ
                 copyDescriptor.m_sourceOffset = 0;
                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
                 copyDescriptor.m_sourceBytesPerImage = stagingSlicePitch;
+                copyDescriptor.m_sourceFormat = packet.m_destinationImage->GetDescriptor().m_format;
                 copyDescriptor.m_sourceSize = subresourceLayout.m_size;
                 copyDescriptor.m_destinationImage = packet.m_destinationImage;
                 copyDescriptor.m_destinationSubresource.m_mipSlice = packet.m_subresource.m_mipSlice;
@@ -184,20 +185,26 @@ namespace AZ
             m_epiloqueBarriers.erase(AZStd::remove_if(m_epiloqueBarriers.begin(), m_epiloqueBarriers.end(), predicateBarrier), m_epiloqueBarriers.end());
         }
 
-        void ImagePoolResolver::QueuePrologueTransitionBarriers(CommandList& commandList)
+        void ImagePoolResolver::QueuePrologueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask)
         {
-            EmmitBarriers(commandList, m_prologueBarriers);
+            EmmitBarriers(commandList, m_prologueBarriers, mask);
         }
 
-        void ImagePoolResolver::QueueEpilogueTransitionBarriers(CommandList& commandList)
+        void ImagePoolResolver::QueueEpilogueTransitionBarriers(CommandList& commandList, BarrierTypeFlags mask)
         {
-            EmmitBarriers(commandList, m_epiloqueBarriers);
+            EmmitBarriers(commandList, m_epiloqueBarriers, mask);
         }
 
-        void ImagePoolResolver::EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const
+        void ImagePoolResolver::EmmitBarriers(
+            CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers, BarrierTypeFlags mask) const
         {
             for (const auto& barrierInfo : barriers)
             {
+                if (!RHI::CheckBitsAll(mask, ConvertBarrierType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)))
+                {
+                    continue;
+                }
+
                 m_device.GetContext().CmdPipelineBarrier(
                     commandList.GetNativeCommandBuffer(),
                     barrierInfo.m_srcStageMask,

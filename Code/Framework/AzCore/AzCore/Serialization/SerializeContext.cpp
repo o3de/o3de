@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/DataOverlay.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Asset/AssetSerializer.h>
 
@@ -295,6 +296,8 @@ namespace AZ
         /// Convert binary data to text
         size_t DataToText(IO::GenericStream& in, IO::GenericStream& out, bool isDataBigEndian /*= false*/) override
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for string format
+
             AZ_Assert(in.GetLength() == sizeof(T), "Invalid data size");
 
             T value;
@@ -308,6 +311,8 @@ namespace AZ
         /// Convert text data to binary, to support loading old version formats. We must respect text version if the text->binary format has changed!
         size_t  TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian = false) override
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for strtod
+
             AZ_Assert(textVersion == 0, "Unknown float/double version!");
             (void)textVersion;
             double value = strtod(text, nullptr);

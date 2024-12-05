@@ -247,8 +247,8 @@ namespace AZ
 
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
-            const auto meshes = m_modelLod->GetMeshes();
-            const ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
+            auto meshes = m_modelLod->GetMeshes();
+            ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
 
             if (!m_material)
             {
@@ -260,9 +260,7 @@ namespace AZ
 
             RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
             drawPacketBuilder.Begin(nullptr);
-
-            drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
-            drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView  );
+            drawPacketBuilder.SetGeometryView(&mesh);
             drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
             drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
@@ -270,11 +268,6 @@ namespace AZ
             // if DoUpdate() fails it won't modify any member data.
             MeshDrawPacket::ShaderList shaderList;
             shaderList.reserve(m_activeShaders.size());
-
-            // We have to keep a list of these outside the loops that collect all the shaders because the DrawPacketBuilder
-            // keeps pointers to StreamBufferViews until DrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
-            // that the memory won't be relocated when new entries are added.
-            AZStd::fixed_vector<ModelLod::StreamBufferViewList, RHI::DrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
 
             // The root constants are shared by all draw items in the draw packet. We must populate them with default values.
             // The draw packet builder needs to know where the data is coming from during appendShader, but it's not actually read
@@ -383,13 +376,12 @@ namespace AZ
                 const RHI::RenderStates& renderStatesOverlay = *shaderItem.GetRenderStatesOverlay();
                 RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
 
-                auto& streamBufferViews = streamBufferViewsPerShader.emplace_back();
-
                 UvStreamTangentBitmask uvStreamTangentBitmask;
+                RHI::StreamBufferIndices streamIndices;
 
                 if (!m_modelLod->GetStreamsForMesh(
                     pipelineStateDescriptor.m_inputStreamLayout,
-                    streamBufferViews,
+                    streamIndices,
                     &uvStreamTangentBitmask,
                     shader->GetInputContract(),
                     m_modelLodMeshIndex,
@@ -453,7 +445,7 @@ namespace AZ
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;
-                drawRequest.m_streamBufferViews = streamBufferViews;
+                drawRequest.m_streamIndices = streamIndices;
                 drawRequest.m_stencilRef = m_stencilRef;
                 drawRequest.m_sortKey = m_sortKey;
                 if (drawSrg)

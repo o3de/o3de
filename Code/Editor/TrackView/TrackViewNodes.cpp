@@ -326,7 +326,6 @@ enum EMenuItem
     eMI_AddDOF = 510,
     eMI_AddScreenfader = 511,
     eMI_AddShadowSetup = 513,
-    eMI_AddEnvironment = 514,
     eMI_EditEvents = 550,
     eMI_SaveToFBX = 12,
     eMI_ImportFromFBX = 14,
@@ -653,6 +652,10 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
             // In case of a missing entity, color it red.
             record->setForeground(0, TextColorForMissingEntity);
         }
+        else
+        {
+            record->setData(0, Qt::ForegroundRole, QPalette::ColorRole::NoRole);
+        }
     }
 
     // Mark the active director and other directors properly.
@@ -964,12 +967,6 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Shadow Setup Node");
                 groupNode->CreateSubNode("ShadowsSetup", AnimNodeType::ShadowSetup);
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
-            else if (cmd == eMI_AddEnvironment)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Environment Node");
-                groupNode->CreateSubNode("Environment", AnimNodeType::Environment);
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
             else if (cmd == eMI_AddDirectorNode)
@@ -1395,11 +1392,6 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
     if (pDirector->GetAnimNodesByType(AnimNodeType::ShadowSetup).GetCount() == 0)
     {
         contextMenu.main.addAction("Add Shadows Setup Node")->setData(eMI_AddShadowSetup);
-    }
-
-    if (pDirector->GetAnimNodesByType(AnimNodeType::Environment).GetCount() == 0)
-    {
-        contextMenu.main.addAction("Add Environment Node")->setData(eMI_AddEnvironment);
     }
 
     // A director node cannot have another director node as a child.

@@ -128,10 +128,14 @@ namespace AZ
 
             for (const RHI::ShaderInputImageDescriptor& shaderInputImage : m_srgLayout->GetShaderInputListForImages())
             {
-                MTLArgumentDescriptor* imgArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
-                ConvertImageArgumentDescriptor(imgArgDescriptor, shaderInputImage);
-                [argBufferDecriptors addObject:imgArgDescriptor];
-                resourceAdded = true;
+                // SubpassInputs do not use a texture in the SRG for Metal.
+                if (shaderInputImage.m_type != RHI::ShaderInputImageType::SubpassInput)
+                {
+                    MTLArgumentDescriptor* imgArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
+                    ConvertImageArgumentDescriptor(imgArgDescriptor, shaderInputImage);
+                    [argBufferDecriptors addObject:imgArgDescriptor];
+                    resourceAdded = true;
+                }
             }
 
             for (const RHI::ShaderInputSamplerDescriptor& shaderInputSampler : m_srgLayout->GetShaderInputListForSamplers())
@@ -209,6 +213,12 @@ namespace AZ
         void ArgumentBuffer::UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
                                               const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews)
         {
+            if (shaderInputImage.m_type == RHI::ShaderInputImageType::SubpassInput)
+            {
+                // SubpassInputs don't need to update the argument buffer because they are not really a texture.
+                return;
+            }
+            
             int imageArrayLen = 0;
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
             

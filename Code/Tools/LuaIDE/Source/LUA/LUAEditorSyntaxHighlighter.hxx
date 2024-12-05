@@ -58,6 +58,7 @@ namespace LUAEditor
 
         struct HighlightingRule
         {
+            bool stopProcessingMoreRulesAfterThis = false;
             QRegularExpression pattern;
             AZStd::function<QColor()> colorCB;
         };

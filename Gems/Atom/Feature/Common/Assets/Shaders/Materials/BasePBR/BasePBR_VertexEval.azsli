@@ -108,6 +108,6 @@ VsOutput EvaluateVertexGeometry_BasePBR(
         uv0,
         uv1,
         instanceId,
-        float4(1.0f, 1.0f, 1.0f, 1.0f),
-        false);
+        false,
+        float4(1.0f, 1.0f, 1.0f, 1.0f));
 }

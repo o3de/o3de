@@ -462,21 +462,36 @@ namespace O3DE::ProjectManager
             if (projectDirectory.exists())
             {
                 // Check if there is an actual project here or just force it
-                AZ::Outcome<ProjectInfo> pInfo = PythonBindingsInterface::Get()->GetProject(path);
-                if (force || pInfo.IsSuccess())
+                auto pythonBindingsPtr = PythonBindingsInterface::Get();
+                if (pythonBindingsPtr)
                 {
-                    //determine if we have a restricted directory to worry about
-                    if (!pInfo.GetValue().m_restricted.isEmpty())
+                    // if we can obtain the python interface, then we will ONLY delete the folder
+                    // if its a real project, unless force is specified.
+
+                    AZ::Outcome<ProjectInfo> pInfo = pythonBindingsPtr->GetProject(path);
+                    if (force || pInfo.IsSuccess())
                     {
-                        QDir restrictedDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
-                        
-                        if (restrictedDirectory.cd("O3DE/Restricted/Projects") &&
-                            restrictedDirectory.cd(pInfo.GetValue().m_restricted) &&
-                            !restrictedDirectory.isEmpty())
+                        if (pInfo.IsSuccess())
                         {
-                            restrictedDirectory.removeRecursively();
+                            //determine if we have a restricted directory to worry about
+                            if (!pInfo.GetValue().m_restricted.isEmpty())
+                            {
+                                QDir restrictedDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
+                        
+                                if (restrictedDirectory.cd("O3DE/Restricted/Projects") &&
+                                    restrictedDirectory.cd(pInfo.GetValue().m_restricted) &&
+                                    !restrictedDirectory.isEmpty())
+                                {
+                                    restrictedDirectory.removeRecursively();
+                                }
+                            }
                         }
+                        return projectDirectory.removeRecursively();
                     }
+                }
+                else
+                {
+                    // we don't have any python bindings available, we're likely in test mode.
                     return projectDirectory.removeRecursively();
                 }
             }
@@ -556,9 +571,9 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool FindSupportedCompiler(QWidget* parent)
+        bool FindSupportedCompiler(const ProjectInfo& projectInfo, QWidget* parent)
         {
-            auto findCompilerResult = FindSupportedCompilerForPlatform();
+            auto findCompilerResult = FindSupportedCompilerForPlatform(projectInfo);
 
             if (!findCompilerResult.IsSuccess())
             {

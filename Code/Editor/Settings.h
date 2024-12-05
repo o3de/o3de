@@ -361,12 +361,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SGUI_Settings gui;
 
-    // Read only parameter.
-    // Refects the status of GetIEditor()->GetOperationMode
-    // To change current operation mode use GetIEditor()->SetOperationMode
-    // see EOperationMode
-    int operationMode;
-
     // For the texture browser configurations.
     STextureBrowserSettings sTextureBrowserSettings;
 

@@ -5,8 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/std/containers/vector.h>
+#include <Atom/RHI.Reflect/IndirectBufferLayout.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
+#include <Atom/RHI/DeviceIndirectBufferSignature.h>
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/lock.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
@@ -23,18 +26,16 @@
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>
-#include <RHI/RayTracingBlas.h>
-#include <RHI/RayTracingTlas.h>
-#include <RHI/RayTracingPipelineState.h>
-#include <RHI/RayTracingShaderTable.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
+#include <RHI/RayTracingAccelerationStructure.h>
+#include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingPipelineState.h>
+#include <RHI/RayTracingShaderTable.h>
+#include <RHI/RayTracingTlas.h>
 #include <RHI/RenderPass.h>
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI/DeviceIndirectBufferSignature.h>
-#include <Atom/RHI.Reflect/IndirectBufferLayout.h>
-#include <Atom/RHI/DeviceDispatchRaysItem.h>
 
 namespace AZ
 {
@@ -126,7 +127,7 @@ namespace AZ
                 const RHI::DeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                 const auto* sourceBufferMemoryView = static_cast<const Buffer*>(descriptor.m_sourceBuffer)->GetBufferMemoryView();
                 const auto* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
-                const RHI::Format format = destinationImage->GetDescriptor().m_format;
+                const RHI::Format format = descriptor.m_sourceFormat;
                 RHI::Size formatDimensionAlignment = GetFormatDimensionAlignment(format);
 
                 // VkBufferImageCopy::bufferRowLength is specified in texels not in bytes. 
@@ -140,7 +141,8 @@ namespace AZ
                 copy.bufferOffset = sourceBufferMemoryView->GetOffset() + descriptor.m_sourceOffset;
                 copy.bufferRowLength = descriptor.m_sourceBytesPerRow / GetFormatSize(format) * formatDimensionAlignment.m_width;
                 copy.bufferImageHeight = RHI::AlignUp(descriptor.m_sourceSize.m_height, formatDimensionAlignment.m_height);
-                copy.imageSubresource.aspectMask = destinationImage->GetImageAspectFlags();
+                copy.imageSubresource.aspectMask = ConvertImageAspect(descriptor.m_destinationSubresource.m_aspect);
+
                 copy.imageSubresource.mipLevel = descriptor.m_destinationSubresource.m_mipSlice;
                 copy.imageSubresource.baseArrayLayer = descriptor.m_destinationSubresource.m_arraySlice;
                 copy.imageSubresource.layerCount = 1;
@@ -167,14 +169,14 @@ namespace AZ
                 const auto* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
                 VkImageCopy copy{};
-                copy.srcSubresource.aspectMask = sourceImage->GetImageAspectFlags();
+                copy.srcSubresource.aspectMask = ConvertImageAspect(descriptor.m_sourceSubresource.m_aspect);
                 copy.srcSubresource.mipLevel = descriptor.m_sourceSubresource.m_mipSlice;
                 copy.srcSubresource.baseArrayLayer = descriptor.m_sourceSubresource.m_arraySlice;
                 copy.srcSubresource.layerCount = 1;
                 copy.srcOffset.x = descriptor.m_sourceOrigin.m_left;
                 copy.srcOffset.y = descriptor.m_sourceOrigin.m_top;
                 copy.srcOffset.z = descriptor.m_sourceOrigin.m_front;
-                copy.dstSubresource.aspectMask = destinationImage->GetImageAspectFlags();
+                copy.dstSubresource.aspectMask = ConvertImageAspect(descriptor.m_destinationSubresource.m_aspect);
                 copy.dstSubresource.mipLevel = descriptor.m_destinationSubresource.m_mipSlice;
                 copy.dstSubresource.baseArrayLayer = descriptor.m_destinationSubresource.m_arraySlice;
                 copy.dstSubresource.layerCount = 1;
@@ -269,6 +271,12 @@ namespace AZ
         {
             ValidateSubmitIndex(submitIndex);
 
+            if (drawItem.m_geometryView == nullptr)
+            {
+                AZ_Assert(false, "DrawItem being submitted without GeometryView, i.e. without draw arguments, index buffer or stream buffers!");
+                return;
+            }
+
             if (!CommitShaderResource(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");
@@ -276,7 +284,7 @@ namespace AZ
             }
 
             SetStencilRef(drawItem.m_stencilRef);
-            SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+            SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
 
             RHI::CommandListScissorState scissorState;
             if (drawItem.m_scissorsCount)
@@ -298,35 +306,39 @@ namespace AZ
 
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
-            switch (drawItem.m_arguments.m_type)
+            switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
             {
-                AZ_Assert(drawItem.m_indexBufferView, "IndexBufferView is null.");
+                AZ_Assert(drawItem.m_geometryView->GetIndexBufferView().GetBuffer(), "IndexBufferView is null.");
 
-                const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-                SetIndexBuffer(*drawItem.m_indexBufferView);
+                const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
 
                 context.CmdDrawIndexed(
                     m_nativeCommandBuffer,
                     indexed.m_indexCount,
-                    indexed.m_instanceCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
                     indexed.m_indexOffset,
                     indexed.m_vertexOffset,
-                    indexed.m_instanceOffset);
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
             case RHI::DrawType::Linear:
             {
-                const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
 
                 context.CmdDraw(
-                    m_nativeCommandBuffer, linear.m_vertexCount, linear.m_instanceCount, linear.m_vertexOffset, linear.m_instanceOffset);
+                    m_nativeCommandBuffer,
+                    linear.m_vertexCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
+                    linear.m_vertexOffset,
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
             case RHI::DrawType::Indirect:
             {
-                const RHI::DeviceDrawIndirect& indirect = drawItem.m_arguments.m_indirect;
+                const RHI::DeviceDrawIndirect& indirect = drawItem.m_geometryView->GetDrawArguments().m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
                 decltype(context.CmdDrawIndexedIndirectCountKHR) drawIndirectCountFunctionPtr = nullptr;
                 decltype(context.CmdDrawIndexedIndirect) drawIndirectfunctionPtr = nullptr;
@@ -337,7 +349,7 @@ namespace AZ
                     drawIndirectfunctionPtr = context.CmdDrawIndirect;
                     break;
                 case RHI::IndirectBufferLayoutType::IndexedDraw:
-                    SetIndexBuffer(*drawItem.m_indexBufferView);
+                    SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
                     drawIndirectCountFunctionPtr = context.CmdDrawIndexedIndirectCountKHR;
                     drawIndirectfunctionPtr = context.CmdDrawIndexedIndirect;
                     break;
@@ -827,14 +839,16 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices)
         {
+            auto streamIter = geometryView.CreateStreamIterator(streamIndices);
             RHI::Interval interval = InvalidInterval;
-            for (uint32_t index = 0; index < count; ++index)
+
+            for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
             {
-                if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streams[index].GetHash()))
+                if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streamIter->GetHash()))
                 {
-                    m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streams[index].GetHash());
+                    m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streamIter->GetHash());
                     interval.m_min = AZStd::min<uint32_t>(interval.m_min, index);
                     interval.m_max = AZStd::max<uint32_t>(interval.m_max, index);
                 }
@@ -843,21 +857,21 @@ namespace AZ
             if (interval != InvalidInterval)
             {
                 uint32_t numBuffers = interval.m_max - interval.m_min + 1;
-                AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers(numBuffers, VK_NULL_HANDLE);
-                AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets(numBuffers, 0);
-                for (uint32_t i = 0; i < numBuffers; ++i)
+                AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers;
+                AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets;
+
+                for (u8 i = (u8)interval.m_min; i <= (u8)interval.m_max; ++i)
                 {
-                    const RHI::DeviceStreamBufferView& bufferView = streams[i + interval.m_min];
-                    if (bufferView.GetBuffer())
+                    if (streamIter[i].GetBuffer())
                     {
-                        const auto* bufferMemoryView = static_cast<const Buffer*>(bufferView.GetBuffer())->GetBufferMemoryView();
-                        nativeBuffers[i] = bufferMemoryView->GetNativeBuffer();
-                        offsets[i] = bufferMemoryView->GetOffset() + bufferView.GetByteOffset();
+                        const auto* bufferMemoryView = static_cast<const Buffer*>(streamIter[i].GetBuffer())->GetBufferMemoryView();
+                        nativeBuffers.push_back(bufferMemoryView->GetNativeBuffer());
+                        offsets.push_back(bufferMemoryView->GetOffset() + streamIter[i].GetByteOffset());
                     }
                     else
                     {
-                        nativeBuffers[i] = VK_NULL_HANDLE;
-                        offsets[i] = 0;
+                        nativeBuffers.push_back(VK_NULL_HANDLE);
+                        offsets.push_back(0);
                     }
                 }
 
@@ -1161,7 +1175,7 @@ namespace AZ
             // Set the build mode to update the acceleration structure
             VkAccelerationStructureBuildGeometryInfoKHR tempBuildInfo = blasBuffers.m_buildInfo;
             tempBuildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_UPDATE_KHR;
-            tempBuildInfo.srcAccelerationStructure = blasBuffers.m_accelerationStructure;
+            tempBuildInfo.srcAccelerationStructure = blasBuffers.m_accelerationStructure->GetNativeAccelerationStructure();
 
             const auto& context = dynamic_cast<Device&>(GetDevice()).GetContext();
 

@@ -23,16 +23,18 @@ namespace AZ
         static size_t CalculateHeapAlignment(D3D12_HEAP_FLAGS heapFlags)
         {
             /**
-            * Heap alignment is the alignment of the actual heap we are allocating, not the base alignment of
-            * of sub-allocations from the heap. That is confusing in the D3D12 docs. The heap itself is
-            * required to be 4MB aligned if it holds MSAA textures. Therefore, this simple metric just
-            * forces 4MB alignment of the heap for all textures, because our chances of having an MSAA target
-            * across the whole frame is high, and the amount of internal fragmentation is low relative to the full
-            * heap size.
-            */
-            if (D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES == heapFlags ||
-                D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES == heapFlags ||
-                D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES == heapFlags)
+             * Heap alignment is the alignment of the actual heap we are allocating, not the base alignment of
+             * of sub-allocations from the heap. That is confusing in the D3D12 docs. The heap itself is
+             * required to be 4MB aligned if it holds MSAA textures. Therefore, this simple metric just
+             * forces 4MB alignment of the heap for all textures, because our chances of having an MSAA target
+             * across the whole frame is high, and the amount of internal fragmentation is low relative to the full
+             * heap size.
+             * To simply test the flags for equality, we mask the D3D12_HEAP_FLAG_SHARED prior to testing.
+             */
+            auto maskedFlags = heapFlags & ~(D3D12_HEAP_FLAG_SHARED);
+            if (D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES == maskedFlags ||
+                D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES == maskedFlags ||
+                D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES == maskedFlags)
             {
                 return D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT;
             }
@@ -60,7 +62,7 @@ namespace AZ
             m_descriptor = static_cast<const Descriptor&>(descriptor);
             
             D3D12_HEAP_DESC heapDesc;
-            heapDesc.Alignment = CalculateHeapAlignment(m_descriptor.m_heapFlags);
+            heapDesc.Alignment = AZStd::max(CalculateHeapAlignment(m_descriptor.m_heapFlags), descriptor.m_alignment);
             // Even the dx12 document said 'but non-aligned SizeInBytes is also supported', but it may lead to TDR issue with some graphics cards
             // Such as nvidia 2070, 2080
             heapDesc.SizeInBytes = RHI::AlignUp<size_t>(descriptor.m_budgetInBytes, heapDesc.Alignment);

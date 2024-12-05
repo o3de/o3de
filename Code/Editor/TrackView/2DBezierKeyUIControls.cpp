@@ -15,7 +15,7 @@
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
 
 //////////////////////////////////////////////////////////////////////////
-bool C2DBezierKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool C2DBezierKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

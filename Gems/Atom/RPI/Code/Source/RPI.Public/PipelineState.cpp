@@ -71,26 +71,16 @@ namespace AZ
             // Reset some variables
             m_pipelineState = nullptr;
 
-            // Reset some flags
-            m_dirty = true;
-            m_isShaderVariantReady = true;
+            // Cache shader so it can be used for create RHI::PipelineState later
+            m_shader = shader;
 
-            // Get shader variant from the shader
-            m_shaderVariantId = shaderVariantId;
-            ShaderVariant shaderVariant = shader->GetVariant(m_shaderVariantId);
-            m_isShaderVariantReady = !shaderVariant.UseKeyFallback();
-
-            // Fill the descriptor with data from shader variant
-            shaderVariant.ConfigurePipelineState(m_descriptor, m_shaderVariantId);
-
+            UpdateShaderVaraintId(shaderVariantId);
+            
             // Connect to shader reload notification bus to rebuilt pipeline state when shader or shader variant changed.
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             ShaderReloadNotificationBus::MultiHandler::BusConnect(shader->GetAsset().GetId());
 
             m_initDataFromShader = true;
-
-            // Cache shader so it can be used for create RHI::PipelineState later
-            m_shader = shader;
         }
 
         void PipelineStateForDraw::RefreshShaderVariant()
@@ -203,6 +193,19 @@ namespace AZ
         {
             m_dirty = true;
             return m_descriptor.m_inputStreamLayout;
+        }
+
+        void PipelineStateForDraw::UpdateShaderVaraintId(const ShaderVariantId& shaderVariantId)
+        {
+            m_dirty = true;
+
+            // Get shader variant from the shader
+            m_shaderVariantId = shaderVariantId;
+            ShaderVariant shaderVariant = m_shader->GetVariant(m_shaderVariantId);
+            m_isShaderVariantReady = !shaderVariant.UseKeyFallback();
+
+            // Fill the descriptor with data from shader variant
+            shaderVariant.ConfigurePipelineState(m_descriptor, m_shaderVariantId);
         }
 
         const RHI::PipelineStateDescriptorForDraw& PipelineStateForDraw::ConstDescriptor() const

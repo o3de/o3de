@@ -451,11 +451,11 @@ void CTrackViewDialog::InitToolbar()
     {
         QMenu* buttonMenu = new QMenu(this);
         toolButton->setMenu(buttonMenu);
-        qaction = buttonMenu->addAction("Stop");
-        connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnStop);
-        toolButton->addAction(qaction);
+
+        buttonMenu->addAction(qaction);
         qaction = buttonMenu->addAction("Stop with Hard Reset");
-        qaction->setData(true);
+        qaction->setData(ID_TV_STOP_HARD_RESET);
+        m_actions[ID_TV_STOP_HARD_RESET] = qaction;
         connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnStopHardReset);
     }
     m_playToolBar->addWidget(toolButton);

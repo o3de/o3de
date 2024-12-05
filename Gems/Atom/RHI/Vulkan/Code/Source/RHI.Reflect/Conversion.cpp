@@ -917,6 +917,17 @@ namespace AZ
             return rhiRange;
         }
 
+        VkImageSubresourceRange ConvertSubresourceRange(const RHI::ImageSubresourceRange& range)
+        {
+            VkImageSubresourceRange vkRange = {};
+            vkRange.aspectMask = ConvertImageAspectFlags(range.m_aspectFlags);
+            vkRange.baseMipLevel = range.m_mipSliceMin;
+            vkRange.levelCount = range.m_mipSliceMax - range.m_mipSliceMin + 1;
+            vkRange.baseArrayLayer = range.m_arraySliceMin;
+            vkRange.layerCount = range.m_arraySliceMax - range.m_arraySliceMin + 1;
+            return vkRange;
+        }
+
         VkPipelineStageFlags ConvertScopeAttachmentStage(const RHI::ScopeAttachmentStage& stage)
         {
             VkPipelineStageFlags flags = {};

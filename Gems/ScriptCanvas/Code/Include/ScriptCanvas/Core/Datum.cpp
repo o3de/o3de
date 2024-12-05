@@ -2441,9 +2441,11 @@ namespace ScriptCanvas
             return true;
 
         case Data::eType::Number:
+        {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
             result = AZStd::string::format("%f", *GetAs<Data::NumberType>());
             return true;
-
+        }
         case Data::eType::OBB:
             result = ToStringOBB(*GetAs<Data::OBBType>());
             return true;
@@ -2556,6 +2558,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringOBB(const Data::OBBType& obb) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         return AZStd::string::format
         ("(Position: %s, AxisX: %s, AxisY: %s, AxisZ: %s, halfLengthX: %.7f, halfLengthY: %.7f, halfLengthZ: %.7f)"
             , ToStringVector3(obb.GetPosition()).c_str()
@@ -2574,6 +2577,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringQuaternion(const Data::QuaternionType& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         AZ::Vector3 eulerRotation = AZ::ConvertTransformToEulerDegrees(AZ::Transform::CreateFromQuaternion(source));
         return AZStd::string::format
         ("(Pitch: %5.2f, Roll: %5.2f, Yaw: %5.2f)"
@@ -2584,6 +2588,8 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringTransform(const Data::TransformType& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         Data::TransformType copy(source);
         AZ::Vector3 pos = copy.GetTranslation();
         float scale = copy.ExtractUniformScale();
@@ -2599,6 +2605,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringVector2(const AZ::Vector2& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         return AZStd::string::format
         ("(X: %f, Y: %f)"
             , source.GetX()
@@ -2607,6 +2614,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringVector3(const AZ::Vector3& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         return AZStd::string::format
         ("(X: %f, Y: %f, Z: %f)"
             , (source.GetX())
@@ -2616,6 +2624,7 @@ namespace ScriptCanvas
 
     AZStd::string Datum::ToStringVector4(const AZ::Vector4& source) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
         return AZStd::string::format
         ("(X: %f, Y: %f, Z: %f, W: %f)"
             , (source.GetX())

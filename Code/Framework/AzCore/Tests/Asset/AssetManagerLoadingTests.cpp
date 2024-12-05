@@ -1998,27 +1998,6 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-    using AssetLoadingTest = AssetJobsFloodTest;
-
-    TEST_F(AssetLoadingTest, CreateAssetWithOutdatedAssetId_LegacyIdAddedAfterwards_UpgradesAndLoadsSuccessfully)
-    {
-        static constexpr AZ::Uuid MyOutdatedUuid{ "{30583432-95F0-4071-883E-114D57CD7CE1}" };
-
-        Asset<AssetWithAssetReference> asset;
-        asset.Create(MyOutdatedUuid);
-
-        EXPECT_EQ(asset.GetId().m_guid, MyOutdatedUuid);
-
-        m_assetHandlerAndCatalog->AddLegacyAssetId(MyOutdatedUuid, MyAsset1Id);
-
-        EXPECT_TRUE(asset.QueueLoad());
-        EXPECT_EQ(asset.GetId().m_guid, MyAsset1Id);
-
-        asset.BlockUntilLoadComplete();
-
-        EXPECT_TRUE(asset.IsReady());
-    }
-
     /**
     * Run multiple threads that get and release assets simultaneously to test AssetManager's thread safety
     */

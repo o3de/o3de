@@ -31,8 +31,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "DisplayMapperPass",
-                        "Attachment": "Output"
+                        "Pass": "BloomPass",
+                        "Attachment": "InputOutput"
                     }
                 }
             ],
@@ -71,44 +71,6 @@
                             }
                         }
                     ]
-                },
-                {
-                    "Name": "DisplayMapperPass",
-                    "TemplateName": "MobileDisplayMapperTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "BloomPass",
-                                "Attachment": "InputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "PipelineOutput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "PipelineOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Output",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "PipelineOutput"
-                            }
-                        }
-                    ],
-                    "PassData": {
-                        "$type": "DisplayMapperPassData",
-                        "MergeLdrGradingLut": true,
-                        "DisplayMapperConfig": {
-                            "OperationType": "AcesFitted"
-                        },
-                         "OutputTransformShaderOverride": {
-                            "FilePath": "Shaders/PostProcessing/OutputTransformMobile.shader"
-                        }
-                    }
                 }
             ]
         }

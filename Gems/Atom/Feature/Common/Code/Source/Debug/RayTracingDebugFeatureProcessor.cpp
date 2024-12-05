@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Debug/RayTracingDebugFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 

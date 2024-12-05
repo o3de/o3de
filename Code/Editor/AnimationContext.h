@@ -16,6 +16,7 @@
 #include "TrackView/TrackViewSequenceManager.h"
 #include <Range.h>
 #include <IMovieSystem.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
 class CTrackViewSequence;
 
@@ -27,17 +28,16 @@ struct IAnimationContextListener
     virtual void OnTimeChanged([[maybe_unused]] float newTime) {}
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /** CAnimationContext stores information about current editable animation sequence.
         Stores information about whenever animation is being recorded know,
         current sequence, current time in sequence etc.
 */
-class SANDBOX_API CAnimationContext
+class CAnimationContext
     : public IEditorNotifyListener
     , public IUndoManagerListener
     , public ITrackViewSequenceManagerListener
+    , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
 {
-    AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     //////////////////////////////////////////////////////////////////////////
     // Constructors.
@@ -191,6 +191,8 @@ private:
 
     virtual void BeginUndoTransaction() override;
     virtual void EndUndoTransaction() override;
+
+    void OnPrefabInstancePropagationEnd() override;
 
     virtual void OnSequenceRemoved(CTrackViewSequence* pSequence) override;
 

@@ -60,10 +60,7 @@ namespace AZ::RHI
         RHI::IndirectCommandTiers m_indirectCommandTier = RHI::IndirectCommandTiers::Tier0;
 
         //! The type of support for subpass inputs of render target attachments.
-        SubpassInputSupportType m_renderTargetSubpassInputSupport = SubpassInputSupportType::NotSupported;
-
-        //! The type of support for subpass inputs of depth/stencil attachments.
-        SubpassInputSupportType m_depthStencilSubpassInputSupport = SubpassInputSupportType::NotSupported;
+        SubpassInputSupportType m_subpassInputSupport = SubpassInputSupportType::None;
 
         //! Whether Ray Tracing support is available.
         bool m_rayTracing = false;

@@ -306,6 +306,16 @@ namespace AZ
             */
             bool CopyShaderResourceGroupData(const ShaderResourceGroup& other);
 
+            /**
+            * Returns the ShaderAsset that this ShaderResourceGroup is using.
+            */
+            const Data::Asset<ShaderAsset>& GetShaderAsset() const;
+
+            /**
+            * Returns the SuperVariantIndex that this ShaderResourceGroup is using.
+            */
+            SupervariantIndex GetSupervariantIndex() const;
+
         private:
             ShaderResourceGroup() = default;
 
@@ -339,7 +349,7 @@ namespace AZ
             static AZ::Data::Instance<ShaderResourceGroup> CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* srgInitParams);
 
             /// A name to be used in error messages
-            static const char* s_traceCategoryName;
+            static constexpr const char* s_traceCategoryName = "ShaderResourceGroup";
 
             /// Allows us to return const& to a null Image
             static const Data::Instance<Image> s_nullImage;
@@ -378,6 +388,9 @@ namespace AZ
              * However, entries remain null when RHI buffer views are bound.
              */
             AZStd::vector<Data::Instance<Buffer>> m_bufferGroup;
+
+            /// SupervariantIndex used for initializing the SRG.
+            SupervariantIndex m_supervariantIndex;
         };
 
         template<typename T>

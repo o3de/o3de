@@ -33,10 +33,10 @@
 //! @param N            macrosurface normal
 //! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
 //! @return             factor for how much of the macrosurface has normals in the direction M. The value non-negative, but it's not normalized, so values are not restricted to [0, 1].
-real NormalDistributionGGX(const real NdotH, const real roughnessA2)
+float NormalDistributionGGX(const real NdotH, const float roughnessA2)
 {
     // Walter equation 33, simplified given that the positive characteristic function is handled elsewhere
-    real b = (NdotH * roughnessA2 - NdotH) * NdotH + 1.0;
+    float b = (NdotH * roughnessA2 - NdotH) * NdotH + 1.0;
     return roughnessA2 / (PI * b * b);
 }
 
@@ -49,7 +49,7 @@ real NormalDistributionGGX(const real NdotH, const real roughnessA2)
 //! @param L            direction to the light
 //! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
 //! @return             probability that V and L are not masked.
-float GeometricShadowingMaskingGGXCorrelated(const float NdotV, const float NdotL, const real roughnessA2)
+float GeometricShadowingMaskingGGXCorrelated(const real NdotV, const real NdotL, const float roughnessA2)
 {
     // See Frostbite PBR guide (page 12)
     // https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
@@ -67,7 +67,7 @@ float GeometricShadowingMaskingGGXCorrelated(const float NdotV, const float Ndot
 //! @param t    - rotated surface tangent for calculating anisotropic response
 //! @param b    - rotated surface bitangent for calculating anisotropic response
 //! @param anisotropyFactors - anisotropic tangent and bitangent factor 
-float NormalDistibution_AnisotropicGGX( float NdotH, const float3 h, const float3 t, const float3 b, real2 anisotropyFactors )
+float NormalDistibution_AnisotropicGGX(const real NdotH, const float3 h, const float3 t, const float3 b, real2 anisotropyFactors )
 {
     const real atFactor = anisotropyFactors.x;
     const real abFactor = anisotropyFactors.y;

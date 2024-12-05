@@ -906,9 +906,17 @@ namespace AZ
             /// Get an element's address by its index (called before the element is loaded).
             void*   GetElementByIndex(void* instance, const SerializeContext::ClassElement* classElement, size_t index) override
             {
-                (void)instance;
                 (void)classElement;
-                (void)index;
+                // Linear iteration of the container.   If possible, use GetElementByKey, but this is implemented to be compatible
+                // with things that present the container as if it is a linear container (such as UIs)
+                T* containerPtr = reinterpret_cast<T*>(instance);
+                if (index < containerPtr->size())
+                {
+                    auto elementIterator = containerPtr->begin();
+                    AZStd::advance(elementIterator, index);
+                    
+                    return (elementIterator != containerPtr->end()) ? &(*elementIterator) : nullptr;
+                }
                 return nullptr;
             }
 

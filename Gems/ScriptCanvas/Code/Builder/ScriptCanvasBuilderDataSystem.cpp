@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <Builder/ScriptCanvasBuilder.h>
@@ -97,8 +98,20 @@ namespace ScriptCanvasBuilder
         using namespace ScriptCanvasBuilder;
 
         BuilderSourceStorage result;
-        
-        auto assetTreeOutcome = LoadEditorAssetTree(sourceHandle);
+
+        AZ::ApplicationTypeQuery appType;
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+        ScriptCanvas::MakeInternalGraphEntitiesUnique makeUnique = ScriptCanvas::MakeInternalGraphEntitiesUnique::Yes;
+        const bool isAssetProcessor = appType.IsValid() && (appType.IsTool() && !appType.IsEditor());
+        if (isAssetProcessor)
+        {
+            // Allow to keep the same entity UIDs between the editable scriptCanvas and the compiled scriptCanvas files,
+            // This is needed to support debug features such as breakpoints.
+            // In editor we force the UIDs to be re-generated to prevent UIDs collision as entities are not unregistered on file reload.
+            makeUnique = ScriptCanvas::MakeInternalGraphEntitiesUnique::No;
+        }
+
+        auto assetTreeOutcome = LoadEditorAssetTree(sourceHandle, makeUnique);
         if (!assetTreeOutcome.IsSuccess())
         {
             AZ_Warning("ScriptCanvas", false

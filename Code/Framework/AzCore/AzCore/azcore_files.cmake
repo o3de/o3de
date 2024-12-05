@@ -559,6 +559,8 @@ set(FILES
     Serialization/EditContextConstants.inl
     Serialization/IdUtils.inl
     Serialization/IdUtils.h
+    Serialization/Locale.h
+    Serialization/Locale.cpp
     Serialization/Utils.h
     Serialization/SerializationUtils.cpp
     Serialization/ObjectStream.cpp
@@ -586,7 +588,6 @@ set(FILES
     Serialization/Json/BoolSerializer.h
     Serialization/Json/BoolSerializer.cpp
     Serialization/Json/ByteStreamSerializer.h
-    Serialization/Json/ByteStreamSerializer.cpp
     Serialization/Json/CastingHelpers.h
     Serialization/Json/DoubleSerializer.h
     Serialization/Json/DoubleSerializer.cpp

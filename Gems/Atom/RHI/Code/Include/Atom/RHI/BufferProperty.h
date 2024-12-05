@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/interval_map.h>
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 

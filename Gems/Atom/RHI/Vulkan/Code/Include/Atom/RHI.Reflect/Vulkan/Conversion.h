@@ -37,6 +37,7 @@ namespace AZ
         VkFormat ConvertFormat(RHI::Format format, bool raiseAsserts = true);
         VkImageAspectFlagBits ConvertImageAspect(RHI::ImageAspect imageAspect);
         VkImageAspectFlags ConvertImageAspectFlags(RHI::ImageAspectFlags aspectFlagMask);
+        RHI::ImageAspectFlags ConvertImageAspectFlags(VkImageAspectFlags aspectFlagMask);
         VkPrimitiveTopology ConvertTopology(RHI::PrimitiveTopology topology);
         VkQueueFlags ConvertQueueClass(RHI::HardwareQueueClass queueClass);
         VkMemoryPropertyFlags ConvertHeapMemoryLevel(RHI::HeapMemoryLevel heapMemoryLevel);
@@ -67,6 +68,7 @@ namespace AZ
         VkComponentSwizzle ConvertComponentSwizzle(const ImageComponentMapping::Swizzle swizzle);
         VkComponentMapping ConvertComponentMapping(const ImageComponentMapping& mapping);
         RHI::ImageSubresourceRange ConvertSubresourceRange(const VkImageSubresourceRange& range);
+        VkImageSubresourceRange ConvertSubresourceRange(const RHI::ImageSubresourceRange& range);
         VkPipelineStageFlags ConvertScopeAttachmentStage(const RHI::ScopeAttachmentStage& stage);
     }
 }

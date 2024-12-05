@@ -28,7 +28,7 @@ namespace AZ
 
         AZStd::unique_ptr<RHI::AliasingBarrierTracker> AliasedHeap::CreateBarrierTrackerInternal()
         {
-            return AZStd::make_unique<AliasingBarrierTracker>(GetVulkanRHIDevice());
+            return AZStd::make_unique<AliasingBarrierTracker>(GetVulkanRHIDevice(), GetDescriptor().m_budgetInBytes);
         }
 
         RHI::ResultCode AliasedHeap::InitInternal(RHI::Device& rhiDevice, const RHI::AliasedHeapDescriptor& descriptor)
@@ -43,6 +43,7 @@ namespace AZ
 
             VmaAllocation vmaAllocation;
             VkMemoryRequirements memReq = m_descriptor.m_memoryRequirements;
+            memReq.alignment = AZStd::max(memReq.alignment, descriptor.m_alignment);
             memReq.size = descriptor.m_budgetInBytes;
             VkResult vkResult = vmaAllocateMemory(device.GetVmaAllocator(), &memReq, &allocInfo, &vmaAllocation, nullptr);
             AssertSuccess(vkResult);

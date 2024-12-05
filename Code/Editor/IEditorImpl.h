@@ -161,23 +161,13 @@ public:
     void UpdateViews(int flags, const AABB* updateRegion) override;
     void ResetViews() override;
     void ReloadTrackView() override;
-    Vec3 GetMarkerPosition() override { return m_marker; };
-    void SetMarkerPosition(const Vec3& pos) override { m_marker = pos; };
-    void    SetSelectedRegion(const AABB& box) override;
-    void    GetSelectedRegion(AABB& box) override;
     bool AddToolbarItem(uint8 iId, IUIEvent* pIHandler);
     void SetDataModified() override;
-    void SetOperationMode(EOperationMode mode) override;
-    EOperationMode GetOperationMode() override;
 
     void SetAxisConstraints(AxisConstrains axis) override;
     AxisConstrains GetAxisConstrains() override;
-    void SetAxisVectorLock(bool bAxisVectorLock) override { m_bAxisVectorLock = bAxisVectorLock; }
-    bool IsAxisVectorLocked() override { return m_bAxisVectorLock; }
     void SetTerrainAxisIgnoreObjects(bool bIgnore) override;
     bool IsTerrainAxisIgnoreObjects() override;
-    void SetReferenceCoordSys(RefCoordSys refCoords) override;
-    RefCoordSys GetReferenceCoordSys() override;
     XmlNodeRef FindTemplate(const QString& templateName) override;
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl) override;
 
@@ -231,10 +221,6 @@ public:
     void NotifyExcept(EEditorNotifyEvent event, IEditorNotifyListener* listener) override;
     void RegisterNotifyListener(IEditorNotifyListener* listener) override;
     void UnregisterNotifyListener(IEditorNotifyListener* listener) override;
-    //! Register document notifications listener.
-    void RegisterDocListener(IDocListener* listener) override;
-    //! Unregister document notifications listener.
-    void UnregisterDocListener(IDocListener* listener) override;
 
     void ReduceMemory() override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
@@ -242,15 +228,10 @@ public:
     void ShowStatusText(bool bEnable) override;
 
     SSystemGlobalEnvironment* GetEnv() override;
-    IImageUtil* GetImageUtil() override;  // Vladimir@conffx
     SEditorSettings* GetEditorSettings() override;
-    ILogFile* GetLogFile() override { return m_pLogFile; }
 
     void UnloadPlugins() override;
     void LoadPlugins() override;
-
-    QMimeData* CreateQMimeData() const override;
-    void DestroyQMimeData(QMimeData* data) const override;
 
 protected:
 
@@ -263,18 +244,13 @@ protected:
     //! List of all notify listeners.
     std::list<IEditorNotifyListener*> m_listeners;
 
-    EOperationMode m_operationMode;
     ISystem* m_pSystem;
     IFileUtil* m_pFileUtil;
     CEditorCommandManager* m_pCommandManager;
     CPluginManager* m_pPluginManager;
     CViewManager*   m_pViewManager;
     CUndoManager* m_pUndoManager;
-    Vec3 m_marker;
-    AABB m_selectedRegion;
     AxisConstrains m_selectedAxis;
-    RefCoordSys m_refCoordsSys;
-    bool m_bAxisVectorLock;
     bool m_bUpdates;
     bool m_bTerrainAxisIgnoreObjects;
     SFileVersion m_fileVersion;
@@ -317,9 +293,6 @@ protected:
     ::AssetDatabase::AssetDatabaseLocationListener* m_pAssetDatabaseLocationListener;
     AzAssetBrowserRequestHandler* m_pAssetBrowserRequestHandler;
     AssetEditorRequestsHandler* m_assetEditorRequestsHandler;
-
-    IImageUtil* m_pImageUtil;  // Vladimir@conffx
-    ILogFile* m_pLogFile;  // Vladimir@conffx
 
     AZStd::mutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;

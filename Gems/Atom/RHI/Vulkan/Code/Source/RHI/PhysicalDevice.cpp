@@ -186,6 +186,11 @@ namespace AZ
             return m_timelineSemaphoreFeatures;
         }
 
+        const VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT& PhysicalDevice::GetPhysicalSubpassMergeFeedbackFeatures() const
+        {
+            return m_subpassMergeFeedbackFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -277,8 +282,8 @@ namespace AZ
 
         void PhysicalDevice::LoadSupportedFeatures(const GladVulkanContext& context)
         {
-            uint32_t majorVersion = VK_VERSION_MAJOR(m_deviceProperties.apiVersion);
-            uint32_t minorVersion = VK_VERSION_MINOR(m_deviceProperties.apiVersion);
+            uint32_t majorVersion = VK_VERSION_MAJOR(GetVulkanVersion());
+            uint32_t minorVersion = VK_VERSION_MINOR(GetVulkanVersion());
 
             m_features.reset();
             m_features.set(static_cast<size_t>(DeviceFeature::Compatible2dArrayTexture), (majorVersion >= 1 && minorVersion >= 1) || VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_maintenance1));
@@ -335,7 +340,8 @@ namespace AZ
                 VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
                 VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
                 VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-                VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME
+                VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME,
+                VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME
             } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
@@ -363,6 +369,11 @@ namespace AZ
             return filteredOptionalExtensions;
         }
 
+        uint32_t PhysicalDevice::GetVulkanVersion() const
+        {
+            return m_vulkanVersion;
+        }
+
         void PhysicalDevice::Init(VkPhysicalDevice vkPhysicalDevice)
         {
             m_vkPhysicalDevice = vkPhysicalDevice;
@@ -386,6 +397,7 @@ namespace AZ
                 m_shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
                 m_fragmentDensityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
                 m_timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+                m_subpassMergeFeedbackFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT;
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -405,7 +417,8 @@ namespace AZ
                       &m_rayTracingPipelineFeatures,
                       &m_shadingRateFeatures,
                       &m_fragmentDensityMapFeatures,
-                      &m_timelineSemaphoreFeatures });
+                      &m_timelineSemaphoreFeatures,
+                      &m_subpassMergeFeedbackFeatures });
 
                 context.GetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;
@@ -500,6 +513,9 @@ namespace AZ
 
             m_descriptor.m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Device)] = static_cast<size_t>(memsize_device);
             m_descriptor.m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Host)] = static_cast<size_t>(memsize_host);
+            // We need to consider the application's vulkan version, since we cannot use a higher version than that, even though
+            // the physical device might support a higher one.
+            m_vulkanVersion = AZStd::min(Instance::GetInstance().GetVkAppInfo().apiVersion, m_deviceProperties.apiVersion);
         }
 
         void PhysicalDevice::Shutdown()

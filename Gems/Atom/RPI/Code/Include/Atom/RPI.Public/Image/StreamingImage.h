@@ -164,6 +164,8 @@ namespace AZ
             // Uploads the mip chain content from the asset to the GPU
             RHI::ResultCode UploadMipChain(size_t mipChainIndex);
 
+            AZStd::mutex m_mipChainMutex;
+
             struct MipChainState
             {
                 static const uint16_t InvalidMipChain = (uint16_t)-1;

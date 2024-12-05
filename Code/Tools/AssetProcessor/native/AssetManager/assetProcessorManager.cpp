@@ -1592,7 +1592,6 @@ namespace AssetProcessor
 
                 // now we need notify everyone about the new products
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntry& newProduct = pair.first;
-                AZStd::vector<AZ::u32>& subIds = newLegacySubIDs[productIdx];
 
                 // product name will be in the form "platform/relativeProductPath"
                 QString productName = QString::fromUtf8(newProduct.m_productName.c_str());
@@ -1606,7 +1605,6 @@ namespace AssetProcessor
 
                 AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetChanged, newProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 AZ::Data::AssetId assetId(source.m_sourceGuid, newProduct.m_subID);
-                AZ::Data::AssetId legacyAssetId(newProduct.m_legacyGuid, 0);
 
                 message.m_data = relativeProductPath;
                 message.m_sizeBytes = QFileInfo(fullProductPath).size();
@@ -1619,40 +1617,6 @@ namespace AssetProcessor
                     message.m_dependencies.emplace_back(AZ::Data::AssetId(entry.m_dependencySourceGuid, entry.m_dependencySubID), entry.m_dependencyFlags);
                 }
 
-                if (legacyAssetId != assetId)
-                {
-                    message.m_legacyAssetIds.push_back(legacyAssetId);
-                }
-
-                const SourceAssetReference& sourceAsset = processedAsset.m_entry.m_sourceAssetReference;
-                AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds; // Keep track of the legacy *asset* Ids to avoid duplicates
-                auto legacySourceUuidsOutcome = AssetUtilities::GetLegacySourceUuids(sourceAsset);
-
-                if (legacySourceUuidsOutcome)
-                {
-                    auto legacySourceUuids = legacySourceUuidsOutcome.GetValue();
-                    legacySourceAssetIds.reserve(legacySourceUuids.size());
-
-                    for (const auto& legacyUuid : legacySourceUuids)
-                    {
-                        AZ::Data::AssetId legacySourceAssetId(legacyUuid, newProduct.m_subID);
-
-                        if (legacySourceAssetId != assetId)
-                        {
-                            legacySourceAssetIds.emplace(legacySourceAssetId);
-                            message.m_legacyAssetIds.push_back(AZStd::move(legacySourceAssetId));
-                        }
-                    }
-                }
-
-                for (AZ::u32 newLegacySubId : subIds)
-                {
-                    AZ::Data::AssetId createdSubID(source.m_sourceGuid, newLegacySubId);
-                    if ((createdSubID != legacyAssetId) && !legacySourceAssetIds.contains(createdSubID) && (createdSubID != assetId))
-                    {
-                        message.m_legacyAssetIds.push_back(createdSubID);
-                    }
-                }
 
                 Q_EMIT AssetMessage(message);
 
@@ -1905,18 +1869,26 @@ namespace AssetProcessor
                 // or if its in the "currently being examined" list.  The latter is likely to be the smaller list,
                 // so we check it first.  Both of those are absolute paths, so we convert to absolute path before
                 // searching those lists:
+
                 if (m_filesToExamine.find(absolutePath) != m_filesToExamine.end())
                 {
                     // its already in the file to examine queue.
                     continue;
                 }
+
                 if (m_alreadyActiveFiles.find(absolutePath) != m_alreadyActiveFiles.end())
                 {
                     // its already been picked up by a file monitoring / scanning step.
                     continue;
                 }
+                
+                if (source.m_fromDependencyChain.contains(absolutePath))
+                {
+                    AZ_Trace(AssetProcessor::DebugChannel, "Ignoring dependant file: " AZ_STRING_FORMAT " - cyclic dependency detected\n", AZ_STRING_ARG(absolutePath));
+                    continue;
+                }
 
-                AssessFileInternal(absolutePath, false);
+                AssessFileInternal(absolutePath, false, false, normalizedFilePath + QString(";") + source.m_fromDependencyChain);
             }
         }
 
@@ -3279,7 +3251,7 @@ namespace AssetProcessor
     // during startup, and should avoid logging, sleeping, or doing
     // any more work than is necessary (Log only in error or uncommon
     // circumstances).
-    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner)
+    void AssetProcessorManager::AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner, QString fromDependencyChain)
     {
         if (m_quitRequested)
         {
@@ -3380,6 +3352,7 @@ namespace AssetProcessor
         }
 
         FileEntry newEntry(normalizedFullFile, isDelete, fromScanner);
+        newEntry.m_fromDependencyChain = fromDependencyChain;
 
         if (m_alreadyActiveFiles.find(normalizedFullFile) != m_alreadyActiveFiles.end())
         {
@@ -3718,38 +3691,44 @@ namespace AssetProcessor
         {
             // File is a source file that has been processed before
             AZStd::string fingerprintFromDatabase = sourceFileItr->m_analysisFingerprint.toUtf8().data();
+
+            if (fingerprintFromDatabase.empty())
+            {
+                // No recorded fingerprint
+                return false;
+            }
+
             AZStd::string_view builderEntries(fingerprintFromDatabase.begin() + s_lengthOfUuid + 1, fingerprintFromDatabase.end());
             AZStd::string_view dependencyFingerprint(fingerprintFromDatabase.begin(), fingerprintFromDatabase.begin() + s_lengthOfUuid);
             int numBuildersEmittingSourceDependencies = 0;
 
-            if (!fingerprintFromDatabase.empty() && AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
+            // Check for updated builders
+            if (!AreBuildersUnchanged(builderEntries, numBuildersEmittingSourceDependencies))
             {
-                // Builder(s) have not changed since last time
-                AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(sourceFileItr->m_sourceAssetReference);
-
-                if(dependencyFingerprint != currentFingerprint)
-                {
-                    // Dependencies have changed
-                    ++m_assetsNeedingProcessing_DependenciesChanged;
-                    return false;
-                }
-                // Success - we can skip this file, nothing has changed!
-
-                // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
-                // Note that this means any files that *were* deleted are already handled by CheckMissingFiles
-                m_sourceFilesInDatabase.erase(sourceFileItr);
-                return true;
+                ++m_assetsNeedingProcessing_BuildersChanged;
+                return false;
             }
-        }
-        else
-        {
-            // File is a non-tracked file, aka a file that no builder cares about.
-            // The fact that it has a matching modtime means we've already seen this file and attempted to process it
-            // If it were a new, unprocessed source file, there would be no modtime stored
+
+            // Check for updated fingerprint
+            AZStd::string currentFingerprint = ComputeRecursiveDependenciesFingerprint(sourceFileItr->m_sourceAssetReference);
+            if (dependencyFingerprint != currentFingerprint)
+            {
+                // Dependencies have changed
+                ++m_assetsNeedingProcessing_DependenciesChanged;
+                return false;
+            }
+
+            // Success - we can skip this file, nothing has changed!
+
+            // Remove it from the list of to-be-processed files, otherwise the AP will assume the file was deleted
+            // Note that this means any files that *were* deleted are already handled by CheckMissingFiles
+            m_sourceFilesInDatabase.erase(sourceFileItr);
             return true;
         }
-
-        return false;
+        // File is a non-tracked file, aka a file that no builder cares about.
+        // The fact that it has a matching modtime means we've already seen this file and attempted to process it
+        // If it were a new, unprocessed source file, there would be no modtime stored
+        return true;
     }
 
     void AssetProcessorManager::AssessDeletedFile(QString filePath)

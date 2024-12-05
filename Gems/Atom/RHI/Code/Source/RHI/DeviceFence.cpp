@@ -28,7 +28,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode DeviceFence::Init(Device& device, FenceState initialState)
+    ResultCode DeviceFence::Init(Device& device, FenceState initialState, bool usedForWaitingOnDevice)
     {
         if (Validation::IsEnabled())
         {
@@ -39,7 +39,7 @@ namespace AZ::RHI
             }
         }
 
-        const ResultCode resultCode = InitInternal(device, initialState);
+        const ResultCode resultCode = InitInternal(device, initialState, usedForWaitingOnDevice);
 
         if (resultCode == ResultCode::Success)
         {

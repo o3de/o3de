@@ -78,6 +78,9 @@ namespace AZ
 
             // Fog mode option name
             const AZ::Name m_fogModeOptionName;
+
+            // Shader input constant index for the depth texture dimensions.
+            RHI::ShaderInputConstantIndex m_depthTextureDimensionsIndex;
         };       
     }   // namespace Render
 }   // namespace AZ

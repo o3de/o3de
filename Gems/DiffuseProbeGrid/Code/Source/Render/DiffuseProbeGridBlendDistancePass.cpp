@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
@@ -15,7 +16,6 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridBlendDistancePass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -88,7 +88,7 @@ namespace AZ
                 return false;
             }
 
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
             if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
             {
                 // empty scene
@@ -169,8 +169,10 @@ namespace AZ
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
                 diffuseProbeGrid->UpdateBlendDistanceSrg(shader.m_shader, shader.m_srgLayout);
-
-                diffuseProbeGrid->GetBlendDistanceSrg()->Compile();
+                if (!diffuseProbeGrid->GetBlendDistanceSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetBlendDistanceSrg()->Compile();
+                }
             }
         }
 

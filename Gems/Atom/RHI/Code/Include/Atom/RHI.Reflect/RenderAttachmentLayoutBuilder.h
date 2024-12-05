@@ -142,6 +142,7 @@ namespace AZ::RHI
             SubpassAttachmentLayoutBuilder* SubpassInputAttachment(
                 const AZ::Name& name,
                 RHI::ImageAspectFlags aspectFlags,
+                const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction(),
                 RenderAttachmentExtras* extras = nullptr);
 
             // Adds the use of a shading rate attachment.
@@ -150,12 +151,14 @@ namespace AZ::RHI
                 const AZ::Name& name = {},
                 RenderAttachmentExtras* extras = nullptr);
 
+            bool HasAttachments() const;
+
         private:
             struct RenderAttachmentEntry
             {
                 AZ::Name m_name;
                 Format m_format = Format::Unknown;
-                AttachmentLoadStoreAction m_loadStoreAction;
+                AttachmentLoadStoreAction m_loadStoreAction = AttachmentLoadStoreAction();
                 AZ::Name m_resolveName;
                 //! The following two flags are only relevant when there are more than one subpasses
                 //! that will be merged.
@@ -181,6 +184,8 @@ namespace AZ::RHI
                 //! The scope attachment stage as defined in the pass template, which will be used
                 //! to accurately define the subpass dependencies.
                 AZ::RHI::ScopeAttachmentStage m_scopeAttachmentStage = AZ::RHI::ScopeAttachmentStage::Uninitialized;
+                //! Load store action for the subpass input.
+                AttachmentLoadStoreAction m_loadStoreAction = AttachmentLoadStoreAction();
                 //! Extra data that can be passed for platform specific operations.
                 RenderAttachmentExtras* m_extras = nullptr;
             };

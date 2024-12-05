@@ -397,27 +397,29 @@ namespace AZ
         {
             AZ_Assert(m_surface, "Surface has not been initialized.");
 
-            if (verticalSyncInterval > 0)
+            AZStd::vector<VkPresentModeKHR> preferredModes;
+            if (verticalSyncInterval == 0)
             {
-                // When a non-zero vsync interval is requested, the FIFO presentation mode (always available)
-                // is usable without needing to query available presentation modes.
-                return VK_PRESENT_MODE_FIFO_KHR;
+                // No vsync, so we try to use the immediate mode.
+                preferredModes.push_back(VK_PRESENT_MODE_IMMEDIATE_KHR);
+                // If immediate mode is not available we try for mailbox, which technically is still vsync
+                // but doesn't block the CPU when queue is full.
+                preferredModes.push_back(VK_PRESENT_MODE_MAILBOX_KHR);
             }
-
+            preferredModes.push_back(VK_PRESENT_MODE_FIFO_KHR);
             auto& device = static_cast<Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             uint32_t modeCount = 0;
             AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr));
-            // At least VK_PRESENT_MODE_FIFO_KHR have to be supported.
+            // VK_PRESENT_MODE_FIFO_KHR has to be supported.
             // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkPresentModeKHR.html
             AZ_Assert(modeCount > 0, "no available present mode.");
             AZStd::vector<VkPresentModeKHR> supportedModes(modeCount);
             AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, supportedModes.data()));
 
-            VkPresentModeKHR preferredModes[] = {VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR};
             for (VkPresentModeKHR preferredMode : preferredModes)
             {
                 for (VkPresentModeKHR supportedMode : supportedModes)
@@ -544,7 +546,6 @@ namespace AZ
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            imageAvailableSemaphore->SignalEvent();
             if (m_currentFrameContext.m_imageAvailableSemaphore)
             {
                 semaphoreAllocator.DeAllocate(m_currentFrameContext.m_imageAvailableSemaphore);
@@ -569,7 +570,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto presentCommand = [&device, swapchain]([[maybe_unused]] void* queue)
             {
-                device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
+                device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Graphics).WaitForIdle();
                 if (swapchain != VK_NULL_HANDLE)
                 {
                     device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), swapchain, VkSystemAllocator::Get());

@@ -60,9 +60,7 @@ struct AABB;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
-struct ILogFile; // Vladimir@conffx
 
 // Qt
 
@@ -230,17 +228,6 @@ enum AxisConstrains
     AXIS_TERRAIN,
 };
 
-//! Reference coordinate system values
-enum RefCoordSys
-{ // Don't change this order. Should be in the same order as MainWindow::CreateRefCoordComboBox()
-    COORDS_VIEW = 0,
-    COORDS_LOCAL,
-    COORDS_PARENT,
-    COORDS_WORLD,
-    COORDS_USERDEFINED,
-    LAST_COORD_SYSTEM, // Must always be the last member
-};
-
 // Insert locations for menu items
 enum EMenuInsertLocation
 {
@@ -254,14 +241,6 @@ enum EMenuInsertLocation
     eMenuScript,
     eMenuView,
     eMenuHelp
-};
-
-//! Global editor operation mode
-enum EOperationMode
-{
-    eOperationModeNone = 0, // None
-    eCompositingMode, // Normal operation mode where objects are composited in the scene
-    eModellingMode // Geometry modeling mode
 };
 
 //! Mouse events that viewport can send
@@ -457,15 +436,6 @@ struct IEditor
     virtual void SetActiveView(CViewport* viewport) = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
 
-    //! QMimeData is used by the Qt clipboard.
-    //! IMPORTANT: Any QMimeData allocated for the clipboard will be deleted
-    //! when the editor exists. If a QMimeData is allocated by a different
-    //! memory allocator (for example, in a different DLL) than the one used
-    //! by the main editor, a crash will occur on exit, if data is left in
-    //! the clipboard. The solution is to enfore all allocations of QMimeData
-    //! using CreateQMimeData().
-    virtual QMimeData* CreateQMimeData() const = 0;
-    virtual void DestroyQMimeData(QMimeData* data) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Access for CLevelIndependentFileMan
@@ -478,33 +448,16 @@ struct IEditor
     virtual void ResetViews() = 0;
     //! Update information in track view dialog.
     virtual void ReloadTrackView() = 0;
-    //! Current position marker
-    virtual Vec3 GetMarkerPosition() = 0;
-    //! Set current position marker.
-    virtual void    SetMarkerPosition(const Vec3& pos) = 0;
-    //! Set current selected region.
-    virtual void    SetSelectedRegion(const AABB& box) = 0;
-    //! Get currently selected region.
-    virtual void    GetSelectedRegion(AABB& box) = 0;
 
-    virtual void SetOperationMode(EOperationMode mode) = 0;
-    virtual EOperationMode GetOperationMode() = 0;
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
     virtual void SetAxisConstraints(AxisConstrains axis) = 0;
     //! Get axis constrain for objects construction and modifications.
     virtual AxisConstrains GetAxisConstrains() = 0;
-    //! Set whether axes are forced to the same value when they are changed (x = y = z).
-    virtual void SetAxisVectorLock(bool bAxisVectorLock) = 0;
-    //! Get whether axes are forced to the same value when they are changed (x = y = z).
-    virtual bool IsAxisVectorLocked() = 0;
     //! If set, when axis terrain constrain is selected, snapping only to terrain.
     virtual void SetTerrainAxisIgnoreObjects(bool bIgnore) = 0;
     virtual bool IsTerrainAxisIgnoreObjects() = 0;
-    //! Set current reference coordinate system used when constructing/modifying objects.
-    virtual void SetReferenceCoordSys(RefCoordSys refCoords) = 0;
     //! Get current reference coordinate system used when constructing/modifying objects.
-    virtual RefCoordSys GetReferenceCoordSys() = 0;
     virtual XmlNodeRef FindTemplate(const QString& templateName) = 0;
     virtual void AddTemplate(const QString& templateName, XmlNodeRef& tmpl) = 0;
 
@@ -583,10 +536,6 @@ struct IEditor
     virtual void RegisterNotifyListener(IEditorNotifyListener* listener) = 0;
     //! Unregister Editor notifications listener.
     virtual void UnregisterNotifyListener(IEditorNotifyListener* listener) = 0;
-    //! Register document notifications listener.
-    virtual void RegisterDocListener(IDocListener* listener) = 0;
-    //! Unregister document notifications listener.
-    virtual void UnregisterDocListener(IDocListener* listener) = 0;
 
     virtual void ReduceMemory() = 0;
 
@@ -594,12 +543,8 @@ struct IEditor
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
-
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
-    virtual IImageUtil* GetImageUtil() = 0;  // Vladimir@conffx
     virtual SEditorSettings* GetEditorSettings() = 0;
-
-    virtual ILogFile* GetLogFile() = 0;  // Vladimir@conffx
 
     // unload all plugins
     virtual void UnloadPlugins() = 0;

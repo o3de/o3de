@@ -260,7 +260,6 @@ set(FILES
     Include/HitContext.h
     Include/ICommandManager.h
     Include/IDisplayViewport.h
-    Include/ILogFile.h
     Include/IKeyTimeSet.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
@@ -397,8 +396,6 @@ set(FILES
     Util/GeometryUtil.h
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
-    LogFileImpl.cpp
-    LogFileImpl.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
@@ -561,8 +558,6 @@ set(FILES
     WaitProgress.h
     Util/FileUtil_impl.h
     Util/FileUtil_impl.cpp
-    Util/ImageUtil_impl.h
-    Util/ImageUtil_impl.cpp
     Util/ColumnSortProxyModel.h
     Util/ColumnSortProxyModel.cpp
     Util/AbstractGroupProxyModel.h
@@ -583,8 +578,6 @@ set(FILES
     Util/3DConnexionDriver.h
     Util/FileChangeMonitor.cpp
     Util/FileChangeMonitor.h
-    Util/ImageUtil.cpp
-    Util/ImageUtil.h
     Util/ImageGif.cpp
     Util/ImageGif.h
     Util/ImageTIF.cpp

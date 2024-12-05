@@ -102,7 +102,12 @@ function(get_all_gem_dependencies gem_name output_resolved_gem_names)
         unset(gem_name_only)
         o3de_get_name_and_version_specifier(${gem_name} gem_name_only ignore_spec_op ignore_spec_version)
         get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name_only}@")
-        if(NOT gem_path)
+        if (NOT gem_path)
+            unset(gem_optional)
+            get_property(gem_optional GLOBAL PROPERTY ${gem_name}_OPTIONAL)
+            if (gem_optional)
+                return()
+            endif()
             message(FATAL_ERROR "Unable to locate gem path for Gem \"${gem_name_only}\"."
                     " Is the gem registered in either the ~/.o3de/o3de_manifest.json, ${LY_ROOT_FOLDER}/engine.json,"
                     " any project.json or any gem.json which itself is registered?")

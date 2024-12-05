@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawList.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
 // Predefinition for unit test friend class
@@ -95,14 +96,12 @@ namespace AZ::RHI
         // The allocator used to release the memory when Release() is called.
         IAllocator* m_allocator = nullptr;
 
+        DrawInstanceArguments m_drawInstanceArgs;
+
         // The bit-mask of all active filter tags.
         DrawListMask m_drawListMask = 0;
 
-        // The index buffer view used when the draw call is indexed.
-        DeviceIndexBufferView m_indexBufferView;
-
         uint8_t m_drawItemCount = 0;
-        uint8_t m_streamBufferViewCount = 0;
         uint8_t m_shaderResourceGroupCount = 0;
         uint8_t m_uniqueShaderResourceGroupCount = 0;
         uint8_t m_rootConstantSize = 0;
@@ -111,6 +110,9 @@ namespace AZ::RHI
 
         // List of draw items.
         DeviceDrawItem* m_drawItems = nullptr;
+
+        // Contains DrawArguments and geometry buffer views used during rendering
+        const DeviceGeometryView* m_geometryView = nullptr;
 
         // List of draw item sort keys associated with the draw item index.
         const DrawItemSortKey* m_drawItemSortKeys = nullptr;
@@ -129,9 +131,6 @@ namespace AZ::RHI
 
         // List of inline constants shared by all draw items.
         const uint8_t* m_rootConstants = nullptr;
-
-        // The list of stream buffer views. Each draw item has a view into the array.
-        const DeviceStreamBufferView* m_streamBufferViews = nullptr;
 
         // Optional list of scissors to be used by all draw items.
         const Scissor* m_scissors = nullptr;

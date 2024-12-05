@@ -128,7 +128,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    MTLBlitOption mtlBlitOption = GetBlitOption(destinationImage->GetDescriptor().m_format, descriptor.m_destinationSubresource.m_aspect);
+                    MTLBlitOption mtlBlitOption = GetBlitOption(descriptor.m_sourceFormat, descriptor.m_destinationSubresource.m_aspect);
                     [blitEncoder copyFromBuffer: sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
                                    sourceOffset: sourceBuffer->GetMemoryView().GetOffset() + descriptor.m_sourceOffset
                               sourceBytesPerRow: descriptor.m_sourceBytesPerRow
@@ -157,7 +157,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    MTLBlitOption mtlBlitOption = GetBlitOption(sourceImage->GetDescriptor().m_format, descriptor.m_sourceSubresource.m_aspect);
+                    MTLBlitOption mtlBlitOption = GetBlitOption(descriptor.m_destinationFormat, descriptor.m_sourceSubresource.m_aspect);
                     [blitEncoder copyFromTexture: sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
                                      sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
                                      sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
@@ -621,17 +621,17 @@ namespace AZ
                 return;
             }
 
-            SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+            SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
             SetStencilRef(drawItem.m_stencilRef);
 
             MTLPrimitiveType mtlPrimType = pipelineState->GetPipelineTopology();
 
-            switch (drawItem.m_arguments.m_type)
+            switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
                 case RHI::DrawType::Indexed:
                 {
-                    const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-                    const RHI::DeviceIndexBufferView& indexBuffDescriptor = *drawItem.m_indexBufferView;
+                    const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                    const RHI::DeviceIndexBufferView& indexBuffDescriptor = drawItem.m_geometryView->GetIndexBufferView();
                     const Buffer * buff = static_cast<const Buffer*>(indexBuffDescriptor.GetBuffer());
                     id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
                     MTLIndexType mtlIndexType = (indexBuffDescriptor.GetIndexFormat() == RHI::IndexFormat::Uint16) ?
@@ -645,20 +645,20 @@ namespace AZ
                                                indexType: mtlIndexType
                                              indexBuffer: mtlBuff
                                        indexBufferOffset: indexOffset
-                                           instanceCount: indexed.m_instanceCount
+                                           instanceCount: drawItem.m_drawInstanceArgs.m_instanceCount
                                               baseVertex: indexed.m_vertexOffset
-                                            baseInstance: indexed.m_instanceOffset];
+                                            baseInstance: drawItem.m_drawInstanceArgs.m_instanceOffset];
                     break;
                 }
 
                 case RHI::DrawType::Linear:
                 {
-                    const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                    const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
                     [renderEncoder drawPrimitives: mtlPrimType
                                       vertexStart: linear.m_vertexOffset
                                       vertexCount: linear.m_vertexCount
-                                    instanceCount: linear.m_instanceCount
-                                     baseInstance: linear.m_instanceOffset];
+                                    instanceCount: drawItem.m_drawInstanceArgs.m_instanceCount
+                                     baseInstance: drawItem.m_drawInstanceArgs.m_instanceOffset];
                     break;
                 }
             }
@@ -741,14 +741,15 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryBufferViews, const RHI::StreamBufferIndices& streamIndices)
         {
+            auto streamIter = geometryBufferViews.CreateStreamIterator(streamIndices);
             bool needsBinding = false;
-            for (uint32_t i = 0; i < count; ++i)
+            for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
             {
-                if (m_state.m_streamsHashes[i] != streams[i].GetHash())
+                if (m_state.m_streamsHashes[index] != streamIter->GetHash())
                 {
-                    m_state.m_streamsHashes[i] = streams[i].GetHash();
+                    m_state.m_streamsHashes[index] = streamIter->GetHash();
                     needsBinding = true;
                 }
             }
@@ -758,17 +759,19 @@ namespace AZ
             if (needsBinding)
             {
                 uint16_t bufferArrayLen = 0;
+                streamIter.Reset();
+                u8 count = streamIndices.Size();
                 AZ_Assert(count <= METAL_MAX_ENTRIES_BUFFER_ARG_TABLE , "Slots needed cannot exceed METAL_MAX_ENTRIES_BUFFER_ARG_TABLE");
 
                 NSRange range = {METAL_MAX_ENTRIES_BUFFER_ARG_TABLE - count, count};
                 //The stream buffers are populated from bottom to top as the top slots are taken by argument buffers
                 for (int i = count-1; i >= 0; --i)
                 {
-                    if (streams[i].GetBuffer())
+                    if (streamIter[i].GetBuffer())
                     {
-                        const Buffer * buff = static_cast<const Buffer*>(streams[i].GetBuffer());
+                        const Buffer * buff = static_cast<const Buffer*>(streamIter[i].GetBuffer());
                         id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
-                        uint32_t offset = static_cast<uint32_t>(streams[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
+                        uint32_t offset = static_cast<uint32_t>(streamIter[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
                         mtlStreamBuffers[bufferArrayLen] = mtlBuff;
                         mtlStreamBufferOffsets[bufferArrayLen] = offset;
                         bufferArrayLen++;

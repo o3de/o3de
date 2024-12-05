@@ -39,6 +39,7 @@ namespace AZ::RHI
     void MultiDeviceObject::Shutdown()
     {
         m_deviceMask = static_cast<MultiDevice::DeviceMask>(0u);
+        m_deviceObjects.clear();
     }
 
     int MultiDeviceObject::GetDeviceCount()

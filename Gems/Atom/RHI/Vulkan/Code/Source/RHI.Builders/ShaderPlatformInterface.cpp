@@ -40,7 +40,7 @@ namespace AZ
         {
             RHI::Ptr<ShaderStageFunction> newShaderStageFunction = ShaderStageFunction::Create(RHI::ToRHIShaderStage(stageDescriptor.m_stageType));
 
-            const Vulkan::ShaderByteCode& byteCode = stageDescriptor.m_byteCode;
+            const auto& byteCode = stageDescriptor.m_byteCode;
             const AZStd::string& entryFunctionName = stageDescriptor.m_entryFunctionName;
             const int byteCodeIndex = 0;
             newShaderStageFunction->SetByteCode(byteCodeIndex, byteCode, entryFunctionName);
@@ -225,9 +225,7 @@ namespace AZ
                 RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fvk-invert-y" });
                 break;
             case RHI::ShaderHardwareStage::Fragment:
-                // Enable the use of subpass input. DXC doesn't compile if a SubpassInput is present
-                // when compiling a shader stage that is not the fragment shader (even if it's not being used).
-                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-DAZ_USE_SUBPASSINPUT", "-fvk-use-dx-position-w"});
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fvk-use-dx-position-w"});
                 break;
             case RHI::ShaderHardwareStage::Compute:
             case RHI::ShaderHardwareStage::RayTracing:

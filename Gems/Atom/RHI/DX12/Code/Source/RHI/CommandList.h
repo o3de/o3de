@@ -18,6 +18,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
+#include <Atom/RHI/DeviceGeometryView.h>
 #include <Atom/RHI/DeviceIndirectArguments.h>
 #include <Atom/RHI/ObjectPool.h>
 #include <AzCore/std/containers/span.h>
@@ -190,7 +191,7 @@ namespace AZ
             template <RHI::PipelineStateType, typename Item>
             bool CommitShaderResources(const Item& item);
 
-            void SetStreamBuffers(const RHI::DeviceStreamBufferView* descriptors, uint32_t count);
+            void SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices);
             void SetIndexBuffer(const RHI::DeviceIndexBufferView& descriptor);
             void SetStencilRef(uint8_t stencilRef);
             void SetTopology(RHI::PrimitiveTopology topology);
@@ -208,6 +209,7 @@ namespace AZ
                 AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgsByIndex;
                 AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgsBySlot;
                 bool m_hasRootConstants = false;
+                int m_bindlessHeapLastIndex = -1;
             };
 
             ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType pipelineType);
@@ -241,9 +243,6 @@ namespace AZ
 
                 // A queue of tile mappings to execute on the command queue at submission time (prior to executing the command list).
                 TileMapRequestList m_tileMapRequests;
-
-                // Signal that the global bindless heap is bound to the index
-                int m_bindlessHeapLastIndex = -1;
 
                 // The currently bound shading rate image
                 const ImageView* m_shadingRateImage = nullptr;
@@ -295,6 +294,7 @@ namespace AZ
             {
                 if (!pipelineState->IsInitialized())
                 {
+                    AZ_Warning("CommandList", false, "Pipeline State is not initialized.");
                     return false;
                 }
 
@@ -336,6 +336,7 @@ namespace AZ
                     {
                         bindings.m_srgsByIndex[i] = nullptr;
                     }
+                    bindings.m_bindlessHeapLastIndex = -1;
                 }
 
                 m_state.m_pipelineState = pipelineState;
@@ -385,7 +386,7 @@ namespace AZ
                 if (srgSlot == device.GetBindlessSrgSlot() && shaderResourceGroup == nullptr)
                 {
                     // Skip in case the global static heap is already bound
-                    if (m_state.m_bindlessHeapLastIndex == binding.m_bindlessTable.GetIndex())
+                    if (bindings.m_bindlessHeapLastIndex == binding.m_bindlessTable.GetIndex())
                     {
                         continue;
                     }
@@ -409,7 +410,7 @@ namespace AZ
                         AZ_Assert(false, "Invalid PipelineType");
                         break;
                     }
-                    m_state.m_bindlessHeapLastIndex = binding.m_bindlessTable.GetIndex();
+                    bindings.m_bindlessHeapLastIndex = binding.m_bindlessTable.GetIndex();
                     continue;
                 }
                 

@@ -7,7 +7,6 @@
  */
 
 #include <Model/ModelExporterComponent.h>
-#include <Model/ModelExporterContexts.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -30,6 +29,7 @@
 
 #include <cinttypes>
 
+#include <Atom/RPI.Builders/Model/ModelExporterContexts.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
@@ -147,6 +147,17 @@ namespace AZ
                 Data::Asset<MorphTargetMetaAsset> morphTargetMetaAsset;
                 ModelAssetBuilderContext modelContext(exportEventContext.GetScene(), meshGroup, coordSysConverter, materialsByUid, modelAsset, skinMetaAsset, morphTargetMetaAsset);
                 combinerResult = SceneAPI::Events::Process<ModelAssetBuilderContext>(modelContext);
+                if (combinerResult.GetResult() != SceneAPI::Events::ProcessingResult::Success)
+                {
+                    return combinerResult.GetResult();
+                }
+                ModelAssetPostBuildContext modelAssetPostBuildContext(
+                    exportEventContext.GetScene(),
+                    exportEventContext.GetOutputDirectory(),
+                    exportEventContext.GetProductList(),
+                    meshGroup,
+                    modelAsset);
+                combinerResult = SceneAPI::Events::Process<ModelAssetPostBuildContext>(modelAssetPostBuildContext);
                 if (combinerResult.GetResult() != SceneAPI::Events::ProcessingResult::Success)
                 {
                     return combinerResult.GetResult();

@@ -64,6 +64,9 @@ set(LY_ASSET_DEPLOY_ASSET_TYPE "linux" CACHE STRING "Set the asset type for depl
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 
+# Compiler flag to export all symbols from a library
+ly_set(PAL_TRAIT_EXPORT_ALL_SYMBOLS_COMPILE_OPTIONS -fvisibility=default)
+
 # Set the default window manager that applications should be using on Linux 
 # Note: Only ("xcb" or "wayland" should be considered)
 set(PAL_TRAIT_LINUX_WINDOW_MANAGER "xcb" CACHE STRING "Sets the Window Manager type to use when configuring Linux")  

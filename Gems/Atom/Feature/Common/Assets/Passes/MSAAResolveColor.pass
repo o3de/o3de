@@ -10,8 +10,7 @@
                 {
                     "Name": "Input",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ScopeAttachmentStage": "FragmentShader",
+                    "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
                         "LoadAction": "Load",
                         "StoreAction": "DontCare",

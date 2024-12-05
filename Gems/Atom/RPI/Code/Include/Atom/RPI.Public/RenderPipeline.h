@@ -250,6 +250,9 @@ namespace AZ
             //! Update viewport and scissor based on pass tree's output
             void UpdateViewportScissor();
 
+            //! Return true if the pipeline allows merging of passes as subpasses.
+            bool SubpassMergingSupported() const;
+
         private:
             RenderPipeline() = default;
 
@@ -374,6 +377,9 @@ namespace AZ
             // viewport and scissor for frame update
             RHI::Viewport m_viewport;
             RHI::Scissor m_scissor;
+
+            // Supports merging of passes as subpasses.
+            bool m_allowSubpassMerging = false;
         };
 
     } // namespace RPI

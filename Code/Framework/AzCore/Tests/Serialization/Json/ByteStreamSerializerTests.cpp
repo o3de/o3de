@@ -12,23 +12,23 @@
 
 namespace JsonSerializationTests
 {
-    class ByteStreamSerializerTestDescription : public JsonSerializerConformityTestDescriptor<AZ::JsonByteStream>
+    class ByteStreamSerializerTestDescription : public JsonSerializerConformityTestDescriptor<AZ::JsonByteStream<AZStd::allocator>>
     {
     public:
         AZStd::shared_ptr<AZ::BaseJsonSerializer> CreateSerializer() override
         {
-            return AZStd::make_shared<AZ::JsonByteStreamSerializer>();
+            return AZStd::make_shared<AZ::JsonByteStreamSerializer<AZStd::allocator>>();
         }
 
-        AZStd::shared_ptr<AZ::JsonByteStream> CreateDefaultInstance() override
+        AZStd::shared_ptr<AZ::JsonByteStream<AZStd::allocator>> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<AZ::JsonByteStream>();
+            return AZStd::make_shared<AZ::JsonByteStream<AZStd::allocator>>();
         }
 
-        AZStd::shared_ptr<AZ::JsonByteStream> CreateFullySetInstance() override
+        AZStd::shared_ptr<AZ::JsonByteStream<AZStd::allocator>> CreateFullySetInstance() override
         {
             // create a JsonByteStream (AZStd::vector<u8>) with ten 'a's
-            return AZStd::make_shared<AZ::JsonByteStream>(10, 'a');
+            return AZStd::make_shared<AZ::JsonByteStream<AZStd::allocator>>(10, 'a');
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
@@ -44,7 +44,7 @@ namespace JsonSerializationTests
             features.m_supportsInjection = false;
         }
 
-        bool AreEqual(const AZ::JsonByteStream& lhs, const AZ::JsonByteStream& rhs) override
+        bool AreEqual(const AZ::JsonByteStream<AZStd::allocator>& lhs, const AZ::JsonByteStream<AZStd::allocator>& rhs) override
         {
             return lhs == rhs;
         }

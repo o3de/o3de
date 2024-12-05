@@ -90,7 +90,8 @@ namespace AZ
             uint32_t lodIndex,
             uint32_t meshIndex,
             const RHI::InputStreamLayout& inputLayout,
-            const RPI::ModelLod::StreamBufferViewList& streamBufferViews,
+            RPI::ModelLod::Mesh& mesh,
+            const RHI::StreamBufferIndices& streamIndices,
             const char* modelName)
         {
             SkinnedSubMeshProperties& skinnedSubMesh = m_meshes[meshIndex];
@@ -100,14 +101,25 @@ namespace AZ
             // Keep track of whether or not an input stream exists
             HasInputStreamArray meshHasInputStream{ false };
 
+            // Loop variables
+            auto streamIter = mesh.CreateStreamIterator(streamIndices);
+            u8 meshStreamIndex = 0;
+
             // Create a buffer view for each input stream in the current mesh
-            for (size_t meshStreamIndex = 0; meshStreamIndex < streamBufferViews.size(); ++meshStreamIndex)
+            for (; !streamIter.HasEnded(); ++streamIter, ++meshStreamIndex)
             {
+                // `IsValid` would return false for dummy buffers, since the index of those buffers equals the size of the buffer view.
+                // We shall skip dummy buffers to avoid empty pointers in the following code. 
+                if (!streamIter.IsValid())
+                {
+                    continue;
+                }
+
                 // Get the semantic from the input layout, and use that to get the SkinnedMeshStreamInfo
                 const SkinnedMeshVertexStreamInfo* streamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(
                     inputLayout.GetStreamChannels()[meshStreamIndex].m_semantic);
 
-                const RHI::StreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
+                const RHI::StreamBufferView& streamBufferView = *streamIter;
                 if (streamInfo && streamBufferView.GetByteCount() > 0)
                 {
                     RHI::BufferViewDescriptor descriptor =
@@ -212,6 +224,7 @@ namespace AZ
             m_meshes.resize(modelLod->GetMeshes().size());
             for (uint32_t meshIndex = 0; meshIndex < modelLod->GetMeshes().size(); ++meshIndex)
             {
+                RPI::ModelLod::Mesh mesh = modelLod->GetMeshes()[meshIndex];
                 SkinnedSubMeshProperties& skinnedSubMesh = m_meshes[meshIndex];
                 skinnedSubMesh.m_vertexOffsetsFromStreamStartInBytes = SkinnedMeshOutputVertexOffsets{ 0 };
 
@@ -222,17 +235,15 @@ namespace AZ
 
                 // Get all of the streams potentially used as input to the skinning compute shader
                 RHI::InputStreamLayout inputLayout;
-                RPI::ModelLod::StreamBufferViewList streamBufferViews;
-                modelLod->GetStreamsForMesh(
-                    inputLayout, streamBufferViews, nullptr,
+                RHI::StreamBufferIndices streamIndices;
+                [[maybe_unused]] bool success = modelLod->GetStreamsForMesh(
+                    inputLayout, streamIndices, nullptr,
                     SkinnedMeshVertexStreamPropertyInterface::Get()->GetComputeShaderInputContract(), meshIndex);
 
-                AZ_Assert(
-                    inputLayout.GetStreamBuffers().size() == streamBufferViews.size(),
-                    "Mismatch in size of InputStreamLayout and StreamBufferViewList for model '%s'", modelAsset.GetHint().c_str());
+                AZ_Assert( success, "SkinnedMeshInputLod failed to get Streams for model '%s'", modelAsset.GetHint().c_str());
 
-                HasInputStreamArray meshHasInputStream =
-                    CreateInputBufferViews(lodIndex, meshIndex, inputLayout, streamBufferViews, modelAsset->GetName().GetCStr());
+                HasInputStreamArray meshHasInputStream = CreateInputBufferViews(lodIndex, meshIndex, inputLayout,
+                    mesh, streamIndices, modelAsset->GetName().GetCStr());
 
                 CreateOutputOffsets(meshIndex, meshHasInputStream, currentMeshOffsetFromStreamStart);
 
@@ -748,7 +759,7 @@ namespace AZ
                     isSkinningEnabledPerMesh.push_back(lod.m_meshes[i].m_skinInfluenceCountPerVertex > 0);
 
                     Aabb localAabb = inputMesh.GetAabb();
-                    modelLodCreator.SetMeshAabb(AZStd::move(localAabb));
+                    modelLodCreator.SetMeshAabb(localAabb);
 
                     modelCreator.AddMaterialSlot(m_modelAsset->FindMaterialSlot(inputMesh.GetMaterialSlotId()));
                     modelLodCreator.SetMeshMaterialSlot(inputMesh.GetMaterialSlotId());

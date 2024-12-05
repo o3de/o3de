@@ -49,12 +49,13 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////
             // RHI::DeviceFence
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForWaitingOnDevice) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
             void WaitOnCpuInternal() const override;
             void ResetInternal() override;
             RHI::FenceState GetFenceStateInternal() const override;
+            void SetExternallySignalled() override;
             //////////////////////////////////////////////////////////////////////
 
             RHI::Ptr<FenceBase> m_fenceImpl;

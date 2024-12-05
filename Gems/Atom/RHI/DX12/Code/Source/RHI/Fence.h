@@ -113,6 +113,7 @@ namespace AZ
         {
         public:
             AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator);
+            AZ_RTTI(FenceImpl, "{6CD62A6F-FF00-4F6D-990B-59E220083939}", RHI::DeviceFence);
 
             static RHI::Ptr<FenceImpl> Create();
 
@@ -126,7 +127,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceFence
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForWaitingOnDevice) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
             void WaitOnCpuInternal() const override;
