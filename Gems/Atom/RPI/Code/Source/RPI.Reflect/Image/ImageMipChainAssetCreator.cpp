@@ -85,6 +85,7 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(ImageMip);
+            //ASSET_TAG("ImageMip4");  // not present in the log
 #endif
             if (!ValidateIsBuildingMip())
             {
@@ -136,6 +137,7 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(ImageMip);
+            //ASSET_TAG("ImageMip5"); // not present in the log
 #endif
             if (!ValidateIsReady())
             {

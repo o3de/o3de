@@ -467,7 +467,7 @@ namespace AZ
         m_isAllocatorLeaking = false;
 #if defined(CARBONATED)
 #if defined(AZ_ENABLE_TRACING) && defined(AZ_START_MEMORY_TRACING) && !defined(_RELEASE)
-    m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
+    m_defaultTrackingRecordMode = Debug::AllocationRecords::Mode::RECORD_STACK_IF_NO_FILE_LINE;
     m_defaultProfilingState = true;
 #else
         m_defaultTrackingRecordMode = Debug::AllocationRecords::Mode::RECORD_NO_RECORDS;
@@ -947,22 +947,18 @@ AllocatorManager::ThreadLocalData& AllocatorManager::FindThreadData()
 // GetCodePoint
 // [4/8/2024]
 //=========================================================================
-AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int, const char*> AllocatorManager::GetCodePointMaskTagAsset()
+AllocatorManager::AllocationMetadata AllocatorManager::GetAllocationMetadata()
 {
     ThreadLocalData& tld = FindThreadData();
 
-    const AZ::AllocatorManager::CodePoint* point = !tld.m_allocationMarkers.IsEmpty() ? &tld.m_allocationMarkers.Get() : nullptr;
+    AllocationMetadata metadata;
+    metadata.m_codePoint = !tld.m_allocationMarkers.IsEmpty() ? &tld.m_allocationMarkers.Get() : nullptr;
+    metadata.m_mask = tld.m_tagMask;
+    metadata.m_tag = ((!tld.m_allocationTags.IsOverflow() && !tld.m_allocationTags.IsEmpty()) ? tld.m_allocationTags.Get() : 0u) & 63u;  // drop the other service bits
+    metadata.m_assetName = (!tld.m_assetItems.IsEmpty()) ? tld.m_assetItems.GetAnyway()->GetName() : nullptr;
+    metadata.m_assetSizeLimit = tld.m_assetSizeLimit;
 
-    const uint64_t mask = tld.m_tagMask;
-    const unsigned int tag = ((!tld.m_allocationTags.IsOverflow() && !tld.m_allocationTags.IsEmpty()) ? tld.m_allocationTags.Get() : 0u) & 63u;  // drop the other service bits
-
-    const char* assetName = nullptr;
-    if (!tld.m_assetItems.IsEmpty())
-    {
-        assetName = tld.m_assetItems.Get()->GetName();
-    }
-
-    return AZStd::make_tuple(point, mask, tag, assetName);
+    return metadata;
 }
 
 //=========================================================================
@@ -1021,6 +1017,10 @@ void AllocatorManager::PopMemoryTag()
     tld.m_allocationTags.Pop();
 }
 
+//=========================================================================
+// PushAssetTag and PopAssetTag
+// [12/2/2024]
+//=========================================================================
 void AllocatorManager::PushAssetMemoryTag(const char* name)
 {
     AssetMemoryItem* item = nullptr;
@@ -1031,7 +1031,7 @@ void AllocatorManager::PushAssetMemoryTag(const char* name)
         if (it == m_assetMap.end())
         {
             item = aznew AssetMemoryItem(name);
-            m_assetMap[name] = item;
+            m_assetMap[item->GetName()] = item;
         }
         else
         {
@@ -1042,23 +1042,34 @@ void AllocatorManager::PushAssetMemoryTag(const char* name)
     }
 
     ThreadLocalData& tld = FindThreadData();
-    AZ_Assert(!tld.m_allocationTags.IsEmpty(), "Push asset tag, but empty");
-
     if (tld.m_assetItems.IsFull())
     {
         tld.m_assetItems.SimulatePush(); // just increase the index to enable pop
         return;
     }
-
     tld.m_assetItems.Push(item);
 }
 
 void AllocatorManager::PopAssetMemoryTag()
 {
     ThreadLocalData& tld = FindThreadData();
-    AZ_Assert(!tld.m_allocationTags.IsEmpty(), "Pop asset tag, but empty");
-
+    AZ_Assert(!tld.m_assetItems.IsEmpty(), "Pop asset tag, but empty");
     tld.m_assetItems.Pop();
+}
+
+//=========================================================================
+// SetAssetMemoryLimit
+// [12/5/2024]
+//=========================================================================
+void AllocatorManager::SetAssetMemoryLimit(size_t limit)
+{
+    ThreadLocalData& tld = FindThreadData();
+    tld.m_assetSizeLimit = limit;
+}
+size_t AllocatorManager::GetAssetMemoryLimit()
+{
+    const ThreadLocalData& tld = FindThreadData();
+    return tld.m_assetSizeLimit;
 }
 
 

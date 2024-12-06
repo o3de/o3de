@@ -21,6 +21,8 @@ namespace AZ::Render
     {
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
+        //ASSET_TAG("Mesh32");
+        ASSET_TAG((*(m_associatedInstances.begin()))->GetAssetHint().c_str());
 #endif
         if (m_drawPacket.Update(parentScene, forceUpdate))
         {
@@ -39,6 +41,8 @@ namespace AZ::Render
     {
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
+        //ASSET_TAG("Mesh33");
+        ASSET_TAG((*(m_associatedInstances.begin()))->GetAssetHint().c_str());
 #endif
         // Shader options are either set or being unspecified (which means use the global value).
         // We only set a shader option if ALL instances have the same value. Otherwise, we leave it unspecified.
@@ -75,6 +79,8 @@ namespace AZ::Render
     {
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
+        //ASSET_TAG("Mesh34");
+        ASSET_TAG(instance->GetAssetHint().c_str());
 #endif
         AZStd::scoped_lock<AZStd::mutex> scopedLock(m_eventLock);
         m_associatedInstances.insert(instance);
@@ -91,6 +97,10 @@ namespace AZ::Render
     {
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
+        //ASSET_TAG("Mesh35");
+        const char* meshName =  m_instanceGroupData.size() > 0 ?
+            (*(m_instanceGroupData.begin()->m_associatedInstances.begin()))->GetAssetHint().c_str() : "";
+        ASSET_TAG(meshName);
 #endif
         // It is not safe to have multiple threads Add and/or Remove at the same time
         m_instanceDataConcurrencyChecker.soft_lock();

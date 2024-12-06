@@ -33,6 +33,7 @@
 #if defined(CARBONATED)
 #include <AzCore/Utils/LogNotification.h> // AE -- update log while waiting for assets
 #include <AzCore/Utils/AssetLoadNotification.h> // update subscribers while waiting for assets
+#include <AzCore/Memory/MemoryMarker.h>
 #endif
 
 // Set this to 1 to enable debug logging for asset loads/unloads
@@ -347,8 +348,7 @@ namespace AZ::Data
                     constexpr int MaxWaitBetweenDispatchMs = 1;
                     while (!m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitBetweenDispatchMs)))
                     {
-// Gruber patch begin // AE -- update log while waiting for assets
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // update log while waiting for assets
                         // if we are here then it is the main thread, let deliver the log messages
                         AZ::LogNotification::LogNotificationBus::Broadcast(&AZ::LogNotification::LogNotificationBus::Events::Update);
                         // update subscribers while waiting for assets
@@ -359,7 +359,6 @@ namespace AZ::Data
                             AZ::AssetLoadNotification::AssetLoadNotificatorBus::Broadcast(&AZ::AssetLoadNotification::AssetLoadNotificatorBus::Events::WaitForAssetUpdate);
                         }
 #endif
-// Gruber patch end // AE -- update log while waiting for assets
                         AssetManager::Instance().DispatchEvents();
                     }
                 }
@@ -1021,7 +1020,9 @@ namespace AZ::Data
         }
 
         AZ_PROFILE_SCOPE(AzCore, "GetAsset: %s", assetInfo.m_relativePath.c_str());
-
+#if defined(CARBONATED)
+        ASSET_TAG(assetInfo.m_relativePath.c_str());
+#endif
         AZStd::shared_ptr<AssetDataStream> dataStream;
         AssetStreamInfo loadInfo;
         bool triggerAssetErrorNotification = false;
@@ -1798,6 +1799,8 @@ namespace AZ::Data
 
             Asset<AssetData> loadingAsset = weakAsset.GetStrongReference();
 
+            ASSET_TAG(loadingAsset.GetHint().c_str());
+
             if (loadingAsset)
             {
                 AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetStreamerCallback %s",
@@ -1881,6 +1884,8 @@ namespace AZ::Data
     //=========================================================================
     void AssetManager::NotifyAssetReady(Asset<AssetData> asset)
     {
+        ASSET_TAG(asset.GetHint().c_str());
+
         AssetData* data = asset.Get();
         AZ_Assert(data, "NotifyAssetReady: asset is missing info!");
         data->m_status = AssetData::AssetStatus::Ready;

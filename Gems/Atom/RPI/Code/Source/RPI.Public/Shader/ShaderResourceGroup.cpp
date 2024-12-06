@@ -12,6 +12,10 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace RPI
@@ -69,6 +73,9 @@ namespace AZ
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
+#if defined(CARBONATED)
+            ASSET_TAG(shaderAsset.GetHint().c_str());  // shaderasset
+#endif
             SrgInitParams initParams{ supervariantIndex, srgName };
             auto anyInitParams = AZStd::any(initParams);
             return Data::InstanceDatabase<ShaderResourceGroup>::Instance().Create(shaderAsset, &anyInitParams);

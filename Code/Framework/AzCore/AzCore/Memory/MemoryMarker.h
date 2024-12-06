@@ -46,6 +46,7 @@ namespace AZ
         Mesh = 7,
         AssetCatalog = 8,
         RHIDevice = 9,
+        Lod = 10,
 
         GameSpecific = 32  // game tags starts from this index, use your own enum starting with this value
     };
@@ -63,7 +64,18 @@ namespace AZ
         AssetMemoryTagMarker(const char* name);
         ~AssetMemoryTagMarker();
     };
-}
+
+    class AssetMemoryTagLimit
+    {
+    public:
+        AssetMemoryTagLimit(size_t limit);
+        ~AssetMemoryTagLimit();
+
+        static void SetLimit(size_t limit);
+        static size_t GetLimit();
+    };
+
+} // namespace AZ
 
 #define MEMORY_ALLOCATION_MARKER AZ::MemoryAllocationMarker(nullptr, __FILE__, __LINE__)
 
@@ -77,7 +89,11 @@ namespace AZ
 #define MEMORY_TAG(x) AZ::MemoryTagMarker CONCATENATION_MACRO_2(memoryTagMarker_, __LINE__)(AZ::MemoryTagValue::x)
 #define MEMORY_TAG_GAME(x) AZ::MemoryTagMarker CONCATENATION_MACRO_2(memoryTagMarkerGame_, __LINE__)(static_cast<AZ::MemoryTagValue>((unsigned int)(x)))
 
+#define ENABLE_ASSET_MEMORY_TRACKING_OVERHEAD 1
 #define ASSET_TAG(x) AZ::AssetMemoryTagMarker CONCATENATION_MACRO_2(assetMemoryTagMarker_, __LINE__)(x)
+#define MEMORY_ASSET_LIMIT(x) AZ::AssetMemoryTagLimit CONCATENATION_MACRO_2(assetMemoryTagLimit_, __LINE__)(x)
+#define MEMORY_SET_ASSET_LIMIT(x) AZ::AssetMemoryTagLimit::SetLimit(x)
+#define MEMORY_GET_ASSET_LIMIT() AZ::AssetMemoryTagLimit::GetLimit()
 
 #else  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED
 
@@ -88,5 +104,8 @@ namespace AZ
 #define MEMORY_TAG_GAME(x)
 
 #define ASSET_TAG(x)
+#define MEMORY_ASSET_LIMIT(x)
+#define MEMORY_SET_ASSET_LIMIT(x)
+#define MEMORY_GET_ASSET_LIMIT() 0
 
 #endif  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED

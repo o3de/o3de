@@ -167,8 +167,17 @@ namespace AZ
             }
         };
 
+        struct AllocationMetadata
+        {
+            const AZ::AllocatorManager::CodePoint* m_codePoint;
+            uint64_t m_mask;
+            unsigned int m_tag;
+            const char* m_assetName;
+            size_t m_assetSizeLimit;
+        };
+
         /// Returns current thread's top stack registered code point
-        AZStd::tuple<const CodePoint*, uint64_t, unsigned int, const char*> GetCodePointMaskTagAsset();
+        AllocationMetadata GetAllocationMetadata();
 
         /// Pushes memory marker to stack, this speeds up memory tracking by dropping callstack symbolication, see MEMORY_ALLOCATION_MARKER_NAME macro
         void PushMemoryMarker(const CodePoint& point);
@@ -187,6 +196,12 @@ namespace AZ
 
         /// Pop asset memory tag from stack
         void PopAssetMemoryTag();
+
+        /// Set asset mmeory size limit to drop large buffer allocations from asset stats
+        void SetAssetMemoryLimit(size_t limit);
+
+        /// Get current asset mmeory size limit
+        size_t GetAssetMemoryLimit();
 
         /// Protection from a recursive call by the same thread
         bool IsRecursive()
@@ -268,6 +283,12 @@ namespace AZ
                 return m_stack[m_numItems - 1];
             }
 
+            const Data& GetAnyway() const
+            {
+                AZ_Assert(!IsEmpty(), "Get, but empty");
+                return m_stack[AZStd::min(m_numItems, Size) - 1];
+            }
+
             bool IsFull() const
             {
                 return m_numItems >= Size;
@@ -310,6 +331,7 @@ namespace AZ
             DataStack<CodePoint, 64> m_allocationMarkers;
             DataStack<unsigned int, 64> m_allocationTags;
             uint64_t m_tagMask = 0;
+            size_t m_assetSizeLimit = 0;
 
             DataStack<AssetMemoryItem*, 64> m_assetItems;
         };
@@ -323,7 +345,7 @@ namespace AZ
         public:
             size_t operator()(const char* p) const
             {
-                // FNV hash 64 (maybe tryMurmurHash3 ?)
+                // FNV hash 64 (maybe try MurmurHash3 ?)
                 size_t h = 14695981039346656037llu;  // 32bit 2166136261u;
                 while (*p)
                 {
@@ -333,7 +355,14 @@ namespace AZ
                 return h;
             }
         };
-        AZStd::unordered_map<const char*, AssetMemoryItem*, hash_string> m_assetMap;
+        struct equal_to
+        {
+            bool operator()(const char* left, const char* right) const
+            {
+                return strcmp(left,right) == 0;
+            }
+        };
+        AZStd::unordered_map<const char*, AssetMemoryItem*, hash_string, equal_to> m_assetMap;
         AZStd::mutex m_assetMapLock;
 
         ThreadLocalData& FindThreadData();

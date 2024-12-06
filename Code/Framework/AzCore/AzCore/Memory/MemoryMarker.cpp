@@ -11,31 +11,53 @@
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MemoryMarker.h>
 
-void AZ::MemoryAllocationMarker::Init(const char* name, const char* file, int line, bool isLiteral)
+namespace AZ
 {
-    AZ::AllocatorManager::Instance().PushMemoryMarker(AZ::AllocatorManager::CodePoint(name, file, line, isLiteral));
-}
-AZ::MemoryAllocationMarker::~MemoryAllocationMarker()
-{
-    AZ::AllocatorManager::Instance().PopMemoryMarker();
-}
+    void MemoryAllocationMarker::Init(const char* name, const char* file, int line, bool isLiteral)
+    {
+        AllocatorManager::Instance().PushMemoryMarker(AZ::AllocatorManager::CodePoint(name, file, line, isLiteral));
+    }
+    MemoryAllocationMarker::~MemoryAllocationMarker()
+    {
+        AllocatorManager::Instance().PopMemoryMarker();
+    }
 
-AZ::MemoryTagMarker::MemoryTagMarker(MemoryTagValue v)
-{
-    AZ::AllocatorManager::Instance().PushMemoryTag((int)v);
-}
-AZ::MemoryTagMarker::~MemoryTagMarker()
-{
-    AZ::AllocatorManager::Instance().PopMemoryTag();
-}
+    MemoryTagMarker::MemoryTagMarker(MemoryTagValue v)
+    {
+        AllocatorManager::Instance().PushMemoryTag((int)v);
+    }
+    MemoryTagMarker::~MemoryTagMarker()
+    {
+        AllocatorManager::Instance().PopMemoryTag();
+    }
 
-AZ::AssetMemoryTagMarker::AssetMemoryTagMarker(const char* name)
-{
-    AZ::AllocatorManager::Instance().PushAssetMemoryTag(name);
-}
-AZ::AssetMemoryTagMarker::~AssetMemoryTagMarker()
-{
-    AZ::AllocatorManager::Instance().PopAssetMemoryTag();
-}
+    AssetMemoryTagMarker::AssetMemoryTagMarker(const char* name)
+    {
+        AllocatorManager::Instance().PushAssetMemoryTag(name);
+    }
+    AssetMemoryTagMarker::~AssetMemoryTagMarker()
+    {
+        AllocatorManager::Instance().PopAssetMemoryTag();
+    }
+
+    AssetMemoryTagLimit::AssetMemoryTagLimit(size_t limit)
+    {
+        AllocatorManager::Instance().SetAssetMemoryLimit(limit);
+    }
+    AssetMemoryTagLimit::~AssetMemoryTagLimit()
+    {
+        AllocatorManager::Instance().SetAssetMemoryLimit(0);
+    }
+    void AssetMemoryTagLimit::SetLimit(size_t limit)
+    {
+        AllocatorManager::Instance().SetAssetMemoryLimit(limit);
+    }
+    size_t AssetMemoryTagLimit::GetLimit()
+    {
+        return AllocatorManager::Instance().GetAssetMemoryLimit();
+    }
+
+
+} // namespace AZ
 
 #endif  // AZ_ENABLE_TRACING  && !_RELEASE && CARBONATED

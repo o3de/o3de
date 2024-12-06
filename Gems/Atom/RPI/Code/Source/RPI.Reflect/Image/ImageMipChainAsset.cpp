@@ -12,6 +12,7 @@
 
 #if defined(CARBONATED)
 #include <AzCore/Memory/MemoryMarker.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #endif
 
 namespace AZ
@@ -94,7 +95,12 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(ImageMip);
+#if defined(ENABLE_ASSET_MEMORY_TRACKING_OVERHEAD)
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, source.GetId());
+            ASSET_TAG(assetInfo.m_relativePath.c_str());
 #endif
+#endif  // CARBONATED
             m_mipLevels = source.m_mipLevels;
             m_arraySize = source.m_arraySize;
             m_mipToSubImageOffset = source.m_mipToSubImageOffset;
@@ -146,6 +152,7 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(ImageMip);
+            ASSET_TAG(asset.GetHint().c_str());
 #endif
             Data::AssetHandler::LoadResult result = Base::LoadAssetData(asset, stream, assetLoadFilterCB);
             if (result == Data::AssetHandler::LoadResult::LoadComplete)
