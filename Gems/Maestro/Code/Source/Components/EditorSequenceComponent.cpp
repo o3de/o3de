@@ -57,6 +57,21 @@ namespace Maestro
                 if (animNode->GetType() == AnimNodeType::AzEntity)
                 {
                     RemoveEntityToAnimate(animNode->GetAzEntityId());
+
+                    // TODO (AnimSequence linking):
+                    // Consider destroying the ambiguous CAnimAzEntityNode the node in the RemoveEntityToAnimate() method
+                    // instead of removing it only here in dtor, as this method call is also available
+                    // through the EditorSequenceComponentRequestBus::Events::DisconnectSequence,
+                    // please see the closely related comment with the same "TODO (AnimSequence linking)" tag
+                    // in the RemoveEntityToAnimate() method below.
+
+                    //#if 0
+                    // Destroy the now ambiguous CAnimAzEntityNode right here,
+                    // as the corresponding agent component is now detached and "dead"
+                    // (please see comments in the EditorSequenceAgentComponent::DisconnectSequence()).
+                    constexpr const bool removeChildRelationships = false;
+                    m_sequence->RemoveNode(animNode, removeChildRelationships);
+                    //#endif // 0
                 }
             }
         }
@@ -248,6 +263,19 @@ namespace Maestro
         // Notify the SequenceAgentComponent that we're disconnecting from it
         Maestro::SequenceAgentComponentRequestBus::Event(ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::DisconnectSequence);
 
+        // TODO (AnimSequence linking):
+        // Consider destroying the now ambiguous CAnimAzEntityNode right here, 
+        // please see the closely related comment with the same "TODO (AnimSequence linking)" tag
+        // in the component dtor above, where this method is called directly.
+        // Removing the node disables any following ambiguous bus calls to the
+        // EditorSequenceAgentComponent::DisconnectSequence() in this component,
+        // as the corresponding agent component is now detached and "dead"
+        // (please see comments in the EditorSequenceAgentComponent::DisconnectSequence()).
+        // Although it seems that destroying the now ambiguous node here would be architecturally right,
+        // this may interfere with the current implementation of the governing code.
+        // In ideal world the governing code calling RemoveEntityToAnimate() is then to call the AddEntityToAnimate()
+        // in case the Sequence <-> SequenceAgent link is further used.
+        #if 0
         // A linked animation agent in a referenced entity disconnects with the above code.
         // Removing the node disables next calls to EditorSequenceAgentComponent::DisconnectSequence()
         // and thus fixes ambiguous warnings on missing owner instance in ToolsApplication::CreateUndosForDirtyEntities()
@@ -259,10 +287,12 @@ namespace Maestro
                 IAnimNode* animNode = m_sequence->GetNode(i);
                 if (animNode->GetType() == AnimNodeType::AzEntity && animNode->GetAzEntityId() == removedEntityId)
                 {
-                    m_sequence->RemoveNode(animNode, true);
+                    constexpr const bool removeChildRelationships = true;
+                    m_sequence->RemoveNode(animNode, removeChildRelationships);
                 }
             }
         }
+        #endif // 0
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
