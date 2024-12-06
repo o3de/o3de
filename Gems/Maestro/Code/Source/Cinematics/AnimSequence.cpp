@@ -392,7 +392,6 @@ void CAnimSequence::RemoveNode(IAnimNode* node, bool removeChildRelationships)
                 RemoveNodeNeedToRender(node);
             }
 
-            // TODO : move destruction after usage in CUiAnimSequence::RemoveNode() too ?
             m_nodes.erase(m_nodes.begin() + i);
 
             continue;
