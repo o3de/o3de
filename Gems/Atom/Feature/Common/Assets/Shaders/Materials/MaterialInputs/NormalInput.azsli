@@ -44,8 +44,8 @@ real2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv, float4 uvDxDy
     }
     else
     {
-        #ifdef SAMPLE_LEVEL_LOD
-        sampledValue = real2(map.SampleLevel(mapSampler, uv, SAMPLE_LEVEL_LOD).xy);
+        #ifdef CS_SAMPLERS
+        sampledValue = real2(map.SampleLevel(mapSampler, uv, 0).xy);
         #else
         sampledValue = real2(map.Sample(mapSampler, uv).xy);
         #endif

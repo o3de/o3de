@@ -61,8 +61,8 @@ float2 LtcCoords(float cosTheta, float roughness)
 // Constructs an LTC matrix from the provided texture and coordinates.
 float3x3 LtcMatrix(Texture2D<float4> ltcMatrix, float2 coord)
 {
-    #ifdef SAMPLE_LEVEL_LOD
-    float4 t = ltcMatrix.SampleLevel(SceneSrg::LtcSampler, coord, SAMPLE_LEVEL_LOD);
+    #ifdef CS_SAMPLERS
+    float4 t = ltcMatrix.SampleLevel(SceneSrg::LtcSampler, coord, 0);
     #else
     float4 t = ltcMatrix.Sample(SceneSrg::LtcSampler, coord);
     #endif
@@ -409,8 +409,8 @@ void LtcQuadEvaluate(
     float specular = LtcEvaluateSpecularUnscaled(ltcCoords, ltcMatrix, polygon, vertexCount, doubleSided);
 
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
-    #ifdef SAMPLE_LEVEL_LOD
-    float2 schlick = ltcAmpMatrix.SampleLevel(SceneSrg::LtcSampler, ltcCoords, SAMPLE_LEVEL_LOD).xy;
+    #ifdef CS_SAMPLERS
+    float2 schlick = ltcAmpMatrix.SampleLevel(SceneSrg::LtcSampler, ltcCoords, 0).xy;
     #else
     float2 schlick = ltcAmpMatrix.Sample(SceneSrg::LtcSampler, ltcCoords).xy;
     #endif
@@ -639,8 +639,8 @@ void LtcPolygonEvaluate(
     specular = -specular;
 
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
-    #ifdef SAMPLE_LEVEL_LOD
-    float2 schlick = ltcAmpMatrix.SampleLevel(SceneSrg::LtcSampler, ltcCoords, SAMPLE_LEVEL_LOD).xy;
+    #ifdef CS_SAMPLERS
+    float2 schlick = ltcAmpMatrix.SampleLevel(SceneSrg::LtcSampler, ltcCoords, 0).xy;
     #else
     float2 schlick = ltcAmpMatrix.Sample(SceneSrg::LtcSampler, ltcCoords).xy;
     #endif

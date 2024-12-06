@@ -60,8 +60,8 @@ real GetDetailLayerBlendFactor(Texture2D detailLayerBlendMask, sampler detailLay
         }
         else
         {
-            #ifdef SAMPLE_LEVEL_LOD
-            detailLayerBlendFactor *= real(detailLayerBlendMask.SampleLevel(detailLayerBlendMaskSampler, detailLayerBlendMaskUv, SAMPLE_LEVEL_LOD).r);
+            #ifdef CS_SAMPLERS
+            detailLayerBlendFactor *= real(detailLayerBlendMask.SampleLevel(detailLayerBlendMaskSampler, detailLayerBlendMaskUv, 0).r);
             #else
             detailLayerBlendFactor *= real(detailLayerBlendMask.Sample(detailLayerBlendMaskSampler, detailLayerBlendMaskUv).r);
             #endif
@@ -168,8 +168,8 @@ real3 ApplyTextureOverlay(bool applyOverlay, real3 baseColor, Texture2D map, sam
         }
         else
         {
-            #ifdef SAMPLE_LEVEL_LOD
-            sampledColor = real3(map.SampleLevel(mapSampler, uv, SAMPLE_LEVEL_LOD).rgb);
+            #ifdef CS_SAMPLERS
+            sampledColor = real3(map.SampleLevel(mapSampler, uv, 0).rgb);
             #else
             sampledColor = real3(map.Sample(mapSampler, uv).rgb);
             #endif

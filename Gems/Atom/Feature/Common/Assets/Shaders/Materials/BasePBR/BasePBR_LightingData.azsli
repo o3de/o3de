@@ -85,8 +85,8 @@ void LightingData_BasePBR::Init(float3 positionWS, real3 specularNormal, real ro
     // sample BRDF map (indexed by smoothness values rather than roughness)
     NdotV = saturate(dot(specularNormal, dirToCamera));
     float2 brdfUV = float2(NdotV, (1.0 - roughnessLinear));
-    #ifdef SAMPLE_LEVEL_LOD
-    brdf = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, brdfUV, SAMPLE_LEVEL_LOD).rg);
+    #ifdef CS_SAMPLERS
+    brdf = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, brdfUV, 0).rg);
     #else
     brdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg);
     #endif
