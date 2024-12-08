@@ -15,6 +15,7 @@
 #include <AzCore/Component/EntityBus.h>                         // for AZ::EntitySystemBus
 #include <AzFramework/Components/CameraBus.h>                   // for Camera::CameraNotificationBus
 #include <CryCommon/Maestro/Types/AnimValueType.h>              // for AnimValueType
+#include <Maestro/Bus/MovieSystemBus.h>
 
 CSelectKeyUIControls::~CSelectKeyUIControls()
 {
@@ -115,10 +116,15 @@ void CSelectKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
 
             if (!selectKey.szSelection.empty())
             {
-                IAnimSequence* pSequence = GetIEditor()->GetSystem()->GetIMovieSystem()->FindLegacySequenceByName(selectKey.szSelection.c_str());
-                if (pSequence)
+                IMovieSystem* movieSystem = nullptr;
+                Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+                if (movieSystem)
                 {
-                    selectKey.fDuration = pSequence->GetTimeRange().Length();
+                    IAnimSequence* pSequence = movieSystem->FindLegacySequenceByName(selectKey.szSelection.c_str());
+                    if (pSequence)
+                    {
+                        selectKey.fDuration = pSequence->GetTimeRange().Length();
+                    }
                 }
             }
 

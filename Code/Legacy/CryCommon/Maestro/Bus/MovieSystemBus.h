@@ -11,7 +11,7 @@
 
 namespace Maestro
 {
-    class MaestroRequests
+    class MovieSystemRequests
         : public AZ::EBusTraits
     {
 
@@ -19,8 +19,9 @@ namespace Maestro
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
+        virtual IMovieSystem* GetMovieSystem() = 0;
     };
-    using MaestroRequestBus = AZ::EBus<MaestroRequests>;
+    using MovieSystemRequestBus = AZ::EBus<MovieSystemRequests>;
 
 
 

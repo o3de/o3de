@@ -16,6 +16,7 @@
 #include "CryPath.h"
 
 #include <CryCommon/LoadScreenBus.h>
+#include <Maestro/Bus/MovieSystemBus.h>
 
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/IO/FileOperations.h>
@@ -534,11 +535,13 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         //////////////////////////////////////////////////////////////////////////
         // Movie system must be reset after entities.
         //////////////////////////////////////////////////////////////////////////
-        IMovieSystem* movieSys = gEnv->pMovieSystem;
-        if (movieSys != NULL)
+        IMovieSystem* movieSystem = nullptr;
+        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+        if (movieSystem)
         {
             // bSeekAllToStart needs to be false here as it's only of interest in the editor
-            movieSys->Reset(true, false);
+            movieSystem->Reset(true, false);
         }
 
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
@@ -773,10 +776,13 @@ void CLevelSystem::UnloadLevel()
     // Clear level entities and prefab instances.
     EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
 
-    if (gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->Reset(false, false);
-        gEnv->pMovieSystem->RemoveAllSequences();
+        movieSystem->Reset(false, false);
+        movieSystem->RemoveAllSequences();
     }
 
     OnUnloadComplete(m_lastLevelName.c_str());

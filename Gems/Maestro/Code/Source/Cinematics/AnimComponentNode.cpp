@@ -12,8 +12,11 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
+
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
+#include <Maestro/Bus/MovieSystemBus.h>
+
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -27,7 +30,9 @@ CAnimComponentNode::CAnimComponentNode(int id)
     , m_componentTypeId(AZ::Uuid::CreateNull())
     , m_componentId(AZ::InvalidComponentId)
     , m_skipComponentAnimationUpdates(false)
+    , m_movieSystem(nullptr)
 {
+    Maestro::MovieSystemRequestBus::BroadcastResult(m_movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
 }
 
 CAnimComponentNode::CAnimComponentNode()
@@ -391,7 +396,8 @@ void CAnimComponentNode::SetPos(float time, const AZ::Vector3& pos)
 {
     if (m_componentTypeId == AZ::Uuid(AZ::EditorTransformComponentTypeId) || m_componentTypeId == AzFramework::TransformComponent::TYPEINFO_Uuid())
     {
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (GetParent()->GetFlags() & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+
+        bool bDefault = !(m_movieSystem->IsRecording() && (GetParent()->GetFlags() & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
 
         IAnimTrack* posTrack = GetTrackForParameter(AnimParamType::Position);
         if (posTrack)
@@ -428,7 +434,7 @@ void CAnimComponentNode::SetRotate(float time, const AZ::Quaternion& rotation)
 {
     if (m_componentTypeId == AZ::Uuid(AZ::EditorTransformComponentTypeId) || m_componentTypeId == AzFramework::TransformComponent::TYPEINFO_Uuid())
     {
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (GetParent()->GetFlags() & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+        bool bDefault = !(m_movieSystem->IsRecording() && (GetParent()->GetFlags() & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
 
         IAnimTrack* rotTrack = GetTrackForParameter(AnimParamType::Rotation);
         if (rotTrack)
@@ -489,7 +495,7 @@ void CAnimComponentNode::SetScale(float time, const AZ::Vector3& scale)
 {
     if (m_componentTypeId == AZ::Uuid(AZ::EditorTransformComponentTypeId) || m_componentTypeId == AzFramework::TransformComponent::TYPEINFO_Uuid())
     {
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (GetParent()->GetFlags() & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+        bool bDefault = !(m_movieSystem->IsRecording() && (GetParent()->GetFlags() & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
 
         IAnimTrack* scaleTrack = GetTrackForParameter(AnimParamType::Scale);
         if (scaleTrack)

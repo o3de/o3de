@@ -7,9 +7,12 @@
  */
 #include "SequenceComponent.h"
 
+#include <IMovieSystem.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Maestro/Bus/SequenceAgentComponentBus.h>
+#include <Maestro/Bus/MovieSystemBus.h>
 
 #include <Cinematics/Movie.h>
 #include <Cinematics/AnimSplineTrack.h>
@@ -186,7 +189,9 @@ namespace Maestro
     {
         Component::Init();
 
-        if (gEnv && gEnv->pMovieSystem)
+        Maestro::MovieSystemRequestBus::BroadcastResult(m_movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+        if (m_movieSystem)
         {
             if (m_sequence)
             {
@@ -194,12 +199,12 @@ namespace Maestro
                 m_sequence->InitPostLoad();
 
                 // Register our deserialized sequence with the MovieSystem
-                gEnv->pMovieSystem->AddSequence(m_sequence.get());
+                m_movieSystem->AddSequence(m_sequence.get());
             }
         }
         else
         {
-            AZ_Warning("TrackView", false, "SequenceComponent::Init() called without gEnv->pMovieSystem initialized yet, skipping creation of %s sequence.", m_entity->GetName().c_str());
+            AZ_Warning("TrackView", false, "SequenceComponent::Init() called without m_movieSystem initialized yet, skipping creation of %s sequence.", m_entity->GetName().c_str());
         }
     }
 
@@ -209,9 +214,9 @@ namespace Maestro
 
         if (m_sequence != nullptr && m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
         {
-            if (gEnv != nullptr && gEnv->pMovieSystem != nullptr && m_sequence.get() != nullptr)
+            if (gEnv != nullptr && m_movieSystem != nullptr && m_sequence.get() != nullptr)
             {
-                gEnv->pMovieSystem->OnSequenceActivated(m_sequence.get());
+                m_movieSystem->OnSequenceActivated(m_sequence.get());
             }
         }
     }
@@ -221,11 +226,11 @@ namespace Maestro
         Maestro::SequenceComponentRequestBus::Handler::BusDisconnect();
 
         // Remove this sequence from the game movie system.
-        if (nullptr != gEnv->pMovieSystem)
+        if (nullptr != m_movieSystem)
         {
             if (m_sequence)
             {
-                gEnv->pMovieSystem->RemoveSequence(m_sequence.get());
+                m_movieSystem->RemoveSequence(m_sequence.get());
             }
         }
     }
@@ -275,7 +280,7 @@ namespace Maestro
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, /*float startTime =*/ -FLT_MAX, /*float endTime =*/ -FLT_MAX);
+            m_movieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, /*float startTime =*/ -FLT_MAX, /*float endTime =*/ -FLT_MAX);
         }
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -283,7 +288,7 @@ namespace Maestro
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, startTime, endTime);
+            m_movieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, startTime, endTime);
         }
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -291,7 +296,7 @@ namespace Maestro
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->StopSequence(m_sequence.get());
+            m_movieSystem->StopSequence(m_sequence.get());
         }
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -315,7 +320,7 @@ namespace Maestro
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->SetPlayingSpeed(m_sequence.get(), newSpeed);
+            m_movieSystem->SetPlayingSpeed(m_sequence.get(), newSpeed);
         }
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +329,7 @@ namespace Maestro
         if (m_sequence)
         {
             newTime = clamp_tpl(newTime, m_sequence.get()->GetTimeRange().start, m_sequence.get()->GetTimeRange().end);
-            gEnv->pMovieSystem->SetPlayingTime(m_sequence.get(), newTime);
+            m_movieSystem->SetPlayingTime(m_sequence.get(), newTime);
         }
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -332,7 +337,7 @@ namespace Maestro
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().end);
+            m_movieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().end);
         }
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -340,7 +345,7 @@ namespace Maestro
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().start);
+            m_movieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().start);
         }
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,7 +353,7 @@ namespace Maestro
     {
         if (m_sequence)
         {
-            return gEnv->pMovieSystem->GetPlayingTime(m_sequence.get());
+            return m_movieSystem->GetPlayingTime(m_sequence.get());
         }
         return .0f;
     }
@@ -357,7 +362,7 @@ namespace Maestro
     {
         if (m_sequence)
         {
-            return gEnv->pMovieSystem->GetPlayingSpeed(m_sequence.get());
+            return m_movieSystem->GetPlayingSpeed(m_sequence.get());
         }
         return 1.0f;
     }

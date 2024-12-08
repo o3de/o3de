@@ -85,6 +85,7 @@ namespace Maestro
 
     void MaestroSystemComponent::Activate()
     {
+        MovieSystemRequestBus::Handler::BusConnect();
         MaestroRequestBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
     }
@@ -93,6 +94,7 @@ namespace Maestro
     {
         MaestroRequestBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
+        MovieSystemRequestBus::Handler::BusDisconnect();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,18 +104,13 @@ namespace Maestro
         {
             // Create the movie System
             m_movieSystem.reset(new CMovieSystem(&system));
-            gEnv->pMovieSystem = m_movieSystem.get();
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void MaestroSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
     {
-        if (gEnv && gEnv->pMovieSystem)
-        {
-            gEnv->pMovieSystem = nullptr;
-            // delete m_movieSystem
-            m_movieSystem.reset();
-        }
+        // delete m_movieSystem
+        m_movieSystem.reset();
     }
 }

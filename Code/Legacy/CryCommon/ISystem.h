@@ -590,7 +590,7 @@ struct SSystemGlobalEnvironment
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
-    IMovieSystem*              pMovieSystem;
+    //IMovieSystem*              pMovieSystem;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_4

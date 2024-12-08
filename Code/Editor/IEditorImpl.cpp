@@ -62,6 +62,8 @@
 
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
+#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
+
 static CCryEditDoc * theDocument;
 #include <QMimeData>
 #include <QMessageBox>
@@ -124,7 +126,10 @@ CEditorImpl::CEditorImpl()
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
     m_pSequenceManager = new CTrackViewSequenceManager;
-    m_pAnimationContext = new CAnimationContext;
+
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    m_pAnimationContext = new CAnimationContext(movieSystem);
 
     DetectVersion();
     RegisterTools();

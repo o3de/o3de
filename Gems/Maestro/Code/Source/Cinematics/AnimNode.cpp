@@ -40,6 +40,8 @@
 #include "Maestro/Types/AnimNodeType.h"
 #include "Maestro/Types/AnimParamType.h"
 
+#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
+
 //////////////////////////////////////////////////////////////////////////
 // Old deprecated IDs
 //////////////////////////////////////////////////////////////////////////
@@ -675,6 +677,7 @@ CAnimNode::CAnimNode(const CAnimNode& other)
     , m_pParentNode(other.m_pParentNode)
     , m_nLoadedParentNodeId(other.m_nLoadedParentNodeId)
     , m_expanded(other.m_expanded)
+    , m_movieSystem(other.m_movieSystem)
 {
     // m_bIgnoreSetParam not copied
 }
@@ -693,6 +696,8 @@ CAnimNode::CAnimNode(const int id, AnimNodeType nodeType)
     m_pParentNode = 0;
     m_nLoadedParentNodeId = 0;
     m_expanded = true;
+
+    Maestro::MovieSystemRequestBus::BroadcastResult(m_movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -770,7 +775,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, float value)
     if (pTrack && pTrack->GetValueType() == AnimValueType::Float)
     {
         // Float track.
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+        bool bDefault = !(m_movieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
         pTrack->SetValue(time, value, bDefault);
         return true;
     }
@@ -789,7 +794,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector
     if (pTrack && pTrack->GetValueType() == AnimValueType::Vector)
     {
         // Vec3 track.
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+        bool bDefault = !(m_movieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
         pTrack->SetValue(time, value, bDefault);
         return true;
     }
@@ -808,7 +813,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector
     if (pTrack && pTrack->GetValueType() == AnimValueType::Vector4)
     {
         // Vec4 track.
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+        bool bDefault = !(m_movieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
         pTrack->SetValue(time, value, bDefault);
         return true;
     }
@@ -1236,3 +1241,10 @@ bool CAnimNode::GetExpanded() const
 {
     return m_expanded;
 }
+
+IMovieSystem* CAnimNode::GetMovieSystem() const
+{
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    return movieSystem;
+};

@@ -9,10 +9,6 @@
 
 // Description : Base of all Animation Nodes
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_ANIMNODE_H
-#define CRYINCLUDE_CRYMOVIE_ANIMNODE_H
-
 #pragma once
 
 #include "IMovieSystem.h"
@@ -62,7 +58,7 @@ public:
     int GetFlags() const override;
     bool AreFlagsSetOnNodeOrAnyParent(EAnimNodeFlags flagsToCheck) const override;
 
-    IMovieSystem*   GetMovieSystem() const override { return gEnv->pMovieSystem; };
+    IMovieSystem* GetMovieSystem() const override;
 
     virtual void OnStart() {}
     void OnReset() override {}
@@ -176,7 +172,7 @@ protected:
     // sets track animNode pointer to this node and sorts tracks
     void RegisterTrack(IAnimTrack* pTrack);
 
-    CMovieSystem* GetCMovieSystem() const { return (CMovieSystem*)gEnv->pMovieSystem; }
+    CMovieSystem* GetCMovieSystem() const { return static_cast<CMovieSystem*>(m_movieSystem); }
 
     bool NeedToRender() const override { return false; }
 
@@ -203,6 +199,7 @@ protected:
     int m_flags;
     unsigned int m_bIgnoreSetParam : 1; // Internal flags.
     bool m_expanded;
+    IMovieSystem* m_movieSystem;
 
 private:
     void SortTracks();
@@ -213,4 +210,3 @@ private:
     AZStd::mutex m_updateDynamicParamsLock;
 };
 
-#endif // CRYINCLUDE_CRYMOVIE_ANIMNODE_H

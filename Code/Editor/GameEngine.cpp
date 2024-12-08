@@ -37,6 +37,7 @@
 
 // CryCommon
 #include <CryCommon/MainThreadRenderRequestBus.h>
+#include <Maestro/Bus/MovieSystemBus.h>
 
 // Editor
 #include "CryEdit.h"
@@ -242,7 +243,13 @@ CGameEngine::~CGameEngine()
 {
 AZ_POP_DISABLE_WARNING
     GetIEditor()->UnregisterNotifyListener(this);
-    m_pISystem->GetIMovieSystem()->SetCallback(nullptr);
+
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
+    {
+        movieSystem->SetCallback(nullptr);
+    }
 
     delete m_pISystem;
     m_pISystem = nullptr;
@@ -407,9 +414,11 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     SetEditorCoreEnvironment(gEnv);
 
-    if (gEnv && gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->EnablePhysicsEvents(m_bSimulationMode);
+        movieSystem->EnablePhysicsEvents(m_bSimulationMode);
     }
 
     CLogFile::AboutSystem();
@@ -497,10 +506,19 @@ void CGameEngine::SwitchToInGame()
 
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
-    m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
+    {
+        movieSystem->EnablePhysicsEvents(true);
+    }
+
     m_bInGameMode = true;
 
-    m_pISystem->GetIMovieSystem()->Reset(true, false);
+    if (movieSystem)
+    {
+        movieSystem->Reset(true, false);
+    }
 
     // Transition to runtime entity context.
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StartPlayInEditor);
@@ -522,15 +540,23 @@ void CGameEngine::SwitchToInEditor()
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StopPlayInEditor);
 
     // Reset movie system
-    for (int i = m_pISystem->GetIMovieSystem()->GetNumPlayingSequences(); --i >= 0;)
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
     {
-        m_pISystem->GetIMovieSystem()->GetPlayingSequence(i)->Deactivate();
+        for (int i = movieSystem->GetNumPlayingSequences(); --i >= 0;)
+        {
+            movieSystem->GetPlayingSequence(i)->Deactivate();
+        }
+        movieSystem->Reset(false, false);
     }
-    m_pISystem->GetIMovieSystem()->Reset(false, false);
 
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
-    m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(m_bSimulationMode);
+    if (movieSystem)
+    {
+        movieSystem->EnablePhysicsEvents(m_bSimulationMode);
+    }
 
     m_bInGameMode = false;
 
@@ -634,7 +660,12 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
         return;
     }
 
-    m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(enabled);
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
+    {
+        movieSystem->EnablePhysicsEvents(enabled);
+    }
 
     if (enabled)
     {

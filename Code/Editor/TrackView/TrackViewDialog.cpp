@@ -40,6 +40,7 @@
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
+#include <Maestro/Bus/MovieSystemBus.h>
 
 // Editor
 #include "Settings.h"
@@ -883,9 +884,12 @@ void CTrackViewDialog::Update()
     // The active camera node means two conditions:
     // 1. Sequence camera is currently active.
     // 2. The camera which owns this node has been set as the current camera by the director node.
-    if (gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    if (movieSystem)
     {
-        AZ::EntityId camId = gEnv->pMovieSystem->GetCameraParams().cameraEntityId;
+        AZ::EntityId camId = movieSystem->GetCameraParams().cameraEntityId;
         if (camId.IsValid())
         {
             AZ::Entity* entity = nullptr;
