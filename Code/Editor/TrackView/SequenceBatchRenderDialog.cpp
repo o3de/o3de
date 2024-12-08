@@ -27,6 +27,7 @@
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
+#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 
 // Editor
 #include "MainWindow.h"
@@ -189,11 +190,14 @@ void CSequenceBatchRenderDialog::OnInitDialog()
 
     // Fill the sequence combo box.
     bool activeSequenceWasSet = false;
-    if (GetIEditor()->GetMovieSystem())
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    if (movieSystem)
     {
-        for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
+        for (int k = 0; k < movieSystem->GetNumSequences(); ++k)
         {
-            IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->GetSequence(k);
+            IAnimSequence* pSequence = movieSystem->GetSequence(k);
             m_ui->m_sequenceCombo->addItem(pSequence->GetName());
             if (pSequence->IsActivated())
             {
@@ -537,9 +541,13 @@ void CSequenceBatchRenderDialog::OnGo()
         m_ui->m_pGoBtn->setText("Cancel");
         m_ui->m_pGoBtn->setIcon(QPixmap(":/Trackview/clapperboard_cancel.png"));
         // Inform the movie system that it soon will be in a batch-rendering mode.
-        if (GetIEditor()->GetMovieSystem())
+
+        IMovieSystem* movieSystem = nullptr;
+        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+        if (movieSystem)
         {
-            GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(true);
+            movieSystem->EnableBatchRenderMode(true);
         }
 
         // Initialize the context.
@@ -598,7 +606,10 @@ void CSequenceBatchRenderDialog::OnSequenceSelected()
 {
     // Get the selected sequence.
     const QString seqName = m_ui->m_sequenceCombo->currentText();
-    IAnimSequence* pSequence = GetIEditor()->GetMovieSystem() ? GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data()) : nullptr;
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    IAnimSequence* pSequence = movieSystem ? movieSystem->FindLegacySequenceByName(seqName.toUtf8().data()) : nullptr;
     if (pSequence)
     {
         // Adjust the frame range.
@@ -1003,7 +1014,12 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
         *TrackView::SceneFromGameEntityContext(), "TrackViewSequencePipeline", renderItem.resW, renderItem.resH);
     UpdateAtomOutputFrameCaptureView(m_atomOutputFrameCapture, renderItem.resW, renderItem.resH);
 
-    GetIEditor()->GetMovieSystem()->EnableFixedStepForCapture(m_renderContext.captureOptions.timeStep);
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
+    {
+        movieSystem->EnableFixedStepForCapture(m_renderContext.captureOptions.timeStep);
+    }
 
     // The capturing doesn't actually start here. It just flags the warming-up and
     // once it's done, then the capturing really begins.
@@ -1038,7 +1054,12 @@ void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
     // Pause the movie player on the first frame
     if (m_renderContext.framesSpentInCurrentPhase++ == 0)
     {
-        GetIEditor()->GetMovieSystem()->Pause();
+        IMovieSystem* movieSystem = nullptr;
+        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        if (movieSystem)
+        {
+            movieSystem->Pause();
+        }
     }
     // Spend 30 frames warming up after changing to game mode.
     else if (m_renderContext.framesSpentInCurrentPhase++ > 30)
@@ -1053,9 +1074,14 @@ void CSequenceBatchRenderDialog::OnUpdateBeginPlayingSequence()
 
     SRenderItem renderItem = m_renderItems[m_renderContext.currentItemIndex];
 
-    GetIEditor()->GetMovieSystem()->AddMovieListener(renderItem.pSequence, this);
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
+    {
+        movieSystem->AddMovieListener(renderItem.pSequence, this);
+        movieSystem->Resume();
+    }
 
-    GetIEditor()->GetMovieSystem()->Resume();
 
     // Set the time range for this render, back it up 1 frame so the capture will start
     // exactly on the first frame.
@@ -1064,7 +1090,10 @@ void CSequenceBatchRenderDialog::OnUpdateBeginPlayingSequence()
     renderItem.pSequence->SetTimeRange(newRange);
 
     // Start the sequence playing
-    GetIEditor()->GetMovieSystem()->SetPlayingTime(renderItem.pSequence, newRange.start);
+    if (movieSystem)
+    {
+        movieSystem->SetPlayingTime(renderItem.pSequence, newRange.start);
+    }
 
     EnterCaptureState(CaptureState::Capturing);
 }
@@ -1084,9 +1113,12 @@ void CSequenceBatchRenderDialog::OnUpdateCapturing()
     // Progress bar
     IAnimSequence* pCurSeq = m_renderItems[m_renderContext.currentItemIndex].pSequence;
     Range rng = pCurSeq->GetTimeRange();
-    float elapsedTime = GetIEditor()->GetMovieSystem()->GetPlayingTime(pCurSeq) - rng.start;
-    int percentage
-        = int(100.0f * (m_renderContext.spentTime + elapsedTime) / m_renderContext.expectedTotalTime);
+
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    
+    float elapsedTime = movieSystem ? movieSystem->GetPlayingTime(pCurSeq) - rng.start : 0.f;
+    int percentage = int(100.0f * (m_renderContext.spentTime + elapsedTime) / m_renderContext.expectedTotalTime);
     m_ui->m_progressBar->setValue(percentage);
 
     // Progress message
@@ -1099,13 +1131,20 @@ void CSequenceBatchRenderDialog::OnUpdateCapturing()
 
 void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
 {
-    GetIEditor()->GetMovieSystem()->DisableFixedStepForCapture();
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
 
-    // Important: End batch render mode BEFORE leaving Game Mode.
-    // Otherwise track view will set the active camera based on the directors in the current sequence while leaving game mode
-    GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(false);
+    if (movieSystem)
+    {
+        movieSystem->DisableFixedStepForCapture();
 
-    GetIEditor()->GetMovieSystem()->RemoveMovieListener(sequence, this);
+        // Important: End batch render mode BEFORE leaving Game Mode.
+        // Otherwise track view will set the active camera based on the directors in the current sequence while leaving game mode
+        movieSystem->EnableBatchRenderMode(false);
+
+        movieSystem->RemoveMovieListener(sequence, this);
+
+    }
     GetIEditor()->SetInGameMode(false);
     GetIEditor()->GetGameEngine()->Update();        // Update is needed because SetInGameMode() queues game mode, Update() executes it.
 
@@ -1328,12 +1367,18 @@ void CSequenceBatchRenderDialog::OnKickIdle()
 
         if (canBeginFrameCapture())
         {
-            // update the time so the frame number can be calculated in StartCapture()
-            IAnimSequence* sequence = m_renderItems[m_renderContext.currentItemIndex].pSequence;
-            m_renderContext.captureOptions.time = GetIEditor()->GetMovieSystem()->GetPlayingTime(sequence);
+            IMovieSystem* movieSystem = nullptr;
+            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
 
-            GetIEditor()->GetMovieSystem()->StartCapture(m_renderContext.captureOptions, ++m_renderContext.frameNumber);
-            GetIEditor()->GetMovieSystem()->ControlCapture();
+            if (movieSystem)
+            {
+                // update the time so the frame number can be calculated in StartCapture()
+                IAnimSequence* sequence = m_renderItems[m_renderContext.currentItemIndex].pSequence;
+                m_renderContext.captureOptions.time = movieSystem->GetPlayingTime(sequence);
+
+                movieSystem->StartCapture(m_renderContext.captureOptions, ++m_renderContext.frameNumber);
+                movieSystem->ControlCapture();
+            }
         }
 
         // if we're not capturing or we're not currently waiting for the current frame to finish
@@ -1355,11 +1400,18 @@ void CSequenceBatchRenderDialog::OnKickIdle()
                 m_renderContext.captureOptions.folder.c_str(), fileName.c_str(), filePath, /*caseInsensitive=*/true,
                 /*normalize=*/false);
 
+            IMovieSystem* movieSystem = nullptr;
+            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
             // track view callback after each frame is captured
-            const auto captureFinishedCallback = [this]() {
+            const auto captureFinishedCallback = [this, movieSystem]()
+            {
                 m_renderContext.capturingFrame = false;
-                GetIEditor()->GetMovieSystem()->EndCapture();
-                GetIEditor()->GetMovieSystem()->ControlCapture();
+                if (movieSystem)
+                {
+                    movieSystem->EndCapture();
+                    movieSystem->ControlCapture();
+                }
             };
 
             const auto imageFormatExtension = m_ui->m_imageFormatCombo->currentText();
@@ -1409,7 +1461,12 @@ void CSequenceBatchRenderDialog::OnCancelRender()
     {
         // In the capturing state, abort the sequence, OnMovieEvent with an abort will fire and cause
         // the transition to CaptureState::End.
-        GetIEditor()->GetMovieSystem()->AbortSequence(m_renderItems[m_renderContext.currentItemIndex].pSequence);
+        IMovieSystem* movieSystem = nullptr;
+        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        if (movieSystem)
+        {
+            movieSystem->AbortSequence(m_renderItems[m_renderContext.currentItemIndex].pSequence);
+        }
     }
     else if (m_renderContext.captureState == CaptureState::EnteringGameMode)
     {
@@ -1462,6 +1519,9 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
 
         OnClearRenderItems();
 
+        IMovieSystem* movieSystem = nullptr;
+        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
         for (int i = 0; i < batchRenderListNode->getChildCount(); ++i)
         {
             // Get an item.
@@ -1470,7 +1530,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
 
             // sequence
             const QString seqName = itemNode->getAttr("sequence");
-            item.pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
+            item.pSequence = movieSystem ? movieSystem->FindLegacySequenceByName(seqName.toUtf8().data()) : nullptr;
             if (item.pSequence == nullptr)
             {
                 QMessageBox::warning(this, tr("Sequence not found"), tr("A sequence of '%1' not found! This'll be skipped.").arg(seqName));
@@ -1597,7 +1657,10 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
         return false;
     }
     // sequence
-    item.pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    item.pSequence = movieSystem ? movieSystem->FindLegacySequenceByName(seqName.toUtf8().data()) : nullptr;
     assert(item.pSequence);
     // director
     for (int i = 0; i < item.pSequence->GetNodeCount(); ++i)

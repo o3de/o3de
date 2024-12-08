@@ -49,6 +49,7 @@
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
 #include "Undo/Undo.h"
+#include "Maestro/Bus/MovieSystemBus.h"
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -278,7 +279,13 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
     }
 
     GetIEditor()->Notify(eNotify_OnBeginSceneOpen);
-    GetIEditor()->GetMovieSystem()->RemoveAllSequences();
+
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
+    {
+        movieSystem->RemoveAllSequences();
+    }
 
     {
         // Start recording errors

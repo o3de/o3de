@@ -113,7 +113,9 @@ void CTrackViewDialog::RegisterViewClass()
     opts.showOnToolsToolbar = true;
     opts.toolbarIcon = ":/Menu/trackview_editor.svg";
 
-    if (GetIEditor()->GetMovieSystem())
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    if (movieSystem)
     {
         AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
         GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, LyViewPane::TrackView);
@@ -816,9 +818,12 @@ void CTrackViewDialog::UpdateActions()
         m_actions[ID_ADDNODE]->setEnabled(false);
     }
 
-    if (GetIEditor()->GetMovieSystem())
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    if (movieSystem)
     {
-        m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(GetIEditor()->GetMovieSystem()->GetNumSequences() > 0 && !m_enteringGameOrSimModeLock);
+        m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(movieSystem->GetNumSequences() > 0 && !m_enteringGameOrSimModeLock);
     }
     else
     {
@@ -1035,7 +1040,10 @@ void CTrackViewDialog::OnAddSequence()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReloadSequences()
 {
-    if (!GetIEditor()->GetMovieSystem() || m_bIgnoreUpdates || m_bDoingUndoOperation)
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    if (!movieSystem || m_bIgnoreUpdates || m_bDoingUndoOperation)
     {
         return;
     }
@@ -1540,12 +1548,17 @@ void CTrackViewDialog::OnAddSelectedNode()
         // check to make sure all nodes were added and notify user if they weren't
         if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
         {
-            IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
+            IMovieSystem* movieSystem = nullptr;
+            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
 
-            QMessageBox::information(this, tr("Track View Warning"), tr(movieSystem->GetUserNotificationMsgs().c_str()));
+            if (movieSystem)
+            {
+                QMessageBox::information(this, tr("Track View Warning"), tr(movieSystem->GetUserNotificationMsgs().c_str()));
 
-            // clear the notification log now that we've consumed and presented them.
-            movieSystem->ClearUserNotificationMsgs();
+                // clear the notification log now that we've consumed and presented them.
+                movieSystem->ClearUserNotificationMsgs();
+            }
+
         }
 
         UpdateActions();

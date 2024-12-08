@@ -25,6 +25,7 @@
 #include <CryCommon/Maestro/Types/AnimValueType.h>
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
+#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 #include <CryCommon/MathConversion.h>
 
 // Editor
@@ -263,7 +264,10 @@ bool CTrackViewSequence::IsAncestorOf(CTrackViewSequence* pSequence) const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewSequence::BeginCutScene(const bool bResetFx) const
 {
-    IMovieUser* pMovieUser = GetIEditor()->GetMovieSystem()->GetUser();
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    IMovieUser* pMovieUser = movieSystem ? movieSystem->GetUser() : nullptr;
 
     if (pMovieUser)
     {
@@ -274,7 +278,10 @@ void CTrackViewSequence::BeginCutScene(const bool bResetFx) const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewSequence::EndCutScene() const
 {
-    IMovieUser* pMovieUser = GetIEditor()->GetMovieSystem()->GetUser();
+    IMovieSystem* movieSystem = nullptr;
+    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+    IMovieUser* pMovieUser = movieSystem ? movieSystem->GetUser() : nullptr;
 
     if (pMovieUser)
     {

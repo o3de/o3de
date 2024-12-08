@@ -12,6 +12,7 @@
 #include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Bus/MovieSystemBus.h>
 
 #include <AzCore/Math/Uuid.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -65,12 +66,17 @@ namespace Maestro
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
-            IAnimSequence* sequence = editor->GetMovieSystem()->FindSequenceById(m_sequenceId);
-            ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
-
-            if (sequence && pSequenceManager && pSequenceManager->GetSequenceByEntityId(sequence->GetSequenceEntityId()))
+            IMovieSystem* movieSystem = nullptr;
+            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+            if (movieSystem)
             {
-                pSequenceManager->OnDeleteSequenceEntity(sequence->GetSequenceEntityId());
+                IAnimSequence* sequence = movieSystem->FindSequenceById(m_sequenceId);
+                ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
+
+                if (sequence && pSequenceManager && pSequenceManager->GetSequenceByEntityId(sequence->GetSequenceEntityId()))
+                {
+                    pSequenceManager->OnDeleteSequenceEntity(sequence->GetSequenceEntityId());
+                }
             }
         }
 

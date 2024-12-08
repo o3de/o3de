@@ -12,6 +12,7 @@
 #include "TrackViewPythonFuncs.h"
 
 // CryCommon
+#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
@@ -188,14 +189,20 @@ namespace
             throw std::runtime_error("No sequence is active");
         }
 
-        const AnimNodeType nodeType = GetIEditor()->GetMovieSystem()->GetNodeTypeFromString(nodeTypeString);
-        if (nodeType == AnimNodeType::Invalid)
+        IMovieSystem* movieSystem = nullptr;
+        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        if (movieSystem)
         {
-            throw std::runtime_error("Invalid node type");
+            const AnimNodeType nodeType = movieSystem->GetNodeTypeFromString(nodeTypeString);
+            if (nodeType == AnimNodeType::Invalid)
+            {
+                throw std::runtime_error("Invalid node type");
+            }
+
+            CUndo undo("Create anim node");
+            pSequence->CreateSubNode(nodeName, nodeType);
         }
 
-        CUndo undo("Create anim node");
-        pSequence->CreateSubNode(nodeName, nodeType);
     }
 
     void PyTrackViewAddSelectedEntities()
@@ -321,15 +328,20 @@ namespace
             throw std::runtime_error("Couldn't find node");
         }
 
-        const CAnimParamType paramType = GetIEditor()->GetMovieSystem()->GetParamTypeFromString(paramName);
-        CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType, index);
-        if (!pTrack)
+        IMovieSystem* movieSystem = nullptr;
+        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        if (movieSystem)
         {
-            throw std::runtime_error("Could not find track");
-        }
+            const CAnimParamType paramType = movieSystem->GetParamTypeFromString(paramName);
+            CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType, index);
+            if (!pTrack)
+            {
+                throw std::runtime_error("Could not find track");
+            }
 
-        CUndo undo("Delete TrackView track");
-        pNode->RemoveTrack(pTrack);
+            CUndo undo("Delete TrackView track");
+            pNode->RemoveTrack(pTrack);
+        }
     }
 
     int PyTrackViewGetNumNodes(AZStd::string_view parentDirectorName)
@@ -398,9 +410,12 @@ namespace
             throw std::runtime_error("Couldn't find node");
         }
 
-        if (GetIEditor()->GetMovieSystem())
+        IMovieSystem* movieSystem = nullptr;
+        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+
+        if (movieSystem)
         {
-            const CAnimParamType paramType = GetIEditor()->GetMovieSystem()->GetParamTypeFromString(paramName);
+            const CAnimParamType paramType = movieSystem->GetParamTypeFromString(paramName);
             CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType, index);
             if (!pTrack)
             {
