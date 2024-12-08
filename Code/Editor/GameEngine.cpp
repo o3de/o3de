@@ -517,7 +517,9 @@ void CGameEngine::SwitchToInGame()
 
     if (movieSystem)
     {
-        movieSystem->Reset(true, false);
+        constexpr bool playOnReset = true;
+        constexpr bool seekToStart = false;
+        movieSystem->Reset(playOnReset, seekToStart);
     }
 
     // Transition to runtime entity context.
@@ -548,7 +550,9 @@ void CGameEngine::SwitchToInEditor()
         {
             movieSystem->GetPlayingSequence(i)->Deactivate();
         }
-        movieSystem->Reset(false, false);
+        constexpr bool playOnReset = false;
+        constexpr bool seekToStart = false;
+        movieSystem->Reset(playOnReset, seekToStart);
     }
 
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();

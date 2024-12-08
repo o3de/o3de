@@ -102,7 +102,6 @@ namespace Maestro
     {
         if (!startupParams.bSkipMovie)
         {
-            // Create the movie System
             m_movieSystem.reset(new CMovieSystem(&system));
         }
     }
@@ -110,7 +109,6 @@ namespace Maestro
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void MaestroSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
     {
-        // delete m_movieSystem
         m_movieSystem.reset();
     }
 }

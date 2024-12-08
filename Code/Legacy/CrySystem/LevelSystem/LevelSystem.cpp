@@ -541,7 +541,9 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         if (movieSystem)
         {
             // bSeekAllToStart needs to be false here as it's only of interest in the editor
-            movieSystem->Reset(true, false);
+            constexpr bool playOnReset = true;
+            constexpr bool seekToStart = false;
+            movieSystem->Reset(playOnReset, seekToStart);
         }
 
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
@@ -781,7 +783,9 @@ void CLevelSystem::UnloadLevel()
 
     if (movieSystem)
     {
-        movieSystem->Reset(false, false);
+        constexpr bool playOnReset = false;
+        constexpr bool seekToStart = false;
+        movieSystem->Reset(playOnReset, seekToStart);
         movieSystem->RemoveAllSequences();
     }
 
