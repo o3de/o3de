@@ -175,7 +175,7 @@ namespace
 
 #if defined(CARBONATED) && AZ_TRAIT_OS_PLATFORM_APPLE
                             // support ABGR colorization
-                            AZStd::swap(color.b, color.r); // swap R and B
+                            color.Set(color.GetZ(), color.GetY(), color.GetX()); // swap R and B
 #endif
                         }
                     }
