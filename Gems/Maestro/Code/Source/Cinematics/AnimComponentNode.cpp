@@ -914,7 +914,15 @@ void CAnimComponentNode::Animate(SAnimContext& ac)
 
                             Maestro::SequenceComponentRequests::AnimatedVector3Value value(vec);
                             Maestro::SequenceComponentRequests::AnimatedVector3Value prevValue(vec);
-                            Maestro::SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &Maestro::SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevValue, GetParentAzEntityId(), animatableAddress);
+                            bool wasInvoked = false;
+                            const AZ::EntityId& sequenceEntityId = m_pSequence->GetSequenceEntityId();
+                            Maestro::SequenceComponentRequestBus::EventResult(wasInvoked, sequenceEntityId, &Maestro::SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, prevValue, GetParentAzEntityId(), animatableAddress);
+
+                            if (!wasInvoked)
+                            {
+                                AZ_Info("CAnimComponentNode::Animate", "GetAnimatedPropertyValue failed for %s", sequenceEntityId.ToString().c_str());
+                            }
+
                             AZ::Vector3 vector3PrevValue;
                             prevValue.GetValue(vector3PrevValue);
 

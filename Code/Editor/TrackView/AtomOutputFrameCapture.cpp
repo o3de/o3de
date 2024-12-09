@@ -30,7 +30,7 @@ namespace TrackView
         pipelineDesc.m_mainViewTagName = "MainCamera"; // must be "MainCamera"
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = "MainPipelineRenderToTexture";
-        pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
+        pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 2;
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
 
         if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(m_renderPipeline->GetRootPass().get()))
@@ -54,6 +54,8 @@ namespace TrackView
             // This will be set again to mimic the active camera in UpdateView
             fp->SetViewAlias(m_view, m_targetView);
         }
+
+        m_pipelineCreated = true;
     }
 
     void AtomOutputFrameCapture::DestroyPipeline(AZ::RPI::Scene& scene)
@@ -68,6 +70,8 @@ namespace TrackView
         m_renderPipeline.reset();
         m_view.reset();
         m_targetView.reset();
+
+        m_pipelineCreated = false;
     }
 
     void AtomOutputFrameCapture::UpdateView(const AZ::Matrix3x4& cameraTransform, const AZ::Matrix4x4& cameraProjection, const AZ::RPI::ViewPtr targetView)

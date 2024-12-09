@@ -702,7 +702,7 @@ namespace Maestro
          * @param animatedEntityId the entity Id of the entity containing the animatedAddress
          * @param animatedAddress identifies the component and property to be set
          */
-        virtual void GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) = 0;
+        virtual bool GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) = 0;
 
         /** Returns the Uuid of the type for the property at the animatableAddress on the given entityId
         */

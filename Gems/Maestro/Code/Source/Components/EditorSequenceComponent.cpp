@@ -39,11 +39,14 @@ namespace Maestro
     EditorSequenceComponent::EditorSequenceComponent()
         : m_sequenceId(s_invalidSequenceId)
     {
+        AZ_Info("EditorSequenceComponent", "EditorSequenceComponent");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     EditorSequenceComponent::~EditorSequenceComponent()
     {
+        AZ_Info("EditorSequenceComponent", "~EditorSequenceComponent");
+
         bool isDuringUndo = false;
         AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
 
@@ -168,11 +171,19 @@ namespace Maestro
         Maestro::EditorSequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
         Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
+        AZ_Info("EditorSequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str());
+
         IEditor* editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
             editor->GetSequenceManager()->OnSequenceActivated(GetEntityId());
+        }
+
+        // Add this sequence into the game movie system.
+        if (m_sequence && nullptr != gEnv->pMovieSystem)
+        {
+            gEnv->pMovieSystem->AddSequence(m_sequence.get());
         }
     }
 
@@ -182,6 +193,14 @@ namespace Maestro
         Maestro::EditorSequenceComponentRequestBus::Handler::BusDisconnect();
         Maestro::SequenceComponentRequestBus::Handler::BusDisconnect();
 
+        AZ_Info("EditorSequenceComponent::Deactivate", "SequenceComponentRequestBus disconnected from %s", GetEntityId().ToString().c_str());
+
+        // Remove this sequence from the game movie system.
+        if (m_sequence && nullptr != gEnv->pMovieSystem)
+        {
+            gEnv->pMovieSystem->RemoveSequence(m_sequence.get());
+        }
+
         // disconnect from TickBus if we're connected (which would only happen if we deactivated during a pending property refresh)
         AZ::TickBus::Handler::BusDisconnect();
 
@@ -189,7 +208,7 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    void EditorSequenceComponent::AddEntityToAnimate(AZ::EntityId entityToAnimate)
+    bool EditorSequenceComponent::AddEntityToAnimate(AZ::EntityId entityToAnimate)
     {
         Maestro::EditorSequenceAgentComponent* agentComponent = nullptr;
         auto component = AzToolsFramework::FindComponent<EditorSequenceAgentComponent>::OnEntity(entityToAnimate);
@@ -229,6 +248,7 @@ namespace Maestro
         {
             agentComponent->ConnectSequence(GetEntityId());
         }
+        return true;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -328,11 +348,12 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    void EditorSequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
+    bool EditorSequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
         Maestro::SequenceAgentComponentRequestBus::Event(
             ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAnimatedPropertyValue, returnValue, animatableAddress);
+        return true;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////

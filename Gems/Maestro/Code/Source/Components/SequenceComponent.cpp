@@ -97,6 +97,12 @@ namespace Maestro
 
     SequenceComponent::SequenceComponent()
     {
+        AZ_Info("SequenceComponent", "SequenceComponent");
+    }
+
+    SequenceComponent::~SequenceComponent()
+    {
+        AZ_Info("SequenceComponent", "~SequenceComponent");
     }
 
     void SequenceComponent::Reflect(AZ::ReflectContext* context)
@@ -207,9 +213,11 @@ namespace Maestro
     {
         Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
-        if (m_sequence != nullptr && m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
+        AZ_Info("SequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str())
+
+        if (gEnv && gEnv->pMovieSystem)
         {
-            if (gEnv != nullptr && gEnv->pMovieSystem != nullptr && m_sequence.get() != nullptr)
+            if (m_sequence && m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
             {
                 gEnv->pMovieSystem->OnSequenceActivated(m_sequence.get());
             }
@@ -219,6 +227,11 @@ namespace Maestro
     void SequenceComponent::Deactivate()
     {
         Maestro::SequenceComponentRequestBus::Handler::BusDisconnect();
+
+        AZ_Info(
+            "SequenceComponent::Deactivate",
+            "SequenceComponentRequestBus disconnected from %s",
+            GetEntityId().ToString().c_str());
 
         // Remove this sequence from the game movie system.
         if (nullptr != gEnv->pMovieSystem)
@@ -243,12 +256,14 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    void SequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress)
+    bool SequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
 
         Maestro::SequenceAgentComponentRequestBus::Event(
             ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAnimatedPropertyValue, returnValue, animatableAddress);
+
+        return true;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
