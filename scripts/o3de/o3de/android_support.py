@@ -986,6 +986,9 @@ dependencies {{
 {dependencies}
     api 'androidx.core:core:1.1.0'
     implementation 'com.android.billingclient:billing:6.1.0'
+    implementation 'com.google.firebase:firebase-messaging:20.1.4'
+    implementation 'com.google.android.gms:play-services-games:19.0.0'
+    implementation 'com.google.android.gms:play-services-auth:18.0.0'  
 }}
 """
 
