@@ -57,7 +57,7 @@ CAnimSequence::CAnimSequence(IMovieSystem* pMovieSystem, uint32 id, SequenceType
     m_pEventStrings = aznew CAnimStringTable;
     m_expanded = true;
 
-    AZ_Info("CAnimSequence", "CAnimSequence type %i", (int)sequenceType);
+    AZ_Info("CAnimSequence", "CAnimSequence type %i", static_cast<int>(sequenceType));
 }
 
 //////////////////////////////////////////////////////////////////////////
