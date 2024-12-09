@@ -359,6 +359,11 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::CalibratedTimestamps))
+            {
+                InitializeTimeDomains();
+            }
+
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
                 delete[] queueInfo.pQueuePriorities;
@@ -967,6 +972,55 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             auto timeInNano = AZStd::chrono::nanoseconds(static_cast<AZStd::chrono::nanoseconds::rep>(physicalDevice.GetDeviceLimits().timestampPeriod * gpuTimestamp));
             return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(timeInNano);
+        }
+
+        AZStd::pair<uint64_t, uint64_t> Device::GetCalibratedTimestamp([[maybe_unused]] RHI::HardwareQueueClass queueClass)
+        {
+            if (!static_cast<const PhysicalDevice&>(GetPhysicalDevice())
+                     .IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::CalibratedTimestamps))
+            {
+                return { 0ull, AZStd::chrono::microseconds().count() };
+            }
+
+            uint64_t maxDeviation;
+            AZStd::pair<uint64_t, uint64_t> result;
+
+            AZStd::array<VkCalibratedTimestampInfoEXT, 2> timestampsInfos{
+                VkCalibratedTimestampInfoEXT{ VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, 0, VK_TIME_DOMAIN_DEVICE_EXT },
+                VkCalibratedTimestampInfoEXT{ VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, 0, m_hostTimeDomain }
+            };
+
+            GetContext().GetCalibratedTimestampsEXT(
+                m_nativeDevice, static_cast<uint32_t>(timestampsInfos.size()), timestampsInfos.data(), &result.first, &maxDeviation);
+            return result;
+        }
+
+        void Device::InitializeTimeDomains()
+        {
+            auto timeDomains{
+                static_cast<const PhysicalDevice&>(GetPhysicalDevice()).GetCalibratedTimeDomains(m_loaderContext->GetContext())
+            };
+
+            bool deviceTimeDomainFound{ false };
+
+            for (VkTimeDomainEXT timeDomain : timeDomains)
+            {
+                if (timeDomain == VK_TIME_DOMAIN_DEVICE_EXT)
+                {
+                    deviceTimeDomainFound = true;
+                }
+                // we prioritize VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT of the host time domains
+                else if (m_hostTimeDomain != VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT)
+                {
+                    m_hostTimeDomain = timeDomain;
+                }
+            }
+
+            // if there is no device time domain we reset the host one as this is pointless then
+            if (!deviceTimeDomainFound)
+            {
+                m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_EXT;
+            }
         }
 
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
