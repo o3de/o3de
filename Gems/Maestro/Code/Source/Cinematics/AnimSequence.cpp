@@ -28,6 +28,7 @@
 #include "ShadowsSetupNode.h"
 #include "SequenceTrack.h"
 #include "AnimNodeGroup.h"
+
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -35,11 +36,11 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 //////////////////////////////////////////////////////////////////////////
-CAnimSequence::CAnimSequence(IMovieSystem* pMovieSystem, uint32 id, SequenceType sequenceType)
+CAnimSequence::CAnimSequence(uint32 id, SequenceType sequenceType)
     : m_refCount(0)
+    , m_pMovieSystem(AZ::Interface<IMovieSystem>::Get())
 {
     m_nextGenId = 1;
-    m_pMovieSystem = pMovieSystem;
     m_flags = 0;
     m_pParentSequence = nullptr;
     m_timeRange.Set(0, 10);
@@ -60,7 +61,7 @@ CAnimSequence::CAnimSequence(IMovieSystem* pMovieSystem, uint32 id, SequenceType
 
 //////////////////////////////////////////////////////////////////////////
 CAnimSequence::CAnimSequence()
-    : CAnimSequence((gEnv) ? gEnv->pMovieSystem : nullptr, 0, SequenceType::SequenceComponent)
+    : CAnimSequence(0, SequenceType::SequenceComponent)
 {
 }
 

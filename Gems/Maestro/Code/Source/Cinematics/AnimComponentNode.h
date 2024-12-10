@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_ANIMCOMPONENTNODE_H
-#define CRYINCLUDE_CRYMOVIE_ANIMCOMPONENTNODE_H
-
 #pragma once
 
 #include "AnimNode.h"
@@ -22,6 +18,8 @@
  * All animation on AZ::Entity nodes are keyed to tracks on CAnimComponentNodes.
  *
  */
+
+struct IMovieSystem;
 
 class CAnimComponentNode
     : public CAnimNode
@@ -183,5 +181,7 @@ private:
     CCharacterTrackAnimator*   m_characterTrackAnimator = nullptr;
 
     bool m_skipComponentAnimationUpdates;
+
+    IMovieSystem* m_movieSystem;
 };
-#endif // CRYINCLUDE_CRYMOVIE_ANIMCOMPONENTNODE_H
+

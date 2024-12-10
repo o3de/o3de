@@ -410,11 +410,15 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
     {
         if (!owner.IsValid())
         {
-            GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(
-                AZStd::string::format(
-                    "Failed to add '%s' to sequence '%s', could not find associated entity. "
-                    "Please try adding the entity associated with '%s'.",
-                    originalNameStr.constData(), director->GetName().c_str(), originalNameStr.constData()));
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+            if (movieSystem)
+            {
+                movieSystem->LogUserNotificationMsg(
+                    AZStd::string::format(
+                        "Failed to add '%s' to sequence '%s', could not find associated entity. "
+                        "Please try adding the entity associated with '%s'.",
+                        originalNameStr.constData(), director->GetName().c_str(), originalNameStr.constData()));
+            }
 
             return nullptr;
         }
@@ -461,9 +465,13 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
         // Show an error if this node is a duplicate
         if (alreadyExists)
         {
-            GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(
-                AZStd::string::format("'%s' already exists in sequence '%s', skipping...",
-                    originalNameStr.constData(), director2->GetName().c_str()));
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+            if (movieSystem)
+            {
+                movieSystem->LogUserNotificationMsg(
+                    AZStd::string::format("'%s' already exists in sequence '%s', skipping...",
+                        originalNameStr.constData(), director2->GetName().c_str()));
+            }
 
             return nullptr;
         }
@@ -478,8 +486,12 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
     IAnimNode* newAnimNode = m_animSequence->CreateNode(animNodeType);
     if (!newAnimNode)
     {
-        GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(
-            AZStd::string::format("Failed to add '%s' to sequence '%s'.", nameStr.constData(), director->GetName().c_str()));
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
+        {
+            movieSystem->LogUserNotificationMsg(
+                AZStd::string::format("Failed to add '%s' to sequence '%s'.", nameStr.constData(), director->GetName().c_str()));
+        }
         return nullptr;
     }
 
@@ -1261,8 +1273,12 @@ CTrackViewAnimNodeBundle CTrackViewAnimNode::AddSelectedEntities(const AZStd::ve
             // If it has the same director than the current node, reject it
             if (existingNode->GetDirector() == GetDirector())
             {
-                GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(AZStd::string::format(
-                    "'%s' was already added to '%s', skipping...", entity->GetName().c_str(), GetDirector()->GetName().c_str()));
+                IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+                if (movieSystem)
+                {
+                    movieSystem->LogUserNotificationMsg(AZStd::string::format(
+                        "'%s' was already added to '%s', skipping...", entity->GetName().c_str(), GetDirector()->GetName().c_str()));
+                }
 
                 continue;
             }
@@ -1489,8 +1505,12 @@ void CTrackViewAnimNode::PasteNodeFromClipboard(AZStd::map<int, IAnimNode*>& cop
         return;
     }
 
-    AnimNodeType nodeType;
-    GetIEditor()->GetMovieSystem()->SerializeNodeType(nodeType, xmlNode, /*bLoading=*/ true, IAnimSequence::kSequenceVersion, m_animSequence->GetFlags());
+    AnimNodeType nodeType = AnimNodeType::Invalid;
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->SerializeNodeType(nodeType, xmlNode, /*bLoading=*/ true, IAnimSequence::kSequenceVersion, m_animSequence->GetFlags());
+    }
     
     if (nodeType == AnimNodeType::Component)
     {

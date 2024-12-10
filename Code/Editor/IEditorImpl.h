@@ -142,15 +142,6 @@ public:
     const QColor& GetColorByName(const QString& name) override;
 
     //////////////////////////////////////////////////////////////////////////
-    IMovieSystem* GetMovieSystem() override
-    {
-        if (m_pSystem)
-        {
-            return m_pSystem->GetIMovieSystem();
-        }
-        return nullptr;
-    };
-
     CPluginManager* GetPluginManager() override { return m_pPluginManager; }
     CViewManager* GetViewManager() override;
     CViewport* GetActiveView() override;

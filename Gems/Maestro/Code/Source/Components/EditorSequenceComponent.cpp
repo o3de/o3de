@@ -65,12 +65,16 @@ namespace Maestro
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
-            IAnimSequence* sequence = editor->GetMovieSystem()->FindSequenceById(m_sequenceId);
-            ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
-
-            if (sequence && pSequenceManager && pSequenceManager->GetSequenceByEntityId(sequence->GetSequenceEntityId()))
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+            if (movieSystem)
             {
-                pSequenceManager->OnDeleteSequenceEntity(sequence->GetSequenceEntityId());
+                IAnimSequence* sequence = movieSystem->FindSequenceById(m_sequenceId);
+                ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
+
+                if (sequence && pSequenceManager && pSequenceManager->GetSequenceByEntityId(sequence->GetSequenceEntityId()))
+                {
+                    pSequenceManager->OnDeleteSequenceEntity(sequence->GetSequenceEntityId());
+                }
             }
         }
 

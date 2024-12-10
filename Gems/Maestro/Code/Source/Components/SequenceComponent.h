@@ -6,10 +6,12 @@
  *
  */
 #pragma once
-#include <IMovieSystem.h>
 
 #include <AzCore/Component/Component.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
+
+struct IMovieSystem;
+struct IAnimSequence;
 
 namespace Maestro
 {
@@ -103,6 +105,8 @@ namespace Maestro
 
         // Reflects the entire CryMovie library
         static void ReflectCinematicsLib(AZ::ReflectContext* context);
+
+        IMovieSystem* m_movieSystem;
     };
 
 } // namespace Maestro
