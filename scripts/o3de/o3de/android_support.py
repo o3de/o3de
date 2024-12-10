@@ -1400,12 +1400,15 @@ class AndroidProjectGenerator(object):
 
         project_names = self.patch_and_transfer_android_libs()
 
-        project_names.extend(self.create_lumberyard_app(project_names))
-        
-# CARBONATED -- begin : Carbonated game only specific - add PlayerEngagement game gem to dependency lists
-       # project_names.append("playerengagement")        
+# CARBONATED -- begin : Carbonated game only specific - prepare to add Android project for PlayerEngagement gem into dependency lists
+        playerengagement_dir = self._build_dir / "playerengagement"
+        playerengagement_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy(self._project_path / "Gems/PlayerEngagement/Projects/Android/build.gradle", playerengagement_dir)
+        project_names.append("playerengagement")        
 # CARBONATED -- end
 
+        project_names.extend(self.create_lumberyard_app(project_names))
+        
 # CARBONATED -- begin : generate/append asset pack project to the project list 
         if self._aab_enable_asset_pack:
             self.generate_aab_asset_pack_project()            
