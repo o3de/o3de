@@ -263,7 +263,9 @@ bool CTrackViewSequence::IsAncestorOf(CTrackViewSequence* pSequence) const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewSequence::BeginCutScene(const bool bResetFx) const
 {
-    IMovieUser* pMovieUser = GetIEditor()->GetMovieSystem()->GetUser();
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
+    IMovieUser* pMovieUser = movieSystem ? movieSystem->GetUser() : nullptr;
 
     if (pMovieUser)
     {
@@ -274,7 +276,9 @@ void CTrackViewSequence::BeginCutScene(const bool bResetFx) const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewSequence::EndCutScene() const
 {
-    IMovieUser* pMovieUser = GetIEditor()->GetMovieSystem()->GetUser();
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
+    IMovieUser* pMovieUser = movieSystem ? movieSystem->GetUser() : nullptr;
 
     if (pMovieUser)
     {

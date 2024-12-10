@@ -229,7 +229,6 @@ CSystem::CSystem()
     m_bNoUpdate = false;
     m_iApplicationInstance = -1;
 
-
     m_pXMLUtils = new CXmlUtils(this);
 
     m_eRuntimeState = ESYSTEM_EVENT_LEVEL_UNLOAD;
@@ -241,6 +240,8 @@ CSystem::CSystem()
 #endif
 
     m_ConfigPlatform = CONFIG_INVALID_PLATFORM;
+
+    m_movieSystem = AZ::Interface<IMovieSystem>::Get();
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -362,7 +363,6 @@ void CSystem::ShutDown()
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
 
-    SAFE_RELEASE(m_env.pMovieSystem);
     SAFE_RELEASE(m_env.pCryFont);
     if (m_env.pConsole)
     {
@@ -769,7 +769,7 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
 //////////////////////////////////////////////////////////////////////////
 void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate)
 {
-    if (m_env.pMovieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
+    if (m_movieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
     {
         float fMovieFrameTime = fFrameTime;
 
@@ -780,11 +780,11 @@ void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, c
 
         if (bPreUpdate)
         {
-            m_env.pMovieSystem->PreUpdate(fMovieFrameTime);
+            m_movieSystem->PreUpdate(fMovieFrameTime);
         }
         else
         {
-            m_env.pMovieSystem->PostUpdate(fMovieFrameTime);
+            m_movieSystem->PostUpdate(fMovieFrameTime);
         }
     }
 }

@@ -90,6 +90,7 @@ protected:
 
 //////////////////////////////////////////////////////////////////////////
 CAnimationContext::CAnimationContext()
+    : m_movieSystem(AZ::Interface<IMovieSystem>::Get())
 {
     m_paused = 0;
     m_playing = false;
@@ -128,9 +129,9 @@ CAnimationContext::~CAnimationContext()
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::Init()
 {
-    if (gEnv->pMovieSystem)
+    if (m_movieSystem)
     {
-        gEnv->pMovieSystem->SetCallback(&s_movieCallback);
+        m_movieSystem->SetCallback(&s_movieCallback);
     }
 
     REGISTER_COMMAND("mov_goToFrameEditor", (ConsoleCommandFunc)GoToFrameCmd, 0, "Make a specified sequence go to a given frame time in the editor.");
@@ -346,9 +347,9 @@ void CAnimationContext::Pause()
         SetRecordingInternal(false);
     }
 
-    if (GetIEditor()->GetMovieSystem())
+    if (m_movieSystem)
     {
-        GetIEditor()->GetMovieSystem()->Pause();
+        m_movieSystem->Pause();
     }
 
     if (m_pSequence)
@@ -367,9 +368,9 @@ void CAnimationContext::Resume()
         SetRecordingInternal(true);
     }
 
-    if (GetIEditor()->GetMovieSystem())
+    if (m_movieSystem)
     {
-        GetIEditor()->GetMovieSystem()->Resume();
+        m_movieSystem->Resume();
     }
 
     if (m_pSequence)
@@ -414,39 +415,38 @@ void CAnimationContext::SetPlaying(bool playing)
     m_recording = false;
     SetRecordingInternal(false);
 
-    IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-    if (pMovieSystem)
+    if (m_movieSystem)
     {
         if (playing)
         {
-            pMovieSystem->Resume();
+            m_movieSystem->Resume();
 
             if (m_pSequence)
             {
                 m_pSequence->Resume();
 
-                IMovieUser* pMovieUser = pMovieSystem->GetUser();
+                IMovieUser* pMovieUser = m_movieSystem->GetUser();
 
                 if (pMovieUser)
                 {
                     m_pSequence->BeginCutScene(true);
                 }
             }
-            pMovieSystem->ResumeCutScenes();
+            m_movieSystem->ResumeCutScenes();
         }
         else
         {
-            pMovieSystem->Pause();
+            m_movieSystem->Pause();
 
             if (m_pSequence)
             {
                 m_pSequence->Pause();
             }
 
-            pMovieSystem->PauseCutScenes();
+            m_movieSystem->PauseCutScenes();
             if (m_pSequence)
             {
-                IMovieUser* pMovieUser = pMovieSystem->GetUser();
+                IMovieUser* pMovieUser = m_movieSystem->GetUser();
 
                 if (pMovieUser)
                 {
@@ -475,9 +475,9 @@ void CAnimationContext::Update()
 
         if (!m_recording)
         {
-            if (GetIEditor()->GetMovieSystem())
+            if (m_movieSystem)
             {
-                GetIEditor()->GetMovieSystem()->StillUpdate();
+                m_movieSystem->StillUpdate();
             }
         }
 
@@ -495,10 +495,10 @@ void CAnimationContext::Update()
 
         if (!m_recording)
         {
-            if (GetIEditor()->GetMovieSystem())
+            if (m_movieSystem)
             {
-                GetIEditor()->GetMovieSystem()->PreUpdate(frameDeltaTime);
-                GetIEditor()->GetMovieSystem()->PostUpdate(frameDeltaTime);
+                m_movieSystem->PreUpdate(frameDeltaTime);
+                m_movieSystem->PostUpdate(frameDeltaTime);
             }
         }
     }
@@ -746,9 +746,9 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void CAnimationContext::SetRecordingInternal(bool enableRecording)
 {
-    if (GetIEditor()->GetMovieSystem())
+    if (m_movieSystem)
     {
-        GetIEditor()->GetMovieSystem()->SetRecording(enableRecording);
+        m_movieSystem->SetRecording(enableRecording);
     }
 
     if (m_pSequence)

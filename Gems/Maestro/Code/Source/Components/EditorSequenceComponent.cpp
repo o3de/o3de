@@ -68,12 +68,16 @@ namespace Maestro
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
-            IAnimSequence* sequence = editor->GetMovieSystem()->FindSequenceById(m_sequenceId);
-            ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
-
-            if (sequence && pSequenceManager && pSequenceManager->GetSequenceByEntityId(sequence->GetSequenceEntityId()))
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+            if (movieSystem)
             {
-                pSequenceManager->OnDeleteSequenceEntity(sequence->GetSequenceEntityId());
+                IAnimSequence* sequence = movieSystem->FindSequenceById(m_sequenceId);
+                ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
+
+                if (sequence && pSequenceManager && pSequenceManager->GetSequenceByEntityId(sequence->GetSequenceEntityId()))
+                {
+                    pSequenceManager->OnDeleteSequenceEntity(sequence->GetSequenceEntityId());
+                }
             }
         }
 
@@ -180,10 +184,12 @@ namespace Maestro
             editor->GetSequenceManager()->OnSequenceActivated(GetEntityId());
         }
 
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
         // Add this sequence into the game movie system.
-        if (m_sequence && nullptr != gEnv->pMovieSystem)
+        if (m_sequence && movieSystem)
         {
-            gEnv->pMovieSystem->AddSequence(m_sequence.get());
+            movieSystem->AddSequence(m_sequence.get());
         }
     }
 
@@ -195,10 +201,12 @@ namespace Maestro
 
         AZ_Info("EditorSequenceComponent::Deactivate", "SequenceComponentRequestBus disconnected from %s", GetEntityId().ToString().c_str());
 
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
         // Remove this sequence from the game movie system.
-        if (m_sequence && nullptr != gEnv->pMovieSystem)
+        if (m_sequence && movieSystem)
         {
-            gEnv->pMovieSystem->RemoveSequence(m_sequence.get());
+            movieSystem->RemoveSequence(m_sequence.get());
         }
 
         // disconnect from TickBus if we're connected (which would only happen if we deactivated during a pending property refresh)

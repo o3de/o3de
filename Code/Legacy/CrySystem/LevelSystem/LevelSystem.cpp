@@ -534,11 +534,13 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         //////////////////////////////////////////////////////////////////////////
         // Movie system must be reset after entities.
         //////////////////////////////////////////////////////////////////////////
-        IMovieSystem* movieSys = gEnv->pMovieSystem;
-        if (movieSys != NULL)
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
         {
             // bSeekAllToStart needs to be false here as it's only of interest in the editor
-            movieSys->Reset(true, false);
+            constexpr bool playOnReset = true;
+            constexpr bool seekToStart = false;
+            movieSystem->Reset(playOnReset, seekToStart);
         }
 
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
@@ -773,10 +775,13 @@ void CLevelSystem::UnloadLevel()
     // Clear level entities and prefab instances.
     EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
 
-    if (gEnv->pMovieSystem)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        gEnv->pMovieSystem->Reset(false, false);
-        gEnv->pMovieSystem->RemoveAllSequences();
+        constexpr bool playOnReset = false;
+        constexpr bool seekToStart = false;
+        movieSystem->Reset(playOnReset, seekToStart);
+        movieSystem->RemoveAllSequences();
     }
 
     OnUnloadComplete(m_lastLevelName.c_str());

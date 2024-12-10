@@ -50,6 +50,7 @@ public:
 
     CMovieSystem(ISystem* system);
     CMovieSystem();
+    ~CMovieSystem();
 
     void Release() override { delete this; };
 
