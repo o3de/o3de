@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <stdint.h>
 
 namespace AZ
@@ -17,6 +18,6 @@ namespace AZ
         //! Calculate the count of dummy joint ids that must be used to keep the buffer aligned.
         //! Joint Ids use raw views into the buffer, and raw views
         //! must begin on 16-byte aligned boundaries.
-        uint32_t CalculateJointIdPaddingCount(uint32_t realJointIdCount);
+        ATOM_RPI_REFLECT_API uint32_t CalculateJointIdPaddingCount(uint32_t realJointIdCount);
     } // namespace RPI
 } // namespace AZ

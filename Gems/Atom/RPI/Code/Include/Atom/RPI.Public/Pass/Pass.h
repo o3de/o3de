@@ -9,6 +9,7 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
@@ -100,7 +101,7 @@ namespace AZ
         //! a PassTemplate, or a PassRequest. To register your pass class with the PassFactory,
         //! you'll need to write a static create method (see ParentPass and RenderPass for examples)
         //! and register this create method with the PassFactory.
-        class Pass
+        class ATOM_RPI_PUBLIC_API Pass
             : public AZStd::intrusive_base
         {
             AZ_RPI_PASS(Pass);
@@ -706,7 +707,7 @@ namespace AZ
         };
 
         //! Struct used to return results from Pass hierarchy validation
-        struct PassValidationResults
+        struct ATOM_RPI_PUBLIC_API PassValidationResults
         {
             bool IsValid();
             void PrintValidationIfError();

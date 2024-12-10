@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI/XRRenderingInterface.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <AtomCore/Instance/Instance.h>
 
@@ -49,7 +50,7 @@ namespace AZ::RPI
     };
 
     //! This class contains the interface related to XR but significant to RPI level functionality
-    class XRRenderingInterface
+    class ATOM_RPI_PUBLIC_API XRRenderingInterface
     {
     public:
         AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator);
@@ -138,7 +139,7 @@ namespace AZ::RPI
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI.
-    class IXRRegisterInterface
+    class ATOM_RPI_PUBLIC_API IXRRegisterInterface
     {
     public:
         AZ_CLASS_ALLOCATOR(IXRRegisterInterface, AZ::SystemAllocator);

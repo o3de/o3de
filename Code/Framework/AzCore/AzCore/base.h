@@ -41,6 +41,19 @@ namespace AZ::Internal
     #define AZ_SIZE_ALIGN(_size, _align)         AZ_SIZE_ALIGN_UP(_size, _align)
 #endif // AZ_SIZE_ALIGN
 
+#if defined(AZ_MONOLITHIC_BUILD)
+    #define AZCORE_API
+    #define AZCORE_API_EXTERN
+#else
+    #if defined(AZCORE_EXPORTS)
+        #define AZCORE_API        AZ_DLL_EXPORT
+        #define AZCORE_API_EXTERN AZ_DLL_EXPORT_EXTERN
+    #else
+        #define AZCORE_API        AZ_DLL_IMPORT
+        #define AZCORE_API_EXTERN AZ_DLL_IMPORT_EXTERN
+    #endif
+#endif
+
 /**
  * Macros for calling into strXXX functions. These are simple wrappers that call into the platform
  * implementation. Definitions provide inputs for destination size to allow calling to strXXX_s functions

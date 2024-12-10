@@ -80,11 +80,6 @@
 
 #include <AzCore/Outcome/Outcome.h> // for unexpect_t
 
-DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
-DECLARE_EBUS_INSTANTIATION(TickEvents);
-DECLARE_EBUS_INSTANTIATION(SystemTickEvents);
-DECLARE_EBUS_INSTANTIATION(TickRequests);
-
 namespace AZ::Metrics
 {
     const EventLoggerId CoreEventLoggerId{ static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}("Core")) };

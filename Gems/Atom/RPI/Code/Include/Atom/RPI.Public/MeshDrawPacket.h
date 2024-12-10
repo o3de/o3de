@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
@@ -33,7 +34,7 @@ namespace AZ
         class Scene;
 
         //! Holds and manages an RHI DrawPacket for a specific mesh, and the resources that are needed to build and maintain it.
-        class MeshDrawPacket
+        class ATOM_RPI_PUBLIC_API MeshDrawPacket
         {
         public:
             struct ShaderData

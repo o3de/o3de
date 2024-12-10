@@ -10,6 +10,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
 
 namespace AZ
@@ -22,7 +23,7 @@ namespace AZ
         //! Provides configuration data about which shader variants should be generated for a given shader.
         //! Although Gems/Features can define their .shadervariantlists, game projects can override what variants to generate
         //! by declaring their own .shadervariantlists.
-        struct ShaderVariantListSourceData
+        struct ATOM_RPI_EDIT_API ShaderVariantListSourceData
         {
             AZ_TYPE_INFO(AZ::RPI::ShaderVariantListSourceData, "{F8679938-6D3F-47CC-A078-3D6EC0011366}");
             AZ_CLASS_ALLOCATOR(ShaderVariantListSourceData, AZ::SystemAllocator);

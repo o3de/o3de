@@ -6,6 +6,10 @@
  *
  */
 
-#include <AzCore/RTTI/BehaviorObjectSignals.h>
+#include <AzCore/PlatformDef.h>
+#include <AzCore/std/smart_ptr/intrusive_base.h>
 
-DECLARE_EBUS_INSTANTIATION(BehaviorObjectSignalsInterface);
+namespace AZStd
+{
+    template class AZ_DLL_EXPORT intrusive_refcount<atomic_uint>;
+}

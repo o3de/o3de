@@ -11,6 +11,7 @@
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -29,7 +30,7 @@ namespace AZ
         //! Both buffer and image attachments are supported.
         //! In case of images it can also capture specific Mip Levels, as defined in the image view descriptors.
         //! Also, for images, Volume Texture image attachments (aka Texture3D) are supported too.
-        class AttachmentReadback final
+        class ATOM_RPI_PUBLIC_API AttachmentReadback final
         {
         public:
             AZ_RTTI(AttachmentReadback, "{9C70ACD3-8694-4EF3-A556-9DA25BD1237C}");

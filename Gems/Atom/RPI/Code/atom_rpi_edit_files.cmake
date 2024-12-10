@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/Atom/RPI.Edit/Configuration.h
     Include/Atom/RPI.Edit/Common/AssetUtils.h
     Include/Atom/RPI.Edit/Common/AssetAliasesSourceData.h
     Include/Atom/RPI.Edit/Common/ColorUtils.h
@@ -54,6 +55,7 @@ set(FILES
     Source/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.cpp
     Source/RPI.Edit/Material/MaterialPipelineSourceData.cpp
     Source/RPI.Edit/Material/MaterialUtils.cpp
+    Source/RPI.Edit/ResourcePool/ResourcePoolSourceData.cpp
     Source/RPI.Edit/Shader/ShaderSourceData.cpp
     Source/RPI.Edit/Shader/ShaderVariantListSourceData.cpp
     Source/RPI.Edit/Shader/ShaderVariantAssetCreator.cpp

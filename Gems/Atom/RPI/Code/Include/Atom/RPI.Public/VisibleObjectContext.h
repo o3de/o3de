@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/ThreadLocalContext.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
@@ -37,7 +38,7 @@ namespace AZ
          *
          * Finally, in the consume phase, the context is immutable and lists are accessible via GetList.
          */
-        class VisibleObjectContext final
+        class ATOM_RPI_PUBLIC_API VisibleObjectContext final
         {
         public:
             VisibleObjectContext() = default;

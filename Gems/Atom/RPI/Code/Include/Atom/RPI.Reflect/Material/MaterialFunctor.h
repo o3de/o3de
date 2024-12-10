@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
@@ -55,7 +56,7 @@ namespace AZ
         namespace MaterialFunctorAPI
         {
             //! Provides functions that are common to all runtime execution contexts
-            class CommonRuntimeConfiguration
+            class ATOM_RPI_REFLECT_API CommonRuntimeConfiguration
             {
             public:
                 virtual ~CommonRuntimeConfiguration() = default;
@@ -72,7 +73,7 @@ namespace AZ
             };
 
             //! Provides commonly used functions for reading material property values
-            class ReadMaterialPropertyValues
+            class ATOM_RPI_REFLECT_API ReadMaterialPropertyValues
             {
             public:
                 virtual ~ReadMaterialPropertyValues() = default;
@@ -100,7 +101,7 @@ namespace AZ
             };
 
             //! Provides commonly used functions for configuring shaders
-            class ConfigureShaders
+            class ATOM_RPI_REFLECT_API ConfigureShaders
             {
                 friend LuaMaterialFunctorAPI::ConfigureShaders;
 
@@ -157,7 +158,7 @@ namespace AZ
             //! It can configure shaders that are not specific to a particular material pipeline (i.e. the MaterialPipelineNone ShaderCollection).
             //! It can set shader option values (Note this does impact the material-pipeline-specific shaders in order to automatically
             //! propagate the values to all shaders in the material).
-            class RuntimeContext
+            class ATOM_RPI_REFLECT_API RuntimeContext
                 : public CommonRuntimeConfiguration
                 , public ReadMaterialPropertyValues
                 , public ConfigureShaders
@@ -189,7 +190,7 @@ namespace AZ
 
             //! This execution context operates on a specific MaterialPipelinePayload's shaders.
             //! It can read "internal" material properties used for passing data to the material pipeline.
-            class PipelineRuntimeContext
+            class ATOM_RPI_REFLECT_API PipelineRuntimeContext
                 : public CommonRuntimeConfiguration
                 , public ReadMaterialPropertyValues
                 , public ConfigureShaders
@@ -206,7 +207,7 @@ namespace AZ
             };
 
             //! This execution context is used by tools for configuring UI metadata.
-            class EditorContext
+            class ATOM_RPI_REFLECT_API EditorContext
                 : public ReadMaterialPropertyValues
             {
             public:
@@ -294,7 +295,7 @@ namespace AZ
         //!       LuaMaterial[Pipeline]FunctorSourceData, and all their relevant unit tests. These are so similar functionally that it ends
         //!       up being easier to just keep them all together, and solely rely on the different execution context objections to keep the
         //!       APIs separated.
-        class MaterialFunctor :
+        class ATOM_RPI_REFLECT_API MaterialFunctor :
             public AZStd::intrusive_base
         {
             friend class MaterialFunctorSourceData;

@@ -22,6 +22,8 @@
 #define AZ_TRAIT_OS_DELETE_THROW noexcept
 #define AZ_TRAIT_OS_DLL_EXPORT_CLANG __attribute__ ((visibility ("default")))
 #define AZ_TRAIT_OS_DLL_IMPORT_CLANG __attribute__ ((visibility ("default")))
+#define AZ_TRAIT_OS_DLL_EXPORT_EXTERN_CLANG AZ_TRAIT_OS_DLL_EXPORT_CLANG
+#define AZ_TRAIT_OS_DLL_IMPORT_EXTERN_CLANG AZ_TRAIT_OS_DLL_IMPORT_CLANG
 #define AZ_TRAIT_OS_ATTRIBUTE_MARK_USED __attribute__ ((used))
 #define AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION ""
 #define AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX ""

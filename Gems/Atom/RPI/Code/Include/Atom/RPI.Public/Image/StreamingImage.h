@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/StreamingImageContext.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -42,11 +43,13 @@ namespace AZ
         //! the streaming phase of the controller, in order to make uploads deterministic.
         //! 
         //! A trim operation will immediately trim the GPU image down and cancel any in-flight mip chain fetches.
-        //! 
-        class StreamingImage final
+        //!
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API StreamingImage final
             : public Image
             , public Data::AssetBus::MultiHandler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             static_assert(RHI::Limits::Image::MipCountMax < 16, "StreamingImageAsset is optimized to support a maximum of 16 mip levels.");
 
             friend class ImageSystem;
@@ -133,7 +136,7 @@ namespace AZ
             bool IsStreamed() const;
 
         private:
-            StreamingImage() = default;
+            StreamingImage();
 
             static Data::Instance<StreamingImage> CreateInternal(StreamingImageAsset& streamingImageAsset);
             RHI::ResultCode Init(StreamingImageAsset& imageAsset);
