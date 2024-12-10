@@ -41,7 +41,6 @@
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/SequenceType.h>
-#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 
 // Editor
 #include "TrackView/TVEventsDialog.h"
@@ -889,8 +888,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 // check to make sure all nodes were added and notify user if they weren't
                 if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
                 {
-                    IMovieSystem* movieSystem = nullptr;
-                    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+                    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
                     AZStd::string messages = movieSystem ? movieSystem->GetUserNotificationMsgs() : "";
 

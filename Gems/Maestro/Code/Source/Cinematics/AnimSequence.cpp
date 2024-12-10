@@ -28,7 +28,7 @@
 #include "ShadowsSetupNode.h"
 #include "SequenceTrack.h"
 #include "AnimNodeGroup.h"
-#include <Maestro/Bus/MovieSystemBus.h>
+
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -38,10 +38,8 @@
 //////////////////////////////////////////////////////////////////////////
 CAnimSequence::CAnimSequence(uint32 id, SequenceType sequenceType)
     : m_refCount(0)
-    , m_pMovieSystem(nullptr)
+    , m_pMovieSystem(AZ::Interface<IMovieSystem>::Get())
 {
-    Maestro::MovieSystemRequestBus::BroadcastResult(m_pMovieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
     m_nextGenId = 1;
     m_flags = 0;
     m_pParentSequence = nullptr;

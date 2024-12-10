@@ -21,7 +21,6 @@
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
 #include <CryCommon/MiniQueue.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -242,8 +241,7 @@ CSystem::CSystem()
 
     m_ConfigPlatform = CONFIG_INVALID_PLATFORM;
 
-    m_movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(m_movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    m_movieSystem = AZ::Interface<IMovieSystem>::Get();
 }
 
 /////////////////////////////////////////////////////////////////////////////////

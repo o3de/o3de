@@ -49,7 +49,6 @@
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
 #include "Undo/Undo.h"
-#include "Maestro/Bus/MovieSystemBus.h"
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -280,8 +279,7 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
 
     GetIEditor()->Notify(eNotify_OnBeginSceneOpen);
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->RemoveAllSequences();

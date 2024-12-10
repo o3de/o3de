@@ -85,7 +85,6 @@ namespace Maestro
 
     void MaestroSystemComponent::Activate()
     {
-        MovieSystemRequestBus::Handler::BusConnect();
         MaestroRequestBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
     }
@@ -94,7 +93,6 @@ namespace Maestro
     {
         MaestroRequestBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
-        MovieSystemRequestBus::Handler::BusDisconnect();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

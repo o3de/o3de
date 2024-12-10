@@ -12,7 +12,6 @@
 #include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 
 #include <AzCore/Math/Uuid.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -66,8 +65,7 @@ namespace Maestro
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
-            IMovieSystem* movieSystem = nullptr;
-            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
             if (movieSystem)
             {
                 IAnimSequence* sequence = movieSystem->FindSequenceById(m_sequenceId);

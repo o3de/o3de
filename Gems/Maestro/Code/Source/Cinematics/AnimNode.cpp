@@ -40,8 +40,6 @@
 #include "Maestro/Types/AnimNodeType.h"
 #include "Maestro/Types/AnimParamType.h"
 
-#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
-
 //////////////////////////////////////////////////////////////////////////
 // Old deprecated IDs
 //////////////////////////////////////////////////////////////////////////
@@ -688,6 +686,7 @@ CAnimNode::CAnimNode(const int id, AnimNodeType nodeType)
     , m_id(id)
     , m_parentNodeId(0)
     , m_nodeType(nodeType)
+    , m_movieSystem(AZ::Interface<IMovieSystem>::Get())
 {
     m_pOwner = 0;
     m_pSequence = 0;
@@ -696,8 +695,6 @@ CAnimNode::CAnimNode(const int id, AnimNodeType nodeType)
     m_pParentNode = 0;
     m_nLoadedParentNodeId = 0;
     m_expanded = true;
-
-    Maestro::MovieSystemRequestBus::BroadcastResult(m_movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1244,7 +1241,5 @@ bool CAnimNode::GetExpanded() const
 
 IMovieSystem* CAnimNode::GetMovieSystem() const
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-    return movieSystem;
+    return AZ::Interface<IMovieSystem>::Get();
 };

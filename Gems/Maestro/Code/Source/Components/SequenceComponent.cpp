@@ -12,7 +12,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Maestro/Bus/SequenceAgentComponentBus.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 
 #include <Cinematics/Movie.h>
 #include <Cinematics/AnimSplineTrack.h>
@@ -189,7 +188,7 @@ namespace Maestro
     {
         Component::Init();
 
-        Maestro::MovieSystemRequestBus::BroadcastResult(m_movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        m_movieSystem = AZ::Interface<IMovieSystem>::Get();
 
         if (m_movieSystem)
         {

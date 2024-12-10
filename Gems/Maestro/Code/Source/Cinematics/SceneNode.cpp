@@ -35,7 +35,6 @@
 
 #include <IAudioSystem.h>
 #include <IConsole.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 
 #define s_nodeParamsInitialized s_nodeParamsInitializedScene
 #define s_nodeParams s_nodeParamsSene
@@ -1094,9 +1093,7 @@ void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnim
 {
     IAnimSequence* retSequence = nullptr;
 
-    IMovieSystem* m_movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(m_movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+    IMovieSystem* m_movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (m_movieSystem)
     {
         if (sequenceKey.sequenceEntityId.IsValid())

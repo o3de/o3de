@@ -34,7 +34,7 @@
 #include <ILog.h>
 #include <IConsole.h>
 #include <IRenderer.h>
-#include <Maestro/Bus/MovieSystemBus.h>
+
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -52,16 +52,13 @@ struct SMovieSequenceAutoComplete
 {
     virtual int GetCount() const
     {
-        IMovieSystem* movieSystem = nullptr;
-        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         return movieSystem ? movieSystem->GetNumSequences() : 0;
     }
 
     virtual const char* GetValue(int nIndex) const
     {
-        IMovieSystem* movieSystem = nullptr;
-        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         if (movieSystem)
         {
             IAnimSequence* sequence = movieSystem->GetSequence(nIndex);
@@ -209,6 +206,11 @@ namespace Internal
 //////////////////////////////////////////////////////////////////////////
 CMovieSystem::CMovieSystem(ISystem* pSystem)
 {
+    if (!AZ::Interface<IMovieSystem>::Get())
+    {
+        AZ::Interface<IMovieSystem>::Register(this);
+    }
+
     m_pSystem = pSystem;
     m_bRecording = false;
     m_pCallback = nullptr;
@@ -245,6 +247,16 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
 CMovieSystem::CMovieSystem()
     : CMovieSystem(gEnv->pSystem)
 {
+}
+
+//////////////////////////////////////////////////////////////////////////
+CMovieSystem::~CMovieSystem()
+{
+    if (AZ::Interface<IMovieSystem>::Get() == this)
+    {
+        AZ::Interface<IMovieSystem>::Unregister(this);
+    }
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1427,8 +1439,7 @@ void CMovieSystem::GoToFrameCmd(IConsoleCmdArgs* pArgs)
     const char* pSeqName = pArgs->GetArg(1);
     float targetFrame = (float)atof(pArgs->GetArg(2));
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
     (static_cast<CMovieSystem*>(movieSystem))->GoToFrame(pSeqName, targetFrame);
 }
@@ -1437,9 +1448,7 @@ void CMovieSystem::GoToFrameCmd(IConsoleCmdArgs* pArgs)
 #if !defined(_RELEASE)
 void CMovieSystem::ListSequencesCmd([[maybe_unused]] IConsoleCmdArgs* pArgs)
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         int numSequences = movieSystem->GetNumSequences();
@@ -1460,8 +1469,7 @@ void CMovieSystem::PlaySequencesCmd(IConsoleCmdArgs* pArgs)
 {
     const char* sequenceName = pArgs->GetArg(1);
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->PlaySequence(sequenceName, nullptr, false, false);

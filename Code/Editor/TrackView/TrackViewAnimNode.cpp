@@ -24,7 +24,6 @@
 
 // CryCommon
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
-#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
@@ -411,8 +410,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
     {
         if (!owner.IsValid())
         {
-            IMovieSystem* movieSystem = nullptr;
-            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
             if (movieSystem)
             {
                 movieSystem->LogUserNotificationMsg(
@@ -467,8 +465,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
         // Show an error if this node is a duplicate
         if (alreadyExists)
         {
-            IMovieSystem* movieSystem = nullptr;
-            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
             if (movieSystem)
             {
                 movieSystem->LogUserNotificationMsg(
@@ -489,8 +486,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
     IAnimNode* newAnimNode = m_animSequence->CreateNode(animNodeType);
     if (!newAnimNode)
     {
-        IMovieSystem* movieSystem = nullptr;
-        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         if (movieSystem)
         {
             movieSystem->LogUserNotificationMsg(
@@ -1277,8 +1273,7 @@ CTrackViewAnimNodeBundle CTrackViewAnimNode::AddSelectedEntities(const AZStd::ve
             // If it has the same director than the current node, reject it
             if (existingNode->GetDirector() == GetDirector())
             {
-                IMovieSystem* movieSystem = nullptr;
-                Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+                IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
                 if (movieSystem)
                 {
                     movieSystem->LogUserNotificationMsg(AZStd::string::format(
@@ -1511,8 +1506,7 @@ void CTrackViewAnimNode::PasteNodeFromClipboard(AZStd::map<int, IAnimNode*>& cop
     }
 
     AnimNodeType nodeType = AnimNodeType::Invalid;
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->SerializeNodeType(nodeType, xmlNode, /*bLoading=*/ true, IAnimSequence::kSequenceVersion, m_animSequence->GetFlags());

@@ -19,7 +19,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_TrackViewFindDlg.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "Maestro/Types/AnimNodeType.h"
-#include "Maestro/Bus/MovieSystemBus.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CTrackViewFindDlg dialog
@@ -54,8 +53,7 @@ void CTrackViewFindDlg::FillData()
     m_numSeqs = 0;
     m_objs.resize(0);
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         for (int k = 0; k < movieSystem->GetNumSequences(); ++k)

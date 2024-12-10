@@ -16,7 +16,6 @@
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimNodeType.h>   // for AnimNodeType
-#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 
 //////////////////////////////////////////////////////////////////////////
 CSelectLightAnimationDialog::CSelectLightAnimationDialog(QWidget* pParent)
@@ -35,8 +34,7 @@ void CSelectLightAnimationDialog::OnInitDialog()
 //////////////////////////////////////////////////////////////////////////
 void CSelectLightAnimationDialog::GetItems(std::vector<SItem>& outItems)
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (!movieSystem)
     {
         return;

@@ -12,7 +12,6 @@
 #include "TrackViewPythonFuncs.h"
 
 // CryCommon
-#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
@@ -189,8 +188,7 @@ namespace
             throw std::runtime_error("No sequence is active");
         }
 
-        IMovieSystem* movieSystem = nullptr;
-        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         if (movieSystem)
         {
             const AnimNodeType nodeType = movieSystem->GetNodeTypeFromString(nodeTypeString);
@@ -328,8 +326,7 @@ namespace
             throw std::runtime_error("Couldn't find node");
         }
 
-        IMovieSystem* movieSystem = nullptr;
-        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         if (movieSystem)
         {
             const CAnimParamType paramType = movieSystem->GetParamTypeFromString(paramName);
@@ -410,9 +407,7 @@ namespace
             throw std::runtime_error("Couldn't find node");
         }
 
-        IMovieSystem* movieSystem = nullptr;
-        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         if (movieSystem)
         {
             const CAnimParamType paramType = movieSystem->GetParamTypeFromString(paramName);

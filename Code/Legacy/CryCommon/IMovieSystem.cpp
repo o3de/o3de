@@ -7,7 +7,6 @@
  */
 
 #include <IMovieSystem.h>
-#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 AZ_TYPE_INFO_WITH_NAME_IMPL(CAnimParamType, "CAnimParamType", "{E2F34955-3B07-4241-8D34-EA3BEF3B33D2}");
@@ -76,9 +75,7 @@ bool CAnimParamType::operator <(const CAnimParamType& animParamType) const
 
 void CAnimParamType::SaveToXml(XmlNodeRef& xmlNode) const
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->SaveParamTypeToXml(*this, xmlNode);
@@ -87,9 +84,7 @@ void CAnimParamType::SaveToXml(XmlNodeRef& xmlNode) const
 
 void CAnimParamType::LoadFromXml(const XmlNodeRef& xmlNode, const uint version)
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->LoadParamTypeFromXml(*this, xmlNode, version);
@@ -98,9 +93,7 @@ void CAnimParamType::LoadFromXml(const XmlNodeRef& xmlNode, const uint version)
 
 void CAnimParamType::Serialize(XmlNodeRef& xmlNode, bool bLoading, const uint version)
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->SerializeParamType(*this, xmlNode, bLoading, version);

@@ -11,7 +11,6 @@
 #include "IMovieSystem.h"
 
 #include <CryCommon/LoadScreenBus.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
@@ -336,9 +335,7 @@ namespace LegacyLevelSystem
             //////////////////////////////////////////////////////////////////////////
             // Movie system must be reset after entities.
             //////////////////////////////////////////////////////////////////////////
-            IMovieSystem* movieSystem = nullptr;
-            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
             if (movieSystem)
             {
                 // bSeekAllToStart needs to be false here as it's only of interest in the editor
@@ -584,9 +581,7 @@ namespace LegacyLevelSystem
 
         const AZ::TimeMs beginTimeMs = AZ::GetRealElapsedTimeMs();
 
-        IMovieSystem* movieSystem = nullptr;
-        Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         if (movieSystem)
         {
             constexpr bool playOnReset = false;

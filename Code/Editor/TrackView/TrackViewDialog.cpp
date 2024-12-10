@@ -40,7 +40,6 @@
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 
 // Editor
 #include "Settings.h"
@@ -113,8 +112,7 @@ void CTrackViewDialog::RegisterViewClass()
     opts.showOnToolsToolbar = true;
     opts.toolbarIcon = ":/Menu/trackview_editor.svg";
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
@@ -818,8 +816,7 @@ void CTrackViewDialog::UpdateActions()
         m_actions[ID_ADDNODE]->setEnabled(false);
     }
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
     if (movieSystem)
     {
@@ -889,8 +886,7 @@ void CTrackViewDialog::Update()
     // The active camera node means two conditions:
     // 1. Sequence camera is currently active.
     // 2. The camera which owns this node has been set as the current camera by the director node.
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
     if (movieSystem)
     {
@@ -1040,9 +1036,7 @@ void CTrackViewDialog::OnAddSequence()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReloadSequences()
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (!movieSystem || m_bIgnoreUpdates || m_bDoingUndoOperation)
     {
         return;
@@ -1548,9 +1542,7 @@ void CTrackViewDialog::OnAddSelectedNode()
         // check to make sure all nodes were added and notify user if they weren't
         if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
         {
-            IMovieSystem* movieSystem = nullptr;
-            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
             if (movieSystem)
             {
                 QMessageBox::information(this, tr("Track View Warning"), tr(movieSystem->GetUserNotificationMsgs().c_str()));

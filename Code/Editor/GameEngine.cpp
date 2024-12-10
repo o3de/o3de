@@ -37,7 +37,6 @@
 
 // CryCommon
 #include <CryCommon/MainThreadRenderRequestBus.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 
 // Editor
 #include "CryEdit.h"
@@ -244,8 +243,7 @@ CGameEngine::~CGameEngine()
 AZ_POP_DISABLE_WARNING
     GetIEditor()->UnregisterNotifyListener(this);
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->SetCallback(nullptr);
@@ -414,8 +412,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     SetEditorCoreEnvironment(gEnv);
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->EnablePhysicsEvents(m_bSimulationMode);
@@ -506,8 +503,7 @@ void CGameEngine::SwitchToInGame()
 
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->EnablePhysicsEvents(true);
@@ -542,8 +538,7 @@ void CGameEngine::SwitchToInEditor()
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StopPlayInEditor);
 
     // Reset movie system
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         for (int i = movieSystem->GetNumPlayingSequences(); --i >= 0;)
@@ -664,8 +659,7 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
         return;
     }
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         movieSystem->EnablePhysicsEvents(enabled);

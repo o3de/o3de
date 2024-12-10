@@ -10,7 +10,6 @@
 #include "EditorDefs.h"
 
 #include "SelectSequenceDialog.h"
-#include <Maestro/Bus/MovieSystemBus.h>
 
 // CSelectSequence dialog
 
@@ -33,9 +32,7 @@ CSelectSequenceDialog::OnInitDialog()
 /* virtual */ void
 CSelectSequenceDialog::GetItems(std::vector<SItem>& outItems)
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
-
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
         for (int i = 0; i < movieSystem->GetNumSequences(); ++i)

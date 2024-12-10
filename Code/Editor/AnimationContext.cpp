@@ -89,8 +89,8 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////
-CAnimationContext::CAnimationContext(IMovieSystem* movieSystem)
-    : m_movieSystem(movieSystem)
+CAnimationContext::CAnimationContext()
+    : m_movieSystem(AZ::Interface<IMovieSystem>::Get())
 {
     m_paused = 0;
     m_playing = false;

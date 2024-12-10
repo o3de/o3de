@@ -9,7 +9,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include "SequenceTrack.h"
-#include <Maestro/Bus/MovieSystemBus.h>
 
 //////////////////////////////////////////////////////////////////////////
 /// @deprecated Serialization for Sequence Tracks in Component Entity Sequences now occur through AZ::SerializeContext and the Sequence Component
@@ -72,8 +71,7 @@ void CSequenceTrack::GetKeyInfo(int key, const char*& description, float& durati
     description = 0;
     duration = m_keys[key].fDuration;
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
     IAnimSequence* sequence = movieSystem ? movieSystem->FindSequence(m_keys[key].sequenceEntityId) : nullptr;
     if (sequence)

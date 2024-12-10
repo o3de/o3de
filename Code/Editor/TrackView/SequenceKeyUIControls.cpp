@@ -11,7 +11,6 @@
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimParamType.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 
 // Editor
 #include "KeyUIControls.h"
@@ -68,8 +67,7 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sel
             mv_overrideTimes = sequenceKey.bOverrideTimes;
             if (!sequenceKey.bOverrideTimes)
             {
-                IMovieSystem* movieSystem = nullptr;
-                Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+                IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
                 if (movieSystem)
                 {
                     IAnimSequence* pSequence2 = movieSystem->FindSequence(sequenceKey.sequenceEntityId);
@@ -110,8 +108,7 @@ void CSequenceKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
         return;
     }
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
     for (unsigned int keyIndex = 0; keyIndex < selectedKeys.GetKeyCount(); ++keyIndex)
     {

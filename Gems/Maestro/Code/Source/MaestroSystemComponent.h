@@ -10,7 +10,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Component/Component.h>
 #include <CrySystemBus.h>
-#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 
 #include "Cinematics/Movie.h"
 #include "Maestro/MaestroBus.h"
@@ -37,7 +36,6 @@ namespace Maestro
         : public AZ::Component
         , protected MaestroRequestBus::Handler
         , protected CrySystemEventBus::Handler
-        , protected MovieSystemRequestBus::Handler
     {
     public:
         AZ_COMPONENT(MaestroSystemComponent, "{47991994-4417-4CD7-AE0B-FEF1C8720766}");
@@ -55,8 +53,8 @@ namespace Maestro
 
     protected:
         ////////////////////////////////////////////////////////////////////////
-        // MovieSystemRequestBus interface implementation
-        IMovieSystem* GetMovieSystem() override { return m_movieSystem.get(); }
+        // MaestroRequestBus interface implementation
+
         ////////////////////////////////////////////////////////////////////////
 
         // CrySystemEventBus ///////////////////////////////////////////////////////

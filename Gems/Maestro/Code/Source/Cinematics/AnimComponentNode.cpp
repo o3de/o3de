@@ -15,7 +15,6 @@
 
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
-#include <Maestro/Bus/MovieSystemBus.h>
 
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimValueType.h>
@@ -30,9 +29,8 @@ CAnimComponentNode::CAnimComponentNode(int id)
     , m_componentTypeId(AZ::Uuid::CreateNull())
     , m_componentId(AZ::InvalidComponentId)
     , m_skipComponentAnimationUpdates(false)
-    , m_movieSystem(nullptr)
+    , m_movieSystem(AZ::Interface<IMovieSystem>::Get())
 {
-    Maestro::MovieSystemRequestBus::BroadcastResult(m_movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
 }
 
 CAnimComponentNode::CAnimComponentNode()

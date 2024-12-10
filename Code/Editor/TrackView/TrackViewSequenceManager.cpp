@@ -17,7 +17,6 @@
 
 // CryCommon
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
-#include <CryCommon/Maestro/Bus/MovieSystemBus.h>
 #include <CryCommon/Maestro/Types/SequenceType.h>
 
 // AzCore
@@ -181,8 +180,7 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
 ////////////////////////////////////////////////////////////////////////////
 IAnimSequence* CTrackViewSequenceManager::OnCreateSequenceObject(QString name, bool isLegacySequence, AZ::EntityId entityId)
 {
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
     // Drop legacy sequences on the floor, they are no longer supported.
     if (isLegacySequence && movieSystem)
@@ -221,8 +219,7 @@ void CTrackViewSequenceManager::OnCreateSequenceComponent(AZStd::intrusive_ptr<I
     // Fix up the internal pointers in the sequence to match the deserialized structure
     sequence->InitPostLoad();
 
-    IMovieSystem* movieSystem = nullptr;
-    Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
     // Add the sequence to the movie system
     if (movieSystem)
@@ -349,8 +346,7 @@ void CTrackViewSequenceManager::RemoveSequenceInternal(CTrackViewSequence* seque
             // Remove from CryMovie and TrackView
             m_sequences.erase(iter);
 
-            IMovieSystem* movieSystem = nullptr;
-            Maestro::MovieSystemRequestBus::BroadcastResult(movieSystem, &Maestro::MovieSystemRequestBus::Events::GetMovieSystem);
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
             if (movieSystem)
             {
                 movieSystem->RemoveSequence(sequence->m_pAnimSequence.get());
