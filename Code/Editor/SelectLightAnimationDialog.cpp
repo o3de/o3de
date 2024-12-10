@@ -50,7 +50,7 @@ void CSelectLightAnimationDialog::GetItems(std::vector<SItem>& outItems)
 
         for (int k = 0; k < pSequence->GetNodeCount(); ++k)
         {
-            assert(pSequence->GetNode(k)->GetType() == AnimNodeType::Light);
+            AZ_Assert(pSequence->GetNode(k)->GetType() == AnimNodeType::Light, "Expected Node Type Light");
             if (pSequence->GetNode(k)->GetType() != AnimNodeType::Light)
             {
                 continue;
