@@ -1227,6 +1227,8 @@ namespace AZ
                     {
                         continue;
                     }
+                    // Only create the DispatchItems for DrawItems whose DrawListTag is included
+                    // in @drawListTagsFilter AND their DrawFilterMask is included in @materialPipelineFilter.
                     RHI::DrawListTag tag = drawPacket->GetDrawListTag(drawItemIdx);
                     RHI::DrawFilterMask drawItemPipelineFilter = drawPacket->GetDrawFilterMask(drawItemIdx);
                     if (
