@@ -63,6 +63,7 @@ function(copy_java_to_build_dir common_relative_path file_paths)
   endforeach()
 endfunction()
 
+# CARBONATED -- begin : copy resources into an android package
 function(copy_java_files_to_package_dir package_name common_source_path common_target_path file_paths)
   foreach(file_path ${file_paths})
     # We want to copy the extra Java source/resources to /myProjectAndroid/${package_name}/${common_target_path}/${file_path}
@@ -74,3 +75,4 @@ function(copy_java_files_to_package_dir package_name common_source_path common_t
     file(COPY ${res_file_src} DESTINATION ${res_file_dest})
   endforeach()
 endfunction()
+# CARBONATED -- end
