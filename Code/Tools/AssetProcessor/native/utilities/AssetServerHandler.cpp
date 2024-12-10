@@ -239,11 +239,20 @@ namespace AssetProcessor
         if (!IsServerAddressValid())
         {
             m_serverAddress = previousServerAddress;
-            AZ_Error(AssetProcessor::DebugChannel,
+#if defined(CARBONATED)
+            AZ_Warning(AssetProcessor::DebugChannel,
                 m_assetCachingMode == AssetServerMode::Inactive,
                 "Server address (%.*s) is invalid! Reverting back to (%.*s)",
                 AZ_STRING_ARG(address),
                 AZ_STRING_ARG(previousServerAddress));
+#else
+            AZ_Error(
+                AssetProcessor::DebugChannel,
+                m_assetCachingMode == AssetServerMode::Inactive,
+                "Server address (%.*s) is invalid! Reverting back to (%.*s)",
+                AZ_STRING_ARG(address),
+                AZ_STRING_ARG(previousServerAddress));
+#endif
             return false;
         }
         return true;
