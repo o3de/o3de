@@ -1093,17 +1093,17 @@ void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnim
 {
     IAnimSequence* retSequence = nullptr;
 
-    IMovieSystem* m_movieSystem = AZ::Interface<IMovieSystem>::Get();
-    if (m_movieSystem)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
         if (sequenceKey.sequenceEntityId.IsValid())
         {
-            retSequence = m_movieSystem->FindSequence(sequenceKey.sequenceEntityId);
+            retSequence = movieSystem->FindSequence(sequenceKey.sequenceEntityId);
         }
         else if (!sequenceKey.szSelection.empty())
         {
             // legacy Deprecate ISequenceKey used names to identify sequences
-            retSequence = m_movieSystem->FindLegacySequenceByName(sequenceKey.szSelection.c_str());
+            retSequence = movieSystem->FindLegacySequenceByName(sequenceKey.szSelection.c_str());
         }
     }
 
