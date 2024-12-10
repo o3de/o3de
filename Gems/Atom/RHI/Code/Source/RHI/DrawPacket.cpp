@@ -37,7 +37,22 @@ namespace AZ::RHI
         return (index < m_drawItems.size()) ? &m_drawItems[index] : nullptr;
     }
 
+    const DrawItem* DrawPacket::GetDrawItem(size_t index) const
+    {
+        return (index < m_drawItems.size()) ? &m_drawItems[index] : nullptr;
+    }
+
     DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag)
+    {
+        s32 index = GetDrawListIndex(drawListTag);
+        if (index > -1)
+        {
+            return GetDrawItem(index);
+        }
+        return nullptr;
+    }
+
+    const DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag) const
     {
         s32 index = GetDrawListIndex(drawListTag);
         if (index > -1)

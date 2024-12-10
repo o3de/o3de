@@ -45,6 +45,7 @@ set(FILES
     Include/Atom/Feature/Mesh/MeshCommon.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessorInterface.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
+    Include/Atom/Feature/Mesh/StreamBufferViewsBuilderInterface.h
     Include/Atom/Feature/MorphTargets/MorphTargetInputBuffers.h
     Include/Atom/Feature/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessorInterface.h
     Include/Atom/Feature/ParamMacros/EndParams.inl

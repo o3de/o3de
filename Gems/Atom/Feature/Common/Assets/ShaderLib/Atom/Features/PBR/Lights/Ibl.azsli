@@ -37,7 +37,11 @@ real3 GetIblDiffuse(
     real3 diffuseResponse)
 {
     real3 irradianceDir = MultiplyVectorQuaternion(normal, real4(SceneSrg::m_iblOrientation));
+    #ifdef CS_SAMPLERS
+    real3 diffuseSample = real3(SceneSrg::m_diffuseEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir), 0).rgb);
+    #else
     real3 diffuseSample = real3(SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb);
+    #endif
 
     return diffuseResponse * albedo * diffuseSample;
 }
@@ -127,7 +131,11 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
             {
                 real clearCoatNdotV = saturate(dot(surface.clearCoat.normal, lightingData.dirToCamera));
                 clearCoatNdotV = max(clearCoatNdotV, 0.01);  // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
+                #ifdef CS_SAMPLERS
+                real2 clearCoatBrdf = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, GetBRDFTexCoords(surface.clearCoat.roughness, clearCoatNdotV), 0).rg);
+                #else
                 real2 clearCoatBrdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(surface.clearCoat.roughness, clearCoatNdotV)).rg);
+                #endif
 
                 // clear coat uses fixed IOR = 1.5 represents polyurethane which is the most common material for gloss clear coat
                 // coat layer assumed to be dielectric thus don't need multiple scattering compensation
@@ -145,7 +153,11 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
 #if ENABLE_DUAL_SPECULAR
             if(o_enableDualSpecular)
             {
+                #ifdef CS_SAMPLERS
+                real2 dualSpecularBrdf = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, GetBRDFTexCoords(surface.dualSpecRoughness, lightingData.GetSpecularNdotV()), 0).rg);
+                #else
                 real2 dualSpecularBrdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(surface.dualSpecRoughness, lightingData.GetSpecularNdotV())).rg);
+                #endif
                 real3 dualSpecular = GetIblSpecular(surface.position, surface.GetSpecularNormal(), surface.dualSpecF0.xxx, surface.dualSpecRoughness, lightingData.dirToCamera, dualSpecularBrdf, reflectionProbe, reflectionProbeCubemap);
                 iblSpecular = lerp(iblSpecular, dualSpecular, surface.dualSpecFactor);
             }

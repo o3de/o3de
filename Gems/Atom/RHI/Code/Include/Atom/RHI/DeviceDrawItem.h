@@ -92,6 +92,16 @@ namespace AZ::RHI
 
     // A filter associate to a DeviceDrawItem which can be used to filter the DeviceDrawItem when submitting to command list
     using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;
+    // This mask is typically used to filter out DrawItems that should or shouldn't be submitted
+    // to a particular RenderPipeline.
+    // A RenderPipeline builds it DrawFilterMask using two bits (Tags):
+    // 1- Tag from its m_nameId
+    // 2- Tag from its m_materialPipelineTagName
+    // On the other hand, a DrawItem has two options:
+    // 1- If it doesn't come from a shader listed under a MaterialPipeline, then all bits are enabled.
+    //    Which means the DrawItem will be valid for all active RenderPipelines.
+    // 2- If it comes from a shader listed under a MaterialPipeline, then only the bit of the given
+    //    MaterialPipelineTag is enabled.
     using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
     constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
     static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");
