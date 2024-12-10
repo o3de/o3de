@@ -77,6 +77,9 @@ namespace AZ
                 const Data::Asset<BufferAsset>& indexBufferAsset = indexBufferAssetView.GetBufferAsset();
                 if (indexBufferAsset.GetId().IsValid())
                 {
+#if defined(CARBONATED)
+                    ASSET_TAG(indexBufferAsset.GetHint().c_str());
+#endif
                     Data::Instance<Buffer> indexBuffer = Buffer::FindOrCreate(indexBufferAsset);
 
                     if (!indexBuffer)
@@ -395,6 +398,9 @@ namespace AZ
             AZ_PROFILE_FUNCTION(RPI);
 
             const Data::Asset<BufferAsset>& streamBufferAsset = streamBufferInfo.m_bufferAssetView.GetBufferAsset();
+#if defined(CARBONATED)
+            ASSET_TAG(streamBufferAsset.GetHint().c_str());
+#endif
             const Data::Instance<Buffer>& streamBuffer = Buffer::FindOrCreate(streamBufferAsset);
             if (streamBuffer == nullptr)
             {

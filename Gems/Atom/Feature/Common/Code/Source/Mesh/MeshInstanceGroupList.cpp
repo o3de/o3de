@@ -98,8 +98,16 @@ namespace AZ::Render
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
         //ASSET_TAG("Mesh35");
-        const char* meshName =  m_instanceGroupData.size() > 0 ?
-            (*(m_instanceGroupData.begin()->m_associatedInstances.begin()))->GetAssetHint().c_str() : "";
+        const char* meshName = "";
+        if (m_instanceGroupData.size() > 0)
+        {
+            auto firstGroup = m_instanceGroupData.begin();
+            if (firstGroup->m_associatedInstances.size() > 0)
+            {
+                auto firstInstance = firstGroup->m_associatedInstances.begin();
+                meshName = (*firstInstance)->GetAssetHint().c_str();
+            }
+        }
         ASSET_TAG(meshName);
 #endif
         // It is not safe to have multiple threads Add and/or Remove at the same time

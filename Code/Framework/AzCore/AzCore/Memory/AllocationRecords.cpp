@@ -151,8 +151,8 @@ namespace AZ::Debug
             ai.m_assetName = nullptr;
         }
         
-        constexpr const char* assetToFind = "dlc/cover/barriers/models/concrete_barrier_01/concrete_barrier_01.fbx.azmodel";
-        constexpr size_t thresholdSize = 100 * 1024;
+        constexpr const char* assetToFind = "dlc/characters/models/player_m_01/player_m_01_lod4_position0.fbx.azbuffer";
+        constexpr size_t thresholdSize = 1; //100 * 1024;
         if (ai.m_assetName != nullptr && ai.m_byteSize > thresholdSize && strcmp(ai.m_assetName, assetToFind) == 0)
         {
             AZ_Info("mmm", "this is it");

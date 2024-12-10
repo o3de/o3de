@@ -180,7 +180,9 @@ namespace AZ::Data
 
                 AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetJob::Process: %s",
                     asset.GetHint().c_str());
-
+#if defined(CARBONATED)
+                ASSET_TAG(asset.GetHint().c_str());
+#endif
                 if (m_owner->ValidateAndRegisterAssetLoading(asset))
                 {
                     LoadAndSignal(asset);
@@ -1283,6 +1285,11 @@ namespace AZ::Data
         AssetMap::iterator it = m_assets.find(assetId);
         if (it == m_assets.end())
         {
+#if defined(CARBONATED) && defined(ENABLE_ASSET_MEMORY_TRACKING_OVERHEAD)
+            AssetInfo assetInfo;
+            AssetCatalogRequestBus::BroadcastResult(assetInfo, &AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+            ASSET_TAG(assetInfo.m_relativePath.c_str());
+#endif
             // find the asset type handler
             AssetHandlerMap::iterator handlerIt = m_handlers.find(assetType);
             AZ_Error("AssetDatabase", handlerIt != m_handlers.end(), "No handler was registered for this asset (id=%s, type=%s)!", assetId.ToString<AZ::OSString>().c_str(), assetType.ToString<AZ::OSString>().c_str());
@@ -1799,12 +1806,13 @@ namespace AZ::Data
 
             Asset<AssetData> loadingAsset = weakAsset.GetStrongReference();
 
-            ASSET_TAG(loadingAsset.GetHint().c_str());
-
             if (loadingAsset)
             {
                 AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetStreamerCallback %s",
                     loadingAsset.GetHint().c_str());
+#if defined(CARBONATED)
+                ASSET_TAG(loadingAsset.GetHint().c_str());
+#endif
                 {
                     AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
                     AssetData* data = loadingAsset.Get();

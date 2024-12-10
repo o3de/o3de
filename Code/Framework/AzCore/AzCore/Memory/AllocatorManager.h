@@ -329,11 +329,11 @@ namespace AZ
         struct ThreadLocalData
         {
             DataStack<CodePoint, 64> m_allocationMarkers;
-            DataStack<unsigned int, 64> m_allocationTags;
+            DataStack<unsigned int, 32> m_allocationTags;
             uint64_t m_tagMask = 0;
             size_t m_assetSizeLimit = 0;
 
-            DataStack<AssetMemoryItem*, 64> m_assetItems;
+            DataStack<AssetMemoryItem*, 32> m_assetItems;
         };
         AZStd::unordered_map<std::thread::id, ThreadLocalData, std::hash<std::thread::id>, AZStd::equal_to<std::thread::id>, AZStd::stateless_allocator>
             m_threadData;
