@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 
@@ -21,7 +22,7 @@ namespace AZ
         //! The class to store a material property value.
         //! If this object was loaded from JSON, Resolve() must be called before the value can be read;
         //! otherwise, SetValue() must be called instead.
-        class MaterialPropertyValueSourceData final
+        class ATOM_RPI_EDIT_API MaterialPropertyValueSourceData final
         {
             friend class JsonMaterialPropertyValueSourceDataSerializer;
         public:

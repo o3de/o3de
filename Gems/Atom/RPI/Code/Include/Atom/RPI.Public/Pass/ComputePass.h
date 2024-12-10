@@ -12,6 +12,7 @@
 #include <Atom/RHI/DispatchItem.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
@@ -23,7 +24,7 @@ namespace AZ
         class ShaderResourceGroup;
 
         //! A ComputePass is a leaf pass (pass with no children) that is used for GPU compute
-        class ComputePass
+        class ATOM_RPI_PUBLIC_API ComputePass
             : public RenderPass
             , private ShaderReloadNotificationBus::Handler
         {

@@ -12,6 +12,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -41,10 +42,12 @@ namespace AZ
         //! an error is emitted and the call returns false without performing the requested operation. Likewise, if 
         //! a getter method fails, an error is emitted and an empty value is returned. If validation is disabled, the 
         //! operation is always performed.
-        class Material
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API Material
             : public Data::InstanceData
             , public ShaderReloadNotificationBus::MultiHandler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class MaterialSystem;
         public:
             AZ_INSTANCE_DATA(Material, "{C99F75B2-8BD5-4CD8-8672-1E01EF0A04CF}");
@@ -148,7 +151,7 @@ namespace AZ
             void ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler);
 
         private:
-            Material() = default;
+            Material();
 
             //! Standard init path from asset data.
             static Data::Instance<Material> CreateInternal(MaterialAsset& materialAsset);

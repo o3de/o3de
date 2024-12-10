@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AzCore/std/containers/span.h>
 
@@ -24,7 +25,7 @@ namespace AZ
         //! MaterialAsset itself only provides property values.
         //! The MaterialAsset may optionally inherit from another 'parent' MaterialAsset,
         //! which provides the MaterialTypeAsset and default property values.
-        class MaterialTypeAssetCreator
+        class ATOM_RPI_REFLECT_API MaterialTypeAssetCreator
             : public AssetCreator<MaterialTypeAsset>
         {
         public:

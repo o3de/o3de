@@ -15,6 +15,8 @@
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
+#include <Atom/RPI.Public/Configuration.h>
+
 namespace AZ
 {
     namespace RPI
@@ -29,7 +31,7 @@ namespace AZ
        //! geometry will not be combined with any other geometry to reduce draw calls. For functions where a single color is provided, the given color
        //! is used to determine if the geometry is opaque or translucent. If multiple colors are provided then a separate parameter of type OpacityType
        //! is used to indicate if the geometry is opaque or translucent.
-        class AuxGeomDraw
+        class ATOM_RPI_PUBLIC_API AuxGeomDraw
         {
         public: //types
 

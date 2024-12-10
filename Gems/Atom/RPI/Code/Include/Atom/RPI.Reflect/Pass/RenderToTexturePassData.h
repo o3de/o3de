@@ -7,13 +7,14 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        struct RenderToTexturePassData
+        struct ATOM_RPI_REFLECT_API RenderToTexturePassData
             : public PassData
         {
             AZ_RTTI(RenderToTexturePassData, "{A2DEDE8A-C203-4BEA-896F-7F29A58F6978}", PassData);

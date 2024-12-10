@@ -139,6 +139,8 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        Material::Material() = default;
+
         Material::~Material()
         {
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
@@ -806,15 +808,15 @@ namespace AZ
 
         // Using explicit instantiation to restrict SetPropertyValue to the set of types that we support
 
-        template bool Material::SetPropertyValue<bool>     (MaterialPropertyIndex index, const bool&     value);
-        template bool Material::SetPropertyValue<int32_t>  (MaterialPropertyIndex index, const int32_t&  value);
-        template bool Material::SetPropertyValue<uint32_t> (MaterialPropertyIndex index, const uint32_t& value);
-        template bool Material::SetPropertyValue<float>    (MaterialPropertyIndex index, const float&    value);
-        template bool Material::SetPropertyValue<Vector2>  (MaterialPropertyIndex index, const Vector2&  value);
-        template bool Material::SetPropertyValue<Vector3>  (MaterialPropertyIndex index, const Vector3&  value);
-        template bool Material::SetPropertyValue<Vector4>  (MaterialPropertyIndex index, const Vector4&  value);
-        template bool Material::SetPropertyValue<Color>    (MaterialPropertyIndex index, const Color&    value);
-        template bool Material::SetPropertyValue<Data::Instance<Image>> (MaterialPropertyIndex index, const Data::Instance<Image>& value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<bool>     (MaterialPropertyIndex index, const bool&     value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<int32_t>  (MaterialPropertyIndex index, const int32_t&  value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<uint32_t> (MaterialPropertyIndex index, const uint32_t& value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<float>    (MaterialPropertyIndex index, const float&    value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Vector2>  (MaterialPropertyIndex index, const Vector2&  value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Vector3>  (MaterialPropertyIndex index, const Vector3&  value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Vector4>  (MaterialPropertyIndex index, const Vector4&  value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Color>    (MaterialPropertyIndex index, const Color&    value);
+        template AZ_DLL_EXPORT bool Material::SetPropertyValue<Data::Instance<Image>> (MaterialPropertyIndex index, const Data::Instance<Image>& value);
 
         bool Material::SetPropertyValue(MaterialPropertyIndex propertyIndex, const MaterialPropertyValue& value)
         {
@@ -836,15 +838,15 @@ namespace AZ
 
         // Using explicit instantiation to restrict GetPropertyValue to the set of types that we support
 
-        template const bool&     Material::GetPropertyValue<bool>     (MaterialPropertyIndex index) const;
-        template const int32_t&  Material::GetPropertyValue<int32_t>  (MaterialPropertyIndex index) const;
-        template const uint32_t& Material::GetPropertyValue<uint32_t> (MaterialPropertyIndex index) const;
-        template const float&    Material::GetPropertyValue<float>    (MaterialPropertyIndex index) const;
-        template const Vector2&  Material::GetPropertyValue<Vector2>  (MaterialPropertyIndex index) const;
-        template const Vector3&  Material::GetPropertyValue<Vector3>  (MaterialPropertyIndex index) const;
-        template const Vector4&  Material::GetPropertyValue<Vector4>  (MaterialPropertyIndex index) const;
-        template const Color&    Material::GetPropertyValue<Color>    (MaterialPropertyIndex index) const;
-        template const Data::Instance<Image>& Material::GetPropertyValue<Data::Instance<Image>>(MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const bool&     Material::GetPropertyValue<bool>     (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const int32_t&  Material::GetPropertyValue<int32_t>  (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const uint32_t& Material::GetPropertyValue<uint32_t> (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const float&    Material::GetPropertyValue<float>    (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Vector2&  Material::GetPropertyValue<Vector2>  (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Vector3&  Material::GetPropertyValue<Vector3>  (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Vector4&  Material::GetPropertyValue<Vector4>  (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Color&    Material::GetPropertyValue<Color>    (MaterialPropertyIndex index) const;
+        template AZ_DLL_EXPORT const Data::Instance<Image>& Material::GetPropertyValue<Data::Instance<Image>>(MaterialPropertyIndex index) const;
         
         const MaterialPropertyFlags& Material::GetPropertyDirtyFlags() const
         {

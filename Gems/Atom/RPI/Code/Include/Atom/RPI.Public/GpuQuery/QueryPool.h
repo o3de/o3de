@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Public/GpuQuery/Query.h>
 
@@ -29,7 +30,7 @@ namespace AZ
         //! A RPI QueryPool keeps track of all the RPI Query instances that are created with this pool instance. The tracking of RPI Queries is intrusive,
         //! (i.e. each RPI Query has a refrence to the RPI QueryPool which it was created from). Upon removing a RPI Query, it unregisters itself from the RPI QueryPool.
         //! The RPI QueryPool also manages the underlying RHI Query related resources.
-        class QueryPool
+        class ATOM_RPI_PUBLIC_API QueryPool
         {
             friend class RPI::Query;
 

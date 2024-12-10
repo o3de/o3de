@@ -20,7 +20,7 @@
 // Enable this define to debug output streaming image initialization and expanding process.
 //#define AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
 
-AZ_DECLARE_BUDGET(RPI);
+ATOM_RPI_PUBLIC_API AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -235,6 +235,8 @@ namespace AZ
                 m_mipChainState = {};
             }
         }
+
+        StreamingImage::StreamingImage() = default;
 
         StreamingImage::~StreamingImage()
         {

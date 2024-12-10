@@ -12,13 +12,14 @@
 #include <AzCore/EBus/EBus.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
     namespace RPI
     {
         //! Ebus to receive scene's notifications
-        class SceneNotification
+        class ATOM_RPI_PUBLIC_API SceneNotification
             : public AZ::EBusTraits
         {
         public:
@@ -93,7 +94,7 @@ namespace AZ
         using SceneNotificationBus = AZ::EBus<SceneNotification>;
         
         //! Ebus to handle requests sent to scene
-        class SceneRequest
+        class ATOM_RPI_PUBLIC_API SceneRequest
             : public AZ::EBusTraits
         {
         public:
@@ -119,3 +120,5 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(RPI::SceneNotification);
