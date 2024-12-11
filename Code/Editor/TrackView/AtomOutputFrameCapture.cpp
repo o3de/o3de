@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
@@ -30,7 +31,7 @@ namespace TrackView
         pipelineDesc.m_mainViewTagName = "MainCamera"; // must be "MainCamera"
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = "MainPipelineRenderToTexture";
-        pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 2;
+        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
 
         if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(m_renderPipeline->GetRootPass().get()))
@@ -60,6 +61,11 @@ namespace TrackView
 
     void AtomOutputFrameCapture::DestroyPipeline(AZ::RPI::Scene& scene)
     {
+        if (!m_pipelineCreated)
+        {
+            return;
+        }
+
         if (auto* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>())
         {
             // Remove view alias introduced in CreatePipeline and UpdateView

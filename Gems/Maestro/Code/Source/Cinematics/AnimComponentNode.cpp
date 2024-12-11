@@ -924,7 +924,7 @@ void CAnimComponentNode::Animate(SAnimContext& ac)
 
                             if (!wasInvoked)
                             {
-                                AZ_Info("CAnimComponentNode::Animate", "GetAnimatedPropertyValue failed for %s", sequenceEntityId.ToString().c_str());
+                                AZ_Trace("CAnimComponentNode::Animate", "GetAnimatedPropertyValue failed for %s", sequenceEntityId.ToString().c_str());
                             }
 
                             AZ::Vector3 vector3PrevValue;

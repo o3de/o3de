@@ -99,12 +99,12 @@ namespace Maestro
 
     SequenceComponent::SequenceComponent()
     {
-        AZ_Info("SequenceComponent", "SequenceComponent");
+        AZ_Trace("SequenceComponent", "SequenceComponent");
     }
 
     SequenceComponent::~SequenceComponent()
     {
-        AZ_Info("SequenceComponent", "~SequenceComponent");
+        AZ_Trace("SequenceComponent", "~SequenceComponent");
     }
 
     void SequenceComponent::Reflect(AZ::ReflectContext* context)
@@ -217,11 +217,11 @@ namespace Maestro
     {
         Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
-        AZ_Info("SequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str())
+        AZ_Trace("SequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str())
 
         if (m_movieSystem)
         {
-            if (m_sequence && m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
+            if (m_sequence && (m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset))
             {
                 m_movieSystem->OnSequenceActivated(m_sequence.get());
             }
@@ -232,7 +232,7 @@ namespace Maestro
     {
         Maestro::SequenceComponentRequestBus::Handler::BusDisconnect();
 
-        AZ_Info(
+        AZ_Trace(
             "SequenceComponent::Deactivate",
             "SequenceComponentRequestBus disconnected from %s",
             GetEntityId().ToString().c_str());

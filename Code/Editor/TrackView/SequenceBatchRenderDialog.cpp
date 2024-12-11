@@ -14,10 +14,10 @@
 
 #include "SequenceBatchRenderDialog.h"
 
+#include <Atom/RPI.Public/ViewProviderBus.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#include <Atom/RPI.Public/ViewProviderBus.h>
-#include <AzCore/Time/ITime.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 // Qt
 #include <QAction>
 #include <QFileDialog>
@@ -91,6 +91,18 @@ namespace
     }
 }
 
+namespace TrackView
+{
+    AZ_CVAR(
+        int,
+        tv_SkipFramesCount,
+        30,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Set the number of frames to skip during the warm up and switching to the Game Mode.");
+}; // namespace TrackView
+
+
 CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pParent /* = nullptr */)
     : QDialog(pParent)
     , m_fpsForTimeToFrameConversion(fps)
@@ -113,8 +125,6 @@ CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pPare
     connect(&m_renderTimer, &QTimer::timeout, this, &CSequenceBatchRenderDialog::OnKickIdleTimout);
     m_renderTimer.setInterval(0);
     m_renderTimer.setSingleShot(true);
-
-    m_skipFramesCount = REGISTER_INT("TrackViewSkipFramesCount", 30, 0, "Set the number of frames to skip during the warm up and switching to the Game Mode");
 
     REGISTER_CVAR3("TrackViewRenderOutputCapturing", CV_TrackViewRenderOutputCapturing, 0, VF_NULL, "Set to 1 when Track View is actively capturing render output.");
 }
@@ -887,6 +897,51 @@ void CSequenceBatchRenderDialog::InitializeContext()
 
 void CSequenceBatchRenderDialog::CaptureItemStart()
 {
+    const SRenderItem& renderItem = m_renderItems[m_renderContext.currentItemIndex];
+
+    const QString renderListName =
+        m_ui->m_renderList->model()->index(m_renderContext.currentItemIndex, 0).data().toString();
+
+    static const QString reservedCharacters("/\\:*?\"<>|");
+
+    QString renderListNameSanitized;
+    for (auto chr : renderListName)
+    {
+        const bool isReserved = reservedCharacters.contains(chr);
+        renderListNameSanitized.append(isReserved ? '-' : chr);
+    }
+
+    AZStd::string folderName;
+    AzFramework::StringFunc::Path::Join(renderItem.folder.toUtf8().data(), renderListNameSanitized.toUtf8().data(), folderName);
+
+    // If this is a relative path, prepend the @products@ folder to match where the Renderer is going
+    // to dump the frame buffer image captures.
+    if (AzFramework::StringFunc::Path::IsRelative(folderName.c_str()))
+    {
+        AZStd::string absolutePath;
+        const AZStd::string assetsRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
+        AzFramework::StringFunc::Path::Join(assetsRoot.c_str(), folderName.c_str(), absolutePath);
+        folderName = absolutePath;
+    }
+
+    QString finalFolder = folderName.c_str();
+    int i = 2;
+    QString probeName = finalFolder;
+    while (QFileInfo::exists(probeName))
+    {
+        probeName = QObject::tr("%1_v%2").arg(finalFolder).arg(i++);
+    }
+    finalFolder = probeName;
+
+    // Create a new folder before writing any files
+    const bool mkdirResult = QDir().mkdir(finalFolder);
+    if (!mkdirResult)
+    {
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Cannot create directory %1 for output frames").arg(finalFolder));
+        OnUpdateFinalize();
+        return;
+    }
+
     // Disable most of the UI in group chunks.
     // (Leave the start/cancel button and feedback elements).
     m_ui->BATCH_RENDER_LIST_GROUP_BOX->setEnabled(false);
@@ -896,53 +951,22 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     m_renderContext.canceled = false;
 
     CV_TrackViewRenderOutputCapturing = 1;
-
-    const SRenderItem& renderItem = m_renderItems[m_renderContext.currentItemIndex];
-
+    
     m_renderContext.captureOptions.timeStep = 1.0f / renderItem.fps;
   
     // Set up the custom config cvars for this item.
-    IConsole* pConsole = GetIEditor()->GetSystem()->GetIConsole();
-    for (const auto& cvar : renderItem.cvars)
+    AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+    AZ_Assert(console, "CSequenceBatchRenderDialog requires an IConsole interface but no instance has been created.");
+    if (console)
     {
-        pConsole->ExecuteString(cvar.toUtf8().data());
+        for (const auto& cvar : renderItem.cvars)
+        {
+            console->PerformCommand(cvar.toUtf8().data());
+        }
     }
 
     // Set specific capture options for this item.
     m_renderContext.captureOptions.prefix = renderItem.prefix.toUtf8().data();
-
-    QString folder = renderItem.folder;
-    folder.append('/');
-
-    static const QString reservedCharacters("/\\:*?\"<>|");
-    const QString renderListName = m_ui->m_renderList->model()->index(m_renderContext.currentItemIndex, 0).data().toString();
-    for (auto chr : renderListName)
-    {
-        const bool isReserved = reservedCharacters.contains(chr);
-        folder.append(isReserved ? '-' : chr);
-    }
-
-    // If this is a relative path, prepend the @products@ folder to match where the Renderer is going
-    // to dump the frame buffer image captures.
-    if (AzFramework::StringFunc::Path::IsRelative(folder.toUtf8().data()))
-    {
-        AZStd::string absolutePath;
-        AZStd::string assetsRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
-        AzFramework::StringFunc::Path::Join(assetsRoot.c_str(), folder.toUtf8().data(), absolutePath);
-        folder = absolutePath.c_str();
-    }
-
-    QString finalFolder = folder;
-    int i = 2;
-    while (QFileInfo::exists(finalFolder))
-    {
-        finalFolder = folder + QString::fromLatin1("_v%1").arg(i);
-        ++i;
-    }
-
-    // Create a new folder before writing any files
-    [[maybe_unused]] const bool mkdirResult = QDir().mkdir(finalFolder);
-    AZ_Assert(mkdirResult, "Cannot create directory %s", finalFolder.toStdString().c_str());
 
     m_renderContext.captureOptions.folder = finalFolder.toUtf8().data();
 
@@ -991,8 +1015,7 @@ void CSequenceBatchRenderDialog::OnUpdateWarmingUpAfterResChange()
     UpdateSpinnerProgressMessage("Warming up");
 
     // Spend the given frames warming up after frame buffer resolution change
-    const int skipFramesCount = m_skipFramesCount->GetIVal();
-    if (m_renderContext.framesSpentInCurrentPhase++ >= skipFramesCount)
+    if (m_renderContext.framesSpentInCurrentPhase++ >= TrackView::tv_SkipFramesCount)
     {
         // We will handle the idle tick manually now because calling Game Update directly.
         SetEnableEditorIdleProcessing(false);
@@ -1010,7 +1033,6 @@ void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
     GetIEditor()->GetGameEngine()->Update();
 
     // Pause the movie player on the first frame
-    const int skipFramesCount = m_skipFramesCount->GetIVal();
     if (m_renderContext.framesSpentInCurrentPhase++ == 0)
     {
         IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
@@ -1020,7 +1042,7 @@ void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
         }
     }
     // Spend the given frames warming up after changing to game mode.
-    else if (m_renderContext.framesSpentInCurrentPhase++ > skipFramesCount)
+    else if (m_renderContext.framesSpentInCurrentPhase++ > TrackView::tv_SkipFramesCount)
     {
         EnterCaptureState(CaptureState::BeginPlayingSequence);
     }
@@ -1144,8 +1166,6 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
     {
         cvarDebugInfo->Set(m_renderContext.cvarDisplayInfoBU);
     }
-
-
 
     const SRenderItem& renderItem = m_renderItems[m_renderContext.currentItemIndex];
     if (m_bFFMPEGCommandAvailable && renderItem.bCreateVideo)

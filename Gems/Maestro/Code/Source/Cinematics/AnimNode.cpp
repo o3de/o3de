@@ -695,11 +695,14 @@ CAnimNode::CAnimNode(const int id, AnimNodeType nodeType)
     m_pParentNode = 0;
     m_nLoadedParentNodeId = 0;
     m_expanded = true;
+
+    AZ_Trace("CAnimNode", "CAnimNode type %i", static_cast<int>(nodeType));
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimNode::~CAnimNode()
 {
+    AZ_Trace("CAnimNode", "~CAnimNode %i", static_cast<int>(m_nodeType));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -904,7 +907,7 @@ void CAnimNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTra
 void CAnimNode::InitPostLoad(IAnimSequence* sequence)
 {
     [[maybe_unused]]const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
-    AZ_Info("CAnimNode::InitPostLoad", "IAnimSequence is %s", sequenceEntityId.ToString().c_str());
+    AZ_Trace("CAnimNode::InitPostLoad", "IAnimSequence is %s", sequenceEntityId.ToString().c_str());
 
     m_pSequence = sequence;
     m_pParentNode = ((CAnimSequence*)m_pSequence)->FindNodeById(m_parentNodeId);

@@ -157,7 +157,7 @@ protected:
 
         bool IsInRendering() const { return currentItemIndex >= 0; }
 
-        SRenderContext() {}
+        SRenderContext() = default;
     };
     SRenderContext m_renderContext;
 
@@ -213,7 +213,6 @@ private:
     QScopedPointer<Ui::SequenceBatchRenderDialog> m_ui;
     QStringListModel* m_renderListModel;
     QTimer m_renderTimer;
-    ICVar* m_skipFramesCount;
     bool m_editorIdleProcessingEnabled;
     int32 CV_TrackViewRenderOutputCapturing;
     QScopedPointer<CPrefixValidator> m_prefixValidator;

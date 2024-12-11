@@ -828,12 +828,12 @@ struct IAnimSequence
 
     IAnimSequence()
     {
-        AZ_Info("IAnimSequence", "IAnimSequence");
+        AZ_Trace("IAnimSequence", "IAnimSequence");
     }
 
     virtual ~IAnimSequence()
     {
-        AZ_Info("IAnimSequence", "~IAnimSequence");
+        AZ_Trace("IAnimSequence", "~IAnimSequence");
     }
 
     // for intrusive_ptr support

@@ -1048,7 +1048,7 @@ void CTrackViewAnimNode::SetNodeEntityId(const AZ::EntityId entityId)
                 wasInvoked,
                 sequenceComponentEntityId, &Maestro::EditorSequenceComponentRequestBus::Events::AddEntityToAnimate, entityId);
 
-            AZ_Info(
+            AZ_Trace(
                 "CTrackViewAnimNode::SetNodeEntityId", "AddEntityToAnimate %s sequenceComponentEntityId %s was invoked %s", entityId.ToString().c_str(),
                 sequenceComponentEntityId.ToString().c_str(),
                 wasInvoked ? "true" : "false");

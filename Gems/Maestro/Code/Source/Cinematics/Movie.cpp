@@ -424,12 +424,12 @@ void CMovieSystem::AddSequence(IAnimSequence* sequence)
     [[maybe_unused]] const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
     if (AZStd::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
     {
-        AZ_Info("CMovieSystem::AddSequence", "IAnimSequence %s push_back in m_sequences", sequenceEntityId.ToString().c_str());
+        AZ_Trace("CMovieSystem::AddSequence", "IAnimSequence %s push_back in m_sequences", sequenceEntityId.ToString().c_str());
         m_sequences.push_back(sequence);
     }
     else
     {
-        AZ_Info("CMovieSystem::AddSequence", "IAnimSequence %s already in m_sequences", sequenceEntityId.ToString().c_str());
+        AZ_Trace("CMovieSystem::AddSequence", "IAnimSequence %s already in m_sequences", sequenceEntityId.ToString().c_str());
     }    
 }
 
@@ -476,7 +476,7 @@ void CMovieSystem::RemoveSequence(IAnimSequence* sequence)
             {
                 [[maybe_unused]] AZ::EntityId sequenceComponentEntityId(sequence->GetSequenceEntityId());
 
-                AZ_Info(
+                AZ_Trace(
                     "CMovieSystem::RemoveSequence",
                     "Erasing %s from m_sequences",
                     sequenceComponentEntityId.ToString().c_str());
@@ -487,17 +487,19 @@ void CMovieSystem::RemoveSequence(IAnimSequence* sequence)
             }
         }
 
+#if defined(AZ_ENABLE_TRACING)
         if (!m_sequences.empty())
         {
-            AZ_Info("CMovieSystem::RemoveSequence","Left in m_sequences:");
+            AZ_Trace("CMovieSystem::RemoveSequence","Left in m_sequences:");
 
             for (Sequences::iterator iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
             {
                 AZ::EntityId sequenceComponentEntityId((*iter)->GetSequenceEntityId());
 
-                AZ_Info("CMovieSystem::RemoveSequence", "  %s", sequenceComponentEntityId.ToString().c_str());
+                AZ_Trace("CMovieSystem::RemoveSequence", "  %s", sequenceComponentEntityId.ToString().c_str());
             }
         }
+#endif
 
         SetCallback(callback);
     }
@@ -689,7 +691,7 @@ void CMovieSystem::PlaySequence(IAnimSequence* sequence, IAnimSequence* parentSe
     // Make sure all members are initialized before pushing.
 
     [[maybe_unused]] const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
-    AZ_Info("CMovieSystem::PlaySequence", "m_playingSequences.push_back %s", sequenceEntityId.ToString().c_str());
+    AZ_Trace("CMovieSystem::PlaySequence", "m_playingSequences.push_back %s", sequenceEntityId.ToString().c_str());
 
     m_playingSequences.push_back(ps);
 
@@ -927,7 +929,7 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
             if (pCurrentSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
             {
                 [[maybe_unused]] const AZ::EntityId& sequenceEntityId = pCurrentSequence->GetSequenceEntityId();
-                AZ_Info("CMovieSystem::Reset", "PlaySequence %s", sequenceEntityId.ToString().c_str());
+                AZ_Trace("CMovieSystem::Reset", "PlaySequence %s", sequenceEntityId.ToString().c_str());
 
                 PlaySequence(pCurrentSequence);
             }

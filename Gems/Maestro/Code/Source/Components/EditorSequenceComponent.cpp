@@ -39,13 +39,13 @@ namespace Maestro
     EditorSequenceComponent::EditorSequenceComponent()
         : m_sequenceId(s_invalidSequenceId)
     {
-        AZ_Info("EditorSequenceComponent", "EditorSequenceComponent");
+        AZ_Trace("EditorSequenceComponent", "EditorSequenceComponent");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     EditorSequenceComponent::~EditorSequenceComponent()
     {
-        AZ_Info("EditorSequenceComponent", "~EditorSequenceComponent");
+        AZ_Trace("EditorSequenceComponent", "~EditorSequenceComponent");
 
         bool isDuringUndo = false;
         AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
@@ -175,7 +175,7 @@ namespace Maestro
         Maestro::EditorSequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
         Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
-        AZ_Info("EditorSequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str());
+        AZ_Trace("EditorSequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str());
 
         IEditor* editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
@@ -199,7 +199,7 @@ namespace Maestro
         Maestro::EditorSequenceComponentRequestBus::Handler::BusDisconnect();
         Maestro::SequenceComponentRequestBus::Handler::BusDisconnect();
 
-        AZ_Info("EditorSequenceComponent::Deactivate", "SequenceComponentRequestBus disconnected from %s", GetEntityId().ToString().c_str());
+        AZ_Trace("EditorSequenceComponent::Deactivate", "SequenceComponentRequestBus disconnected from %s", GetEntityId().ToString().c_str());
 
         IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 

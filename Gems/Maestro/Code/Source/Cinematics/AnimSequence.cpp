@@ -58,19 +58,19 @@ CAnimSequence::CAnimSequence(uint32 id, SequenceType sequenceType)
     m_pEventStrings = aznew CAnimStringTable;
     m_expanded = true;
 
-    AZ_Info("CAnimSequence", "CAnimSequence type %i", static_cast<int>(sequenceType));
+    AZ_Trace("CAnimSequence", "CAnimSequence type %i", static_cast<int>(sequenceType));
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimSequence::CAnimSequence()
     : CAnimSequence(0, SequenceType::SequenceComponent)
 {
-    AZ_Info("CAnimSequence", "CAnimSequence no args");
+    AZ_Trace("CAnimSequence", "CAnimSequence no args");
 }
 
 CAnimSequence::~CAnimSequence()
 {
-    AZ_Info("CAnimSequence", "~CAnimSequence");
+    AZ_Trace("CAnimSequence", "~CAnimSequence");
 
     // clear reference to me from all my nodes
     for (int i = static_cast<int>(m_nodes.size()); --i >= 0;)
@@ -210,7 +210,7 @@ bool CAnimSequence::AddNode(IAnimNode* animNode)
     if (!found)
     {
         m_nodes.push_back(AZStd::intrusive_ptr<IAnimNode>(animNode));
-        AZ_Info("CAnimSequence::Animate", "Added %s to m_nodes", animNode->GetAzEntityId().ToString().c_str());
+        AZ_Trace("CAnimSequence::Animate", "Added %s to m_nodes", animNode->GetAzEntityId().ToString().c_str());
     }
 
     const int nodeId = animNode->GetId();
@@ -754,11 +754,11 @@ void CAnimSequence::Animate(const SAnimContext& ec)
         const AZStd::string animNodeTypeName = GetAnimNodeTypeName(animNodeType);
         if (animNode->GetType() == AnimNodeType::AzEntity)
         {
-            AZ_Info("CAnimSequence::Animate", "AnimNode m_nodes[%i] type %s, id %s", i, animNodeTypeName.c_str(), animNode->GetAzEntityId().ToString().c_str());
+            AZ_Trace("CAnimSequence::Animate", "AnimNode m_nodes[%i] type %s, id %s", i, animNodeTypeName.c_str(), animNode->GetAzEntityId().ToString().c_str());
         }
         else
         {
-            AZ_Info("CAnimSequence::Animate", "AnimNode m_nodes[%i] type %s", i, animNodeTypeName.c_str());
+            AZ_Trace("CAnimSequence::Animate", "AnimNode m_nodes[%i] type %s", i, animNodeTypeName.c_str());
         }
     }
 #endif

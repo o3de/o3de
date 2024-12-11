@@ -50,7 +50,7 @@ namespace TrackView
         AZStd::vector<AZStd::string> m_passHierarchy; //!< Pass hierarchy (includes pipelineName and CopyToSwapChain).
         CaptureFinishedCallback m_captureFinishedCallback; //!< Stored callback called from OnCaptureFinished.
 
-        bool m_pipelineCreated = false;
+        bool m_pipelineCreated{};
 
         // FrameCaptureNotificationBus overrides ...
         void OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
