@@ -394,7 +394,9 @@ namespace AZ
             hdrMetadata.displayPrimaryGreen = {Chroma.GreenX, Chroma.GreenY};
             hdrMetadata.displayPrimaryBlue = {Chroma.BlueX, Chroma.BlueY};
             hdrMetadata.whitePoint = {Chroma.WhiteX, Chroma.WhiteY};
-            hdrMetadata.maxLuminance = maxOutputNits; // * 10000.0f;
+            //Mult. by 10,000 because its what VKD3D does
+            //https://github.com/HansKristian-Work/vkd3d-proton/blob/8165096180a9019542b693ce1fcb80f44433b1e2/libs/vkd3d/swapchain.c#L866C36-L866C57
+            hdrMetadata.maxLuminance = maxOutputNits * 10000.0f;
             hdrMetadata.minLuminance = minOutputNits;
             hdrMetadata.maxContentLightLevel = maxContentLightLevel;
             hdrMetadata.maxFrameAverageLightLevel = maxFrameAverageLightLevel;

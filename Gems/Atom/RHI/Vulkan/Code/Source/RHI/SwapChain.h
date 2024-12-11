@@ -114,7 +114,7 @@ namespace AZ
             VkSurfaceFormatKHR m_surfaceFormat = {};
             VkSurfaceCapabilitiesKHR m_surfaceCapabilities = {};
             VkPresentModeKHR m_presentMode = {};
-            VkCompositeAlphaFlagBitsKHR m_compositeAlphaFlagBits = {}; 
+            VkCompositeAlphaFlagBitsKHR m_compositeAlphaFlagBits = {};
             AZStd::vector<VkImage> m_swapchainNativeImages;
             RHI::SwapChainDimensions m_dimensions;
 
