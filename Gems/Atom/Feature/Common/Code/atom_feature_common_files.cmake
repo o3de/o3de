@@ -137,6 +137,8 @@ set(FILES
     Source/Mesh/ModelReloader.h
     Source/Mesh/ModelReloaderSystem.cpp
     Source/Mesh/ModelReloaderSystem.h
+    Source/Mesh/StreamBufferViewsBuilder.cpp
+    Source/Mesh/StreamBufferViewsBuilder.h
     Source/MorphTargets/MorphTargetComputePass.cpp
     Source/MorphTargets/MorphTargetComputePass.h
     Source/MorphTargets/MorphTargetDispatchItem.cpp

@@ -98,7 +98,7 @@ namespace AZ::RHI
 
         DrawInstanceArguments m_drawInstanceArgs;
 
-        // The bit-mask of all active filter tags.
+        // The bit-mask of all active DrawListTags.
         DrawListMask m_drawListMask = 0;
 
         uint8_t m_drawItemCount = 0;

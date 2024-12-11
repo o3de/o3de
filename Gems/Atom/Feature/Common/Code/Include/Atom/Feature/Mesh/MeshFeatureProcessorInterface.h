@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
+#include <Atom/RHI/DispatchItem.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
@@ -68,6 +69,21 @@ namespace AZ
             "This is helpful for simulating the worst case scenario for instancing for profiling performance.");
 
         struct MeshInstanceGroupData;
+        class StreamBufferViewsBuilderInterface;
+
+        //! Custom material infill containing a material instance that will be substituted for an embedded material on a model and UV
+        //! mapping reassignments
+        struct CustomMaterialInfo
+        {
+            Data::Instance<RPI::Material> m_material;
+            RPI::MaterialModelUvOverrideMap m_uvMapping;
+        };
+
+        //! Mesh feature processor data types for customizing model materials
+        using CustomMaterialLodIndex = AZ::u64;
+
+        //! Pair referring to the lod index and unique id corresponding to the material slot where the material should be applied 
+        using CustomMaterialId = AZStd::pair<CustomMaterialLodIndex, uint32_t>;
 
         // ModelDataInstanceInterface provides an interface to ModelDataInstance
         // It provides information about an instance of a model in the scene
@@ -102,31 +118,20 @@ namespace AZ
             virtual const AZ::Uuid& GetRayTracingUuid() const = 0;
 
             //! Internally called when a DrawPacket used by this ModelDataInstance was updated.
-            virtual void HandleDrawPacketUpdate(RPI::MeshDrawPacket& meshDrawPacket) = 0;
+            virtual void HandleDrawPacketUpdate(uint32_t lodIndex, uint32_t meshIndex, RPI::MeshDrawPacket& meshDrawPacket) = 0;
 
             //! Event that let's us know whenever one of the MeshDrawPackets has been updated.
             //! This event can occur on multiple threads.
             //! Provides the ModelDataInstance parent object that owns the MeshDrawPacket.
-            using MeshDrawPacketUpdatedEvent = Event<const ModelDataInstanceInterface&, const AZ::RPI::MeshDrawPacket&>;
+            using MeshDrawPacketUpdatedEvent = Event<const ModelDataInstanceInterface&, uint32_t /*lodIndex*/, uint32_t /*meshIndex*/, const AZ::RPI::MeshDrawPacket&>;
             //! Connects @handler to the MeshDrawPacketUpdatedEvent.
             //! One of the most common reasons a MeshDrawPacket gets updated is
             //! when a RenderPipeline is instantiated at runtime and it happens to contain
             //! a RasterPass with a DrawListTag that matches one of the Shaders of one of the Materials in
-            //! a Mesh.
+            //! a Mesh. Another scenario is when Shader assets or Material assets are reloaded.
             virtual void ConnectMeshDrawPacketUpdatedHandler(MeshDrawPacketUpdatedEvent::Handler& handler) = 0;
-        };
 
-        //! Mesh feature processor data types for customizing model materials
-        using CustomMaterialLodIndex = AZ::u64;
-
-        //! Pair referring to the lod index and unique id corresponding to the material slot where the material should be applied 
-        using CustomMaterialId = AZStd::pair<CustomMaterialLodIndex, uint32_t>;
-
-        //! Custom material infill containing a material instance that will be substituted for an embedded material on a model and UV mapping reassignments 
-        struct CustomMaterialInfo
-        {
-            Data::Instance<RPI::Material> m_material;
-            RPI::MaterialModelUvOverrideMap m_uvMapping;
+            virtual CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const = 0;
         };
 
         using CustomMaterialMap = AZStd::unordered_map<CustomMaterialId, CustomMaterialInfo>;
@@ -181,6 +186,22 @@ namespace AZ
             ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler{ [](const Data::Instance<RPI::ShaderResourceGroup>&){} };
         };
 
+        //! Helper structure used to create a DispatchItem from a DrawItem.
+        //! This structure is created, optionally and on demand, by the MeshFeatureProcessor
+        //! only for DrawItems with a PipelineState of Compute type.
+        struct DispatchDrawItem
+        {
+            DispatchDrawItem() = delete;
+            explicit DispatchDrawItem(const RHI::DrawItem* drawItem)
+                : m_drawItem(drawItem)
+                , m_distpatchItem(RHI::MultiDevice::AllDevices)
+            {
+            }
+            const RHI::DrawItem* m_drawItem = nullptr;
+            RHI::DispatchItem m_distpatchItem;
+        };
+        using DispatchDrawItemList = AZStd::vector<DispatchDrawItem>;
+
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying
         //! MeshFeatureProcessor
         class MeshFeatureProcessorInterface : public RPI::FeatureProcessor
@@ -204,8 +225,9 @@ namespace AZ
             virtual Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const = 0;
             //! Gets the underlying RPI::ModelAsset for a meshHandle.
             virtual Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const = 0;
-            //! This function is primarily intended for debug output and testing, by providing insight into what
-            //! materials, shaders, etc. are actively being used to render the model.
+
+            //! This function provides insight into what materials, shaders, etc. are actively being used to render the model.
+            //! Useful for custom feature processors that work in tandem with the MeshFeatureProcessor.
             virtual const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
 
             //! Gets the ObjectSrgs for a meshHandle.
@@ -274,6 +296,29 @@ namespace AZ
             virtual void SetRayTracingDirty(const MeshHandle& meshHandle) = 0;
             //! Print out info about the mesh draw packet
             virtual void PrintDrawPacketInfo(const MeshHandle& meshHandle) = 0;
+            //! A helper function, typically called by another FeatureProcessor, when Compute or RayTracing shaders need to bind
+            //! Mesh Input Streams like "POSITION", "NORMAL", "UV1" etc as regular AZ::RHI::BufferViews.
+            //! This function instantiates a concrete Builder-like object that helps creating the RHI::BufferViews. 
+            virtual AZStd::unique_ptr<StreamBufferViewsBuilderInterface> CreateStreamBufferViewsBuilder(const MeshHandle& meshHandle) const = 0;
+            //! MaterialTypes and MaterialPipelines support Compute Shaders (With DrawListTag) in their ShaderItem collections.
+            //! Given that this is an uncommon use case, the DispatchItems are not created automatically by the MeshDrawPacket.
+            //! Additionally DispatchItems require knowledge of the Total number of threads X,Y,Z, which should be customizable.
+            //! The following function helps the creation of the DispatchItems and the user must supply a callback that
+            //! allows full control on the number of Total Threads X,Y,Z.
+            //! REMARK 1: It is recommended to call this function whenever ModelDataInstanceInterface::MeshDrawPacketUpdatedEvent is signaled.
+            //! REMARK 2: This function is typically called by a custom FeatureProcessor that leverages the MeshFeatureProcessor.
+            //!           The custom FeatureProcessor will own the returned list and submit the DispatchItems in a custom Pass.
+            using DispatchArgumentsSetupCB = AZStd::function<void(uint32_t /*lodIndex*/, uint32_t /*meshIndex*/, uint32_t /*drawItemIdx*/, const RHI::DrawItem*, RHI::DispatchDirect&)>;
+            //! DisptachItems will be created for the DrawItems that match both the @drawListTagsFilter and @materialPipelineFilter.
+            //! Also, only DrawItems whose PipelineState is of Compute type will be considered.
+            virtual DispatchDrawItemList BuildDispatchDrawItemList(
+                const MeshHandle& meshHandle,
+                const uint32_t lodIndex,
+                const uint32_t meshIndex,
+                const RHI::DrawListMask drawListTagsFilter,
+                const RHI::DrawFilterMask materialPipelineFilter,
+                DispatchArgumentsSetupCB dispatchArgumentsSetupCB) const = 0;
+
         };
     } // namespace Render
 } // namespace AZ
