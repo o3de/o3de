@@ -292,6 +292,11 @@ namespace AZ::RHI
 
         ResultCode resultCode = IterateObjects<DeviceBufferPool>([&](auto deviceIndex, auto deviceBufferPool)
         {
+            if (!AZ::RHI::CheckBit(request.m_buffer->GetDeviceMask(), deviceIndex))
+            {
+                return ResultCode::Success;
+            }
+
             deviceMapRequest.m_buffer = request.m_buffer->GetDeviceBuffer(deviceIndex).get();
             auto resultCode = deviceBufferPool->MapBuffer(deviceMapRequest, deviceMapResponse);
 
@@ -321,7 +326,10 @@ namespace AZ::RHI
         {
             IterateObjects<DeviceBufferPool>([&buffer](auto deviceIndex, auto deviceBufferPool)
             {
-                deviceBufferPool->UnmapBuffer(*buffer.GetDeviceBuffer(deviceIndex));
+                if (AZ::RHI::CheckBit(buffer.GetDeviceMask(), deviceIndex))
+                {
+                    deviceBufferPool->UnmapBuffer(*buffer.GetDeviceBuffer(deviceIndex));
+                }
             });
         }
     }
