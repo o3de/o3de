@@ -215,13 +215,20 @@ namespace AzToolsFramework
             AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
 
             //! Adds a nested instance to the prefab DOM and optionally initialize its contents.
-            //! @param prefabDom The prefab DOM to udpate.
+            //! @param prefabDom The prefab DOM to update.
             //! @param nestedInstanceAlias The alias of the nested instance to be added.
             //! @param nestedInstanceDom An optional value to assign to the added nested instance in the prefab DOM.
             void AddNestedInstance(
                 PrefabDom& prefabDom,
                 const InstanceAlias& nestedInstanceAlias,
                 PrefabDomValueConstReference nestedInstanceDom = AZStd::nullopt);
+
+            //! Checks the provided PrefabDom checking that nested entity objects do have valid parents in TransformComoponents.
+            //! In case a nested entity object has invalid parent, then assign the container entity as parent.
+            //! This may happen, for example, when loading a spoiled prefab stored with early O3DE versions.
+            //! @param prefabDom The prefab DOM to check and conditionally update. Changes will be applied in place.
+            //! @return True if checks were successful, false if a parent statement is updated with logging an error.
+            bool CheckEntitiesParents(PrefabDom& prefabDom);
 
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.
