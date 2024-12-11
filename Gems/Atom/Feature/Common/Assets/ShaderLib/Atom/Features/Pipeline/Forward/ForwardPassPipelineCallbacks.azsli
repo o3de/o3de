@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/InstancedTransforms.azsli>
+
+#ifndef VsSystemValues
+#error "VsSystemValues needs to be declared"
+#endif
+
+// DrawSrg, ObjectSrg, ViewSrg and SceneSrg need to be defined fully before this file 
+
+uint GetLightingChannelMask(VsSystemValues SV)
+{
+    return ObjectSrg::m_lightingChannelMask;
+}
+
+float4x4 GetObjectToWorldMatrix(VsSystemValues SV)
+{
+    return GetObjectToWorldMatrix(SV.m_instanceId);
+}
+
+float3x3 GetObjectToWorldMatrixInverseTranspose(VsSystemValues SV)
+{
+    return GetObjectToWorldMatrixInverseTranspose(SV.m_instanceId);
+}
+
+float4x4 GetViewProjectionMatrix(VsSystemValues SV)
+{
+    return ViewSrg::m_viewProjectionMatrix;
+}
+
+bool HasGoboTexture(int index)
+{
+    return index < ViewSrg::MaxGoboTextureCount;
+}
+
+Texture2D<float> GetGoboTexture(int index)
+{
+    return ViewSrg::m_goboTextures[index];
+}
+
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+float4x4 GetObjectToWorldMatrixPrev(VsSystemValues SV)
+{
+    return GetObjectToWorldMatrixPrev(SV.m_instanceId);
+}
+
+float4x4 GetViewProjectionPrevMatrix(VsSystemValues SV)
+{
+    return ViewSrg::m_viewProjectionPrevMatrix;
+}
+#endif // MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+
+
+
+

@@ -25,16 +25,18 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     float4 tangent,
     float2 uv0,
     float2 uv1,
-    uint instanceId,
+    VsSystemValues SV,
     bool useVertexColor,
     float4 color0)
 {
     // BasePBRP
-    VsOutput output = EvaluateVertexGeometry_BasePBR(params, position, normal, tangent, uv0, uv1, instanceId, useVertexColor, color0);
+    VsOutput output = EvaluateVertexGeometry_BasePBR(params, position, normal, tangent, uv0, uv1, SV, useVertexColor, color0);
 
+#ifdef PIPELINE_VERTEX_DETAIL_UV
     // Detail UVs
     float2 detailUvs[UvSetCount] = { uv0, uv1 };
     TransformDetailUvs(params, detailUvs, output.detailUvs);
+#endif
 
     return output;
 }
@@ -54,7 +56,7 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV, const
         IN.tangent,
         IN.uv0,
         IN.uv1,
-        SV.m_instanceId,
+        SV,
         useVertexColor0,
         color0);
 }
@@ -68,6 +70,9 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     float2 uv1,
     uint instanceId)
 {
+    VsSystemValues  SV;
+    SV.m_instanceId = instanceId;
+
     return EvaluateVertexGeometry_EnhancedPBR(
         params,
         position,
@@ -75,7 +80,7 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
         tangent,
         uv0,
         uv1,
-        instanceId,
+        SV,
         false,
         float4(1.0f, 1.0f, 1.0f, 1.0f));
 }

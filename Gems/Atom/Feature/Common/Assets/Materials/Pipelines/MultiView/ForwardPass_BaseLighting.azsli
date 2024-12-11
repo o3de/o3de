@@ -34,11 +34,23 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include MATERIAL_TYPE_AZSLI_FILE_PATH
+#ifdef MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#include MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <viewsrg.srgi>
+#include <scenesrg.srgi>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include MATERIAL_TYPE_AZSLI_FILE_PATH
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"

@@ -10,6 +10,19 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#include MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <viewsrg.srgi>
+#include <scenesrg.srgi>
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include MATERIAL_TYPE_AZSLI_FILE_PATH
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,7 +41,11 @@ struct PsOutput
 
 PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace, GetMaterialParameters());
+    // ------- Reconstruct the Instance-Id --------
+    VsSystemValues SV;
+    SV.m_instanceId = IN.m_instanceId;
+
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, SV, isFrontFace, GetMaterialParameters());
 
     // Pixel clipping can be done here
     EvaluateSurface(IN, geoData, GetMaterialParameters());
