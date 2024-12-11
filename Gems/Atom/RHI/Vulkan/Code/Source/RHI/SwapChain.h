@@ -70,6 +70,9 @@ namespace AZ
             void SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval) override;
             //////////////////////////////////////////////////////////////////////
 
+            void DisableHdr();
+            void SetHDRMetaData(float maxOutputNits, float minOutputNits, float maxContentLightLevel, float maxFrameAverageLightLevel);
+
             RHI::ResultCode BuildSurface(const RHI::SwapChainDescriptor& descriptor);
 
             //! Returns true is the swapchain dimensions are supported by the current surface.
@@ -99,6 +102,8 @@ namespace AZ
             void InvalidateSurface();
             //! Destroy the swapchain.
             void InvalidateNativeSwapChain(VkSwapchainKHR swapchain);
+
+            VkColorSpaceKHR m_colorSpace = VK_COLOR_SPACE_MAX_ENUM_KHR;
 
             RHI::Ptr<WSISurface> m_surface;
             VkSwapchainKHR m_nativeSwapChain = VK_NULL_HANDLE;

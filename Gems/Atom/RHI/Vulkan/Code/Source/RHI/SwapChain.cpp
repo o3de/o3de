@@ -138,7 +138,7 @@ namespace AZ
                     *nativeDimensions = m_dimensions;
                     nativeDimensions->m_imageFormat = ConvertFormat(m_surfaceFormat.format);
                 }
-            }    
+            }
 
             SetName(GetName());
             return result;
@@ -348,6 +348,61 @@ namespace AZ
             }
         }
 
+        void SwapChain::SetHDRMetaData(float maxOutputNits, float minOutputNits, float maxContentLightLevel,
+            float maxFrameAverageLightLevel) {
+            auto& device = static_cast<Device&>(GetDevice());
+
+            //From DX12 RHI
+            struct DisplayChromacities
+            {
+                float RedX;
+                float RedY;
+                float GreenX;
+                float GreenY;
+                float BlueX;
+                float BlueY;
+                float WhiteX;
+                float WhiteY;
+            };
+            static const DisplayChromacities DisplayChromacityList[] =
+            {
+                { 0.64000f, 0.33000f, 0.30000f, 0.60000f, 0.15000f, 0.06000f, 0.31270f, 0.32900f }, // Display Gamut Rec709
+                { 0.70800f, 0.29200f, 0.17000f, 0.79700f, 0.13100f, 0.04600f, 0.31270f, 0.32900f }, // Display Gamut Rec2020
+            };
+
+            // Select the chromaticity based on HDR format
+            int selectedChroma = 0;
+            if (m_colorSpace == VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT)
+            {
+                selectedChroma = 0;
+            }
+            else if (m_colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT)
+            {
+                selectedChroma = 1;
+            }
+            else
+            {
+                AZ_Assert(false, "Unhandled color space for swapchain.");
+            }
+
+            // const float LuminanceScalingFactor = 10000.0f;
+
+            const DisplayChromacities& Chroma = DisplayChromacityList[selectedChroma];
+            VkHdrMetadataEXT hdrMetadata;
+            hdrMetadata.sType = VK_STRUCTURE_TYPE_HDR_METADATA_EXT;
+            hdrMetadata.displayPrimaryRed = {Chroma.RedX, Chroma.RedY};
+            hdrMetadata.displayPrimaryGreen = {Chroma.GreenX, Chroma.GreenY};
+            hdrMetadata.displayPrimaryBlue = {Chroma.BlueX, Chroma.BlueY};
+            hdrMetadata.whitePoint = {Chroma.WhiteX, Chroma.WhiteY};
+            hdrMetadata.maxLuminance = maxOutputNits; // * 10000.0f;
+            hdrMetadata.minLuminance = minOutputNits;
+            hdrMetadata.maxContentLightLevel = maxContentLightLevel;
+            hdrMetadata.maxFrameAverageLightLevel = maxFrameAverageLightLevel;
+
+            AZ_Assert(device.GetContext().SetHdrMetadataEXT != nullptr, "Calling SetHDRMetaData when HDR isn't supported.");
+            device.GetContext().SetHdrMetadataEXT(device.GetNativeDevice(), 1, &m_nativeSwapChain, &hdrMetadata);
+        }
+
         RHI::ResultCode SwapChain::BuildSurface(const RHI::SwapChainDescriptor& descriptor)
         {
             WSISurface::Descriptor surfaceDesc{};
@@ -499,6 +554,19 @@ namespace AZ
                 }
             }
 
+            VkColorSpaceKHR colorSpace = m_surfaceFormat.colorSpace;
+            bool hdrEnabled = false;
+
+            if(device.GetContext().SetHdrMetadataEXT != nullptr &&
+                dimensions.m_imageFormat == RHI::Format::R10G10B10A2_UNORM)
+            {
+                //We have HDR
+                //VKD3D converts DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 -> VK_COLOR_SPACE_HDR10_ST2084_EXT
+                //misyltoad said they implemented that and that it's correct.
+                colorSpace = VK_COLOR_SPACE_HDR10_ST2084_EXT;
+                hdrEnabled = true;
+            }
+
             VkSwapchainCreateInfoKHR createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
             createInfo.pNext = nullptr;
@@ -508,7 +576,7 @@ namespace AZ
             // need to be less than or equal to the difference between the number of images in swapchain and the value of VkSurfaceCapabilitiesKHR::minImageCount
             createInfo.minImageCount = AZStd::max(dimensions.m_imageCount, simultaneousAcquiredImages + m_surfaceCapabilities.minImageCount);
             createInfo.imageFormat = m_surfaceFormat.format;
-            createInfo.imageColorSpace = m_surfaceFormat.colorSpace;
+            createInfo.imageColorSpace = colorSpace;
             createInfo.imageExtent = extent;
             createInfo.imageArrayLayers = 1; // non-stereoscopic
             createInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -526,6 +594,16 @@ namespace AZ
             const VkResult result =
                 device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSwapChain);
             AssertSuccess(result);
+
+            if(hdrEnabled) {
+                m_colorSpace = createInfo.imageColorSpace;
+                // [GFX TODO][ATOM-2587] How to specify and determine the limits of the display and scene?
+                float maxOutputNits = 1000.f;
+                float minOutputNits = 0.001f;
+                float maxContentLightLevelNits = 2000.f;
+                float maxFrameAverageLightLevelNits = 500.f;
+                SetHDRMetaData(maxOutputNits, minOutputNits, maxContentLightLevelNits, maxFrameAverageLightLevelNits);
+            }
 
             return ConvertResult(result);
         }
