@@ -463,11 +463,12 @@ set(FILES
     Shaders/Materials/MaterialInputs/SubsurfaceInput.azsli
     Shaders/Materials/MaterialInputs/TransmissionInput.azsli
     Shaders/Materials/MaterialInputs/UvSetCount.azsli
-    Shaders/Materials/MaterialInputs/VertexColorInput.azsli
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Common.azsli
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_DepthPass_WithPS.azsl
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.azsl
-    Shaders/Materials/Silhouette/SilhouetteGather_MaterialSrg.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_Common.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_PixelGeometryData.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_PixelGeometryEval.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_SurfaceEval.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_VertexData.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_VertexEval.azsli
     Shaders/Materials/Skin/Skin_LightingBrdf.azsli
     Shaders/Materials/Skin/Skin_LightingEval.azsli
     Shaders/Materials/Skin/Skin_MaterialInputs.azsli
