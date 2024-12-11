@@ -223,12 +223,14 @@ namespace AzToolsFramework
                 const InstanceAlias& nestedInstanceAlias,
                 PrefabDomValueConstReference nestedInstanceDom = AZStd::nullopt);
 
-            //! Checks the provided PrefabDom checking that nested entity objects do have valid parents in TransformComoponents.
-            //! In case a nested entity object has invalid parent, then assign the container entity as parent.
-            //! This may happen, for example, when loading a spoiled prefab stored with early O3DE versions.
+            //! Runs through PrefabDom structure analyzing its general correctness, and checks that
+            //! nested entity objects have non-empty parent values in their TransformComoponents.
+            //! Logs errors found.
+            //! In case a nested entity object has the empty parent alias, reassigns the container entity alias as the parent.
+            //! This may happen, for example, when loading a spoiled prefab stored with earlier O3DE versions.
             //! @param prefabDom The prefab DOM to check and conditionally update. Changes will be applied in place.
-            //! @return True if checks were successful, false if a parent statement is updated with logging an error.
-            bool CheckEntitiesParents(PrefabDom& prefabDom);
+            //! @return True if all checks were successful, otherwise false. 
+            bool SubstituteInvalidParentsInEntities(PrefabDom& prefabDom);
 
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.
