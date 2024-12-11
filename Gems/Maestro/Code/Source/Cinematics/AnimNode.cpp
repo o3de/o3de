@@ -906,7 +906,7 @@ void CAnimNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTra
 //////////////////////////////////////////////////////////////////////////
 void CAnimNode::InitPostLoad(IAnimSequence* sequence)
 {
-    [[maybe_unused]]const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
+    [[maybe_unused]] const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
     AZ_Trace("CAnimNode::InitPostLoad", "IAnimSequence is %s", sequenceEntityId.ToString().c_str());
 
     m_pSequence = sequence;
