@@ -276,6 +276,10 @@ namespace AZ
                 AZStd::vector<Supervariant> m_supervariants;
             };
 
+            //! GALIB
+            bool UpdateRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+            bool UpdateRootShaderVariantAssets(const ShaderAsset& srcShaderAsset);
+
             bool PostLoadInit() override;
             void SetReady();
 

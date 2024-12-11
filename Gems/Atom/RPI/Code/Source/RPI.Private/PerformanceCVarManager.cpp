@@ -27,7 +27,7 @@ namespace AZ
             0, // Starts at 0, which means "do not capture performance data". When this variable changes to >0 we'll start performance capture.
             nullptr, //&PerformanceCvarManager::OnWaitTimePerCaptureBatchChanged,
             ConsoleFunctorFlags::DontReplicate,
-            "How many seconds to wait before each batch of performance capture.");
+            "How many seconds to wait(s) before each batch of performance capture.");
 
         AZ_CVAR(AZ::u32, r_metricsFrameCountPerCaptureBatch,
             1200, // Number of frames in which performance will be measured per batch.

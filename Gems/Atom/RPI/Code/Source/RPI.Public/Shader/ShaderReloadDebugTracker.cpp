@@ -38,8 +38,8 @@ namespace AZ
         {
             if (!ShaderReloadDebugTrackerInternal::s_enabled)
             {
-                ShaderReloadDebugTrackerInternal::s_enabled = AZ::Environment::CreateVariable<bool>(AZ::Crc32(ShaderReloadDebugTrackerInternal::EnabledVariableName), false);
-                ShaderReloadDebugTrackerInternal::s_indent = AZ::Environment::CreateVariable<int>(AZ::Crc32(ShaderReloadDebugTrackerInternal::IndentVariableName), 0);
+                ShaderReloadDebugTrackerInternal::s_enabled = AZ::Environment::CreateVariable<bool>(AZ::Crc32(ShaderReloadDebugTrackerInternal::EnabledVariableName), true);
+                ShaderReloadDebugTrackerInternal::s_indent = AZ::Environment::CreateVariable<int>(AZ::Crc32(ShaderReloadDebugTrackerInternal::IndentVariableName), 4);
             }
         }
 
