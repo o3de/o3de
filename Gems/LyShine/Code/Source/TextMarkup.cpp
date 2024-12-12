@@ -172,6 +172,11 @@ namespace
                             color.SetX(static_cast<float>(AZStd::stoi(colorValue.substr(1, 2), 0, base16)) * normalizeRgbMultiplier);
                             color.SetY(static_cast<float>(AZStd::stoi(colorValue.substr(3, 2), 0, base16)) * normalizeRgbMultiplier);
                             color.SetZ(static_cast<float>(AZStd::stoi(colorValue.substr(5, 2), 0, base16)) * normalizeRgbMultiplier);
+
+#if defined(CARBONATED) && AZ_TRAIT_OS_PLATFORM_APPLE
+                            // support ABGR colorization
+                            color.Set(color.GetZ(), color.GetY(), color.GetX()); // swap R and B
+#endif
                         }
                     }
                     else
