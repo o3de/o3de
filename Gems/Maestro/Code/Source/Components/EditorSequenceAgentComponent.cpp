@@ -17,7 +17,6 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzCore/Component/Entity.h>
-#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <Maestro/Types/AnimParamType.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
@@ -172,84 +171,18 @@ namespace Maestro
 
         AZ::EntityId curEntityId = GetEntityId();
 
+        AZ_Trace("EditorSequenceAgentComponent","DisconnectSequence(): removing self from entity %s, %s.", curEntityId.ToString().c_str(), entity->GetName().c_str());
+        // This component was created indirectly via user actions in EditorSequenceComponent,
+        // so temporary disable undo / redo for its destruction adding EntityId to the ignored list, to bypass possible undo / redo errors.
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddIgnoredEntity, curEntityId);
+
         // remove this SequenceAgent from this entity if no sequenceComponents are connected to it
-        {
-            AZ_Trace("EditorSequenceAgentComponent", "DisconnectSequence(): removing self from entity %s, %s.",
-                curEntityId.ToString().c_str(), entity->GetName().c_str());
-            // The normal call for a component would be:
-            // AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::RemoveComponents, AZ::Entity::ComponentArrayType{this});
-            // but this one is not used, as this component is created abnormally via user actions in EditorSequenceComponent.
-            // Below goes minimal component removal process.
-            bool isEntityEditable = false;
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                isEntityEditable, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, curEntityId);
-            if (!isEntityEditable)
-            {
-                return;
-            }
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::RemoveComponents, AZ::Entity::ComponentArrayType{this});        
 
-            bool reactivate = false;
-            // We must deactivate entities to remove components
-            if (entity->GetState() == AZ::Entity::State::Active)
-            {
-                reactivate = true;
-                entity->Deactivate();
-            }
+        // Remove EntityId from the ignored list to return to standard undo / redo pipeline.
+        // This call is mandatory after the above AddIgnoredEntity() call which was intended to disable undo / redo only temporary.
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::RemoveIgnoredEntity, curEntityId);
 
-            const auto componentId = GetId();
-
-            // Remove  component from entity
-            const auto& entityComponents = entity->GetComponents();
-            if (AZStd::find(entityComponents.begin(), entityComponents.end(), this) != entityComponents.end())
-            {
-                entity->RemoveComponent(this);
-                this->SetEntity(nullptr);
-            }
-
-            {
-                // Check for pending component
-                AZ::Entity::ComponentArrayType pendingComponents;
-                AzToolsFramework::EditorPendingCompositionRequestBus::Event(
-                    entity->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
-                if (AZStd::find(pendingComponents.begin(), pendingComponents.end(), this) != pendingComponents.end())
-                {
-                    AzToolsFramework::EditorPendingCompositionRequestBus::Event(
-                        entity->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::RemovePendingComponent, this);
-                    this->SetEntity(nullptr);
-                }
-
-                // Check for disabled component
-                AZ::Entity::ComponentArrayType disabledComponents;
-                AzToolsFramework::EditorDisabledCompositionRequestBus::Event(
-                    entity->GetId(), &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
-                if (AZStd::find(disabledComponents.begin(), disabledComponents.end(), this) != disabledComponents.end())
-                {
-                    AzToolsFramework::EditorDisabledCompositionRequestBus::Event(
-                        entity->GetId(), &AzToolsFramework::EditorDisabledCompositionRequests::RemoveDisabledComponent, this);
-
-                    // Remove the entity* in this case because it'll try to call RemoveComponent if it isn't null
-                    this->SetEntity(nullptr);
-                }
-            }
-
-            delete this; // delete this component, - now any member access would fail
-
-            // Attempt to re-activate if we were previously active
-            if (reactivate)
-            {
-                // If previously active, attempt to re-activate entity
-                entity->Activate();
-
-                // If entity is not active now, something failed hardcore
-                AZ_Error("EditorSequenceAgentComponent", entity->GetState() == AZ::Entity::State::Active,
-                    "Failed to reactivate entity %s, %s after component removal");
-            }
-
-            AzToolsFramework::EntityCompositionNotificationBus::Broadcast(
-                &AzToolsFramework::EntityCompositionNotificationBus::Events::OnEntityComponentRemoved, curEntityId, componentId);
-            AzToolsFramework::EntityCompositionNotificationBus::Broadcast(
-                &AzToolsFramework::EntityCompositionNotificationBus::Events::OnEntityCompositionChanged,AzToolsFramework::EntityIdList{curEntityId});
-        }
         // Let any currently-active undo operations know that this entity has changed state.
         auto undoCacheInterface = AZ::Interface<AzToolsFramework::UndoSystem::UndoCacheInterface>::Get();
         if (undoCacheInterface)
