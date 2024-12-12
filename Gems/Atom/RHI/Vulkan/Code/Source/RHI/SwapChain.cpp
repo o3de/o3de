@@ -385,16 +385,16 @@ namespace AZ
                 AZ_Assert(false, "Unhandled color space for swapchain.");
             }
 
-            // const float LuminanceScalingFactor = 10000.0f;
-
             const DisplayChromacities& Chroma = DisplayChromacityList[selectedChroma];
             VkHdrMetadataEXT hdrMetadata;
             hdrMetadata.sType = VK_STRUCTURE_TYPE_HDR_METADATA_EXT;
+            //DX12 RHI scales these by 50000 but VKD3D removes that so just use the raw values.
             hdrMetadata.displayPrimaryRed = {Chroma.RedX, Chroma.RedY};
             hdrMetadata.displayPrimaryGreen = {Chroma.GreenX, Chroma.GreenY};
             hdrMetadata.displayPrimaryBlue = {Chroma.BlueX, Chroma.BlueY};
             hdrMetadata.whitePoint = {Chroma.WhiteX, Chroma.WhiteY};
-            //Mult. by 10,000 because its what VKD3D does
+            //Mult. by 10,000 because its what VKD3D does, you can look at convert_max_luminance and convert_min_luminance for reference.
+            //Since the DX12 RHI scales these by 10000 we should too but VKD3D downscales by the same amount for minLuminance.
             //https://github.com/HansKristian-Work/vkd3d-proton/blob/8165096180a9019542b693ce1fcb80f44433b1e2/libs/vkd3d/swapchain.c#L866C36-L866C57
             hdrMetadata.maxLuminance = maxOutputNits * 10000.0f;
             hdrMetadata.minLuminance = minOutputNits;
@@ -562,9 +562,6 @@ namespace AZ
             if(device.GetContext().SetHdrMetadataEXT != nullptr &&
                 dimensions.m_imageFormat == RHI::Format::R10G10B10A2_UNORM)
             {
-                //We have HDR
-                //VKD3D converts DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 -> VK_COLOR_SPACE_HDR10_ST2084_EXT
-                //misyltoad said they implemented that and that it's correct.
                 colorSpace = VK_COLOR_SPACE_HDR10_ST2084_EXT;
                 hdrEnabled = true;
             }
@@ -597,9 +594,9 @@ namespace AZ
                 device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSwapChain);
             AssertSuccess(result);
 
-            if(hdrEnabled) {
+            if(hdrEnabled)
+            {
                 m_colorSpace = createInfo.imageColorSpace;
-                // [GFX TODO][ATOM-2587] How to specify and determine the limits of the display and scene?
                 float maxOutputNits = 1000.f;
                 float minOutputNits = 0.001f;
                 float maxContentLightLevelNits = 2000.f;
@@ -668,7 +665,7 @@ namespace AZ
             m_surfaceCapabilities = GetSurfaceCapabilities();
             m_surfaceFormat = GetSupportedSurfaceFormat(m_dimensions.m_imageFormat);
             m_presentMode = GetSupportedPresentMode(GetDescriptor().m_verticalSyncInterval);
-            m_compositeAlphaFlagBits = GetSupportedCompositeAlpha(); 
+            m_compositeAlphaFlagBits = GetSupportedCompositeAlpha();
 
             if (!ValidateSurfaceDimensions(m_dimensions))
             {
