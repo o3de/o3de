@@ -44,6 +44,9 @@ namespace AZ
             //! entry from the root entry.
             void LinkChild(PassEntry* childEntry);
 
+            //! Propagate deviceIndex to parents
+            void PropagateDeviceIndex(int deviceIndex);
+
             //! Checks if timestamp queries are enabled for this PassEntry.
             bool IsTimestampEnabled() const;
             //! Checks if PipelineStatistics queries are enabled for this PassEntry.
@@ -70,6 +73,8 @@ namespace AZ
 
             //! Mirrors the enabled/disabled state of the pass.
             bool m_enabled = false;
+            int m_deviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
+            AZStd::unordered_set<int> m_childrenDeviceIndices;
 
             //! Dirty flag to determine if this entry is linked to an parent entry.
             bool m_linked = false;
@@ -205,9 +210,9 @@ namespace AZ
         private:
             // Draw option for the hierarchical view of the passes.
             // Recursively iterates through the timestamp entries, and creates an hierarchical structure.
-            void DrawHierarchicalView(const PassEntry* entry) const;
+            void DrawHierarchicalView(const PassEntry* entry, int deviceIndex) const;
             // Draw option for the flat view of the passes.
-            void DrawFlatView() const;
+            void DrawFlatView(int deviceIndex) const;
 
             // Sorts the entries array depending on the sorting type.
             void SortFlatView();

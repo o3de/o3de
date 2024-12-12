@@ -31,7 +31,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
-AZ_DECLARE_BUDGET(RPI);
+ATOM_RPI_PUBLIC_API AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {

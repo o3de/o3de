@@ -10,7 +10,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/sort.h>
 
-AZ_DECLARE_BUDGET(RPI);
+ATOM_RPI_PUBLIC_API AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {

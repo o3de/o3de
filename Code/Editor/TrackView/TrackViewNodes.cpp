@@ -888,9 +888,9 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 // check to make sure all nodes were added and notify user if they weren't
                 if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
                 {
-                    IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
+                    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
-                    AZStd::string messages = movieSystem->GetUserNotificationMsgs();
+                    AZStd::string messages = movieSystem ? movieSystem->GetUserNotificationMsgs() : "";
 
                     // Create a list of all lines
                     AZStd::vector<AZStd::string> lines;

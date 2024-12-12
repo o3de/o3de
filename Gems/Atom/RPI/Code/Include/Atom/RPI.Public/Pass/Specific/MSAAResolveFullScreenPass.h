@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 
@@ -15,7 +16,7 @@ namespace AZ
     namespace RPI
     {
         //! This pass allows the use of a custom fullscreen MSAA resolve pass shader.
-        class MSAAResolveFullScreenPass
+        class ATOM_RPI_PUBLIC_API MSAAResolveFullScreenPass
             : public RPI::FullscreenTrianglePass
         {
             AZ_RPI_PASS(MSAAResolveFullScreenPass);

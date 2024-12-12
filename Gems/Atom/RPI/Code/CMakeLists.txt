@@ -18,7 +18,7 @@ else()
 endif()
 
 ly_add_target(
-    NAME ${gem_name}.Public STATIC
+    NAME ${gem_name}.Public ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rpi_reflect_files.cmake
@@ -26,6 +26,10 @@ ly_add_target(
         ../Assets/atom_rpi_asset_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         ${MASKED_OCCLUSION_CULLING_FILES}
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ATOM_RPI_PUBLIC_EXPORTS
+            ATOM_RPI_REFLECT_EXPORTS
     PLATFORM_INCLUDE_FILES
         ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/atom_rpi_public_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -81,10 +85,13 @@ ly_add_source_properties(
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME ${gem_name}.Edit STATIC
+        NAME ${gem_name}.Edit ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atom_rpi_edit_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                ATOM_RPI_EDIT_EXPORTS
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source

@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -21,7 +22,7 @@ namespace AZ
     {
         //! A RasterPass is a leaf pass (pass with no children) that is used for rasterization
         //! and it is required to have a valid @m_drawListTag at runtime.
-        class RasterPass
+        class ATOM_RPI_PUBLIC_API RasterPass
             : public RenderPass
         {
             AZ_RPI_PASS(RasterPass);

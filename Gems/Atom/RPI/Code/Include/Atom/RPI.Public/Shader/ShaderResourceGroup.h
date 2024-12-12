@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroupPool.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -46,9 +47,11 @@ namespace AZ
          * Likewise, if a getter method fails, an error is emitted and an empty value or empty array
          * is returned. If validation is disabled, the operation is always performed.
          */
-        class ShaderResourceGroup final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ShaderResourceGroup final
             : public AZ::Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
             friend class ShaderResourceGroupPool;
 
@@ -156,7 +159,7 @@ namespace AZ
                 RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::ImageView* const> imageViews,
-                uint32_t* outIndices,
+                AZStd::unordered_map<int, uint32_t*> outIndices,
                 AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
 
@@ -187,10 +190,10 @@ namespace AZ
                 RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::BufferView* const> bufferViews,
-                uint32_t* outIndices,
+                AZStd::unordered_map<int, uint32_t*> outIndices,
                 AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
-            
+
             /// Returns a single buffer view associated with the buffer shader input index and array offset.
             const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;

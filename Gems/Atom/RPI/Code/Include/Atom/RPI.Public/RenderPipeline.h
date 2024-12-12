@@ -12,6 +12,7 @@
 #include <Atom/RHI/DrawFilterTagRegistry.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/PipelinePassChanges.h>
 #include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -81,7 +82,7 @@ namespace AZ
         //! RenderPipeline describes how to render a scene. It has all the passes and views for rendering.
         //! A scene may have several pipelines. Each pipeline have its own render frequency. 
         //! Pipeline can be disabled and it won't be rendered if it's disabled.
-        class RenderPipeline
+        class ATOM_RPI_PUBLIC_API RenderPipeline
         {
             friend class Pass;
             friend class PassSystem;

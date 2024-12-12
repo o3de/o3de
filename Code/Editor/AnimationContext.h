@@ -15,9 +15,9 @@
 #include "Undo/Undo.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include <Range.h>
-#include <IMovieSystem.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
+struct IMovieSystem;
 class CTrackViewSequence;
 
 /** CAnimationContext listener interface
@@ -260,6 +260,8 @@ private:
 
     bool m_bPostRenderRegistered;
     bool m_bForcingAnimation;
+
+    IMovieSystem* m_movieSystem;
 
     //! Listeners
     std::vector<IAnimationContextListener*> m_contextListeners;

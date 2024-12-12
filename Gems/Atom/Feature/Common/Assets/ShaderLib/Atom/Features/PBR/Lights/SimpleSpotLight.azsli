@@ -65,7 +65,11 @@ void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout Lighting
             float4 positionInView = mul(light.m_viewProjectionMatrix, float4(surface.position, 1.0));
             positionInView /= positionInView.w;
             float2 goboUv = float2((positionInView.x + 1.0)/2.0, (positionInView.y + 1.0)/2.0);
+            #ifdef CS_SAMPLERS
+            lightIntensity *= ViewSrg::m_goboTextures[light.m_goboTexIndex].SampleLevel(PassSrg::LinearSampler, goboUv, 0);
+            #else
             lightIntensity *= ViewSrg::m_goboTextures[light.m_goboTexIndex].Sample(PassSrg::LinearSampler, goboUv);
+            #endif
         }
 
         if (dotWithDirection < cosInnerConeAngle) // in penumbra

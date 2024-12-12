@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h>
 
 #include <AzCore/std/smart_ptr/intrusive_base.h>
@@ -33,7 +34,7 @@ namespace AZ
         //!         // Use the buffer view for DrawItem or etc.
         //!     }
         //! Note: DynamicBuffer should only be used for DynamicInputAssembly buffer or Constant buffer (not supported yet).
-        class DynamicBuffer
+        class ATOM_RPI_PUBLIC_API DynamicBuffer
             : public AZStd::intrusive_base
         {
             friend class DynamicBufferAllocator;

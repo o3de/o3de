@@ -180,16 +180,18 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
 ////////////////////////////////////////////////////////////////////////////
 IAnimSequence* CTrackViewSequenceManager::OnCreateSequenceObject(QString name, bool isLegacySequence, AZ::EntityId entityId)
 {
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
     // Drop legacy sequences on the floor, they are no longer supported.
-    if (isLegacySequence && GetIEditor()->GetMovieSystem())
+    if (isLegacySequence && movieSystem)
     {
-        GetIEditor()->GetMovieSystem()->LogUserNotificationMsg(AZStd::string::format("Legacy Sequences are no longer supported. Skipping '%s'.", name.toUtf8().data()));
+        movieSystem->LogUserNotificationMsg(AZStd::string::format("Legacy Sequences are no longer supported. Skipping '%s'.", name.toUtf8().data()));
         return nullptr;
     }
 
-    if (GetIEditor()->GetMovieSystem())
+    if (movieSystem)
     {
-        IAnimSequence* sequence = GetIEditor()->GetMovieSystem()->CreateSequence(name.toUtf8().data(), /*bload =*/ false, /*id =*/ 0U, SequenceType::SequenceComponent, entityId);
+        IAnimSequence* sequence = movieSystem->CreateSequence(name.toUtf8().data(), /*bload =*/ false, /*id =*/ 0U, SequenceType::SequenceComponent, entityId);
         AZ_Assert(sequence, "Failed to create sequence");
         AddTrackViewSequence(new CTrackViewSequence(sequence));
 
@@ -217,10 +219,12 @@ void CTrackViewSequenceManager::OnCreateSequenceComponent(AZStd::intrusive_ptr<I
     // Fix up the internal pointers in the sequence to match the deserialized structure
     sequence->InitPostLoad();
 
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
     // Add the sequence to the movie system
-    if (GetIEditor()->GetMovieSystem())
+    if (movieSystem)
     {
-        GetIEditor()->GetMovieSystem()->AddSequence(sequence.get());
+        movieSystem->AddSequence(sequence.get());
     }
 
     // Create the TrackView Sequence
@@ -341,10 +345,11 @@ void CTrackViewSequenceManager::RemoveSequenceInternal(CTrackViewSequence* seque
 
             // Remove from CryMovie and TrackView
             m_sequences.erase(iter);
-            IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-            if (pMovieSystem)
+
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+            if (movieSystem)
             {
-                pMovieSystem->RemoveSequence(sequence->m_pAnimSequence.get());
+                movieSystem->RemoveSequence(sequence->m_pAnimSequence.get());
             }
 
             break;

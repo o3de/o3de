@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
 namespace AZ
@@ -19,7 +20,7 @@ namespace AZ
         //! Each slot has a unique ID, a name, and a default material. Each mesh in model will reference a single ModelMaterialSlot.
         //! Other classes like MeshFeatureProcessor and MaterialComponent can override the material associated with individual slots
         //! to alter the default appearance of the mesh.
-        struct ModelMaterialSlot
+        struct ATOM_RPI_REFLECT_API ModelMaterialSlot
         {
             AZ_TYPE_INFO(ModelMaterialSlot, "{0E88A62A-D83D-4C1B-8DE7-CE972B8124B5}");
                 

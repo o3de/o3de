@@ -148,6 +148,7 @@ namespace AZ
             m_path = pass->GetPathName();
             m_parent = parent;
             m_enabled = pass->IsEnabled();
+            m_deviceIndex = pass->GetDeviceIndex() == -1 ? RHI::MultiDevice::DefaultDeviceIndex : pass->GetDeviceIndex();
             m_timestampEnabled = pass->IsTimestampQueryEnabled();
             m_pipelineStatisticsEnabled = pass->IsPipelineStatisticsQueryEnabled();
             m_isParent = pass->AsParent() != nullptr;
@@ -182,6 +183,15 @@ namespace AZ
             }
 
             childEntry->m_linked = true;
+        }
+
+        void PassEntry::PropagateDeviceIndex(int deviceIndex)
+        {
+            m_childrenDeviceIndices.insert(deviceIndex);
+            if (m_parent)
+            {
+                m_parent->PropagateDeviceIndex(deviceIndex);
+            }
         }
 
         bool PassEntry::IsTimestampEnabled() const
@@ -581,81 +591,99 @@ namespace AZ
             // Clear the references from the previous frame.
             m_passEntryReferences.clear();
 
-            // pass entry grid based on its timestamp
-            AZStd::vector<PassEntry*> sortedPassEntries;
-            AZStd::vector<AZStd::vector<PassEntry*>> sortedPassGrid;
+            struct PerDevicePassData
+            {
+                // pass entry grid based on its timestamp
+                AZStd::vector<PassEntry*> sortedPassEntries;
+                AZStd::vector<AZStd::vector<PassEntry*>> sortedPassGrid;
+                RPI::TimestampResult gpuTimestamp;
+            };
+
+            AZStd::map<int, PerDevicePassData> passEntriesMap;
 
             // Set the child of the parent, only if it passes the filter.
-            for (auto& passEntryIt : timestampEntryDatabase)
+            for (auto& [passName, passEntry] : timestampEntryDatabase)
             {
-                PassEntry* passEntry = &passEntryIt.second;
-
                 // Collect all pass entries with non-zero durations
-                if (passEntry->m_timestampResult.GetDurationInTicks() > 0)
+                if (passEntry.m_timestampResult.GetDurationInTicks() > 0)
                 {
-                    sortedPassEntries.push_back(passEntry);
+                    auto it{ passEntriesMap.find(passEntry.m_deviceIndex) };
+                    if (it == passEntriesMap.end())
+                    {
+                        it = passEntriesMap.insert({ passEntry.m_deviceIndex, PerDevicePassData{} }).first;
+                    }
+                    it->second.sortedPassEntries.push_back(&passEntry);
                 }
 
                 // Skip the pass if the pass' timestamp duration is 0
-                if (m_hideZeroPasses && (!passEntry->m_isParent) && passEntry->m_timestampResult.GetDurationInTicks() == 0)
+                if (m_hideZeroPasses && (!passEntry.m_isParent) && passEntry.m_timestampResult.GetDurationInTicks() == 0)
                 {
                     continue;
                 }
 
                 // Only add pass if it pass the filter.
-                if (m_passFilter.PassFilter(passEntry->m_name.GetCStr()))
+                if (m_passFilter.PassFilter(passEntry.m_name.GetCStr()))
                 {
-                    if (passEntry->m_parent && !passEntry->m_linked)
+                    if (passEntry.m_parent && !passEntry.m_linked)
                     {
-                        passEntry->m_parent->LinkChild(passEntry);
+                        passEntry.m_parent->LinkChild(&passEntry);
+                        passEntry.m_parent->PropagateDeviceIndex(passEntry.m_deviceIndex);
                     }
 
                     AZ_Assert(
                         m_passEntryReferences.size() < TimestampEntryCount,
                         "Too many PassEntry references. Increase the size of the array.");
-                    m_passEntryReferences.push_back(passEntry);
+                    m_passEntryReferences.push_back(&passEntry);
                 }
             }
 
-            // Sort the pass entries based on their starting time and duration
-            AZStd::sort(sortedPassEntries.begin(), sortedPassEntries.end(), [](const PassEntry* passEntry1, const PassEntry* passEntry2) {
-                if (passEntry1->m_timestampResult.GetTimestampBeginInTicks() == passEntry2->m_timestampResult.GetTimestampBeginInTicks())
-                {
-                    return passEntry1->m_timestampResult.GetDurationInTicks() < passEntry2->m_timestampResult.GetDurationInTicks();
-                }
-                return passEntry1->m_timestampResult.GetTimestampBeginInTicks() < passEntry2->m_timestampResult.GetTimestampBeginInTicks();
-            });
-
-            // calculate the total GPU duration.
-            RPI::TimestampResult gpuTimestamp;
-            if (sortedPassEntries.size() > 0)
+            for (auto& [deviceIndex, passEntries] : passEntriesMap)
             {
-                gpuTimestamp = sortedPassEntries.front()->m_timestampResult;
-                gpuTimestamp.Add(sortedPassEntries.back()->m_timestampResult);
-            }
+                // Sort the pass entries based on their starting time and duration
+                AZStd::sort(
+                    passEntries.sortedPassEntries.begin(),
+                    passEntries.sortedPassEntries.end(),
+                    [](const PassEntry* passEntry1, const PassEntry* passEntry2)
+                    {
+                        if (passEntry1->m_timestampResult.GetTimestampBeginInTicks() ==
+                            passEntry2->m_timestampResult.GetTimestampBeginInTicks())
+                        {
+                            return passEntry1->m_timestampResult.GetDurationInTicks() < passEntry2->m_timestampResult.GetDurationInTicks();
+                        }
+                        return passEntry1->m_timestampResult.GetTimestampBeginInTicks() <
+                            passEntry2->m_timestampResult.GetTimestampBeginInTicks();
+                    });
 
-            // Add a pass to the pass grid which none of the pass's timestamp range won't overlap each other.
-            // Search each row until the pass can be added to the end of row without overlap the previous one.
-            for (auto& passEntry : sortedPassEntries)
-            {
-                auto row = sortedPassGrid.begin();
-                for (; row != sortedPassGrid.end(); row++)
+                // calculate the total GPU duration.
+                if (passEntries.sortedPassEntries.size() > 0)
                 {
-                    if (row->empty())
-                    {
-                        break;
-                    }
-                    auto last = (*row).back();
-                    if (passEntry->m_timestampResult.GetTimestampBeginInTicks() >=
-                        last->m_timestampResult.GetTimestampBeginInTicks() + last->m_timestampResult.GetDurationInTicks())
-                    {
-                        row->push_back(passEntry);
-                        break;
-                    }
+                    passEntries.gpuTimestamp = passEntries.sortedPassEntries.front()->m_timestampResult;
+                    passEntries.gpuTimestamp.Add(passEntries.sortedPassEntries.back()->m_timestampResult);
                 }
-                if (row == sortedPassGrid.end())
+
+                // Add a pass to the pass grid which none of the pass's timestamp range won't overlap each other.
+                // Search each row until the pass can be added to the end of row without overlap the previous one.
+                for (auto& passEntry : passEntries.sortedPassEntries)
                 {
-                    sortedPassGrid.emplace_back().push_back(passEntry);
+                    auto row = passEntries.sortedPassGrid.begin();
+                    for (; row != passEntries.sortedPassGrid.end(); row++)
+                    {
+                        if (row->empty())
+                        {
+                            break;
+                        }
+                        auto last = (*row).back();
+                        if (passEntry->m_timestampResult.GetTimestampBeginInTicks() >=
+                            last->m_timestampResult.GetTimestampBeginInTicks() + last->m_timestampResult.GetDurationInTicks())
+                        {
+                            row->push_back(passEntry);
+                            break;
+                        }
+                    }
+                    if (row == passEntries.sortedPassGrid.end())
+                    {
+                        passEntries.sortedPassGrid.emplace_back().push_back(passEntry);
+                    }
                 }
             }
 
@@ -683,7 +711,7 @@ namespace AZ
                 rootPass->SetTimestampQueryEnabled(needEnable);
             }
 
-            const ImVec2 windowSize(680.0f, 620.0f);
+            const ImVec2 windowSize(1240.0f, 620.0f);
             ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
             if (ImGui::Begin("Timestamp View", &draw, ImGuiWindowFlags_None))
             {
@@ -696,9 +724,14 @@ namespace AZ
                     }
 
                     // Draw the frame time (GPU).
-                    const AZStd::string formattedTimestamp = FormatTimestampLabel(gpuTimestamp.GetDurationInNanoseconds());
-                    const AZStd::string headerFrameTime = AZStd::string::format("Total frame duration (GPU): %s", formattedTimestamp.c_str());
-                    ImGui::Text("%s", headerFrameTime.c_str());
+                    for (auto& [deviceIndex, passEntries] : passEntriesMap)
+                    {
+                        const AZStd::string formattedTimestamp =
+                            FormatTimestampLabel(passEntriesMap[deviceIndex].gpuTimestamp.GetDurationInNanoseconds());
+                        const AZStd::string headerFrameTime =
+                            AZStd::string::format("Total frame duration (GPU %d): %s", deviceIndex, formattedTimestamp.c_str());
+                        ImGui::Text("%s", headerFrameTime.c_str());
+                    }
 
                     // Draw the viewing option.
                     ImGui::RadioButton("Hierarchical", reinterpret_cast<int32_t*>(&m_viewType), static_cast<int32_t>(ProfilerViewType::Hierarchical));
@@ -738,53 +771,65 @@ namespace AZ
                 ImGui::Separator();
 
                 // Draw the pass entry grid
-                if (!sortedPassEntries.empty() && m_showTimeline)
+                for (auto& [deviceIndex, passEntries] : passEntriesMap)
                 {
-                    const float passBarHeight = 20.f;
-                    const float passBarSpace = 3.f;
-                    float areaWidth = ImGui::GetContentRegionAvail().x - 20.f;
-
-                    if (ImGui::BeginChild("Timeline", ImVec2(areaWidth, (passBarHeight + passBarSpace) * sortedPassGrid.size()), false))
+                    if (!passEntries.sortedPassEntries.empty() && m_showTimeline)
                     {
-                        // start tick and end tick for the area
-                        uint64_t areaStartTick = sortedPassEntries.front()->m_timestampResult.GetTimestampBeginInTicks();
-                        uint64_t areaEndTick = sortedPassEntries.back()->m_timestampResult.GetTimestampBeginInTicks() +
-                            sortedPassEntries.back()->m_timestampResult.GetDurationInTicks();
-                        uint64_t areaDurationInTicks = areaEndTick - areaStartTick;
+                        const float passBarHeight = 20.f;
+                        const float passBarSpace = 3.f;
+                        float areaWidth = ImGui::GetContentRegionAvail().x - 20.f;
 
-                        float rowStartY = 0.f;
-                        for (auto& row : sortedPassGrid)
+                        ImGui::Text("GPU %d", deviceIndex);
+                        AZStd::string childID{ "Timeline" + AZStd::to_string(deviceIndex) };
+                        if (ImGui::BeginChild(
+                                childID.c_str(),
+                                ImVec2(areaWidth, (passBarHeight + passBarSpace) * passEntries.sortedPassGrid.size()),
+                                false))
                         {
-                            // row start y 
-                            for (auto passEntry : row)
+                            // start tick and end tick for the area
+                            uint64_t areaStartTick = passEntries.sortedPassEntries.front()->m_timestampResult.GetTimestampBeginInTicks();
+                            uint64_t areaEndTick = passEntries.sortedPassEntries.back()->m_timestampResult.GetTimestampBeginInTicks() +
+                                passEntries.sortedPassEntries.back()->m_timestampResult.GetDurationInTicks();
+                            uint64_t areaDurationInTicks = areaEndTick - areaStartTick;
+
+                            float rowStartY = 0.f;
+                            for (auto& row : passEntries.sortedPassGrid)
                             {
-                                // button start and end
-                                float buttonStartX = (passEntry->m_timestampResult.GetTimestampBeginInTicks() - areaStartTick) * areaWidth /
-                                    areaDurationInTicks;
-                                float buttonWidth =  passEntry->m_timestampResult.GetDurationInTicks() * areaWidth / areaDurationInTicks;
-                                ImGui::SetCursorPosX(buttonStartX);
-                                ImGui::SetCursorPosY(rowStartY);
-
-                                // Adds a button and the hover colors.
-                                ImGui::Button(passEntry->m_name.GetCStr(), ImVec2(buttonWidth, passBarHeight));
-
-                                if (ImGui::IsItemHovered())
+                                // row start y
+                                for (auto passEntry : row)
                                 {
-                                    ImGui::BeginTooltip();
-                                    ImGui::Text("Name: %s", passEntry->m_name.GetCStr());
-                                    ImGui::Text("Path: %s", passEntry->m_path.GetCStr());
-                                    ImGui::Text("Duration in ticks: %llu", static_cast<AZ::u64>(passEntry->m_timestampResult.GetDurationInTicks()));
-                                    ImGui::Text("Duration in microsecond: %.3f us", passEntry->m_timestampResult.GetDurationInNanoseconds()/1000.f);
-                                    ImGui::EndTooltip();
+                                    // button start and end
+                                    float buttonStartX = (passEntry->m_timestampResult.GetTimestampBeginInTicks() - areaStartTick) *
+                                        areaWidth / areaDurationInTicks;
+                                    float buttonWidth = passEntry->m_timestampResult.GetDurationInTicks() * areaWidth / areaDurationInTicks;
+                                    ImGui::SetCursorPosX(buttonStartX);
+                                    ImGui::SetCursorPosY(rowStartY);
+
+                                    // Adds a button and the hover colors.
+                                    ImGui::Button(passEntry->m_name.GetCStr(), ImVec2(buttonWidth, passBarHeight));
+
+                                    if (ImGui::IsItemHovered())
+                                    {
+                                        ImGui::BeginTooltip();
+                                        ImGui::Text("Name: %s", passEntry->m_name.GetCStr());
+                                        ImGui::Text("Path: %s", passEntry->m_path.GetCStr());
+                                        ImGui::Text(
+                                            "Duration in ticks: %llu",
+                                            static_cast<AZ::u64>(passEntry->m_timestampResult.GetDurationInTicks()));
+                                        ImGui::Text(
+                                            "Duration in microsecond: %.3f us",
+                                            passEntry->m_timestampResult.GetDurationInNanoseconds() / 1000.f);
+                                        ImGui::EndTooltip();
+                                    }
                                 }
+
+                                rowStartY += passBarHeight + passBarSpace;
                             }
-
-                            rowStartY += passBarHeight + passBarSpace;
                         }
-                    }
-                    ImGui::EndChild();
+                        ImGui::EndChild();
 
-                    ImGui::Separator();
+                        ImGui::Separator();
+                    }
                 }
 
                 // Draw the timestamp view.
@@ -807,87 +852,97 @@ namespace AZ
 
                     m_passFilter.Draw("Pass Name Filter");
 
-                    if (ImGui::BeginChild("Passes"))
+                    float areaWidth = ImGui::GetContentRegionAvail().x / passEntriesMap.size();
+                    for (auto& [deviceIndex, passEntries] : passEntriesMap)
                     {
-                        // Set column settings.
-                        ImGui::Columns(3, "view", false);
-                        ImGui::SetColumnWidth(0, 340.0f);
-                        ImGui::SetColumnWidth(1, 100.0f);
+                        AZStd::string childID{ "Passes" + AZStd::to_string(deviceIndex) };
 
-                        if (m_viewType == ProfilerViewType::Hierarchical)
+                        if (ImGui::BeginChild(childID.c_str(), ImVec2(areaWidth, 0)))
                         {
-                            // Set the tab header.
-                            {
-                                ImGui::Text("Pass Names");
-                                ImGui::NextColumn();
+                            // Set column settings.
+                            ImGui::Columns(3, "view", false);
+                            ImGui::SetColumnWidth(0, 340.0f);
+                            ImGui::SetColumnWidth(1, 100.0f);
 
-                                // Render the text depending on the metric unit.
+                            if (m_viewType == ProfilerViewType::Hierarchical)
+                            {
+                                // Set the tab header.
                                 {
-                                    const int32_t timestampMetricUnitNumeric = static_cast<int32_t>(m_timestampMetricUnit);
-                                    const AZStd::string metricUnitText = AZStd::string::format("Time in %s", MetricUnitText[timestampMetricUnitNumeric]);
-                                    ImGui::Text("%s", metricUnitText.c_str());
+                                    ImGui::Text("Pass Names");
                                     ImGui::NextColumn();
+
+                                    // Render the text depending on the metric unit.
+                                    {
+                                        const int32_t timestampMetricUnitNumeric = static_cast<int32_t>(m_timestampMetricUnit);
+                                        const AZStd::string metricUnitText =
+                                            AZStd::string::format("Time in %s", MetricUnitText[timestampMetricUnitNumeric]);
+                                        ImGui::Text("%s", metricUnitText.c_str());
+                                        ImGui::NextColumn();
+                                    }
+
+                                    // Render the text depending on the metric unit.
+                                    {
+                                        const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
+                                        const AZStd::string frameWorkloadViewText =
+                                            AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
+                                        ImGui::Text("%s", frameWorkloadViewText.c_str());
+                                        ImGui::NextColumn();
+                                    }
+
+                                    ImGui::Separator();
                                 }
 
-                                // Render the text depending on the metric unit.
+                                // Draw the hierarchical view.
+                                DrawHierarchicalView(rootPassEntry, deviceIndex);
+                            }
+                            else if (m_viewType == ProfilerViewType::Flat)
+                            {
+                                // Set the tab header.
                                 {
+                                    // Check whether it should be sorted by name.
+                                    const uint32_t sortType = static_cast<uint32_t>(m_sortType);
+                                    AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
+                                    bool sortByName =
+                                        (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
+                                         (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
+                                    AZ_POP_DISABLE_WARNING
+
+                                    if (ImGui::Selectable("Pass Names", sortByName))
+                                    {
+                                        ToggleOrSwitchSortType(ProfilerSortType::Alphabetical, ProfilerSortType::AlphabeticalCount);
+                                    }
+                                    ImGui::NextColumn();
+
+                                    if (ImGui::Selectable("Time in ms", !sortByName))
+                                    {
+                                        ToggleOrSwitchSortType(ProfilerSortType::Timestamp, ProfilerSortType::TimestampCount);
+                                    }
+                                    ImGui::NextColumn();
+
                                     const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
-                                    const AZStd::string frameWorkloadViewText = AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
+                                    const AZStd::string frameWorkloadViewText =
+                                        AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
                                     ImGui::Text("%s", frameWorkloadViewText.c_str());
                                     ImGui::NextColumn();
                                 }
 
                                 ImGui::Separator();
-                            }
 
-                            // Draw the hierarchical view.
-                            DrawHierarchicalView(rootPassEntry);
-                        }
-                        else if (m_viewType == ProfilerViewType::Flat)
-                        {
-                            // Set the tab header.
+                                // Create the sorting buttons.
+                                SortFlatView();
+                                DrawFlatView(deviceIndex);
+                            }
+                            else
                             {
-                                // Check whether it should be sorted by name.
-                                const uint32_t sortType = static_cast<uint32_t>(m_sortType);
-                                AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
-                                bool sortByName = (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
-                                    (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
-                                AZ_POP_DISABLE_WARNING
-
-                                if (ImGui::Selectable("Pass Names", sortByName))
-                                {
-                                    ToggleOrSwitchSortType(ProfilerSortType::Alphabetical, ProfilerSortType::AlphabeticalCount);
-                                }
-                                ImGui::NextColumn();
-
-                                if (ImGui::Selectable("Time in ms", !sortByName))
-                                {
-                                    ToggleOrSwitchSortType(ProfilerSortType::Timestamp, ProfilerSortType::TimestampCount);
-                                }
-                                ImGui::NextColumn();
-
-                                const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
-                                const AZStd::string frameWorkloadViewText = AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
-                                ImGui::Text("%s", frameWorkloadViewText.c_str());
-                                ImGui::NextColumn();
+                                AZ_Assert(false, "Invalid ViewType.");
                             }
 
-                            ImGui::Separator();
-
-                            // Create the sorting buttons.
-                            SortFlatView();
-                            DrawFlatView();
+                            // Set back to default.
+                            ImGui::Columns(1, "view", false);
                         }
-                        else
-                        {
-                            AZ_Assert(false, "Invalid ViewType.");
-                        }
-
-                        // Set back to default.
-                        ImGui::Columns(1, "view", false);
+                        ImGui::EndChild();
+                        ImGui::SameLine();
                     }
-                    ImGui::EndChild();
-
                 }
             }
             ImGui::End();
@@ -908,7 +963,7 @@ namespace AZ
             ImGui::PopStyleColor(1);
         }
 
-        void ImGuiTimestampView::DrawHierarchicalView(const PassEntry* entry) const
+        void ImGuiTimestampView::DrawHierarchicalView(const PassEntry* entry, int deviceIndex) const
         {
             const AZStd::string entryTime = FormatTimestampLabel(entry->m_interpolatedTimestampInNanoseconds);
 
@@ -939,7 +994,7 @@ namespace AZ
                 }
             };
 
-            if (entry->m_children.empty())
+            if (entry->m_children.empty() && entry->m_deviceIndex == deviceIndex)
             {
                 // Draw the workload bar when it doesn't have children.
                 ImGui::Text("%s", entry->m_name.GetCStr());
@@ -948,25 +1003,28 @@ namespace AZ
 
                 drawWorkloadBar(entryTime, entry);
             }
-            else
+            else if (entry->m_childrenDeviceIndices.contains(deviceIndex))
             {
                 // Recursively create another tree node.
                 const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen;
-                GpuProfilerImGuiHelper::TreeNode(entry->m_name.GetCStr(), flags, [&drawWorkloadBar, &entryTime, entry, this](bool unrolled)
-                {
-                    // Show a HoverMarker if the text is bigger than the column.
-                    createHoverMarker(entry->m_name.GetCStr());
-
-                    drawWorkloadBar(entryTime, entry);
-
-                    if (unrolled)
+                GpuProfilerImGuiHelper::TreeNode(
+                    entry->m_name.GetCStr(),
+                    flags,
+                    [&drawWorkloadBar, &entryTime, entry, this, deviceIndex](bool unrolled)
                     {
-                        for (const PassEntry* child : entry->m_children)
+                        // Show a HoverMarker if the text is bigger than the column.
+                        createHoverMarker(entry->m_name.GetCStr());
+
+                        drawWorkloadBar(entryTime, entry);
+
+                        if (unrolled)
                         {
-                            DrawHierarchicalView(child);
+                            for (const PassEntry* child : entry->m_children)
+                            {
+                                DrawHierarchicalView(child, deviceIndex);
+                            }
                         }
-                    }
-                });
+                    });
             }
         }
 
@@ -995,12 +1053,12 @@ namespace AZ
             AZStd::sort(m_passEntryReferences.begin(), m_passEntryReferences.end(), it->second);
         }
 
-        void ImGuiTimestampView::DrawFlatView() const
+        void ImGuiTimestampView::DrawFlatView(int deviceIndex) const
         {
             // Draw the flat view.
             for (const PassEntry* entry : m_passEntryReferences)
             {
-                if (entry->m_isParent)
+                if (entry->m_isParent || entry->m_deviceIndex != deviceIndex)
                 {
                     continue;
                 }
