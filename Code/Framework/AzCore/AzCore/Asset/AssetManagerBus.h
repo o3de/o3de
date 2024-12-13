@@ -202,6 +202,12 @@ namespace AZ
             /// NoLoad assets however simply wait for the user to request an additional load - they or their dependencies don't begin loading by default
             virtual AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependencies([[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, [[maybe_unused]] PreloadAssetListType& preloadLists) { return AZ::Failure<AZStd::string>("Not implemented"); }
 
+#if defined(CARBONATED)  // lod removal
+            typedef void (*FilterCallback)(AZStd::vector<AZ::Data::ProductDependency>& oneStepDependencyAssets);
+            // the same as the above, but with one-step dependency asset sub-list filtering callback
+            virtual AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependenciesFiltered([[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, [[maybe_unused]] PreloadAssetListType& preloadLists, [[maybe_unused]] FilterCallback filter) { return AZ::Failure<AZStd::string>("Not implemented"); }
+#endif
+
             /// Retrieves a list of all products the given (product) asset depends on (recursively).
             /// \param id - the id of the asset to look up the dependencies for
             /// \param exclusionList - list of AssetIds to ignore (recursively).  If a match is found, it and all its dependencies are skipped.

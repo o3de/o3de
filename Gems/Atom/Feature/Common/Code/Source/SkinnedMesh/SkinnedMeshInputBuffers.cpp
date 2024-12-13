@@ -345,6 +345,8 @@ namespace AZ
             m_modelAsset = modelAsset;
             m_model = RPI::Model::FindOrCreate(m_modelAsset);
 
+            AZ_Info("lll", "SkinnedMeshInputBuffers::CreateFromModelAsset %s, %d lods", modelAsset.GetHint().c_str(), m_model->GetLodCount());
+
             if (m_model)
             {
                 m_lods.resize(m_model->GetLodCount());
@@ -649,6 +651,8 @@ namespace AZ
             modelCreator.SetName(m_modelAsset->GetName().GetStringView());
 
             Data::Asset<RPI::BufferAsset> skinnedMeshOutputBufferAsset = SkinnedMeshOutputStreamManagerInterface::Get()->GetBufferAsset();
+
+            AZ_Info("lll", "SkinnedMeshInputBuffers::CreateSkinnedMeshInstance %d lods for %s", m_lods.size(), m_modelAsset->GetName().GetCStr());
 
             size_t lodIndex = 0;
             for (const SkinnedMeshInputLod& lod : m_lods)

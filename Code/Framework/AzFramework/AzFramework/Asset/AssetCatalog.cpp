@@ -347,7 +347,6 @@ namespace AzFramework
 
         return AZ::Success(AZStd::move(dependencyList));
     }
-
     AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> AssetCatalog::GetLoadBehaviorProductDependencies(const AZ::Data::AssetId& id, AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, AZ::Data::PreloadAssetListType& preloadAssetList)
     {
         AZStd::vector<AZ::Data::ProductDependency> dependencyList;
@@ -377,7 +376,45 @@ namespace AzFramework
 
         return AZ::Success(AZStd::move(returnList));
     }
+#if defined(CARBONATED) // lod removal
+    AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> AssetCatalog::GetLoadBehaviorProductDependenciesFiltered(
+        const AZ::Data::AssetId& id, AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, AZ::Data::PreloadAssetListType& preloadAssetList, FilterCallback filter)
+    {
+        AZStd::vector<AZ::Data::ProductDependency> dependencyList;
+        AZStd::vector<AZ::Data::ProductDependency> returnList;
+        AZStd::unordered_set<AZ::Data::AssetId> assetSet;
 
+        AddAssetDependencies(id, assetSet, dependencyList, {}, {}, preloadAssetList);
+        if (dependencyList.size() > 0)
+        {
+            filter(dependencyList);
+        }
+
+        // dependencyList will be appended to while looping, so use a traditional loop
+        for (size_t i = 0; i < dependencyList.size(); ++i)
+        {
+            if (AZ::Data::ProductDependencyInfo::LoadBehaviorFromFlags(dependencyList[i].m_flags) == AZ::Data::AssetLoadBehavior::NoLoad)
+            {
+                noloadSet.insert(dependencyList[i].m_assetId);
+                assetSet.erase(dependencyList[i].m_assetId);
+            }
+            else
+            {
+                returnList.push_back(dependencyList[i]);
+                // Copy the asset Id out of the list into a temp variable before passing it in.  AddAssetDependencies will modify
+                // dependencyList, which can cause reallocations of the list, so the reference to a specific entry might not remain
+                // valid throughout the entire call.
+                AZ::Data::AssetId searchId = dependencyList[i].m_assetId;
+                AZStd::vector<AZ::Data::ProductDependency> oneStepList;
+                AddAssetDependencies(searchId, assetSet, oneStepList, {}, {}, preloadAssetList);
+                filter(oneStepList);
+                dependencyList.append_range(oneStepList);
+            }
+        }
+
+        return AZ::Success(AZStd::move(returnList));
+    }
+#endif
     bool AssetCatalog::DoesAssetIdMatchWildcardPatternInternal(const AZ::Data::AssetId& assetId, const AZStd::string& wildcardPattern) const
     {
         if (wildcardPattern.empty())

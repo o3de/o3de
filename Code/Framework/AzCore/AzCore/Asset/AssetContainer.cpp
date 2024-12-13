@@ -17,7 +17,10 @@ namespace AZ::Data
 {
     AZ_CVAR(bool, bg_trackHandledAssetDependencies, false, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Set to true if to track handled asset dependencies in order to troubleshoot when a dependent asset hasn't loaded.");
-
+#if defined(CARBONATED) // lod removal
+    AZ_CVAR(int, q_dropLods, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Set to non-zero to suppres the number of LODs.");
+#endif
     AssetContainer::AssetContainer(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams, bool isReload)
     {
         m_rootAsset = AssetInternal::WeakAsset<AssetData>(rootAsset);
@@ -77,6 +80,78 @@ namespace AZ::Data
         return dependencyAssets;
     }
 
+#if defined(CARBONATED)  // lod removal
+    int AssetContainer::s_numLodsToRemove = 1;
+
+    static AZ_INLINE int GetLodNumber(AZStd::string s)  // returns LOD number if the name matches the model LOD pattern, otherwise -1
+    {
+        // in case of there is a model dependencies we have a set of *_lod#.fbx.azlod, plus some more assets
+        constexpr const char* ANY_LOD_SUFFIX = ".fbx.azlod";
+        constexpr const char* LOD0_SUFFIX = "_lod0.fbx.azlod";
+        constexpr const int lodSuffixLen = 15; // strlen(LOD_SUFFIX);
+        constexpr size_t LOD_NUMBER_POSITION = 4; // from the beginning
+
+        if (!s.ends_with(ANY_LOD_SUFFIX))
+        {
+            return -1;
+        }
+
+        const char* name = s.c_str();
+        const size_t len = strlen(name);
+        if (len > lodSuffixLen)
+        {
+            const char* p = name + len - lodSuffixLen;
+            if (p[0] == LOD0_SUFFIX[0] && p[1] == LOD0_SUFFIX[1] && p[2] == LOD0_SUFFIX[2] && p[3] == LOD0_SUFFIX[3] &&
+                p[LOD_NUMBER_POSITION] >= '0' && p[LOD_NUMBER_POSITION] <= '9')
+            {
+                return p[LOD_NUMBER_POSITION] - '0';
+            }
+        }
+
+        return -1;
+    }
+
+    void AssetContainer::LodFilter(AZStd::vector<AZ::Data::ProductDependency>& oneStepDependencyAssets)
+    {
+        // fill names, search for any lod-like name, find max LOD number
+        int maxLodNumber = -1;
+        AZStd::vector<AssetInfo> infos(oneStepDependencyAssets.size());
+        for (int i = 0; i < oneStepDependencyAssets.size(); i++)
+        {
+            AssetCatalogRequestBus::BroadcastResult(infos[i], &AssetCatalogRequestBus::Events::GetAssetInfoById, oneStepDependencyAssets[i].m_assetId);
+            const int lodNumber = GetLodNumber(infos[i].m_relativePath);
+            if (lodNumber > maxLodNumber)
+            {
+                maxLodNumber = lodNumber;
+            }
+        }
+        if (maxLodNumber <= 0)  // we cannot remove anything if we have LOD0 only
+        {
+            return;
+        }
+
+        // try to remove up to s_numLodsToRemove LODs
+        const int lodsToRemove = AZStd::min(maxLodNumber, s_numLodsToRemove);
+        for (int i = int(infos.size()) - 1; i >= 0; i--) // reverse cycle because we delete the current index item from oneStepDependencyAssets
+        {
+            bool removed = false;
+
+            const int lodNumber = GetLodNumber(infos[i].m_relativePath);
+            if (lodNumber >= 0 && lodNumber < lodsToRemove)
+            {
+                AZ_Info("lll", "Block LOD%d %s", lodNumber, infos[i].m_relativePath.c_str());
+                oneStepDependencyAssets.erase(oneStepDependencyAssets.begin() + i);
+                removed = true;
+            }
+
+            if (removed && lodsToRemove == 1)
+            {
+                break; // if we should remove one LOD only then we already done
+            }
+        }
+    }
+#endif
+
     void AssetContainer::AddDependentAssets(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams)
     {
         AssetId rootAssetId = rootAsset.GetId();
@@ -101,8 +176,26 @@ namespace AZ::Data
         if (loadParams.m_dependencyRules == AssetDependencyLoadRules::UseLoadBehavior)
         {
             AZStd::unordered_set<AssetId> noloadDependencies;
+#if defined(CARBONATED)  // lod removal
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("q_dropLods", s_numLodsToRemove);
+            }
+
+            if (s_numLodsToRemove > 0)
+            {
+                AssetCatalogRequestBus::BroadcastResult(getDependenciesResult, &AssetCatalogRequestBus::Events::GetLoadBehaviorProductDependenciesFiltered,
+                                                        rootAssetId, noloadDependencies, preloadDependencies, LodFilter);
+            }
+            else
+            {
+                AssetCatalogRequestBus::BroadcastResult(getDependenciesResult, &AssetCatalogRequestBus::Events::GetLoadBehaviorProductDependencies,
+                                                        rootAssetId, noloadDependencies, preloadDependencies);
+            }
+#else
             AssetCatalogRequestBus::BroadcastResult(getDependenciesResult, &AssetCatalogRequestBus::Events::GetLoadBehaviorProductDependencies,
                                                     rootAssetId, noloadDependencies, preloadDependencies);
+#endif
             if (!noloadDependencies.empty())
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> dependencyLock(m_dependencyMutex);
@@ -174,6 +267,37 @@ namespace AZ::Data
                         continue;
                     }
                 }
+                /*
+#if defined(CARBONATED)
+                {
+                    const char* name = assetInfo.m_relativePath.c_str();
+                    const char* lodPattern = "_lod0";
+                    if (strstr(name, lodPattern) != nullptr)
+                    {
+                        char buf[512];
+                        azstrcpy(buf, sizeof(buf), name);
+                        char* p = strstr(buf, lodPattern);
+                        *(p + strlen(lodPattern) - 1) = '1';
+                        bool found = false;
+                        for (const auto& ass : getDependenciesResult.GetValue())
+                        {
+                            AssetInfo aInfo;
+                            AssetCatalogRequestBus::BroadcastResult(aInfo, &AssetCatalogRequestBus::Events::GetAssetInfoById, ass.m_assetId);
+                            if (strcmp(aInfo.m_relativePath.c_str(), buf) == 0)
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found)
+                        {
+                            AZ_Info("lll", "Second block %s", name);
+                            continue; // drop lod0 if we have lod1
+                        }
+                    }
+                }
+#endif
+                */
                 dependencyInfoList.push_back(assetInfo);
             }
         }
