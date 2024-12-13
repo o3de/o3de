@@ -224,7 +224,7 @@ namespace AzToolsFramework
                 PrefabDomValueConstReference nestedInstanceDom = AZStd::nullopt);
 
             //! Runs through PrefabDom structure analyzing its general correctness, and checks that
-            //! nested entity objects have non-empty parent values in their TransformComoponents.
+            //! nested entity objects have non-empty parent values in their TransformComponents.
             //! Logs errors found.
             //! In case a nested entity object has the empty parent alias, reassigns the container entity alias as the parent.
             //! This may happen, for example, when loading a spoiled prefab stored with earlier O3DE versions.
