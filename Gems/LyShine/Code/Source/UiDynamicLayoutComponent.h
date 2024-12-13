@@ -90,6 +90,11 @@ protected: // data
     //! Number of child elements to clone on initialization
     int m_numChildElementsToClone;
 
+#if defined(CARBONATED)
+    //! Whether the container should be resized to fit all child elements
+    bool m_resizeToFitChildren;
+#endif
+
     //! Stores the size of the prototype element before it is removed from the child list. Used
     //! to calculate the element size
     AZ::Vector2 m_prototypeElementSize;
