@@ -147,14 +147,6 @@ namespace AZ
             //                [ EXECUTION WARNING #202: COMMAND_LIST_DRAW_VERTEX_BUFFER_NOT_SET]
             disabledMessages.push_back(D3D12_MESSAGE_ID_COMMAND_LIST_DRAW_VERTEX_BUFFER_NOT_SET);
 
-            //GALIB D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
-            //D3D12 WARNING: ID3D12CommandList::ClearRenderTargetView: The application did not pass any clear value to resource creation. The clear operation is typically slower as a result; but will still clear to the desired value. [ EXECUTION WARNING #820: CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE]
-            //D3D12 WARNING
-            //    : ID3D12CommandList::ClearRenderTargetView
-            //    : The application did not pass any clear value to resource creation.The clear operation is typically slower as a result;
-            //but will still clear to the desired value.[EXECUTION WARNING #820:CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE]
-            disabledMessages.push_back(D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE);
-
             // Windows build 10.0.17763 (AKA version 1809) has a bug where the D3D Debug layer throws the error COPY_DESCRIPTORS_INVALID_RANGES when it shouldn't.
             // This was fixed in subsequent builds, however, Amazon IT is still deploying this version to new machines as of the time this comment was written.
             if (IsRunningWindows10_0_17763())

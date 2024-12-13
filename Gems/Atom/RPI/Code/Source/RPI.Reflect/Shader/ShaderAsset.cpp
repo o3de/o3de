@@ -607,21 +607,6 @@ namespace AZ
             return false;
         }
 
-        bool ShaderAsset::UpdateRootShaderVariantAssets(const ShaderAsset& srcShaderAsset)
-        {
-            auto& dstSupervariants = GetCurrentShaderApiData().m_supervariants;
-            const auto& srcSuperVariants = srcShaderAsset.GetCurrentShaderApiData().m_supervariants;
-            if (dstSupervariants.size() != srcSuperVariants.size())
-            {
-                return false;
-            }
-            for (size_t i = 0; i < srcSuperVariants.size(); i++)
-            {
-                dstSupervariants[i].m_rootShaderVariantAsset = srcSuperVariants[i].m_rootShaderVariantAsset;
-            }
-            return true;
-        }
-
         bool ShaderAsset::PostLoadInit()
         {
             ShaderVariantFinderNotificationBus::Handler::BusConnect(GetId());

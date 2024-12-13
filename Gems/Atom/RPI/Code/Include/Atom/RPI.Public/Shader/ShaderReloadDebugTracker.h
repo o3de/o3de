@@ -11,9 +11,9 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Debug/Trace.h>
 
-//#ifdef AZ_ENABLE_TRACING
+#ifdef AZ_ENABLE_TRACING
 #define AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
-//#endif
+#endif
 
 namespace AZ
 {
