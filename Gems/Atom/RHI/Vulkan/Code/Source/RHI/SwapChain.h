@@ -70,7 +70,6 @@ namespace AZ
             void SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval) override;
             //////////////////////////////////////////////////////////////////////
 
-            void DisableHdr();
             void SetHDRMetaData(float maxOutputNits, float minOutputNits, float maxContentLightLevel, float maxFrameAverageLightLevel);
 
             RHI::ResultCode BuildSurface(const RHI::SwapChainDescriptor& descriptor);
