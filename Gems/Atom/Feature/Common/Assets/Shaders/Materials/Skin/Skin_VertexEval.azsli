@@ -62,8 +62,10 @@ VsOutput EvaluateVertexGeometry_Skin(
     // Detail UVs
     // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
     // either UV0 or UV1, in either case we apply the transform.
-    output.detailUv = params.m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
-    output.detailUv = mul(params.m_detailUvMatrix, float3(output.detailUv, 1.0)).xy;
+    output.detailUvs[0] = params.m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
+    output.detailUvs[0] = mul(params.m_detailUvMatrix, float3(output.detailUvs[0], 1.0)).xy;
+    output.detailUvs[1] = output.detailUvs[0];
+
 #endif // PIPELINE_VERTEX_DETAIL_UV
 
 #if PIPELINE_VERTEX_BLENDMASK
@@ -100,7 +102,9 @@ VsOutput EvaluateVertexGeometry_Skin(
     float2 uv1_unwrapped,
     uint instanceId)
 {
-    return EvaluateVertexGeometry_Skin(params, position, normal, tangent, uv0_tiled, uv1_unwrapped, float4(0, 0, 0, 0), instanceId);
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    return EvaluateVertexGeometry_Skin(params, position, normal, tangent, uv0_tiled, uv1_unwrapped, float4(0, 0, 0, 0), SV);
 }
 
 VsOutput EvaluateVertexGeometry_Skin(VsInput IN, VsSystemValues SV, const MaterialParameters params)

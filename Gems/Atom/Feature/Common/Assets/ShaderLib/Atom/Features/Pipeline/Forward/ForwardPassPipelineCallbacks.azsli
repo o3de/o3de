@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <Atom/Features/InstancedTransforms.azsli>
-
 #ifndef VsSystemValues
 #error "VsSystemValues needs to be declared"
 #endif
@@ -21,14 +19,31 @@ uint GetLightingChannelMask(VsSystemValues SV)
     return ObjectSrg::m_lightingChannelMask;
 }
 
+option bool o_meshInstancingIsEnabled = false;
+rootconstant uint m_rootConstantInstanceDataOffset;
+
 float4x4 GetObjectToWorldMatrix(VsSystemValues SV)
 {
-    return GetObjectToWorldMatrix(SV.m_instanceId);
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldMatrix(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + SV.m_instanceId]);
+    }
+    else
+    {
+        return SceneSrg::GetObjectToWorldMatrix(ObjectSrg::m_objectId);
+    }
 }
 
 float3x3 GetObjectToWorldMatrixInverseTranspose(VsSystemValues SV)
 {
-    return GetObjectToWorldMatrixInverseTranspose(SV.m_instanceId);
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + SV.m_instanceId]);
+    }
+    else
+    {
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(ObjectSrg::m_objectId);
+    }
 }
 
 float4x4 GetViewProjectionMatrix(VsSystemValues SV)
@@ -49,7 +64,14 @@ Texture2D<float> GetGoboTexture(int index)
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
 float4x4 GetObjectToWorldMatrixPrev(VsSystemValues SV)
 {
-    return GetObjectToWorldMatrixPrev(SV.m_instanceId);
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + SV.m_instanceId]);
+    }
+    else
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId);
+    }
 }
 
 float4x4 GetViewProjectionPrevMatrix(VsSystemValues SV)

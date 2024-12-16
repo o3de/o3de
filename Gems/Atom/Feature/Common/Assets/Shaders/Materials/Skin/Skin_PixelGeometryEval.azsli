@@ -16,7 +16,6 @@
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
-#include <Atom/Features/InstancedTransforms.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_Skin(
     const MaterialParameters params,

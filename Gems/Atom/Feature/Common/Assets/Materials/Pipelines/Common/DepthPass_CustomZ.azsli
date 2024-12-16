@@ -5,7 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+#pragma once
+#include <Atom/Features/SrgSemantics.azsli>
+
 #define MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE 1
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

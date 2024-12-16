@@ -75,8 +75,10 @@ VsOutput EvaluateVertexGeometry_Eye(
     float2 uv1,
     uint instanceId)
 {
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
     const float3 bitangent = float3(0, 0, 0);
-    return EvaluateVertexGeometry_Eye(params, position, normal, tangent, bitangent, uv0, uv1, instanceId);
+    return EvaluateVertexGeometry_Eye(params, position, normal, tangent, bitangent, uv0, uv1, SV);
 }
 
 VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV, const MaterialParameters params)

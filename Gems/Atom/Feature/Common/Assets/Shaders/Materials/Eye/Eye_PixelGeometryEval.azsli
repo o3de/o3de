@@ -16,7 +16,6 @@
 #endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
-#include <Atom/Features/InstancedTransforms.azsli>
 
 // TODO: The body of this function is copy pasted from BasePBR_PixelGeometryEval.azsli as that file could not be included here
 // since the file references an option o_normal_useTexture, which is not defined for the Eye shader. Need to find an elegant

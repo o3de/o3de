@@ -16,7 +16,6 @@
 #endif
 
 #include "../StandardPBR/StandardPBR_PixelGeometryEval.azsli"
-#include <Atom/Features/InstancedTransforms.azsli>
 
 #include <Atom/Features/Debug.azsli>
 

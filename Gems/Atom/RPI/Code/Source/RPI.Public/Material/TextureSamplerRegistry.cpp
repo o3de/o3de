@@ -100,7 +100,10 @@ namespace AZ
             if (it == m_samplerLookup.end())
             {
                 auto result = MakeSharedSamplerState(samplerState);
-                m_samplerLookup[result->m_samplerState] = result->m_samplerIndex;
+                if (result)
+                {
+                    m_samplerLookup[result->m_samplerState] = result->m_samplerIndex;
+                }
                 return result;
             }
             else

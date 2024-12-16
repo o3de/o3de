@@ -17,8 +17,6 @@
 
 #include <viewsrg.srgi>
 #include <Atom/RPI/TangentSpace.azsli>
-#include <Atom/Features/InstancedTransforms.azsli>
-
 
 VsOutput EvaluateVertexGeometry_BasePBR(
     const MaterialParameters params,

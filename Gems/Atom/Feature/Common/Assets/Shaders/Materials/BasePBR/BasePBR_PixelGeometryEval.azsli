@@ -16,7 +16,6 @@
 #endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
-#include <Atom/Features/InstancedTransforms.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_BasePBR(
     const MaterialParameters params,

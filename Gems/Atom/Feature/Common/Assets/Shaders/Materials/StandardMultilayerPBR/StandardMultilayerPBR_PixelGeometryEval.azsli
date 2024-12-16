@@ -33,14 +33,14 @@ PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(
 #if ENABLE_PARALLAX
     if(ShouldHandleParallax())
     {
-        MultilayerSetPixelDepth(vertexBlendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
+        MultilayerSetPixelDepth(params, vertexBlendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
             geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
 #endif
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(inout VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParamters params)
+PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(inout VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
 {
     real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(SV));
     real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(SV));

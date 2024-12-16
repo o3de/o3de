@@ -10,17 +10,6 @@
 
 #include <Atom/RPI/Math.azsli>
 
-#include "../MaterialInputs/BaseColorInput.azsli"
-#include "../MaterialInputs/RoughnessInput.azsli"
-#include "../MaterialInputs/MetallicInput.azsli"
-#include "../MaterialInputs/SpecularInput.azsli"
-#include "../MaterialInputs/NormalInput.azsli"
-#include "../MaterialInputs/ClearCoatInput.azsli"
-#include "../MaterialInputs/OcclusionInput.azsli"
-#include "../MaterialInputs/EmissiveInput.azsli"
-#include "../MaterialInputs/ParallaxInput.azsli"
-#include "../MaterialInputs/UvSetCount.azsli"
-
 // ------ Shader Options ----------------------------------------
 
 option bool o_layer2_enabled;

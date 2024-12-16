@@ -5,7 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
 
 // TODO(MaterialPipeline): In the end, after all refactoring and rearranging of our shader code is done, some of these flags might become unnecessary and should be re-evaluated.
@@ -30,6 +34,8 @@
 #define ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION 0
 #define ENABLE_REFLECTIONPROBE_BLENDING 0
 #define ENABLE_SPECULARAA 0
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

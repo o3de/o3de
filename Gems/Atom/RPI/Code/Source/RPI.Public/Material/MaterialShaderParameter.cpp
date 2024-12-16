@@ -353,8 +353,11 @@ namespace AZ
                 {
                     auto sharedSampler =
                         instanceHandler->RegisterTextureSampler(m_materialTypeIndex, m_materialInstanceIndex, samplerState);
-                    m_sharedSamplerStates[index] = sharedSampler;
-                    samplerIndex = sharedSampler->m_samplerIndex;
+                    if (sharedSampler)
+                    {
+                        samplerIndex = sharedSampler->m_samplerIndex;
+                        m_sharedSamplerStates[index] = AZStd::move(sharedSampler);
+                    }
                 }
                 return TypedParameterHelper{ this }.SetBasicParameter(index, samplerIndex);
             }

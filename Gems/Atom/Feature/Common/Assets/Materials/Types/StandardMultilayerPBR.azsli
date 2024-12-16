@@ -5,17 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
-#include "../MaterialInputs/BaseColorInput.azsli"
-#include "../MaterialInputs/RoughnessInput.azsli"
-#include "../MaterialInputs/MetallicInput.azsli"
-#include "../MaterialInputs/SpecularInput.azsli"
-#include "../MaterialInputs/NormalInput.azsli"
-#include "../MaterialInputs/ClearCoatInput.azsli"
-#include "../MaterialInputs/OcclusionInput.azsli"
-#include "../MaterialInputs/EmissiveInput.azsli"
-#include "../MaterialInputs/ParallaxInput.azsli"
-#include "../MaterialInputs/UvSetCount.azsli"
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_MaterialInputs.azsli>
+
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE || MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
 

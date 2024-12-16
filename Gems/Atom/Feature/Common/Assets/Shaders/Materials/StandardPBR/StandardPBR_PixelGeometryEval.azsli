@@ -17,7 +17,6 @@
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
 #include "../MaterialFunctions/ParallaxDepth.azsli"
-#include <Atom/Features/InstancedTransforms.azsli>
 
 #include <Atom/Features/Debug.azsli>
 
