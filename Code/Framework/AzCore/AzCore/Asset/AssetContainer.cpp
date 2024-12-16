@@ -18,7 +18,7 @@ namespace AZ::Data
     AZ_CVAR(bool, bg_trackHandledAssetDependencies, false, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Set to true if to track handled asset dependencies in order to troubleshoot when a dependent asset hasn't loaded.");
 #if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
-    AZ_CVAR(int, q_dropLods, 2, nullptr, AZ::ConsoleFunctorFlags::Null,
+    AZ_CVAR(int, q_dropLods, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Set to non-zero to suppres the number of LODs.");
 #endif
     AssetContainer::AssetContainer(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams, bool isReload)
