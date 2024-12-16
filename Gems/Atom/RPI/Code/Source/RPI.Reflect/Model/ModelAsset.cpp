@@ -54,21 +54,14 @@ namespace AZ
             }
         }
 
-#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
-        int ModelAsset::s_numLodsToRemove = 0;
-#endif
-
         ModelAsset::ModelAsset()
         {
             // c-tor and d-tor have to be defined in .cpp in order to have AZStd::unique_ptr<ModelKdTree> without having to include the header of KDTree
 #if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
-
             if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
-                console->GetCvarValue("q_dropLods", s_numLodsToRemove);
+                console->GetCvarValue("q_dropLods", m_numLodsToRemove);
             }
-
-            m_numLodsToRemove = s_numLodsToRemove;
 #endif
         }
 

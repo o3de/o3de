@@ -20,7 +20,7 @@ namespace AZ::Data
 
 #if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
     AZ_CVAR(int, q_dropLods, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "Set to non-zero to suppres the number of LODs.");
+        "Set to non-zero to drop this number of high quality LODs per model.");
 #endif
 
     AssetContainer::AssetContainer(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams, bool isReload)
@@ -83,7 +83,7 @@ namespace AZ::Data
     }
 
 #if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
-    int AssetContainer::s_numLodsToRemove = 1;
+    int AssetContainer::s_numLodsToRemove = 0;
 
     static AZ_INLINE int GetLodNumber(AZStd::string s)  // returns LOD number if the name matches the model LOD pattern, otherwise -1
     {
