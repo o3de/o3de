@@ -21,6 +21,8 @@
 #include <AzCore/Serialization/Locale.h>
 #include <AzCore/Time/ITime.h>
 
+#include <AzToolsFramework/API/EditorCameraBus.h>
+
 //////////////////////////////////////////////////////////////////////////
 // Movie Callback.
 //////////////////////////////////////////////////////////////////////////
@@ -120,6 +122,10 @@ CAnimationContext::CAnimationContext()
 //////////////////////////////////////////////////////////////////////////
 CAnimationContext::~CAnimationContext()
 {
+    if (Maestro::SequenceComponentNotificationBus::Handler::BusIsConnected())
+    {
+        Maestro::SequenceComponentNotificationBus::Handler::BusDisconnect();
+    }
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
     GetIEditor()->GetSequenceManager()->RemoveListener(this);
     GetIEditor()->GetUndoManager()->RemoveListener(this);
@@ -197,6 +203,12 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
 
     if (m_pSequence)
     {
+        const auto oldSequenceEntityId = m_pSequence->GetSequenceComponentEntityId();
+        if (Maestro::SequenceComponentNotificationBus::Handler::BusIsConnectedId(oldSequenceEntityId))
+        {
+            Maestro::SequenceComponentNotificationBus::Handler::BusDisconnect(oldSequenceEntityId);
+        }
+
         m_pSequence->Deactivate();
         if (m_playing)
         {
@@ -227,6 +239,8 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
         m_pSequence->PrecacheData(newSeqStartTime);
 
         m_pSequence->BindToEditorObjects();
+        // Get ready to handle camera switching in this sequence, if ever, in order to switch camera in Editor Viewport Widget
+        Maestro::SequenceComponentNotificationBus::Handler::BusConnect(m_mostRecentSequenceId);
     }
     else if (user)
     {
@@ -251,6 +265,17 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
 
     m_recording = bRecording;
     SetRecordingInternal(bRecording);
+
+    // restore initial Editor Viewport camera EntityId
+    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, m_viewCameraEntityId);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SequenceComponentNotificationBus overrider: called when a Sequence changes camera during playback in Track View.
+void CAnimationContext::OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId)
+{
+    // Switch camera in Editor Viewport Widget to the newCameraEntityId
+    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, newCameraEntityId);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -327,13 +352,16 @@ void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
                         // Restore the current time.
                         SetTime(lastTime);
 
-                        // Notify time may have changed, use m_currTime incase it was clamped by SetTime()
+                        // Notify time may have changed, use m_currTime in case it was clamped by SetTime()
                         TimeChanged(m_currTime);
                     }
                 }
             }
         }
     }
+
+    // Store initial Editor Viewport camera EntityId 
+    Camera::EditorCameraRequestBus::BroadcastResult(m_viewCameraEntityId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
 }
 
 //////////////////////////////////////////////////////////////////////////

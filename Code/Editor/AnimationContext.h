@@ -17,6 +17,8 @@
 #include <Range.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
+#include <CryCommon/Maestro/Bus/SequenceComponentBus.h>
+
 struct IMovieSystem;
 class CTrackViewSequence;
 
@@ -37,6 +39,8 @@ class CAnimationContext
     , public IUndoManagerListener
     , public ITrackViewSequenceManagerListener
     , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
+    , public Maestro::SequenceComponentNotificationBus::Handler
+
 {
 public:
     //////////////////////////////////////////////////////////////////////////
@@ -133,7 +137,7 @@ public:
     */
     void SetResetTime(float t) {m_resetTime = t; };
 
-    /** Start animation recorduing.
+    /** Start animation recording.
         Automatically stop playing.
         @param recording True to start recording, false to stop.
     */
@@ -184,6 +188,11 @@ public:
     */
     void OnSequenceActivated(AZ::EntityId entityId);
 
+    /** Get stored entity ID of a camera in an active editor viewport at the moment a sequence was activated
+     *  (invalid if the default editor camera was used).
+     */
+    AZ::EntityId GetStoredViewCameraEntityId() const { return m_viewCameraEntityId; }
+
 private:
     static void GoToFrameCmd(IConsoleCmdArgs* pArgs);
 
@@ -201,6 +210,9 @@ private:
     void AnimateActiveSequence();
 
     void SetRecordingInternal(bool enableRecording);
+
+    // SequenceComponentNotificationBus
+    void OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId) override;
 
     //! Current time within active animation sequence.
     float m_currTime;
@@ -227,6 +239,10 @@ private:
     Range m_timeRange;
 
     Range m_timeMarker;
+
+    //! An entity ID of a current camera in an active editor viewport, at the moment a sequence is activated,
+    //! or invalid if the default editor camera is used at the moment.
+    AZ::EntityId m_viewCameraEntityId = AZ::EntityId();
 
     //! Currently active animation sequence.
     CTrackViewSequence* m_pSequence;
