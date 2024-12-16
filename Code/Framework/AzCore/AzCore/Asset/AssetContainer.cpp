@@ -17,10 +17,12 @@ namespace AZ::Data
 {
     AZ_CVAR(bool, bg_trackHandledAssetDependencies, false, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Set to true if to track handled asset dependencies in order to troubleshoot when a dependent asset hasn't loaded.");
+
 #if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
     AZ_CVAR(int, q_dropLods, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Set to non-zero to suppres the number of LODs.");
 #endif
+
     AssetContainer::AssetContainer(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams, bool isReload)
     {
         m_rootAsset = AssetInternal::WeakAsset<AssetData>(rootAsset);
@@ -267,37 +269,6 @@ namespace AZ::Data
                         continue;
                     }
                 }
-                /*
-#if defined(CARBONATED)
-                {
-                    const char* name = assetInfo.m_relativePath.c_str();
-                    const char* lodPattern = "_lod0";
-                    if (strstr(name, lodPattern) != nullptr)
-                    {
-                        char buf[512];
-                        azstrcpy(buf, sizeof(buf), name);
-                        char* p = strstr(buf, lodPattern);
-                        *(p + strlen(lodPattern) - 1) = '1';
-                        bool found = false;
-                        for (const auto& ass : getDependenciesResult.GetValue())
-                        {
-                            AssetInfo aInfo;
-                            AssetCatalogRequestBus::BroadcastResult(aInfo, &AssetCatalogRequestBus::Events::GetAssetInfoById, ass.m_assetId);
-                            if (strcmp(aInfo.m_relativePath.c_str(), buf) == 0)
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (found)
-                        {
-                            AZ_Info("lll", "Second block %s", name);
-                            continue; // drop lod0 if we have lod1
-                        }
-                    }
-                }
-#endif
-                */
                 dependencyInfoList.push_back(assetInfo);
             }
         }

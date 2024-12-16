@@ -21,7 +21,6 @@ namespace AZ::Render
     {
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
-        //ASSET_TAG("Mesh32");
         ASSET_TAG((*(m_associatedInstances.begin()))->GetAssetHint().c_str());
 #endif
         if (m_drawPacket.Update(parentScene, forceUpdate))
@@ -41,7 +40,6 @@ namespace AZ::Render
     {
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
-        //ASSET_TAG("Mesh33");
         ASSET_TAG((*(m_associatedInstances.begin()))->GetAssetHint().c_str());
 #endif
         // Shader options are either set or being unspecified (which means use the global value).
@@ -79,7 +77,6 @@ namespace AZ::Render
     {
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
-        //ASSET_TAG("Mesh34");
         ASSET_TAG(instance->GetAssetHint().c_str());
 #endif
         AZStd::scoped_lock<AZStd::mutex> scopedLock(m_eventLock);
@@ -97,7 +94,6 @@ namespace AZ::Render
     {
 #if defined(CARBONATED)
         MEMORY_TAG(Mesh);
-        //ASSET_TAG("Mesh35");
         const char* meshName = "";
         if (m_instanceGroupData.size() > 0)
         {

@@ -86,6 +86,7 @@ namespace AzFramework
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependenciesFiltered(const AZ::Data::AssetId& id,
             AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, AZ::Data::PreloadAssetListType& preloadAssetList, FilterCallback filter) override;
 #endif
+
         bool DoesAssetIdMatchWildcardPattern(const AZ::Data::AssetId& assetId, const AZStd::string& wildcardPattern) override;
 
         AZ::Data::AssetId GenerateAssetIdTEMP(const char* /*path*/) override;

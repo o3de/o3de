@@ -347,6 +347,7 @@ namespace AzFramework
 
         return AZ::Success(AZStd::move(dependencyList));
     }
+
     AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> AssetCatalog::GetLoadBehaviorProductDependencies(const AZ::Data::AssetId& id, AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, AZ::Data::PreloadAssetListType& preloadAssetList)
     {
         AZStd::vector<AZ::Data::ProductDependency> dependencyList;

@@ -267,7 +267,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh4");  // not present in the log
 #endif
             const auto instanceManagerRanges = m_meshInstanceManager.GetParallelRanges();
             AZStd::vector<Job*> perInstanceGroupJobQueue;
@@ -280,7 +279,6 @@ namespace AZ
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: PerInstanceGroupUpdate");
 #if defined(CARBONATED)
                     MEMORY_TAG(Mesh);
-                    //ASSET_TAG("Mesh5");  // not present in the log, there is an asset tag in the functions called below
 #endif
                     for (auto instanceGroupDataIter = iteratorRange.m_begin; instanceGroupDataIter != iteratorRange.m_end;
                          ++instanceGroupDataIter)
@@ -304,7 +302,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh6");  // not present in the log
 #endif
             const auto iteratorRanges = m_modelData.GetParallelRanges();
             AZStd::vector<Job*> initJobQueue;
@@ -317,7 +314,6 @@ namespace AZ
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Init");
 #if defined(CARBONATED)
                     MEMORY_TAG(Mesh);
-                    //ASSET_TAG("Mesh7");  // not present in the log
 #endif
                     for (auto meshDataIter = iteratorRange.m_begin; meshDataIter != iteratorRange.m_end; ++meshDataIter)
                     {
@@ -387,7 +383,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh8");  // not a particular asset loading allocation
 #endif
             const auto iteratorRanges = m_modelData.GetParallelRanges();
             AZStd::vector<Job*> updateCullingJobQueue;
@@ -400,7 +395,6 @@ namespace AZ
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: UpdateCulling");
 #if defined(CARBONATED)
                     MEMORY_TAG(Mesh);
-                    //ASSET_TAG("Mesh9"); // moved below, check it!!! TODO
 #endif
                     for (auto meshDataIter = iteratorRange.m_begin; meshDataIter != iteratorRange.m_end; ++meshDataIter)
                     {
@@ -433,7 +427,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh10");  // not an asset loading
 #endif
             AZ::JobCompletion jobCompletion;
             for (size_t i = 0; i < initQueue.size(); ++i)
@@ -471,7 +464,7 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            ASSET_TAG("Mesh11");  // not a particular asset loading, hard to identify but there is some memory allocated, TODO
+            ASSET_TAG("UnknownMesh1");  // not a particular asset loading, hard to identify, but there is some memory allocated, TODO
 #endif
             AZ::JobCompletion jobCompletion;
             for (Job* childJob : jobQueue)
@@ -504,7 +497,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh12");  // not present in the log
 #endif
             if (r_meshInstancingEnabled)
             {
@@ -571,7 +563,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh13");  // not related to particular asset loading
 #endif
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: ResizePerInstanceVectors");
             // Initialize the instance data if it hasn't been created yet
@@ -695,7 +686,6 @@ namespace AZ
             size_t visibleObjectCount = view->GetVisibleObjectList().size();
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh14");  // not present in the log
 #endif
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
             if (visibleObjectCount > 0)
@@ -797,7 +787,6 @@ namespace AZ
             MeshInstanceGroupData& instanceGroup = *instanceGroupHandle;
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            // ASSET_TAG("Mesh15");
             ASSET_TAG((*(instanceGroup.m_associatedInstances.begin()))->GetAssetHint().c_str());
 #endif
             // Each task is working on a page of instance groups, but
@@ -849,7 +838,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh16");  // moved below
 #endif
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
             AZStd::vector<InstanceGroupBucket>& currentViewInstanceGroupBuckets = m_perViewInstanceGroupBuckets[viewIndex];
@@ -919,7 +907,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: UpdateGPUInstanceBufferForView");
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            ASSET_TAG("Mesh17");  // cannot identify TODO
+            ASSET_TAG("UnknownMesh2");  // cannot identify any particular asset TODO
 #endif
             // Use the correct srg for the view
             GpuBufferHandler& instanceDataBufferHandler = m_perViewInstanceDataBufferHandlers[viewIndex];
@@ -937,7 +925,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh18");  // moved below per model
 #endif
             m_meshDataChecker.soft_lock();
                         
@@ -1071,7 +1058,6 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: AcquireMesh");
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh19");
             ASSET_TAG(descriptor.m_modelAsset.GetHint().c_str());  
 #endif
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during
@@ -1246,7 +1232,6 @@ namespace AZ
             {
 #if defined(CARBONATED)
                 MEMORY_TAG(Mesh);
-                // ASSET_TAG("Mesh20");
                 ASSET_TAG(meshHandle->m_originalModelAsset.GetHint().c_str());
 #endif
                 meshHandle->m_descriptor.m_customMaterials = materials;
@@ -1520,7 +1505,6 @@ namespace AZ
             {
 #if defined(CARBONATED)
                 MEMORY_TAG(Mesh);
-                //ASSET_TAG("Mesh21");  // not present in the log
 #endif
                 meshHandle->m_descriptor.m_useForwardPassIblSpecular = useForwardPassIblSpecular;
                 meshHandle->m_flags.m_objectSrgNeedsUpdate = true;
@@ -1568,7 +1552,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh22");  // not present in the log
 #endif
             for (auto& meshInstance : m_modelData)
             {
@@ -1702,7 +1685,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh23");
             ASSET_TAG(m_modelAsset.GetHint().c_str());
 #endif        	
             SystemTickBus::Handler::BusDisconnect();
@@ -1847,7 +1829,6 @@ namespace AZ
                         {
 #if defined(CARBONATED)
                             MEMORY_TAG(Mesh);
-                            //ASSET_TAG("Mesh24");  // not present in the list
 #endif
                             ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
                         }
@@ -1933,7 +1914,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh25");
             ASSET_TAG(m_meshLoader->GetAssetHint().c_str());
 #endif
             const size_t modelLodCount = m_model->GetLodCount();
@@ -2047,7 +2027,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh26");
             ASSET_TAG(m_meshLoader->GetAssetHint().c_str());
 #endif
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
@@ -2243,7 +2222,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh27");
             ASSET_TAG(m_meshLoader->GetAssetHint().c_str());
 #endif
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = meshFeatureProcessor->GetRayTracingFeatureProcessor();
@@ -2603,7 +2581,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh28"); not present in the log
 #endif
             RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(s_irradiance_irradianceColorSource_Name);
             if (!propertyIndex.IsValid())
@@ -2737,7 +2714,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh29");  // not present in the log
 #endif
             TransformServiceFeatureProcessor* transformServiceFeatureProcessor = meshFeatureProcessor->GetTransformServiceFeatureProcessor();
             ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = meshFeatureProcessor->GetReflectionProbeFeatureProcessor();
@@ -2853,7 +2829,6 @@ namespace AZ
             AZ_Assert(m_model, "The model has not finished loading yet");
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh30");
             ASSET_TAG(m_meshLoader->GetAssetHint().c_str());
 #endif
             RPI::Cullable::CullData& cullData = m_cullable.m_cullData;
@@ -3025,7 +3000,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh31");
             ASSET_TAG(m_meshLoader->GetAssetHint().c_str());
 #endif
             ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = meshFeatureProcessor->GetReflectionProbeFeatureProcessor();

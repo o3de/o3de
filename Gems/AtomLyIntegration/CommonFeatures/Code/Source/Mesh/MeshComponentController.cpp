@@ -260,7 +260,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh1");
             ASSET_TAG(m_configuration.m_modelAsset.GetHint().c_str());
 #endif
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
@@ -375,7 +374,6 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);
-            //ASSET_TAG("Mesh2");
             ASSET_TAG(m_configuration.m_modelAsset.GetHint().c_str());
 #endif
             return GetDefaultMaterialMapFromModelAsset(GetModelAsset());
@@ -451,7 +449,6 @@ namespace AZ
             {
 #if defined(CARBONATED)
                 MEMORY_TAG(Mesh);
-                //ASSET_TAG("Mesh3");   // actually not present in the log
                 ASSET_TAG(m_configuration.m_modelAsset.GetHint().c_str());
 #endif
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
