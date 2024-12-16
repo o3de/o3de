@@ -81,8 +81,6 @@ namespace AZ
 
             m_lods.resize(modelAsset->GetLodAssets().size());
 
-            AZ_Info("lll", "Create %d lods for %s", m_lods.size(), modelAsset.GetHint().c_str());
-
             for (size_t lodIndex = 0; lodIndex < m_lods.size(); ++lodIndex)
             {
                 const auto lodAssets = modelAsset->GetLodAssets();
@@ -93,8 +91,6 @@ namespace AZ
                     AZ_Error("Model", false, "Invalid Operation: Last ModelLod is not loaded.");
                     return RHI::ResultCode::Fail;
                 }
-
-                AZ_Info("lll", "Lod asset %d %s", lodIndex, lodAsset.GetHint().c_str());
 
                 Data::Instance<ModelLod> lodInstance = ModelLod::FindOrCreate(lodAsset, modelAsset);
                 if (lodInstance == nullptr)

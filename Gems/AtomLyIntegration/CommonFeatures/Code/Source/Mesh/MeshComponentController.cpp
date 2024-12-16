@@ -370,7 +370,7 @@ namespace AZ
             return GetMaterialSlotIdFromModelAsset(GetModelAsset(), lod, label);
         }
 
-        MaterialAssignmentMap MeshComponentController::GetDefaultMaterialMap() const  // it returns map by value FIXME?
+        MaterialAssignmentMap MeshComponentController::GetDefaultMaterialMap() const
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Mesh);

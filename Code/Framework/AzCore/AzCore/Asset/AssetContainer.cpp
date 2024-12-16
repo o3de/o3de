@@ -141,7 +141,6 @@ namespace AZ::Data
             const int lodNumber = GetLodNumber(infos[i].m_relativePath);
             if (lodNumber >= 0 && lodNumber < lodsToRemove)
             {
-                AZ_Info("lll", "Block LOD%d %s", lodNumber, infos[i].m_relativePath.c_str());
                 oneStepDependencyAssets.erase(oneStepDependencyAssets.begin() + i);
                 removed = true;
             }

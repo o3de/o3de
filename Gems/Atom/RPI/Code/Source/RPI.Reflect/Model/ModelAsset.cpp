@@ -136,7 +136,6 @@ namespace AZ
             if (m_numLodsToRemove > 0 && m_lodAssets.size() > 0)
             {
                 const int numLodsToRemove = AZStd::min(m_numLodsToRemove, int(m_lodAssets.size() - 1));
-                AZ_Info("lll", "Load %d..%d LODs for %s", numLodsToRemove, m_lodAssets.size() - 1, GetName().GetCStr());
                 for (int i = numLodsToRemove; i < m_lodAssets.size(); i++)
                 {
                     m_lodAssets[i]->LoadBufferAssets();
@@ -144,7 +143,6 @@ namespace AZ
                 return;
             }
 #endif
-            AZ_Info("lll", "Load all %d LODs for %s", m_lodAssets.size(), GetName().GetCStr());
             for (auto& lodAsset : m_lodAssets)
             {
                 lodAsset->LoadBufferAssets();
