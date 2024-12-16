@@ -25,7 +25,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiDynamicLayoutComponent::UiDynamicLayoutComponent()
-    : m_numChildElementsToClone(0)
+    : 
+#if defined(CARBONATED)
+    m_numChildElementsToClone(0),
+    m_resizeToFitChildren(true)
+#else
+    m_numChildElementsToClone(0)
+#endif
 {
 }
 
@@ -181,8 +187,14 @@ void UiDynamicLayoutComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiDynamicLayoutComponent, AZ::Component>()
+#if defined(CARBONATED)
+            ->Version(2)
+            ->Field("NumChildElements", &UiDynamicLayoutComponent::m_numChildElementsToClone)
+            ->Field("ResizeToFit", &UiDynamicLayoutComponent::m_resizeToFitChildren);
+#else
             ->Version(1)
             ->Field("NumChildElements", &UiDynamicLayoutComponent::m_numChildElementsToClone);
+#endif
 
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
@@ -200,6 +212,11 @@ void UiDynamicLayoutComponent::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiDynamicLayoutComponent::m_numChildElementsToClone, "Num Cloned Elements",
                 "The number of child elements to initialize the layout with.")
                 ->Attribute(AZ::Edit::Attributes::Min, 0);
+
+#if defined(CARBONATED)
+             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiDynamicLayoutComponent::m_resizeToFitChildren, "Resize to Fit Children",
+                "Whether we should resize the container to fit all the contents.");
+#endif
         }
     }
 
@@ -306,6 +323,11 @@ void UiDynamicLayoutComponent::SetPrototypeElementActive(bool active)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiDynamicLayoutComponent::ResizeToFitChildElements()
 {
+#if defined(CARBONATED)
+    if (!m_resizeToFitChildren)
+        return;
+#endif
+
     if (!m_prototypeElement.IsValid())
     {
         return;
