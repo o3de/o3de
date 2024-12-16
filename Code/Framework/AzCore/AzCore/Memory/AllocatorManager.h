@@ -313,17 +313,21 @@ namespace AZ
             AssetMemoryItem(const char* name)
             {
                 const size_t size = strlen(name) + 1;
-                mName = aznew char[size];
-                memcpy(mName, name, size);
+                m_name = aznew char[size];
+                memcpy(m_name, name, size);
+            }
+            ~AssetMemoryItem()
+            {
+                delete[] m_name;
             }
 
             const char* GetName() const
             {
-                return mName;
+                return m_name;
             }
 
         private:
-            char* mName;
+            char* m_name;
         };
 
         struct ThreadLocalData

@@ -703,8 +703,7 @@ namespace AzFramework
 #if defined(CARBONATED)
         MEMORY_TAG(AssetCatalog);
 #endif
-        AZ_Error(
-            "AssetCatalog", id != AZ::Data::s_invalidAssetType, "Registering asset \"%s\" with invalid type.", info.m_relativePath.c_str());
+        AZ_Error("AssetCatalog", id != AZ::Data::s_invalidAssetType, "Registering asset \"%s\" with invalid type.", info.m_relativePath.c_str());
 
         info.m_assetId = id;
         if (info.m_sizeBytes == 0)

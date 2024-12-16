@@ -1165,6 +1165,7 @@ namespace AZ
                             stringOutput += drawItem->m_enabled ? "Enabled  | " : "Disabled | ";
                             stringOutput += AZStd::string::format("%s Tag\n", RHI::GetDrawListName(tag).GetCStr());
                         }
+
                     }
                 }
             }

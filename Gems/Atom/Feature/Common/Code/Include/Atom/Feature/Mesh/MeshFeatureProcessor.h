@@ -66,7 +66,6 @@ namespace AZ
 #if defined(CARBONATED)
             const AZStd::string& GetAssetHint() const
             {
-                //return m_meshLoader->GetAssetHint();
                 return m_originalModelAsset.GetHint();
             }
 #endif

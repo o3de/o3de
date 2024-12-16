@@ -151,6 +151,8 @@ namespace AZ::Debug
             ai.m_assetName = nullptr;
         }
         /*
+        // this code piece allows catching a particular asset's memory allocation via debugger
+        // it cannot allocate any memory, cannot log any argument except basic string, otherwise there is an infinite recursion
         constexpr const char* assetToFind = "dlc/cover/tanks/models/watertank_ibc_01/watertank_ibc_01_lod0.fbx.azlod";
         constexpr size_t thresholdSize = 1; //100 * 1024;
         if (ai.m_assetName != nullptr && ai.m_byteSize > thresholdSize && strcmp(ai.m_assetName, assetToFind) == 0)
