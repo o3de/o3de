@@ -30,6 +30,7 @@
 #include <QToolButton>
 
 // AzFramework
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 
 // AzQtComponents
@@ -161,8 +162,8 @@ CTrackViewDialog::CTrackViewDialog(QWidget* pParent /*=nullptr*/)
     m_defaultTracksForEntityNode.push_back(AnimParamType::Position);
     m_defaultTracksForEntityNode.push_back(AnimParamType::Rotation);
 
-    OnInitDialog();
     AddDialogListeners();
+    OnInitDialog();
 
     AZ::EntitySystemBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
@@ -1048,6 +1049,8 @@ void CTrackViewDialog::ReloadSequences()
 
     if (sequence)
     {
+        // In case a sequence was previously selected in this Editor session, - restore the selection, selecting this in ReloadSequencesComboBox().
+        m_currentSequenceEntityId = sequence->GetSequenceComponentEntityId();
         sequence->UnBindFromEditorObjects();
     }
 
@@ -1060,22 +1063,19 @@ void CTrackViewDialog::ReloadSequences()
 
     ReloadSequencesComboBox();
 
-    if (m_currentSequenceEntityId.IsValid())
+    if (m_currentSequenceEntityId.IsValid()) // A sequence force-selected when reloading the combo box ?
     {
-        CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
-        sequence = pSequenceManager->GetSequenceByEntityId(m_currentSequenceEntityId);
-
-        const float prevTime = pAnimationContext->GetTime();
-        pAnimationContext->SetSequence(sequence, true, true);
-        pAnimationContext->SetTime(prevTime);
+        OnSequenceComboBox(); // Emulate sequence selection to load it into the dialog
+        InvalidateSequence(); // and force later update.
+        sequence = pAnimationContext->GetSequence(); // In case a latest sequence created was selected, actualize the pointer.
     }
-    else
+    else // No sequences yet
     {
         pAnimationContext->SetSequence(nullptr, true, false);
         m_sequencesComboBox->setCurrentIndex(0);
     }
 
-    if (sequence)
+    if (sequence && !sequence->IsBoundToEditorObjects())
     {
         sequence->BindToEditorObjects();
     }
@@ -1093,6 +1093,8 @@ void CTrackViewDialog::ReloadSequencesComboBox()
     m_sequencesComboBox->clear();
     m_sequencesComboBox->addItem(QString(s_kNoSequenceComboBoxEntry));
 
+    AZ::EntityId lastSequenceComponentEntityId;
+    int lastIndex = -1;
     {
         CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
@@ -1100,19 +1102,32 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         for (unsigned int k = 0; k < numSequences; ++k)
         {
             CTrackViewSequence* sequence = pSequenceManager->GetSequenceByIndex(k);
-            QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
-            m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
+            const auto sequenceComponentEntityId = sequence->GetSequenceComponentEntityId();
+            if (sequenceComponentEntityId.IsValid())
+            {
+                lastIndex = static_cast<int>(k);
+                lastSequenceComponentEntityId = sequenceComponentEntityId;
+                QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
+                m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
+            }
         }
     }
 
-    if (!m_currentSequenceEntityId.IsValid())
-    {
-        m_sequencesComboBox->setCurrentIndex(0);
-    }
-    else
+    if (m_currentSequenceEntityId.IsValid())
     {
         QString entityIdString = GetEntityIdAsString(m_currentSequenceEntityId);
         m_sequencesComboBox->setCurrentIndex(m_sequencesComboBox->findData(entityIdString));
+    }
+    else if (lastSequenceComponentEntityId.IsValid())
+    {
+        // Make opening the dialog more user friendly: selecting a sequence probably worked on lately,
+        // as sequences, when created, are pushed to back into corresponding container. 
+        m_currentSequenceEntityId = lastSequenceComponentEntityId;
+        m_sequencesComboBox->setCurrentIndex(lastIndex + 1);
+    }
+    else
+    {
+        m_sequencesComboBox->setCurrentIndex(0);
     }
     m_sequencesComboBox->blockSignals(false);
 }
@@ -1434,6 +1449,9 @@ void CTrackViewDialog::OnStopHardReset()
         sequence->ResetHard();
     }
     UpdateActions();
+    // restore initial Editor Viewport camera EntityId
+    Camera::EditorCameraRequestBus::Broadcast(
+        &Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, pAnimationContext->GetStoredViewCameraEntityId());
 }
 
 //////////////////////////////////////////////////////////////////////////
