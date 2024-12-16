@@ -150,14 +150,14 @@ namespace AZ::Debug
         {
             ai.m_assetName = nullptr;
         }
-        
-        constexpr const char* assetToFind = "dlc/characters/models/player_m_01/player_m_01_lod4_position0.fbx.azbuffer";
+        /*
+        constexpr const char* assetToFind = "dlc/cover/tanks/models/watertank_ibc_01/watertank_ibc_01_lod0.fbx.azlod";
         constexpr size_t thresholdSize = 1; //100 * 1024;
         if (ai.m_assetName != nullptr && ai.m_byteSize > thresholdSize && strcmp(ai.m_assetName, assetToFind) == 0)
         {
             AZ_Info("mmm", "this is it");
         }
-        
+        */
         if (point)
         {
             ai.m_name = point->m_name;

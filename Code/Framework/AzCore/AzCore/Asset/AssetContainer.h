@@ -146,7 +146,7 @@ namespace AZ
             // AssetId -> List of assets waiting on it
             PreloadAssetListType m_preloadWaitList;
         private:
-#if defined(CARBONATED)  // lod removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
             static int s_numLodsToRemove;
             static void LodFilter(AZStd::vector<AZ::Data::ProductDependency>& oneStepDependencyAssets);
 #endif

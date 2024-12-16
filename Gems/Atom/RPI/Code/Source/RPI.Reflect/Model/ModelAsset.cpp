@@ -17,7 +17,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#if defined(CARBONATED)  // load removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
 #include <AzCore/Console/IConsole.h>
 #endif
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -54,14 +54,14 @@ namespace AZ
             }
         }
 
-#if defined(CARBONATED)  // load removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
         int ModelAsset::s_numLodsToRemove = 0;
 #endif
 
         ModelAsset::ModelAsset()
         {
             // c-tor and d-tor have to be defined in .cpp in order to have AZStd::unique_ptr<ModelKdTree> without having to include the header of KDTree
-#if defined(CARBONATED)  // load removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
 
             if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
@@ -108,10 +108,11 @@ namespace AZ
 
         size_t ModelAsset::GetLodCount() const
         {
-#if defined(CARBONATED)  // load removal
-            if (m_numLodsToRemove > 0 && m_lodAssets.size() > m_numLodsToRemove)
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+            if (m_numLodsToRemove > 0 && m_lodAssets.size() > 0)
             {
-                return m_lodAssets.size() - m_numLodsToRemove;
+                const int numLodsToRemove = AZStd::min(m_numLodsToRemove, int(m_lodAssets.size() - 1));
+                return m_lodAssets.size() - numLodsToRemove;
             }
 #endif
             return m_lodAssets.size();
@@ -119,11 +120,11 @@ namespace AZ
 
         AZStd::span<const Data::Asset<ModelLodAsset>> ModelAsset::GetLodAssets() const
         {
-#if defined(CARBONATED)  // load removal
-            if (m_numLodsToRemove > 0 && m_lodAssets.size() > m_numLodsToRemove)
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+            if (m_numLodsToRemove > 0 && m_lodAssets.size() > 0)
             {
-                return AZStd::span<const Data::Asset<ModelLodAsset>>(m_lodAssets).subspan(m_numLodsToRemove,
-                    m_lodAssets.size() - m_numLodsToRemove);
+                const int numLodsToRemove = AZStd::min(m_numLodsToRemove, int(m_lodAssets.size() - 1));
+                return AZStd::span<const Data::Asset<ModelLodAsset>>(m_lodAssets).subspan(numLodsToRemove, m_lodAssets.size() - numLodsToRemove);
             }
 #endif
             return AZStd::span<const Data::Asset<ModelLodAsset>>(m_lodAssets);
@@ -131,16 +132,19 @@ namespace AZ
 
         void ModelAsset::LoadBufferAssets()
         {
-#if defined(CARBONATED)  // load removal
-            if (m_numLodsToRemove > 0 && m_lodAssets.size() > m_numLodsToRemove)
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+            if (m_numLodsToRemove > 0 && m_lodAssets.size() > 0)
             {
-                for (int i = m_numLodsToRemove; i < m_lodAssets.size(); i++)
+                const int numLodsToRemove = AZStd::min(m_numLodsToRemove, int(m_lodAssets.size() - 1));
+                AZ_Info("lll", "Load %d..%d LODs for %s", numLodsToRemove, m_lodAssets.size() - 1, GetName().GetCStr());
+                for (int i = numLodsToRemove; i < m_lodAssets.size(); i++)
                 {
                     m_lodAssets[i]->LoadBufferAssets();
                 }
                 return;
             }
 #endif
+            AZ_Info("lll", "Load all %d LODs for %s", m_lodAssets.size(), GetName().GetCStr());
             for (auto& lodAsset : m_lodAssets)
             {
                 lodAsset->LoadBufferAssets();
@@ -149,10 +153,11 @@ namespace AZ
 
         void ModelAsset::ReleaseBufferAssets()
         {
-#if defined(CARBONATED)  // load removal
-            if (m_lodAssets.size() > 2)
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+            if (m_numLodsToRemove > 0 && m_lodAssets.size() > 0)
             {
-                for (int i = 1; i < m_lodAssets.size(); i++)
+                const int numLodsToRemove = AZStd::min(m_numLodsToRemove, int(m_lodAssets.size() - 1));
+                for (int i = numLodsToRemove; i < m_lodAssets.size(); i++)
                 {
                     m_lodAssets[i]->ReleaseBufferAssets();
                 }

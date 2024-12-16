@@ -61,7 +61,7 @@ namespace AZ
         {
             if (ValidateIsReady())
             {
-#if defined(CARBONATED)  // load removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
                 m_asset->m_numLodsToRemove = 0;
 #endif
                 m_asset->m_lodAssets.push_back(AZStd::move(lodAsset));

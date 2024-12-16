@@ -82,7 +82,7 @@ namespace AzFramework
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetAllProductDependenciesFilter(const AZ::Data::AssetId& id, const AZStd::unordered_set<AZ::Data::AssetId>& exclusionList, const AZStd::vector<AZStd::string>& wildcardPatternExclusionList) override;
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependencies(const AZ::Data::AssetId& id, AZStd::unordered_set<AZ::Data::AssetId>& noloadSet,
             AZ::Data::PreloadAssetListType& preloadAssetList) override;
-#if defined(CARBONATED) // lod removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependenciesFiltered(const AZ::Data::AssetId& id,
             AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, AZ::Data::PreloadAssetListType& preloadAssetList, FilterCallback filter) override;
 #endif

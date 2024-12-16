@@ -69,7 +69,7 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(MaterialInit);
-#if defined(ENABLE_ASSET_MEMORY_TRACKING_OVERHEAD)
+#if defined(AZ_ADVANCED_ASSET_TRACING)
             AZ::Data::AssetInfo assetInfo;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo,
                 &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, materialAsset.GetId());

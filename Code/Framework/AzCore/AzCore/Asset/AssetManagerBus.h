@@ -202,7 +202,7 @@ namespace AZ
             /// NoLoad assets however simply wait for the user to request an additional load - they or their dependencies don't begin loading by default
             virtual AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependencies([[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, [[maybe_unused]] PreloadAssetListType& preloadLists) { return AZ::Failure<AZStd::string>("Not implemented"); }
 
-#if defined(CARBONATED)  // lod removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
             typedef void (*FilterCallback)(AZStd::vector<AZ::Data::ProductDependency>& oneStepDependencyAssets);
             // the same as the above, but with one-step dependency asset sub-list filtering callback
             virtual AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependenciesFiltered([[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, [[maybe_unused]] PreloadAssetListType& preloadLists, [[maybe_unused]] FilterCallback filter) { return AZ::Failure<AZStd::string>("Not implemented"); }

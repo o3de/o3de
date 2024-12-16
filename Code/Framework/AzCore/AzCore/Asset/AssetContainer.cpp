@@ -17,8 +17,8 @@ namespace AZ::Data
 {
     AZ_CVAR(bool, bg_trackHandledAssetDependencies, false, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Set to true if to track handled asset dependencies in order to troubleshoot when a dependent asset hasn't loaded.");
-#if defined(CARBONATED) // lod removal
-    AZ_CVAR(int, q_dropLods, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+    AZ_CVAR(int, q_dropLods, 2, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Set to non-zero to suppres the number of LODs.");
 #endif
     AssetContainer::AssetContainer(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams, bool isReload)
@@ -80,7 +80,7 @@ namespace AZ::Data
         return dependencyAssets;
     }
 
-#if defined(CARBONATED)  // lod removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
     int AssetContainer::s_numLodsToRemove = 1;
 
     static AZ_INLINE int GetLodNumber(AZStd::string s)  // returns LOD number if the name matches the model LOD pattern, otherwise -1
@@ -176,7 +176,7 @@ namespace AZ::Data
         if (loadParams.m_dependencyRules == AssetDependencyLoadRules::UseLoadBehavior)
         {
             AZStd::unordered_set<AssetId> noloadDependencies;
-#if defined(CARBONATED)  // lod removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
             if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
                 console->GetCvarValue("q_dropLods", s_numLodsToRemove);

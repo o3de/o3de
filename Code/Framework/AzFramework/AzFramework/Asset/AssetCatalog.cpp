@@ -376,7 +376,7 @@ namespace AzFramework
 
         return AZ::Success(AZStd::move(returnList));
     }
-#if defined(CARBONATED) // lod removal
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
     AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> AssetCatalog::GetLoadBehaviorProductDependenciesFiltered(
         const AZ::Data::AssetId& id, AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, AZ::Data::PreloadAssetListType& preloadAssetList, FilterCallback filter)
     {
