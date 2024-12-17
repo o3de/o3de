@@ -1,6 +1,7 @@
 There must be only one scenesrg.srgi and one viewsrg.srgi files
-per game project. They are always located in \<DevFolder>/\<Project>/ShaderLib,
-This location can not change, otherwise the asset processor won't be able to find
+per game project. If they need to be modified in the project, they must be placed in \<DevFolder>/\<Project>/ShaderLib,
+Otherwise, the files in \<EngineRoot>/Gems/Atom/Assets/DefaultProjectShaderLib are used.
+These locations can not change, otherwise the asset processor won't be able to find
 the SceneSrg and the ViewSrg.
 
 Each game project can customize the content of scenesrg.srgi and viewsrg.srgi as needed.

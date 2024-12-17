@@ -6,6 +6,7 @@
  *
  */
 
+#include "AzCore/Utils/TypeHash.h"
 #include <AzCore/PlatformDef.h>
 
 #include <CommonFiles/Preprocessor.h>
@@ -20,12 +21,15 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Utils/Utils.h>
 
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
+
+#include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AZ
 {
@@ -353,6 +357,42 @@ namespace AZ
             }
         }
 
+        bool FilesModifiedFromTemplate(const AZ::IO::Path& path)
+        {
+            auto result = AzFramework::FileFunc::FindFilesInPath(path.Native(), "*", true);
+            if (result.IsSuccess())
+            {
+                // Note that we are effectively using two different hashing algorithms here because the existing functions were convenient
+                // to use. But since we only want to know if the files have beeen modified, this should be fine.
+
+                // expected hash value when the filenames are Readme.md, scenesrg.srgi and viewsrg.srgi
+                constexpr AZ::HashValue64 expectedFilenameHash{ 0xC378C1EE8963A3ED };
+                AZ::HashValue64 currentFilenamesHash{};
+                for (auto& file : result.GetValue())
+                {
+                    auto filename = AZ::IO::Path(file).Filename().StringAsPosix();
+                    currentFilenamesHash = TypeHash64(filename.c_str(), currentFilenamesHash);
+                }
+                if (currentFilenamesHash == expectedFilenameHash)
+                {
+                    // hash of the file contents from o3de/Templates/DefaultProject/Template/ShaderLib/*, as of Dec. 2024,
+                    // before the addition of AZ_COLLECTING_PARTIAL_SRG_INCLUDES, and removal of the folder from the project templates
+                    constexpr AZ::u64 expectedFileContentsHash{ 0xF5A887CDDBEE978A };
+                    AZ::u64 fileContentsHash{};
+                    for (auto& file : result.GetValue())
+                    {
+                        AZ::u64 fileHash = AssetBuilderSDK::GetFileHash(file.c_str());
+                        AZStd::hash_combine(fileContentsHash, fileHash);
+                    }
+                    if (expectedFileContentsHash == fileContentsHash)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
+
         AZStd::vector<AZStd::string> BuildListOfIncludeDirectories([[maybe_unused]] const char* builderName, const char* optionalIncludeFolder)
         {
             AZ_TraceContext("Init include-paths lookup options", "preprocessor");
@@ -391,24 +431,67 @@ namespace AZ
                 scanFoldersVector);
             AZ_Warning(builderName, success, "Preprocessor option: Could not acquire a list of scan folders from the database.");
 
+            bool useDefaultProjectShaderLibFromEngine = true;
+
+            AZ::IO::Path enginePath{ AZStd::string_view{ AZ::Utils::GetEnginePath() } };
+
             // but while we transfer to the set, we're going to keep only folders where +/ShaderLib exists
-            for (AZ::IO::Path shaderScanFolder : scanFoldersVector)
+            for (AZ::IO::Path inShaderScanFolder : scanFoldersVector)
             {
-                shaderScanFolder /= "ShaderLib";
+                auto shaderScanFolder = inShaderScanFolder / "ShaderLib";
                 if (auto it = AZStd::find_if(includePaths.begin(), includePaths.end(), PathCompare(shaderScanFolder));
                     it == includePaths.end())
                 {
                     // the folders constructed this fashion constitute the base of automatic include search paths
                     if (AZ::IO::SystemFile::Exists(shaderScanFolder.c_str()))
                     {
-                        includePaths.emplace_back(AZStd::move(shaderScanFolder.LexicallyNormal().Native()));
+                        if (inShaderScanFolder == projectPath)
+                        {
+                            // use the <project>/ShaderLib - folder only if contents were modified. 
+                            // Otherwise use the DefaultProjectShaderlib folder from the engine
+                            if (FilesModifiedFromTemplate(shaderScanFolder)) {
+                                AZ_TracePrintf(
+                                    "Preprocessing",
+                                    "The files in %s/ShaderLib were modified since initial creation, and have priority over "
+                                    "%s/Gems/Atom/Asset/DefaultProjectShaderlib/. Be aware that "
+                                    "potential upstream changes need to be migrated to the project manually.",
+                                    projectPath.c_str(),
+                                    enginePath.c_str());
+                                useDefaultProjectShaderLibFromEngine = false;
+                                includePaths.emplace_back(AZStd::move(shaderScanFolder.LexicallyNormal().Native()));
+                            }
+                            else {
+                                AZ_TracePrintf(
+                                    "Preprocessing",
+                                    "The files in %s/ShaderLib are unmodified since initial creation: using the versions from "
+                                    "%s/Gems/Atom/Asset/DefaultProjectShaderlib instead. Consider removing the folder from the "
+                                    "project.",
+                                    projectPath.c_str(),
+                                    enginePath.c_str());
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            includePaths.emplace_back(AZStd::move(shaderScanFolder.LexicallyNormal().Native()));
+                        }
                     }
                 }
             }
 
+            // finally the <engineroot>/Gems/Atom/Asset/DefaultProjectShaderLib if the project doesn't modify it
+
+            if (useDefaultProjectShaderLibFromEngine)
+            {
+                auto engineProjectShaderLibs = enginePath / "Gems" / "Atom" / "Asset" / "DefaultProjectShaderlib";
+                if (AZ::IO::SystemFile::Exists(engineProjectShaderLibs.c_str()))
+                {
+                    includePaths.emplace_back(AZStd::move(engineProjectShaderLibs.Native()));
+                }
+            }
+
             // finally the <engineroot>/Gems fallback
-            AZ::IO::Path engineGemsFolder(AZStd::string_view{ AZ::Utils::GetEnginePath() });
-            engineGemsFolder /= "Gems";
+            auto engineGemsFolder = enginePath / "Gems";
             if (auto it = AZStd::find_if(includePaths.begin(), includePaths.end(), PathCompare(engineGemsFolder));
                 it == includePaths.end())
             {
