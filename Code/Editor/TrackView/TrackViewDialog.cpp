@@ -856,6 +856,9 @@ void CTrackViewDialog::InvalidateDopeSheet()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::Update()
 {
+    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    bool wasReloading = m_bNeedReloadSequence;
+
     if (m_bNeedReloadSequence || m_needReAddListeners)
     {
         const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
@@ -864,7 +867,6 @@ void CTrackViewDialog::Update()
         if (m_bNeedReloadSequence)
         {
             m_bNeedReloadSequence = false;
-            CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
             pAnimationContext->SetSequence(sequence, true, false);
         }
         if (m_needReAddListeners)
@@ -874,7 +876,15 @@ void CTrackViewDialog::Update()
         }
     }
 
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    constexpr const auto noMovieCameraName = "Active Camera";
+    const auto sequence = pAnimationContext->GetSequence();
+    if (!sequence)  // Nothing to update ?
+    {
+        m_activeCamStatic->setText(noMovieCameraName);
+        SetCursorPosText(-1.0f);
+        return;
+    }
+
     float fTime = pAnimationContext->GetTime();
 
     if (fTime != m_fLastTime)
@@ -884,31 +894,47 @@ void CTrackViewDialog::Update()
     }
 
     // Display the name of the active camera in the static control, if any.
-    // The active camera node means two conditions:
-    // 1. Sequence camera is currently active.
-    // 2. The camera which owns this node has been set as the current camera by the director node.
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    // The active camera node means at least the following conditions:
+    // 1. The movie system has the Animation Sequence corresponding to the active TrackView Sequence.
+    // 2. The Animation Sequence has an active Director node.
+    // 3. The Camera parameters in the movie system are valid.
+    // TODO: invalidate the Camera parameters in the movie system when conditions 1 and 2 are not valid.
 
+    bool cameraNameSet = false;
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
+        const auto animSequence = movieSystem->FindSequenceById(sequence->GetCryMovieId());
+        IAnimNode* activeDirector = animSequence ? animSequence->GetActiveDirector() : nullptr;
+
         AZ::EntityId camId = movieSystem->GetCameraParams().cameraEntityId;
-        if (camId.IsValid())
+        if (camId.IsValid() && activeDirector)
         {
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, camId);
             if (entity)
             {
                 m_activeCamStatic->setText(entity->GetName().c_str());
-            }
-            else
-            {
-                m_activeCamStatic->setText("Active Camera");
+                cameraNameSet = true;
+
+                // A corner case when reloaded: prepare manually scrubbing this sequence with time = 0.0f and a Camera key at 0.0f
+                if (wasReloading && fabs(fTime) < AZ::Constants::Tolerance)
+                {
+                    AZ::EntityId currentEditorViewportCamId;
+                    Camera::EditorCameraRequestBus::BroadcastResult(
+                        currentEditorViewportCamId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+                    if (currentEditorViewportCamId != camId)
+                    {
+                        Camera::EditorCameraRequestBus::Broadcast(
+                            &Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, camId);
+                    }
+                }
             }
         }
-        else
-        {
-            m_activeCamStatic->setText("Active Camera");
-        }
+    }
+    if (!cameraNameSet)
+    {
+        m_activeCamStatic->setText(noMovieCameraName);
     }
 
     if (m_wndNodesCtrl)
@@ -1066,7 +1092,6 @@ void CTrackViewDialog::ReloadSequences()
     if (m_currentSequenceEntityId.IsValid()) // A sequence force-selected when reloading the combo box ?
     {
         OnSequenceComboBox(); // Emulate sequence selection to load it into the dialog
-        InvalidateSequence(); // and force later update.
         sequence = pAnimationContext->GetSequence(); // In case a latest sequence created was selected, actualize the pointer.
     }
     else // No sequences yet
@@ -1271,6 +1296,7 @@ void CTrackViewDialog::OnSequenceComboBox()
         const bool noNotify = false;
         const bool user = true;
         animationContext->SetSequence(sequence, force, noNotify, user);
+        InvalidateSequence(); // Force later update.
     }
 }
 
@@ -1449,7 +1475,7 @@ void CTrackViewDialog::OnStopHardReset()
         sequence->ResetHard();
     }
     UpdateActions();
-    // restore initial Editor Viewport camera EntityId
+    // Restore initial Editor Viewport camera EntityId
     Camera::EditorCameraRequestBus::Broadcast(
         &Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, pAnimationContext->GetStoredViewCameraEntityId());
 }
@@ -2235,6 +2261,10 @@ void CTrackViewDialog::OnSequenceSettingsChanged(CTrackViewSequence* sequence)
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSequenceAdded([[maybe_unused]] CTrackViewSequence* sequence)
 {
+    // Restore initial Editor Viewport camera EntityId
+    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective,
+        GetIEditor()->GetAnimation()->GetStoredViewCameraEntityId());
+
     ReloadSequencesComboBox();
     UpdateActions();
 }

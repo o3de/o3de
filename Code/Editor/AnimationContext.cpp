@@ -175,6 +175,9 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
         return;
     }
 
+    // Restore initial Editor Viewport camera EntityId
+    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, m_viewCameraEntityId);
+
     // Prevent keys being created from time change
     const bool bRecording = m_recording;
     m_recording = false;
@@ -227,6 +230,9 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
         // Set the last valid sequence that was selected.
         m_mostRecentSequenceId = m_pSequence->GetSequenceComponentEntityId();
 
+        // Get ready to handle camera switching in this sequence, if ever, in order to switch camera in Editor Viewport Widget
+        Maestro::SequenceComponentNotificationBus::Handler::BusConnect(m_mostRecentSequenceId);
+
         if (m_playing)
         {
             m_pSequence->BeginCutScene(true);
@@ -239,8 +245,6 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
         m_pSequence->PrecacheData(newSeqStartTime);
 
         m_pSequence->BindToEditorObjects();
-        // Get ready to handle camera switching in this sequence, if ever, in order to switch camera in Editor Viewport Widget
-        Maestro::SequenceComponentNotificationBus::Handler::BusConnect(m_mostRecentSequenceId);
     }
     else if (user)
     {
@@ -265,9 +269,6 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
 
     m_recording = bRecording;
     SetRecordingInternal(bRecording);
-
-    // restore initial Editor Viewport camera EntityId
-    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, m_viewCameraEntityId);
 }
 
 //////////////////////////////////////////////////////////////////////////
