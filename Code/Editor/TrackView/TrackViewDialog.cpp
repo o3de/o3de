@@ -894,10 +894,10 @@ void CTrackViewDialog::Update()
     }
 
     // Display the name of the active camera in the static control, if any.
-    // The active camera node means at least the following conditions:
+    // Having an active camera means at least the following conditions:
     // 1. The movie system has the Animation Sequence corresponding to the active TrackView Sequence.
     // 2. The Animation Sequence has an active Director node.
-    // 3. The Camera parameters in the movie system are valid.
+    // 3. The current Camera parameters in the movie system are valid.
     // TODO: invalidate the Camera parameters in the movie system when conditions 1 and 2 are not valid.
 
     bool cameraNameSet = false;
