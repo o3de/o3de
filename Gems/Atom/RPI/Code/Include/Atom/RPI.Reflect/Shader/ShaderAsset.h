@@ -276,6 +276,13 @@ namespace AZ
                 AZStd::vector<Supervariant> m_supervariants;
             };
 
+            //! Searches across all Supervariants for the matching AssetId of the each Root
+            //! ShaderVariantAsset. The first root ShaderVariantAsset that matches is replaced
+            //! with @shaderVariantAsset.
+            //! @returns true if a matching AssetId was found and replaced.
+            //! @remark This function is only useful during Shader::OnAssetReloaded.
+            bool UpdateRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+
             bool PostLoadInit() override;
             void SetReady();
 

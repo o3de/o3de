@@ -2147,6 +2147,11 @@ namespace LUAEditor
         }
     }
 
+    bool LUAEditorMainWindow::HasAtLeastOneFileOpen() const
+    {
+        return m_StateTrack.atLeastOneFileOpen;
+    }
+
     bool LUAEditorMainWindow::eventFilter(QObject* obj, QEvent* event)
     {
         (void)obj;
