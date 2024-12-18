@@ -143,6 +143,9 @@ namespace AZ
             // Cull the decals for a view using the CPU.
             void CullDecals(const RPI::ViewPtr& view);
             void UpdateBounds(const DecalHandle handle);
+#if defined(CARBONATED)
+            void LogDecalDebugInfo(const AZStd::string& text, const DecalLocation& decalLocation) const;
+#endif
 
             MultiIndexedDataVector<DecalData, AZ::Aabb> m_decalData;
             RHI::Handle<uint32_t> m_decalMeshFlag;
