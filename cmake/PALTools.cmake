@@ -62,17 +62,3 @@ function(copy_java_to_build_dir common_relative_path file_paths)
     file(COPY ${java_file_src} DESTINATION ${java_file_dest})
   endforeach()
 endfunction()
-
-# CARBONATED -- begin : copy resources into an android package
-function(copy_java_files_to_package_dir package_name common_source_path common_target_path file_paths)
-  foreach(file_path ${file_paths})
-    # We want to copy the extra Java source/resources to /myProjectAndroid/${package_name}/${common_target_path}/${file_path}
-    get_filename_component(target_path "${file_path}" DIRECTORY)
-    set(res_file_src ${CMAKE_CURRENT_SOURCE_DIR}/${common_source_path}/${file_path})
-    set(res_file_dest ${CMAKE_BINARY_DIR}/../../../../../${package_name}/${common_target_path}/${target_path})
-    cmake_print_variables(res_file_src)
-    cmake_print_variables(res_file_dest)
-    file(COPY ${res_file_src} DESTINATION ${res_file_dest})
-  endforeach()
-endfunction()
-# CARBONATED -- end

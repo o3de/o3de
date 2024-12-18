@@ -1408,11 +1408,9 @@ class AndroidProjectGenerator(object):
 
 # CARBONATED -- begin : Carbonated game only specific - prepare to add Android project for PlayerEngagement gem into dependency lists
         playerengagement_dir = self._build_dir / "playerengagement"
-        playerengagement_dir.mkdir(parents=True, exist_ok=True)
-        dir_to_java = "java/com/amazon/lumberyard/playerengagement/messaging"
+        (playerengagement_dir / "src/main").mkdir(parents=True, exist_ok=True)
         shutil.copy(self._project_path / "Gems/PlayerEngagement/Projects/Android/build.gradle", playerengagement_dir)
-        shutil.copytree(self._project_path / "Gems/PlayerEngagement/Resources/Android", playerengagement_dir / "src/main")       
-        shutil.copytree(self._project_path / "Gems/PlayerEngagement/Code/Platform/Android" / dir_to_java, playerengagement_dir / "src/main" / dir_to_java)
+        shutil.copytree(self._project_path / "Gems/PlayerEngagement/Resources/Android", playerengagement_dir / "src/main", dirs_exist_ok=True)       
         project_names.append("playerengagement")        
 # CARBONATED -- end
 
