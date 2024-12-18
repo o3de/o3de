@@ -399,6 +399,7 @@ namespace LUAEditor
         void SetCurrentFindListWidget(int index);
         LUAViewWidget* GetCurrentView();
         AZStd::vector<LUAViewWidget*> GetAllViews();
+        bool HasAtLeastOneFileOpen() const;
     };
 
     class LUAEditorMainWindowLayout : public QLayout

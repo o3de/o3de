@@ -193,7 +193,7 @@ namespace AZ
             switch (heapMemoryLevel)
             {
             case RHI::HeapMemoryLevel::Host:
-                return VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                return VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
             case RHI::HeapMemoryLevel::Device:
                 return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
             default:

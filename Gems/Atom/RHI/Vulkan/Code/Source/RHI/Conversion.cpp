@@ -499,6 +499,7 @@ namespace AZ
             case RHI::HeapMemoryLevel::Host:
                 allocInfo.flags |= VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
                 allocInfo.requiredFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                allocInfo.requiredFlags |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
                 break;
             case RHI::HeapMemoryLevel::Device:
                 allocInfo.requiredFlags |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
