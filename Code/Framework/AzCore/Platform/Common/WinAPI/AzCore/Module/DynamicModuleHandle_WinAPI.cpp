@@ -138,6 +138,13 @@ namespace AZ
             }
             else
             {
+                AZ_Error("Module", false, "Failed to load module '%s'.", m_fileName.c_str());
+
+                #if defined(RELEASE)
+                    // Using AZ_Print to get this message across. AZ_Error is not available in release mode due to AZ_ENABLE_TRACING being false by default.
+                    AZ_Printf("Module", "Dynamic module failed to load in release mode! Please re-generate your release project with LY_MONOLITHIC_GAME=1", m_fileName.c_str());
+                #endif
+
                 return LoadStatus::LoadFailure;
             }
         }
