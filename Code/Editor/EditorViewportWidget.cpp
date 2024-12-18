@@ -1618,28 +1618,29 @@ bool EditorViewportWidget::IsSelectedCamera() const
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::CycleCamera()
 {
-    // None (default editor camera) -> CameraComponent (added editor camera component) -> ... CameraComponent -> None
+    // None (default editor camera) -> 1st CameraComponent (added editor camera component) -> ... next CameraComponent -> ... -> None
     if (!m_viewEntityId.IsValid())
     {
-        SetFirstComponentCamera();
+        SetFirstComponentCamera(); // None (default editor camera) -> select a first CameraComponent, if any
         return;
     }
+
+    // Find the CameraComponent with the valid m_viewEntityId stored, if it still exists.
+    AZ::EBusAggregateResults<AZ::EntityId> results;
+    Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
+    AZStd::sort_heap(results.values.begin(), results.values.end());
+    auto&& currentCameraIterator = AZStd::find(results.values.begin(), results.values.end(), m_viewEntityId);
+    if (currentCameraIterator != results.values.end())
     {
-        AZ::EBusAggregateResults<AZ::EntityId> results;
-        Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
-        AZStd::sort_heap(results.values.begin(), results.values.end());
-        auto&& currentCameraIterator = AZStd::find(results.values.begin(), results.values.end(), m_viewEntityId);
-        if (currentCameraIterator != results.values.end())
+        if (++currentCameraIterator != results.values.end()) // Found -> check that a next one exists ... 
         {
-            ++currentCameraIterator;
-            if (currentCameraIterator != results.values.end())
-            {
-                SetEntityAsCamera(*currentCameraIterator);
-                return;
-            }
+            SetEntityAsCamera(*currentCameraIterator); // ... and then select it.
+            return;
         }
-        SetDefaultCamera();
     }
+    // Go back to None (default editor camera) when the CameraComponent with stored m_viewEntityId
+    // is the last one in the list, or was destroyed.
+    SetDefaultCamera();
 }
 
 void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& entityId)

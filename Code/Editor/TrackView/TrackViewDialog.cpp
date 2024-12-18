@@ -1128,13 +1128,14 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         {
             CTrackViewSequence* sequence = pSequenceManager->GetSequenceByIndex(k);
             const auto sequenceComponentEntityId = sequence->GetSequenceComponentEntityId();
-            if (sequenceComponentEntityId.IsValid())
+            if (!sequenceComponentEntityId.IsValid())
             {
-                lastIndex = static_cast<int>(k);
-                lastSequenceComponentEntityId = sequenceComponentEntityId;
-                QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
-                m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
+                continue;
             }
+            lastIndex = static_cast<int>(k);
+            lastSequenceComponentEntityId = sequenceComponentEntityId;
+            QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
+            m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
         }
     }
 
