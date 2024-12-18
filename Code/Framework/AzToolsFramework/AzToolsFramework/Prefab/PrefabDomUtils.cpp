@@ -589,7 +589,7 @@ namespace AzToolsFramework
                 auto sourceIt = templateDomRef.FindMember(PrefabDomUtils::SourceName);
                 if (sourceIt == templateDomRef.MemberEnd() || !sourceIt->value.IsString())
                 {
-                    AZ_Error("Prefab", false, "lacks a 'Source' container.");
+                    AZ_Warning("Prefab", false, "lacks a 'Source' container.");
                     return false;
                 }
                 const AZStd::string path(sourceIt->value.GetString());
@@ -597,7 +597,7 @@ namespace AzToolsFramework
                 const auto containerEntityIt = templateDomRef.FindMember(PrefabDomUtils::ContainerEntityName);
                 if (containerEntityIt == templateDomRef.MemberEnd() || !containerEntityIt->value.IsObject())
                 {
-                    AZ_Error("Prefab", false, "'%s' lacks a 'ContainerEntity' container.", path.c_str());
+                    AZ_Warning("Prefab", false, "'%s' lacks a 'ContainerEntity' container.", path.c_str());
                     return false;
                 }
                 const auto containerEntityAliasIt = containerEntityIt->value.FindMember(PrefabDomUtils::EntityIdName);
