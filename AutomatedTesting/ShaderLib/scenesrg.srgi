@@ -14,15 +14,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-#define AZ_COLLECTING_PARTIAL_SRG_INCLUDES
-#include <Atom/Feature/Common/Assets/ShaderResourceGroups/ViewSrgIncludesAll.azsli>
-#undef AZ_COLLECTING_PARTIAL_SRG_INCLUDES
-
 partial ShaderResourceGroup SceneSrg : SRG_PerScene
 {
 /* Intentionally Empty. Helps define the SrgSemantic for SceneSrg once.*/
 };
-
-#define AZ_COLLECTING_PARTIAL_SRGS
-#include <Atom/Feature/Common/Assets/ShaderResourceGroups/SceneSrgAll.azsli>
-#undef AZ_COLLECTING_PARTIAL_SRGS

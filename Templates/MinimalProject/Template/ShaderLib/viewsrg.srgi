@@ -10,21 +10,14 @@
 
 #pragma once
 
+// this file is included by 'viewsrg_all.srgi', which is included by each shader using the scene-srg.
 // Please read README.md for an explanation on why scenesrg.srgi and viewsrg.srgi are
 // located in this folder (And how you can optionally customize your own scenesrg.srgi
 // and viewsrg.srgi in your game project).
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-#define AZ_COLLECTING_PARTIAL_SRG_INCLUDES
-#include <Atom/Feature/Common/Assets/ShaderResourceGroups/ViewSrgIncludesAll.azsli>
-#undef AZ_COLLECTING_PARTIAL_SRG_INCLUDES
-
 partial ShaderResourceGroup ViewSrg : SRG_PerView
 {
 /* Intentionally Empty. Helps define the SrgSemantic for ViewSrg once.*/
 };
-
-#define AZ_COLLECTING_PARTIAL_SRGS
-#include <Atom/Feature/Common/Assets/ShaderResourceGroups/ViewSrgAll.azsli>
-#undef AZ_COLLECTING_PARTIAL_SRGS
