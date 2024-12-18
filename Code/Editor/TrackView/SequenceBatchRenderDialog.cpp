@@ -13,6 +13,7 @@
 #include "EditorDefs.h"
 
 #include "SequenceBatchRenderDialog.h"
+#include "TrackViewMessageBox.h"
 
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <AzCore/Component/ComponentApplication.h>
@@ -21,7 +22,6 @@
 // Qt
 #include <QAction>
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QStringListModel>
 #include <QtConcurrent>
 
@@ -925,11 +925,11 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     }
 
     QString finalFolder = folderName.c_str();
-    int i = 2;
+    int numProbeIndex = 2;
     QString probeName = finalFolder;
     while (QFileInfo::exists(probeName))
     {
-        probeName = QObject::tr("%1_v%2").arg(finalFolder).arg(i++);
+        probeName = QObject::tr("%1_v%2").arg(finalFolder).arg(numProbeIndex++);
     }
     finalFolder = probeName;
 
@@ -937,7 +937,11 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     const bool mkdirResult = QDir().mkdir(finalFolder);
     if (!mkdirResult)
     {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Cannot create directory %1 for output frames").arg(finalFolder));
+        TrackViewMessageBox::Critical(
+            AzToolsFramework::GetActiveWindow(),
+            QString(),
+            QObject::tr("Cannot create directory %1 for output frames").arg(finalFolder));
+
         OnUpdateFinalize();
         return;
     }
