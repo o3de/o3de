@@ -123,7 +123,7 @@ namespace Multiplayer
         MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
         bool StartHosting(uint16_t port = UseDefaultHostPort, bool isDedicated = true) override;
-        bool Connect(const AZStd::string& remoteAddress, uint16_t port) override;
+        bool Connect(const AZStd::string& remoteAddress, uint16_t port, const AZStd::string& connectionTicket = "") override;
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
