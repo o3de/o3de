@@ -1892,8 +1892,9 @@ namespace AZ::Data
     //=========================================================================
     void AssetManager::NotifyAssetReady(Asset<AssetData> asset)
     {
+#if defined(CARBONATED)
         ASSET_TAG(asset.GetHint().c_str());
-
+#endif
         AssetData* data = asset.Get();
         AZ_Assert(data, "NotifyAssetReady: asset is missing info!");
         data->m_status = AssetData::AssetStatus::Ready;

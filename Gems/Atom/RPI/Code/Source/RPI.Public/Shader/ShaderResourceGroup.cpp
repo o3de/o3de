@@ -78,7 +78,7 @@ namespace AZ
         {
 #if defined(CARBONATED)
             MEMORY_TAG(Shader);
-            ASSET_TAG(shaderAsset.GetHint().c_str()); // shaderasset
+            ASSET_TAG(shaderAsset.GetHint().c_str());
 #endif
             SrgInitParams initParams{ supervariantIndex, srgName };
             auto anyInitParams = AZStd::any(initParams);

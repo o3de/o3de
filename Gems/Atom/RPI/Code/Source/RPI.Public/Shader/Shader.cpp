@@ -32,7 +32,7 @@ namespace AZ
         Data::Instance<Shader> Shader::FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName)
         {
 #if defined(CARBONATED)
-                ASSET_TAG(shaderAsset.GetHint().c_str()); // shaderasset
+                ASSET_TAG(shaderAsset.GetHint().c_str());
 #endif
             auto anySupervariantName = AZStd::any(supervariantName);
 

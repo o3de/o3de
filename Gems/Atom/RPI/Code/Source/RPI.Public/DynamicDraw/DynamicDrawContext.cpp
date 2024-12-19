@@ -97,7 +97,7 @@ namespace AZ
         void DynamicDrawContext::InitShader(Data::Asset<ShaderAsset> shaderAsset)
         {
 #if defined(CARBONATED)
-            ASSET_TAG(shaderAsset.GetHint().c_str()); // shaderasset
+            ASSET_TAG(shaderAsset.GetHint().c_str());
 #endif
             Data::Instance<Shader> shader = Shader::FindOrCreate(shaderAsset);
             InitShader(shader);
@@ -112,7 +112,7 @@ namespace AZ
         void DynamicDrawContext::InitShaderWithVariant(Data::Asset<ShaderAsset> shaderAsset, const ShaderOptionList* optionAndValues)
         {
 #if defined(CARBONATED)
-            ASSET_TAG(shaderAsset.GetHint().c_str()); // shaderasset
+            ASSET_TAG(shaderAsset.GetHint().c_str());
 #endif
             Data::Instance<Shader> shader = Shader::FindOrCreate(shaderAsset);
             InitShaderWithVariant(shader, optionAndValues);

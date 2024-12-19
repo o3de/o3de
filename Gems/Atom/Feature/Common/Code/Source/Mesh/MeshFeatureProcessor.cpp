@@ -2083,7 +2083,7 @@ namespace AZ
                 {
                     auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
 #if defined(CARBONATED)
-                    ASSET_TAG(shaderAsset.GetHint().c_str());  // shaderasset
+                    ASSET_TAG(shaderAsset.GetHint().c_str());
 #endif
                     meshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
                     if (!meshObjectSrg)

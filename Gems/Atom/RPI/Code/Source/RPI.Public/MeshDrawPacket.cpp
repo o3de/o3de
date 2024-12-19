@@ -295,7 +295,7 @@ namespace AZ
             auto appendShader = [&](const ShaderCollection::Item& shaderItem, const Name& materialPipelineName)
             {
 #if defined(CARBONATED)
-                ASSET_TAG(shaderItem.GetShaderAsset().GetHint().c_str());  // shaderasset
+                ASSET_TAG(shaderItem.GetShaderAsset().GetHint().c_str());
 #endif
                 // Skip the shader item without creating the shader instance
                 // if the mesh is not going to be rendered based on the draw tag

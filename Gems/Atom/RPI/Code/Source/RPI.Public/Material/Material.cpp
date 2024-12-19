@@ -108,7 +108,7 @@ namespace AZ
             {
                 auto shaderAsset = m_materialAsset->GetMaterialTypeAsset()->GetShaderAssetForMaterialSrg();
 #if defined(CARBONATED)
-                ASSET_TAG(shaderAsset.GetHint().c_str()); // shaderasset
+                ASSET_TAG(shaderAsset.GetHint().c_str());
 #endif
                 m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
 
@@ -336,7 +336,7 @@ namespace AZ
         void Material::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
         {
 #if defined(CARBONATED)
-            ASSET_TAG(shaderAsset.GetHint().c_str()); // shaderasset
+            ASSET_TAG(shaderAsset.GetHint().c_str());
 #endif
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
