@@ -1156,6 +1156,7 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         m_sequencesComboBox->setCurrentIndex(0);
     }
     m_sequencesComboBox->blockSignals(false);
+    InvalidateSequence();
 }
 
 //////////////////////////////////////////////////////////////////////////
