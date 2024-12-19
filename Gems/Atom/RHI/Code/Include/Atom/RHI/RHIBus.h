@@ -30,6 +30,7 @@ namespace AZ::RHI
 
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        using MutexType = AZStd::mutex;
     };
 
     using RHIRequirementRequestBus = AZ::EBus<RHIRequirementsRequest>;
