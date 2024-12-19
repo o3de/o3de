@@ -10,6 +10,10 @@
 #include <Atom/RHI/ImageView.h>
 #include <AzCore/Console/IConsole.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ::RHI
 {
     AZ_CVAR(bool, r_DisablePartialSrgCompilation, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable this cvar to disable Partial SRG compilation");
@@ -63,6 +67,9 @@ namespace AZ::RHI
 
     ResultCode ShaderResourceGroupPool::InitGroup(ShaderResourceGroup& group)
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(Shader);
+#endif
         ResultCode resultCode = ResourcePool::InitResource(&group, [this, &group]() { return InitGroupInternal(group); });
         if (resultCode == ResultCode::Success)
         {

@@ -61,6 +61,9 @@ namespace AZ
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
             const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& srgName)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Shader);
+#endif
             // retrieve the supervariantIndex by searching for the default supervariant name, this will
             // allow the shader asset to properly handle the RPI::ShaderSystem supervariant
             SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(AZ::Name(""));
@@ -74,7 +77,8 @@ namespace AZ
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
 #if defined(CARBONATED)
-            ASSET_TAG(shaderAsset.GetHint().c_str());  // shaderasset
+            MEMORY_TAG(Shader);
+            ASSET_TAG(shaderAsset.GetHint().c_str()); // shaderasset
 #endif
             SrgInitParams initParams{ supervariantIndex, srgName };
             auto anyInitParams = AZStd::any(initParams);
@@ -83,6 +87,9 @@ namespace AZ
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* anySrgInitParams)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Shader);
+#endif
             AZ_Assert(anySrgInitParams, "Invalid SrgInitParams");
             auto srgInitParams = AZStd::any_cast<SrgInitParams>(*anySrgInitParams);
 
@@ -98,6 +105,9 @@ namespace AZ
 
         RHI::ResultCode ShaderResourceGroup::Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Shader);
+#endif
             const auto& lay = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex);
             m_layout = lay.get();
 
@@ -136,6 +146,9 @@ namespace AZ
 
         void ShaderResourceGroup::Compile()
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Shader);
+#endif
             m_shaderResourceGroup->Compile(m_data);
 
             //Mask is passed to RHI in the Compile call so we can reset it here
@@ -641,6 +654,9 @@ namespace AZ
 
         bool ShaderResourceGroup::CopyShaderResourceGroupData(const ShaderResourceGroup& other)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Shader);
+#endif
             bool isFullCopy = true;
             // Copy Buffer Shader Inputs
             for (const RHI::ShaderInputBufferDescriptor& desc : m_layout->GetShaderInputListForBuffers())

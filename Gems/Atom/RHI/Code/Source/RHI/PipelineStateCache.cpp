@@ -13,6 +13,10 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/exponential_backoff.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ::RHI
 {
     Ptr<PipelineStateCache> PipelineStateCache::Create(Device& device)
@@ -286,6 +290,9 @@ namespace AZ::RHI
         {
             return nullptr;
         }
+#if defined(CARBONATED)
+        MEMORY_TAG(Shader);
+#endif        
 
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_mutex);
 

@@ -474,6 +474,9 @@ namespace AZ
 
         Data::Instance<ShaderResourceGroup> Shader::CreateDrawSrgForShaderVariant(const ShaderOptionGroup& shaderOptions, bool compileTheSrg)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Shader);
+#endif
             RHI::Ptr<RHI::ShaderResourceGroupLayout> drawSrgLayout = m_asset->GetDrawSrgLayout(GetSupervariantIndex());
             Data::Instance<ShaderResourceGroup> drawSrg;
             if (drawSrgLayout)

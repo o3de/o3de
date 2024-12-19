@@ -174,7 +174,10 @@ namespace AZ
 
             /// Given an asset ID, retrieve general information about that asset.
             virtual AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& /*id*/) { return AssetInfo(); }
-
+#if defined(CARBONATED)
+            /// Given an asset ID, retrieve general information about that asset.
+            virtual const AZ::Data::AssetInfo* GetAssetInfoPtrById(const AZ::Data::AssetId& /*id*/) { return nullptr; }
+#endif
             /// Compute an asset Id from a path.
             /// This is TEMPORARY functionality. Side-by-side metadata and/or  will eventually contain Uuid information.
             /// For now it's computed based on path.

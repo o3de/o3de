@@ -117,11 +117,11 @@ namespace AZ::Data
     {
         // fill names, search for any lod-like name, find max LOD number
         int maxLodNumber = -1;
-        AZStd::vector<AssetInfo> infos(oneStepDependencyAssets.size());
+        AZStd::vector<const AssetInfo*> infos(oneStepDependencyAssets.size());
         for (int i = 0; i < oneStepDependencyAssets.size(); i++)
         {
-            AssetCatalogRequestBus::BroadcastResult(infos[i], &AssetCatalogRequestBus::Events::GetAssetInfoById, oneStepDependencyAssets[i].m_assetId);
-            const int lodNumber = GetLodNumber(infos[i].m_relativePath);
+            AssetCatalogRequestBus::BroadcastResult(infos[i], &AssetCatalogRequestBus::Events::GetAssetInfoPtrById, oneStepDependencyAssets[i].m_assetId);
+            const int lodNumber = GetLodNumber(infos[i]->m_relativePath);
             if (lodNumber > maxLodNumber)
             {
                 maxLodNumber = lodNumber;
@@ -138,7 +138,7 @@ namespace AZ::Data
         {
             bool removed = false;
 
-            const int lodNumber = GetLodNumber(infos[i].m_relativePath);
+            const int lodNumber = GetLodNumber(infos[i]->m_relativePath);
             if (lodNumber >= 0 && lodNumber < lodsToRemove)
             {
                 oneStepDependencyAssets.erase(oneStepDependencyAssets.begin() + i);

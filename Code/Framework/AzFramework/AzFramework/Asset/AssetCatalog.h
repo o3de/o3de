@@ -75,6 +75,9 @@ namespace AzFramework
 
         AZStd::string GetAssetPathById(const AZ::Data::AssetId& id) override;
         AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& id) override;
+#if defined(CARBONATED)
+        const AZ::Data::AssetInfo* GetAssetInfoPtrById(const AZ::Data::AssetId& id) override;
+#endif
         AZ::Data::AssetId GetAssetIdByPath(const char* path, const AZ::Data::AssetType& typeToRegister, bool autoRegisterIfNotFound) override;
         AZStd::vector<AZStd::string> GetRegisteredAssetPaths() override;
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetDirectProductDependencies(const AZ::Data::AssetId& asset) override;

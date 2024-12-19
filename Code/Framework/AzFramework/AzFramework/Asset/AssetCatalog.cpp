@@ -199,7 +199,28 @@ namespace AzFramework
     {
         return GetAssetInfoByIdInternal(id);
     }
+#if defined(CARBONATED)
+    //=========================================================================
+    // SetAssetInfoById
+    //=========================================================================
+    const AZ::Data::AssetInfo* AssetCatalog::GetAssetInfoPtrById(const AZ::Data::AssetId& id)
+    {
+        if (!id.IsValid())
+        {
+            return nullptr;
+        }
 
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
+
+        auto foundIter = m_registry->m_assetIdToInfo.find(id);
+        if (foundIter == m_registry->m_assetIdToInfo.end())
+        {
+            return nullptr;
+        }
+
+        return &foundIter->second;
+    }
+#endif
     //=========================================================================
     // GetAssetInfoByIdInternal
     //=========================================================================

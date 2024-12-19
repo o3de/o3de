@@ -14,6 +14,10 @@
 #include <RHI/ImagePool.h>
 #include <RHI/ImagePoolResolver.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace Vulkan
@@ -32,6 +36,9 @@ namespace AZ
 
         RHI::ResultCode ImagePool::InitImageInternal(const RHI::ImageInitRequest& request)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(ImageMip);
+#endif
             auto& device = static_cast<Device&>(GetDevice());
             Image* image = static_cast<Image*>(request.m_image);
             AZ_Assert(image, "Null image during initialization.");
