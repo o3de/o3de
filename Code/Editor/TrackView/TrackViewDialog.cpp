@@ -917,14 +917,16 @@ void CTrackViewDialog::Update()
                 m_activeCamStatic->setText(entity->GetName().c_str());
                 cameraNameSet = true;
 
-                // A corner case when reloaded: prepare manually scrubbing this sequence with time = 0.0f and a Camera key at 0.0f
-                if (wasReloading && fabs(fTime) < AZ::Constants::Tolerance)
+                // Evaluate the corner case when the sequence is reloaded and the "Autostart" flag is set for the sequence:
+                // prepare to manually scrub this sequence if time == 0.0 and a Camera key exists at 0.0:
+                if (wasReloading && (fabs(fTime) < AZ::Constants::Tolerance) &&
+                    ((animSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0))
                 {
                     AZ::EntityId currentEditorViewportCamId;
-                    Camera::EditorCameraRequestBus::BroadcastResult(
-                        currentEditorViewportCamId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
-                    if (currentEditorViewportCamId != camId)
+                    Camera::EditorCameraRequestBus::BroadcastResult(currentEditorViewportCamId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+                    if (currentEditorViewportCamId != camId) // ... if camera has not been already switched ...
                     {
+                        // ... switch camera in Editor Viewport Widget to the CameraComponent with the EntityId from this key.
                         Camera::EditorCameraRequestBus::Broadcast(
                             &Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, camId);
                     }

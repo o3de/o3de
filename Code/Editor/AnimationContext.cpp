@@ -275,7 +275,18 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
 // SequenceComponentNotificationBus overrider: called when a Sequence changes camera during playback in Track View.
 void CAnimationContext::OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId)
 {
-    // Switch camera in Editor Viewport Widget to the newCameraEntityId
+    const auto sequence = GetSequence();
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (!sequence || !movieSystem)
+    {
+        return;
+    }
+    const auto animSequence = movieSystem->FindSequenceById(sequence->GetCryMovieId());
+    if (!animSequence || ((animSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) == 0))
+    {
+        return;
+    }
+    // The "Autostart" flag is set for the active sequence, so switch camera in Editor Viewport Widget to the newCameraEntityId
     Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, newCameraEntityId);
 }
 
