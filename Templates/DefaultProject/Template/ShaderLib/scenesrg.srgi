@@ -19,5 +19,5 @@
 
 partial ShaderResourceGroup SceneSrg : SRG_PerScene
 {
-/* Intentionally Empty. Helps define the SrgSemantic for SceneSrg once.*/
+    /* Intentionally Empty. Add fields here based on the project's needs */
 };
