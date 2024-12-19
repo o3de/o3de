@@ -32,6 +32,7 @@ namespace MultiplayerCompression
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation

@@ -46,6 +46,11 @@ namespace MultiplayerCompression
         incompatible.push_back(AZ_CRC_CE("MultiplayerCompressionService"));
     }
 
+    void MultiplayerCompressionSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        required.push_back(AZ_CRC_CE("NetworkingService"));  // Required for getting AzNetworking::INetworking interface
+    }
+
     MultiplayerCompressionSystemComponent::MultiplayerCompressionSystemComponent()
     {
         m_multiplayerCompressionFactory = new MultiplayerCompressionFactory();
