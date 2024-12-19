@@ -239,7 +239,7 @@ private:
     void EndRestoreTransaction() override;
 
     // Current time when animated
-    float m_time = 0;
+    float m_time;
 
     // Stores if sequence is bound
     bool m_bBoundToEditorObjects;
