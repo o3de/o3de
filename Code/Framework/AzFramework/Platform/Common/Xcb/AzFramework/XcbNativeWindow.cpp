@@ -396,7 +396,7 @@ namespace AzFramework
                         (mode.htotal * mode.vtotal);
 
                     //Most of the time the refresh rate is 159.798 or 59.98
-                    refreshRate = static_cast<uint32_t>(std::ceil(refreshRatePrecise));
+                    refreshRate = static_cast<uint32_t>(ceil(refreshRatePrecise));
                 }
 
                 free(crtcInfoReply);
