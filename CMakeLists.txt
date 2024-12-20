@@ -26,6 +26,7 @@ endif(CARBONATED)
 OPTION(START_MEMORY_TRACING "Start memory tracing from app start" OFF)
 OPTION(ADVANCED_ASSET_TRACING "Take more CPU time to find asset names for precise asset size tracing" OFF)
 OPTION(LOD_REMOVAL "Enable conditional LOD removal at runtime to save RAM" ON)
+OPTION(MIP_REMOVAL "Enable conditional mipmap level removal at runtime to save RAM" ON)
 
 if(START_MEMORY_TRACING)
     add_compile_definitions(AZ_START_MEMORY_TRACING)  # enables memory tracing at startup, sys_LogMemoryMap command can dump allocations at any moment
@@ -38,6 +39,10 @@ endif(ADVANCED_ASSET_TRACING)
 if(LOD_REMOVAL)
     add_compile_definitions(AZ_LOD_REMOVAL)  # enables dropping some high quality LODs in runtime
 endif(LOD_REMOVAL)
+
+if(MIP_REMOVAL)
+    add_compile_definitions(AZ_MIP_REMOVAL)  # enables dropping some high quality MIPs in runtime
+endif(MIP_REMOVAL)
 
 include(cmake/LySet.cmake)
 include(cmake/GeneralSettings.cmake)
