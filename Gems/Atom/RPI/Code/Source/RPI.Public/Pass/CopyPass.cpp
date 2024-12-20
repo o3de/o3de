@@ -796,27 +796,25 @@ namespace AZ
 
         void CopyPass::ReadbackScopeQueryResults(CopyIndex copyIndex)
         {
+            int deviceIndex = copyIndex == CopyIndex::DeviceToHost ? m_data.m_sourceDeviceIndex : m_data.m_destinationDeviceIndex;
+            deviceIndex = deviceIndex != RHI::MultiDevice::InvalidDeviceIndex ? deviceIndex : RHI::MultiDevice::DefaultDeviceIndex;
+
             ExecuteOnTimestampQuery(
-                [this, copyIndex](RHI::Ptr<Query> query)
+                [this, copyIndex, deviceIndex](RHI::Ptr<Query> query)
                 {
                     const uint32_t TimestampResultQueryCount = 2u;
                     uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
-                    query->GetLatestResult(
-                        &timestampResult,
-                        sizeof(uint64_t) * TimestampResultQueryCount,
-                        copyIndex == CopyIndex::DeviceToHost ? m_data.m_sourceDeviceIndex : m_data.m_destinationDeviceIndex);
+                    query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, deviceIndex);
                     m_queryEntries[AZStd::to_underlying(copyIndex)].m_timestampResult =
                         TimestampResult(timestampResult[0], timestampResult[1], m_hardwareQueueClass);
                 },
                 copyIndex);
 
             ExecuteOnPipelineStatisticsQuery(
-                [this, copyIndex](RHI::Ptr<Query> query)
+                [this, copyIndex, deviceIndex](RHI::Ptr<Query> query)
                 {
                     query->GetLatestResult(
-                        &m_queryEntries[AZStd::to_underlying(copyIndex)].m_statisticsResult,
-                        sizeof(PipelineStatisticsResult),
-                        copyIndex == CopyIndex::DeviceToHost ? m_data.m_sourceDeviceIndex : m_data.m_destinationDeviceIndex);
+                        &m_queryEntries[AZStd::to_underlying(copyIndex)].m_statisticsResult, sizeof(PipelineStatisticsResult), deviceIndex);
                 },
                 copyIndex);
         }
