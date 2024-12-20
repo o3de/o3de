@@ -41,6 +41,6 @@ namespace MultiplayerCompression
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
     private:
-        MultiplayerCompressionFactory* m_multiplayerCompressionFactory;
+        MultiplayerCompressionFactory* m_multiplayerCompressionFactory = nullptr;
     };
 }
