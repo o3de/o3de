@@ -1609,11 +1609,17 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
                 // Create 'Add Tracks' submenu
                 m_menuParamTypeMap.clear();
 
+                const QString addTracksMenuName = "Add Tracks";
                 if (FillAddTrackMenu(contextMenu.addTrackSub, animNode))
                 {
-                    // add script table properties
+                    // add script table properties -> tracks available for adding
                     unsigned int currentId = 0;
-                    CreateAddTrackMenuRec(contextMenu.main, "Add Track", animNode, contextMenu.addTrackSub, currentId);
+                    CreateAddTrackMenuRec(contextMenu.main, addTracksMenuName, animNode, contextMenu.addTrackSub, currentId);
+                }
+                else
+                {
+                    // no tracks available for adding -> add empty disabled submenu for UI consistency
+                    contextMenu.main.addMenu(addTracksMenuName)->setEnabled(false);
                 }
             }
 
@@ -1669,8 +1675,10 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     if (bOnNode && !pNode->IsGroupNode())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        QString string = QString("%1 Tracks").arg(animNode->GetName().c_str());
-        contextMenu.main.addAction(string)->setEnabled(false);
+
+        // Create 'Manage Tracks' submenu with already added tracks ...
+        const QString manageTracksMenuName = "Manage Tracks";
+        auto manageTracksAction = contextMenu.main.addAction(manageTracksMenuName);
 
         bool bAppendedTrackFlag = false;
 
@@ -1694,6 +1702,8 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
                 bAppendedTrackFlag = true;
             }
         }
+
+        manageTracksAction->setEnabled(bAppendedTrackFlag); // ... and disable this sub-menu if no tracks were added.
 
         bAppended = bAppendedTrackFlag || bAppended;
     }
@@ -1864,12 +1874,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
             {
                 pCurrentNode = findIter->second.get();
             }
-            else
-            {
-                STrackMenuTreeNode* pNewNode = new STrackMenuTreeNode;
-                pCurrentNode->children[segment] = std::unique_ptr<STrackMenuTreeNode>(pNewNode);
-                pCurrentNode = pNewNode;
-            }
+            //else {} - keep current node to avoid unnecessary nesting
         }
 
         // only add tracks to the that STrackMenuTreeNode tree that haven't already been added
