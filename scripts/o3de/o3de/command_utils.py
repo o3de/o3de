@@ -300,12 +300,15 @@ class O3DEConfig(object):
                 project_config.write(current_settings_file)
             if show_log:
                 logger.info(f"Setting for {key} cleared.")
-        elif is_clear_operation and not self.is_global and len(self._global_settings.get(key)) > 0:
-            # If the was a clear value request, but the key is only set globally and the global flag was not applied,
-            # then present a warning
-            if show_log:
-                logger.warning(f"Operation skipped. The settings value for {key} was requested to be cleared locally, but is only "
-                               "set globally. Run this request again but with the global flag specified.")
+        elif is_clear_operation and not self.is_global:
+            # CARBONATED FIX - None-check for the global key
+            global_value = self._global_settings.get(key)
+            if global_value is not None and len(global_value) > 0:
+                # If this was a clear value request, but the key is only set globally and the global flag was not applied,
+                # then present a warning
+                if show_log:
+                    logger.warning(f"Operation skipped. The settings value for {key} was requested to be cleared locally, but is only "
+                                   "set globally. Run this request again but with the global flag specified.")
 
         return current_value
 
