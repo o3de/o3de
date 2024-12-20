@@ -29,6 +29,10 @@
 //! If modified, ensure that r_maxVisibleDecals is equal to or lower than ENABLE_DECALS_CAP which is the limit set by the shader on GPU.
 AZ_CVAR(int, r_maxVisibleDecals, -1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of visible decals to use when culling is not available. -1 means no limit");
 
+#if defined(CARBONATED)
+AZ_CVAR(bool, r_logDecals, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Print out logs when decals are added to the o3de decal list or removed from this list");
+#endif
+
 namespace AZ
 {
     namespace Render
@@ -503,6 +507,12 @@ namespace AZ
             DecalLocation result;
             result.textureArrayIndex = textureArrayIndex;
             result.textureIndex = textureIndex;
+#if defined(CARBONATED)
+            if (r_logDecals)
+            {
+                LogDecalDebugInfo("Added", result);
+            }
+#endif
             return result;
         }
 
@@ -579,6 +589,12 @@ namespace AZ
 
                 if (decalInformation.m_useCount == 0)
                 {
+#if defined(CARBONATED)
+                    if (r_logDecals)
+                    {
+                        LogDecalDebugInfo("Removed", decalLocation);
+                    }
+#endif
                     m_materialToTextureArrayLookupTable.erase(iter);
                     textureArray.RemoveMaterial(decalLocation.textureIndex);
                 }
@@ -751,5 +767,23 @@ namespace AZ
                 AZ::Vector3(data.m_halfSize[0], data.m_halfSize[1], data.m_halfSize[2]));
         }
 
+#if defined(CARBONATED)
+        void DecalTextureArrayFeatureProcessor::LogDecalDebugInfo(const AZStd::string& infoPrefix, const DecalLocation& decalLocation) const
+        {
+            const auto& textureArray =  m_textureArrayList[decalLocation.textureArrayIndex];
+            const AZ::Data::AssetId& materialAssetId = textureArray.second.GetMaterialAssetId(decalLocation.textureIndex);
+            auto asset = AZ::Data::AssetManager::Instance().FindAsset<AZ::RPI::MaterialAsset>(materialAssetId, AZ::Data::AssetLoadBehavior::QueueLoad);
+            const AZStd::string assetHint = asset.GetId().IsValid() ? asset.GetHint() : "";
+
+            AZ_Printf("DecalTextureArrayFeatureProcessor", "%s decal: size=%ux%u hint='%s' id='%s' depth=%u",
+                infoPrefix.c_str(),
+                textureArray.first.m_width,
+                textureArray.first.m_height,
+                assetHint.c_str(),
+                materialAssetId.ToString<AZStd::string>().c_str(),
+                textureArray.first.m_depth
+            );
+        }
+#endif
     } // namespace Render
 } // namespace AZ
