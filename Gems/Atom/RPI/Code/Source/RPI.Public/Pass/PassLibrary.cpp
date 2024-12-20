@@ -201,7 +201,7 @@ namespace AZ
             outputSlot.m_name = "Output";
             outputSlot.m_slotType = PassSlotType::Output;
             outputSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Copy;
-            outputSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Clear;
+            outputSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Load;
             passTemplate->m_slots.emplace_back(outputSlot);
 
             AddPassTemplate(passTemplate->m_name, std::move(passTemplate));
