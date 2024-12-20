@@ -25,7 +25,7 @@ namespace MultiplayerCompression
     public:
         AZ_COMPONENT(MultiplayerCompressionSystemComponent, "{C3099AC9-47A6-41D2-8928-F38F904BAC1B}");
 
-        MultiplayerCompressionSystemComponent();
+        MultiplayerCompressionSystemComponent() = default;
         ~MultiplayerCompressionSystemComponent() override;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -37,8 +37,8 @@ namespace MultiplayerCompression
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override {}
-        void Activate() override {}
-        void Deactivate() override {}
+        void Activate() override;
+        void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
     private:
         MultiplayerCompressionFactory* m_multiplayerCompressionFactory;
