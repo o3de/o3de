@@ -13,6 +13,7 @@
 #include <AzFramework/XcbNativeWindow.h>
 
 #include <xcb/xcb.h>
+#include <xcb/randr.h>
 
 namespace AzFramework
 {
@@ -300,10 +301,120 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     uint32_t XcbNativeWindow::GetDisplayRefreshRate() const
     {
-        // [GFX TODO][GHI - 2678]
-        // Using 60 for now until proper support is added
+        xcb_generic_error_t* error = nullptr;
 
-        return 60;
+        xcb_screen_iterator_t iter = xcb_setup_roots_iterator(xcb_get_setup(m_xcbConnection));
+        xcb_screen_t* screen = iter.data;
+
+        const xcb_query_extension_reply_t* extReply = xcb_get_extension_data(m_xcbConnection, &xcb_randr_id);
+        if (!extReply || !extReply->present)
+        {
+            AZ_Warning(XcbErrorWindow, extReply != nullptr, "Failed to get extension RandR.");
+            return 60;
+        }
+
+        int positionX = 0;
+        int positionY = 0;
+
+        //Get the position of the window globally.
+        {
+            xcb_translate_coordinates_cookie_t translateCookie = xcb_translate_coordinates(
+                m_xcbConnection,
+                m_xcbWindow,
+                screen->root,
+                0,
+                0
+                );
+            xcb_translate_coordinates_reply_t* translateReply = xcb_translate_coordinates_reply(
+                m_xcbConnection,
+                translateCookie,
+                &error
+                );
+
+            if (error || translateReply == nullptr)
+            {
+                AZ_Warning(XcbErrorWindow, error != nullptr, "Failed to translate window coordinates.");
+                free(error);
+                free(translateReply);
+                return 60;
+            }
+
+            positionX = translateReply->dst_x;
+            positionY = translateReply->dst_y;
+            free(translateReply);
+        }
+
+        xcb_randr_get_screen_resources_current_cookie_t resCookie = xcb_randr_get_screen_resources_current(m_xcbConnection, screen->root);
+        xcb_randr_get_screen_resources_current_reply_t* resReply = xcb_randr_get_screen_resources_current_reply(
+            m_xcbConnection,
+            resCookie,
+            &error);
+
+        if (error || resReply == nullptr)
+        {
+            AZ_Warning(XcbErrorWindow, error != nullptr, "Failed to get screen resources.");
+            free(error);
+            return 60;
+        }
+
+        xcb_randr_crtc_t* crtcs = xcb_randr_get_screen_resources_current_crtcs(resReply);
+        int crtcLength = xcb_randr_get_screen_resources_current_crtcs_length(resReply);
+
+        uint32_t refreshRate = 0;
+
+        for (int i = 0; i < crtcLength; i++)
+        {
+            xcb_randr_get_crtc_info_cookie_t crtcInfoCookie = xcb_randr_get_crtc_info(m_xcbConnection, crtcs[i], XCB_TIME_CURRENT_TIME);
+            xcb_randr_get_crtc_info_reply_t* crtcInfoReply = xcb_randr_get_crtc_info_reply(m_xcbConnection, crtcInfoCookie, &error);
+
+            if (error || crtcInfoReply == nullptr)
+            {
+                free(error);
+                continue;
+            }
+
+            int crtcX = crtcInfoReply->x;
+            int crtcY = crtcInfoReply->y;
+            int crtcW = crtcInfoReply->width;
+            int crtcH = crtcInfoReply->height;
+
+            if (positionX + m_width > crtcX && positionX < crtcX + crtcW &&
+                positionY + m_height > crtcY && positionY < crtcY + crtcH)
+            {
+                const uint32_t modeId = crtcInfoReply->mode;
+
+                xcb_randr_mode_info_t* modes = xcb_randr_get_screen_resources_current_modes(resReply);
+                int modesLength = xcb_randr_get_screen_resources_current_modes_length(resReply);
+
+                for (int mi = 0; mi < modesLength; mi++)
+                {
+                    auto mode = modes[mi];
+                    if (mode.id != modeId)
+                        continue;
+
+                    double refreshRatePrecise = static_cast<double>(mode.dot_clock) /
+                        (mode.htotal * mode.vtotal);
+
+                    //Most of the time the refresh rate is 159.798 or 59.98
+                    refreshRate = static_cast<uint32_t>(std::ceil(refreshRatePrecise));
+                }
+
+                free(crtcInfoReply);
+                break;
+            }
+
+            free(crtcInfoReply);
+        }
+
+        if (refreshRate == 0)
+        {
+            AZ_Warning(XcbErrorWindow, refreshRate == 0, "Failed to get CRTC refresh rate for window.");
+            free(resReply);
+            return 60;
+        }
+
+        free(resReply);
+        return refreshRate;
     }
 
     bool XcbNativeWindow::GetFullScreenState() const
