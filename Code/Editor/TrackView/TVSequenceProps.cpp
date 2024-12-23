@@ -169,6 +169,10 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
     else
     {
         seqFlags &= ~IAnimSequence::eSeqFlags_PlayOnReset;
+        if (ac)
+        {
+            ac->OnCameraChanged(AZ::EntityId(), ac->GetStoredViewCameraEntityId()); // Restore camera in the active Editor Viewport
+        }
     }
 
     if (ui->CUT_SCENE->isChecked())

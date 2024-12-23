@@ -195,8 +195,8 @@ public:
 
     /**
      * The SequenceComponentNotificationBus overrider.
-     * Switch camera in an active Editor Viewport Widget to the newCameraEntityId,
-     * only in editing mode, and only when the "Autostart" flag is set for an active sequence.
+     * Switch camera in the active Editor Viewport Widget to the newCameraEntityId,
+     * only in editing mode and only when the "Autostart" flag is set for an active sequence.
      */
     void OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId) override;
 
