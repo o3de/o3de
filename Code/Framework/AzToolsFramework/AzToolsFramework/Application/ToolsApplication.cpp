@@ -19,7 +19,6 @@
 #include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
