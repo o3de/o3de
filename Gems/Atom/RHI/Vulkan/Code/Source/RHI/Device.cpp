@@ -866,6 +866,13 @@ namespace AZ
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
             {
+                // Don't expose formats for HDR output when the extension is missing
+                // This can happen on Linux with Wayland.
+                if (surfaceFormat.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32 &&
+                    m_loaderContext->GetContext().SetHdrMetadataEXT == nullptr)
+                {
+                    continue;
+                }
                 formats.insert(ConvertFormat(surfaceFormat.format));
             }
             formatsList.assign(formats.begin(), formats.end());

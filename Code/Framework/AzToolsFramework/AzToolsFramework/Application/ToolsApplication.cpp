@@ -1159,6 +1159,15 @@ namespace AzToolsFramework
             return;
         }
 
+        // Only accept entities as dirty if these were not added to the ignored list.
+        // This filters out entities that have been marked as ignored by a non-user operation
+        // such as specific controller destruction when such controller was added in a specific pipeline.
+        if (m_ignoredEntities.contains(entityId))
+        {
+            AZ_Trace("ToolsApplication", "AddDirtyEntity(%s) exits as the entity was added to the ignored list.", entityId.ToString().c_str())
+            return;
+        }
+
         m_dirtyEntities.insert(entityId);
     }
 
@@ -1170,6 +1179,21 @@ namespace AzToolsFramework
     void ToolsApplication::ClearDirtyEntities()
     {
         m_dirtyEntities.clear();
+    }
+
+    void ToolsApplication::AddIgnoredEntity(AZ::EntityId entityId)
+    {
+        m_ignoredEntities.insert(entityId);
+    }
+
+    int ToolsApplication::RemoveIgnoredEntity(AZ::EntityId entityId)
+    {
+        return static_cast<int>(m_ignoredEntities.erase(entityId));
+    }
+
+    void ToolsApplication::ClearIgnoredEntities()
+    {
+        m_ignoredEntities.clear();
     }
 
     void ToolsApplication::UndoPressed()

@@ -197,7 +197,7 @@ namespace SliceBuilder
         bool sliceWritable = AZ::IO::SystemFile::IsWritable(fullPath.c_str());
         bool createDynamicSlice = sourcePrefab->IsDynamic();
 
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AzToolsFramework::Fingerprinting::TypeFingerprint sourceSliceTypeFingerprint = CalculateFingerprintForSlice(*sourcePrefab, *m_typeFingerprinter, *context);
 
@@ -418,7 +418,7 @@ namespace SliceBuilder
             {
                 AZ_TracePrintf(s_sliceBuilder, "Slice Upgrade: Instantiating Slice");
 
-                AZ::SerializeContext* context;
+                AZ::SerializeContext* context = nullptr;
                 AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
                 AZ::Data::Asset<AZ::SliceAsset> sourceAsset;
@@ -538,7 +538,7 @@ namespace SliceBuilder
     {
         AssetBuilderSDK::AssertAndErrorAbsorber assertAndErrorAbsorber(true);
 
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         sourceAsset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
@@ -564,7 +564,7 @@ namespace SliceBuilder
     bool SliceBuilderWorker::GetCompiledSliceAsset(AZStd::shared_ptr<AZ::Data::AssetDataStream> stream, const char* fullPath,
         const AZ::PlatformTagSet& platformTags, AZ::Data::Asset<AZ::SliceAsset>& outSliceAsset)
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         AssetBuilderSDK::AssertAndErrorAbsorber assertAndErrorAbsorber(true);

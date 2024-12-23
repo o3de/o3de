@@ -24,7 +24,7 @@ namespace AZ::DocumentPropertyEditor
 {
     struct ReflectionAdapterReflectionImpl : public AZ::Reflection::IReadWrite
     {
-        AZ::SerializeContext* m_serializeContext;
+        AZ::SerializeContext* m_serializeContext = nullptr;
         ReflectionAdapter* m_adapter;
         AdapterBuilder m_builder;
         // Look-up table of onChanged callbacks for handling property changes
