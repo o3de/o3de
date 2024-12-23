@@ -301,6 +301,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     uint32_t XcbNativeWindow::GetDisplayRefreshRate() const
     {
+        constexpr uint32_t defaultRefreshRate = 60;
         xcb_generic_error_t* error = nullptr;
 
         xcb_screen_iterator_t iter = xcb_setup_roots_iterator(xcb_get_setup(m_xcbConnection));
@@ -309,8 +310,8 @@ namespace AzFramework
         const xcb_query_extension_reply_t* extReply = xcb_get_extension_data(m_xcbConnection, &xcb_randr_id);
         if (!extReply || !extReply->present)
         {
-            AZ_Warning(XcbErrorWindow, extReply != nullptr, "Failed to get extension RandR.");
-            return 60;
+            AZ_WarningOnce(XcbErrorWindow, extReply != nullptr, "Failed to get extension RandR, defaulting to display rate of %d", defaultRefreshRate);
+            return defaultRefreshRate;
         }
 
         int positionX = 0;
@@ -336,7 +337,7 @@ namespace AzFramework
                 AZ_Warning(XcbErrorWindow, error != nullptr, "Failed to translate window coordinates.");
                 free(error);
                 free(translateReply);
-                return 60;
+                return defaultRefreshRate;
             }
 
             positionX = translateReply->dst_x;
@@ -354,7 +355,7 @@ namespace AzFramework
         {
             AZ_Warning(XcbErrorWindow, error != nullptr, "Failed to get screen resources.");
             free(error);
-            return 60;
+            return defaultRefreshRate;
         }
 
         xcb_randr_crtc_t* crtcs = xcb_randr_get_screen_resources_current_crtcs(resReply);
@@ -392,6 +393,12 @@ namespace AzFramework
                     if (mode.id != modeId)
                         continue;
 
+                    if(mode.htotal == 0 || mode.vtotal == 0)
+                    {
+                        AZ_WarningOnce(XcbErrorWindow, false, "V/H total is 0");
+                        return defaultRefreshRate;
+                    }
+
                     double refreshRatePrecise = static_cast<double>(mode.dot_clock) /
                         (mode.htotal * mode.vtotal);
 
@@ -410,7 +417,7 @@ namespace AzFramework
         {
             AZ_Warning(XcbErrorWindow, refreshRate == 0, "Failed to get CRTC refresh rate for window.");
             free(resReply);
-            return 60;
+            return defaultRefreshRate;
         }
 
         free(resReply);
