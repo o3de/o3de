@@ -85,7 +85,7 @@ namespace AZ::Data
 #if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
     int AssetContainer::s_numLodsToRemove = 0;
 
-    static AZ_INLINE int GetLodNumber(AZStd::string s)  // returns LOD number if the name matches the model LOD pattern, otherwise -1
+    static AZ_INLINE int GetLodNumber(const AZStd::string& s)  // returns LOD number if the name matches the model LOD pattern, otherwise -1
     {
         // in case of there is a model dependencies we have a set of *_lod#.fbx.azlod, plus some more assets
         constexpr const char* ANY_LOD_SUFFIX = ".fbx.azlod";
@@ -121,6 +121,10 @@ namespace AZ::Data
         for (int i = 0; i < oneStepDependencyAssets.size(); i++)
         {
             AssetCatalogRequestBus::BroadcastResult(infos[i], &AssetCatalogRequestBus::Events::GetAssetInfoPtrById, oneStepDependencyAssets[i].m_assetId);
+            if (infos[i] == nullptr)
+            {
+                continue;
+            }
             const int lodNumber = GetLodNumber(infos[i]->m_relativePath);
             if (lodNumber > maxLodNumber)
             {
@@ -136,6 +140,11 @@ namespace AZ::Data
         const int lodsToRemove = AZStd::min(maxLodNumber, s_numLodsToRemove);
         for (int i = int(infos.size()) - 1; i >= 0; i--) // reverse cycle because we delete the current index item from oneStepDependencyAssets
         {
+            if (infos[i] == nullptr)
+            {
+                continue;
+            }
+
             bool removed = false;
 
             const int lodNumber = GetLodNumber(infos[i]->m_relativePath);
