@@ -927,8 +927,7 @@ void CTrackViewDialog::Update()
                     if (currentEditorViewportCamId != camId) // ... if camera has not been already switched ...
                     {
                         // ... switch camera in Editor Viewport Widget to the CameraComponent with the EntityId from this key.
-                        Camera::EditorCameraRequestBus::Broadcast(
-                            &Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, camId);
+                        pAnimationContext->OnCameraChanged(AZ::EntityId(), camId);
                     }
                 }
             }
@@ -1480,8 +1479,7 @@ void CTrackViewDialog::OnStopHardReset()
     }
     UpdateActions();
     // Restore initial Editor Viewport camera EntityId
-    Camera::EditorCameraRequestBus::Broadcast(
-        &Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, pAnimationContext->GetStoredViewCameraEntityId());
+    pAnimationContext->OnCameraChanged(AZ::EntityId(), pAnimationContext->GetStoredViewCameraEntityId());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2266,8 +2264,8 @@ void CTrackViewDialog::OnSequenceSettingsChanged(CTrackViewSequence* sequence)
 void CTrackViewDialog::OnSequenceAdded([[maybe_unused]] CTrackViewSequence* sequence)
 {
     // Restore initial Editor Viewport camera EntityId
-    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective,
-        GetIEditor()->GetAnimation()->GetStoredViewCameraEntityId());
+    const auto pAnimationContext = GetIEditor()->GetAnimation();
+    pAnimationContext->OnCameraChanged(AZ::EntityId(), pAnimationContext->GetStoredViewCameraEntityId());
 
     ReloadSequencesComboBox();
     UpdateActions();

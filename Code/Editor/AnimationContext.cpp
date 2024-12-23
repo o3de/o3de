@@ -176,7 +176,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     }
 
     // Restore initial Editor Viewport camera EntityId
-    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, m_viewCameraEntityId);
+    OnCameraChanged(AZ::EntityId(), GetStoredViewCameraEntityId());
 
     // Prevent keys being created from time change
     const bool bRecording = m_recording;
@@ -286,7 +286,14 @@ void CAnimationContext::OnCameraChanged([[maybe_unused]] const AZ::EntityId& old
     {
         return;
     }
-    // The "Autostart" flag is set for the active sequence, so switch camera in Editor Viewport Widget to the newCameraEntityId
+    const auto editor = GetIEditor();
+    if (!editor || editor->IsInGameMode() || editor->IsInPreviewMode() || editor->IsInSimulationMode() || editor->IsInConsolewMode() ||
+        editor->IsInTestMode() || editor->IsInLevelLoadTestMode())
+    {
+        return;
+    }
+    // The Editor is in editing mode and the "Autostart" flag is set for the active sequence,
+    // so switch camera in Editor Viewport Widget to the newCameraEntityId
     Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, newCameraEntityId);
 }
 

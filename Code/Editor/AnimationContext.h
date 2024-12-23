@@ -193,6 +193,13 @@ public:
      */
     AZ::EntityId GetStoredViewCameraEntityId() const { return m_viewCameraEntityId; }
 
+    /**
+     * The SequenceComponentNotificationBus overrider.
+     * Switch camera in an active Editor Viewport Widget to the newCameraEntityId,
+     * only in editing mode, and only when the "Autostart" flag is set for an active sequence.
+     */
+    void OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId) override;
+
 private:
     static void GoToFrameCmd(IConsoleCmdArgs* pArgs);
 
@@ -210,9 +217,6 @@ private:
     void AnimateActiveSequence();
 
     void SetRecordingInternal(bool enableRecording);
-
-    // SequenceComponentNotificationBus
-    void OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId) override;
 
     //! Current time within active animation sequence.
     float m_currTime;
