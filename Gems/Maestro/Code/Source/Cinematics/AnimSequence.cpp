@@ -388,12 +388,12 @@ void CAnimSequence::RemoveNode(IAnimNode* node, bool removeChildRelationships)
     {
         if (node == m_nodes[i].get())
         {
-            m_nodes.erase(m_nodes.begin() + i);
-
             if (node->NeedToRender())
             {
                 RemoveNodeNeedToRender(node);
             }
+
+            m_nodes.erase(m_nodes.begin() + i);
 
             continue;
         }

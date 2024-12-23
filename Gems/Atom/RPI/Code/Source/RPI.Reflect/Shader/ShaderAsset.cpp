@@ -21,7 +21,7 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
-DECLARE_EBUS_INSTANTIATION(RPI::ShaderVariantFinderNotification);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(RPI::ShaderVariantFinderNotification);
 
 namespace AZ
 {
@@ -591,6 +591,20 @@ namespace AZ
             }
 
             return true;
+        }
+
+        bool ShaderAsset::UpdateRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset)
+        {
+            auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            for (auto& supervariant : supervariants)
+            {
+                if (supervariant.m_rootShaderVariantAsset.GetId() == shaderVariantAsset.GetId())
+                {
+                    supervariant.m_rootShaderVariantAsset = shaderVariantAsset;
+                    return true;
+                }
+            }
+            return false;
         }
 
         bool ShaderAsset::PostLoadInit()

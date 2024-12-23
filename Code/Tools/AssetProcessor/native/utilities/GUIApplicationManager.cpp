@@ -376,7 +376,7 @@ bool GUIApplicationManager::Run()
     delete m_mainWindow;
     m_mainWindow = nullptr;
 
-    AZ::SerializeContext* context;
+    AZ::SerializeContext* context = nullptr;
     AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     QDir projectCacheRoot;
@@ -504,7 +504,7 @@ bool GUIApplicationManager::Activate()
 {
     m_startupErrorCollector = AZStd::make_unique<ErrorCollector>(m_mainWindow);
 
-    AZ::SerializeContext* context;
+    AZ::SerializeContext* context = nullptr;
     AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     QDir projectCacheRoot;
