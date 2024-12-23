@@ -51,29 +51,17 @@ namespace MultiplayerCompression
         required.push_back(AZ_CRC_CE("NetworkingService"));  // Required for getting AzNetworking::INetworking interface
     }
 
-    MultiplayerCompressionSystemComponent::~MultiplayerCompressionSystemComponent()
-    {
-        if (m_multiplayerCompressionFactory)
-        {
-            delete m_multiplayerCompressionFactory;
-            m_multiplayerCompressionFactory = nullptr;
-        }
-    }
-
     void MultiplayerCompressionSystemComponent::Activate()
     {
-        m_multiplayerCompressionFactory = new MultiplayerCompressionFactory();
-        AZ::Interface<AzNetworking::INetworking>::Get()->RegisterCompressorFactory(m_multiplayerCompressionFactory);
+        // The registering class is responsible for managing the lifetime of the factory.
+        // We'll save the factory name required for unregistering later, but not manager the pointer ourselves.
+        auto* compressionFactory = new MultiplayerCompressionFactory();
+        m_multiplayerCompressionFactoryName = compressionFactory->GetFactoryName();
+        AZ::Interface<AzNetworking::INetworking>::Get()->RegisterCompressorFactory(compressionFactory);
     }
 
     void MultiplayerCompressionSystemComponent::Deactivate()
     {
-        AZ::Interface<AzNetworking::INetworking>::Get()->UnregisterCompressorFactory(m_multiplayerCompressionFactory->GetFactoryName());
-
-        if (m_multiplayerCompressionFactory)
-        {
-            delete m_multiplayerCompressionFactory;
-            m_multiplayerCompressionFactory = nullptr;
-        }
+        AZ::Interface<AzNetworking::INetworking>::Get()->UnregisterCompressorFactory(m_multiplayerCompressionFactoryName);
     }
 }
