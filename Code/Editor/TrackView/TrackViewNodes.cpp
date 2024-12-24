@@ -1676,8 +1676,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
 
-        // Create 'Manage Tracks' submenu with already added tracks ...
-        const QString manageTracksMenuName = "Manage Tracks";
+        const QString manageTracksMenuName = "Toggle Tracks";
         auto manageTracksAction = contextMenu.main.addAction(manageTracksMenuName);
 
         bool bAppendedTrackFlag = false;
@@ -1703,7 +1702,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
             }
         }
 
-        manageTracksAction->setEnabled(bAppendedTrackFlag); // ... and disable this sub-menu if no tracks were added.
+        manageTracksAction->setEnabled(bAppendedTrackFlag); // Disable this submenu if no tracks were added.
 
         bAppended = bAppendedTrackFlag || bAppended;
     }
