@@ -126,6 +126,9 @@ namespace AZ
             AZ::Name m_name;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             AZStd::fixed_vector<Data::Asset<ModelLodAsset>, ModelLodAsset::LodCountMax> m_lodAssets;
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+            int m_numLodsToRemove;
+#endif
 
             // mutable method
             void BuildKdTree() const;

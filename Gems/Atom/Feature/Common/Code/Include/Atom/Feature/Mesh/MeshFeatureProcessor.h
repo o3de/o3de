@@ -63,6 +63,14 @@ namespace AZ
             //! called when a DrawPacket used by this ModelDataInstance was updated. 
             void HandleDrawPacketUpdate();
 
+#if defined(CARBONATED)
+            const AZStd::string& GetAssetHint() const
+            {
+                return m_originalModelAsset.GetHint();
+            }
+#endif
+
+
         private:
             class MeshLoader
                 : private SystemTickBus::Handler
@@ -72,6 +80,9 @@ namespace AZ
             public:
                 MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, ModelDataInstance* parent);
                 ~MeshLoader();
+#if defined(CARBONATED)
+                const AZStd::string& GetAssetHint() const { return m_modelAsset.GetHint(); }
+#endif
 
             private:
                 // SystemTickBus::Handler overrides...

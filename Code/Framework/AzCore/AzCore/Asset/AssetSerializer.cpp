@@ -11,6 +11,10 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/SystemFile.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ {
     //-------------------------------------------------------------------------
     //-------------------------------------------------------------------------
@@ -244,6 +248,8 @@ namespace AZ {
 
     bool AssetSerializer::PostSerializeAssetReference(AZ::Data::Asset<AZ::Data::AssetData>& asset, const Data::AssetFilterCB& assetFilterCallback)
     {
+        ASSET_TAG(asset.GetHint().c_str());
+
         if (!asset.GetId().IsValid())
         {
             // The asset reference is null, so there's no additional processing required.

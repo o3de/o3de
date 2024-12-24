@@ -13,6 +13,10 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace Vulkan
@@ -53,6 +57,13 @@ namespace AZ
             VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(descriptor.m_heapMemoryLevel);
             VmaAllocation vmaAlloc;
             VkResult vkResult;
+#if defined(CARBONATED)
+            {
+                // do not count allocation record with size greather than the limit for any asset
+                // sometimes vulkan allocates a huge buffer for small items, we do not want
+                // to count that buffer in a pariticular asset
+                MEMORY_ASSET_LIMIT(createInfo.m_vkCreateInfo.size);
+#endif
             // Creates the buffer, allocates new memory and bind it to the buffer.
             vkResult = vmaCreateBufferWithAlignment(
                 device.GetVmaAllocator(),
@@ -62,6 +73,9 @@ namespace AZ
                 &m_vkBuffer,
                 &vmaAlloc,
                 nullptr);
+#if defined(CARBONATED)
+            }
+#endif
             
             AssertSuccess(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);

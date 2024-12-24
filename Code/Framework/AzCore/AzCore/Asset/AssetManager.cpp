@@ -33,6 +33,7 @@
 #if defined(CARBONATED)
 #include <AzCore/Utils/LogNotification.h> // AE -- update log while waiting for assets
 #include <AzCore/Utils/AssetLoadNotification.h> // update subscribers while waiting for assets
+#include <AzCore/Memory/MemoryMarker.h>
 #endif
 
 // Set this to 1 to enable debug logging for asset loads/unloads
@@ -179,7 +180,9 @@ namespace AZ::Data
 
                 AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetJob::Process: %s",
                     asset.GetHint().c_str());
-
+#if defined(CARBONATED)
+                ASSET_TAG(asset.GetHint().c_str());
+#endif
                 if (m_owner->ValidateAndRegisterAssetLoading(asset))
                 {
                     LoadAndSignal(asset);
@@ -347,8 +350,7 @@ namespace AZ::Data
                     constexpr int MaxWaitBetweenDispatchMs = 1;
                     while (!m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitBetweenDispatchMs)))
                     {
-// Gruber patch begin // AE -- update log while waiting for assets
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // update log while waiting for assets
                         // if we are here then it is the main thread, let deliver the log messages
                         AZ::LogNotification::LogNotificationBus::Broadcast(&AZ::LogNotification::LogNotificationBus::Events::Update);
                         // update subscribers while waiting for assets
@@ -359,7 +361,6 @@ namespace AZ::Data
                             AZ::AssetLoadNotification::AssetLoadNotificatorBus::Broadcast(&AZ::AssetLoadNotification::AssetLoadNotificatorBus::Events::WaitForAssetUpdate);
                         }
 #endif
-// Gruber patch end // AE -- update log while waiting for assets
                         AssetManager::Instance().DispatchEvents();
                     }
                 }
@@ -1021,7 +1022,9 @@ namespace AZ::Data
         }
 
         AZ_PROFILE_SCOPE(AzCore, "GetAsset: %s", assetInfo.m_relativePath.c_str());
-
+#if defined(CARBONATED)
+        ASSET_TAG(assetInfo.m_relativePath.c_str());
+#endif
         AZStd::shared_ptr<AssetDataStream> dataStream;
         AssetStreamInfo loadInfo;
         bool triggerAssetErrorNotification = false;
@@ -1282,6 +1285,11 @@ namespace AZ::Data
         AssetMap::iterator it = m_assets.find(assetId);
         if (it == m_assets.end())
         {
+#if defined(CARBONATED) && defined(ENABLE_ASSET_MEMORY_TRACKING_OVERHEAD)
+            AssetInfo assetInfo;
+            AssetCatalogRequestBus::BroadcastResult(assetInfo, &AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+            ASSET_TAG(assetInfo.m_relativePath.c_str());
+#endif
             // find the asset type handler
             AssetHandlerMap::iterator handlerIt = m_handlers.find(assetType);
             AZ_Error("AssetDatabase", handlerIt != m_handlers.end(), "No handler was registered for this asset (id=%s, type=%s)!", assetId.ToString<AZ::OSString>().c_str(), assetType.ToString<AZ::OSString>().c_str());
@@ -1802,6 +1810,9 @@ namespace AZ::Data
             {
                 AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetStreamerCallback %s",
                     loadingAsset.GetHint().c_str());
+#if defined(CARBONATED)
+                ASSET_TAG(loadingAsset.GetHint().c_str());
+#endif
                 {
                     AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
                     AssetData* data = loadingAsset.Get();
@@ -1881,6 +1892,9 @@ namespace AZ::Data
     //=========================================================================
     void AssetManager::NotifyAssetReady(Asset<AssetData> asset)
     {
+#if defined(CARBONATED)
+        ASSET_TAG(asset.GetHint().c_str());
+#endif
         AssetData* data = asset.Get();
         AZ_Assert(data, "NotifyAssetReady: asset is missing info!");
         data->m_status = AssetData::AssetStatus::Ready;

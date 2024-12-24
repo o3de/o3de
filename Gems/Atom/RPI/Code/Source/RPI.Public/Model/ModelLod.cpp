@@ -14,12 +14,20 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace RPI
     {
         Data::Instance<ModelLod> ModelLod::FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Lod);
+            ASSET_TAG(lodAsset.GetHint().c_str());
+#endif
             AZStd::any modelAssetAny{&modelAsset};
 
             return Data::InstanceDatabase<ModelLod>::Instance().FindOrCreate(
@@ -35,6 +43,10 @@ namespace AZ
 
         Data::Instance<ModelLod> ModelLod::CreateInternal(const Data::Asset<ModelLodAsset>& lodAsset, const AZStd::any* modelAssetAny)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Lod);
+            ASSET_TAG(lodAsset.GetHint().c_str());
+#endif
             AZ_Assert(modelAssetAny != nullptr, "Invalid model asset param");
             auto modelAsset = AZStd::any_cast<Data::Asset<ModelAsset>*>(*modelAssetAny);
 
@@ -52,6 +64,10 @@ namespace AZ
         RHI::ResultCode ModelLod::Init(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset)
         {
             AZ_PROFILE_FUNCTION(RPI);
+#if defined(CARBONATED)
+            MEMORY_TAG(Lod);
+            ASSET_TAG(lodAsset.GetHint().c_str());
+#endif
 
             for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
             {
@@ -61,6 +77,9 @@ namespace AZ
                 const Data::Asset<BufferAsset>& indexBufferAsset = indexBufferAssetView.GetBufferAsset();
                 if (indexBufferAsset.GetId().IsValid())
                 {
+#if defined(CARBONATED)
+                    ASSET_TAG(indexBufferAsset.GetHint().c_str());
+#endif
                     Data::Instance<Buffer> indexBuffer = Buffer::FindOrCreate(indexBufferAsset);
 
                     if (!indexBuffer)
@@ -379,6 +398,9 @@ namespace AZ
             AZ_PROFILE_FUNCTION(RPI);
 
             const Data::Asset<BufferAsset>& streamBufferAsset = streamBufferInfo.m_bufferAssetView.GetBufferAsset();
+#if defined(CARBONATED)
+            ASSET_TAG(streamBufferAsset.GetHint().c_str());
+#endif
             const Data::Instance<Buffer>& streamBuffer = Buffer::FindOrCreate(streamBufferAsset);
             if (streamBuffer == nullptr)
             {

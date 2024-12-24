@@ -17,6 +17,10 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 // Enable this define to debug output streaming image initialization and expanding process.
 //#define AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
 
@@ -77,6 +81,9 @@ namespace AZ
             }
 
             Data::Asset<StreamingImageAsset> streamingImageAsset;
+#if defined(CARBONATED)
+            ASSET_TAG("MemoryImage.streamingimage");
+#endif
 
             // Construct the streaming image asset.
             {

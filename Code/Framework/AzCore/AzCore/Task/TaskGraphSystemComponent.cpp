@@ -15,6 +15,10 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Threading/ThreadUtils.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
  // PERFORMANCE NOTE & TODO
  // Profiling Ros Con demo, Task Graph was 2-3ms slower than Jobs
  // Time for Jobs was ~5.5ms, maxing out at ~6.3ms
@@ -34,6 +38,9 @@ namespace AZ
 {
     void TaskGraphSystemComponent::Activate()
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(TaskGraphComponent);
+#endif
         AZ_Assert(m_taskExecutor == nullptr, "Error multiple activation of the TaskGraphSystemComponent");
 
         AZ::ApplicationTypeQuery appType;

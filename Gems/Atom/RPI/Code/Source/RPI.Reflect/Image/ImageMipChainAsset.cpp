@@ -10,6 +10,11 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#endif
+
 namespace AZ
 {
     namespace RPI
@@ -88,6 +93,14 @@ namespace AZ
 
         void ImageMipChainAsset::CopyFrom(const ImageMipChainAsset& source)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(ImageMip);
+#if defined(AZ_ADVANCED_ASSET_TRACING)
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, source.GetId());
+            ASSET_TAG(assetInfo.m_relativePath.c_str());
+#endif
+#endif  // CARBONATED
             m_mipLevels = source.m_mipLevels;
             m_arraySize = source.m_arraySize;
             m_mipToSubImageOffset = source.m_mipToSubImageOffset;
@@ -100,6 +113,9 @@ namespace AZ
 
         void ImageMipChainAsset::Init()
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(ImageMip);
+#endif
             const size_t subImageCount = m_mipLevels * m_arraySize;
 
             AZ_Assert(m_status != AssetStatus::Ready, "ImageMipChainAsset has already been initialized!");
@@ -134,6 +150,10 @@ namespace AZ
             AZStd::shared_ptr<Data::AssetDataStream> stream,
             const Data::AssetFilterCB& assetLoadFilterCB)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(ImageMip);
+            ASSET_TAG(asset.GetHint().c_str());
+#endif
             Data::AssetHandler::LoadResult result = Base::LoadAssetData(asset, stream, assetLoadFilterCB);
             if (result == Data::AssetHandler::LoadResult::LoadComplete)
             {

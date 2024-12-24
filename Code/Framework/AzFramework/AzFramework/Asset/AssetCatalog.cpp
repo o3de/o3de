@@ -29,6 +29,10 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 // uncomment to have the catalog be dumped to stdout:
 //#define DEBUG_DUMP_CATALOG
 
@@ -195,7 +199,28 @@ namespace AzFramework
     {
         return GetAssetInfoByIdInternal(id);
     }
+#if defined(CARBONATED)
+    //=========================================================================
+    // SetAssetInfoById
+    //=========================================================================
+    const AZ::Data::AssetInfo* AssetCatalog::GetAssetInfoPtrById(const AZ::Data::AssetId& id)
+    {
+        if (!id.IsValid())
+        {
+            return nullptr;
+        }
 
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
+
+        auto foundIter = m_registry->m_assetIdToInfo.find(id);
+        if (foundIter == m_registry->m_assetIdToInfo.end())
+        {
+            return nullptr;
+        }
+
+        return &foundIter->second;
+    }
+#endif
     //=========================================================================
     // GetAssetInfoByIdInternal
     //=========================================================================
@@ -373,7 +398,45 @@ namespace AzFramework
 
         return AZ::Success(AZStd::move(returnList));
     }
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+    AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> AssetCatalog::GetLoadBehaviorProductDependenciesFiltered(
+        const AZ::Data::AssetId& id, AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, AZ::Data::PreloadAssetListType& preloadAssetList, FilterCallback filter)
+    {
+        AZStd::vector<AZ::Data::ProductDependency> dependencyList;
+        AZStd::vector<AZ::Data::ProductDependency> returnList;
+        AZStd::unordered_set<AZ::Data::AssetId> assetSet;
 
+        AddAssetDependencies(id, assetSet, dependencyList, {}, {}, preloadAssetList);
+        if (dependencyList.size() > 0)
+        {
+            filter(dependencyList);
+        }
+
+        // dependencyList will be appended to while looping, so use a traditional loop
+        for (size_t i = 0; i < dependencyList.size(); ++i)
+        {
+            if (AZ::Data::ProductDependencyInfo::LoadBehaviorFromFlags(dependencyList[i].m_flags) == AZ::Data::AssetLoadBehavior::NoLoad)
+            {
+                noloadSet.insert(dependencyList[i].m_assetId);
+                assetSet.erase(dependencyList[i].m_assetId);
+            }
+            else
+            {
+                returnList.push_back(dependencyList[i]);
+                // Copy the asset Id out of the list into a temp variable before passing it in.  AddAssetDependencies will modify
+                // dependencyList, which can cause reallocations of the list, so the reference to a specific entry might not remain
+                // valid throughout the entire call.
+                AZ::Data::AssetId searchId = dependencyList[i].m_assetId;
+                AZStd::vector<AZ::Data::ProductDependency> oneStepList;
+                AddAssetDependencies(searchId, assetSet, oneStepList, {}, {}, preloadAssetList);
+                filter(oneStepList);
+                dependencyList.append_range(oneStepList);
+            }
+        }
+
+        return AZ::Success(AZStd::move(returnList));
+    }
+#endif
     bool AssetCatalog::DoesAssetIdMatchWildcardPatternInternal(const AZ::Data::AssetId& assetId, const AZStd::string& wildcardPattern) const
     {
         if (wildcardPattern.empty())
@@ -527,6 +590,9 @@ namespace AzFramework
     //=========================================================================
     void AssetCatalog::InitializeCatalog(const char* catalogRegistryFile /*= nullptr*/)
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(AssetCatalog);
+#endif
         bool shouldBroadcast = false;
         {
             // this scope controls the below lock guard, do not remove this scope.
@@ -655,6 +721,9 @@ namespace AzFramework
     //=========================================================================
     void AssetCatalog::RegisterAsset(const AZ::Data::AssetId& id, AZ::Data::AssetInfo& info)
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(AssetCatalog);
+#endif
         AZ_Error("AssetCatalog", id != AZ::Data::s_invalidAssetType, "Registering asset \"%s\" with invalid type.", info.m_relativePath.c_str());
 
         info.m_assetId = id;
@@ -797,6 +866,9 @@ namespace AzFramework
     // the results.  For this reason, it is a direct call and protects its structures with a lock.
     void AssetCatalog::AssetChanged(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages, bool isCatalogInitialize)
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(AssetCatalog);
+#endif
         for (const auto& message : messages)
         {
             AZStd::string relativePath = message.m_data;

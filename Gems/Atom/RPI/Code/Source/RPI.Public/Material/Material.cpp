@@ -24,6 +24,10 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/Utils/ScopedValue.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace RPI
@@ -32,11 +36,19 @@ namespace AZ
 
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(MaterialInit);
+            ASSET_TAG(materialAsset.GetHint().c_str());
+#endif
             return Data::InstanceDatabase<Material>::Instance().FindOrCreate(materialAsset);
         }
 
         Data::Instance<Material> Material::Create(const Data::Asset<MaterialAsset>& materialAsset)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(MaterialInit);
+            ASSET_TAG(materialAsset.GetHint().c_str());
+#endif
             return Data::InstanceDatabase<Material>::Instance().Create(materialAsset);
         }
 
@@ -55,6 +67,15 @@ namespace AZ
 
         RHI::ResultCode Material::Init(MaterialAsset& materialAsset)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(MaterialInit);
+#if defined(AZ_ADVANCED_ASSET_TRACING)
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo,
+                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, materialAsset.GetId());
+            ASSET_TAG(assetInfo.m_relativePath.c_str());
+#endif
+#endif  // CARBONATED
             AZ_PROFILE_FUNCTION(RPI);
 
             ScopedValue isInitializing(&m_isInitializing, true, false);
@@ -86,6 +107,9 @@ namespace AZ
             if (srgLayout)
             {
                 auto shaderAsset = m_materialAsset->GetMaterialTypeAsset()->GetShaderAssetForMaterialSrg();
+#if defined(CARBONATED)
+                ASSET_TAG(shaderAsset.GetHint().c_str());
+#endif
                 m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
 
                 if (m_shaderResourceGroup)
@@ -311,6 +335,9 @@ namespace AZ
 
         void Material::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
         {
+#if defined(CARBONATED)
+            ASSET_TAG(shaderAsset.GetHint().c_str());
+#endif
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be

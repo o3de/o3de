@@ -10,6 +10,10 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 #include <Atom/RHI/Factory.h>
 
 namespace AZ
@@ -78,6 +82,9 @@ namespace AZ
 
         void ShaderVariantAsyncLoader::ThreadServiceLoop()
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Shader);
+#endif
             AZStd::unordered_set<ShaderVariantAsyncLoader::TupleShaderAssetAndShaderVariantId> newShaderVariantPendingRequests;
             AZStd::unordered_set<Data::AssetId> shaderVariantTreePendingRequests;
 
