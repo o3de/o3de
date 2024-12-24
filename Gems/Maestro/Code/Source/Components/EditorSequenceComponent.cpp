@@ -60,6 +60,19 @@ namespace Maestro
                 if (animNode->GetType() == AnimNodeType::AzEntity)
                 {
                     RemoveEntityToAnimate(animNode->GetAzEntityId());
+                    // TODO (AnimSequence linking):
+                    // Consider destroying the now ambiguous CAnimAzEntityNode right here,
+                    // or in the RemoveEntityToAnimate(), as this method call is also available
+                    // through the EditorSequenceComponentRequestBus::Events::DisconnectSequence,
+                    // because the corresponding agent component is now detached and "dead"
+                    // (please see comments in the EditorSequenceAgentComponent::DisconnectSequence());
+                    // with something like:
+                    //  constexpr const bool removeChildRelationships = false;
+                    //  m_sequence->RemoveNode(animNode, removeChildRelationships);
+                    // In ideal world the governing code calling RemoveEntityToAnimate() is then to call the AddEntityToAnimate()
+                    // in case the Sequence <-> SequenceAgent link is further used.
+                    // In real world, - currently, - such removal interferes with the current implementation
+                    // of the governing code.
                 }
             }
         }
@@ -262,6 +275,15 @@ namespace Maestro
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void EditorSequenceComponent::RemoveEntityToAnimate(AZ::EntityId removedEntityId)
     {
+        if (!GetEntity())
+        {
+            // This check removes ambiguous warning in Component::GetEntityId()
+            // while destroying an instance when sanitizing a prefab DOM :
+            // entities are not activated, components have no pointers to parent entities,
+            // buses are not connected -> no need to try fetching owner EntityId from m_sequence.
+            return;
+        }
+
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), removedEntityId);
 
         // Notify the SequenceAgentComponent that we're disconnecting from it
