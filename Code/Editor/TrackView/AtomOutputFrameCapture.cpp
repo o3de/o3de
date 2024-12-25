@@ -55,7 +55,6 @@ namespace TrackView
             // This will be set again to mimic the active camera in UpdateView
             fp->SetViewAlias(m_view, m_targetView);
         }
-
         m_pipelineCreated = true;
     }
 
