@@ -174,7 +174,10 @@ namespace AZ
 
             /// Given an asset ID, retrieve general information about that asset.
             virtual AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& /*id*/) { return AssetInfo(); }
-
+#if defined(CARBONATED)
+            /// Given an asset ID, retrieve general information about that asset.
+            virtual const AZ::Data::AssetInfo* GetAssetInfoPtrById(const AZ::Data::AssetId& /*id*/) { return nullptr; }
+#endif
             /// Compute an asset Id from a path.
             /// This is TEMPORARY functionality. Side-by-side metadata and/or  will eventually contain Uuid information.
             /// For now it's computed based on path.
@@ -201,6 +204,12 @@ namespace AZ
             /// which have additional reporting requirements.  We don't want to report assets which have preload dependencies as "Ready" until all of their "PreLoad" dependencies are also ready
             /// NoLoad assets however simply wait for the user to request an additional load - they or their dependencies don't begin loading by default
             virtual AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependencies([[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, [[maybe_unused]] PreloadAssetListType& preloadLists) { return AZ::Failure<AZStd::string>("Not implemented"); }
+
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+            typedef void (*FilterCallback)(AZStd::vector<AZ::Data::ProductDependency>& oneStepDependencyAssets);
+            // the same as the above, but with one-step dependency asset sub-list filtering callback
+            virtual AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependenciesFiltered([[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, [[maybe_unused]] PreloadAssetListType& preloadLists, [[maybe_unused]] FilterCallback filter) { return AZ::Failure<AZStd::string>("Not implemented"); }
+#endif
 
             /// Retrieves a list of all products the given (product) asset depends on (recursively).
             /// \param id - the id of the asset to look up the dependencies for

@@ -139,9 +139,13 @@ namespace AZ
             //! For images, the value will be of type ImageBinding.
             const AZStd::vector<MaterialPropertyValue>& GetDefaultPropertyValues() const;
 
+#if defined(CARBONATED)
+            //! Returns a map from the UV shader inputs to a custom name.
+            const MaterialUvNameMap& GetUvNameMap() const;
+#else
             //! Returns a map from the UV shader inputs to a custom name.
             MaterialUvNameMap GetUvNameMap() const;
-
+#endif
             //! Returns the version of the MaterialTypeAsset.
             uint32_t GetVersion() const;
  

@@ -19,6 +19,10 @@
 
 #include <AzCore/Component/TickBus.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 #define PSOCacheVersion 0 // Bump this if you want to reset PSO cache for everyone
 
 namespace AZ
@@ -27,6 +31,9 @@ namespace AZ
     {
         Data::Instance<Shader> Shader::FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName)
         {
+#if defined(CARBONATED)
+                ASSET_TAG(shaderAsset.GetHint().c_str());
+#endif
             auto anySupervariantName = AZStd::any(supervariantName);
 
             // retrieve the supervariant index from the shader asset
@@ -467,6 +474,9 @@ namespace AZ
 
         Data::Instance<ShaderResourceGroup> Shader::CreateDrawSrgForShaderVariant(const ShaderOptionGroup& shaderOptions, bool compileTheSrg)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Shader);
+#endif
             RHI::Ptr<RHI::ShaderResourceGroupLayout> drawSrgLayout = m_asset->GetDrawSrgLayout(GetSupervariantIndex());
             Data::Instance<ShaderResourceGroup> drawSrg;
             if (drawSrgLayout)

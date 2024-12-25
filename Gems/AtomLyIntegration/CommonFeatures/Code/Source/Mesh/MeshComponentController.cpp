@@ -31,6 +31,10 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ
 {
     namespace Render
@@ -254,6 +258,10 @@ namespace AZ
 
         void MeshComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Mesh);
+            ASSET_TAG(m_configuration.m_modelAsset.GetHint().c_str());
+#endif
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             m_entityComponentIdPair = entityComponentIdPair;
 
@@ -364,6 +372,10 @@ namespace AZ
 
         MaterialAssignmentMap MeshComponentController::GetDefaultMaterialMap() const
         {
+#if defined(CARBONATED)
+            MEMORY_TAG(Mesh);
+            ASSET_TAG(m_configuration.m_modelAsset.GetHint().c_str());
+#endif
             return GetDefaultMaterialMapFromModelAsset(GetModelAsset());
         }
 
@@ -435,6 +447,10 @@ namespace AZ
         {
             if (m_meshFeatureProcessor && m_configuration.m_modelAsset.GetId().IsValid())
             {
+#if defined(CARBONATED)
+                MEMORY_TAG(Mesh);
+                ASSET_TAG(m_configuration.m_modelAsset.GetHint().c_str());
+#endif
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
 
                 MaterialAssignmentMap materials;

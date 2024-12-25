@@ -12,10 +12,18 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
+#if defined(CARBONATED) && defined(AZ_MIP_REMOVAL)
+#include <AzCore/Console/IConsole.h>
+#endif
+
 namespace AZ
 {
     namespace RPI
     {
+
+#if defined(CARBONATED) && defined(AZ_MIP_REMOVAL)
+        AZ_CVAR(int, q_dropMips, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "Set to non-zero to drop this number of high quality MIPs per StreamingImage.");
+#endif
 
         StreamingImageAssetHandler::~StreamingImageAssetHandler()
         {
@@ -69,7 +77,17 @@ namespace AZ
                             ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterAsset, tag, assetData->GetId());
                         }
                     }
-
+#if defined(CARBONATED) && defined(AZ_MIP_REMOVAL)
+                    if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+                    {
+                        size_t numMipsToRemove = 0;
+                        console->GetCvarValue("q_dropMips", numMipsToRemove);
+                        if (numMipsToRemove > 0 && assetData->GetMipChainCount() > 1)
+                        {
+                            assetData->RemoveFrontMipchains(AZStd::min(numMipsToRemove, assetData->GetMipChainCount() - 1));
+                        }
+                    }
+#endif
                     // Handle StreamingImageAsset reload (which the asset can be found from asset manager)
                     auto& assetManager = AZ::Data::AssetManager::Instance();
                     Data::Asset<StreamingImageAsset> foundImageAsset = assetManager.FindAsset(asset.GetId(), AZ::Data::AssetLoadBehavior::Default);

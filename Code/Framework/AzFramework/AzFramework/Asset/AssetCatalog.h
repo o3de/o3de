@@ -75,6 +75,9 @@ namespace AzFramework
 
         AZStd::string GetAssetPathById(const AZ::Data::AssetId& id) override;
         AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& id) override;
+#if defined(CARBONATED)
+        const AZ::Data::AssetInfo* GetAssetInfoPtrById(const AZ::Data::AssetId& id) override;
+#endif
         AZ::Data::AssetId GetAssetIdByPath(const char* path, const AZ::Data::AssetType& typeToRegister, bool autoRegisterIfNotFound) override;
         AZStd::vector<AZStd::string> GetRegisteredAssetPaths() override;
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetDirectProductDependencies(const AZ::Data::AssetId& asset) override;
@@ -82,6 +85,10 @@ namespace AzFramework
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetAllProductDependenciesFilter(const AZ::Data::AssetId& id, const AZStd::unordered_set<AZ::Data::AssetId>& exclusionList, const AZStd::vector<AZStd::string>& wildcardPatternExclusionList) override;
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependencies(const AZ::Data::AssetId& id, AZStd::unordered_set<AZ::Data::AssetId>& noloadSet,
             AZ::Data::PreloadAssetListType& preloadAssetList) override;
+#if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
+        AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetLoadBehaviorProductDependenciesFiltered(const AZ::Data::AssetId& id,
+            AZStd::unordered_set<AZ::Data::AssetId>& noloadSet, AZ::Data::PreloadAssetListType& preloadAssetList, FilterCallback filter) override;
+#endif
 
         bool DoesAssetIdMatchWildcardPattern(const AZ::Data::AssetId& assetId, const AZStd::string& wildcardPattern) override;
 

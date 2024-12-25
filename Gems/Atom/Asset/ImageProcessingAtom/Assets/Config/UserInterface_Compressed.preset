@@ -7,7 +7,7 @@
             "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
             "Name": "UserInterface_Compressed",
             "SuppressEngineReduce": true,
-            "PixelFormat": "R8G8B8A8",
+            "PixelFormat": "BC1",
             "SourceColor": "sRGB",
             "DestColor": "sRGB"
         },

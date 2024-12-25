@@ -11,10 +11,18 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h> 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Memory/MemoryMarker.h>
+#endif
+
 namespace AZ::Render
 {
     bool MeshInstanceGroupData::UpdateDrawPacket(const RPI::Scene& parentScene, bool forceUpdate)
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(Mesh);
+        ASSET_TAG((*(m_associatedInstances.begin()))->GetAssetHint().c_str());
+#endif
         if (m_drawPacket.Update(parentScene, forceUpdate))
         {
             // Clear any cached draw packets, since they need to be re-created
@@ -30,6 +38,10 @@ namespace AZ::Render
 
     bool MeshInstanceGroupData::UpdateShaderOptionFlags()
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(Mesh);
+        ASSET_TAG((*(m_associatedInstances.begin()))->GetAssetHint().c_str());
+#endif
         // Shader options are either set or being unspecified (which means use the global value).
         // We only set a shader option if ALL instances have the same value. Otherwise, we leave it unspecified.
         uint32_t newShaderOptionFlagMask = ~0u;      // Defaults to all shaders options being specified. 
@@ -63,6 +75,10 @@ namespace AZ::Render
 
     void MeshInstanceGroupData::AddAssociatedInstance(ModelDataInstance* instance)
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(Mesh);
+        ASSET_TAG(instance->GetAssetHint().c_str());
+#endif
         AZStd::scoped_lock<AZStd::mutex> scopedLock(m_eventLock);
         m_associatedInstances.insert(instance);
 
@@ -76,6 +92,20 @@ namespace AZ::Render
 
     MeshInstanceGroupList::InsertResult MeshInstanceGroupList::Add(const MeshInstanceGroupKey& key)
     {
+#if defined(CARBONATED)
+        MEMORY_TAG(Mesh);
+        const char* meshName = "";
+        if (m_instanceGroupData.size() > 0)
+        {
+            auto firstGroup = m_instanceGroupData.begin();
+            if (firstGroup->m_associatedInstances.size() > 0)
+            {
+                auto firstInstance = firstGroup->m_associatedInstances.begin();
+                meshName = (*firstInstance)->GetAssetHint().c_str();
+            }
+        }
+        ASSET_TAG(meshName);
+#endif
         // It is not safe to have multiple threads Add and/or Remove at the same time
         m_instanceDataConcurrencyChecker.soft_lock();
 

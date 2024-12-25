@@ -203,12 +203,17 @@ namespace AZ
         {
             return m_propertyValues;
         }
-
+#if defined(CARBONATED)
+        const MaterialUvNameMap& MaterialTypeAsset::GetUvNameMap() const
+        {
+            return m_uvNameMap;
+        }
+#else
         MaterialUvNameMap MaterialTypeAsset::GetUvNameMap() const
         {
             return m_uvNameMap;
         }
-
+#endif
         uint32_t MaterialTypeAsset::GetVersion() const
         {
             return m_version;

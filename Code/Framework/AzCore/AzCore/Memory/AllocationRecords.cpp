@@ -135,10 +135,31 @@ namespace AZ::Debug
 
 #if defined(CARBONATED)
         AllocatorManager& manager = AllocatorManager::Instance();
-        AZStd::tuple<const AZ::AllocatorManager::CodePoint*, uint64_t, unsigned int> data = manager.GetCodePointAndTags();
-        const AZ::AllocatorManager::CodePoint* point = AZStd::get<0>(data);
-        ai.m_tagMask = AZStd::get<1>(data);
-        ai.m_tag = AZStd::get<2>(data);
+        AZ::AllocatorManager::AllocationMetadata metadata = manager.GetAllocationMetadata();
+         
+        const AZ::AllocatorManager::CodePoint* point = metadata.m_codePoint;
+        ai.m_tagMask = metadata.m_mask;
+        ai.m_tag = metadata.m_tag;
+        ai.m_assetName = metadata.m_assetName;
+
+        // prevent a large vulkan buffer allocation to be counted per asset
+        constexpr size_t ALLOWED_ALLOCATION_OVERHEAD_ADD = 1024;
+        constexpr size_t ALLOWED_ALLOCATION_OVERHEAD_MUL = 2;
+        if (ai.m_assetName != nullptr && metadata.m_assetSizeLimit != 0 &&
+            byteSize > metadata.m_assetSizeLimit * ALLOWED_ALLOCATION_OVERHEAD_MUL + ALLOWED_ALLOCATION_OVERHEAD_ADD)
+        {
+            ai.m_assetName = nullptr;
+        }
+        /*
+        // this code piece allows catching a particular asset's memory allocation via debugger
+        // it cannot allocate any memory, cannot log any argument except basic string, otherwise there is an infinite recursion
+        constexpr const char* assetToFind = "materials/types/basepbr_common_1_shadowmappass.azshader";
+        constexpr size_t thresholdSize = 0; //100 * 1024;
+        if (ai.m_assetName != nullptr && ai.m_byteSize > thresholdSize && strcmp(ai.m_assetName, assetToFind) == 0)
+        {
+            ai.m_lineNum = 1; // dummy operation to set a breakpoint
+        }
+        */
         if (point)
         {
             ai.m_name = point->m_name;
