@@ -988,13 +988,20 @@ dependencies {{
     implementation 'com.android.billingclient:billing:6.1.0'
     {implementations}  
 }}
+
+{plugins}
 """
 
 # CARBONATED -- begin : additional libs for messaging
 ADDITIONAL_IMPLEMENTATIONS = """
+    implementation 'com.google.firebase:firebase-core:9.6.1'
     implementation 'com.google.firebase:firebase-messaging:20.1.4'
     implementation 'com.google.android.gms:play-services-games:19.0.0'
     implementation 'com.google.android.gms:play-services-auth:18.0.0'  
+"""
+
+ADDITIONAL_PLUGINS = """
+    apply plugin: 'com.google.gms.google-services'
 """
 # CARBONATED -- end
 
@@ -1428,7 +1435,8 @@ class AndroidProjectGenerator(object):
             'MIN_SDK_VER': self._android_platform_sdk_api_level,
             'NDK_VERSION': self._android_ndk.version,
             'SDK_BUILD_TOOL_VER': self._android_sdk_build_tool_version,
-            'LY_ENGINE_ROOT': self._engine_root.as_posix()
+            'LY_ENGINE_ROOT': self._engine_root.as_posix(),
+            'ROOT_DEPENDENCIES': "classpath 'com.google.gms:google-services:4.3.2'" # CARBONATED -- root dependencies
         }
         # Generate the gradle build script
         self.create_file_from_project_template(src_template_file='root.build.gradle.in',
@@ -1717,7 +1725,7 @@ class AndroidProjectGenerator(object):
         absolute_azandroid_path = (self._engine_root / 'Code/Framework/AzAndroid/java').resolve().as_posix()
 
         gradle_build_env['TARGET_TYPE'] = 'application'
-        gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies), implementations=ADDITIONAL_IMPLEMENTATIONS) # CARBONATED: added implementations
+        gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies), implementations=ADDITIONAL_IMPLEMENTATIONS, plugins=ADDITIONAL_PLUGINS) # CARBONATED: added implementations/plugins
         gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self._cmake_version), native_build_path=native_build_path, absolute_cmakelist_path=absolute_cmakelist_path)
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
 
