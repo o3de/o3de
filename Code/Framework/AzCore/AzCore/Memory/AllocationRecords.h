@@ -143,7 +143,11 @@ namespace AZ
             AZ_FORCE_INLINE Debug::AllocationRecordsType& GetMap()  { return m_records; }
 
             /// Enumerates all allocations in a thread safe manner.
+#if defined(CARBONATED)
+            void    EnumerateAllocations(AllocationInfoCBType cb);
+#else
             void    EnumerateAllocations(AllocationInfoCBType cb) const;
+#endif
 
             /// If marking is enabled it will set all memory we deallocate with 0xcd
             void    MarkUallocatedMemory(bool isMark)           { m_isMarkUnallocatedMemory = isMark; }
@@ -189,6 +193,10 @@ namespace AZ
             AZStd::atomic<size_t>           m_requestedBytes;
             AZStd::atomic<size_t>           m_requestedBytesPeak;
 
+#if defined(CARBONATED)
+            volatile bool m_enumerationInProgress;
+#endif
+            
             const char*                     m_allocatorName;
         };
     }
