@@ -64,8 +64,8 @@
         <service android:name="com.android.vending.billing.InAppBillingService" />
 
         <!-- Services for downloading the Obb -->
-        <service android:name="com.amazon.lumberyard.io.obb.ObbDownloaderService" android:exported="true" />
-        <receiver android:name="com.amazon.lumberyard.io.obb.ObbDownloaderAlarmReceiver" android:exported="true" />
+        <service android:name="com.amazon.lumberyard.io.obb.ObbDownloaderService" />
+        <receiver android:name="com.amazon.lumberyard.io.obb.ObbDownloaderAlarmReceiver" />
 
         <!-- Samsung DEX specific properties, the following line(s) can be blank if not specified -->
         ${SAMSUNG_DEX_KEEP_ALIVE}

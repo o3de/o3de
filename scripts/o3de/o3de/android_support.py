@@ -986,14 +986,14 @@ dependencies {{
 {dependencies}
     api 'androidx.core:core:1.1.0'
     implementation 'com.android.billingclient:billing:6.1.0'
-    {implementations}  
+    {additional_dependencies}  
 }}
 
 {plugins}
 """
 
 # CARBONATED -- begin : additional libs for messaging
-ADDITIONAL_IMPLEMENTATIONS = """
+ADDITIONAL_DEPENDENCIES = """
     implementation 'com.google.firebase:firebase-core:9.6.1'
     implementation 'com.google.firebase:firebase-messaging:20.1.4'
     implementation 'com.google.android.gms:play-services-games:19.0.0'
@@ -1728,7 +1728,7 @@ class AndroidProjectGenerator(object):
         absolute_azandroid_path = (self._engine_root / 'Code/Framework/AzAndroid/java').resolve().as_posix()
 
         gradle_build_env['TARGET_TYPE'] = 'application'
-        gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies), implementations=ADDITIONAL_IMPLEMENTATIONS, plugins=ADDITIONAL_PLUGINS) # CARBONATED: added implementations/plugins
+        gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies), additional_dependencies=ADDITIONAL_DEPENDENCIES, plugins=ADDITIONAL_PLUGINS) # CARBONATED: added implementations/plugins
         gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self._cmake_version), native_build_path=native_build_path, absolute_cmakelist_path=absolute_cmakelist_path)
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
 
