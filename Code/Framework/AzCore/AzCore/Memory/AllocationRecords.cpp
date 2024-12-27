@@ -45,6 +45,9 @@ namespace AZ::Debug
         , m_requestedBytes(0)
         , m_requestedBytesPeak(0)
         , m_allocatorName(allocatorName)
+#if defined(CARBONATED)
+        , m_enumerationInProgress(false)
+#endif
     {
     }
 
@@ -322,20 +325,26 @@ namespace AZ::Debug
 #endif
 
         // delete allocation record
-        if (allocationInfo.m_namesBlock)
+#if defined(CARBONATED)
+        if (!m_enumerationInProgress)  // intentional memory leak here to provide the right data for enumeration callback
         {
-            m_records.get_allocator().deallocate(allocationInfo.m_namesBlock, allocationInfo.m_namesBlockSize, 1);
-            allocationInfo.m_namesBlock = nullptr;
-            allocationInfo.m_namesBlockSize = 0;
-            allocationInfo.m_name = nullptr;
-            allocationInfo.m_fileName = nullptr;
+#endif
+            if (allocationInfo.m_namesBlock)
+            {
+                m_records.get_allocator().deallocate(allocationInfo.m_namesBlock, allocationInfo.m_namesBlockSize, 1);
+                allocationInfo.m_namesBlock = nullptr;
+                allocationInfo.m_namesBlockSize = 0;
+                allocationInfo.m_name = nullptr;
+                allocationInfo.m_fileName = nullptr;
+            }
+            if (allocationInfo.m_stackFrames)
+            {
+                m_records.get_allocator().deallocate(allocationInfo.m_stackFrames, sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1);
+                allocationInfo.m_stackFrames = nullptr;
+            }
+#if defined(CARBONATED)
         }
-        if (allocationInfo.m_stackFrames)
-        {
-            m_records.get_allocator().deallocate(allocationInfo.m_stackFrames, sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1);
-            allocationInfo.m_stackFrames = nullptr;
-        }
-
+#endif
         if (info)
         {
             *info = allocationInfo;
@@ -540,8 +549,11 @@ namespace AZ::Debug
     // EnumerateAllocations
     // [9/29/2009]
     //=========================================================================
-    void AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb) const
+    void AllocationRecords::EnumerateAllocations(AllocationInfoCBType cb)
     {
+#if defined(CARBONATED)
+        m_enumerationInProgress = true;
+#endif
         // enumerate all allocations and stop if requested.
         // Since allocations can change during the iteration (code that prints out the records could allocate, which will
         // mutate m_records), we are going to make a copy and iterate the copy.
@@ -557,6 +569,9 @@ namespace AZ::Debug
                 break;
             }
         }
+#if defined(CARBONATED)
+        m_enumerationInProgress = false;
+#endif
     }
 
     //=========================================================================
