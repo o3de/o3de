@@ -39,13 +39,13 @@ namespace Maestro
     EditorSequenceComponent::EditorSequenceComponent()
         : m_sequenceId(s_invalidSequenceId)
     {
-        AZ_Trace("EditorSequenceComponent", "EditorSequenceComponent");
+        AZ_Trace("EditorSequenceComponent", "EditorSequenceComponent %p", this);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     EditorSequenceComponent::~EditorSequenceComponent()
     {
-        AZ_Trace("EditorSequenceComponent", "~EditorSequenceComponent");
+        AZ_Trace("EditorSequenceComponent", "~EditorSequenceComponent %p", this);
 
         bool isDuringUndo = false;
         AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
@@ -77,25 +77,18 @@ namespace Maestro
             }
         }
 
-        IEditor* editor = nullptr;
-        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
-        if (editor)
-        {
-            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-            if (movieSystem)
-            {
-                IAnimSequence* sequence = movieSystem->FindSequenceById(m_sequenceId);
-                ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
-
-                if (sequence && pSequenceManager && pSequenceManager->GetSequenceByEntityId(sequence->GetSequenceEntityId()))
-                {
-                    pSequenceManager->OnDeleteSequenceEntity(sequence->GetSequenceEntityId());
-                }
-            }
-        }
-
         if (m_sequence)
         {
+            IEditor* editor = nullptr;
+            AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
+            if (editor)
+            {
+                ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
+                if (pSequenceManager && pSequenceManager->GetSequenceByEntityId(m_sequence->GetSequenceEntityId()))
+                {
+                    pSequenceManager->OnDeleteSequenceEntity(m_sequence->GetSequenceEntityId());
+                }
+            }
             m_sequence = nullptr;
             m_sequenceId = s_invalidSequenceId;
         }
@@ -214,12 +207,23 @@ namespace Maestro
 
         AZ_Trace("EditorSequenceComponent::Deactivate", "SequenceComponentRequestBus disconnected from %s", GetEntityId().ToString().c_str());
 
-        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-
-        // Remove this sequence from the game movie system.
-        if (m_sequence && movieSystem)
+        IEditor* editor = nullptr;
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
+        if (editor && m_sequence)
         {
-            movieSystem->RemoveSequence(m_sequence.get());
+            ITrackViewSequenceManager* sequenceManager = editor->GetSequenceManager();
+            const AZ::EntityId& sequenceEntityId = m_sequence->GetSequenceEntityId();
+            if (sequenceManager->GetSequenceByEntityId(sequenceEntityId))
+            {
+                sequenceManager->OnSequenceDeactivated(GetEntityId());
+            }
+
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+            // Remove this sequence from the game movie system.
+            if (movieSystem)
+            {
+                movieSystem->RemoveSequence(m_sequence.get());
+            }
         }
 
         // disconnect from TickBus if we're connected (which would only happen if we deactivated during a pending property refresh)

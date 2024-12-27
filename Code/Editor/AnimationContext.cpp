@@ -161,10 +161,7 @@ void CAnimationContext::NotifyTimeChangedListenersUsingCurrTime() const
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bool noNotify, bool user)
 {
-    float newSeqStartTime = .0f;
-    CTrackViewSequence* pCurrentSequence = m_pSequence;
-
-    if (!force && sequence == pCurrentSequence)
+    if (!force && sequence == m_pSequence)
     {
         return;
     }
@@ -174,10 +171,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     m_recording = false;
     SetRecordingInternal(false);
 
-    if (sequence)
-    {
-        newSeqStartTime = sequence->GetTimeRange().start;
-    }
+    const float newSeqStartTime = sequence ? sequence->GetTimeRange().start : .0f;
 
     m_currTime = newSeqStartTime;
     m_fRecordingCurrTime = newSeqStartTime;
@@ -331,6 +325,23 @@ void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
                         TimeChanged(m_currTime);
                     }
                 }
+            }
+        }
+    }
+}
+
+void CAnimationContext::OnSequenceDeactivated(AZ::EntityId entityId)
+{
+    auto editor = GetIEditor();
+    if (editor != nullptr)
+    {
+        auto manager = editor->GetSequenceManager();
+        if (manager != nullptr)
+        {
+            auto sequence = manager->GetSequenceByEntityId(entityId);
+            if (sequence != nullptr && sequence == m_pSequence)
+            {
+                SetSequence(nullptr, true, false);
             }
         }
     }

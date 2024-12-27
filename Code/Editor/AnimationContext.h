@@ -183,6 +183,7 @@ public:
     /** Notify after a sequence has been activated, useful for Undo/Redo
     */
     void OnSequenceActivated(AZ::EntityId entityId);
+    void OnSequenceDeactivated(AZ::EntityId entityId);
 
 private:
     static void GoToFrameCmd(IConsoleCmdArgs* pArgs);

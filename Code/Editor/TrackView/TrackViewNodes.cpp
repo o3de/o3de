@@ -404,6 +404,8 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     ///////////////////////////////////////////////////////////////
 
 
+    GetIEditor()->GetSequenceManager()->AddListener(this);
+    GetIEditor()->GetAnimation()->AddListener(this);
     GetIEditor()->GetUndoManager()->AddListener(this);
 };
 
@@ -411,6 +413,8 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
 CTrackViewNodesCtrl::~CTrackViewNodesCtrl()
 {
     GetIEditor()->GetUndoManager()->RemoveListener(this);
+    GetIEditor()->GetAnimation()->RemoveListener(this);
+    GetIEditor()->GetSequenceManager()->RemoveListener(this);
 }
 
 bool CTrackViewNodesCtrl::eventFilter(QObject* o, QEvent* e)
@@ -439,6 +443,18 @@ void CTrackViewNodesCtrl::OnSequenceChanged()
     FillAutoCompletionListForFilter();
 
     Reload();
+}
+
+// IAnimationContextListener
+void CTrackViewNodesCtrl::OnSequenceChanged([[maybe_unused]]CTrackViewSequence* pNewSequence)
+{
+    OnSequenceChanged();
+}
+
+// ITrackViewSequenceManagerListener
+void CTrackViewNodesCtrl::OnSequenceRemoved([[maybe_unused]] CTrackViewSequence* pSequence)
+{
+    OnSequenceChanged();
 }
 
 //////////////////////////////////////////////////////////////////////////
