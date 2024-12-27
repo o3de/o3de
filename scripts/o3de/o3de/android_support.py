@@ -994,10 +994,10 @@ dependencies {{
 
 # CARBONATED -- begin : additional libs for messaging
 ADDITIONAL_DEPENDENCIES = """
-    implementation 'com.google.firebase:firebase-core:9.6.1'
-    implementation 'com.google.firebase:firebase-messaging:20.1.4'
-    implementation 'com.google.android.gms:play-services-games:19.0.0'
-    implementation 'com.google.android.gms:play-services-auth:18.0.0'  
+    implementation 'com.google.firebase:firebase-core:21.1.1'
+    implementation 'com.google.firebase:firebase-messaging:24.0.3'
+    implementation 'com.google.android.gms:play-services-games:23.2.0'
+    implementation 'com.google.android.gms:play-services-auth:21.2.0'  
 """
 
 ADDITIONAL_PLUGINS = """
