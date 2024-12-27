@@ -54,7 +54,7 @@ namespace MultiplayerCompression
     void MultiplayerCompressionSystemComponent::Activate()
     {
         // The registering class is responsible for managing the lifetime of the factory.
-        // We'll save the factory name required for unregistering later, but not manager the pointer ourselves.
+        // We'll save the factory name required for unregistering later, but not manage the pointer ourselves.
         auto* compressionFactory = new MultiplayerCompressionFactory();
         m_multiplayerCompressionFactoryName = compressionFactory->GetFactoryName();
         AZ::Interface<AzNetworking::INetworking>::Get()->RegisterCompressorFactory(compressionFactory);
