@@ -92,7 +92,7 @@ namespace AZ::Render
 
     MeshInstanceGroupList::InsertResult MeshInstanceGroupList::Add(const MeshInstanceGroupKey& key)
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(MEMORY_TAGS_ACTIVE)  // MEMORY_TAGS_ACTIVE to avoid unused variables error in release build
         MEMORY_TAG(Mesh);
         const char* meshName = "";
         if (m_instanceGroupData.size() > 0)

@@ -78,6 +78,8 @@ namespace AZ
 
 } // namespace AZ
 
+#define MEMORY_TAGS_ACTIVE
+
 #define MEMORY_ALLOCATION_MARKER AZ::MemoryAllocationMarker(nullptr, __FILE__, __LINE__)
 
 // without these wrapper macros Name##_LINE__ is Name__LINE__ but not Name123
