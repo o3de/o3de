@@ -1062,7 +1062,7 @@ namespace AZ
 #endif
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during
             // insertion
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(MEMORY_TAGS_ACTIVE) // MEMORY_TAGS_ACTIVE to avoid unused variables error in release build
             // unfortunately we cannot really track asset data here because StableDynamicArray<ModelDataInstance> m_modelData
             // allocates mmeory in 512-item blocks, which we should not track by a random asset
             // making it right requires a deep mod of the memory tracking system, which we maybe do later
