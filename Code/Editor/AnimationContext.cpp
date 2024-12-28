@@ -171,7 +171,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     m_recording = false;
     SetRecordingInternal(false);
 
-    const float newSeqStartTime = sequence ? sequence->GetTimeRange().start : .0f;
+    const float newSeqStartTime = sequence ? sequence->GetTimeRange().start : 0.f;
 
     m_currTime = newSeqStartTime;
     m_fRecordingCurrTime = newSeqStartTime;
