@@ -116,6 +116,14 @@ namespace AZ
     {
         if (!DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear))
         {
+#if defined(CARBONATED)
+            if (m_enableToDispatchConsoleCommands)
+            {
+                CVarFixedString commandLowercase(command);
+                return AZ::Failure(AZStd::string::format(
+                    "Command \"%s\" is not registered in this Console. Let to process it by an outside console.", commandLowercase.c_str()));
+            }
+#endif
             // If the command could not be dispatched at this time add it to the deferred commands queue
             DeferredCommand deferredCommand{ AZStd::string_view{ command },
                                              DeferredCommand::DeferredArguments{ commandArgs.begin(), commandArgs.end() },
