@@ -175,8 +175,11 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
         return;
     }
 
-    // Restore initial Editor Viewport camera EntityId
-    OnCameraChanged(AZ::EntityId(), GetStoredViewCameraEntityId());
+    if (!m_bIsInGameMode) // In Editor Play Game mode switching Editor Viewport cameras is currently not supported.
+    {
+        // Restore camera in the active Editor Viewport Widget to the value saved while a sequence was activated.
+        SwitchEditorViewportCamera(m_defaulViewCameraEntityId);
+    }
 
     // Prevent keys being created from time change
     const bool bRecording = m_recording;
@@ -272,28 +275,72 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SequenceComponentNotificationBus overrider: called when a Sequence changes camera during playback in Track View.
-void CAnimationContext::OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId)
+bool CAnimationContext::IsInGameMode() const
+{
+    const auto editor = GetIEditor();
+    const bool isInGame = editor && editor->IsInGameMode();
+    return m_bIsInGameMode || isInGame;
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool CAnimationContext::IsInEditingMode() const
+{
+    const auto editor = GetIEditor();
+    const bool isNotEditing = !editor || editor->IsInConsolewMode() || editor->IsInTestMode() || editor->IsInLevelLoadTestMode() || editor->IsInPreviewMode();
+    return !m_bIsInGameMode && !isNotEditing;
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool CAnimationContext::IsSequenceAutostartFlagOn() const
 {
     const auto sequence = GetSequence();
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-    if (!sequence || !movieSystem)
+    return sequence && ((sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAnimationContext::SwitchEditorViewportCamera(const AZ::EntityId& newCameraEntityId)
+{
+    if (!IsInEditingMode())
     {
-        return;
+        return; // Camera switching is currently supported in editing mode only.
     }
-    const auto animSequence = movieSystem->FindSequenceById(sequence->GetCryMovieId());
-    if (!animSequence || ((animSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) == 0))
+
+    AZ::EntityId currentEditorViewportCamId;
+    Camera::EditorCameraRequestBus::BroadcastResult(currentEditorViewportCamId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+    if (currentEditorViewportCamId == newCameraEntityId)
     {
-        return;
+        return; // Camera in Editor Viewport Widget is already set to the requested value, avoid unneeded actions.
     }
-    const auto editor = GetIEditor();
-    if (!editor || editor->IsInGameMode() || editor->IsInPreviewMode() || editor->IsInSimulationMode() || editor->IsInConsolewMode() ||
-        editor->IsInTestMode() || editor->IsInLevelLoadTestMode())
+
+    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, newCameraEntityId);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAnimationContext::OnCameraChanged([[maybe_unused]] const AZ::EntityId&, const AZ::EntityId& newCameraEntityId)
+{
+
+    if (!newCameraEntityId.IsValid())
     {
-        return;
+        return; // Only valid camera Ids are sent to the active editor viewport
     }
-    // The Editor is in editing mode and the "Autostart" flag is set for the active sequence,
-    // so switch camera in Editor Viewport Widget to the newCameraEntityId
+
+    if (!IsInEditingMode())
+    {
+        return; // Camera switching is currently supported in editing mode only.
+    }
+
+    if (!IsSequenceAutostartFlagOn())
+    {
+        return; // The "Autostart" flag is not set for the active sequence.
+    }
+
+    AZ::EntityId currentEditorViewportCamId;
+    Camera::EditorCameraRequestBus::BroadcastResult( currentEditorViewportCamId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+    if (currentEditorViewportCamId == newCameraEntityId)
+    {
+        return; // Camera in Editor Viewport Widget is already set to the requested value, avoid unneeded actions.
+    }
+
     Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, newCameraEntityId);
 }
 
@@ -380,7 +427,7 @@ void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
     }
 
     // Store initial Editor Viewport camera EntityId 
-    Camera::EditorCameraRequestBus::BroadcastResult(m_viewCameraEntityId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+    Camera::EditorCameraRequestBus::BroadcastResult(m_defaulViewCameraEntityId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -507,6 +554,19 @@ void CAnimationContext::SetPlaying(bool playing)
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::Update()
 {
+    if (m_countWaitingForExitingGameMode > 0) // Waiting while Editor is exiting Play Game mode ?
+    {
+        if (--m_countWaitingForExitingGameMode == 0)  // The 2nd frame after StopPlayInEditor event sent ?
+        {
+            m_bIsInGameMode = false; // Now Editor Viewport Widget is in the "Editor" state,
+            RestoreSequenceOnEnteringEditMode(); // So restore previously active sequence and camera in Editor Viewport.
+        }
+        else
+        {
+            return; // while the Editor Viewport state goes from "Started" to "Stopping" and finally back to "Editor".
+        }
+    }
+
     if (m_bForceUpdateInNextFrame)
     {
         ForceAnimation();
@@ -730,6 +790,48 @@ void CAnimationContext::OnSequenceRemoved(CTrackViewSequence* pSequence)
         SetSequence(nullptr, true, false);
     }
 }
+
+//////////////////////////////////////////////////////////////////////////
+void CAnimationContext::StoreSequenceOnExitingEditMode(bool isSwitchingToGameMode)
+{
+    // Store currently active Editor Viewport camera EntityId
+    Camera::EditorCameraRequestBus::BroadcastResult(
+        m_viewCameraEntityIdToRestore, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+
+    if (isSwitchingToGameMode)
+    {
+        SwitchEditorViewportCamera(AZ::EntityId()); // Switch Editor Viewport back to the default Editor camera
+        m_bIsInGameMode = true; // and set the flag of Editor being switched into Play Game mode.
+    }
+
+    if (m_pSequence)
+    {
+        m_sequenceToRestore = m_pSequence->GetSequenceComponentEntityId();
+    }
+    else
+    {
+        m_sequenceToRestore.SetInvalid();
+    }
+
+    m_sequenceRestoreTime = GetTime();
+
+    m_bSavedRecordingState = m_recording;
+    SetRecordingInternal(false);
+    SetSequence(nullptr, true, true);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAnimationContext::RestoreSequenceOnEnteringEditMode()
+{
+    m_currTime = m_sequenceRestoreTime;
+    SetSequence(GetIEditor()->GetSequenceManager()->GetSequenceByEntityId(m_sequenceToRestore), true, true);
+    SetTime(m_sequenceRestoreTime);
+
+    SetRecordingInternal(m_bSavedRecordingState);
+
+    SwitchEditorViewportCamera(m_viewCameraEntityIdToRestore); // Switch Editor Viewport back to the stored camera, which was active prior to switching to Play Game mode.
+}
+
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
@@ -740,32 +842,37 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
         {
             m_pSequence->Resume();
         }
+        {
+            // This notification arrives before even the OnStartPlayInEditorBegin and later OnStartPlayInEditor events
+            // arrive to Editor Views, and thus switching cameras is still available.
+            // So, after storing an active camera Id, rollback the Editor Viewport to default "Editor camera" in order
+            // to help Editor correctly restore viewport state after switching back to Editing mode,
+            // then set the 'm_bIsInGameMode' flag, store an active sequence and drop it.
+            constexpr const bool isSwitchingToGameMode = true;
+            StoreSequenceOnExitingEditMode(isSwitchingToGameMode);
+        }
+        break;
+
     case eNotify_OnBeginSceneSave:
     case eNotify_OnBeginLayerExport:
-        if (m_pSequence)
         {
-            m_sequenceToRestore = m_pSequence->GetSequenceComponentEntityId();
+            constexpr const bool isSwitchingToGameMode = false;
+            // Store active sequence and camera Ids and drop this sequence.
+            StoreSequenceOnExitingEditMode(isSwitchingToGameMode);
         }
-        else
-        {
-            m_sequenceToRestore.SetInvalid();
-        }
-
-        m_sequenceRestoreTime = GetTime();
-
-        m_bSavedRecordingState = m_recording;
-        SetRecordingInternal(false);
-        SetSequence(nullptr, true, true);
         break;
 
     case eNotify_OnEndGameMode:
+        // Delay restoring previously active sequence and Editor Viewport camera, and clearing 'm_bIsInGameMode' flag,
+        // for 2 frames, while Editor Viewport state goes from "Started" to "Stopping" and finally back to "Editor",
+        // and switching cameras is not supported.
+        m_countWaitingForExitingGameMode = 2;
+        break;
+
     case eNotify_OnEndSceneSave:
     case eNotify_OnEndLayerExport:
-        m_currTime = m_sequenceRestoreTime;
-        SetSequence(GetIEditor()->GetSequenceManager()->GetSequenceByEntityId(m_sequenceToRestore), true, true);
-        SetTime(m_sequenceRestoreTime);
-
-        SetRecordingInternal(m_bSavedRecordingState);
+        // Restore previously active sequence and camera in Editor Viewport.
+        RestoreSequenceOnEnteringEditMode();
         break;
 
     case eNotify_OnQuit:

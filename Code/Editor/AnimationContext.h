@@ -188,35 +188,63 @@ public:
     */
     void OnSequenceActivated(AZ::EntityId entityId);
 
-    /** Get stored entity ID of a camera in an active editor viewport at the moment a sequence was activated
-     *  (invalid if the default editor camera was used).
+    /**
+     * Returns true if Editor is in the Play Game mode.
      */
-    AZ::EntityId GetStoredViewCameraEntityId() const { return m_viewCameraEntityId; }
+    bool IsInGameMode() const;
 
     /**
-     * The SequenceComponentNotificationBus overrider.
-     * Switch camera in the active Editor Viewport Widget to the newCameraEntityId,
-     * only in editing mode and only when the "Autostart" flag is set for an active sequence.
+     * Returns true if Editor is in the Editing mode.
      */
-    void OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId) override;
+    bool IsInEditingMode() const;
+
+    /**
+     * Returns true if a sequence is active and has "Autostart" (IAnimSequence::eSeqFlags_PlayOnReset) flag set.
+     */
+    bool IsSequenceAutostartFlagOn() const;
+
+    /**
+     * Switch camera, only in Editing mode, in the active Editor Viewport Widget to the newCameraEntityId 
+     * (including invalid Id, which corresponds to the default Editor camera).
+     */
+    void SwitchEditorViewportCamera(const AZ::EntityId& newCameraEntityId);
 
 private:
     static void GoToFrameCmd(IConsoleCmdArgs* pArgs);
 
     void NotifyTimeChangedListenersUsingCurrTime() const;
 
-    virtual void BeginUndoTransaction() override;
-    virtual void EndUndoTransaction() override;
+    //! IUndoManagerListener overrides
+    void BeginUndoTransaction() override;
+    void EndUndoTransaction() override;
 
+    //! PrefabPublicNotificationBus override
     void OnPrefabInstancePropagationEnd() override;
 
-    virtual void OnSequenceRemoved(CTrackViewSequence* pSequence) override;
+    //! ITrackViewSequenceManagerListener override
+    void OnSequenceRemoved(CTrackViewSequence* pSequence) override;
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+    //! IEditorNotifyListener override
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+
+    /** SequenceComponentNotificationBus override:
+     *  Switches camera Id in the active editor viewport when a Sequence changes camera during playback in Track View,
+     *  only if in Editing mode and if the "Autostart" flag is set in the active sequence. 
+     */
+    void OnCameraChanged([[maybe_unused]] const AZ::EntityId& oldCameraEntityId, const AZ::EntityId& newCameraEntityId) override;
 
     void AnimateActiveSequence();
 
     void SetRecordingInternal(bool enableRecording);
+
+    /**
+     * Store an active sequence when switching from Editing mode to Game mode or Saving mode.
+     * @param isSwitchingToGameMode True if the function is called when switching from Editing mode to Game mode.
+     */
+    void StoreSequenceOnExitingEditMode(bool isSwitchingToGameMode);
+
+    //! Restore a previously active sequence when switching back from Game mode or Saving mode to Editing mode.
+    void RestoreSequenceOnEnteringEditMode();
 
     //! Current time within active animation sequence.
     float m_currTime;
@@ -244,15 +272,32 @@ private:
 
     Range m_timeMarker;
 
-    //! An entity ID of a current camera in an active editor viewport, at the moment a sequence is activated,
-    //! or invalid if the default editor camera is used at the moment.
-    AZ::EntityId m_viewCameraEntityId = AZ::EntityId();
+    /** An entity ID of a current camera in an active editor viewport, at the moment a sequence is activated,
+     *  or invalid if the default editor camera is used at the moment.
+     *  Used to restore the default editor viewport camera when clearing "Autostart" property or deselecting a sequence.
+     */
+    AZ::EntityId m_defaulViewCameraEntityId = AZ::EntityId();
+
+    //! Id of the active viewport camera to restore when switching back from game mode and saving mode to Editing mode.
+    AZ::EntityId m_viewCameraEntityIdToRestore = AZ::EntityId();
+
+    /** Switched On with EEditorNotifyEvent::eNotify_OnBeginGameMode,
+     *  switched Off - after 2 frames in Update() since receiving EEditorNotifyEvent::eNotify_OnEndGameModein.
+     */
+    bool m_bIsInGameMode = false;
+
+    /** Set to a positive value with EEditorNotifyEvent::eNotify_OnEndGameMode, in order to delay restoring a previously active
+     *  sequence and Editor Viewport camera, and then resetting m_bIsInGameMode. Decreased to 0 in Update().
+     *  Currently skipping 2 frames is needed, as Editor Viewport state goes from "Started" to "Stopping" and finally back to "Editor".
+     */
+    int m_countWaitingForExitingGameMode = 0;
 
     //! Currently active animation sequence.
     CTrackViewSequence* m_pSequence;
 
-    //! Id of latest valid sequence that was selected. Useful for restoring the selected
-    //! sequence after undo has destroyed and recreated it.
+    /** Id of latest valid sequence that was selected. Useful for restoring the selected
+     * sequence after undo has destroyed and recreated it.
+     */
     AZ::EntityId m_mostRecentSequenceId;
 
     //! The current time of the most recent selected sequence. It's very useful to restore this after an undo.

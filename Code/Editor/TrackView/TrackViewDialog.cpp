@@ -918,17 +918,12 @@ void CTrackViewDialog::Update()
                 cameraNameSet = true;
 
                 // Evaluate the corner case when the sequence is reloaded and the "Autostart" flag is set for the sequence:
-                // prepare to manually scrub this sequence if time == 0.0 and a Camera key exists at 0.0:
-                if (wasReloading && (fabs(fTime) < AZ::Constants::Tolerance) &&
-                    ((animSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0))
+                // prepare to manually scrub this sequence if the "Autostart" flag is set.
+                if (wasReloading && ((animSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0))
                 {
-                    AZ::EntityId currentEditorViewportCamId;
-                    Camera::EditorCameraRequestBus::BroadcastResult(currentEditorViewportCamId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
-                    if (currentEditorViewportCamId != camId) // ... if camera has not been already switched ...
-                    {
-                        // ... switch camera in Editor Viewport Widget to the CameraComponent with the EntityId from this key.
-                        pAnimationContext->OnCameraChanged(AZ::EntityId(), camId);
-                    }
+                    // Try to switch camera in the Editor Viewport Widget to the CameraComponent with the EntityId from this key,
+                    // works only in Editing mode (checked in the called method).
+                    pAnimationContext->SwitchEditorViewportCamera(camId);
                 }
             }
         }
@@ -1478,8 +1473,6 @@ void CTrackViewDialog::OnStopHardReset()
         sequence->ResetHard();
     }
     UpdateActions();
-    // Restore initial Editor Viewport camera EntityId
-    pAnimationContext->OnCameraChanged(AZ::EntityId(), pAnimationContext->GetStoredViewCameraEntityId());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2263,10 +2256,6 @@ void CTrackViewDialog::OnSequenceSettingsChanged(CTrackViewSequence* sequence)
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnSequenceAdded([[maybe_unused]] CTrackViewSequence* sequence)
 {
-    // Restore initial Editor Viewport camera EntityId
-    const auto pAnimationContext = GetIEditor()->GetAnimation();
-    pAnimationContext->OnCameraChanged(AZ::EntityId(), pAnimationContext->GetStoredViewCameraEntityId());
-
     ReloadSequencesComboBox();
     UpdateActions();
 }
