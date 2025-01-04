@@ -272,7 +272,7 @@ void EditorViewportWidget::resizeEvent(QResizeEvent* event)
 
     // In the case of the default viewport camera, we must re-set the FOV, which also updates the aspect ratio
     // Component cameras hand this themselves
-    if (m_viewSourceType == ViewSourceType::None)
+    if (!m_viewEntityId.IsValid())
     {
         SetFOV(GetFOV());
     }
@@ -544,7 +544,7 @@ void EditorViewportWidget::PostCameraSet()
     // Special case in the editor; if the camera is the default editor camera,
     // notify that the active view changed. In game mode, it is a hard error to not have
     // any cameras on the view stack!
-    if (m_viewSourceType == ViewSourceType::None)
+    if (!m_viewEntityId.IsValid())
     {
         m_sendingOnActiveChanged = true;
         Camera::CameraNotificationBus::Broadcast(&Camera::CameraNotificationBus::Events::OnActiveViewChanged, AZ::EntityId());
@@ -848,7 +848,7 @@ void EditorViewportWidget::SetViewportId(int id)
     m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
         [this](const float fovRadians)
         {
-            if (m_viewSourceType == ViewSourceType::None)
+            if (!m_viewEntityId.IsValid())
             {
                 if (m_viewPane)
                 {
@@ -1054,7 +1054,7 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
 
     QAction* action = customCameraMenu->addAction("Editor Camera");
     action->setCheckable(true);
-    action->setChecked(m_viewSourceType == ViewSourceType::None);
+    action->setChecked(!m_viewEntityId.IsValid());
     connect(action, &QAction::triggered, this, &EditorViewportWidget::SetDefaultCamera);
 
     AZ::EBusAggregateResults<AZ::EntityId> getCameraResults;
@@ -1070,7 +1070,7 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
         action = new QAction(QString(entityName.c_str()), nullptr);
         additionalCameras.append(action);
         action->setCheckable(true);
-        action->setChecked(m_viewEntityId == entityId && m_viewSourceType == ViewSourceType::CameraComponent);
+        action->setChecked(m_viewEntityId == entityId && m_viewEntityId.IsValid());
         connect(
             action, &QAction::triggered, this,
             [this, entityId](bool isChecked)
@@ -1193,7 +1193,7 @@ const Matrix34& EditorViewportWidget::GetViewTM() const
 AZ::EntityId EditorViewportWidget::GetCurrentViewEntityId()
 {
     // Sanity check that this camera entity ID is actually the camera entity which owns the current active render view
-    if (m_viewSourceType == ViewSourceType::CameraComponent)
+    if (m_viewEntityId.IsValid())
     {
         // Check that the current view is the same view as the view entity view
         AZ::RPI::ViewPtr viewEntityView;
@@ -1483,7 +1483,6 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
             "Please report this as a bug.");
 
         m_viewEntityId = viewEntityId;
-        m_viewSourceType = ViewSourceType::CameraComponent;
         AZStd::string entityName;
         AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, viewEntityId);
         SetName(QString("Camera entity: %1").arg(entityName.c_str()));
@@ -1506,7 +1505,6 @@ void EditorViewportWidget::SetDefaultCamera()
     }
 
     m_viewEntityId.SetInvalid();
-    m_viewSourceType = ViewSourceType::None;
     SetName(m_defaultViewName);
 
     // synchronize the configured editor viewport FOV to the default camera
@@ -1543,7 +1541,7 @@ void EditorViewportWidget::SetDefaultCameraNearFar()
 
 void EditorViewportWidget::OnDefaultCameraNearFarChanged()
 {
-    if (m_viewSourceType == ViewSourceType::None)
+    if (!m_viewEntityId.IsValid())
     {
         SetDefaultCameraNearFar();
     }
@@ -1608,7 +1606,7 @@ bool EditorViewportWidget::IsSelectedCamera() const
     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
         selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-    if ((m_viewSourceType == ViewSourceType::CameraComponent) && !selectedEntityList.empty() &&
+    if (m_viewEntityId.IsValid() && !selectedEntityList.empty() &&
         AZStd::find(selectedEntityList.begin(), selectedEntityList.end(), m_viewEntityId) != selectedEntityList.end())
     {
         return true;
@@ -1620,39 +1618,29 @@ bool EditorViewportWidget::IsSelectedCamera() const
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::CycleCamera()
 {
-    // None -> Sequence -> LegacyCamera -> ... LegacyCamera -> CameraComponent -> ... CameraComponent -> None
-    // AZ_Entity has been intentionally left out of the cycle for now.
-    switch (m_viewSourceType)
+    // None (default editor camera) -> 1st CameraComponent (added editor camera component) -> ... next CameraComponent -> ... -> None
+    if (!m_viewEntityId.IsValid())
     {
-    case EditorViewportWidget::ViewSourceType::None:
+        SetFirstComponentCamera(); // None (default editor camera) -> select a first CameraComponent, if any
+        return;
+    }
+
+    // Find the CameraComponent with the valid m_viewEntityId stored, if it still exists.
+    AZ::EBusAggregateResults<AZ::EntityId> results;
+    Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
+    AZStd::sort_heap(results.values.begin(), results.values.end());
+    auto&& currentCameraIterator = AZStd::find(results.values.begin(), results.values.end(), m_viewEntityId);
+    if (currentCameraIterator != results.values.end())
+    {
+        if (++currentCameraIterator != results.values.end()) // Found -> check that a next one exists ... 
         {
-            SetFirstComponentCamera();
-            break;
-        }
-    case EditorViewportWidget::ViewSourceType::CameraComponent:
-        {
-            AZ::EBusAggregateResults<AZ::EntityId> results;
-            Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
-            AZStd::sort_heap(results.values.begin(), results.values.end());
-            auto&& currentCameraIterator = AZStd::find(results.values.begin(), results.values.end(), m_viewEntityId);
-            if (currentCameraIterator != results.values.end())
-            {
-                ++currentCameraIterator;
-                if (currentCameraIterator != results.values.end())
-                {
-                    SetEntityAsCamera(*currentCameraIterator);
-                    break;
-                }
-            }
-            SetDefaultCamera();
-            break;
-        }
-    default:
-        {
-            SetDefaultCamera();
-            break;
+            SetEntityAsCamera(*currentCameraIterator); // ... and then select it.
+            return;
         }
     }
+    // Go back to None (default editor camera) when the CameraComponent with stored m_viewEntityId
+    // is the last one in the list, or was destroyed.
+    SetDefaultCamera();
 }
 
 void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& entityId)

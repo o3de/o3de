@@ -3028,20 +3028,6 @@ void CCryEditApp::OnToolsPreferences()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSwitchToDefaultCamera()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateSwitchToDefaultCamera(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    {
-        action->setEnabled(false);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToSequenceCamera()
 {
 }
