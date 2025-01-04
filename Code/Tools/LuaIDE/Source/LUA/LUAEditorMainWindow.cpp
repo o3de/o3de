@@ -36,6 +36,7 @@
 #include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusAPI.h>
 #include <Source/LUA/TargetContextButton.hxx>
 #include <Source/LUA/LUAEditorDebuggerMessages.h>
+
 #include "DebugAttachmentButton.hxx"
 #include "ClassReferenceFilter.hxx"
 #include "WatchesPanel.hxx"
@@ -44,6 +45,7 @@
 #include "LUAEditorContextMessages.h"
 #include "LUABreakpointTrackerMessages.h"
 #include "LUAEditorSettingsDialog.hxx"
+#include "RecentFiles.h"
 
 #include <Source/AssetDatabaseLocationListener.h>
 #include <Source/LUA/ui_LUAEditorMainWindow.h>
@@ -81,6 +83,7 @@ namespace LUAEditor
         , m_lastFocusedAssetId()
         , m_ptrFindDialog(nullptr)
         , m_settingsDialog(nullptr)
+        , m_actionClearRecentFiles(nullptr)
     {
         initSharedResources();
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -214,6 +217,8 @@ namespace LUAEditor
 
         connect(m_gui->actionOpen, SIGNAL(triggered(bool)), this, SLOT(OnFileMenuOpen()));
 
+        UpdateOpenRecentMenu();
+
         connect(m_gui->actionAutocomplete, SIGNAL(triggered(bool)), this, SLOT(OnAutocompleteChanged(bool)));
 
         auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
@@ -291,6 +296,53 @@ namespace LUAEditor
         m_gui->actionAutocomplete->setCheckable(true);
         m_gui->actionAutocomplete->setChecked(m_bAutocompleteEnabled);
         m_gui->actionAutocomplete->blockSignals(false);
+    }
+
+    void LUAEditorMainWindow::UpdateOpenRecentMenu()
+    {
+        const QStringList recentFiles = ReadRecentFiles();
+
+        QList<QAction*> actions = m_gui->menuOpenRecent->actions();
+
+        for (int i = actions.size() - 1; i >= 0; i--)
+        {
+            m_gui->menuOpenRecent->removeAction(actions[i]);
+        }
+
+        for (auto& fileName : recentFiles)
+        {
+            QAction* action = new QAction(fileName, this);
+            connect(
+                action,
+                &QAction::triggered,
+                this,
+                [fileName]([[maybe_unused]] bool checked)
+                {
+                    constexpr bool errorOnNotFound = true;
+                    Context_DocumentManagement::Bus::Broadcast(
+                        &Context_DocumentManagement::Bus::Events::OnLoadDocument, fileName.toStdString().c_str(), errorOnNotFound);
+                });
+            m_gui->menuOpenRecent->addAction(action);
+        }
+
+        m_gui->menuOpenRecent->addSeparator();
+
+        m_actionClearRecentFiles = new QAction("Clear Recent Files", this);
+
+        connect(
+            m_actionClearRecentFiles,
+            &QAction::triggered,
+            this,
+            [this]([[maybe_unused]] bool checked)
+            {
+                ClearRecentFile();
+                UpdateOpenRecentMenu();
+            });
+
+        m_gui->menuOpenRecent->addAction(m_actionClearRecentFiles);
+
+        m_gui->menuOpenRecent->setEnabled(!recentFiles.isEmpty());
+        m_actionClearRecentFiles->setEnabled(!recentFiles.isEmpty());
     }
 
     LUAEditorMainWindow::~LUAEditorMainWindow(void)
@@ -851,6 +903,8 @@ namespace LUAEditor
         const AZStd::string assetId(result->GetFullPath().data());
         Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
         AzFramework::StringFunc::Path::Split(assetId.c_str(), nullptr, &m_lastOpenFilePath);
+        AddRecentFile(result->GetFullPath().c_str());
+        UpdateOpenRecentMenu();
     }
 
     void LUAEditorMainWindow::OnFileMenuNew()
