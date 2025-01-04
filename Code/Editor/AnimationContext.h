@@ -187,6 +187,7 @@ public:
     /** Notify after a sequence has been activated, useful for Undo/Redo
     */
     void OnSequenceActivated(AZ::EntityId entityId);
+    void OnSequenceDeactivated(AZ::EntityId entityId);
 
     /**
      * Returns true if Editor is in the Play Game mode.

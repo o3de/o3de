@@ -57,16 +57,21 @@ CAnimSequence::CAnimSequence(uint32 id, SequenceType sequenceType)
 
     m_pEventStrings = aznew CAnimStringTable;
     m_expanded = true;
+
+    AZ_Trace("CAnimSequence", "CAnimSequence type %i", static_cast<int>(sequenceType));
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimSequence::CAnimSequence()
     : CAnimSequence(0, SequenceType::SequenceComponent)
 {
+    AZ_Trace("CAnimSequence", "CAnimSequence no args");
 }
 
 CAnimSequence::~CAnimSequence()
 {
+    AZ_Trace("CAnimSequence", "~CAnimSequence");
+
     // clear reference to me from all my nodes
     for (int i = static_cast<int>(m_nodes.size()); --i >= 0;)
     {
@@ -205,6 +210,7 @@ bool CAnimSequence::AddNode(IAnimNode* animNode)
     if (!found)
     {
         m_nodes.push_back(AZStd::intrusive_ptr<IAnimNode>(animNode));
+        AZ_Trace("CAnimSequence::Animate", "Added %s to m_nodes", animNode->GetAzEntityId().ToString().c_str());
     }
 
     const int nodeId = animNode->GetId();
@@ -637,10 +643,92 @@ void CAnimSequence::StillUpdate()
     }
 }
 
+#if defined(AZ_ENABLE_TRACING)
+namespace
+{
+    AZStd::string GetAnimNodeTypeName(AnimNodeType animNodeType)
+    {
+        AZStd::string typeName;
+        switch (animNodeType)
+        {
+        case AnimNodeType::AzEntity:
+            typeName = "AzEntity";
+            break;
+        case AnimNodeType::Invalid:
+            typeName = "Invalid";
+            break;
+        case AnimNodeType::Entity:
+            typeName = "Entity";
+            break;
+        case AnimNodeType::Director:
+            typeName = "Director";
+            break;
+        case AnimNodeType::CVar:
+            typeName = "CVar";
+            break;
+        case AnimNodeType::ScriptVar:
+            typeName = "ScriptVar";
+            break;
+        case AnimNodeType::Material:
+            typeName = "Material";
+            break;
+        case AnimNodeType::Event:
+            typeName = "Event";
+            break;
+        case AnimNodeType::Group:
+            typeName = "Group";
+            break;
+        case AnimNodeType::Layer:
+            typeName = "Layer";
+            break;
+        case AnimNodeType::Comment:
+            typeName = "Comment";
+            break;
+        case AnimNodeType::RadialBlur:
+            typeName = "RadialBlur";
+            break;
+        case AnimNodeType::ColorCorrection:
+            typeName = "ColorCorrection";
+            break;
+        case AnimNodeType::DepthOfField:
+            typeName = "DepthOfField";
+            break;
+        case AnimNodeType::ScreenFader:
+            typeName = "ScreenFader";
+            break;
+        case AnimNodeType::Light:
+            typeName = "Light";
+            break;
+        case AnimNodeType::ShadowSetup:
+            typeName = "ShadowSetup";
+            break;
+        case AnimNodeType::Alembic:
+            typeName = "Alembic";
+            break;
+        case AnimNodeType::GeomCache:
+            typeName = "GeomCache";
+            break;
+        case AnimNodeType::ScreenDropsSetup:
+            typeName = "ScreenDropsSetup";
+            break;
+        case AnimNodeType::Component:
+            typeName = "Component";
+            break;
+        case AnimNodeType::Num:
+            typeName = "Num";
+            break;
+        default:
+            typeName = "Unknown";
+        }
+        return typeName;
+    }
+} // namespace
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 void CAnimSequence::Animate(const SAnimContext& ec)
 {
-    assert(m_bActive);
+    AZ_Assert(m_bActive, "AnimSequence must be active");
 
     if (GetFlags() & eSeqFlags_LightAnimationSet)
     {
@@ -657,6 +745,23 @@ void CAnimSequence::Animate(const SAnimContext& ec)
     {
         m_activeDirector->Animate(animContext);
     }
+
+#if defined(AZ_ENABLE_TRACING)
+    for (int i = 0; i < m_nodes.size(); ++i)
+    {
+        const IAnimNode* animNode = m_nodes[i].get();
+        const AnimNodeType animNodeType = animNode->GetType();
+        const AZStd::string animNodeTypeName = GetAnimNodeTypeName(animNodeType);
+        if (animNode->GetType() == AnimNodeType::AzEntity)
+        {
+            AZ_Trace("CAnimSequence::Animate", "AnimNode m_nodes[%i] type %s, id %s", i, animNodeTypeName.c_str(), animNode->GetAzEntityId().ToString().c_str());
+        }
+        else
+        {
+            AZ_Trace("CAnimSequence::Animate", "AnimNode m_nodes[%i] type %s", i, animNodeTypeName.c_str());
+        }
+    }
+#endif
 
     for (AnimNodes::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
     {
