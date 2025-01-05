@@ -1142,7 +1142,7 @@ namespace LUAEditor
         TrackedLUAViewMap::iterator viewIter = m_dOpenLUAView.find(assetId);
         if (viewIter != m_dOpenLUAView.end())
         {
-            delete viewIter->second.luaDockWidget();
+            viewIter->second.luaDockWidget()->deleteLater();
             m_dOpenLUAView.erase(viewIter);
             TrackedLUACtrlTabOrder::iterator tabIter = m_CtrlTabOrder.begin();
             while (tabIter != m_CtrlTabOrder.end())
