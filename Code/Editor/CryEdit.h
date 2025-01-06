@@ -355,8 +355,6 @@ private:
     void OnDisplayGotoPosition();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
-    void OnSwitchToDefaultCamera();
-    void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
     void OnUpdateSwitchToSequenceCamera(QAction* action);
     void OnSwitchToSelectedcamera();

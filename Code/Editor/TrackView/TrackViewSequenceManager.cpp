@@ -213,6 +213,15 @@ void CTrackViewSequenceManager::OnSequenceActivated(const AZ::EntityId& entityId
     }
 }
 
+void CTrackViewSequenceManager::OnSequenceDeactivated(const AZ::EntityId& entityId)
+{
+    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    if (pAnimationContext != nullptr)
+    {
+        pAnimationContext->OnSequenceDeactivated(entityId);
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence)
 {

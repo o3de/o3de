@@ -11,9 +11,6 @@
         "Gem"
     ],
     "gem_names": [
-        "AWSClientAuth",
-        "AWSCore",
-        "AWSMetrics",
         "Archive",
         "Atom",
         "AtomTressFX",
@@ -36,7 +33,6 @@
         "GradientSignal",
         "GraphCanvas",
         "GraphModel",
-        "HttpRequestor",
         "ImGui",
         "InAppPurchases",
         "LandscapeCanvas",
@@ -44,7 +40,6 @@
         "LyShine",
         "LyShineExamples",
         "Maestro",
-        "Metastream",
         "Multiplayer",
         "NvCloth",
         "PhysX",
