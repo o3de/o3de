@@ -349,7 +349,8 @@ namespace AZ
         }
 
         void SwapChain::SetHDRMetaData(float maxOutputNits, float minOutputNits, float maxContentLightLevel,
-            float maxFrameAverageLightLevel) {
+            float maxFrameAverageLightLevel)
+        {
             auto& device = static_cast<Device&>(GetDevice());
 
             //From DX12 RHI
