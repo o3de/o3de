@@ -335,7 +335,7 @@ namespace MiniAudio
         {
             if (GetConfiguration().m_sound.IsReady())
             {
-                m_soundName = GetConfiguration().m_sound.GetId().ToString<AZStd::string>();
+                m_soundName = GetConfiguration().m_sound.GetId().ToFixedString();
 
                 const auto& assetBuffer = GetConfiguration().m_sound->m_data;
                 if (assetBuffer.empty())

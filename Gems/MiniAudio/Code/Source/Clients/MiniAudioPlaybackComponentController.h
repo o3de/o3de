@@ -95,6 +95,6 @@ namespace MiniAudio
         void UnloadSound();
 
         AZStd::unique_ptr<ma_sound> m_sound;
-        AZStd::string m_soundName;
+        AZ::Data::AssetId::FixedString m_soundName;
     };
 } // namespace MiniAudio
