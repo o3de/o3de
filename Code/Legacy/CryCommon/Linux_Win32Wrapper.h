@@ -7,7 +7,10 @@
  */
 #pragma once
 
+#if defined(CARBONATED)
 #include <platform.h>
+#endif
+
 #include <CryAssert.h>
 #include <dirent.h>
 #include <vector>
