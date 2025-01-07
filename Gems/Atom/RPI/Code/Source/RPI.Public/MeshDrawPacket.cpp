@@ -412,14 +412,20 @@ namespace AZ
                 Data::Instance<ShaderResourceGroup> drawSrg = shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
                 if (drawSrg)
                 {
-                    // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
-
-                    AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
-                    auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
-
-                    if (index.IsValid())
                     {
-                        drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex(UvStreamTangentBitmask::SrgName);
+                        drawSrg->SetConstant(nameIndex, uvStreamTangentBitmask.GetFullTangentBitmask());
+                    }
+                    {
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex("m_materialTypeId");
+                        drawSrg->SetConstant(nameIndex, m_material->GetMaterialTypeId());
+                    }
+                    {
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex("m_materialInstanceId");
+                        drawSrg->SetConstant(nameIndex, m_material->GetMaterialInstanceId());
                     }
 
                     drawSrg->Compile();

@@ -19,8 +19,16 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<MaterialFunctorSourceData>();
+                serializeContext->Class<MaterialFunctorSourceData>()->Version(1)->Field(
+                    "shaderParameters", &MaterialFunctorSourceData::m_shaderParameters);
+                ;
             }
+        }
+
+        void MaterialFunctorSourceData::SetFunctorShaderParameter(
+            Ptr<MaterialFunctor> functor, const AZStd::vector<MaterialFunctorShaderParameter>& shaderParameters)
+        {
+            functor->m_functorShaderParameters = shaderParameters;
         }
 
         void MaterialFunctorSourceData::AddMaterialPropertyDependency(Ptr<MaterialFunctor> functor, MaterialPropertyIndex index) const
@@ -33,11 +41,6 @@ namespace AZ
             return m_materialPropertiesLayout;
         }
 
-        const RHI::ShaderResourceGroupLayout* MaterialFunctorSourceData::RuntimeContext::GetShaderResourceGroupLayout() const
-        {
-            return m_shaderResourceGroupLayout;
-        }
-
         MaterialPropertyIndex MaterialFunctorSourceData::RuntimeContext::FindMaterialPropertyIndex(Name propertyId) const
         {
             m_materialNameContext->ContextualizeProperty(propertyId);
@@ -46,18 +49,6 @@ namespace AZ
             AZ_Error("MaterialFunctorSourceData", propertyIndex.IsValid(), "Could not find property '%s'.", propertyId.GetCStr());
 
             return propertyIndex;
-        }
-
-        RHI::ShaderInputConstantIndex MaterialFunctorSourceData::RuntimeContext::FindShaderInputConstantIndex(Name inputName) const
-        {
-            m_materialNameContext->ContextualizeSrgInput(inputName);
-            return m_shaderResourceGroupLayout->FindShaderInputConstantIndex(inputName);
-        }
-
-        RHI::ShaderInputImageIndex MaterialFunctorSourceData::RuntimeContext::FindShaderInputImageIndex(Name inputName) const
-        {
-            m_materialNameContext->ContextualizeSrgInput(inputName);
-            return m_shaderResourceGroupLayout->FindShaderInputImageIndex(inputName);
         }
 
         const MaterialPropertiesLayout* MaterialFunctorSourceData::EditorContext::GetMaterialPropertiesLayout() const
@@ -73,6 +64,26 @@ namespace AZ
             AZ_Error("MaterialFunctorSourceData", propertyIndex.IsValid(), "Could not find property '%s'", propertyId.GetCStr());
 
             return propertyIndex;
+        }
+
+        const AZStd::vector<MaterialFunctorShaderParameter> MaterialFunctorSourceData::GetMaterialShaderParameters(
+            const MaterialNameContext* nameContext) const
+        {
+            AZStd::vector<MaterialFunctorShaderParameter> result{};
+            if (nameContext && nameContext->HasContextForSrgInputs())
+            {
+                for (const auto& param : m_shaderParameters)
+                {
+                    AZStd::string contextualizedName{ param.m_name };
+                    nameContext->ContextualizeSrgInput(contextualizedName);
+                    result.emplace_back(MaterialFunctorShaderParameter{ contextualizedName, param.m_typeName, param.m_typeSize });
+                }
+            }
+            else
+            {
+                result = m_shaderParameters;
+            }
+            return result;
         }
 
     } // namespace RPI

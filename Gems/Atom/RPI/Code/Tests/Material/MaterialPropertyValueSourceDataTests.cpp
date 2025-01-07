@@ -157,6 +157,8 @@ namespace UnitTest
 
                 functor->m_propertyValue = m_propertyValue.GetValue();
 
+                SetFunctorShaderParameter(functor, GetMaterialShaderParameters(context.GetNameContext()));
+
                 return Success(Ptr<MaterialFunctor>(functor));
             }
 
@@ -203,6 +205,8 @@ namespace UnitTest
             m_materialTypeCreator.BeginMaterialProperty(AZ::Name{ "general.Enum" }, MaterialPropertyDataType::Enum);
             m_materialTypeCreator.SetMaterialPropertyEnumNames(AZStd::vector<AZStd::string>({ "DummyEnum" }));
             m_materialTypeCreator.EndMaterialProperty();
+            m_materialTypeCreator.BeginMaterialProperty(AZ::Name{ "general.SamplerState" }, MaterialPropertyDataType::SamplerState);
+            m_materialTypeCreator.EndMaterialProperty();
         }
 
         void TearDown() override
@@ -218,19 +222,28 @@ namespace UnitTest
 
     TEST_F(MaterialPropertyValueSourceDataTests, MaterialFunctorTest)
     {
-        AZStd::unordered_map<MaterialPropertyDataType, const char *> typeValue =
-        {
-            {MaterialPropertyDataType::Bool,    "true"},
-            {MaterialPropertyDataType::Int,     "-42"},
-            {MaterialPropertyDataType::UInt,    "42"},
-            {MaterialPropertyDataType::Float,   "42.0"},
-            {MaterialPropertyDataType::Vector2, "[42.0, 42.0]"},
-            {MaterialPropertyDataType::Vector3, "[42.0, 42.0, 42.0]"},
-            {MaterialPropertyDataType::Vector4, "[42.0, 42.0, 42.0, 42.0]"},
-            {MaterialPropertyDataType::Color,   "[0.0, 0.0, 0.0, 1.0]"},
-            {MaterialPropertyDataType::Image,   "\"DummyImagePath.png\""},
-            {MaterialPropertyDataType::Enum,    "\"DummyEnum\""},
+        AZStd::unordered_map<MaterialPropertyDataType, const char*> typeValue = {
+            { MaterialPropertyDataType::Bool, "true" },
+            { MaterialPropertyDataType::Int, "-42" },
+            { MaterialPropertyDataType::UInt, "42" },
+            { MaterialPropertyDataType::Float, "42.0" },
+            { MaterialPropertyDataType::Vector2, "[42.0, 42.0]" },
+            { MaterialPropertyDataType::Vector3, "[42.0, 42.0, 42.0]" },
+            { MaterialPropertyDataType::Vector4, "[42.0, 42.0, 42.0, 42.0]" },
+            { MaterialPropertyDataType::Color, "[0.0, 0.0, 0.0, 1.0]" },
+            { MaterialPropertyDataType::Image, R"("DummyImagePath.png")" },
+            { MaterialPropertyDataType::Enum, R"("DummyEnum")" },
+            { MaterialPropertyDataType::SamplerState,
+              R"({
+                    "m_filterMin": "Linear",
+                    "m_filterMag": "Linear",
+                    "m_filterMip": "Linear",
+                    "m_addressU": "MirrorOnce",
+                    "m_addressV": "MirrorOnce",
+                    "m_addressW": "MirrorOnce"
+                })" }
         };
+
         AZStd::array<Ptr<MaterialFunctor>, static_cast<uint32_t>(MaterialPropertyDataType::Count)> valueFunctors;
         valueFunctors.fill(nullptr);
         char inputJson[2048];
@@ -262,14 +275,8 @@ namespace UnitTest
             MaterialNameContext nameContext;
 
             // Where type resolving happens.
-            MaterialFunctorSourceData::FunctorResult functorResult = functorData->CreateFunctor(
-                MaterialFunctorSourceData::RuntimeContext(
-                    "Dummy.materialtype",
-                    m_materialTypeCreator.GetMaterialPropertiesLayout(),
-                    m_materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                    &nameContext
-                )
-            );
+            MaterialFunctorSourceData::FunctorResult functorResult = functorData->CreateFunctor(MaterialFunctorSourceData::RuntimeContext(
+                "Dummy.materialtype", m_materialTypeCreator.GetMaterialPropertiesLayout(), &nameContext));
 
             valueFunctors[i] = functorResult.GetValue();
 
@@ -308,6 +315,10 @@ namespace UnitTest
 
         value = static_cast<ValueFunctor*>(valueFunctors[static_cast<uint32_t>(MaterialPropertyDataType::Enum)].get())->m_propertyValue;
         EXPECT_TRUE(value == AZStd::string("DummyEnum"));
+
+        value =
+            static_cast<ValueFunctor*>(valueFunctors[static_cast<uint32_t>(MaterialPropertyDataType::SamplerState)].get())->m_propertyValue;
+        EXPECT_TRUE(value == RHI::SamplerState::Create(RHI::FilterMode::Linear, RHI::FilterMode::Linear, RHI::AddressMode::MirrorOnce));
     }
 
     TEST_F(MaterialPropertyValueSourceDataTests, DataSimilarityTest)

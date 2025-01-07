@@ -55,15 +55,38 @@ namespace AZ
 
             Matrix3x3 transform = CreateUvTransformMatrix(desc, m_transformOrder);
 
-            context.GetShaderResourceGroup()->SetConstant(m_transformMatrix, transform);
-
-            // There are some cases where the matrix is required but the inverse is not, so the SRG only has the regular matrix.
-            // In that case, the.materialtype file will not provide the name of an inverse matrix because it doesn't have one.
-            if (m_transformMatrixInverse.IsValid())
+            context.GetMaterialShaderParameter()->SetParameter(m_transformMatrix, transform);
+            if (m_transformMatrixInverse.GetIndex().IsValid())
             {
-                context.GetShaderResourceGroup()->SetConstant(m_transformMatrixInverse, transform.GetInverseFull());
+                context.GetMaterialShaderParameter()->SetParameter(m_transformMatrixInverse, transform.GetInverseFull());
             }
         }
 
+        bool Transform2DFunctor::UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout)
+        {
+            bool valid = true;
+            if (m_transformMatrix.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "Transform2DFunctorSourceData", false, "Could not find shader parameter '%s'", m_transformMatrix.GetName().GetCStr());
+                valid &= false;
+            }
+
+            // There are some cases where the matrix is required but the inverse is not, and the shader parameters only have the regular
+            // matrix.
+            if (!m_transformMatrixInverse.GetName().IsEmpty())
+            {
+                if (m_transformMatrixInverse.ValidateOrFindIndex(layout) == false)
+                {
+                    AZ_Error(
+                        "Transform2DFunctorSourceData",
+                        false,
+                        "Could not find shader parameter '%s'",
+                        m_transformMatrixInverse.GetName().GetCStr());
+                    valid &= false;
+                }
+            }
+            return valid;
+        }
     } // namespace Render
 } // namespace AZ

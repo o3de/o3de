@@ -33,6 +33,12 @@ namespace AZ::RHI
     {
         m_imageViews.resize(layout->GetGroupSizeForImages());
         m_bufferViews.resize(layout->GetGroupSizeForBuffers());
+        auto groupSizeForSamplers = layout->GetGroupSizeForSamplers();
+        if (groupSizeForSamplers == AZStd::numeric_limits<uint32_t>::max())
+        {
+            AZ_Assert(false, "SRG %s: Unbound arrays for samplers are not supported", m_shaderResourceGroupLayout->GetUniqueId().c_str());
+            groupSizeForSamplers = 0;
+        }
         m_samplers.resize(layout->GetGroupSizeForSamplers());
     }
 

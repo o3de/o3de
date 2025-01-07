@@ -43,6 +43,7 @@ namespace MaterialCanvas
         void ClearFingerprintsForCurrentNode();
         void PreprocessTemplatesForCurrentNode();
         void BuildInstructionsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
+        //! @deprecated Material SRG members are created by the Material-Pipeline.
         void BuildMaterialSrgForCurrentNode();
         bool BuildMaterialTypeForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
         bool ExportTemplatesMatchingRegex(const AZStd::string& pattern);

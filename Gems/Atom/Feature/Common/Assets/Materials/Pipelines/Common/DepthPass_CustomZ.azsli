@@ -17,7 +17,7 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
-    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV, GetMaterialParameters());
     return OUT;
 }
 
@@ -28,10 +28,10 @@ struct PsOutput
 
 PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace, GetMaterialParameters());
 
     // Pixel clipping can be done here
-    EvaluateSurface(IN, geoData);
+    EvaluateSurface(IN, geoData, GetMaterialParameters());
 
     PsOutput OUT;
     OUT.m_depth = IN.position.z;
