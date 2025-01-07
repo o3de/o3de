@@ -419,13 +419,23 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::Connect(const AZStd::string& remoteAddress, uint16_t port, const AZStd::string& connectionTicket)
     {
+        const IpAddress address(remoteAddress.c_str(), port, m_networkInterface->GetType());
+
+        if (!address.IsValid())
+        {
+            AZLOG_ERROR(
+                "Failed to connect. Invalid IP-address (remote address='%s', port=%i). Please provide a valid DNS or IP address.",
+                remoteAddress.c_str(),
+                port);
+            return false;
+        }
+
         if (!connectionTicket.empty())
         {
             m_pendingConnectionTickets.push(connectionTicket);
         }
 
         InitializeMultiplayer(MultiplayerAgentType::Client);
-        const IpAddress address(remoteAddress.c_str(), port, m_networkInterface->GetType());
         return m_networkInterface->Connect(address, cl_clientport) != InvalidConnectionId;
     }
 
@@ -457,10 +467,8 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::RequestPlayerJoinSession(const SessionConnectionConfig& config)
     {
-        AZStd::string hostname = config.m_dnsName.empty() ? config.m_ipAddress : config.m_dnsName;
-        Connect(hostname.c_str(), config.m_port, config.m_playerSessionId);
-
-        return true;
+        const AZStd::string remoteAddress = config.m_dnsName.empty() ? config.m_ipAddress : config.m_dnsName;
+        return Connect(remoteAddress, config.m_port, config.m_playerSessionId);
     }
 
     void MultiplayerSystemComponent::RequestPlayerLeaveSession()
@@ -2014,3 +2022,4 @@ namespace Multiplayer
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
 } // namespace Multiplayer
+#pragma optimize("", on)
