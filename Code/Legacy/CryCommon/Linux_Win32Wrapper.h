@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <platform.h>
 #include <CryAssert.h>
 #include <dirent.h>
 #include <vector>
