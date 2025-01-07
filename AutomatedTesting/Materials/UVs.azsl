@@ -7,7 +7,7 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
