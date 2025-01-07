@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry  EvaluateVertexGeometry_StandardMultilayerPBR
+#endif
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
+    
+VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(
+    const MaterialParameters params,
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0,
+    float2 uv1,
+    float3 vertexBlendMask,
+    VsSystemValues SV)
+{
+    VsOutput output = EvaluateVertexGeometry_BasePBR(params, position, normal, tangent, uv0, uv1, SV, false, float4(1.0f, 1.0f, 1.0f, 1.0f));
+
+#if PIPELINE_VERTEX_BLENDMASK
+    if(o_blendMask_isBound)
+    {
+        output.blendFactors = float4(vertexBlendMask, 0);
+    }
+    else
+    {
+        output.blendFactors = float4(0,0,0,0);
+    }
+#endif // PIPELINE_VERTEX_BLENDMASK
+
+    return output;
+}
+
+VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+{
+    return EvaluateVertexGeometry_StandardMultilayerPBR(
+        params,
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.uv0,
+        IN.uv1,
+#if PIPELINE_VERTEX_BLENDMASK
+        IN.m_optional_blendMask.rgb,
+#else
+        float3(0, 0, 0),
+#endif
+        SV);
+}

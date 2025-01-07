@@ -8,7 +8,11 @@
 #pragma once
 
 #include <Atom/RPI.Public/Configuration.h>
+#include <Atom/RPI.Public/Material/MaterialInstanceHandler.h>
+#include <Atom/RPI.Public/Material/PersistentIndexAllocator.h>
+#include <Atom/RPI.Public/Material/TextureSamplerRegistry.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 
 namespace AZ
 {
@@ -16,15 +20,105 @@ namespace AZ
 
     namespace RPI
     {
+
+        class Material;
+
         //! Manages system-wide initialization and support for material classes
         class ATOM_RPI_PUBLIC_API MaterialSystem
+            : public MaterialInstanceHandlerInterface::Registrar
+            , public Data::AssetBus::Handler
         {
         public:
             static void Reflect(AZ::ReflectContext* context);
             static void GetAssetHandlers(AssetHandlerPtrList& assetHandlers);
 
+            MaterialSystem() = default;
+            MaterialSystem(const MaterialSystem& other) = delete;
+            MaterialSystem& operator=(const MaterialSystem& other) = delete;
+
+            // MaterialInstanceHandlerInterface
+            MaterialInstanceData RegisterMaterialInstance(const Data::Instance<Material> material) override;
+            void ReleaseMaterialInstance(const MaterialInstanceData& materialInstance) override;
+            int32_t RegisterMaterialTexture(
+                const int materialTypeIndex, const int materialInstanceIndex, Data::Instance<Image> image) override;
+            AZStd::shared_ptr<SharedSamplerState> RegisterTextureSampler(
+                const int materialTypeIndex, const int materialInstanceIndex, const RHI::SamplerState& samplerState) override;
+            const RHI::SamplerState GetRegisteredTextureSampler(
+                const int materialTypeIndex, const int materialInstanceIndex, const uint32_t samplerIndex) override;
+
+            void Compile() override;
+
+            void DebugPrintMaterialInstances();
+
             void Init();
             void Shutdown();
+
+        private:
+            bool LoadMaterialSrgShaderAsset();
+            void CreateSceneMaterialSrg();
+            void UpdateSceneMaterialSrg();
+            void PrepareMaterialParameterBuffers();
+            void UpdateChangedMaterialParameters();
+            void CreateTextureSamplers(const AZStd::vector<RHI::SamplerState>& samplers, Data::Instance<ShaderResourceGroup> srg);
+
+            //  Data::AssetBus Interface
+            void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+            void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+            using MaterialIndexAllocator = PersistentIndexAllocator<int32_t>;
+
+            struct InternalMaterialInstanceData
+            {
+                // either the sceneMaterialSRG, or a separate MaterialSrg for this Material-Instance only
+                Data::Instance<ShaderResourceGroup> m_shaderResourceGroup;
+
+                // #ifndef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
+                // this is only used if "Atom_RPI_Traits_Platform.h" defines this, but we don't want to make
+                // the structs in this header dependent on this, since the platform traits include isn't full public
+                AZStd::vector<Data::Instance<Image>> m_materialTextures;
+                AZStd::unordered_map<Data::AssetId, int32_t> m_materialTexturesMap;
+                bool m_materialTexturesDirty = false;
+                // #endif
+
+                // Texture samplers for this material instance. Used only if the material isn't using the SceneMaterialSrg
+                TextureSamplerRegistry m_textureSamplers;
+
+                Data::Instance<MaterialShaderParameter> m_shaderParameter;
+                Material* m_material{ nullptr }; // can't use a smart pointer here, since the material de-registers itself in the destructor
+                size_t m_compiledChangeId{ 0 };
+            };
+
+            struct MaterialTypeData
+            {
+                bool m_valid = false;
+                // Note: The material either uses the SceneMaterialSrg, which is shared between all materials, or it uses a separate SRG for
+                // each instance. We don't share anything only between instances of the same MaterialType.
+                bool m_useSceneMaterialSrg = false;
+                Data::AssetId m_materialTypeAssetId;
+                AZStd::string m_materialTypeAssetHint;
+                MaterialIndexAllocator m_instanceIndices;
+                Data::Instance<Buffer> m_parameterBuffer;
+                AZStd::unordered_map<int, uint32_t> m_bindlessReadIndices;
+
+                // we need our own 'raw' BufferView for the parameterBuffer so we can access it with the Bindless-SRG
+                Data::Instance<RHI::BufferView> m_parameterBufferView;
+                AZStd::unique_ptr<MaterialShaderParameterLayout> m_shaderParameterLayout;
+                AZStd::vector<InternalMaterialInstanceData> m_instanceData;
+            };
+
+            MaterialIndexAllocator m_materialTypeIndices;
+            AZStd::vector<MaterialTypeData> m_materialTypeData;
+            AZStd::unordered_map<Data::AssetId, int32_t> m_materialTypeIndicesMap;
+
+            RHI::ShaderInputNameIndex m_materialTypeBufferInputIndex = { "m_materialTypeBufferIndices" };
+            Data::Asset<ShaderAsset> m_sceneMaterialSrgShaderAsset;
+            Data::Instance<ShaderResourceGroup> m_sceneMaterialSrg;
+
+            // Texture samplers shared between all materials that use the SceneMaterialSrg
+            TextureSamplerRegistry m_sceneTextureSamplers;
+
+            Data::Instance<Buffer> m_materialTypeBufferIndicesBuffer;
+            bool m_bufferReadIndicesDirty = false;
         };
 
     } // namespace RPI

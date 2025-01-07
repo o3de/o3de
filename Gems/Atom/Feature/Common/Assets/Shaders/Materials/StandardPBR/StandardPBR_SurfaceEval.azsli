@@ -20,6 +20,7 @@
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 Surface EvaluateSurface_StandardPBR(
+    const MaterialParameters params,
     float3 positionWS,
     real3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -31,7 +32,7 @@ Surface EvaluateSurface_StandardPBR(
     bool customDerivatives,
     float4 vertexColor)
 {
-    Surface surface = EvaluateSurface_BasePBR(positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace, uvDxDy, customDerivatives, vertexColor);
+    Surface surface = EvaluateSurface_BasePBR(params, positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace, uvDxDy, customDerivatives, vertexColor);
 
     // ------- Parallax Clipping -------
 
@@ -43,17 +44,17 @@ Surface EvaluateSurface_StandardPBR(
     // ------- Alpha & Clip -------
 
     // TODO: this often invokes a separate sample of the base color texture which is wasteful
-    surface.alpha = GetAlphaAndClip(uvs, uvDxDy, customDerivatives);
+    surface.alpha = GetAlphaAndClip(params, uvs, uvDxDy, customDerivatives);
 
     // ------- Emissive -------
 
-    float2 emissiveUv = uvs[MaterialSrg::m_emissiveMapUvIndex];
-    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, real(MaterialSrg::m_emissiveIntensity), real3(MaterialSrg::m_emissiveColor.rgb), real(MaterialSrg::m_emissiveAffectedByAlpha), real(surface.alpha), o_emissiveEnabled, o_emissive_useTexture, uvDxDy, customDerivatives);
+    float2 emissiveUv = uvs[params.m_emissiveMapUvIndex];
+    surface.emissiveLighting = GetEmissiveInput(GetMaterialTexture(params.m_emissiveMap), GetMaterialTextureSampler(), emissiveUv, real(params.m_emissiveIntensity), real3(params.m_emissiveColor.rgb), real(params.m_emissiveAffectedByAlpha), real(surface.alpha), o_emissiveEnabled, o_emissive_useTexture, uvDxDy, customDerivatives);
 
     // ------- Occlusion -------
     
-    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture, uvDxDy, customDerivatives);
-    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture, uvDxDy, customDerivatives);
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(GetMaterialTexture(params.m_diffuseOcclusionMap), GetMaterialTextureSampler(), uvs[params.m_diffuseOcclusionMapUvIndex], real(params.m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture, uvDxDy, customDerivatives);
+    surface.specularOcclusion = GetOcclusionInput(GetMaterialTexture(params.m_specularOcclusionMap), GetMaterialTextureSampler(), uvs[params.m_specularOcclusionMapUvIndex], real(params.m_specularOcclusionFactor), o_specularOcclusion_useTexture, uvDxDy, customDerivatives);
 
     // ------- Clearcoat -------
 
@@ -63,12 +64,12 @@ Surface EvaluateSurface_StandardPBR(
     {
         if(o_clearCoat_enabled)
         {
-            real3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real();
-            GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex], real(MaterialSrg::m_clearCoatFactor), o_clearCoat_factor_useTexture,
-                               MaterialSrg::m_clearCoatRoughnessMap, uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex], real(MaterialSrg::m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
-                               MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, real(MaterialSrg::m_clearCoatNormalStrength),
-                               uvMatrix, tangents[MaterialSrg::m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_clearCoatNormalMapUvIndex],
-                               MaterialSrg::m_sampler, isFrontFace,
+            real3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real();
+            GetClearCoatInputs(GetMaterialTexture(params.m_clearCoatInfluenceMap), uvs[params.m_clearCoatInfluenceMapUvIndex], real(params.m_clearCoatFactor), o_clearCoat_factor_useTexture,
+                               GetMaterialTexture(params.m_clearCoatRoughnessMap), uvs[params.m_clearCoatRoughnessMapUvIndex], real(params.m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
+                               GetMaterialTexture(params.m_clearCoatNormalMap),    uvs[params.m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, real(params.m_clearCoatNormalStrength),
+                               uvMatrix, tangents[params.m_clearCoatNormalMapUvIndex], bitangents[params.m_clearCoatNormalMapUvIndex],
+                               GetMaterialTextureSampler(), isFrontFace,
                                surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal, uvDxDy, customDerivatives);
         }
 
@@ -77,7 +78,7 @@ Surface EvaluateSurface_StandardPBR(
 #endif
     
     // ------- Opacity -------
-    surface.opacityAffectsSpecularFactor = real(MaterialSrg::m_opacityAffectsSpecularFactor);
+    surface.opacityAffectsSpecularFactor = real(params.m_opacityAffectsSpecularFactor);
 
     return surface;
 }
@@ -85,6 +86,7 @@ Surface EvaluateSurface_StandardPBR(
 // helper function to keep compatible with the previous version
 // because dxc compiler doesn't allow default parameters on functions with overloads
 Surface EvaluateSurface_StandardPBR(
+    const MaterialParameters params,
     float3 positionWS,
     real3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -96,6 +98,7 @@ Surface EvaluateSurface_StandardPBR(
     bool customDerivatives)
 {
     return EvaluateSurface_StandardPBR(
+        params,
         positionWS,
         vertexNormal,
         tangents,
@@ -109,6 +112,7 @@ Surface EvaluateSurface_StandardPBR(
 }
 
 Surface EvaluateSurface_StandardPBR(
+    const MaterialParameters params,
     float3 positionWS,
     real3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -118,6 +122,7 @@ Surface EvaluateSurface_StandardPBR(
     bool isDisplacementClipped)
 {
     return EvaluateSurface_StandardPBR(
+        params,
         positionWS,
         vertexNormal,
         tangents,
@@ -129,9 +134,10 @@ Surface EvaluateSurface_StandardPBR(
         false);
 }
 
-Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_StandardPBR(
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,
@@ -144,9 +150,10 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, floa
         GetVertexColor(IN));
 }
 
-Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
+Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_StandardPBR(
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,

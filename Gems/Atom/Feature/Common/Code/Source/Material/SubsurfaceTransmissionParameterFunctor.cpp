@@ -83,9 +83,44 @@ namespace AZ
             transmissionTintThickness.Set(tintColor.GetAsVector3());
             transmissionTintThickness.SetW(thickness);
 
-            context.GetShaderResourceGroup()->SetConstant(m_scatterDistance, scatterDistance);
-            context.GetShaderResourceGroup()->SetConstant(m_transmissionParams, transmissionParams);
-            context.GetShaderResourceGroup()->SetConstant(m_transmissionTintThickness, transmissionTintThickness);
+            context.GetMaterialShaderParameter()->SetParameter(m_scatterDistance, scatterDistance);
+            context.GetMaterialShaderParameter()->SetParameter(m_transmissionParams, transmissionParams);
+            context.GetMaterialShaderParameter()->SetParameter(m_transmissionTintThickness, transmissionTintThickness);
+        }
+
+        bool SubsurfaceTransmissionParameterFunctor::UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout)
+        {
+            bool valid = true;
+            if (m_scatterDistance.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "SubsurfaceTransmissionParameterFunctorSourceData",
+                    false,
+                    "Could not find shader parameter '%s'",
+                    m_scatterDistance.GetName().GetCStr());
+                valid &= false;
+            }
+
+            if (m_transmissionParams.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "SubsurfaceTransmissionParameterFunctorSourceData",
+                    false,
+                    "Could not find shader parameter '%s'",
+                    m_transmissionParams.GetName().GetCStr());
+                valid &= false;
+            }
+
+            if (m_transmissionTintThickness.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "SubsurfaceTransmissionParameterFunctorSourceData",
+                    false,
+                    "Could not find shader parameter '%s'",
+                    m_transmissionTintThickness.GetName().GetCStr());
+                valid &= false;
+            }
+            return valid;
         }
 
     } // namespace Render

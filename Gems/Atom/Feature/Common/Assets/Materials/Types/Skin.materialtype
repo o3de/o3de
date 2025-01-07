@@ -163,6 +163,7 @@
         ]
     },
     "lightingModel": "Skin",
+    "materialShaderDefines": "Skin_Defines.azsli",
     "materialShaderCode": "Skin.azsli",
     "functors": [
         {

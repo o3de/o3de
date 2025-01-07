@@ -17,6 +17,11 @@
 //size for unbounded arrays
 #define UNBOUNDED_SIZE 100000
 
+// use the Single Material SRG with maximum 32 textures per material
+// note: This assumes AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL is defined via Atom_RPI_Traits_Platform.h
+#define AZ_TRAIT_FORCE_SINGLE_MATERIAL_SRG
+#define AZ_TRAIT_MAX_TEXTURES_PER_MATERIAL 32
+
 static const float4 s_AzslDebugColor = float4(85.0 / 255.0, 85.0 / 255.0, 85.0 / 255.0, 1);
 
 
