@@ -714,7 +714,7 @@ class AndroidSDKManager(object):
                                 capture_output=True,
                                 encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
-                                timeout=5)
+                                timeout=60) # CARBONATED - bump to 60 to allow plenty of time to check licenses
         license_not_accepted_match = AndroidSDKManager.LICENSE_NOT_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_not_accepted_match:
             raise AndroidToolError(f"{license_not_accepted_match.group(1)}\n"
@@ -986,8 +986,24 @@ dependencies {{
 {dependencies}
     api 'androidx.core:core:1.1.0'
     implementation 'com.android.billingclient:billing:6.1.0'
+    {additional_dependencies}  
 }}
+
+{plugins}
 """
+
+# CARBONATED -- begin : additional libs for messaging
+ADDITIONAL_DEPENDENCIES = """
+    implementation 'com.google.firebase:firebase-core:21.1.1'
+    implementation 'com.google.firebase:firebase-messaging:24.0.3'
+    implementation 'com.google.android.gms:play-services-games:23.2.0'
+    implementation 'com.google.android.gms:play-services-auth:21.2.0'  
+"""
+
+ADDITIONAL_PLUGINS = """
+    apply plugin: 'com.google.gms.google-services'
+"""
+# CARBONATED -- end
 
 NATIVE_CMAKE_SECTION_ANDROID_FORMAT = """
     externalNativeBuild {{
@@ -1397,8 +1413,19 @@ class AndroidProjectGenerator(object):
 
         project_names = self.patch_and_transfer_android_libs()
 
-        project_names.extend(self.create_lumberyard_app(project_names))
+# CARBONATED -- begin : Carbonated game only specific - prepare to add Android project for PlayerEngagement gem into dependency lists
+        playerengagement_dir = self._build_dir / "playerengagement"
+        app_dir = self._build_dir / "app"
+        (playerengagement_dir / "src/main").mkdir(parents=True, exist_ok=True)
+        app_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy(self._project_path / "Gems/PlayerEngagement/Projects/Android/build.gradle", playerengagement_dir)
+        shutil.copy(self._project_path / "Gems/PlayerEngagement/Projects/Android/google-services.json", app_dir)
+        shutil.copytree(self._project_path / "Gems/PlayerEngagement/Resources/Android", playerengagement_dir / "src/main", dirs_exist_ok=True)       
+        project_names.append("playerengagement")        
+# CARBONATED -- end
 
+        project_names.extend(self.create_lumberyard_app(project_names))
+        
 # CARBONATED -- begin : generate/append asset pack project to the project list 
         if self._aab_enable_asset_pack:
             self.generate_aab_asset_pack_project()            
@@ -1411,7 +1438,8 @@ class AndroidProjectGenerator(object):
             'MIN_SDK_VER': self._android_platform_sdk_api_level,
             'NDK_VERSION': self._android_ndk.version,
             'SDK_BUILD_TOOL_VER': self._android_sdk_build_tool_version,
-            'LY_ENGINE_ROOT': self._engine_root.as_posix()
+            'LY_ENGINE_ROOT': self._engine_root.as_posix(),
+            'ROOT_DEPENDENCIES': "classpath 'com.google.gms:google-services:4.4.2'" # CARBONATED -- root dependencies
         }
         # Generate the gradle build script
         self.create_file_from_project_template(src_template_file='root.build.gradle.in',
@@ -1700,7 +1728,7 @@ class AndroidProjectGenerator(object):
         absolute_azandroid_path = (self._engine_root / 'Code/Framework/AzAndroid/java').resolve().as_posix()
 
         gradle_build_env['TARGET_TYPE'] = 'application'
-        gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies))
+        gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies), additional_dependencies=ADDITIONAL_DEPENDENCIES, plugins=ADDITIONAL_PLUGINS) # CARBONATED: added implementations/plugins
         gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self._cmake_version), native_build_path=native_build_path, absolute_cmakelist_path=absolute_cmakelist_path)
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
 
