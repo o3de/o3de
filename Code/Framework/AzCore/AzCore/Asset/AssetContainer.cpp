@@ -249,10 +249,12 @@ namespace AZ::Data
                 if (!assetInfo.m_assetId.IsValid())
                 {
                     // Handlers may just not currently be around for a given asset type so we only warn here
+#if !defined(CARBONATED)
                     AZ_Warning("AssetContainer", false, "Asset %s (%s) references/depends on asset %s which does not exist in the catalog and cannot be loaded.",
                         rootAsset.GetHint().c_str(),
                         rootAssetId.ToString<AZStd::string>().c_str(),
                         thisAsset.m_assetId.ToString<AZStd::string>().c_str());
+#endif
                     m_invalidDependencies++;
                     continue;
                 }

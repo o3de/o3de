@@ -543,12 +543,6 @@ namespace EMotionFX
                 AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
 #endif
             }
-#if defined (CARBONATED)
-            else
-            {
-                AZ_Printf("EMotionFX", "Loaded motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
-            }
-#endif
 
             entry->SetMotion(motion);
         }
