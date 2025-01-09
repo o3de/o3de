@@ -312,6 +312,9 @@ namespace AZStd
             return emplace(pos, AZStd::move(value));
         }
 
+        // Prevent accidental non-iterator values to the 'pos' argument which can lead to unexpected results or crashes
+        inline iterator insert(AZStd::nullptr_t, const_reference value) = delete;
+
         template<class ... Args>
         inline iterator emplace(const_iterator pos, Args&& ... args)
         {
