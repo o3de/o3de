@@ -7,10 +7,6 @@
  */
 #pragma once
 
-#if defined(CARBONATED)
-#include <platform.h>
-#endif
-
 #include <CryAssert.h>
 #include <dirent.h>
 #include <vector>
@@ -18,6 +14,8 @@
 
 // carbonated begin (alukyanov)
 #if defined(CARBONATED)
+#include <platform.h>
+
 #if defined(LINUX64) && !defined(ANDROID) && !defined(APPLE)
 #include <Linux64Specific.h>
 #endif
