@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawListContext.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/SceneBus.h>
 
 #include <Atom/RPI.Reflect/FeatureProcessorDescriptor.h>
@@ -42,9 +43,11 @@ namespace AZ
         //! 
         //!         It is recommended that each feature processor maintain a data buffer that is buffered N times for the data that is
         //!         expected to be delivered via an Ebus.
-        class FeatureProcessor
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API FeatureProcessor
             : public SceneNotificationBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class Scene;
 
         public:

@@ -8,10 +8,6 @@
 
 #pragma once
 
-#ifndef ENABLE_SPECULARAA
-#define ENABLE_SPECULARAA 1
-#endif
-
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/PBR/SpecularAA.azsli>
 
@@ -19,9 +15,9 @@
 // However the specular F0 for dialectrics is much lower than metals, so we expose this scaling factor here
 static const real3 MaxDielectricSpecularF0 = 0.08;
 
-// Make sure roughnessA is above 0 to avoid precision and divide by zero issues.
-// 0.0005f is sufficient for directional lights since they tend to be quite bright.
-static const real MinRoughnessA = 0.0005;
+// Make sure roughness is above 0 to avoid precision and divide by zero issues.
+// Picked 0.024 because anything lower makes no perceivable difference in the material editor.
+static const real MinRoughnessLinear = 0.024;
 
 
 // The roughness value in microfacet calculations (called "alpha" in the literature) does not give perceptually
@@ -31,7 +27,8 @@ static const real MinRoughnessA = 0.0005;
 // See Burley's Disney PBR: https://pdfs.semanticscholar.org/eeee/3b125c09044d3e2f58ed0e4b1b66a677886d.pdf
 void CalculateRoughnessValues(float3 normal, inout float roughnessLinear, out float roughnessA, out float roughnessA2)
 {
-    roughnessA = max( Pow2(roughnessLinear), MinRoughnessA);
+    roughnessLinear = max(roughnessLinear, MinRoughnessLinear);
+    roughnessA = Pow2(roughnessLinear);
     roughnessA2 = Pow2(roughnessA);
 
 #if ENABLE_SPECULARAA

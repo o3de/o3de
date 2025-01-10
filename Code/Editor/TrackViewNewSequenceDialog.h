@@ -6,20 +6,23 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEWNEWSEQUENCEDIALOG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEWNEWSEQUENCEDIALOG_H
 #pragma once
 
+// Qt
 #if !defined(Q_MOC_RUN)
 #include <QScopedPointer>
 #include <QDialog>
 #endif
 
+// CryCommon
+#include <CryCommon/Maestro/Types/SequenceType.h>
+
 namespace Ui {
     class CTVNewSequenceDialog;
+    class CTVNewSequenceDialogValidator;
 }
 
+class QValidator;
 
 class CTVNewSequenceDialog
     : public QDialog
@@ -29,10 +32,12 @@ public:
     CTVNewSequenceDialog(QWidget* pParent = 0);
     virtual ~CTVNewSequenceDialog();
 
-    const QString& GetSequenceName() const { return m_sequenceName; };
-    SequenceType   GetSequenceType() const { return m_sequenceType; };
+    const QString& GetSequenceName() const { return m_sequenceName; }
+    SequenceType   GetSequenceType() const { return m_sequenceType; }
 
     void showEvent(QShowEvent* event) override;
+
+    friend class CTVNewSequenceDialogValidator;
 
 protected:
     virtual void OnOK();
@@ -43,6 +48,5 @@ private:
     SequenceType   m_sequenceType;
     QScopedPointer<Ui::CTVNewSequenceDialog> ui;
     bool           m_inputFocusSet;
+    QValidator*    m_validator;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEWNEWSEQUENCEDIALOG_H

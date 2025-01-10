@@ -93,6 +93,7 @@ namespace AZ::RHI
             descriptor.Instance()
                 ->InstanceID(instance.m_instanceID)
                 ->HitGroupIndex(instance.m_hitGroupIndex)
+                ->InstanceMask(instance.m_instanceMask)
                 ->Transform(instance.m_transform)
                 ->NonUniformScale(instance.m_nonUniformScale)
                 ->Transparent(instance.m_transparent)

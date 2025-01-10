@@ -18,7 +18,12 @@ try:
     import azlmbr.atomtools.general as general  # Standard MaterialEditor or similar executable test.
 except ModuleNotFoundError:  # azlmbr.atomtools is not yet available in the Editor
     import azlmbr.legacy.general as general  # Will be updated in https://github.com/o3de/o3de/issues/11056
-import azlmbr.multiplayer as multiplayer
+
+try:
+    import azlmbr.multiplayer as multiplayer
+except ModuleNotFoundError: # Not all projects enable the Multiplayer Gem.
+    pass
+
 import azlmbr.debug
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.process_utils as process_utils

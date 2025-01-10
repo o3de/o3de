@@ -196,6 +196,7 @@ set(FILES
     Source/RHI/DeviceResourcePool.cpp
     Source/RHI/ResourcePool.cpp
     Source/RHI/ResourcePoolDatabase.cpp
+    Include/Atom/RHI/RHIBus.h
     Include/Atom/RHI/MemoryAllocation.h
     Include/Atom/RHI/MemorySubAllocator.h
     Include/Atom/RHI/MemoryLinearSubAllocator.h

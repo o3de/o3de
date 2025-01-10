@@ -91,5 +91,10 @@ namespace AZ
         {
             return m_fenceImpl->GetFenceStateInternal();
         }
+
+        void Fence::SetExternallySignalled()
+        {
+            m_fenceImpl->SignalEvent();
+        }
     } // namespace Vulkan
 } // namespace AZ

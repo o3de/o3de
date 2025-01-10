@@ -57,6 +57,7 @@ namespace AzNetworking
         virtual bool DestroyNetworkInterface(const AZ::Name& name) = 0;
 
         //! Registers a Compressor Factory that can be used to create compressors for INetworkInterfaces
+        //! Upon registry, INetworking assumes ownership of the factory pointer.
         //! @param factory The ICompressorFactory to register
         virtual void RegisterCompressorFactory(ICompressorFactory* factory) = 0;
 

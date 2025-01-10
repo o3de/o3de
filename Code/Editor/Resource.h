@@ -173,6 +173,7 @@
 #define ID_SWITCHCAMERA_SEQUENCECAMERA             33701
 #define ID_SWITCHCAMERA_SELECTEDCAMERA             33702
 #define ID_TV_RECORD_AUTO                          33703
+#define ID_TV_STOP_HARD_RESET                      33704
 #define ID_VIEW_OPENVIEWPANE                       33709
 #define ID_VIEW_OPENPANE_FIRST          33712
 #define ID_VIEW_OPENPANE_LAST           33811

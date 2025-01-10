@@ -446,6 +446,16 @@ namespace AZ
                         CreateDefaultRenderPipeline();
                     }
                 }
+                else
+                {
+                    AZ::ApplicationTypeQuery appType;
+                    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                    // Run BRDF pipeline for the app in console mode, to use it in render-to-texture pipelines.
+                    if (appType.IsConsoleMode())
+                    {
+                        RunBRDFPipeline(m_defaultScene, nullptr);
+                    }
+                }
             }
 
             void BootstrapSystemComponent::OnWindowCreated(AzFramework::NativeWindowHandle windowHandle)
@@ -607,40 +617,9 @@ namespace AZ
                     {
                         renderPipeline->SetActiveAAMethod(antiAliasing.c_str());
                     }
-
-                    // As part of our initialization we need to create the BRDF texture generation pipeline
-
-                    // Save a reference to the generated BRDF texture so it doesn't get deleted if all the passes refering to it get deleted
-                    // and it's ref count goes to zero
-                    if (!m_brdfTexture)
-                    {
-                        const AZStd::shared_ptr<const RPI::PassTemplate> brdfTextureTemplate =
-                            RPI::PassSystemInterface::Get()->GetPassTemplate(Name("BRDFTextureTemplate"));
-                        Data::Asset<RPI::AttachmentImageAsset> brdfImageAsset = RPI::AssetUtils::LoadAssetById<RPI::AttachmentImageAsset>(
-                            brdfTextureTemplate->m_imageAttachments[0].m_assetRef.m_assetId, RPI::AssetUtils::TraceLevel::Error);
-                        if (brdfImageAsset.IsReady())
-                        {
-                            m_brdfTexture = RPI::AttachmentImage::FindOrCreate(brdfImageAsset);
-                        }
-                    }
-
-                    AZ::RPI::RenderPipelineDescriptor pipelineDesc;
-                    pipelineDesc.m_mainViewTagName = "MainCamera";
-                    pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
-                    pipelineDesc.m_executeOnce = true;
-
-                    for (int deviceIndex{ 0 }; deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
-                    {
-                        pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%d_%d", viewportContext->GetId(), deviceIndex);
-
-                        if (!scene->GetRenderPipeline(AZ::Name(pipelineDesc.m_name)))
-                        {
-                            RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
-                            brdfTexturePipeline->GetRootPass()->SetDeviceIndex(deviceIndex);
-                            scene->AddRenderPipeline(brdfTexturePipeline);
-                        }
-                    }
                 }
+
+                RunBRDFPipeline(scene, viewportContext);
 
                 // Load XR pipelines if applicable
                 if (xrSystem)
@@ -685,6 +664,43 @@ namespace AZ
                 }
 
                 return true;
+            }
+
+            void BootstrapSystemComponent::RunBRDFPipeline(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext)
+            {
+                // As part of our initialization we need to create the BRDF texture generation pipeline
+
+                // Save a reference to the generated BRDF texture so it doesn't get deleted if all the passes refering to it get deleted
+                // and it's ref count goes to zero
+                if (!m_brdfTexture)
+                {
+
+                    const AZStd::shared_ptr<const RPI::PassTemplate> brdfTextureTemplate =
+                        RPI::PassSystemInterface::Get()->GetPassTemplate(Name("BRDFTextureTemplate"));
+                    Data::Asset<RPI::AttachmentImageAsset> brdfImageAsset = RPI::AssetUtils::LoadAssetById<RPI::AttachmentImageAsset>(
+                        brdfTextureTemplate->m_imageAttachments[0].m_assetRef.m_assetId, RPI::AssetUtils::TraceLevel::Error);
+                    if (brdfImageAsset.IsReady())
+                    {
+                        m_brdfTexture = RPI::AttachmentImage::FindOrCreate(brdfImageAsset);
+                    }
+                }
+
+                AZ::RPI::RenderPipelineDescriptor pipelineDesc;
+                pipelineDesc.m_mainViewTagName = "MainCamera";
+                pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
+                pipelineDesc.m_executeOnce = true;
+                const AzFramework::ViewportId viewportId = viewportContext ? viewportContext->GetId() : AzFramework::InvalidViewportId;
+                for (int deviceIndex{ 0 }; deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
+                {
+                    pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%d_%d", viewportId, deviceIndex);
+
+                    if (!scene->GetRenderPipeline(AZ::Name(pipelineDesc.m_name)))
+                    {
+                        RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+                        brdfTexturePipeline->GetRootPass()->SetDeviceIndex(deviceIndex);
+                        scene->AddRenderPipeline(brdfTexturePipeline);
+                    }
+                }
             }
 
             void BootstrapSystemComponent::SwitchRenderPipeline(const AZ::RPI::RenderPipelineDescriptor& newRenderPipelineDesc, AZ::RPI::ViewportContextPtr viewportContext)

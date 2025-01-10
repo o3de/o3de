@@ -6,7 +6,7 @@
  *
  */
 
-#include <scenesrg.srgi>
+#include <scenesrg_all.srgi>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 
 #define TILE_DIM_X 16

@@ -9,6 +9,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RHI/DrawList.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <AtomCore/std/containers/vector_set.h>
@@ -27,7 +28,7 @@ namespace AZ
         //! Each shader item may be reconfigured at runtime, but items cannot be added
         //! or removed (this restriction helps simplify overall material system code,
         //! especially around material functors).
-        class ShaderCollection
+        class ATOM_RPI_REFLECT_API ShaderCollection
         {
             friend class MaterialTypeAssetCreator;
         public:
@@ -36,7 +37,7 @@ namespace AZ
 
             //! Contains shader asset and configures how that shader should be used
             //! at runtime, especially which variant of the shader to use.
-            class Item
+            class ATOM_RPI_REFLECT_API Item
             {
                 friend class MaterialTypeAssetCreator;
                 friend class ShaderVariantReferenceSerializationEvents;

@@ -1,0 +1,16 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// Please review README.md to understand how this file is used in SceneSrg.azsrg generation 
+
+#ifdef AZ_COLLECTING_PARTIAL_SRG_INCLUDES
+#include <Atom/Features/Decals/DecalStructures.azsli>
+#include <Atom/Features/PBR/Lights/LightStructures.azsli>
+#endif

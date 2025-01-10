@@ -433,15 +433,15 @@ namespace AZ
         }
 
         // explicit template instantiation
-        template const bool&     MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<bool>     (const Name& propertyId) const;
-        template const int32_t&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<int32_t>  (const Name& propertyId) const;
-        template const uint32_t& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<uint32_t> (const Name& propertyId) const;
-        template const float&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<float>    (const Name& propertyId) const;
-        template const Vector2&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector2>  (const Name& propertyId) const;
-        template const Vector3&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector3>  (const Name& propertyId) const;
-        template const Vector4&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector4>  (const Name& propertyId) const;
-        template const Color&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Color>    (const Name& propertyId) const;
-        template const Data::Instance<Image>& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Data::Instance<Image>>(const Name& propertyId) const;
+        template AZ_DLL_EXPORT const bool&     MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<bool>     (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const int32_t&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<int32_t>  (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const uint32_t& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<uint32_t> (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const float&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<float>    (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Vector2&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector2>  (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Vector3&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector3>  (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Vector4&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector4>  (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Color&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Color>    (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Data::Instance<Image>& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Data::Instance<Image>>(const Name& propertyId) const;
 
         template<typename Type>
         const Type& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue(const Name& propertyId) const
@@ -450,15 +450,15 @@ namespace AZ
         }
 
         // explicit template instantiation
-        template const bool&     MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<bool>     (const MaterialPropertyIndex& index) const;
-        template const int32_t&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<int32_t>  (const MaterialPropertyIndex& index) const;
-        template const uint32_t& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<uint32_t> (const MaterialPropertyIndex& index) const;
-        template const float&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<float>    (const MaterialPropertyIndex& index) const;
-        template const Vector2&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector2>  (const MaterialPropertyIndex& index) const;
-        template const Vector3&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector3>  (const MaterialPropertyIndex& index) const;
-        template const Vector4&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector4>  (const MaterialPropertyIndex& index) const;
-        template const Color&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Color>    (const MaterialPropertyIndex& index) const;
-        template const Data::Instance<Image>& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Data::Instance<Image>> (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const bool&     MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<bool>     (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const int32_t&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<int32_t>  (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const uint32_t& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<uint32_t> (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const float&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<float>    (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Vector2&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector2>  (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Vector3&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector3>  (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Vector4&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector4>  (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Color&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Color>    (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Data::Instance<Image>& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Data::Instance<Image>> (const MaterialPropertyIndex& index) const;
 
         void CheckPropertyAccess([[maybe_unused]] const MaterialPropertyIndex& index, [[maybe_unused]] const MaterialPropertyFlags& materialPropertyDependencies, [[maybe_unused]] const MaterialPropertiesLayout& materialPropertiesLayout)
         {

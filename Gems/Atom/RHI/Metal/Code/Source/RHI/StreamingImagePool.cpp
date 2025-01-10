@@ -62,7 +62,7 @@ namespace AZ
 
             // Queue upload tail mip slices
              RHI::DeviceStreamingImageExpandRequest uploadMipRequest;
-             uploadMipRequest.m_image = &image;
+             uploadMipRequest.m_image = request.m_image;
              uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
              uploadMipRequest.m_waitForUpload = true;
              GetDevice().GetAsyncUploadQueue().QueueUpload(uploadMipRequest, request.m_descriptor.m_mipLevels);

@@ -84,7 +84,7 @@ real3 DiffuseTitanfall(real roughnessA, real3 albedo, real3 normal, real3 dirToL
 //!
 //! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
 //! @param specularF0   the fresnel f0 spectral value of the surface
-real3 SpecularGGX( real3 dirToCamera, real3 dirToLight, real3 normal, real3 specularF0, real NdotV, real roughnessA2, real3 multiScatterCompensation )
+real3 SpecularGGX( real3 dirToCamera, real3 dirToLight, real3 normal, real3 specularF0, real NdotV, float roughnessA2, real3 multiScatterCompensation )
 {
     real3 halfVector = normalize(dirToLight + dirToCamera);
     real NdotH = saturate(dot(normal, halfVector));
@@ -93,8 +93,8 @@ real3 SpecularGGX( real3 dirToCamera, real3 dirToLight, real3 normal, real3 spec
 
     // D, G and F from the lighting equation
     // Note: the division by (4.0 * NdotL * NdotV) is already factored out in the G function as an optimization
-    real D = NormalDistributionGGX(NdotH, roughnessA2);
-    real G = GeometricShadowingMaskingGGXCorrelated(NdotV, NdotL, roughnessA2);
+    float D = NormalDistributionGGX(NdotH, roughnessA2);
+    float G = GeometricShadowingMaskingGGXCorrelated(NdotV, NdotL, roughnessA2);
     real3 F = FresnelSchlick(HdotV, specularF0);
 
     D = max(0.0, D);
@@ -125,7 +125,7 @@ real3 AnisotropicGGX( real3 dirToCamera, real3 dirToLight, real3 normal, real3 t
     return multiScatterCompensation * (D * G * F * NdotL);
 }
 
-real3 SpecularGGXMobile(real3 dirToCamera, real3 dirToLight, real3 normal, real3 specularF0, real roughnessA2, real roughnessA, real roughnessLinear)
+real3 SpecularGGXMobile(real3 dirToCamera, real3 dirToLight, real3 normal, real3 specularF0, float roughnessA2, real roughnessA, real roughnessLinear)
 {
     //! See "Optimizing PBR for Mobile" from Siggraph 2015 moving mobile graphics course
     //! https://community.arm.com/events/1155
@@ -135,7 +135,7 @@ real3 SpecularGGXMobile(real3 dirToCamera, real3 dirToLight, real3 normal, real3
     real NdotL = saturate(dot(normal, dirToLight));
 
     real LdotH2 = LdotH * LdotH;
-    real D = (NdotH * roughnessA2 - NdotH) * NdotH + 1.000001;
+    float D = (NdotH * roughnessA2 - NdotH) * NdotH + 1.000001;
     real denom = 4 * PI * D * D * max(0.1, LdotH2)  * (roughnessLinear + 0.5);
     real specularTerm = (roughnessA2/denom);
 
@@ -148,13 +148,13 @@ real3 SpecularGGXMobile(real3 dirToCamera, real3 dirToLight, real3 normal, real3
 real3 ClearCoatGGX(real NdotH, real HdotL, real NdotL, real3 normal, real roughnessA, real3 F)
 {
     // Specular Anti-Aliasing correction
-    real roughnessA2 = roughnessA * roughnessA;
+    float roughnessA2 = roughnessA * roughnessA;
     //if(o_applySpecularAA)
     //{
     //    roughnessA2 = ApplySpecularAA(roughnessA2, normal);
     //}
 
-    real D = NormalDistributionGGX(NdotH, roughnessA2);
+    float D = NormalDistributionGGX(NdotH, roughnessA2);
     // Kelemen geometry term : Kelemen. C. and Szirmay-Kalos. L. 2001
     // "A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling"
     real G = 0.25 / max(HdotL * HdotL, 1e-4);

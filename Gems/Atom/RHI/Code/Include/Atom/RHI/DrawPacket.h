@@ -49,9 +49,11 @@ namespace AZ::RHI
 
         //! Returns the DeviceDrawItem at the given index
         DrawItem* GetDrawItem(size_t index);
+        const DrawItem* GetDrawItem(size_t index) const;
 
         //! Returns the DeviceDrawItem associated with the given DrawListTag
         DrawItem* GetDrawItem(DrawListTag drawListTag);
+        const DrawItem* GetDrawItem(DrawListTag drawListTag) const;
 
         //! Returns the draw item and its properties associated with the provided index.
         DrawItemProperties GetDrawItemProperties(size_t index) const;

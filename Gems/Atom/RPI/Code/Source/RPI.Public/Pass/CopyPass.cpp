@@ -11,6 +11,7 @@
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
+#include <Atom/RPI.Public/GpuQuery/Query.h>
 #include <Atom/RPI.Public/Pass/CopyPass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -204,15 +205,30 @@ namespace AZ
         {
             if (m_copyMode == CopyMode::SameDevice)
             {
+                if (IsTimestampQueryEnabled())
+                {
+                    m_queryEntries[AZStd::to_underlying(CopyIndex::SameDevice)].m_timestampResult = AZ::RPI::TimestampResult();
+                }
+
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_copyScopeProducerSameDevice);
+                ReadbackScopeQueryResults(CopyIndex::SameDevice);
             }
             else if (m_copyMode == CopyMode::DifferentDevicesIntermediateHost)
             {
+                if (IsTimestampQueryEnabled())
+                {
+                    m_queryEntries[AZStd::to_underlying(CopyIndex::DeviceToHost)].m_timestampResult = AZ::RPI::TimestampResult();
+                    m_queryEntries[AZStd::to_underlying(CopyIndex::HostToDevice)].m_timestampResult = AZ::RPI::TimestampResult();
+                }
+
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_copyScopeProducerDeviceToHost);
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_copyScopeProducerHostToDevice);
                 m_currentBufferIndex = (m_currentBufferIndex + 1) % MaxFrames;
                 m_device1SignalFence[m_currentBufferIndex]->Reset();
                 m_device2WaitFence[m_currentBufferIndex]->Reset();
+
+                ReadbackScopeQueryResults(CopyIndex::DeviceToHost);
+                ReadbackScopeQueryResults(CopyIndex::HostToDevice);
             }
         }
 
@@ -245,6 +261,7 @@ namespace AZ
         void CopyPass::SetupFrameGraphDependenciesSameDevice(RHI::FrameGraphInterface frameGraph)
         {
             DeclareAttachmentsToFrameGraph(frameGraph);
+            AddScopeQueryToFrameGraph(frameGraph, CopyIndex::SameDevice);
         }
 
         void CopyPass::CompileResourcesSameDevice(const RHI::FrameGraphCompileContext& context)
@@ -271,10 +288,12 @@ namespace AZ
 
         void CopyPass::BuildCommandListInternalSameDevice(const RHI::FrameGraphExecuteContext& context)
         {
+            BeginScopeQuery(context, CopyIndex::SameDevice);
             if (m_copyItemSameDevice.m_type != RHI::CopyItemType::Invalid)
             {
                 context.GetCommandList()->Submit(m_copyItemSameDevice.GetDeviceCopyItem(context.GetDeviceIndex()));
             }
+            EndScopeQuery(context, CopyIndex::SameDevice);
         }
 
         void CopyPass::SetupFrameGraphDependenciesDeviceToHost(RHI::FrameGraphInterface frameGraph)
@@ -286,6 +305,7 @@ namespace AZ
 
             frameGraph.SetEstimatedItemCount(2);
             frameGraph.SignalFence(*m_device1SignalFence[m_currentBufferIndex]);
+            AddScopeQueryToFrameGraph(frameGraph, CopyIndex::DeviceToHost);
         }
 
         void CopyPass::CompileResourcesDeviceToHost(const RHI::FrameGraphCompileContext& context)
@@ -305,9 +325,10 @@ namespace AZ
                         return;
                     }
                     const auto& sourceImageDescriptor = sourceImage->GetDescriptor();
+                    m_sourceFormat = sourceImageDescriptor.m_format;
                     const uint16_t sourceMipSlice = m_data.m_imageSourceSubresource.m_mipSlice;
                     RHI::ImageSubresourceRange sourceRange(sourceMipSlice, sourceMipSlice, 0, 0);
-                    RHI::ImageAspectFlags sourceImageAspectFlags = RHI::GetImageAspectFlags(sourceImageDescriptor.m_format);
+                    RHI::ImageAspectFlags sourceImageAspectFlags = RHI::GetImageAspectFlags(m_sourceFormat);
                     uint32_t sourceImageAspect = az_ctz_u32(AZStd::to_underlying(sourceImageAspectFlags));
 
                     auto aspectCount{ static_cast<int>(az_popcnt_u32(AZStd::to_underlying(sourceImageAspectFlags))) };
@@ -420,6 +441,9 @@ namespace AZ
 
         void CopyPass::BuildCommandListInternalDeviceToHost(const RHI::FrameGraphExecuteContext& context)
         {
+            AZ_Warning(
+                "CopyPass", context.GetCommandListCount() == 1, "This will be wrong if the Scope is split across multiple command lists");
+            BeginScopeQuery(context, CopyIndex::DeviceToHost);
             for (const auto& perAspectCopyInfo : m_perAspectCopyInfos)
             {
                 const auto& copyItem{ perAspectCopyInfo.m_copyItemDeviceToHost };
@@ -428,6 +452,7 @@ namespace AZ
                     context.GetCommandList()->Submit(copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
                 }
             }
+            EndScopeQuery(context, CopyIndex::DeviceToHost);
 
             // Once signaled on device 1, we can map the host staging buffers on device 1 and 2 and copy data from 1 -> 2 and then signal the upload on device 2
             m_device1SignalFence[m_currentBufferIndex]
@@ -465,6 +490,7 @@ namespace AZ
             }
 
             frameGraph.SetEstimatedItemCount(2);
+            AddScopeQueryToFrameGraph(frameGraph, CopyIndex::HostToDevice);
 
             frameGraph.WaitFence(*m_device2WaitFence[m_currentBufferIndex]);
         }
@@ -502,23 +528,10 @@ namespace AZ
 
                     RHI::ImageAspectFlags sourceImageAspectFlags{ RHI::ImageAspectFlags::Color };
                     uint32_t sourceImageAspect{};
-                    RHI::Format sourceFormat{};
 
                     if (copyType == RHI::CopyItemType::Image)
                     {
-                        auto inputId =
-                            (m_inputOutputCopy ? GetInputOutputBinding(0) : GetInputBinding(0)).GetAttachment()->GetAttachmentId();
-
-                        const auto* sourceImage = context.GetImage(inputId);
-                        if (!sourceImage)
-                        {
-                            AZ_Warning("CopyPass", false, "Failed to find attachment image %s for copy to buffer", inputId.GetCStr());
-                            return;
-                        }
-                        const auto& sourceImageDescriptor = sourceImage->GetDescriptor();
-
-                        sourceFormat = sourceImageDescriptor.m_format;
-                        sourceImageAspectFlags = RHI::GetImageAspectFlags(sourceFormat);
+                        sourceImageAspectFlags = RHI::GetImageAspectFlags(m_sourceFormat);
                         sourceImageAspect = az_ctz_u32(AZStd::to_underlying(sourceImageAspectFlags));
                     }
 
@@ -564,7 +577,7 @@ namespace AZ
                             copyDesc.m_sourceBytesPerRow = perAspectInfo.m_inputImageLayout.m_bytesPerRow;
                             copyDesc.m_sourceBytesPerImage = perAspectInfo.m_inputImageLayout.m_bytesPerImage;
                             copyDesc.m_sourceSize = perAspectInfo.m_inputImageLayout.m_size;
-                            copyDesc.m_sourceFormat = FindFormatForAspect(sourceFormat, static_cast<RHI::ImageAspect>(sourceImageAspect));
+                            copyDesc.m_sourceFormat = FindFormatForAspect(m_sourceFormat, static_cast<RHI::ImageAspect>(sourceImageAspect));
                         }
 
                         const auto* sourceBuffer = perAspectInfo.m_device2HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
@@ -585,6 +598,9 @@ namespace AZ
 
         void CopyPass::BuildCommandListInternalHostToDevice(const RHI::FrameGraphExecuteContext& context)
         {
+            AZ_Warning(
+                "CopyPass", context.GetCommandListCount() == 1, "This will be wrong if the Scope is split across multiple command lists");
+            BeginScopeQuery(context, CopyIndex::HostToDevice);
             for (const auto& perAspectCopyInfo : m_perAspectCopyInfos)
             {
                 const auto& copyItem{ perAspectCopyInfo.m_copyItemHostToDevice };
@@ -593,6 +609,7 @@ namespace AZ
                     context.GetCommandList()->Submit(copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
                 }
             }
+            EndScopeQuery(context, CopyIndex::HostToDevice);
         }
 
         // --- Copy setup functions ---
@@ -610,7 +627,6 @@ namespace AZ
 
             // Destination Buffer
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId());
             copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId());
             copyDesc.m_destinationOffset = m_data.m_bufferDestinationOffset;
 
@@ -684,5 +700,136 @@ namespace AZ
             m_copyItemSameDevice = copyDesc;
         }
 
+        RHI::Ptr<Query> CopyPass::GetQuery(ScopeQueryType queryType, CopyIndex copyIndex)
+        {
+            uint32_t typeIndex = static_cast<uint32_t>(queryType);
+            if (!m_queryEntries[AZStd::to_underlying(copyIndex)].m_scopeQuery[typeIndex])
+            {
+                RHI::Ptr<Query> query;
+                switch (queryType)
+                {
+                case ScopeQueryType::Timestamp:
+                    query = GpuQuerySystemInterface::Get()->CreateQuery(
+                        RHI::QueryType::Timestamp, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
+                    break;
+                case ScopeQueryType::PipelineStatistics:
+                    query = GpuQuerySystemInterface::Get()->CreateQuery(
+                        RHI::QueryType::PipelineStatistics, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
+                    break;
+                }
+
+                m_queryEntries[AZStd::to_underlying(copyIndex)].m_scopeQuery[typeIndex] = query;
+            }
+
+            return m_queryEntries[AZStd::to_underlying(copyIndex)].m_scopeQuery[typeIndex];
+        }
+
+        template<typename Func>
+        inline void CopyPass::ExecuteOnTimestampQuery(Func&& func, CopyIndex copyIndex)
+        {
+            if (IsTimestampQueryEnabled())
+            {
+                auto query = GetQuery(ScopeQueryType::Timestamp, copyIndex);
+                if (query)
+                {
+                    func(query);
+                }
+            }
+        }
+
+        template<typename Func>
+        inline void CopyPass::ExecuteOnPipelineStatisticsQuery(Func&& func, CopyIndex copyIndex)
+        {
+            if (IsPipelineStatisticsQueryEnabled())
+            {
+                auto query = GetQuery(ScopeQueryType::PipelineStatistics, copyIndex);
+                if (query)
+                {
+                    func(query);
+                }
+            }
+        }
+
+        void CopyPass::AddScopeQueryToFrameGraph(RHI::FrameGraphInterface frameGraph, CopyIndex copyIndex)
+        {
+            const auto addToFrameGraph = [&frameGraph](RHI::Ptr<Query> query)
+            {
+                query->AddToFrameGraph(frameGraph);
+            };
+
+            ExecuteOnTimestampQuery(addToFrameGraph, copyIndex);
+            ExecuteOnPipelineStatisticsQuery(addToFrameGraph, copyIndex);
+        }
+
+        void CopyPass::BeginScopeQuery(const RHI::FrameGraphExecuteContext& context, CopyIndex copyIndex)
+        {
+            const auto beginQuery = [&context, this](RHI::Ptr<Query> query)
+            {
+                if (query->BeginQuery(context) == QueryResultCode::Fail)
+                {
+                    AZ_UNUSED(this); // Prevent unused warning in release builds
+                    AZ_WarningOnce(
+                        "RenderPass",
+                        false,
+                        "BeginScopeQuery failed. Make sure AddScopeQueryToFrameGraph was called in SetupFrameGraphDependencies"
+                        " for this pass: %s",
+                        this->RTTI_GetTypeName());
+                }
+            };
+
+            AZ_Warning("CopyPass", context.GetCommandListIndex() == 0, "Cannot handle multiple CommandLists at the moment");
+
+            ExecuteOnTimestampQuery(beginQuery, copyIndex);
+            ExecuteOnPipelineStatisticsQuery(beginQuery, copyIndex);
+        }
+
+        void CopyPass::EndScopeQuery(const RHI::FrameGraphExecuteContext& context, CopyIndex copyIndex)
+        {
+            const auto endQuery = [&context](RHI::Ptr<Query> query)
+            {
+                query->EndQuery(context);
+            };
+
+            ExecuteOnTimestampQuery(endQuery, copyIndex);
+            ExecuteOnPipelineStatisticsQuery(endQuery, copyIndex);
+        }
+
+        void CopyPass::ReadbackScopeQueryResults(CopyIndex copyIndex)
+        {
+            int deviceIndex = copyIndex == CopyIndex::DeviceToHost ? m_data.m_sourceDeviceIndex : m_data.m_destinationDeviceIndex;
+            deviceIndex = deviceIndex != RHI::MultiDevice::InvalidDeviceIndex ? deviceIndex : RHI::MultiDevice::DefaultDeviceIndex;
+
+            ExecuteOnTimestampQuery(
+                [this, copyIndex, deviceIndex](RHI::Ptr<Query> query)
+                {
+                    const uint32_t TimestampResultQueryCount = 2u;
+                    uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
+                    query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, deviceIndex);
+                    m_queryEntries[AZStd::to_underlying(copyIndex)].m_timestampResult =
+                        TimestampResult(timestampResult[0], timestampResult[1], m_hardwareQueueClass);
+                },
+                copyIndex);
+
+            ExecuteOnPipelineStatisticsQuery(
+                [this, copyIndex, deviceIndex](RHI::Ptr<Query> query)
+                {
+                    query->GetLatestResult(
+                        &m_queryEntries[AZStd::to_underlying(copyIndex)].m_statisticsResult, sizeof(PipelineStatisticsResult), deviceIndex);
+                },
+                copyIndex);
+        }
+
+        TimestampResult CopyPass::GetTimestampResultInternal() const
+        {
+            // TODO: As there is currently no good solution to multi-device Timestamps
+            // as discusssed here (https://github.com/o3de/o3de/pull/18268)
+            // we will return the first Timestamp for now
+            return m_queryEntries[AZStd::to_underlying(CopyIndex::SameDevice)].m_timestampResult;
+        }
+
+        PipelineStatisticsResult CopyPass::GetPipelineStatisticsResultInternal() const
+        {
+            return m_queryEntries[AZStd::to_underlying(CopyIndex::SameDevice)].m_statisticsResult;
+        }
     } // namespace RPI
 } // namespace AZ

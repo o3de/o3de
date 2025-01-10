@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
 {
@@ -46,6 +47,10 @@ namespace AZ
             virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
             //! Sets the lighting channel mask
             virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
+            //! Returns the buffer containing the light data for all simple point lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the number of simple point lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

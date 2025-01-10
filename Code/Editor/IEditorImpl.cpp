@@ -124,6 +124,7 @@ CEditorImpl::CEditorImpl()
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
     m_pSequenceManager = new CTrackViewSequenceManager;
+
     m_pAnimationContext = new CAnimationContext;
 
     DetectVersion();

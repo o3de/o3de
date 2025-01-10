@@ -52,22 +52,27 @@ void CTrackViewFindDlg::FillData()
 {
     m_numSeqs = 0;
     m_objs.resize(0);
-    for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        IAnimSequence* seq = GetIEditor()->GetMovieSystem()->GetSequence(k);
-        for (int i = 0; i < seq->GetNodeCount(); i++)
+        for (int k = 0; k < movieSystem->GetNumSequences(); ++k)
         {
-            IAnimNode* pNode = seq->GetNode(i);
-            ObjName obj;
-            obj.m_objName = pNode->GetName();
-            obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
-            AZStd::string fullname = seq->GetName();
-            obj.m_seqName = fullname.c_str();
-            m_objs.push_back(obj);
+            IAnimSequence* seq = movieSystem->GetSequence(k);
+            for (int i = 0; i < seq->GetNodeCount(); i++)
+            {
+                IAnimNode* pNode = seq->GetNode(i);
+                ObjName obj;
+                obj.m_objName = pNode->GetName();
+                obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
+                AZStd::string fullname = seq->GetName();
+                obj.m_seqName = fullname.c_str();
+                m_objs.push_back(obj);
+            }
+            m_numSeqs++;
         }
-        m_numSeqs++;
+        FillList();
     }
-    FillList();
 }
 
 

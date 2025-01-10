@@ -33,47 +33,45 @@ namespace AZ
         class MeshFeatureProcessor;
         class GpuBufferHandler;
 
-        class ModelDataInstance
+        class ModelDataInstance : ModelDataInstanceInterface
         {
             friend class MeshFeatureProcessor;
             friend class MeshLoader;
 
         public:
+            AZ_RTTI(AZ::Render::ModelDataInstance, "{AF38DCED-9692-4B88-8738-9710BA70F49C}", AZ::Render::ModelDataInstanceInterface);
             ModelDataInstance();
 
-            const Data::Instance<RPI::Model>& GetModel() { return m_model; }
-            const RPI::Cullable& GetCullable() { return m_cullable; }
+            const Data::Instance<RPI::Model>& GetModel() override
+            {
+                return m_model;
+            }
+            const RPI::Cullable& GetCullable() override
+            {
+                return m_cullable;
+            }
 
-            const uint32_t GetLightingChannelMask() { return m_lightingChannelMask; }
+            const uint32_t GetLightingChannelMask() override
+            {
+                return m_lightingChannelMask;
+            }
 
             using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
 
-            //! PostCullingInstanceData represents the data the MeshFeatureProcessor needs after culling
-            //! in order to generate instanced draw calls
-            struct PostCullingInstanceData
-            {
-                InstanceGroupHandle m_instanceGroupHandle;
-                uint32_t m_instanceGroupPageIndex;
-                TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
-            };
-
             using PostCullingInstanceDataList = AZStd::vector<PostCullingInstanceData>;
-            const bool IsSkinnedMesh() { return m_descriptor.m_isSkinnedMesh; }
-            const AZ::Uuid& GetRayTracingUuid() const { return m_rayTracingUuid; }
+            const bool IsSkinnedMesh() override
+            {
+                return m_descriptor.m_isSkinnedMesh;
+            }
+            const AZ::Uuid& GetRayTracingUuid() const override
+            {
+                return m_rayTracingUuid;
+            }
 
-            //! Internally called when a DrawPacket used by this ModelDataInstance was updated. 
-            void HandleDrawPacketUpdate(RPI::MeshDrawPacket& meshDrawPacket);
+            void HandleDrawPacketUpdate(uint32_t lodIndex, uint32_t meshIndex, RPI::MeshDrawPacket& meshDrawPacket) override;
+            void ConnectMeshDrawPacketUpdatedHandler(MeshDrawPacketUpdatedEvent::Handler& handler) override;
 
-            //! Event that let's us know whenever one of the MeshDrawPackets has been updated.
-            //! This event can occur on multiple threads.
-            //! Provides the ModelDataInstance parent object that owns the MeshDrawPacket.
-            using MeshDrawPacketUpdatedEvent = Event<const ModelDataInstance&, const AZ::RPI::MeshDrawPacket&>;
-            //! Connects @handler to the MeshDrawPacketUpdatedEvent.
-            //! One of the most common reasons a MeshDrawPacket gets updated is
-            //! when a RenderPipeline is instantiated at runtime and it happens to contain
-            //! a RasterPass with a DrawListTag that matches one of the Shaders of one of the Materials in
-            //! a Mesh.
-            void ConnectMeshDrawPacketUpdatedHandler(MeshDrawPacketUpdatedEvent::Handler& handler);
+            CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const override;
 
         private:
             class MeshLoader
@@ -105,7 +103,7 @@ namespace AZ
                                                                          } };
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
                 ModelDataInstance* m_parent = nullptr;
-            };
+            };// class MeshLoader
 
             // Free all the resources owned by this mesh handle
             void DeInit(MeshFeatureProcessor* meshFeatureProcessor);
@@ -135,7 +133,6 @@ namespace AZ
             void UpdateObjectSrg(MeshFeatureProcessor* meshFeatureProcessor);
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
-            CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const;
 
             // When instancing is disabled, draw packets are owned by the ModelDataInstance
             RPI::MeshDrawPacketLods m_meshDrawPacketListsByLod;
@@ -193,7 +190,7 @@ namespace AZ
                 bool m_hasRayTracingReflectionProbe : 1;
                 bool m_keepBufferAssetsInMemory : 1;            // If true, we need to keep BufferAssets referenced by ModelAsset stay in memory. This is needed when editor use RayIntersection
             } m_flags;
-        };
+        }; //class ModelDataInstance
 
         //! This feature processor handles static and dynamic non-skinned meshes.
         class MeshFeatureProcessor final : public MeshFeatureProcessorInterface
@@ -241,6 +238,11 @@ namespace AZ
             void SetCustomMaterials(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials) override;
             const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const override;
+            AZStd::unique_ptr<StreamBufferViewsBuilderInterface> CreateStreamBufferViewsBuilder(const MeshHandle& meshHandle) const override;
+            DispatchDrawItemList BuildDispatchDrawItemList(const MeshHandle& meshHandle,
+                const uint32_t lodIndex, const uint32_t meshIndex,
+                const RHI::DrawListMask drawListTagsFilter, const RHI::DrawFilterMask materialPipelineFilter,
+                DispatchArgumentsSetupCB dispatchArgumentsSetupCB) const override;
 
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
@@ -315,6 +317,11 @@ namespace AZ
             void SortInstanceBufferBuckets(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex);
             void BuildInstanceBufferAndDrawCalls(TaskGraph& taskGraph, size_t viewIndex, const RPI::ViewPtr& view);
             void UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view);
+
+            // Helper function for BuildDispatchDrawItemList()
+            void InitializeDispatchItemFromDrawItem(
+                RHI::DispatchItem& dstDispatchItem, const RHI::DrawItem* srcDrawItem,
+                const RHI::DispatchDirect& dispatchDirect) const;
 
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;

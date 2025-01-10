@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/intrusive_list.h>
 
 #include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
@@ -26,7 +27,7 @@ namespace AZ
         //! The context has shared ownership between the streaming image and the streaming image controller.
         //! The controller is allowed to take a reference on the context, but not on the streaming image itself.
         //! As such, it's necessary to check that the image exists before using.
-        class StreamingImageContext
+        class ATOM_RPI_PUBLIC_API StreamingImageContext
             : public AZStd::intrusive_base
             , public AZStd::intrusive_list_node<StreamingImageContext>
         {

@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
 
 namespace AZ
@@ -23,7 +24,7 @@ namespace AZ
 
         //! Describes a material pipeline, which provides shader templates and other mechanisms for automatically
         //! adapting material-specific shader code to work in a specific render pipeline.
-        struct MaterialPipelineSourceData
+        struct ATOM_RPI_EDIT_API MaterialPipelineSourceData
         {
             AZ_TYPE_INFO(AZ::RPI::MaterialPipelineSourceData, "{AB033EDC-0D89-441C-B9E0-DAFF8058865D}");
 

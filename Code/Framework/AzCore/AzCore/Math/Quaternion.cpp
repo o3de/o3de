@@ -262,7 +262,8 @@ namespace AZ
                 Method("CreateFromScaledAxisAngle", &Quaternion::CreateFromScaledAxisAngle)->
                 Method("CreateShortestArc", &Quaternion::CreateShortestArc)->
                 Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)->
-                Method("CreateFromValues", &Internal::CreateFromValues)
+                Method("CreateFromValues", &Internal::CreateFromValues)->
+                Method("CreateFromBasis", &Quaternion::CreateFromBasis)
                 ;
         }
     }

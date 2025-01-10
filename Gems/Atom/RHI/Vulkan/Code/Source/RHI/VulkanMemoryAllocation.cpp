@@ -36,6 +36,14 @@ namespace AZ
             return m_size;
         }
 
+        size_t VulkanMemoryAllocation::GetBlockSize() const
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            VmaAllocationInfo2 info;
+            vmaGetAllocationInfo2(device.GetVmaAllocator(), m_vmaAllocation, &info);
+            return info.blockSize;
+        }
+
         CpuVirtualAddress VulkanMemoryAllocation::Map(size_t offset, size_t size, RHI::HostMemoryAccess hostAccess)
         {
             Device& device = static_cast<Device&>(GetDevice());

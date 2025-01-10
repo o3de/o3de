@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ClearValue.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 namespace AZ
@@ -15,7 +16,7 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the SlowClearPass. Should be specified in the PassRequest.
-        struct SlowClearPassData
+        struct ATOM_RPI_REFLECT_API SlowClearPassData
             : public RenderPassData
         {
             AZ_RTTI(SlowClearPassData, "{5F2C24A4-62D0-4E60-91EC-C207C10D15C6}", RenderPassData);

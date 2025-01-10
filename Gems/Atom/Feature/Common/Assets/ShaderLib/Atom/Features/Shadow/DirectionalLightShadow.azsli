@@ -18,8 +18,8 @@
 #define ENABLE_FULLSCREEN_SHADOW              1
 #endif
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/RPI/Math.azsli>
 #include "Shadow.azsli"
 #include "ShadowmapAtlasLib.azsli"

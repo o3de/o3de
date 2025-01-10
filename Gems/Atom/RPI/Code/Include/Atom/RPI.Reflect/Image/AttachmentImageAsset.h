@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
@@ -21,7 +22,7 @@ namespace AZ
     namespace RPI
     {
         //! The asset for attachment image which is mainly used to create runtime attachment instance. 
-        class AttachmentImageAsset final
+        class ATOM_RPI_REFLECT_API AttachmentImageAsset final
             : public ImageAsset
         {
             friend class AttachmentImageAssetCreator;

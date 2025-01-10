@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <AzCore/base.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Name/Name.h>
@@ -20,7 +21,7 @@ namespace AZ
     {
         //! A place where material functors register to, so that functor source data can be retrieved by name at build time.
         //! As part of deserialization, registration can be done in Reflect() call for each functor.
-        class MaterialFunctorSourceDataRegistration
+        class ATOM_RPI_EDIT_API MaterialFunctorSourceDataRegistration
         {
         public:
             AZ_RTTI(MaterialFunctorSourceDataRegistration, "{20D1E55A-737B-43AF-B1F5-054574DCF400}");

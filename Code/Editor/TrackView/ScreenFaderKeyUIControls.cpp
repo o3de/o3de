@@ -18,7 +18,7 @@
 #include "TrackViewKeyPropertiesDlg.h"
 
 //-----------------------------------------------------------------------------
-bool CScreenFaderKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& keys)
+bool CScreenFaderKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& keys)
 {
     if (!keys.AreAllKeysOfSameType())
     {

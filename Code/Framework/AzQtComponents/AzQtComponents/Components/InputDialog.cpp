@@ -63,9 +63,9 @@ namespace AzQtComponents
 
     int InputDialog::exec()
     {
+        setWindowModality(Qt::WindowModality::WindowModal);
         show();
-
-        this->setWindowModality(Qt::WindowModality::WindowModal);
+ 
         return QInputDialog::exec();
     }
 

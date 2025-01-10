@@ -291,6 +291,8 @@ void CUiAnimSequence::RemoveNode(IUiAnimNode* node)
     {
         if (node == m_nodes[i].get())
         {
+            // TODO : Consider moving node destruction after usage below which might fix the probable problem here
+            // (ref similar PR #18538 fix for GHI #11500). Needs more investigation and testing.
             m_nodes.erase(m_nodes.begin() + i);
 
             if (node->NeedToRender())

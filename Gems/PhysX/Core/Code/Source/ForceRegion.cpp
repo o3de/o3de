@@ -75,7 +75,7 @@ namespace PhysX
     ForceRegion::ForceRegion(const ForceRegion& forceRegion)
     {
         // Force region must be deep copied as it contains pointers
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         context->CloneObjectInplace<ForceRegion>(*this, &forceRegion);
     }

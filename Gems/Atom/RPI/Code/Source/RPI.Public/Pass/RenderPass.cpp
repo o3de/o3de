@@ -267,7 +267,10 @@ namespace AZ
 
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
         {
-            m_timestampResult = AZ::RPI::TimestampResult();
+            if (IsTimestampQueryEnabled())
+            {
+                m_timestampResult = AZ::RPI::TimestampResult();
+            }
 
             // the pass may potentially migrate between devices dynamically at runtime so the deviceIndex is updated every frame.
             if (GetScopeId().IsEmpty() || (ScopeProducer::GetDeviceIndex() != Pass::GetDeviceIndex()))

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
-
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
@@ -25,7 +25,7 @@ namespace AZ
         //! This interface is public only to the ShaderAsset class.
         //! The expectation is that when in need of shader variants the developer
         //! should use AZ::RPI::Shader::GetVariant().
-        class IShaderVariantFinder
+        class ATOM_RPI_REFLECT_API IShaderVariantFinder
         {
         public:
             AZ_TYPE_INFO(IShaderVariantFinder, "{4E041C2C-F158-412E-8961-76987EC75692}");
@@ -108,4 +108,4 @@ namespace AZ
     } // namespace RPI
 }// namespace AZ
 
-DECLARE_EBUS_EXTERN(RPI::ShaderVariantFinderNotification);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(RPI::ShaderVariantFinderNotification);

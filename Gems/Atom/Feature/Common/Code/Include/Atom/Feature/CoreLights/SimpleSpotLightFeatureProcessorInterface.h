@@ -8,10 +8,11 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/FeatureProcessor.h>
-#include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 
 namespace AZ
 {
@@ -71,6 +72,11 @@ namespace AZ
             virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
             //! Sets if this shadow should be rendered every frame (not cached) or only when it detects a change (cached).
             virtual void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) = 0;
+
+            //! Returns the buffer containing the light data for all simple spot lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the number of simple spot lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

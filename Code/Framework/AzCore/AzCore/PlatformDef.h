@@ -39,9 +39,13 @@
 #if defined(AZ_COMPILER_CLANG) || defined(AZ_COMPILER_GCC)
     #define AZ_DLL_EXPORT               AZ_TRAIT_OS_DLL_EXPORT_CLANG
     #define AZ_DLL_IMPORT               AZ_TRAIT_OS_DLL_IMPORT_CLANG
+    #define AZ_DLL_EXPORT_EXTERN        AZ_TRAIT_OS_DLL_EXPORT_EXTERN_CLANG
+    #define AZ_DLL_IMPORT_EXTERN        AZ_TRAIT_OS_DLL_IMPORT_EXTERN_CLANG
 #elif defined(AZ_COMPILER_MSVC)
     #define AZ_DLL_EXPORT               __declspec(dllexport)
     #define AZ_DLL_IMPORT               __declspec(dllimport)
+    #define AZ_DLL_EXPORT_EXTERN
+    #define AZ_DLL_IMPORT_EXTERN
 #endif
 
 // These defines will be deprecated in the future with LY-99152

@@ -85,6 +85,9 @@ namespace AzToolsFramework
         void AddDirtyEntity(AZ::EntityId entityId) override;
         int RemoveDirtyEntity(AZ::EntityId entityId) override;
         void ClearDirtyEntities() override;
+        void AddIgnoredEntity(AZ::EntityId entityId) override;
+        int RemoveIgnoredEntity(AZ::EntityId entityId) override;
+        void ClearIgnoredEntities() override;
         bool IsDuringUndoRedo() override { return m_isDuringUndoRedo; }
         void UndoPressed() override;
         void RedoPressed() override;
@@ -175,6 +178,7 @@ namespace AzToolsFramework
         UndoSystem::UndoStack*              m_undoStack;
         UndoSystem::URSequencePoint*        m_currentBatchUndo;
         AZStd::unordered_set<AZ::EntityId>  m_dirtyEntities;
+        AZStd::unordered_set<AZ::EntityId>  m_ignoredEntities;
         bool                                m_isDuringUndoRedo;
         bool                                m_isInIsolationMode;
         EntityIdSet                         m_isolatedEntityIdSet;

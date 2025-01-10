@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 
 // These classes are not directly referenced in this header only because the Set/GetPropertyValue()
@@ -21,7 +22,7 @@ namespace AZ
     namespace RPI
     {
         //! Represents the runtime state of a set of material properties for a given MaterialPropertiesLayout
-        class MaterialPropertyCollection
+        class ATOM_RPI_REFLECT_API MaterialPropertyCollection
         {
         public:
             //! Initialize or re-initialize the properties. If reinitializing, any values that were set via

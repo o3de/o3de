@@ -6,10 +6,12 @@
  *
  */
 #pragma once
-#include <IMovieSystem.h>
 
 #include <AzCore/Component/Component.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
+
+struct IMovieSystem;
+struct IAnimSequence;
 
 namespace Maestro
 {
@@ -38,6 +40,7 @@ namespace Maestro
         AZ_COMPONENT(SequenceComponent, "{027CE988-CF48-4589-A73A-73CD8D02F783}");
 
         SequenceComponent();
+        ~SequenceComponent();
         
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -64,7 +67,7 @@ namespace Maestro
         * @param animatedEntityId the entity Id of the entity containing the animatedAddress
         * @param animatedAddress identifies the component and property to be set
         */
-        void GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) override;
+        bool GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) override;
 
         AZ::Uuid GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) override;
 
@@ -103,6 +106,8 @@ namespace Maestro
 
         // Reflects the entire CryMovie library
         static void ReflectCinematicsLib(AZ::ReflectContext* context);
+
+        IMovieSystem* m_movieSystem;
     };
 
 } // namespace Maestro

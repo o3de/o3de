@@ -13,8 +13,8 @@
 
 #define SampleMax 60
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {

@@ -7,11 +7,11 @@
  */
 #include <RHI/MemoryView.h>
 
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/string.h>
+#include <dx12ma/D3D12MemAlloc.h>
 
 AZ_DECLARE_BUDGET(RHI);
 
@@ -19,15 +19,24 @@ namespace AZ
 {
     namespace DX12
     {
-        MemoryView::MemoryView(const MemoryAllocation& memAllocation, MemoryViewType viewType)
+        MemoryView::MemoryView(const MemoryAllocation& memAllocation, MemoryViewType viewType, ID3D12Heap* heap, size_t heapOffset)
             : m_memoryAllocation(memAllocation)
             , m_viewType(viewType)
+            , m_heap(heap)
+            , m_heapOffset(heapOffset)
         {
             Construct();
         }
 
-        MemoryView::MemoryView(RHI::Ptr<Memory> memory, size_t offset, size_t size, size_t alignment, MemoryViewType viewType)
-            : MemoryView(MemoryAllocation(memory, offset, size, alignment), viewType)
+        MemoryView::MemoryView(
+            RHI::Ptr<Memory> memory,
+            size_t offset,
+            size_t size,
+            size_t alignment,
+            MemoryViewType viewType,
+            ID3D12Heap* heap,
+            size_t heapOffset)
+            : MemoryView(MemoryAllocation(memory, offset, size, alignment), viewType, heap, heapOffset)
         {
         }
 
@@ -137,6 +146,30 @@ namespace AZ
             {
                 m_memoryAllocation.m_memory->SetPrivateData(
                     WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(name.size() * sizeof(wchar_t)), name.data());
+            }
+        }
+
+        ID3D12Heap* MemoryView::GetHeap()
+        {
+            if (m_d3d12maAllocation)
+            {
+                return m_d3d12maAllocation->GetHeap();
+            }
+            else
+            {
+                return m_heap;
+            }
+        }
+
+        size_t MemoryView::GetHeapOffset()
+        {
+            if (m_d3d12maAllocation)
+            {
+                return m_d3d12maAllocation->GetOffset();
+            }
+            else
+            {
+                return m_heapOffset;
             }
         }
 

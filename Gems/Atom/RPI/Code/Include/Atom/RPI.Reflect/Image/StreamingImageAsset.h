@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Color.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
@@ -45,7 +46,7 @@ namespace AZ
         //! and streaming controller.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using StreamingImageAssetCreator.
         //! See RPI::StreamingImage for runtime features based on this asset.
-        class StreamingImageAsset final
+        class ATOM_RPI_REFLECT_API StreamingImageAsset final
             : public ImageAsset
         {
             friend class StreamingImageAssetCreator;

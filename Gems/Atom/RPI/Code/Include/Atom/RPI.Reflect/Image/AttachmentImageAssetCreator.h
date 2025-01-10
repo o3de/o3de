@@ -8,15 +8,16 @@
 
 #pragma once
 
-#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
 namespace AZ
 {
     namespace RPI
     {
         //! The class to create an attachment image asset
-        class AttachmentImageAssetCreator
+        class ATOM_RPI_REFLECT_API AttachmentImageAssetCreator
             : public AssetCreator<AttachmentImageAsset>
         {
         public:

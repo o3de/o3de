@@ -155,6 +155,22 @@ ly_add_target(
 )
 
 ly_add_target(
+    NAME ${gem_name}.Interface STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        atom_rhi_dx12_interface_common_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            ${pal_source_dir}
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::${gem_name}.Private.Static
+)
+
+ly_add_target(
     NAME ${gem_name}.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE

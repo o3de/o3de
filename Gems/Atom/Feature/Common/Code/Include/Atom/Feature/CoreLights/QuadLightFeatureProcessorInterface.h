@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <AzCore/Math/Quaternion.h>
-#include <Atom/Feature/CoreLights/PhotometricValue.h>
 
 namespace AZ
 {
@@ -99,6 +100,11 @@ namespace AZ
 
             //! Sets all of the the quad data for the provided LightHandle.
             virtual void SetQuadData(LightHandle handle, const QuadLightData& data) = 0;
+
+            //! Returns the buffer containing the light data for all quad lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the number of quad lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

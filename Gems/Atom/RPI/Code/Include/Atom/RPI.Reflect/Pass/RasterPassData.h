@@ -12,6 +12,7 @@
 #include <Atom/RHI.Reflect/Viewport.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 namespace AZ
@@ -19,7 +20,7 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the RasterPass. Should be specified in the PassRequest.
-        struct RasterPassData
+        struct ATOM_RPI_REFLECT_API RasterPassData
             : public RenderPassData
         {
             AZ_RTTI(RasterPassData, "{48AAC4A1-EFD5-46E8-9376-E08243F88F54}", RenderPassData);

@@ -104,7 +104,9 @@ namespace AZ
 
             return nullptr;
         }
-        
+
+        AttachmentImage::AttachmentImage() = default;
+
         AttachmentImage::~AttachmentImage()
         {
             Shutdown(); 

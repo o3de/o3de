@@ -447,7 +447,7 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
     // Animate Camera Track (aka Select Track)
 
     // Check if a camera override is set by CVar
-    const char* overrideCamName = gEnv->pMovieSystem->GetOverrideCamName();
+    const char* overrideCamName = m_movieSystem->GetOverrideCamName();
     AZ::EntityId overrideCamId;
     if (overrideCamName != nullptr && strlen(overrideCamName) > 0)
     {
@@ -461,7 +461,7 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
 
     if (overrideCamId.IsValid())      // There is a valid overridden camera.
     {
-        if (overrideCamId != gEnv->pMovieSystem->GetCameraParams().cameraEntityId)
+        if (overrideCamId != m_movieSystem->GetCameraParams().cameraEntityId)
         {
             ISelectKey key;
             key.szSelection = overrideCamName;
@@ -526,7 +526,7 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
         ApplyGotoKey(pGotoTrack, ec);
     }
 
-    if (pCaptureTrack && gEnv->pMovieSystem->IsInBatchRenderMode() == false)
+    if (pCaptureTrack && m_movieSystem->IsInBatchRenderMode() == false)
     {
         ICaptureKey key;
         int nCaptureKey = pCaptureTrack->GetActiveKey(ec.time, &key);
@@ -543,11 +543,11 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
                 if (m_bLastCapturingEnded == false)
                 {
                     assert(0);
-                    gEnv->pMovieSystem->EndCapture();
+                    m_movieSystem->EndCapture();
                     m_bLastCapturingEnded = true;
                 }
-                gEnv->pMovieSystem->EnableFixedStepForCapture(key.timeStep);
-                gEnv->pMovieSystem->StartCapture(key, m_captureFrameCount);
+                m_movieSystem->EnableFixedStepForCapture(key.timeStep);
+                m_movieSystem->StartCapture(key, m_captureFrameCount);
                 if (key.once == false)
                 {
                     m_bLastCapturingEnded = false;
@@ -556,8 +556,8 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
             }
             else if (justEnded)
             {
-                gEnv->pMovieSystem->DisableFixedStepForCapture();
-                gEnv->pMovieSystem->EndCapture();
+                m_movieSystem->DisableFixedStepForCapture();
+                m_movieSystem->EndCapture();
                 m_bLastCapturingEnded = true;
             }
         }
@@ -819,7 +819,7 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
     }
 
     // Broadcast camera changes
-    const SCameraParams& lastCameraParams = gEnv->pMovieSystem->GetCameraParams();
+    const SCameraParams& lastCameraParams = m_movieSystem->GetCameraParams();
     if (lastCameraParams.cameraEntityId != cameraParams.cameraEntityId)
     {
         Maestro::SequenceComponentNotificationBus::Event(
@@ -827,14 +827,14 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
             lastCameraParams.cameraEntityId, cameraParams.cameraEntityId);
 
         // note: only update the active view if we're currently exporting/capturing a sequence
-        if (gEnv->pMovieSystem->IsInBatchRenderMode())
+        if (m_movieSystem->IsInBatchRenderMode())
         {
             Camera::CameraRequestBus::Event(
                 cameraParams.cameraEntityId, &Camera::CameraRequestBus::Events::MakeActiveView);
         }
     }
 
-    gEnv->pMovieSystem->SetCameraParams(cameraParams);
+    m_movieSystem->SetCameraParams(cameraParams);
 
     // This detects when we've switched from one Camera to another on the Camera Track
     // If cameras were interpolated (blended), reset cameras to their pre-interpolated positions and
@@ -895,7 +895,7 @@ void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext
     char funcName[1024];
     azstrcpy(funcName, AZ_ARRAY_SIZE(funcName), "Event_");
     azstrcat(funcName, AZ_ARRAY_SIZE(funcName), key.event.c_str());
-    gEnv->pMovieSystem->SendGlobalEvent(funcName);
+    m_movieSystem->SendGlobalEvent(funcName);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1092,16 +1092,18 @@ void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnim
 /*static*/ IAnimSequence* CAnimSceneNode::GetSequenceFromSequenceKey(const ISequenceKey& sequenceKey)
 {
     IAnimSequence* retSequence = nullptr;
-    if (gEnv && gEnv->pMovieSystem)
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
         if (sequenceKey.sequenceEntityId.IsValid())
         {
-            retSequence = gEnv->pMovieSystem->FindSequence(sequenceKey.sequenceEntityId);
+            retSequence = movieSystem->FindSequence(sequenceKey.sequenceEntityId);
         }
         else if (!sequenceKey.szSelection.empty())
         {
             // legacy Deprecate ISequenceKey used names to identify sequences
-            retSequence = gEnv->pMovieSystem->FindLegacySequenceByName(sequenceKey.szSelection.c_str());
+            retSequence = movieSystem->FindLegacySequenceByName(sequenceKey.szSelection.c_str());
         }
     }
 

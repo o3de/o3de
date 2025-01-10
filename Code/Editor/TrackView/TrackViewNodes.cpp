@@ -326,7 +326,6 @@ enum EMenuItem
     eMI_AddDOF = 510,
     eMI_AddScreenfader = 511,
     eMI_AddShadowSetup = 513,
-    eMI_AddEnvironment = 514,
     eMI_EditEvents = 550,
     eMI_SaveToFBX = 12,
     eMI_ImportFromFBX = 14,
@@ -405,6 +404,8 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     ///////////////////////////////////////////////////////////////
 
 
+    GetIEditor()->GetSequenceManager()->AddListener(this);
+    GetIEditor()->GetAnimation()->AddListener(this);
     GetIEditor()->GetUndoManager()->AddListener(this);
 };
 
@@ -412,6 +413,8 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
 CTrackViewNodesCtrl::~CTrackViewNodesCtrl()
 {
     GetIEditor()->GetUndoManager()->RemoveListener(this);
+    GetIEditor()->GetAnimation()->RemoveListener(this);
+    GetIEditor()->GetSequenceManager()->RemoveListener(this);
 }
 
 bool CTrackViewNodesCtrl::eventFilter(QObject* o, QEvent* e)
@@ -440,6 +443,18 @@ void CTrackViewNodesCtrl::OnSequenceChanged()
     FillAutoCompletionListForFilter();
 
     Reload();
+}
+
+// IAnimationContextListener
+void CTrackViewNodesCtrl::OnSequenceChanged([[maybe_unused]]CTrackViewSequence* pNewSequence)
+{
+    OnSequenceChanged();
+}
+
+// ITrackViewSequenceManagerListener
+void CTrackViewNodesCtrl::OnSequenceRemoved([[maybe_unused]] CTrackViewSequence* pSequence)
+{
+    OnSequenceChanged();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -652,6 +667,10 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
         {
             // In case of a missing entity, color it red.
             record->setForeground(0, TextColorForMissingEntity);
+        }
+        else
+        {
+            record->setData(0, Qt::ForegroundRole, QPalette::ColorRole::NoRole);
         }
     }
 
@@ -885,9 +904,9 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 // check to make sure all nodes were added and notify user if they weren't
                 if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
                 {
-                    IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
+                    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
 
-                    AZStd::string messages = movieSystem->GetUserNotificationMsgs();
+                    AZStd::string messages = movieSystem ? movieSystem->GetUserNotificationMsgs() : "";
 
                     // Create a list of all lines
                     AZStd::vector<AZStd::string> lines;
@@ -964,12 +983,6 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Shadow Setup Node");
                 groupNode->CreateSubNode("ShadowsSetup", AnimNodeType::ShadowSetup);
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
-            else if (cmd == eMI_AddEnvironment)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Environment Node");
-                groupNode->CreateSubNode("Environment", AnimNodeType::Environment);
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
             else if (cmd == eMI_AddDirectorNode)
@@ -1397,11 +1410,6 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
         contextMenu.main.addAction("Add Shadows Setup Node")->setData(eMI_AddShadowSetup);
     }
 
-    if (pDirector->GetAnimNodesByType(AnimNodeType::Environment).GetCount() == 0)
-    {
-        contextMenu.main.addAction("Add Environment Node")->setData(eMI_AddEnvironment);
-    }
-
     // A director node cannot have another director node as a child.
     if (animNode->GetType() != AnimNodeType::Director)
     {
@@ -1617,11 +1625,17 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
                 // Create 'Add Tracks' submenu
                 m_menuParamTypeMap.clear();
 
+                const QString addTracksMenuName = "Add Tracks";
                 if (FillAddTrackMenu(contextMenu.addTrackSub, animNode))
                 {
-                    // add script table properties
+                    // add script table properties -> tracks available for adding
                     unsigned int currentId = 0;
-                    CreateAddTrackMenuRec(contextMenu.main, "Add Track", animNode, contextMenu.addTrackSub, currentId);
+                    CreateAddTrackMenuRec(contextMenu.main, addTracksMenuName, animNode, contextMenu.addTrackSub, currentId);
+                }
+                else
+                {
+                    // no tracks available for adding -> add empty disabled submenu for UI consistency
+                    contextMenu.main.addMenu(addTracksMenuName)->setEnabled(false);
                 }
             }
 
@@ -1677,8 +1691,9 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     if (bOnNode && !pNode->IsGroupNode())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        QString string = QString("%1 Tracks").arg(animNode->GetName().c_str());
-        contextMenu.main.addAction(string)->setEnabled(false);
+
+        const QString manageTracksMenuName = "Toggle Tracks";
+        auto manageTracksAction = contextMenu.main.addAction(manageTracksMenuName);
 
         bool bAppendedTrackFlag = false;
 
@@ -1702,6 +1717,8 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
                 bAppendedTrackFlag = true;
             }
         }
+
+        manageTracksAction->setEnabled(bAppendedTrackFlag); // Disable this submenu if no tracks were added.
 
         bAppended = bAppendedTrackFlag || bAppended;
     }
@@ -1872,12 +1889,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
             {
                 pCurrentNode = findIter->second.get();
             }
-            else
-            {
-                STrackMenuTreeNode* pNewNode = new STrackMenuTreeNode;
-                pCurrentNode->children[segment] = std::unique_ptr<STrackMenuTreeNode>(pNewNode);
-                pCurrentNode = pNewNode;
-            }
+            //else {} - keep current node to avoid unnecessary nesting
         }
 
         // only add tracks to the that STrackMenuTreeNode tree that haven't already been added

@@ -61,7 +61,11 @@ float2 LtcCoords(float cosTheta, float roughness)
 // Constructs an LTC matrix from the provided texture and coordinates.
 float3x3 LtcMatrix(Texture2D<float4> ltcMatrix, float2 coord)
 {
+    #ifdef CS_SAMPLERS
+    float4 t = ltcMatrix.SampleLevel(SceneSrg::LtcSampler, coord, 0);
+    #else
     float4 t = ltcMatrix.Sample(SceneSrg::LtcSampler, coord);
+    #endif
 
     return float3x3(
         1.0, 0.0, t.w,
@@ -405,7 +409,11 @@ void LtcQuadEvaluate(
     float specular = LtcEvaluateSpecularUnscaled(ltcCoords, ltcMatrix, polygon, vertexCount, doubleSided);
 
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
+    #ifdef CS_SAMPLERS
+    float2 schlick = ltcAmpMatrix.SampleLevel(SceneSrg::LtcSampler, ltcCoords, 0).xy;
+    #else
     float2 schlick = ltcAmpMatrix.Sample(SceneSrg::LtcSampler, ltcCoords).xy;
+    #endif
     float3 specularRgb = specular * (schlick.x * surface.GetSpecularF0() + (1.0 - surface.GetSpecularF0()) * schlick.y);
     
 #if ENABLE_CLEAR_COAT
@@ -631,7 +639,11 @@ void LtcPolygonEvaluate(
     specular = -specular;
 
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
+    #ifdef CS_SAMPLERS
+    float2 schlick = ltcAmpMatrix.SampleLevel(SceneSrg::LtcSampler, ltcCoords, 0).xy;
+    #else
     float2 schlick = ltcAmpMatrix.Sample(SceneSrg::LtcSampler, ltcCoords).xy;
+    #endif
     float3 specularRgb = specular * ((schlick.x * surface.GetSpecularF0()) + (1.0 - surface.GetSpecularF0()) * schlick.y);
 
 #if ENABLE_CLEAR_COAT

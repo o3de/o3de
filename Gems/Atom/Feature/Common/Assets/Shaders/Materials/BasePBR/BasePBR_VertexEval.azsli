@@ -19,7 +19,7 @@
 #define EvaluateVertexGeometry EvaluateVertexGeometry_BasePBR
 #endif
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/RPI/TangentSpace.azsli>
 #include <Atom/Features/InstancedTransforms.azsli>
 

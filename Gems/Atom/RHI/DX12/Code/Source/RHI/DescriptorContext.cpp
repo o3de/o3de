@@ -195,7 +195,15 @@ namespace AZ
             bool isRayTracingAccelerationStructure = RHI::CheckBitsAll(buffer.GetDescriptor().m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure);
             ID3D12Resource* resource = isRayTracingAccelerationStructure ? nullptr : buffer.GetMemoryView().GetMemory();
             m_device->CreateShaderResourceView(resource, &viewDesc, descriptorHandle);
-            staticView = AllocateStaticDescriptor(descriptorHandle);
+
+            staticView = m_staticPool.AllocateHandle(1);
+            AZ_Assert(!staticView.IsNull(), "Failed to allocate static descriptor from shader-visible CBV_SRV_UAV heap");
+            D3D12_SHADER_RESOURCE_VIEW_DESC staticViewDesc;
+            RHI::BufferViewDescriptor rawDesc = RHI::BufferViewDescriptor::CreateRaw(
+                bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
+                bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize);
+            ConvertBufferView(buffer, rawDesc, staticViewDesc);
+            m_device->CreateShaderResourceView(resource, &staticViewDesc, m_staticPool.GetCpuPlatformHandle(staticView));
         }
 
         void DescriptorContext::CreateUnorderedAccessView(
@@ -238,7 +246,16 @@ namespace AZ
                 }
             }
             CopyDescriptor(unorderedAccessViewClear, unorderedAccessView);
-            staticView = AllocateStaticDescriptor(unorderedAccessDescriptor);
+
+            staticView = m_staticPool.AllocateHandle(1);
+            AZ_Assert(!staticView.IsNull(), "Failed to allocate static descriptor from shader-visible CBV_SRV_UAV heap");
+            D3D12_UNORDERED_ACCESS_VIEW_DESC staticViewDesc;
+            RHI::BufferViewDescriptor rawDesc = RHI::BufferViewDescriptor::CreateRaw(
+                bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
+                bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize);
+            ConvertBufferView(buffer, rawDesc, staticViewDesc);
+            m_device->CreateUnorderedAccessView(
+                buffer.GetMemoryView().GetMemory(), nullptr, &staticViewDesc, m_staticPool.GetCpuPlatformHandle(staticView));
         }
 
         void DescriptorContext::CreateShaderResourceView(

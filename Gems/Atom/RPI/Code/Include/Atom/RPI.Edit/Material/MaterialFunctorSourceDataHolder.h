@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <Atom/RPI.Reflect/Base.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 
 namespace AZ
@@ -20,7 +21,7 @@ namespace AZ
     {
         //! The wrapper class for derived material functors.
         //! It is used in deserialization so that derived material functors can be deserialized by name.
-        class MaterialFunctorSourceDataHolder final
+        class ATOM_RPI_EDIT_API MaterialFunctorSourceDataHolder final
             : public AZStd::intrusive_base
         {
             friend class JsonMaterialFunctorSourceDataSerializer;

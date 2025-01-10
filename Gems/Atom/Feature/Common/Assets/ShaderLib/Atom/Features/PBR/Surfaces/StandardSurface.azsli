@@ -52,7 +52,7 @@ class Surface
     real metallic;             //!< Surface metallic property
     real roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
     real roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
-    real roughnessA2;          //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
+    float roughnessA2;         //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance. Float precision is needed as values can get very close to 0
 
     // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
     // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
@@ -88,43 +88,9 @@ class Surface
     real3 GetSpecularF0() { return specularF0; }
 };
 
-// Specular Anti-Aliasing technique from this paper:
-// http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
-void Surface::ApplySpecularAA()
-{
-    // Constants for formula below
-    const float screenVariance = 0.25;
-    const float varianceThresh = 0.18;
-    
-    // Specular Anti-Aliasing
-    float3 dndu = ddx_fine( float3(normal) );
-    float3 dndv = ddy_fine( float3(normal) );
-    float variance = screenVariance * (dot( dndu , dndu ) + dot( dndv , dndv ));
-    float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
-    float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
-    roughnessA2 = real(filteredRoughnessA2);
-
-    roughnessA = sqrt(roughnessA2);
-    roughnessLinear = sqrt(roughnessA);
-}
-
 void Surface::CalculateRoughnessA()
 {
-    // The roughness value in microfacet calculations (called "alpha" in the literature) does not give perceptually
-    // linear results. Disney found that squaring the roughness value before using it in microfacet equations causes
-    // the user-provided roughness parameter to be more perceptually linear. We keep both values available as some
-    // equations need roughnessLinear (i.e. IBL sampling) while others need roughnessA (i.e. GGX equations).
-    // See Burley's Disney PBR: https://pdfs.semanticscholar.org/eeee/3b125c09044d3e2f58ed0e4b1b66a677886d.pdf
-
-    roughnessA = max(roughnessLinear * roughnessLinear, MinRoughnessA);
-    roughnessA2 = roughnessA * roughnessA;
-
-#if ENABLE_SPECULARAA
-    if(o_applySpecularAA)
-    {
-        ApplySpecularAA();
-    }
-#endif
+    CalculateRoughnessValues(normal, roughnessLinear, roughnessA, roughnessA2);
 }
 
 void Surface::SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF0Factor, real newMetallic)

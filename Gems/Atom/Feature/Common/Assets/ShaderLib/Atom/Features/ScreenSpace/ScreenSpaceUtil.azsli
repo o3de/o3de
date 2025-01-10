@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 // Given a depthStencil depth and the fragment XY position, reconstruct the world space position
 // screenCoords - from 0.. dimension of the screen of the current pixel

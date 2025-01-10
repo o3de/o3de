@@ -327,6 +327,7 @@ struct ITrackViewSequenceManager
     virtual void OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence) = 0;
 
     virtual void OnSequenceActivated(const AZ::EntityId& entityId) = 0;
+    virtual void OnSequenceDeactivated(const AZ::EntityId& entityId) = 0;
 };
 
 //! Interface to expose TrackViewSequence functionality to SequenceComponent
@@ -429,7 +430,6 @@ struct IEditor
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
     virtual const QColor& GetColorByName(const QString& name) = 0;
 
-    virtual struct IMovieSystem* GetMovieSystem() = 0;
     virtual class CPluginManager* GetPluginManager() = 0;
     virtual class CViewManager* GetViewManager() = 0;
     virtual class CViewport* GetActiveView() = 0;

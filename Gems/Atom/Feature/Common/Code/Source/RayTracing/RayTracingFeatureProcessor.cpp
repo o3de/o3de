@@ -1125,64 +1125,62 @@ namespace AZ
                 return;
             }
 
+            // determine which devices need RayTracingAccelerationStructurePasses and distribute multiple existing ones to the devices
+            AZ::RPI::Pass* firstRayTracingAccelerationStructurePass{ nullptr };
+            auto rayTracingDeviceMask{ RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
+            AZ::RHI::MultiDevice::DeviceMask devicesToAdd{ rayTracingDeviceMask };
+
             // only enable the RayTracingAccelerationStructurePass for each device on the first pipeline in this scene, this will avoid
             // multiple updates to the same AS
-            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
-                || changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
-            {
-                AZ::RPI::Pass* firstRayTracingAccelerationStructurePass{ nullptr };
-                auto rayTracingDeviceMask{ RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
-                AZ::RHI::MultiDevice::DeviceMask devicesToAdd{ rayTracingDeviceMask };
-
-                AZ::RPI::PassFilter passFilter =
-                    AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("RayTracingAccelerationStructurePassTemplate"), GetParentScene());
-                AZ::RPI::PassSystemInterface::Get()->ForEachPass(
-                    passFilter,
-                    [&devicesToAdd, &firstRayTracingAccelerationStructurePass, &rayTracingDeviceMask](
-                        AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
-                    {
-                        if (!firstRayTracingAccelerationStructurePass)
-                        {
-                            firstRayTracingAccelerationStructurePass = pass;
-                        }
-
-                        // we always set an invalid device index to the first available device
-                        if (pass->GetDeviceIndex() == RHI::MultiDevice::InvalidDeviceIndex)
-                        {
-                            pass->SetDeviceIndex(az_ctz_u32(AZStd::to_underlying(rayTracingDeviceMask)));
-                        }
-
-                        auto mask = RHI::MultiDevice::DeviceMask(AZ_BIT(pass->GetDeviceIndex()));
-
-                        // only have one RayTracingAccelerationStructurePass per device
-                        pass->SetEnabled((mask & devicesToAdd) != RHI::MultiDevice::NoDevices);
-                        devicesToAdd &= ~mask;
-
-                        return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
-                    });
-
-                // we only add the passes on the other devices if the pipeline contains one in the first place
-                if (firstRayTracingAccelerationStructurePass)
+            AZ::RPI::PassFilter passFilter =
+                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("RayTracingAccelerationStructurePassTemplate"), GetParentScene());
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(
+                passFilter,
+                [&devicesToAdd, &firstRayTracingAccelerationStructurePass, &rayTracingDeviceMask](
+                    AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                 {
-                    // add passes for the remaining devices
-                    while (devicesToAdd != RHI::MultiDevice::NoDevices)
+                    if (!firstRayTracingAccelerationStructurePass)
                     {
-                        auto deviceIndex{ az_ctz_u32(AZStd::to_underlying(devicesToAdd)) };
-
-                        AZStd::shared_ptr<RPI::PassRequest> passRequest = AZStd::make_shared<RPI::PassRequest>();
-                        passRequest->m_templateName = Name("RayTracingAccelerationStructurePassTemplate");
-                        passRequest->m_passName = Name("RayTracingAccelerationStructurePass" + AZStd::to_string(deviceIndex));
-
-                        AZStd::shared_ptr<RPI::PassData> passData = AZStd::make_shared<RPI::PassData>();
-                        passData->m_deviceIndex = deviceIndex;
-                        passRequest->m_passData = passData;
-
-                        auto pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest.get());
-
-                        renderPipeline->AddPassAfter(pass, firstRayTracingAccelerationStructurePass->GetName());
-
-                        devicesToAdd &= RHI::MultiDevice::DeviceMask(~AZ_BIT(deviceIndex));
+                        firstRayTracingAccelerationStructurePass = pass;
                     }
+
+                    // we always set an invalid device index to the first available device
+                    if (pass->GetDeviceIndex() == RHI::MultiDevice::InvalidDeviceIndex)
+                    {
+                        pass->SetDeviceIndex(az_ctz_u32(AZStd::to_underlying(rayTracingDeviceMask)));
+                    }
+
+                    auto mask = RHI::MultiDevice::DeviceMask(AZ_BIT(pass->GetDeviceIndex()));
+
+                    // only have one RayTracingAccelerationStructurePass per device
+                    pass->SetEnabled((mask & devicesToAdd) != RHI::MultiDevice::NoDevices);
+                    devicesToAdd &= ~mask;
+
+                    return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
+
+            // we only add the passes on the other devices if the pipeline contains one in the first place
+            if (firstRayTracingAccelerationStructurePass && changeType != RPI::SceneNotification::RenderPipelineChangeType::Removed &&
+                renderPipeline->FindFirstPass(firstRayTracingAccelerationStructurePass->GetName()))
+            {
+                // add passes for the remaining devices
+                while (devicesToAdd != RHI::MultiDevice::NoDevices)
+                {
+                    auto deviceIndex{ az_ctz_u32(AZStd::to_underlying(devicesToAdd)) };
+
+                    AZStd::shared_ptr<RPI::PassRequest> passRequest = AZStd::make_shared<RPI::PassRequest>();
+                    passRequest->m_templateName = Name("RayTracingAccelerationStructurePassTemplate");
+                    passRequest->m_passName = Name("RayTracingAccelerationStructurePass" + AZStd::to_string(deviceIndex));
+
+                    AZStd::shared_ptr<RPI::PassData> passData = AZStd::make_shared<RPI::PassData>();
+                    passData->m_deviceIndex = deviceIndex;
+                    passRequest->m_passData = passData;
+
+                    auto pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest.get());
+
+                    renderPipeline->AddPassAfter(pass, firstRayTracingAccelerationStructurePass->GetName());
+
+                    devicesToAdd &= RHI::MultiDevice::DeviceMask(~AZ_BIT(deviceIndex));
                 }
             }
         }

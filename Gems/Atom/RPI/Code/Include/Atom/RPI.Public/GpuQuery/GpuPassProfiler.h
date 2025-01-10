@@ -10,6 +10,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/Name/Name.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 
 namespace AZ
@@ -26,7 +27,7 @@ namespace AZ
         //! REMARK: Use judiciously, as MeasureGpuTimeInNanoseconds() can itself affect performance when called.
         //! For example, if a scene is running at 300fps, calling MeasureGpuTimeInNanoseconds(), each frame, can reduce the FPS to
         //! ~265fps.
-        class GpuPassProfiler final
+        class ATOM_RPI_PUBLIC_API GpuPassProfiler final
         {
         public:
 

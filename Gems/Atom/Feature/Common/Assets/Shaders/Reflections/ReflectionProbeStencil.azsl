@@ -16,7 +16,7 @@
 // stenciled with the UseIBLSpecularPass value when they were rendered in the forward pass.
 // It increases the stencil value if they are in an inner volume.
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {

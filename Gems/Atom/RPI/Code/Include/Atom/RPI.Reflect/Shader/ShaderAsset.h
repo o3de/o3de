@@ -13,6 +13,7 @@
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
@@ -51,11 +52,13 @@ namespace AZ
                             //!< with dxc, or spirv-cross, etc.
         };
 
-        class ShaderAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ShaderAsset final
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler
             , public AssetInitBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderAssetCreator;
             friend class ShaderAssetHandler;
             friend class ShaderAssetTester;
@@ -273,6 +276,13 @@ namespace AZ
                 AZStd::vector<Supervariant> m_supervariants;
             };
 
+            //! Searches across all Supervariants for the matching AssetId of the each Root
+            //! ShaderVariantAsset. The first root ShaderVariantAsset that matches is replaced
+            //! with @shaderVariantAsset.
+            //! @returns true if a matching AssetId was found and replaced.
+            //! @remark This function is only useful during Shader::OnAssetReloaded.
+            bool UpdateRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+
             bool PostLoadInit() override;
             void SetReady();
 
@@ -333,9 +343,11 @@ namespace AZ
             bool m_isFullySpecialized = false;
         };
 
-        class ShaderAssetHandler final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ShaderAssetHandler final
             : public AssetHandler<ShaderAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ShaderAsset>;
         public:
             ShaderAssetHandler() = default;

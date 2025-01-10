@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/RHIBus.h>
 #include <RHI/BufferD3D12MemoryAllocator.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -38,6 +39,21 @@ namespace AZ
             AZ_PROFILE_FUNCTION(RHI);
 
 #ifdef USE_AMD_D3D12MA
+            struct
+            {
+                size_t m_alignment = 0;
+                void operator=(size_t value)
+                {
+                    m_alignment = AZStd::max(m_alignment, value);
+                }
+            } alignment;
+            RHI::RHIRequirementRequestBus::BroadcastResult(
+                alignment, &RHI::RHIRequirementsRequest::GetRequiredAlignment, *m_descriptor.m_device);
+            if (alignment.m_alignment && sizeInBytes > alignment.m_alignment)
+            {
+                sizeInBytes = ((sizeInBytes + alignment.m_alignment - 1) / alignment.m_alignment) * alignment.m_alignment;
+            }
+
             RHI::BufferDescriptor bufferDescriptor;
             bufferDescriptor.m_byteCount = azlossy_caster(sizeInBytes);
             bufferDescriptor.m_bindFlags = m_descriptor.m_bindFlags;

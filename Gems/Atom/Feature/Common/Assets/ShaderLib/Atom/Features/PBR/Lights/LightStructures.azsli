@@ -1,0 +1,140 @@
+
+#pragma once
+
+// Directional Lights
+struct DirectionalLight
+{
+    float3 m_direction;
+    float m_angularRadius;
+    float3 m_rgbIntensityLux;
+    float m_affectsGIFactor;
+    bool m_affectsGI;
+    uint m_lightingChannelMask;
+    float2 m_padding;
+};
+
+// Simple Point Lights
+
+struct SimplePointLight
+{
+    float3 m_position;
+    float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+    float3 m_rgbIntensityCandelas;
+    float m_affectsGIFactor;
+    bool m_affectsGI;
+    uint m_lightingChannelMask;
+    float2 m_padding;
+    [[pad_to(16)]]  // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
+};
+
+// Simple Spot Lights
+
+struct SimpleSpotLight
+{
+    float4x4 m_viewProjectionMatrix; // Light's view projection matrix. Used to calculate uv for gobo
+    float3 m_position;
+    float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+    float3 m_direction;
+    float m_cosInnerConeAngle; // cosine of the outer cone angle
+    float3 m_rgbIntensityCandelas;
+    float m_cosOuterConeAngle; // cosine of the inner cone angle
+    uint m_shadowIndex;
+    uint m_goboTexIndex;
+    float m_affectsGIFactor;
+    bool m_affectsGI;
+    uint m_lightingChannelMask;
+    [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
+};
+
+// Point lights (sphere lights)
+
+struct PointLight
+{
+    float3 m_position;
+    float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+    float3 m_rgbIntensityCandelas;
+    float m_bulbRadius;
+    uint3 m_shadowIndices;
+    float m_affectsGIFactor;
+    bool m_affectsGI;
+    uint m_lightingChannelMask;
+    float2 m_padding;
+};
+
+// Disk Lights
+
+enum DiskLightFlag
+{
+    UseConeAngle = 1,
+};
+
+struct DiskLight
+{
+    float3 m_position;
+    float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+    float3 m_rgbIntensityCandelas;
+    float m_diskRadius;
+    float3 m_direction;
+    uint m_flags;
+    float m_cosInnerConeAngle;
+    float m_cosOuterConeAngle;
+    float m_bulbPositionOffset;
+    uint m_shadowIndex;
+    float m_affectsGIFactor;
+    bool m_affectsGI;
+    uint m_lightingChannelMask;
+    float m_padding;
+};
+
+// Capsule Lights
+    
+struct CapsuleLight
+{
+    float3 m_startPoint;   // One of the end points of the capsule
+    float m_radius;        // Radius of the capsule, ie distance from line segment to surface.
+    float3 m_direction;    // normalized vector from m_startPoint towards the other end point.
+    float m_length;        // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
+    float3 m_rgbIntensityCandelas; // total rgb luminous intensity of the capsule in candelas
+    float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+    float m_affectsGIFactor;
+    bool m_affectsGI;
+    uint m_lightingChannelMask;
+    float m_padding;
+};
+
+// Quad Lights
+
+enum QuadLightFlag
+{
+    None = 0x00,
+    EmitsBothDirections  = 0x01, // 1 << 0, // Quad should emit light from both sides
+    UseFastApproximation = 0x02, // 1 << 1, // Use a fast approximation instead of linearly transformed cosines.
+};
+
+struct QuadLight
+{
+    float3 m_position;
+    float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+    float3 m_leftDir; // Direction from center of quad to the left edge
+    float m_halfWidth; // Half the width of the quad. m_leftDir * m_halfWidth is a vector from the center to the left edge.
+    float3 m_upDir; // Direction from center of quad to the top edge
+    float m_halfHeight; // Half the height of the quad. m_upDir * m_halfHeight is a vector from the center to the top edge.
+    float3 m_rgbIntensityNits;
+    uint m_flags; // See QuadLightFlag enum
+    float m_affectsGIFactor;
+    bool m_affectsGI;
+    uint m_lightingChannelMask;
+    float m_padding;
+};
+
+// Polygon Lights
+
+struct PolygonLight
+{
+    float3 m_position;
+    uint m_startEndIndex; // 16 bit start and end indices packed into one 32 bit uint
+    float3 m_rgbIntensityNits;
+    float m_invAttenuationRadiusSquared; // negative sign bit indicates double sided.
+    float3 m_direction;
+    uint m_lightingChannelMask;
+};

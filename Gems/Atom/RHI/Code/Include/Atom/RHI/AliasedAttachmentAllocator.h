@@ -515,7 +515,7 @@ namespace AZ::RHI
     template<class Heap>
     AliasedHeap* AliasedAttachmentAllocator<Heap>::AddAliasedHeapPage(size_t sizeInBytes, uint32_t heapIndex)
     {
-        size_t newHeapSize = static_cast<size_t>(GetHeapPageScaleFactor() * sizeInBytes);
+        size_t newHeapSize = static_cast<size_t>(AlignUp(GetHeapPageScaleFactor() * sizeInBytes, m_descriptor.m_alignment));
 
         typename Heap::Descriptor heapDescriptor = m_descriptor;
         heapDescriptor.m_budgetInBytes = newHeapSize;

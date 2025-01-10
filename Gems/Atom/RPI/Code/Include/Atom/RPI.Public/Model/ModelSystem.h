@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 
 namespace AZ
@@ -16,7 +17,7 @@ namespace AZ
     namespace RPI
     {
         //! Manages system-wide initialization and support for Model classes
-        class ModelSystem
+        class ATOM_RPI_PUBLIC_API ModelSystem
         {
         public:
             static void Reflect(AZ::ReflectContext* context);

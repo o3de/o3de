@@ -50,6 +50,24 @@ namespace AZ::Vulkan
 
     using DeviceRequirementBus = AZ::EBus<DeviceRequirementsRequest>;
 
+    //! Ebus for collecting requirements external handle requirements for creating memory/semaphores
+    class ExternalHandleRequirementsRequest : public AZ::EBusTraits
+    {
+    public:
+        virtual ~ExternalHandleRequirementsRequest() = default;
+
+        //! Collects requirements for external memory when allocating memory
+        virtual void CollectExternalMemoryRequirements([[maybe_unused]] VkExternalMemoryHandleTypeFlagsKHR& flags){};
+        //! Collect requirements for semaphore export when creating timeline semaphores
+        virtual void CollectSemaphoreExportHandleTypes([[maybe_unused]] VkExternalSemaphoreHandleTypeFlags& flags){};
+
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        using MutexType = AZStd::mutex;
+        static constexpr bool LocklessDispatch = true;
+    };
+
+    using ExternalHandleRequirementBus = AZ::EBus<ExternalHandleRequirementsRequest>;
+
     //! Notifications related to Vulkan instance operations.
     class InstanceNotification
         : public AZ::EBusTraits

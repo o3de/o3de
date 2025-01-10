@@ -9,12 +9,13 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        class BufferAssetView final
+        class ATOM_RPI_REFLECT_API BufferAssetView final
         {
         public:
             AZ_TYPE_INFO(BufferAssetView, "{D2A51B9F-4210-477E-B253-0095EAF68230}");

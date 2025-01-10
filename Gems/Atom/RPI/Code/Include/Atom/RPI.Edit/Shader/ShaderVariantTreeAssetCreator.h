@@ -9,6 +9,7 @@
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 
 namespace AZ
@@ -16,7 +17,7 @@ namespace AZ
     namespace RPI
     {
         //! The "builder" pattern class that creates a ShaderVariantTreeAsset.
-        class ShaderVariantTreeAssetCreator final
+        class ATOM_RPI_EDIT_API ShaderVariantTreeAssetCreator final
             : public AssetCreator<ShaderVariantTreeAsset>
 
         {

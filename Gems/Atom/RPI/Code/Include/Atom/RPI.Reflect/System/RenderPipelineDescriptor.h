@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/System/PipelineRenderSettings.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -29,7 +30,7 @@ namespace AZ
 
 
         //! A descriptor used to create a render pipeline
-        struct RenderPipelineDescriptor final
+        struct ATOM_RPI_REFLECT_API RenderPipelineDescriptor final
         {
             AZ_TYPE_INFO(RenderPipelineDescriptor, "{B1A5CF41-AC8D-440E-A1E9-3544D7F3445B}");
             static void Reflect(AZ::ReflectContext* context);

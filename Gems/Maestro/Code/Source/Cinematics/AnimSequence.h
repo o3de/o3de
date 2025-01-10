@@ -7,11 +7,6 @@
  */
 
 
-// Description : Implementation of IAnimSequence interface.
-
-#ifndef CRYINCLUDE_CRYMOVIE_ANIMSEQUENCE_H
-#define CRYINCLUDE_CRYMOVIE_ANIMSEQUENCE_H
-
 #pragma once
 
 #include "IMovieSystem.h"
@@ -27,7 +22,7 @@ public:
     AZ_CLASS_ALLOCATOR(CAnimSequence, AZ::SystemAllocator)
     AZ_RTTI(CAnimSequence, "{5127191A-0E7C-4C6F-9AF2-E5544F07BF22}", IAnimSequence);
 
-    CAnimSequence(IMovieSystem* pMovieSystem, uint32 id, SequenceType = kSequenceTypeDefault);
+    CAnimSequence(uint32 id, SequenceType = kSequenceTypeDefault);
     CAnimSequence();
     ~CAnimSequence();
 
@@ -217,4 +212,3 @@ private:
     unsigned int m_nextTrackId = 1;
 };
 
-#endif // CRYINCLUDE_CRYMOVIE_ANIMSEQUENCE_H

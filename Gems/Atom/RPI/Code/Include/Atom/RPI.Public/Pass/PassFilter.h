@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 
 #include <AzCore/Name/Name.h>
@@ -19,7 +20,7 @@ namespace AZ
         class Scene;
         class RenderPipeline;
 
-        class PassFilter
+        class ATOM_RPI_PUBLIC_API PassFilter
         {
         public:
             static PassFilter CreateWithPassName(Name passName, const Scene* scene);

@@ -131,6 +131,12 @@ namespace AZ::RHI
             }
         }
 
+        void SetDevicePipelineState(int deviceIndex, const DevicePipelineState* devicePipelineState)
+        {
+            auto& dispatchItem = m_deviceDispatchItems.at(deviceIndex);
+            dispatchItem.m_pipelineState = devicePipelineState;
+        }
+
         //! Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
         void SetShaderResourceGroups(
             const AZStd::span<const ShaderResourceGroup*> shaderResourceGroups)
@@ -145,6 +151,18 @@ namespace AZ::RHI
             }
         }
 
+        void SetDeviceShaderResourceGroups(int deviceIndex,
+            const DeviceShaderResourceGroup* const* shaderResourceGroups,
+            uint8_t shaderResourceGroupCount)
+        {
+            auto& dispatchItem = m_deviceDispatchItems.at(deviceIndex);
+            dispatchItem.m_shaderResourceGroupCount = shaderResourceGroupCount;
+            for (uint8_t i = 0; i < shaderResourceGroupCount; i++)
+            {
+                dispatchItem.m_shaderResourceGroups[i] = shaderResourceGroups[i];
+            }
+        }
+
         //! Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback
         //! key
         void SetUniqueShaderResourceGroup(const ShaderResourceGroup* uniqueShaderResourceGroup)
@@ -153,6 +171,13 @@ namespace AZ::RHI
             {
                 dispatchItem.m_uniqueShaderResourceGroup = uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get();
             }
+        }
+
+        void SetUniqueDeviceShaderResourceGroup(int deviceIndex,
+            const DeviceShaderResourceGroup* uniqueShaderResourceGroup)
+        {
+            auto& dispatchItem = m_deviceDispatchItems.at(deviceIndex);
+            dispatchItem.m_uniqueShaderResourceGroup = uniqueShaderResourceGroup;
         }
 
         //! Inline constants data.

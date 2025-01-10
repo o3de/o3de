@@ -199,6 +199,7 @@ namespace AzFramework
         , m_rawMovementSampleRate()
         , m_rawButtonEventQueuesById()
         , m_rawMovementEventQueuesById()
+        , m_captureCursor()
     {
         m_timeOfLastRawMovementSample[0] = m_timeOfLastRawMovementSample[1] = m_timeOfLastRawMovementSample[2] = AZStd::chrono::steady_clock::now();
 

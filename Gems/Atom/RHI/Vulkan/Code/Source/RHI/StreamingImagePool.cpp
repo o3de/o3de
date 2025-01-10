@@ -159,7 +159,7 @@ namespace AZ
 
             // Queue upload tail mip slices and wait for it finished.
             RHI::DeviceStreamingImageExpandRequest uploadMipRequest;
-            uploadMipRequest.m_image = &image;
+            uploadMipRequest.m_image = request.m_image;
             uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
             uploadMipRequest.m_waitForUpload = true;
             device.GetAsyncUploadQueue().QueueUpload(uploadMipRequest, request.m_descriptor.m_mipLevels);
@@ -179,7 +179,6 @@ namespace AZ
 
             const uint16_t residentMipLevelBefore = static_cast<uint16_t>(image.GetResidentMipLevel());
             const uint16_t residentMipLevelAfter = residentMipLevelBefore - static_cast<uint16_t>(request.m_mipSlices.size());
-            
             RHI::ResultCode result = image.AllocateAndBindMemory(*this, residentMipLevelAfter);
 
             if (result != RHI::ResultCode::Success)

@@ -9,8 +9,10 @@
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
+
 namespace AZ
 {
     namespace RPI
@@ -23,7 +25,7 @@ namespace AZ
         //! It has optional pointers to a PassTemplate and a PassRequest
         //! If the PassRequest is valid then the PassTemplate must also be valid
         //! and point to the PassTemplate used by the PassRequest.
-        struct PassDescriptor
+        struct ATOM_RPI_REFLECT_API PassDescriptor
         {
             AZ_TYPE_INFO(PassDescriptor, "{71E0E3D4-58FC-4254-BA7B-5A7ADFE15FE7}");
 

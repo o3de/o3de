@@ -12,6 +12,7 @@
 #include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/string/string.h>
 
@@ -20,7 +21,7 @@ namespace AZ::RPI
     //! A class which manages a FrameCountMax number of RPI buffers and manages them in a ring buffer structure, meaning that whenever data
     //! needs to be updated, the current buffer index is incremented (mod FrameCountMax) and the data is then written to the new current
     //! buffer, such that the other buffers stay valid.
-    class RingBuffer : public RHI::FrameCountMaxRingBuffer<Data::Instance<Buffer>>
+    class ATOM_RPI_PUBLIC_API RingBuffer : public RHI::FrameCountMaxRingBuffer<Data::Instance<Buffer>>
     {
         AZStd::string m_bufferName;
         CommonBufferPoolType m_bufferPoolType{ CommonBufferPoolType::ReadOnly };

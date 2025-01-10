@@ -318,6 +318,17 @@ inline double Round(double fVal, double fStep)
     {
         return AzToolsFramework::HelpersVisible();
     }
+
+    void PyToggleIcons()
+    {
+        AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+        AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+    }
+
+    bool PyIsIconsShown()
+    {
+        return AzToolsFramework::IconsVisible();
+    }
 } // namespace
 
 namespace AzToolsFramework
@@ -336,6 +347,8 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("toggle_helpers", PyToggleHelpers, nullptr, "Toggles the display of helpers."));
             addLegacyGeneral(behaviorContext->Method("is_helpers_shown", PyIsHelpersShown, nullptr, "Gets the display state of helpers."));
+            addLegacyGeneral(behaviorContext->Method("toggle_icons", PyToggleIcons, nullptr, "Toggles the display of icons."));
+            addLegacyGeneral(behaviorContext->Method("is_icons_shown", PyIsIconsShown, nullptr, "Gets the display state of icons."));
         }
     }
 } // namespace AzToolsFramework

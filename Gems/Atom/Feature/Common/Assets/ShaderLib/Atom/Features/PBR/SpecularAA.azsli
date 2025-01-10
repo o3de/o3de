@@ -8,6 +8,12 @@
 
 #pragma once
 
+#ifndef ENABLE_SPECULARAA
+#define ENABLE_SPECULARAA 1
+#endif
+
+#if ENABLE_SPECULARAA
+
 option bool o_applySpecularAA;
 
 // Specular Anti-Aliasing technique from this paper:
@@ -33,3 +39,5 @@ float CalculateSpecularAA(float3 normal, float roughnessA2)
     float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
     return filteredRoughnessA2;
 }
+
+#endif

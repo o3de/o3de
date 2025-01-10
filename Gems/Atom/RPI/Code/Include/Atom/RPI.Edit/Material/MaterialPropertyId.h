@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/span.h>
 
@@ -20,7 +21,7 @@ namespace AZ
         //! Utility for building material property IDs.
         //! These IDs are represented like "groupA.groupB.[...].propertyName".
         //! The groups are optional, in which case the full property ID will just be like "propertyName".
-        class MaterialPropertyId
+        class ATOM_RPI_EDIT_API MaterialPropertyId
         {
         public:
             //! Creates a MaterialPropertyId from a full name string like "groupA.groupB.[...].propertyName" or just "propertyName".

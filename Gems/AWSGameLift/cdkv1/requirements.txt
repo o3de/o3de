@@ -1,4 +1,0 @@
-aws-cdk.core>=1.91.0
-aws-cdk.aws_gamelift>=1.91.0
-aws-cdk.aws_iam>=1.91.0
-aws-cdk.aws_s3_assets>=1.91.0

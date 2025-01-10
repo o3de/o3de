@@ -14,6 +14,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
@@ -30,7 +31,7 @@ namespace AZ
 
         //! This is a simple data structure for serializing in/out .materialtype source files.
         //! The .materialtype file has two slightly different formats: "abstract" and "direct". See enum Format below.
-        class MaterialTypeSourceData final
+        class ATOM_RPI_EDIT_API MaterialTypeSourceData final
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData, "{14085B6F-42E8-447D-9833-E1E45C2510B2}");
@@ -59,7 +60,7 @@ namespace AZ
                 Direct
             };
 
-            struct GroupDefinition
+            struct ATOM_RPI_EDIT_API GroupDefinition
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::GroupDefinition, "{B2D0FC5C-72A3-435E-A194-1BFDABAC253D}");
 
@@ -73,7 +74,7 @@ namespace AZ
                 
             using PropertyList = AZStd::vector<AZStd::unique_ptr<MaterialPropertySourceData>>;
 
-            struct PropertyGroup
+            struct ATOM_RPI_EDIT_API PropertyGroup
             {
                 friend class MaterialTypeSourceData;
                 
@@ -124,7 +125,7 @@ namespace AZ
                 AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
             };
 
-            struct ShaderVariantReferenceData
+            struct ATOM_RPI_EDIT_API ShaderVariantReferenceData
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::ShaderVariantReferenceData, "{927F3AAE-C0A9-4B79-B773-A97211E4E514}");
 
@@ -145,7 +146,7 @@ namespace AZ
 
             using VersionUpdateActions = AZStd::vector<MaterialVersionUpdate::Action::ActionDefinition>;
 
-            struct VersionUpdateDefinition
+            struct ATOM_RPI_EDIT_API VersionUpdateDefinition
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdateDefinition, "{2C9D3B91-0585-4BC9-91D2-4CF0C71BC4B7}");
 
@@ -155,7 +156,7 @@ namespace AZ
 
             using VersionUpdates = AZStd::vector<VersionUpdateDefinition>;
 
-            struct PropertyLayout
+            struct ATOM_RPI_EDIT_API PropertyLayout
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyLayout, "{AE53CF3F-5C3B-44F5-B2FB-306F0EB06393}");
 
@@ -178,7 +179,7 @@ namespace AZ
 
             //! This holds data that is specific to one material pipeline. A list of these will allow
             //! the MaterialTypeAsset to work with multiple render pipelines.
-            struct MaterialPipelineState
+            struct ATOM_RPI_EDIT_API MaterialPipelineState
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::MaterialPipelineState, "{AA4648A2-4E0A-4AAB-BC85-FE762D449CA7}");
 

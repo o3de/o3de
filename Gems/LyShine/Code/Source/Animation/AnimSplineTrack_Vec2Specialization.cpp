@@ -9,7 +9,6 @@
 
 #include "AnimSplineTrack.h"
 #include "2DSpline.h"
-#include <IMovieSystem.h>
 #include <LyShine/UiBase.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

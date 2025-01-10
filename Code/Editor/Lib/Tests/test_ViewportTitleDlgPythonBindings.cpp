@@ -54,5 +54,7 @@ namespace ViewportTitleDlgFuncsUnitTests
 
         EXPECT_TRUE(behaviorContext->m_methods.find("toggle_helpers") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("is_helpers_shown") != behaviorContext->m_methods.end());
+        EXPECT_TRUE(behaviorContext->m_methods.find("toggle_icons") != behaviorContext->m_methods.end());
+        EXPECT_TRUE(behaviorContext->m_methods.find("is_icons_shown") != behaviorContext->m_methods.end());
     }
 }

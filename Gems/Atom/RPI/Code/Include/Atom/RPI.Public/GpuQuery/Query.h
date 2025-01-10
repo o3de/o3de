@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RHI.Reflect/Interval.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -41,8 +42,8 @@ namespace AZ
         //! to record a Timestamp on frame 3, the CPU stall will ensure that the result of the Timestamp will be available on frame 6).
         //! The RPI Query will instantiate multiple SubQueries, one for each buffered frame. The SubQuery that is used for recording, will cache the
         //! FrameIndex in which it was used for recording.
-        class Query :
-            public AZStd::intrusive_refcount<AZStd::atomic_uint>
+        class ATOM_RPI_PUBLIC_API Query :
+            public AZStd::intrusive_base
         {
             friend class QueryPool;
 

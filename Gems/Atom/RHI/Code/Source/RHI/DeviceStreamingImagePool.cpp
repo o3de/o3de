@@ -43,7 +43,7 @@ namespace AZ::RHI
     {
         if (Validation::IsEnabled())
         {
-            if (!ValidateIsRegistered(expandRequest.m_image))
+            if (!ValidateIsRegistered(expandRequest.m_image.get()))
             {
                 return false;
             }
@@ -93,12 +93,12 @@ namespace AZ::RHI
         }
 
         ResultCode resultCode = DeviceImagePoolBase::InitImage(
-            initRequest.m_image,
+            initRequest.m_image.get(),
             initRequest.m_descriptor,
             [this, &initRequest]()
-        {
-            return InitImageInternal(initRequest);
-        });
+            {
+                return InitImageInternal(initRequest);
+            });
 
         if (resultCode == ResultCode::Success)
         {

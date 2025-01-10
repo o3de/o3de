@@ -190,7 +190,7 @@ namespace AZ
                 AZ_Assert(false, "Wrong input parameter");
             }
 
-            auto* image = static_cast<Image*>(request.m_image);
+            auto* image = static_cast<Image*>(request.m_image.get());
             auto& device = static_cast<Device&>(GetDevice());
 
             const uint16_t startMip = static_cast<uint16_t>(residentMip - 1);

@@ -33,6 +33,11 @@ namespace AZ
             {
                 return GetAllocation()->GetNativeBuffer();
             }
+
+            VkDeviceMemory GetNativeDeviceMemory() const
+            {
+                return GetAllocation()->GetNativeDeviceMemory();
+            }
         };
     }
 }

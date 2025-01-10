@@ -30,6 +30,7 @@
 #include <QToolButton>
 
 // AzFramework
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 
 // AzQtComponents
@@ -112,7 +113,8 @@ void CTrackViewDialog::RegisterViewClass()
     opts.showOnToolsToolbar = true;
     opts.toolbarIcon = ":/Menu/trackview_editor.svg";
 
-    if (GetIEditor()->GetMovieSystem())
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
         AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
         GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, LyViewPane::TrackView);
@@ -160,8 +162,8 @@ CTrackViewDialog::CTrackViewDialog(QWidget* pParent /*=nullptr*/)
     m_defaultTracksForEntityNode.push_back(AnimParamType::Position);
     m_defaultTracksForEntityNode.push_back(AnimParamType::Rotation);
 
-    OnInitDialog();
     AddDialogListeners();
+    OnInitDialog();
 
     AZ::EntitySystemBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
@@ -399,14 +401,14 @@ void CTrackViewDialog::InitToolbar()
     m_playToolBar->setObjectName("m_playToolBar");
     m_playToolBar->setFloatable(false);
     m_playToolBar->addWidget(new QLabel("Play:"));
-    qaction = m_playToolBar->addAction(QIcon(":/Trackview/play/tvplay-00.png"), "Go to start of sequence");
+    qaction = m_playToolBar->addAction(QIcon(":/Trackview/SequenceStart.svg"), "Go to start of sequence");
     qaction->setData(ID_TV_JUMPSTART);
     m_actions[ID_TV_JUMPSTART] = qaction;
     connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnGoToStart);
 
     toolButton = new QToolButton(m_playToolBar);
     toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    qaction = new QAction(QIcon(":/Trackview/play/tvplay-01.png"), "Play Animation", this);
+    qaction = new QAction(QIcon(":/Trackview/PlayForward.svg"), "Play Animation", this);
     qaction->setData(ID_TV_PLAY);
     qaction->setCheckable(true);
     m_actions[ID_TV_PLAY] = qaction;
@@ -443,7 +445,7 @@ void CTrackViewDialog::InitToolbar()
 
     toolButton = new QToolButton(m_playToolBar);
     toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    qaction = new QAction(QIcon(":/Trackview/play/tvplay-02.png"), "Stop", this);
+    qaction = new QAction(QIcon(":/Trackview/Stop.svg"), "Stop", this);
     qaction->setData(ID_TV_STOP);
     m_actions[ID_TV_STOP] = qaction;
     connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnStop);
@@ -451,27 +453,27 @@ void CTrackViewDialog::InitToolbar()
     {
         QMenu* buttonMenu = new QMenu(this);
         toolButton->setMenu(buttonMenu);
-        qaction = buttonMenu->addAction("Stop");
-        connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnStop);
-        toolButton->addAction(qaction);
+
+        buttonMenu->addAction(qaction);
         qaction = buttonMenu->addAction("Stop with Hard Reset");
-        qaction->setData(true);
+        qaction->setData(ID_TV_STOP_HARD_RESET);
+        m_actions[ID_TV_STOP_HARD_RESET] = qaction;
         connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnStopHardReset);
     }
     m_playToolBar->addWidget(toolButton);
 
     m_playToolBar->addSeparator();
-    qaction = m_playToolBar->addAction(QIcon(":/Trackview/play/tvplay-03.png"), "Pause");
+    qaction = m_playToolBar->addAction(QIcon(":/Trackview/Pause.svg"), "Pause");
     qaction->setData(ID_TV_PAUSE);
     qaction->setCheckable(true);
     m_actions[ID_TV_PAUSE] = qaction;
     connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnPause);
-    qaction = m_playToolBar->addAction(QIcon(":/Trackview/play/tvplay-04.png"), "Go to end of sequence");
+    qaction = m_playToolBar->addAction(QIcon(":/Trackview/SequenceEnd.svg"), "Go to end of sequence");
     qaction->setData(ID_TV_JUMPEND);
     m_actions[ID_TV_JUMPEND] = qaction;
     connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnGoToEnd);
 
-    qaction = m_playToolBar->addAction(QIcon(":/Trackview/play/tvplay-05.png"), "Start Animation Recording");
+    qaction = m_playToolBar->addAction(QIcon(":/Trackview/RecordButton.svg"), "Start Animation Recording");
     qaction->setData(ID_TV_RECORD);
     qaction->setCheckable(true);
     m_actions[ID_TV_RECORD] = qaction;
@@ -479,7 +481,7 @@ void CTrackViewDialog::InitToolbar()
 
     toolButton = new QToolButton(m_playToolBar);
     toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-    qaction = new QAction(QIcon(":/Trackview/play/tvplay-06.png"), "Start Auto Recording", this);
+    qaction = new QAction(QIcon(":/Trackview/AutoRecord.svg"), "Start Auto Recording", this);
     toolButton->addAction(qaction);
     toolButton->setDefaultAction(qaction);
     qaction->setData(ID_TV_RECORD_AUTO);
@@ -511,7 +513,7 @@ void CTrackViewDialog::InitToolbar()
     m_playToolBar->addWidget(toolButton);
 
     m_playToolBar->addSeparator();
-    qaction = m_playToolBar->addAction(QIcon(":/Trackview/play/tvplay-07.png"), "Loop");
+    qaction = m_playToolBar->addAction(QIcon(":/Trackview/Loop.svg"), "Loop");
     qaction->setData(ID_PLAY_LOOP);
     qaction->setCheckable(true);
     m_actions[ID_PLAY_LOOP] = qaction;
@@ -815,9 +817,11 @@ void CTrackViewDialog::UpdateActions()
         m_actions[ID_ADDNODE]->setEnabled(false);
     }
 
-    if (GetIEditor()->GetMovieSystem())
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
+    if (movieSystem)
     {
-        m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(GetIEditor()->GetMovieSystem()->GetNumSequences() > 0 && !m_enteringGameOrSimModeLock);
+        m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(movieSystem->GetNumSequences() > 0 && !m_enteringGameOrSimModeLock);
     }
     else
     {
@@ -852,6 +856,9 @@ void CTrackViewDialog::InvalidateDopeSheet()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::Update()
 {
+    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    bool wasReloading = m_bNeedReloadSequence;
+
     if (m_bNeedReloadSequence || m_needReAddListeners)
     {
         const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
@@ -860,7 +867,6 @@ void CTrackViewDialog::Update()
         if (m_bNeedReloadSequence)
         {
             m_bNeedReloadSequence = false;
-            CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
             pAnimationContext->SetSequence(sequence, true, false);
         }
         if (m_needReAddListeners)
@@ -870,7 +876,15 @@ void CTrackViewDialog::Update()
         }
     }
 
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    constexpr const auto noMovieCameraName = "Active Camera";
+    const auto sequence = pAnimationContext->GetSequence();
+    if (!sequence)  // Nothing to update ?
+    {
+        m_activeCamStatic->setText(noMovieCameraName);
+        SetCursorPosText(-1.0f);
+        return;
+    }
+
     float fTime = pAnimationContext->GetTime();
 
     if (fTime != m_fLastTime)
@@ -880,29 +894,43 @@ void CTrackViewDialog::Update()
     }
 
     // Display the name of the active camera in the static control, if any.
-    // The active camera node means two conditions:
-    // 1. Sequence camera is currently active.
-    // 2. The camera which owns this node has been set as the current camera by the director node.
-    if (gEnv->pMovieSystem)
+    // Having an active camera means at least the following conditions:
+    // 1. The movie system has the Animation Sequence corresponding to the active TrackView Sequence.
+    // 2. The Animation Sequence has an active Director node.
+    // 3. The current Camera parameters in the movie system are valid.
+    // TODO: invalidate the Camera parameters in the movie system when conditions 1 and 2 are not valid.
+
+    bool cameraNameSet = false;
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        AZ::EntityId camId = gEnv->pMovieSystem->GetCameraParams().cameraEntityId;
-        if (camId.IsValid())
+        const auto animSequence = movieSystem->FindSequenceById(sequence->GetCryMovieId());
+        IAnimNode* activeDirector = animSequence ? animSequence->GetActiveDirector() : nullptr;
+
+        AZ::EntityId camId = movieSystem->GetCameraParams().cameraEntityId;
+        if (camId.IsValid() && activeDirector)
         {
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, camId);
             if (entity)
             {
                 m_activeCamStatic->setText(entity->GetName().c_str());
-            }
-            else
-            {
-                m_activeCamStatic->setText("Active Camera");
+                cameraNameSet = true;
+
+                // Evaluate the corner case when the sequence is reloaded and the "Autostart" flag is set for the sequence:
+                // prepare to manually scrub this sequence if the "Autostart" flag is set.
+                if (wasReloading && ((animSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0))
+                {
+                    // Try to switch camera in the Editor Viewport Widget to the CameraComponent with the EntityId from this key,
+                    // works only in Editing mode (checked in the called method).
+                    pAnimationContext->SwitchEditorViewportCamera(camId);
+                }
             }
         }
-        else
-        {
-            m_activeCamStatic->setText("Active Camera");
-        }
+    }
+    if (!cameraNameSet)
+    {
+        m_activeCamStatic->setText(noMovieCameraName);
     }
 
     if (m_wndNodesCtrl)
@@ -1031,7 +1059,8 @@ void CTrackViewDialog::OnAddSequence()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReloadSequences()
 {
-    if (!GetIEditor()->GetMovieSystem() || m_bIgnoreUpdates || m_bDoingUndoOperation)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (!movieSystem || m_bIgnoreUpdates || m_bDoingUndoOperation)
     {
         return;
     }
@@ -1042,6 +1071,8 @@ void CTrackViewDialog::ReloadSequences()
 
     if (sequence)
     {
+        // In case a sequence was previously selected in this Editor session, - restore the selection, selecting this in ReloadSequencesComboBox().
+        m_currentSequenceEntityId = sequence->GetSequenceComponentEntityId();
         sequence->UnBindFromEditorObjects();
     }
 
@@ -1054,22 +1085,18 @@ void CTrackViewDialog::ReloadSequences()
 
     ReloadSequencesComboBox();
 
-    if (m_currentSequenceEntityId.IsValid())
+    if (m_currentSequenceEntityId.IsValid()) // A sequence force-selected when reloading the combo box ?
     {
-        CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
-        sequence = pSequenceManager->GetSequenceByEntityId(m_currentSequenceEntityId);
-
-        const float prevTime = pAnimationContext->GetTime();
-        pAnimationContext->SetSequence(sequence, true, true);
-        pAnimationContext->SetTime(prevTime);
+        OnSequenceComboBox(); // Emulate sequence selection to load it into the dialog
+        sequence = pAnimationContext->GetSequence(); // In case a latest sequence created was selected, actualize the pointer.
     }
-    else
+    else // No sequences yet
     {
         pAnimationContext->SetSequence(nullptr, true, false);
         m_sequencesComboBox->setCurrentIndex(0);
     }
 
-    if (sequence)
+    if (sequence && !sequence->IsBoundToEditorObjects())
     {
         sequence->BindToEditorObjects();
     }
@@ -1087,6 +1114,8 @@ void CTrackViewDialog::ReloadSequencesComboBox()
     m_sequencesComboBox->clear();
     m_sequencesComboBox->addItem(QString(s_kNoSequenceComboBoxEntry));
 
+    AZ::EntityId lastSequenceComponentEntityId;
+    int lastIndex = -1;
     {
         CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
@@ -1094,21 +1123,36 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         for (unsigned int k = 0; k < numSequences; ++k)
         {
             CTrackViewSequence* sequence = pSequenceManager->GetSequenceByIndex(k);
+            const auto sequenceComponentEntityId = sequence->GetSequenceComponentEntityId();
+            if (!sequenceComponentEntityId.IsValid())
+            {
+                continue;
+            }
+            lastIndex = static_cast<int>(k);
+            lastSequenceComponentEntityId = sequenceComponentEntityId;
             QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
             m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
         }
     }
 
-    if (!m_currentSequenceEntityId.IsValid())
-    {
-        m_sequencesComboBox->setCurrentIndex(0);
-    }
-    else
+    if (m_currentSequenceEntityId.IsValid())
     {
         QString entityIdString = GetEntityIdAsString(m_currentSequenceEntityId);
         m_sequencesComboBox->setCurrentIndex(m_sequencesComboBox->findData(entityIdString));
     }
+    else if (lastSequenceComponentEntityId.IsValid())
+    {
+        // Make opening the dialog more user friendly: selecting a sequence probably worked on lately,
+        // as sequences, when created, are pushed to back into corresponding container. 
+        m_currentSequenceEntityId = lastSequenceComponentEntityId;
+        m_sequencesComboBox->setCurrentIndex(lastIndex + 1);
+    }
+    else
+    {
+        m_sequencesComboBox->setCurrentIndex(0);
+    }
     m_sequencesComboBox->blockSignals(false);
+    InvalidateSequence();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1250,6 +1294,7 @@ void CTrackViewDialog::OnSequenceComboBox()
         const bool noNotify = false;
         const bool user = true;
         animationContext->SetSequence(sequence, force, noNotify, user);
+        InvalidateSequence(); // Force later update.
     }
 }
 
@@ -1536,12 +1581,15 @@ void CTrackViewDialog::OnAddSelectedNode()
         // check to make sure all nodes were added and notify user if they weren't
         if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
         {
-            IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
+            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+            if (movieSystem)
+            {
+                QMessageBox::information(this, tr("Track View Warning"), tr(movieSystem->GetUserNotificationMsgs().c_str()));
 
-            QMessageBox::information(this, tr("Track View Warning"), tr(movieSystem->GetUserNotificationMsgs().c_str()));
+                // clear the notification log now that we've consumed and presented them.
+                movieSystem->ClearUserNotificationMsgs();
+            }
 
-            // clear the notification log now that we've consumed and presented them.
-            movieSystem->ClearUserNotificationMsgs();
         }
 
         UpdateActions();

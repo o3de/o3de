@@ -280,8 +280,9 @@ namespace AZ::RHI
     {
         AZ_PROFILE_SCOPE(RHI, "FrameScheduler: CompileProducers");
 
-        for (ScopeProducer* scopeProducer : m_scopeProducers)
+        for (auto scope : m_frameGraph->GetScopes())
         {
+            auto scopeProducer = FindScopeProducer(scope->GetId());
             const FrameGraphCompileContext context(scopeProducer->GetScopeId(), m_frameGraph->GetAttachmentDatabase());
             scopeProducer->CompileResources(context);
         }

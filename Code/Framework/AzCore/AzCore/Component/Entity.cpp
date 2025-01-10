@@ -34,11 +34,6 @@
 
 #include <AzCore/Debug/Profiler.h>
 
-DECLARE_EBUS_INSTANTIATION(EntityEvents);
-DECLARE_EBUS_INSTANTIATION(TransformInterface);
-DECLARE_EBUS_INSTANTIATION(TransformNotification);
-DECLARE_EBUS_INSTANTIATION(TransformHierarchyInformation);
-
 namespace AZ
 {
     class SerializeEntityFactory

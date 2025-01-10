@@ -114,8 +114,6 @@ set(FILES
     Source/ImGui/ImGuiSystemComponent.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
     Source/LookupTable/LookupTableAsset.cpp
-    Source/Material/ConvertEmissiveUnitFunctor.cpp
-    Source/Material/ConvertEmissiveUnitFunctor.h
     Source/Material/SubsurfaceTransmissionParameterFunctor.cpp
     Source/Material/SubsurfaceTransmissionParameterFunctor.h
     Source/Material/Transform2DFunctor.cpp
@@ -139,6 +137,8 @@ set(FILES
     Source/Mesh/ModelReloader.h
     Source/Mesh/ModelReloaderSystem.cpp
     Source/Mesh/ModelReloaderSystem.h
+    Source/Mesh/StreamBufferViewsBuilder.cpp
+    Source/Mesh/StreamBufferViewsBuilder.h
     Source/MorphTargets/MorphTargetComputePass.cpp
     Source/MorphTargets/MorphTargetComputePass.h
     Source/MorphTargets/MorphTargetDispatchItem.cpp

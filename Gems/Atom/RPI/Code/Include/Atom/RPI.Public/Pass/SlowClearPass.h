@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 
 namespace AZ
@@ -17,7 +18,7 @@ namespace AZ
         //! Only use this for debug purposes and edge cases
         //! The correct and efficient way to clear a pass is through the LoadStoreAction on the pass slot
         //! This will clear a given image attachment to the specified clear value.
-        class SlowClearPass
+        class ATOM_RPI_PUBLIC_API SlowClearPass
             : public RenderPass
         {
             AZ_RPI_PASS(SlowClearPass);

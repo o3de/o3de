@@ -307,11 +307,15 @@ namespace AZStd
             insert_range(end(), AZStd::forward<R>(rg));
         }
 
+        inline iterator insert(AZStd::nullptr_t, value_type&&) = delete;
         inline iterator insert(const_iterator pos, value_type&& value)
         {
             return emplace(pos, AZStd::move(value));
         }
 
+
+        template<class... Args>
+        inline iterator emplace(AZStd::nullptr_t, Args&&... ) = delete;
         template<class ... Args>
         inline iterator emplace(const_iterator pos, Args&& ... args)
         {
@@ -615,6 +619,7 @@ namespace AZStd
             assign(iList.begin(), iList.end());
         }
 
+        inline iterator insert(AZStd::nullptr_t, const_reference) = delete;
         inline iterator insert(const_iterator insertPos, const_reference value)
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -638,6 +643,7 @@ namespace AZStd
             return iterator(AZSTD_POINTER_ITERATOR_PARAMS(m_start)) + offset;
         }
 
+        iterator insert(AZStd::nullptr_t, size_type, const_reference) = delete;
         iterator insert(const_iterator insertPos, size_type numElements, const_reference value)
         {
             if (numElements == 0)
@@ -782,11 +788,15 @@ namespace AZStd
         }
 
         template<class InputIterator>
+        iterator insert(AZStd::nullptr_t, InputIterator, InputIterator) = delete;
+        template<class InputIterator>
         iterator insert(const_iterator insertPos, InputIterator first, InputIterator last)
         {
             return insert_impl(insertPos, first, last, is_integral<InputIterator>());
         }
 
+        template<class R>
+        auto insert_range(AZStd::nullptr_t, R&&) -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator> = delete;
         template<class R>
         auto insert_range(const_iterator insertPos, R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
         {
@@ -802,11 +812,13 @@ namespace AZStd
             }
         }
 
+        iterator insert(AZStd::nullptr_t, initializer_list<T>) = delete;
         iterator insert(const_iterator insertPos, initializer_list<T> ilist)
         {
             return insert(insertPos, ilist.begin(), ilist.end());
         }
 
+        inline iterator erase(AZStd::nullptr_t) = delete;
         inline iterator erase(const_iterator elementIter)
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -824,6 +836,8 @@ namespace AZStd
             return iterator(AZSTD_POINTER_ITERATOR_PARAMS(m_start)) + offset;
         }
 
+        inline iterator erase(AZStd::nullptr_t, const_iterator) = delete;
+        inline iterator erase(const_iterator, AZStd::nullptr_t) = delete;
         inline iterator erase(const_iterator first, const_iterator last)
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS

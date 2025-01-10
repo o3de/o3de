@@ -9,6 +9,7 @@
 
 #include <Atom/RPI.Reflect/Pass/DownsampleMipChainPassData.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -22,7 +23,7 @@ namespace AZ
         //! This pass takes a mip mapped texture as input where the most detailed mip is already written to.
         //! It then recursively downsamples that mip to lower mip levels using the provided Compute Shader.
         //! It does this by recursively creating Compute Passes to write to each mip using the Compute Shader.
-        class DownsampleMipChainPass
+        class ATOM_RPI_PUBLIC_API DownsampleMipChainPass
             : public ParentPass
             , private ShaderReloadNotificationBus::Handler
         {

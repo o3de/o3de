@@ -224,16 +224,6 @@
                     }
                 }
             },
-            "Metastream": {
-                "Targets": {
-                    "Metastream": {
-                        "AutoLoad": false
-                    },
-                    "Metastream.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
             "GraphCanvas": {
                 "Targets": {
                     "GraphCanvas.Editor": {
@@ -321,13 +311,6 @@
                     }
                 }
             },
-            "HttpRequestor": {
-                "Targets": {
-                    "HttpRequestor.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
             "WhiteBox": {
                 "Targets": {
                     "WhiteBox.Editor": {
@@ -338,115 +321,6 @@
             "PythonAssetBuilder": {
                 "Targets": {
                     "PythonAssetBuilder.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
-            "AWSCore": {
-                "Targets": {
-                    "AWSCore": {
-                        "AutoLoad": false
-                    },
-                    "AWSCore.Editor": {
-                        "AutoLoad": false
-                    },
-                    "AWSCore.Servers": {
-                        "AutoLoad": false
-                    },
-                    "AWSCore.Clients": {
-                        "AutoLoad": false
-                    },
-                    "AWSCore.Unified": {
-                        "AutoLoad": false
-                    },
-                    "AWSCore.Tools": {
-                        "AutoLoad": false
-                    },
-                    "AWSCore.Builders": {
-                        "AutoLoad": false
-                    },
-                    "AWSCore.Tests": {
-                        "AutoLoad": false
-                    }
-                }
-            },
-            "AWSClientAuth": {
-                "Targets": {
-                    "AWSClientAuth": {
-                        "AutoLoad": false
-                    },
-                    "AWSClientAuth.Editor": {
-                        "AutoLoad": false
-                    },
-                    "AWSClientAuth.Servers": {
-                        "AutoLoad": false
-                    },
-                    "AWSClientAuth.Clients": {
-                        "AutoLoad": false
-                    },
-                    "AWSClientAuth.Unified": {
-                        "AutoLoad": false
-                    },
-                    "AWSClientAuth.Tools": {
-                        "AutoLoad": false
-                    },
-                    "AWSClientAuth.Builders": {
-                        "AutoLoad": false
-                    },
-                    "AWSClientAuth.Tests": {
-                        "AutoLoad": false
-                    }
-                }
-            },
-            "AWSGameLift": {
-                "Targets": {
-                    "AWSGameLift": {
-                        "AutoLoad": false
-                    },
-                    "AWSGameLift.Editor": {
-                        "AutoLoad": false
-                    },
-                    "AWSGameLift.Servers": {
-                        "AutoLoad": false
-                    },
-                    "AWSGameLift.Clients": {
-                        "AutoLoad": false
-                    },
-                    "AWSGameLift.Unified": {
-                        "AutoLoad": false
-                    },
-                    "AWSGameLift.Tools": {
-                        "AutoLoad": false
-                    },
-                    "AWSGameLift.Builders": {
-                        "AutoLoad": false
-                    }
-                }
-            },
-            "AWSMetrics": {
-                "Targets": {
-                    "AWSMetrics": {
-                        "AutoLoad": false
-                    },
-                    "AWSMetrics.Editor": {
-                        "AutoLoad": false
-                    },
-                    "AWSMetrics.Servers": {
-                        "AutoLoad": false
-                    },
-                    "AWSMetrics.Clients": {
-                        "AutoLoad": false
-                    },
-                    "AWSMetrics.Unified": {
-                        "AutoLoad": false
-                    },
-                    "AWSMetrics.Tools": {
-                        "AutoLoad": false
-                    },
-                    "AWSMetrics.Builders": {
-                        "AutoLoad": false
-                    },
-                    "AWSMetrics.Tests": {
                         "AutoLoad": false
                     }
                 }

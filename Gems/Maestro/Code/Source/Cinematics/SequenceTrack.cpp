@@ -70,7 +70,10 @@ void CSequenceTrack::GetKeyInfo(int key, const char*& description, float& durati
     CheckValid();
     description = 0;
     duration = m_keys[key].fDuration;
-    IAnimSequence* sequence = gEnv->pMovieSystem->FindSequence(m_keys[key].sequenceEntityId);
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
+    IAnimSequence* sequence = movieSystem ? movieSystem->FindSequence(m_keys[key].sequenceEntityId) : nullptr;
     if (sequence)
     {
         description = sequence->GetName();

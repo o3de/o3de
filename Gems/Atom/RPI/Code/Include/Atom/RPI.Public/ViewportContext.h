@@ -10,6 +10,7 @@
 
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Windowing/WindowBus.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/SceneBus.h>
@@ -26,11 +27,14 @@ namespace AZ
         //! in which a scene is rendered on-screen.
         //! ViewportContexts are registered on creation to allow consumers to listen to notifications
         //! and manage the view stack for a given viewport.
-        class ViewportContext
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ViewportContext
             : public SceneNotificationBus::Handler
             , public AzFramework::WindowNotificationBus::Handler
             , public AzFramework::ViewportRequestBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_CLASS_ALLOCATOR(ViewportContext, AZ::SystemAllocator);
 

@@ -16,8 +16,8 @@
 // to this location as well.  Note that this shader only considers pixels stenciled to the
 // outer volume.  Inner volume pixels are written in the next pass.
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include "ReflectionProbeRenderObjectSrg.azsli"
 

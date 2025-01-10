@@ -6,7 +6,7 @@
  *
  */
 
-#include "./ConvertEmissiveUnitFunctor.h"
+#include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 

@@ -111,7 +111,7 @@ public:
     bool AreAllKeysOfSameType() const { return m_bAllOfSameType; }
 
     unsigned int GetKeyCount() const { return static_cast<unsigned int>(m_keys.size()); }
-    CTrackViewKeyHandle GetKey(unsigned int index) { return m_keys[index]; }
+    CTrackViewKeyHandle GetKey(unsigned int index) const { return m_keys[index]; }
 
     void SelectKeys(const bool bSelected);
 

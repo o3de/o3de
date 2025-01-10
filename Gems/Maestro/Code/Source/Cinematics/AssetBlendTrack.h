@@ -38,14 +38,21 @@ public:
 
     AnimValueType GetValueType() override;
     void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) override;
+    void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) override;
 
+    //////////////////////////////////////////////////////////////////////////
     void SetDefaultValue(const Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue);
+    void SetDefaultValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue);
+    void GetDefaultValue(Maestro::AssetBlends<AZ::Data::AssetData>& defaultValue) const;
 
     float GetEndTime() const;
 
     static void Reflect(AZ::ReflectContext* context);
 
 private:
+    void SetKeysAtTime(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value);
+    void ClearKeys();
+    void FilterBlends(const Maestro::AssetBlends<AZ::Data::AssetData>& value, Maestro::AssetBlends<AZ::Data::AssetData>& filteredValue) const;
 
     // Internal transient state, not serialized.
     Maestro::AssetBlends<AZ::Data::AssetData> m_assetBlend;

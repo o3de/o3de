@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 namespace AZ
@@ -15,7 +16,7 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the ComputePass. Should be specified in the PassRequest.
-        struct ComputePassData
+        struct ATOM_RPI_REFLECT_API ComputePassData
             : public RenderPassData
         {
             AZ_RTTI(ComputePassData, "{C9ADBF8D-34A3-4406-9067-DD17D0564FD8}", RenderPassData);

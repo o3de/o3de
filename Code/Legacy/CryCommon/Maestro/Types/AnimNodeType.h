@@ -39,7 +39,6 @@ enum class AnimNodeType
     ShadowSetup               = 0x17,
     Alembic                   = 0x18,       // Used in cinebox, added so nobody uses that number
     GeomCache                 = 0x19,
-    Environment,
     ScreenDropsSetup,                       // deprecated Jan 2016
     AzEntity,
     Component,

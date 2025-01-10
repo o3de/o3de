@@ -63,7 +63,7 @@ struct MeshletsPassOutputWithDepth
 };
 
 // Shader Resource Groups
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include <MeshletsPerObjectRenderSrg.azsli>
 
 #include <Atom/RPI/Math.azsli>

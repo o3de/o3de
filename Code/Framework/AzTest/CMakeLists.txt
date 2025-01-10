@@ -71,7 +71,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_target_include_system_directories(TARGET gtest INTERFACE "${LY_ROOT_FOLDER}/include/gtest")
         
         add_library(gmock STATIC IMPORTED GLOBAL)
-        set_target_properties(gtest PROPERTIES IMPORTED_LOCATION "${LY_ROOT_FOLDER}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}")
+        set_target_properties(gmock PROPERTIES IMPORTED_LOCATION "${LY_ROOT_FOLDER}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX}")
         ly_target_include_system_directories(TARGET gmock INTERFACE "${LY_ROOT_FOLDER}/include/gmock")
             
         ly_create_alias(NAME googletest::GTest NAMESPACE 3rdParty TARGETS gtest)

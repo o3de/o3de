@@ -1417,21 +1417,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
     }
 
-    // GameLift Documentation
-    {
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "GameLift Documentation";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.documentation.gamelift", actionProperties,
-            [cryEdit = m_cryEditApp]
-            {
-                cryEdit->OnDocumentationGamelift();
-            }
-        );
-    }
-
     // Release Notes
     {
         AzToolsFramework::ActionProperties actionProperties;
@@ -1473,21 +1458,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationForums();
-            }
-        );
-    }
-
-    // AWS Support
-    {
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "AWS Support";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.resources.awssupport", actionProperties,
-            [cryEdit = m_cryEditApp]
-            {
-                cryEdit->OnDocumentationAWSSupport();
             }
         );
     }
@@ -1967,7 +1937,6 @@ void EditorActionsHandler::OnMenuBindingHook()
         {
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.gamedevblog", 100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.forums", 200);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.awssupport", 300);
         }
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::HelpMenuIdentifier, 500);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);

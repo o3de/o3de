@@ -38,4 +38,4 @@ namespace AZ
     using NonUniformScaleRequestBus = AZ::EBus<NonUniformScaleRequests>;
 } // namespace AZ
 
-DECLARE_EBUS_EXTERN(NonUniformScaleRequests);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(NonUniformScaleRequests);

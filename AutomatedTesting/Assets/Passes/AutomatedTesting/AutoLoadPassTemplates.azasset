@@ -1,0 +1,20 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            //////////////////////////////////////////////////////////////
+            // Passes required by ShaderReloadTest Level 
+            {
+                "Name": "SimpleMeshPassTemplate",
+                "Path": "Levels/ShaderReloadTest/SimpleMeshPass.pass"
+            },
+            {
+                "Name": "SimpleMeshPipelineTemplate",
+                "Path": "Levels/ShaderReloadTest/SimpleMeshPipeline.pass"
+            }
+            //////////////////////////////////////////////////////////////
+        ]
+    }
+}

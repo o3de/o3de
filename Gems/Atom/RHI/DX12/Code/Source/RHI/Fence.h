@@ -113,6 +113,7 @@ namespace AZ
         {
         public:
             AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator);
+            AZ_RTTI(FenceImpl, "{6CD62A6F-FF00-4F6D-990B-59E220083939}", RHI::DeviceFence);
 
             static RHI::Ptr<FenceImpl> Create();
 

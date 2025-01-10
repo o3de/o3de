@@ -43,7 +43,7 @@ namespace Maestro
         void GetAllAnimatablePropertiesForComponent(IAnimNode::AnimParamInfos& addressList, AZ::EntityId id, AZ::ComponentId componentId) override;
         void GetAnimatableComponents(AZStd::vector<AZ::ComponentId>& componentIds, AZ::EntityId id) override;
 
-        void AddEntityToAnimate(AZ::EntityId entityToAnimate) override;
+        bool AddEntityToAnimate(AZ::EntityId entityToAnimate) override;
 
         void RemoveEntityToAnimate(AZ::EntityId removedEntityId) override;
 
@@ -60,7 +60,7 @@ namespace Maestro
         * @param animatedEntityId the entity Id of the entity containing the animatedAddress
         * @param animatedAddress identifies the component and property to be set
         */
-        void GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) override;
+        bool GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress) override;
         /**
         * Set a value for an animated property at the given address on the given entity.
         * @param animatedEntityId the entity Id of the entity containing the animatedAddress

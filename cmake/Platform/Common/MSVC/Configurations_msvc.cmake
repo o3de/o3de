@@ -46,6 +46,7 @@ ly_append_configurations_options(
         ###################
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
         /wd4324 #  warning C4324: 'std::tuple<...>': structure was padded due to alignment specifier. This warning is triggered whenever a simd type is used with the MSVC std::optional or std::tuple types, which is namespaced into AZStd
+        /wd4251 # Don't warn if a class with dllexport attribute has nonstatic members which don't have the dllexport attribute
 
         ###################
         # Enabled warnings (that are disabled by default from /W4)

@@ -40,16 +40,16 @@ namespace AZ
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
 
             void SetSpecularImage(const Data::Asset<RPI::StreamingImageAsset>& imageAsset) override;
-            const Data::Instance<RPI::Image>& GetSpecularImage() const { return m_specular; }
+            const Data::Instance<RPI::Image>& GetSpecularImage() const override { return m_specular; }
 
             void SetDiffuseImage(const Data::Asset<RPI::StreamingImageAsset>& imageAsset) override;
-            const Data::Instance<RPI::Image>& GetDiffuseImage() const { return m_diffuse; }
+            const Data::Instance<RPI::Image>& GetDiffuseImage() const override { return m_diffuse; }
 
             void SetExposure(float exposure) override;
-            float GetExposure() const { return m_exposure; }
+            float GetExposure() const override { return m_exposure; }
 
             void SetOrientation(const Quaternion& orientation) override;
-            const Quaternion& GetOrientation() const { return m_orientation; }
+            const Quaternion& GetOrientation() const override { return m_orientation; }
 
             void Reset() override;
 

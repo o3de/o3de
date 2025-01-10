@@ -56,9 +56,6 @@ add_subdirectory(smoke)
 ## Terrain ##
 add_subdirectory(Terrain)
 
-## AWS ##
-add_subdirectory(AWS)
-
 ## Multiplayer ##
 add_subdirectory(Multiplayer)
 

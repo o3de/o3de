@@ -147,13 +147,14 @@ void SetNormalAndUpdateLightingParams(
 
 //==============================================================================
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/PBR/Lights/LightStructures.azsli>
 //==============================================================================
 
 
 //==============================================================================
 //                         Simple Point Light 
 //==============================================================================
-void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
+void ApplySimplePointLight(SimplePointLight light, Surface surface, inout LightingData lightingData)
 {  
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -196,7 +197,7 @@ void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingDa
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
 
-        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
+        SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
         ApplySimplePointLight(light, surface, lightingData);
         ++lightCount;
     }
@@ -206,7 +207,7 @@ void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
 {
     for (int l = 0; l < ViewSrg::m_simplePointLightCount; ++l)
     {
-        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[l];
+        SimplePointLight light = ViewSrg::m_simplePointLights[l];
         ApplySimplePointLight(light, surface, lightingData);
     }
 }
@@ -214,7 +215,7 @@ void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                           Simple Spot Light 
 //==============================================================================
-void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
+void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float3 dirToLight = normalize(posToLight);
@@ -268,14 +269,14 @@ void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData)
 {
     for (int l = 0; l < ViewSrg::m_simpleSpotLightCount; ++l)
     {
-        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[l];
+        SimpleSpotLight light = ViewSrg::m_simpleSpotLights[l];
         ApplySimpleSpotLight(light, surface, lightingData);
     }
 }
 //==============================================================================
 //                              Point Light 
 //==============================================================================
-void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
+void ApplyPointLight(PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -324,7 +325,7 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
 {
     for (int l = 0; l < ViewSrg::m_pointLightCount; ++l)
     {
-        ViewSrg::PointLight light = ViewSrg::m_pointLights[l];
+        PointLight light = ViewSrg::m_pointLights[l];
         ApplyPointLight(light, surface, lightingData);
     }
 }
@@ -339,7 +340,7 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
     SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera, surface, lightingData);
     for (int l = 0; l < ViewSrg::m_diskLightCount; ++l)
     {
-        ViewSrg::DiskLight light = ViewSrg::m_diskLights[l];
+        DiskLight light = ViewSrg::m_diskLights[l];
         ApplyDiskLight(light, surface, lightingData);
     }
 }
@@ -368,7 +369,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     // Add the lighting contribution for each directional light
     for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
     {
-        SceneSrg::DirectionalLight light = SceneSrg::m_directionalLights[index];
+        DirectionalLight light = SceneSrg::m_directionalLights[index];
         float3 dirToLight = normalize(-light.m_direction);
 
         // Adjust the direction of the light based on its angular diameter.

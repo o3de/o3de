@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 
 namespace UnitTest
@@ -21,7 +22,7 @@ namespace AZ
     {
         //! Builds a LuaMaterialFunctor.
         //! Materials can use this functor to create custom scripted operations.
-        class LuaMaterialFunctorSourceData final
+        class ATOM_RPI_EDIT_API LuaMaterialFunctorSourceData final
             : public AZ::RPI::MaterialFunctorSourceData
         {
             friend class UnitTest::LuaMaterialFunctorTests;

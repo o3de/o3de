@@ -34,6 +34,7 @@
 #include <ILog.h>
 #include <IConsole.h>
 #include <IRenderer.h>
+
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -51,15 +52,20 @@ struct SMovieSequenceAutoComplete
 {
     virtual int GetCount() const
     {
-        return gEnv->pMovieSystem->GetNumSequences();
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        return movieSystem ? movieSystem->GetNumSequences() : 0;
     }
 
     virtual const char* GetValue(int nIndex) const
     {
-        IAnimSequence* sequence = gEnv->pMovieSystem->GetSequence(nIndex);
-        if (sequence)
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
         {
-            return sequence->GetName();
+            IAnimSequence* sequence = movieSystem->GetSequence(nIndex);
+            if (sequence)
+            {
+                return sequence->GetName();
+            }
         }
 
         return "";
@@ -101,7 +107,6 @@ void CMovieSystem::RegisterNodeTypes()
     REGISTER_NODE_TYPE(ShadowSetup)
     REGISTER_NODE_TYPE(Alembic)
     REGISTER_NODE_TYPE(GeomCache)
-    REGISTER_NODE_TYPE(Environment)
     REGISTER_NODE_TYPE(AzEntity)
     REGISTER_NODE_TYPE(Component)
 }
@@ -201,6 +206,11 @@ namespace Internal
 //////////////////////////////////////////////////////////////////////////
 CMovieSystem::CMovieSystem(ISystem* pSystem)
 {
+    if (!AZ::Interface<IMovieSystem>::Get())
+    {
+        AZ::Interface<IMovieSystem>::Register(this);
+    }
+
     m_pSystem = pSystem;
     m_bRecording = false;
     m_pCallback = nullptr;
@@ -240,6 +250,16 @@ CMovieSystem::CMovieSystem()
 }
 
 //////////////////////////////////////////////////////////////////////////
+CMovieSystem::~CMovieSystem()
+{
+    if (AZ::Interface<IMovieSystem>::Get() == this)
+    {
+        AZ::Interface<IMovieSystem>::Unregister(this);
+    }
+
+}
+
+//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::DoNodeStaticInitialisation()
 {
     CAnimPostFXNode::Initialize();
@@ -257,7 +277,7 @@ IAnimSequence* CMovieSystem::CreateSequence(const char* sequenceName, bool load,
         id = m_nextSequenceId++;
     }
 
-    IAnimSequence* sequence = aznew CAnimSequence(this, id, sequenceType);
+    IAnimSequence* sequence = aznew CAnimSequence(id, sequenceType);
     sequence->SetName(sequenceName);
     sequence->SetSequenceEntityId(entityId);
 
@@ -401,7 +421,16 @@ int CMovieSystem::GetNumPlayingSequences() const
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::AddSequence(IAnimSequence* sequence)
 {
-    m_sequences.push_back(sequence);
+    [[maybe_unused]] const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
+    if (AZStd::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
+    {
+        AZ_Trace("CMovieSystem::AddSequence", "IAnimSequence %s push_back in m_sequences", sequenceEntityId.ToString().c_str());
+        m_sequences.push_back(sequence);
+    }
+    else
+    {
+        AZ_Trace("CMovieSystem::AddSequence", "IAnimSequence %s already in m_sequences", sequenceEntityId.ToString().c_str());
+    }    
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -445,11 +474,32 @@ void CMovieSystem::RemoveSequence(IAnimSequence* sequence)
         {
             if (sequence == *iter)
             {
+                [[maybe_unused]] AZ::EntityId sequenceComponentEntityId(sequence->GetSequenceEntityId());
+
+                AZ_Trace(
+                    "CMovieSystem::RemoveSequence",
+                    "Erasing %s from m_sequences",
+                    sequenceComponentEntityId.ToString().c_str());
+
                 m_movieListenerMap.erase(sequence);
                 m_sequences.erase(iter);
                 break;
             }
         }
+
+#if defined(AZ_ENABLE_TRACING)
+        if (!m_sequences.empty())
+        {
+            AZ_Trace("CMovieSystem::RemoveSequence","Left in m_sequences:");
+
+            for (Sequences::iterator iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
+            {
+                AZ::EntityId sequenceComponentEntityId((*iter)->GetSequenceEntityId());
+
+                AZ_Trace("CMovieSystem::RemoveSequence", "  %s", sequenceComponentEntityId.ToString().c_str());
+            }
+        }
+#endif
 
         SetCallback(callback);
     }
@@ -639,6 +689,10 @@ void CMovieSystem::PlaySequence(IAnimSequence* sequence, IAnimSequence* parentSe
     ps.trackedSequence = bTrackedSequence;
     ps.bSingleFrame = false;
     // Make sure all members are initialized before pushing.
+
+    [[maybe_unused]] const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
+    AZ_Trace("CMovieSystem::PlaySequence", "m_playingSequences.push_back %s", sequenceEntityId.ToString().c_str());
+
     m_playingSequences.push_back(ps);
 
     // tell all interested listeners
@@ -874,6 +928,9 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
             IAnimSequence* pCurrentSequence = iter->get();
             if (pCurrentSequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
             {
+                [[maybe_unused]] const AZ::EntityId& sequenceEntityId = pCurrentSequence->GetSequenceEntityId();
+                AZ_Trace("CMovieSystem::Reset", "PlaySequence %s", sequenceEntityId.ToString().c_str());
+
                 PlaySequence(pCurrentSequence);
             }
         }
@@ -1419,20 +1476,26 @@ void CMovieSystem::GoToFrameCmd(IConsoleCmdArgs* pArgs)
     const char* pSeqName = pArgs->GetArg(1);
     float targetFrame = (float)atof(pArgs->GetArg(2));
 
-    ((CMovieSystem*)gEnv->pMovieSystem)->GoToFrame(pSeqName, targetFrame);
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
+    (static_cast<CMovieSystem*>(movieSystem))->GoToFrame(pSeqName, targetFrame);
 }
 #endif //#if !defined(_RELEASE)
 
 #if !defined(_RELEASE)
 void CMovieSystem::ListSequencesCmd([[maybe_unused]] IConsoleCmdArgs* pArgs)
 {
-    int numSequences = gEnv->pMovieSystem->GetNumSequences();
-    for (int i = 0; i < numSequences; i++)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        IAnimSequence* pSeq = gEnv->pMovieSystem->GetSequence(i);
-        if (pSeq)
+        int numSequences = movieSystem->GetNumSequences();
+        for (int i = 0; i < numSequences; i++)
         {
-            CryLogAlways("%s", pSeq->GetName());
+            IAnimSequence* pSeq = movieSystem->GetSequence(i);
+            if (pSeq)
+            {
+                CryLogAlways("%s", pSeq->GetName());
+            }
         }
     }
 }
@@ -1442,7 +1505,12 @@ void CMovieSystem::ListSequencesCmd([[maybe_unused]] IConsoleCmdArgs* pArgs)
 void CMovieSystem::PlaySequencesCmd(IConsoleCmdArgs* pArgs)
 {
     const char* sequenceName = pArgs->GetArg(1);
-    gEnv->pMovieSystem->PlaySequence(sequenceName, nullptr, false, false);
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->PlaySequence(sequenceName, nullptr, false, false);
+    }
 }
 #endif //#if !defined(_RELEASE)
 

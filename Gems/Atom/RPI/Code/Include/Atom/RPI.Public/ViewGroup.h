@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/XR/XRRenderingInterface.h>
@@ -20,7 +21,7 @@ namespace AZ
         //! This class is responsible for managing stereoscopic and non-stereoscopic views.
         //! It also allows calling code to provide handlers or functions to be called in case the projection
         //! or view matrix changes. 
-        class ViewGroup final
+        class ATOM_RPI_PUBLIC_API ViewGroup final
         {
         public:
             AZ_TYPE_INFO(ViewGroup, "{C1AD45ED-03E2-41E0-9DC7-779B4B1842FF}");
@@ -49,9 +50,6 @@ namespace AZ
                 MatrixChangedEvent m_projectionMatrixChangedEvent;
                 MatrixChangedEvent m_viewMatrixChangedEvent;
             };
-
-            ViewGroup();
-            ~ViewGroup();
 
             //! Initialization which involves caching the descriptor and XR system related properties if applicable.
             void Init(const Descriptor& desc);
@@ -123,7 +121,7 @@ namespace AZ
             uint32_t GetViewIndex(ViewType viewType);
 
             //! Vector to all the view data
-            AZStd::vector<ViewData> m_cameraViews;
+            AZStd::array<ViewData, MaxViewTypes> m_cameraViews;
 
             //! XRRendering interface
             AZ::RPI::XRRenderingInterface* m_xrSystem = nullptr;

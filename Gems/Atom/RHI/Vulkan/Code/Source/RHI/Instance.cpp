@@ -5,16 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/Vulkan.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
+#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
+#include <Atom/RHI/RHIBus.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/Utils/Utils.h>
 #include <RHI/Device.h>
 #include <RHI/Instance.h>
 #include <RHI/PhysicalDevice.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
-#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
-#include <AzCore/Debug/Trace.h>
-#include <AzCore/Utils/Utils.h>
+#include <RHI/Vulkan.h>
 
 namespace AZ
 {
@@ -333,6 +334,10 @@ namespace AZ
 
                 it = shouldIgnore ? supportedDevices.erase(it) : it + 1;
             }
+
+            RHI::RHIRequirementRequestBus::Broadcast(
+                &RHI::RHIRequirementsRequest::FilterSupportedPhysicalDevices, supportedDevices, RHI::APIIndex::Vulkan);
+
             return supportedDevices;
         }
 

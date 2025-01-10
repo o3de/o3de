@@ -31,6 +31,14 @@ namespace AZ
             virtual void SetExposure(float exposure) = 0;
             //! Sets the orientation of the global IBL.
             virtual void SetOrientation(const Quaternion& orientation) = 0;
+            //! Returns the global specular IBL image for this scene
+            virtual const Data::Instance<RPI::Image>& GetSpecularImage() const = 0;
+            //! Returns the global diffuse IBL image for this scene
+            virtual const Data::Instance<RPI::Image>& GetDiffuseImage() const = 0;
+            //! Returns the exposure value in stops for the global IBL
+            virtual float GetExposure() const = 0;
+            //! Returns the orientation of the global IBL.
+            virtual const Quaternion& GetOrientation() const = 0;
             //! Resets the images and exposure back to default (unset) values.
             virtual void Reset() = 0;
         };

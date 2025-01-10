@@ -23,7 +23,7 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetAgentType, Multiplayer::MultiplayerAgentType());
         MOCK_METHOD1(InitializeMultiplayer, void(Multiplayer::MultiplayerAgentType));
         MOCK_METHOD2(StartHosting, bool(uint16_t, bool));
-        MOCK_METHOD2(Connect, bool(const AZStd::string&, uint16_t));
+        MOCK_METHOD3(Connect, bool(const AZStd::string&, uint16_t, const AZStd::string&));
         MOCK_METHOD1(Terminate, void(AzNetworking::DisconnectReason));
         MOCK_METHOD1(AddNetworkInitHandler, void(AZ::Event<INetworkInterface*>::Handler&));
         MOCK_METHOD1(AddClientMigrationStartEventHandler, void(Multiplayer::ClientMigrationStartEvent::Handler&));

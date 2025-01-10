@@ -11,7 +11,7 @@
 #include "DepthOfField.azsli"
 #include "NewDepthOfFieldCommon.azsli"
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {

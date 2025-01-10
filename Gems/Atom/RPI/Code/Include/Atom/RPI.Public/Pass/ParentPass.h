@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
@@ -24,7 +25,7 @@ namespace AZ
         //! A parent pass doesn't do any rendering itself, but instead contains child passes that it delegates functionality to.
         //! A child can be a RenderPass or it can be a ParentPass itself. This creates a pass tree hierarchy that defines the
         //! the order in which passes and their logic are executed in.
-        class ParentPass
+        class ATOM_RPI_PUBLIC_API ParentPass
             : public Pass
         {
             friend class PassFactory;

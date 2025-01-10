@@ -10,6 +10,7 @@
 
 #include <Atom/RHI.Reflect/Base.h> // for AZ_BITS and AZ_DEFINE_ENUM_BITWISE_OPERATORS
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/SceneBus.h>
 
@@ -29,7 +30,7 @@ namespace AZ
         //!     * One shader.
         //!     * One draw list tag which is initialized from shader but can be overwritten.
         //! DynamicDrawContext may allow some render states change or few other changes which are defined in DynamicDrawContext::DrawVariation
-        class DynamicDrawContext
+        class ATOM_RPI_PUBLIC_API DynamicDrawContext
             : public AZStd::intrusive_base
             , public SceneNotificationBus::Handler
         {

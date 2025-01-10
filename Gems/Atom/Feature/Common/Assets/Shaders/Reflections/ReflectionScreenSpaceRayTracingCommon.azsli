@@ -93,7 +93,7 @@ bool CheckLightVisibility(RayTracingLightingData lightingData, float3 dirToLight
     return (payload.m_hitT < 0.0f);
 }
 
-void ApplyDirectionalLight(RayTracingSceneSrg::DirectionalLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+void ApplyDirectionalLight(DirectionalLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {   
     float3 dirToLight = normalize(-light.m_direction);
 
@@ -111,15 +111,15 @@ void ApplyDirectionalLight(RayTracingSceneSrg::DirectionalLight light, RayTracin
         return;
     }
 
-    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * light.m_rgbIntensity;
+    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * light.m_rgbIntensityLux;
 
     if (applySpecular)
     {
-        specular += SpecularGGX(lightingData.m_dirToCamera, dirToLight, lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * light.m_rgbIntensity;
+        specular += SpecularGGX(lightingData.m_dirToCamera, dirToLight, lightingData.m_normal, lightingData.m_specularF0, lightingData.m_NdotV, lightingData.m_roughnessA2, 1.0f) * light.m_rgbIntensityLux;
     }
 }
 
-void ApplySimplePointLight(RayTracingSceneSrg::SimplePointLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+void ApplySimplePointLight(SimplePointLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 posToLight = light.m_position - lightingData.m_worldPosition;
     float3 dirToLight = normalize(posToLight);
@@ -152,7 +152,7 @@ void ApplySimplePointLight(RayTracingSceneSrg::SimplePointLight light, RayTracin
     }
 }
 
-void ApplySimpleSpotLight(RayTracingSceneSrg::SimpleSpotLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+void ApplySimpleSpotLight(SimpleSpotLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 posToLight = light.m_position - lightingData.m_worldPosition;
     float3 dirToLight = normalize(posToLight);
@@ -190,7 +190,7 @@ void ApplySimpleSpotLight(RayTracingSceneSrg::SimpleSpotLight light, RayTracingL
     }
 }
 
-void ApplyPointLight(RayTracingSceneSrg::PointLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+void ApplyPointLight(PointLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 posToLight = light.m_position - lightingData.m_worldPosition;
     float3 dirToLight = normalize(posToLight);
@@ -213,7 +213,7 @@ void ApplyPointLight(RayTracingSceneSrg::PointLight light, RayTracingLightingDat
         
     // standard quadratic falloff
     d2 = max(0.001f * 0.001f, d2);
-    float3 lightIntensity = (light.m_rgbIntensity / d2) * radiusAttenuation;
+    float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
     diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
 
@@ -223,7 +223,7 @@ void ApplyPointLight(RayTracingSceneSrg::PointLight light, RayTracingLightingDat
     }
 }
 
-void ApplyDiskLight(RayTracingSceneSrg::DiskLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+void ApplyDiskLight(DiskLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 posToLight = light.m_position - lightingData.m_worldPosition;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -287,7 +287,7 @@ float GetIntensityAdjustedByRadiusAndRoughness(float roughnessA, float radius, f
     return intensityNormalization * intensityNormalization;
 }
 
-void ApplyCapsuleLight(RayTracingSceneSrg::CapsuleLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+void ApplyCapsuleLight(CapsuleLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float lightLength = light.m_length;
     float3 startPoint = light.m_startPoint;
@@ -410,13 +410,6 @@ void ApplyCapsuleLight(RayTracingSceneSrg::CapsuleLight light, RayTracingLightin
     }
 }
 
-enum QuadLightFlag
-{
-    None = 0x00,
-    EmitsBothDirections  = 0x01, // 1 << 0, // quad should emit light from both sides
-    UseFastApproximation = 0x02, // 1 << 1, // use a fast approximation instead of linearly transformed cosines.
-};
-
 // returns the solid angle at origin of a rectangle defined by points p0-p3. Does not handle horizon.
 // modified from https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf Listing 11 on page 49.
 float RectangleSolidAngle(float3 v0, float3 v1, float3 v2, float3 v3)
@@ -473,7 +466,7 @@ float3 ClosestPointRect(in float3 pos, in float3 planeOrigin, in float3 left, in
     return planeOrigin + dist2D.x * left + dist2D.y * up;
 }
 
-void ApplyQuadLight(RayTracingSceneSrg::QuadLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
+void ApplyQuadLight(QuadLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized
 
@@ -588,43 +581,43 @@ void ApplyDirectLighting(RayTracingLightingData lightingData, bool applySpecular
 
     for (index = 0; index < RayTracingSceneSrg::m_directionalLightCount; ++index)
     {
-        RayTracingSceneSrg::DirectionalLight light = RayTracingSceneSrg::m_directionalLights[index];
+        DirectionalLight light = RayTracingSceneSrg::m_directionalLights[index];
         ApplyDirectionalLight(light, lightingData, applySpecular, diffuse, specular);
     }
     
     for (index = 0; index < RayTracingSceneSrg::m_simplePointLightCount; ++index)
     {
-        RayTracingSceneSrg::SimplePointLight light = RayTracingSceneSrg::m_simplePointLights[index];
+        SimplePointLight light = RayTracingSceneSrg::m_simplePointLights[index];
         ApplySimplePointLight(light, lightingData, applySpecular, diffuse, specular);
     }
 
     for (index = 0; index < RayTracingSceneSrg::m_simpleSpotLightCount; ++index)
     {
-        RayTracingSceneSrg::SimpleSpotLight light = RayTracingSceneSrg::m_simpleSpotLights[index];
+        SimpleSpotLight light = RayTracingSceneSrg::m_simpleSpotLights[index];
         ApplySimpleSpotLight(light, lightingData, applySpecular, diffuse, specular);
     }
 
     for (index = 0; index < RayTracingSceneSrg::m_pointLightCount; ++index)
     {
-        RayTracingSceneSrg::PointLight light = RayTracingSceneSrg::m_pointLights[index];
+        PointLight light = RayTracingSceneSrg::m_pointLights[index];
         ApplyPointLight(light, lightingData, applySpecular, diffuse, specular);
     }
 
     for (index = 0; index < RayTracingSceneSrg::m_diskLightCount; ++index)
     {
-        RayTracingSceneSrg::DiskLight light = RayTracingSceneSrg::m_diskLights[index];
+        DiskLight light = RayTracingSceneSrg::m_diskLights[index];
         ApplyDiskLight(light, lightingData, applySpecular, diffuse, specular);
     }
 
     for (index = 0; index < RayTracingSceneSrg::m_capsuleLightCount; ++index)
     {
-        RayTracingSceneSrg::CapsuleLight light = RayTracingSceneSrg::m_capsuleLights[index];
+        CapsuleLight light = RayTracingSceneSrg::m_capsuleLights[index];
         ApplyCapsuleLight(light, lightingData, applySpecular, diffuse, specular);
     }
 
     for (index = 0; index < RayTracingSceneSrg::m_quadLightCount; ++index)
     {
-        RayTracingSceneSrg::QuadLight light = RayTracingSceneSrg::m_quadLights[index];
+        QuadLight light = RayTracingSceneSrg::m_quadLights[index];
         ApplyQuadLight(light, lightingData, applySpecular, diffuse, specular);
     }
 }

@@ -1344,7 +1344,7 @@ namespace AZ
             , m_addressClassVersion(newElementVersion)
             , m_isValid(true)
         {
-            AZ::SerializeContext* context;
+            AZ::SerializeContext* context = nullptr;
             ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
 
             auto classData = context->FindClassData(original.GetElementTypeId());

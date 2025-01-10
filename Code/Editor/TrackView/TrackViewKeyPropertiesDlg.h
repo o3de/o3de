@@ -58,7 +58,7 @@ public:
 
     // Called when user changes selected keys.
     // Return true if control update UI values
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& keys) = 0;
+    virtual bool OnKeySelectionChange(const CTrackViewKeyBundle& keys) = 0;
 
     // Called when UI variable changes.
     virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& keys) = 0;
@@ -127,8 +127,7 @@ public:
     ~CTrackViewTrackPropsDlg();
 
     void OnSequenceChanged();
-    bool OnKeySelectionChange(CTrackViewKeyBundle& keys);
-    void ReloadKey();
+    bool OnKeySelectionChange(const CTrackViewKeyBundle& keys);
 
 protected slots:
     void OnUpdateTime();
@@ -163,8 +162,8 @@ public:
     void PopulateVariables(ReflectedPropertyControl* propCtrl);
 
     // ITrackViewSequenceListener
-    virtual void OnKeysChanged(CTrackViewSequence* pSequence) override;
-    virtual void OnKeySelectionChanged(CTrackViewSequence* pSequence) override;
+    void OnKeysChanged(CTrackViewSequence* pSequence) override;
+    void OnKeySelectionChanged(CTrackViewSequence* pSequence) override;
 
 protected:
     //////////////////////////////////////////////////////////////////////////

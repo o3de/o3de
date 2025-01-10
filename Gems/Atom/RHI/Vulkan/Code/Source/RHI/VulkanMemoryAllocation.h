@@ -35,6 +35,9 @@ namespace AZ
             //! Returns the size of the memory region in bytes.
             size_t GetSize() const;
 
+            //! Returns the size of the memory block in bytes.
+            size_t GetBlockSize() const;
+
             //! A convenience method to map the resource region spanned by the view for CPU access.
             CpuVirtualAddress Map(size_t offset, size_t size, RHI::HostMemoryAccess hostAccess);
 

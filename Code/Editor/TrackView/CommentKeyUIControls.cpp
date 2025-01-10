@@ -17,7 +17,7 @@
 #include "TrackViewKeyPropertiesDlg.h"
 
 //////////////////////////////////////////////////////////////////////////
-bool CCommentKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CCommentKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

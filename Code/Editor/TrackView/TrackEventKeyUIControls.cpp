@@ -18,7 +18,7 @@
 #include "TVEventsDialog.h"
 
 //////////////////////////////////////////////////////////////////////////
-bool CTrackEventKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CTrackEventKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

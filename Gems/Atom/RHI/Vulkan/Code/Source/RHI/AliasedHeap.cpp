@@ -43,6 +43,7 @@ namespace AZ
 
             VmaAllocation vmaAllocation;
             VkMemoryRequirements memReq = m_descriptor.m_memoryRequirements;
+            memReq.alignment = AZStd::max(memReq.alignment, descriptor.m_alignment);
             memReq.size = descriptor.m_budgetInBytes;
             VkResult vkResult = vmaAllocateMemory(device.GetVmaAllocator(), &memReq, &allocInfo, &vmaAllocation, nullptr);
             AssertSuccess(vkResult);

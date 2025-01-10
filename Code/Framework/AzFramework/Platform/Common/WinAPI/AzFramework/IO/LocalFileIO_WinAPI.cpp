@@ -65,7 +65,6 @@ namespace AZ
         {
             // KB article on microsoft : https://support.microsoft.com/en-us/kb/167296
             // you need to adjust for the base time epoch difference between unix epoch and FILETIME epoch!
-            // note that Int32x32To64 is a windows only function.
             // the magic numbers represent the difference in epoch between the windows and unix file time units
             // (in FILETIME units, which are 100-nanosecond intervals, starting on Jan 1, 1601 UTC.)
             // the first 10,000,000 is the number of 100-nanosecond intervals in 1 second
@@ -73,7 +72,7 @@ namespace AZ
             // which started on Jan 1, 1970 UTC (369 years worth of 100-nanosecond chunks), and the windows
             // filetime epoch.
 
-            int64_t longTime = Int32x32To64(timeValue, 10000000) + 116444736000000000;
+            int64_t longTime = (timeValue * 10000000LL) + 116444736000000000LL;
             return longTime;
         }
 

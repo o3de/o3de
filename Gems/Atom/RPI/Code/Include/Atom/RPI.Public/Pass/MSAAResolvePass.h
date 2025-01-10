@@ -12,6 +12,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/ScopeProducer.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -20,7 +21,7 @@ namespace AZ
 {
     namespace RPI
     {
-        class MSAAResolvePass
+        class ATOM_RPI_PUBLIC_API MSAAResolvePass
             : public RenderPass
         {
             AZ_RPI_PASS(MSAAResolvePass);

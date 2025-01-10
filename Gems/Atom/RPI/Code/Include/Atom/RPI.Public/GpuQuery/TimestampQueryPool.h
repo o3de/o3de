@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 #include <Atom/RPI.Public/GpuQuery/QueryPool.h>
 
@@ -15,7 +16,7 @@ namespace AZ
     namespace RPI
     {
         //! Timestamp pool context specialization for timestamp queries.
-        class TimestampQueryPool final
+        class ATOM_RPI_PUBLIC_API TimestampQueryPool final
             : public QueryPool
         {
             // Inherit the constructors of RPI::QueryPool.

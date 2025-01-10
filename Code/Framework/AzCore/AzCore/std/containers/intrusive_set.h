@@ -24,7 +24,7 @@ namespace AZStd
     #define AZSTD_RBTREE_RIGHT  1
 
     /**
-     * This is the node you need to include in you objects, if you want to use
+     * This is the node you need to include in your objects, if you want to use
      * it in intrusive multi set. You can do that either by inheriting it
      * or add it as a \b public member. They way you include the node should be in
      * using the appropriate hooks.
@@ -928,14 +928,15 @@ namespace AZStd
         inline void Rotate(node_ptr_type node, SideType side) const
         {
             hook_node_ptr_type hookNode = Hook::to_node_ptr(node);
-            AZSTD_CONTAINER_ASSERT(Hook::to_node_ptr(hookNode->getParent())->m_children[node->getParentSide()] == node, "Invalid node structure");
+            AZSTD_CONTAINER_ASSERT(Hook::to_node_ptr(hookNode->getParent())->m_children[hookNode->getParentSide()] == node, "Invalid node structure");
             SideType o = static_cast<SideType>(1 - side);
             SideType ps = hookNode->getParentSide();
             node_ptr_type top = hookNode->m_children[o];
             hook_node_ptr_type topHook = Hook::to_node_ptr(top);
             hookNode->m_children[o] = topHook->m_children[side];
-            hookNode->m_children[o]->setParent(node);
-            hookNode->m_children[o]->setParentSide(o);
+            hook_node_ptr_type childHook = Hook::to_node_ptr(hookNode->m_children[o]);
+            childHook->setParent(node);
+            childHook->setParentSide(o);
             node_ptr_type parent = hookNode->getParent();
             hook_node_ptr_type parentHook = Hook::to_node_ptr(parent);
             topHook->setParent(parent);

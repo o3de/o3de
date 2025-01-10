@@ -12,6 +12,7 @@
 #include <Atom/RHI/DrawListContext.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/VisibleObjectContext.h>
@@ -43,7 +44,7 @@ namespace AZ
         //!  SetWorldToViewMatrix()
         //!  SetCameraTransform()
         //! To have a fully formed set of view transforms you also need to call SetViewToClipMatrix() to set up the projection.
-        class View final
+        class ATOM_RPI_PUBLIC_API View final
         {
         public:
             AZ_TYPE_INFO(View, "{C3FFC8DE-83C4-4E29-8216-D55BE0ACE3E4}");

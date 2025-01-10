@@ -192,8 +192,7 @@ namespace AZ
                     renderProxy.m_instance->m_model->WaitForUpload();
                 }
 
-                ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
-                const RPI::Cullable& cullable = modelDataInstance.GetCullable();
+                const RPI::Cullable& cullable = (*renderProxy.m_meshHandle)->GetCullable();
 
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {

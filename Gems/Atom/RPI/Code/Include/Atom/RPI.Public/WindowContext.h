@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 #include <Atom/RHI/SwapChain.h>
 
@@ -28,10 +29,13 @@ namespace AZ
         //! and passes it down throughout the RPI. This is a convenient way to
         //! package the SwapChain, Window size, Attachment info and other
         //! window information needed to present to a surface.
-        class WindowContext final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API WindowContext final
             : public AzFramework::WindowNotificationBus::Handler
             , public AzFramework::ExclusiveFullScreenRequestBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_CLASS_ALLOCATOR(WindowContext, AZ::SystemAllocator);
 

@@ -605,7 +605,10 @@ namespace AzToolsFramework
 
             PrefabDom& loadedTemplateDomRef = loadedTemplateDom->get();
 
-            // first, decode the template DOM into actual Instance data.  This will actually create real
+            // first, check and fix prefabs which could be previously stored with invalid entities' parents (GHI #11500)
+            PrefabDomUtils::SubstituteInvalidParentsInEntities(loadedTemplateDomRef);
+
+            // second, decode the template DOM into actual Instance data.  This will actually create real
             // C++ classes for the instances in the template DOM and fill their member properties with the
             // properties from the DOM.
             Instance loadedPrefabInstance;

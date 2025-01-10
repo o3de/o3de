@@ -11,7 +11,7 @@
 // This resolve function need to be reworked to achieve better reconstruct result.  
 // [GFX TODO] [ATOM-5411] Checkerboard color resolve shader rework 
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 // Maximum number of textures it can resolve at same time
 #define MaxNumberResolveTextures 3

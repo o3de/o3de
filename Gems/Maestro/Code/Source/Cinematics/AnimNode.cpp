@@ -675,6 +675,7 @@ CAnimNode::CAnimNode(const CAnimNode& other)
     , m_pParentNode(other.m_pParentNode)
     , m_nLoadedParentNodeId(other.m_nLoadedParentNodeId)
     , m_expanded(other.m_expanded)
+    , m_movieSystem(other.m_movieSystem)
 {
     // m_bIgnoreSetParam not copied
 }
@@ -685,6 +686,7 @@ CAnimNode::CAnimNode(const int id, AnimNodeType nodeType)
     , m_id(id)
     , m_parentNodeId(0)
     , m_nodeType(nodeType)
+    , m_movieSystem(AZ::Interface<IMovieSystem>::Get())
 {
     m_pOwner = 0;
     m_pSequence = 0;
@@ -693,11 +695,14 @@ CAnimNode::CAnimNode(const int id, AnimNodeType nodeType)
     m_pParentNode = 0;
     m_nLoadedParentNodeId = 0;
     m_expanded = true;
+
+    AZ_Trace("CAnimNode", "CAnimNode type %i", static_cast<int>(nodeType));
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimNode::~CAnimNode()
 {
+    AZ_Trace("CAnimNode", "~CAnimNode %i", static_cast<int>(m_nodeType));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -770,7 +775,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, float value)
     if (pTrack && pTrack->GetValueType() == AnimValueType::Float)
     {
         // Float track.
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+        bool bDefault = !(m_movieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
         pTrack->SetValue(time, value, bDefault);
         return true;
     }
@@ -789,7 +794,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector
     if (pTrack && pTrack->GetValueType() == AnimValueType::Vector)
     {
         // Vec3 track.
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+        bool bDefault = !(m_movieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
         pTrack->SetValue(time, value, bDefault);
         return true;
     }
@@ -808,7 +813,7 @@ bool CAnimNode::SetParamValue(float time, CAnimParamType param, const AZ::Vector
     if (pTrack && pTrack->GetValueType() == AnimValueType::Vector4)
     {
         // Vec4 track.
-        bool bDefault = !(gEnv->pMovieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
+        bool bDefault = !(m_movieSystem->IsRecording() && (m_flags & eAnimNodeFlags_EntitySelected)); // Only selected nodes can be recorded
         pTrack->SetValue(time, value, bDefault);
         return true;
     }
@@ -901,6 +906,9 @@ void CAnimNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTra
 //////////////////////////////////////////////////////////////////////////
 void CAnimNode::InitPostLoad(IAnimSequence* sequence)
 {
+    [[maybe_unused]] const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
+    AZ_Trace("CAnimNode::InitPostLoad", "IAnimSequence is %s", sequenceEntityId.ToString().c_str());
+
     m_pSequence = sequence;
     m_pParentNode = ((CAnimSequence*)m_pSequence)->FindNodeById(m_parentNodeId);
 
@@ -1236,3 +1244,8 @@ bool CAnimNode::GetExpanded() const
 {
     return m_expanded;
 }
+
+IMovieSystem* CAnimNode::GetMovieSystem() const
+{
+    return AZ::Interface<IMovieSystem>::Get();
+};

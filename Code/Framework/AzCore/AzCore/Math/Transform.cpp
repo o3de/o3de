@@ -357,6 +357,7 @@ namespace AZ
                 Method("CreateUniformScale", &Transform::CreateUniformScale)->
                 Method("CreateTranslation", &Transform::CreateTranslation)->
                 Method("CreateLookAt", &Transform::CreateLookAt)->
+                Method("GetEulerDegrees", &Transform::GetEulerDegrees)->
                 Method("ConstructFromValuesNumeric", &Internal::ConstructTransformFromValues);
         }
     }

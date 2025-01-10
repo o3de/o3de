@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
-
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
@@ -30,7 +30,7 @@ namespace AZ
             // Declarations...
 
             //! Finds the AssetId for a given product file path.
-            Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting = TraceLevel::Warning, Data::AssetType assetType = Data::s_invalidAssetType);
+            ATOM_RPI_REFLECT_API Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting = TraceLevel::Warning, Data::AssetType assetType = Data::s_invalidAssetType);
 
             //! Tries to compile the asset at the given product path.
             //! This will actively try to compile the asset every time it is called, it won't skip compilation just because the
@@ -46,7 +46,7 @@ namespace AZ
             //! know the compile state of the asset. If the AP is connected, there *should* always be a result
             //! (Compiled, Failed, Missing, etc), but if this is called *before* the AP is connected, it's possible to get Unknown
             //! even when you think the AP is (or will be) connected.
-            bool TryToCompileAsset(const AZStd::string& assetProductFilePath, TraceLevel reporting);
+            ATOM_RPI_REFLECT_API bool TryToCompileAsset(const AZStd::string& assetProductFilePath, TraceLevel reporting);
 
             //! Gets an Asset<AssetDataT> reference for a given product file path. This function does not cause the asset to load.
             //! @return a null asset if the asset could not be found.
@@ -75,7 +75,7 @@ namespace AZ
             namespace AssetUtilsInternal
             {
                 //! May call AZ_Warning, AZ_Error, or AZ_Assert depending on TraceLevel
-                void ReportIssue(TraceLevel traceLevel, const char* message);
+                ATOM_RPI_REFLECT_API void ReportIssue(TraceLevel traceLevel, const char* message);
             }
 
             // Definitions...
@@ -193,8 +193,11 @@ namespace AZ
             //! multiple ebus functions to handle callbacks. It will invoke the provided callback function when the
             //! asset loads or errors. It will stop listening on destruction, so it should be held onto until the
             //! callback fires.
-            class AsyncAssetLoader : private Data::AssetBus::Handler
+            AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+            class ATOM_RPI_REFLECT_API AsyncAssetLoader : private Data::AssetBus::Handler
             {
+                AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
             public:
                 AZ_RTTI(AZ::RPI::AssetUtils::AsyncAssetLoader, "{E0FB5B08-B97D-40DF-8478-226249C0B654}");
 

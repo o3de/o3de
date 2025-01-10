@@ -32,7 +32,11 @@ real GetSpecularInput(Texture2D map, sampler mapSampler, float2 uv, real specula
         }
         else
         {
+            #ifdef CS_SAMPLERS
+            specularFactor *= real(map.SampleLevel(mapSampler, uv, 0).r);
+            #else
             specularFactor *= real(map.Sample(mapSampler, uv).r);
+            #endif
         }
     }
     return specularFactor;

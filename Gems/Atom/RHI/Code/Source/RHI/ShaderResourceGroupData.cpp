@@ -457,7 +457,7 @@ namespace AZ::RHI
         ShaderInputBufferIndex indirectResourceBufferIndex,
         const BufferView* indirectResourceBufferView,
         AZStd::span<const ImageView* const> imageViews,
-        uint32_t* outIndices,
+        AZStd::unordered_map<int, uint32_t*> outIndices,
         AZStd::span<bool> isViewReadOnly,
         uint32_t arrayIndex)
     {
@@ -470,11 +470,13 @@ namespace AZ::RHI
                 deviceImageViews[imageIndex] = imageViews[imageIndex] ? imageViews[imageIndex]->GetDeviceImageView(deviceIndex).get() : nullptr;
             }
 
+            auto outIndicesIt = outIndices.find(deviceIndex);
+
             deviceShaderResourceGroupData.SetBindlessViews(
                 indirectResourceBufferIndex,
                 indirectResourceBufferView->GetDeviceBufferView(deviceIndex).get(),
                 deviceImageViews,
-                outIndices,
+                outIndicesIt != outIndices.end() ? outIndicesIt->second : nullptr,
                 isViewReadOnly,
                 arrayIndex);
         }
@@ -510,7 +512,7 @@ namespace AZ::RHI
         ShaderInputBufferIndex indirectResourceBufferIndex,
         const BufferView* indirectResourceBufferView,
         AZStd::span<const BufferView* const> bufferViews,
-        uint32_t* outIndices,
+        AZStd::unordered_map<int, uint32_t*> outIndices,
         AZStd::span<bool> isViewReadOnly,
         uint32_t arrayIndex)
     {
@@ -523,11 +525,13 @@ namespace AZ::RHI
                 deviceBufferViews[bufferIndex] = bufferViews[bufferIndex] ? bufferViews[bufferIndex]->GetDeviceBufferView(deviceIndex).get() : nullptr;
             }
 
+            auto outIndicesIt = outIndices.find(deviceIndex);
+
             deviceShaderResourceGroupData.SetBindlessViews(
                 indirectResourceBufferIndex,
                 indirectResourceBufferView->GetDeviceBufferView(deviceIndex).get(),
                 deviceBufferViews,
-                outIndices,
+                outIndicesIt != outIndices.end() ? outIndicesIt->second : nullptr,
                 isViewReadOnly,
                 arrayIndex);
         }

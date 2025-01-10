@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
+
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/Fence.h>
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/Base.h>
-
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -30,9 +31,11 @@ namespace AZ
     {
         class BufferPool;
 
-        class Buffer final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API Buffer final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class BufferSystem;
 
         public:

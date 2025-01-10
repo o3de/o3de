@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <AtomCore/Instance/Instance.h>
 
 namespace AZ
@@ -40,7 +40,7 @@ namespace AZ
             static constexpr char Missing[] = "textures/defaults/missing.png.streamingimage";
         }
 
-        class ImageSystemInterface
+        class ATOM_RPI_PUBLIC_API ImageSystemInterface
         {
         public:
             AZ_RTTI(ImageSystemInterface, "{C05FE364-927F-4669-ADDA-5562E20D5DC1}");

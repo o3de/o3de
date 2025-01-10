@@ -24,7 +24,7 @@ namespace EMStudio
         , m_eventDataEditor(nullptr, nullptr, &m_preset.GetEventDatas(), this)
     {
         setWindowTitle("Motion Event Preset Creation");
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         m_editor = new EMotionFX::ObjectEditor(context, this);

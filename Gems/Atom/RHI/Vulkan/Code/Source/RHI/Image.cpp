@@ -553,6 +553,11 @@ namespace AZ
             return m_sharingMode;
         }
 
+        const MemoryView& Image::GetMemoryView()
+        {
+            return m_memoryView;
+        }
+
         void Image::OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, Image::InitFlags flags)
         {
             RHI::DeviceObject::Init(device);
@@ -775,17 +780,17 @@ namespace AZ
 
             ImageCreateInfo createInfo = device.BuildImageCreateInfo(descriptor);
             // Add flags for sparse binding and sparse memory residency
-            createInfo.m_vkCreateInfo.flags |= VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT; 
+            createInfo.GetCreateInfo()->flags |= VK_IMAGE_CREATE_SPARSE_BINDING_BIT | VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT;
 
             // We will always handles image's ownership
-            createInfo.m_vkCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            createInfo.m_vkCreateInfo.queueFamilyIndexCount = 1;
-            createInfo.m_vkCreateInfo.pQueueFamilyIndices = nullptr;
+            createInfo.GetCreateInfo()->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.GetCreateInfo()->queueFamilyIndexCount = 1;
+            createInfo.GetCreateInfo()->pQueueFamilyIndices = nullptr;
 
-            createInfo.m_vkCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            createInfo.GetCreateInfo()->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             const VkResult vkResult =
-                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &m_vkImage);
+                device.GetContext().CreateImage(device.GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &m_vkImage);
 
             AssertSuccess(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
@@ -794,7 +799,7 @@ namespace AZ
             m_sparseImageInfo = AZStd::make_unique<SparseImageInfo>();
             m_sparseImageInfo->Init(device, m_vkImage, descriptor);
             m_isOwnerOfNativeImage = true;
-            m_sharingMode = createInfo.m_vkCreateInfo.sharingMode;
+            m_sharingMode = createInfo.GetCreateInfo()->sharingMode;
 
             return result;
         }
@@ -807,8 +812,8 @@ namespace AZ
             const RHI::ImageDescriptor& descriptor = GetDescriptor();
 
             ImageCreateInfo createInfo = device.BuildImageCreateInfo(descriptor);
-            m_usageFlags = createInfo.m_vkCreateInfo.usage;
-            m_sharingMode = createInfo.m_vkCreateInfo.sharingMode;
+            m_usageFlags = createInfo.GetCreateInfo()->usage;
+            m_sharingMode = createInfo.GetCreateInfo()->sharingMode;
 
             VkResult result = VK_SUCCESS;
             if (memoryView)
@@ -819,7 +824,7 @@ namespace AZ
                     device.GetVmaAllocator(),
                     memoryView->GetAllocation()->GetVmaAllocation(),
                     memoryView->GetOffset(),
-                    &createInfo.m_vkCreateInfo,
+                    createInfo.GetCreateInfo(),
                     &m_vkImage);
 
                 if (result == VK_SUCCESS)
@@ -833,13 +838,7 @@ namespace AZ
                 VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(RHI::HeapMemoryLevel::Device);
                 VmaAllocation vmaAlloc;
                 // Creates a new image, allocates a new memory for it, and binds the memory to the image.
-                result = vmaCreateImage(
-                    device.GetVmaAllocator(),
-                    &createInfo.m_vkCreateInfo,
-                    &allocInfo,
-                    &m_vkImage,
-                    &vmaAlloc,
-                    nullptr);
+                result = vmaCreateImage(device.GetVmaAllocator(), createInfo.GetCreateInfo(), &allocInfo, &m_vkImage, &vmaAlloc, nullptr);
 
                 if (result == VK_SUCCESS)
                 {

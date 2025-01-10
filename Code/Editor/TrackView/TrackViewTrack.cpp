@@ -268,7 +268,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const flo
         const float keyTime = m_pAnimTrack->GetKeyTime(keyIndex);
         const bool timeRangeOk = (t0 <= keyTime && keyTime <= t1);
 
-        if ((!bOnlySelected || IsKeySelected(keyIndex)) && timeRangeOk)
+        if (timeRangeOk && (!bOnlySelected || IsKeySelected(keyIndex)))
         {
             CTrackViewKeyHandle keyHandle(this, keyIndex);
             bundle.AppendKey(keyHandle);
@@ -612,7 +612,7 @@ void CTrackViewTrack::SelectKeys(const bool bSelected)
         }
     }
 
-    m_pTrackAnimNode->GetSequence()->SubmitPendingNotifcations();
+    m_pTrackAnimNode->GetSequence()->SubmitPendingNotifications();
 }
 
 

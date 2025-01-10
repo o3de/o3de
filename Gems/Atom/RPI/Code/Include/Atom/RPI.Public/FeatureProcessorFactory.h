@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -23,7 +24,7 @@ namespace AZ
         //! feature processors. Once registered, these feature processors can
         //! be queried and created for scenes attempting to enable/disable a
         //! specific feature processor.
-        class FeatureProcessorFactory final
+        class ATOM_RPI_PUBLIC_API FeatureProcessorFactory final
         {
         public:
             friend class FeatureProcessorDeleter;

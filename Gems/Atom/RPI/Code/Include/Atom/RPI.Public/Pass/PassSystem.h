@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassTree.h>
@@ -33,7 +34,7 @@ namespace AZ
         //! Responsible for preparing the frame and keeping 
         //! track of which passes need rebuilding or deleting.
         //! Holds the root of the pass hierarchy.
-        class PassSystem final
+        class ATOM_RPI_PUBLIC_API PassSystem final
             : public PassSystemInterface
         {
             friend class PassTests;

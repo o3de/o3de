@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <limits.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <AzCore/base.h>
+#include <limits.h>
 
 namespace AZ
 {
@@ -20,7 +20,7 @@ namespace AZ
         //! It contains the information about number of UV streams and which tangent/bitangent is used by each UV stream.
         //! See m_mask for more details.
         //! The mask will be passed through per draw SRG.
-        class UvStreamTangentBitmask
+        class ATOM_RPI_PUBLIC_API UvStreamTangentBitmask
         {
         public:
             //! Get the full mask including number of UVs and tangent/bitangent assignment to each UV.

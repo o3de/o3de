@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -27,9 +28,11 @@ namespace AZ
         //! Contains a set of RPI::ModelLodAsset objects.
         //! Serialized to a .azmodel file.
         //! Actual model data is stored in the BufferAssets referenced by ModelLodAssets.
-        class ModelAsset
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ModelAsset
             : public AZ::Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelAssetCreator;
             friend class ModelAssetHelpers;
 
@@ -169,9 +172,12 @@ namespace AZ
             AZStd::vector<AZ::Name> m_tags;
         };
 
-        class ModelAssetHandler
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ModelAssetHandler
             : public AssetHandler<ModelAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
 

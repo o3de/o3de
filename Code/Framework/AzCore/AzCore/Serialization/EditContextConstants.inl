@@ -197,18 +197,18 @@ namespace AZ
             const static AZ::Crc32 SliceFlags = AZ_CRC_CE("SliceFlags");
 
             //! On controls with a clear button, this attribute specifies whether the clear button should be shown.
-            const static AZ::Crc32 ShowClearButtonHandler = AZ_CRC("ShowClearButtonHandler", 0x2ef414c9);
+            const static AZ::Crc32 ShowClearButtonHandler = AZ_CRC_CE("ShowClearButtonHandler");
 
             //! Specifies whether the picker button should be shown.
             //! Authors - if you add this attribute to other handlers, list them here:
             //!      EntityId handler
-            const static AZ::Crc32 ShowPickButton = AZ_CRC("ShowPickButton", 0xc40252dd);
+            const static AZ::Crc32 ShowPickButton = AZ_CRC_CE("ShowPickButton");
 
             //! Specifies whether drop onto this control should be allowed.
             //! Used to turn off drag and drop for Transform Parents - you have to modify that via the outliner.
             //! Authors - if you add this attribute to other handlers, list them here:
             //!      EntityId handler
-            const static AZ::Crc32 AllowDrop = AZ_CRC("AllowDrop", 0x85424942);
+            const static AZ::Crc32 AllowDrop = AZ_CRC_CE("AllowDrop");
 
             //! For optional use on Getter Events used for Virtual Properties
             const static AZ::Crc32 PropertyPosition = AZ_CRC_CE("Position");

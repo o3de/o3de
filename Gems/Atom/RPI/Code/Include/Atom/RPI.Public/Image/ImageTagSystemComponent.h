@@ -15,15 +15,19 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <Atom/RPI.Public/AssetTagBus.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        class ImageTagSystemComponent final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ImageTagSystemComponent final
             : public AZ::Component
             , ImageTagBus::Handler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_COMPONENT(ImageTagSystemComponent, "{1AC446A3-6F20-4D5C-9C09-BB034C9188D5}");
 

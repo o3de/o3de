@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <stdint.h>
 
 namespace AZ::RPI
@@ -69,6 +70,6 @@ namespace AZ::RPI
         uint8_t m_bitangentZ;
     };
 
-    PackedCompressedMorphTargetDelta PackMorphTargetDelta(const CompressedMorphTargetDelta& compressedDelta);
-    CompressedMorphTargetDelta UnpackMorphTargetDelta(const PackedCompressedMorphTargetDelta& packedDelta);
+    ATOM_RPI_REFLECT_API PackedCompressedMorphTargetDelta PackMorphTargetDelta(const CompressedMorphTargetDelta& compressedDelta);
+    ATOM_RPI_REFLECT_API CompressedMorphTargetDelta UnpackMorphTargetDelta(const PackedCompressedMorphTargetDelta& packedDelta);
 } // namespace AZ::RPI

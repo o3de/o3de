@@ -49,6 +49,10 @@ namespace AZ::RHI
         /// is invoked when the fence completes.
         ResultCode WaitOnCpuAsync(SignalCallback callback);
 
+        /// BinaryFences in Vulkan need their dependent TimelineSemaphore Fences to be
+        /// signalled. This is currently only implemented in Vulkan
+        virtual void SetExternallySignalled(){};
+
     protected:
         bool ValidateIsInitialized() const;
 

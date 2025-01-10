@@ -77,7 +77,7 @@ namespace EMStudio
 
     void EventDataEditor::Init()
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         m_eventDataSelectionMenu = new QMenu(this);
@@ -263,7 +263,7 @@ namespace EMStudio
 
     void EventDataEditor::AppendEventData(const AZ::Uuid& newTypeId)
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         const AZ::SerializeContext::ClassData* classData = context->FindClassData(newTypeId);

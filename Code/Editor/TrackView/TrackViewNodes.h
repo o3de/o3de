@@ -17,6 +17,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Entity.h>
 
+#include "AnimationContext.h"
 #include "TrackViewNode.h"
 #include "TrackViewSequence.h"
 #include "Undo/Undo.h"
@@ -48,6 +49,8 @@ class CTrackViewNodesCtrl
     : public QWidget
     , public ITrackViewSequenceListener
     , public IUndoManagerListener
+    , public IAnimationContextListener
+    , public ITrackViewSequenceManagerListener
 {
     Q_OBJECT
 public:
@@ -106,6 +109,12 @@ public:
     // IUndoManagerListener
     virtual void BeginUndoTransaction() override;
     virtual void EndUndoTransaction() override;
+
+    // IAnimationContextListener
+    void OnSequenceChanged(CTrackViewSequence* pNewSequence) override;
+
+    // ITrackViewSequenceManagerListener
+    void OnSequenceRemoved(CTrackViewSequence* pSequence) override;
 
     // Helper for dialog
     QIcon GetIconForTrack(const CTrackViewTrack* pTrack);

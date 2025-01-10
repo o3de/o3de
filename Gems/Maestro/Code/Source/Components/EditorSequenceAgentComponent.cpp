@@ -143,6 +143,13 @@ namespace Maestro
             return;
         }
 
+        const auto entity = GetEntity();
+        if (!entity)
+        {
+            AZ_Assert(false, "EditorSequenceAgentComponent::DisconnectSequence() called for inactive entity.");
+            return;
+        }
+
         AZ::EntityId sequenceEntityId = busIdToDisconnect->first;
 
         // we only process DisconnectSequence events sent over an ID'ed bus - otherwise we don't know which SequenceComponent to disconnect
@@ -164,8 +171,17 @@ namespace Maestro
 
         AZ::EntityId curEntityId = GetEntityId();
 
+        AZ_Trace("EditorSequenceAgentComponent","DisconnectSequence(): removing self from entity %s, %s.", curEntityId.ToString().c_str(), entity->GetName().c_str());
+        // This component was created indirectly via user actions in EditorSequenceComponent,
+        // so temporary disable undo / redo for its destruction adding EntityId to the ignored list, to bypass possible undo / redo errors.
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddIgnoredEntity, curEntityId);
+
         // remove this SequenceAgent from this entity if no sequenceComponents are connected to it
         AzToolsFramework::EntityCompositionRequestBus::Broadcast(&AzToolsFramework::EntityCompositionRequests::RemoveComponents, AZ::Entity::ComponentArrayType{this});        
+
+        // Remove EntityId from the ignored list to return to standard undo / redo pipeline.
+        // This call is mandatory after the above AddIgnoredEntity() call which was intended to disable undo / redo only temporary.
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::RemoveIgnoredEntity, curEntityId);
 
         // Let any currently-active undo operations know that this entity has changed state.
         auto undoCacheInterface = AZ::Interface<AzToolsFramework::UndoSystem::UndoCacheInterface>::Get();

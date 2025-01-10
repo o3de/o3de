@@ -45,7 +45,7 @@ namespace AzQtComponents
         void SetMaxLength(int length);
 
         void show();
-        int exec();
+        int exec() override;
 
         static QString getText(QWidget* parent,
                                const QString& title,

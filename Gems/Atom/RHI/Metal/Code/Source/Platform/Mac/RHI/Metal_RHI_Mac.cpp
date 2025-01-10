@@ -41,6 +41,8 @@ namespace Platform
                 physicalDeviceList.emplace_back(physicalDevice);
             }
         }
+        RHI::RHIRequirementRequestBus::Broadcast(
+            &RHI::RHIRequirementsRequest::FilterSupportedPhysicalDevices, physicalDeviceList, RHI::APIIndex::Metal);
         return physicalDeviceList;
     }
     

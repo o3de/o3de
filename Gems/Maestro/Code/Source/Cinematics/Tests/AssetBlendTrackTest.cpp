@@ -20,6 +20,7 @@ namespace AssetBlendTrackTest
     const AZ::Data::AssetId KEY1_ASSET_ID = AZ::Data::AssetId(AZ::Uuid("{86CE36B5-D996-4CEF-943E-3F12008694E1}"), 1);
     const AZ::Data::AssetId KEY2_ASSET_ID = AZ::Data::AssetId(AZ::Uuid("{94D54D20-BACC-4A60-8A03-0DC9B5033E03}"), 2);
     const AZ::Data::AssetId KEY3_ASSET_ID = AZ::Data::AssetId(AZ::Uuid("{94D54D20-BACC-4A60-8A03-0DC9B5033E03}"), 3);
+    const AZ::Data::AssetId ZERO_ASSET_ID = AZ::Data::AssetId();
 
     /////////////////////////////////////////////////////////////////////////////////////
     // Testing sub-class
@@ -31,6 +32,23 @@ namespace AssetBlendTrackTest
         void CreateAssetBlendTestKeys();
 
         CAssetBlendTrack m_assetBlendTrack;
+
+        AZStd::vector<Maestro::AssetBlend> m_vectorBlends8EvaluatingTo6 = {
+            //                  m_assetId,  m_time, m_blendInTime, m_blendOutTime
+            Maestro::AssetBlend(KEY1_ASSET_ID, 0.0f, 0.1f, 0.1f),
+            Maestro::AssetBlend(KEY1_ASSET_ID, 0.0f, 0.1f, 0.1f), // item is to be filtered out due to the ambiguous key time
+            Maestro::AssetBlend(ZERO_ASSET_ID, 0.5f, 0.1f, 0.1f), // item is to be filtered out due to the invalid asset Id
+            Maestro::AssetBlend(KEY1_ASSET_ID, 0.5f, 0.1f, 0.1f),
+            Maestro::AssetBlend(KEY2_ASSET_ID, 1.0f, 0.1f, 0.1f),
+            Maestro::AssetBlend(KEY2_ASSET_ID, 1.5f, 0.1f, 0.1f),
+            Maestro::AssetBlend(KEY3_ASSET_ID, 2.5f, 0.3f, 0.3f), // item is to be sorted down, its duration cannot be determined other than 0.3f + 0.3f + tolerance
+            Maestro::AssetBlend(KEY3_ASSET_ID, 2.0f, 0.1f, 0.1f)
+        };
+
+        Maestro::AssetBlends<AZ::Data::AssetData> m_AssetBlends8EvaluatingTo6 = {
+            m_vectorBlends8EvaluatingTo6 // AZStd::vector<AssetBlend> m_assetBlends
+        };
+
     };
 
     /////////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +110,58 @@ namespace AssetBlendTrackTest
         ASSERT_EQ(value.m_assetBlends.at(0).m_assetId, KEY3_ASSET_ID) << "Expected KEY3_ASSET_ID at time 3.0f.";
     };
 
+    TEST_F(CAssetBlendTrackTest, SetValue_EmptyBlends_ExpectNoKeys)
+    {
+        Maestro::AssetBlends<AZ::Data::AssetData> emptyAssetBlends;
+
+        m_assetBlendTrack.SetValue(0.f, emptyAssetBlends, false);
+        ASSERT_EQ(m_assetBlendTrack.GetNumKeys(), 0) << "Expected no keys.";
+
+        CreateAssetBlendTestKeys();
+        m_assetBlendTrack.SetValue(0.f, emptyAssetBlends, true);
+        ASSERT_EQ(m_assetBlendTrack.GetNumKeys(), 0) << "Expected no keys.";
+
+        CreateAssetBlendTestKeys();
+        m_assetBlendTrack.SetDefaultValue(emptyAssetBlends);
+        ASSERT_EQ(m_assetBlendTrack.GetNumKeys(), 0) << "Expected no keys.";
+    }
+
+    TEST_F(CAssetBlendTrackTest, SetValue_Default_8Blends_Expect6Keys)
+    {
+        constexpr float timeOffset = 1.0f;
+        m_assetBlendTrack.SetValue(timeOffset, m_AssetBlends8EvaluatingTo6, true); // save default blends and then reconstruct keys from these
+
+        Maestro::AssetBlends<AZ::Data::AssetData> resultingDefaultBlends;
+        m_assetBlendTrack.GetDefaultValue(resultingDefaultBlends);
+        // Invalid elements (with invalid AssetId) and ambiguous elements (with the repeating AssetId and time key) are filtered out
+        ASSERT_EQ(resultingDefaultBlends.m_assetBlends.size(), 6) << "Expected 6 blends, 2 of 8 were to be filtered out.";
+
+        // Setting blends reconstructs keys accordingly, filtering out invalid and ambiguous elements
+        auto numKeys = m_assetBlendTrack.GetNumKeys();
+        ASSERT_EQ(numKeys, 6) << "Expected 6 keys, 2 of 8 blends were to be filtered out.";
+
+        AZ::IAssetBlendKey key;
+        m_assetBlendTrack.GetKey(4, &key);
+        ASSERT_LE(fabs(key.time - 2.0f - timeOffset), AZ::Constants::FloatEpsilon) << "Wrong key time.";
+        ASSERT_LE(fabs(key.m_duration - 0.5f), AZ::Constants::FloatEpsilon) << "Wrong key duration.";
+        m_assetBlendTrack.GetKey(5, &key); // last key
+        ASSERT_LE(fabs(key.time - 2.5f - timeOffset), AZ::Constants::FloatEpsilon) << "Wrong key time.";
+        ASSERT_LE(fabs(key.m_duration - 0.6f), AZ::Constants::Tolerance + AZ::Constants::FloatEpsilon);
+        ASSERT_LE(fabs(m_assetBlendTrack.GetEndTime() - key.m_endTime), AZ::Constants::FloatEpsilon) << "Wrong sequence end time.";
+
+        m_assetBlendTrack.SetValue(0.f, m_AssetBlends8EvaluatingTo6, false); // reconstruct current keys from given blends
+
+        // Setting blends reconstructs keys accordingly, filtering out invalid and ambiguous elements
+        numKeys = m_assetBlendTrack.GetNumKeys();
+        ASSERT_EQ(numKeys, 6) << "Expected 6 keys, 2 of 8 possible keys were to be filtered out.";
+
+        m_assetBlendTrack.GetKey(4, &key);
+        ASSERT_LE(fabs(key.time - 2.0f), AZ::Constants::FloatEpsilon) << "Wrong key time.";
+        ASSERT_LE(fabs(key.m_duration - 0.5f), AZ::Constants::FloatEpsilon) << "Wrong key duration.";
+        m_assetBlendTrack.GetKey(5, &key); // last key
+        ASSERT_LE(fabs(key.time - 2.5f), AZ::Constants::FloatEpsilon) << "Wrong key time.";
+        ASSERT_LE(fabs(m_assetBlendTrack.GetEndTime() - key.m_endTime), AZ::Constants::FloatEpsilon) << "Wrong sequence end time.";
+    }
 }; // namespace AssetBlendTrackTest
 
 #endif // !defined(_RELEASE)

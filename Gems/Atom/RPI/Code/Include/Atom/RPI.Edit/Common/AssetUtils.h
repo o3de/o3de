@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
@@ -25,9 +26,9 @@ namespace AZ
             // Note that these functions default to TraceLevel::Error to preserve legacy behavior of these APIs. It would be nice to make the default match
             // RPI.Reflect/Asset/AssetUtils.h which is TraceLevel::Warning, but we are close to a release so it isn't worth the risk at this time.
 
-            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting = TraceLevel::Error);
+            ATOM_RPI_EDIT_API Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting = TraceLevel::Error);
 
-            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId, TraceLevel reporting = TraceLevel::Error);
+            ATOM_RPI_EDIT_API Outcome<Data::AssetId> MakeAssetId(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId, TraceLevel reporting = TraceLevel::Error);
 
             template<typename AssetDataT>
             Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
@@ -58,21 +59,21 @@ namespace AZ
                 const AZ::Data::AssetLoadParameters& assetLoadParameters = AZ::Data::AssetLoadParameters{});
 
             //! Attempts to resolve the full path to a product asset given its ID
-            AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId);
+            ATOM_RPI_EDIT_API AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId);
 
             //! Attemts to resolve the full path to a source asset given its ID
-            AZStd::string GetSourcePathByAssetId(const AZ::Data::AssetId& assetId);
+            ATOM_RPI_EDIT_API AZStd::string GetSourcePathByAssetId(const AZ::Data::AssetId& assetId);
 
             //! Tries to resolve a relative file reference, given the path of a referencing file.
             //! @param originatingSourceFilePath  Path to the parent file that references referencedSourceFilePath. May be absolute or relative to asset-root.
             //! @param referencedSourceFilePath   Path that the parent file references. May be relative to the parent file location or relative to asset-root.
             //! @return A full path for referencedSourceFilePath, if a full path was found. If a full path could not be constructed, returns referencedSourceFilePath unmodified.
-            AZStd::string ResolvePathReference(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
+            ATOM_RPI_EDIT_API AZStd::string ResolvePathReference(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
 
             //! Takes an arbitrary string and replaces some characters to make it a valid filename. The result will be compatible with AzQtComponents::FileDialog.
             //! Ex. SanitizeFileName("Left=>Right.txt") == "Left_Right.txt"
             //! Ex. SanitizeFileName("Material::Red#1") == "Material_Red_1"
-            AZStd::string SanitizeFileName(AZStd::string filename);
+            ATOM_RPI_EDIT_API AZStd::string SanitizeFileName(AZStd::string filename);
 
             // Definitions...
 

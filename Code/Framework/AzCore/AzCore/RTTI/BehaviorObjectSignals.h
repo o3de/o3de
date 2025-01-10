@@ -30,4 +30,4 @@ namespace AZ
     using BehaviorObjectSignals =  AZ::EBus<BehaviorObjectSignalsInterface>;
 }
 
-DECLARE_EBUS_EXTERN(BehaviorObjectSignalsInterface);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(BehaviorObjectSignalsInterface);

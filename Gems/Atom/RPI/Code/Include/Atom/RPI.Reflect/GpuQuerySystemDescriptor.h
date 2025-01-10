@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
 
 namespace AZ
@@ -19,7 +20,7 @@ namespace AZ
     namespace RPI
     {
         //! A descriptor used to create a render pipeline
-        struct GpuQuerySystemDescriptor final
+        struct ATOM_RPI_REFLECT_API GpuQuerySystemDescriptor final
         {
             AZ_TYPE_INFO(GpuQuerySystemDescriptor, "{952FE9DA-96EA-473E-BED5-1B12088BABD0}");
             static void Reflect(AZ::ReflectContext* context);

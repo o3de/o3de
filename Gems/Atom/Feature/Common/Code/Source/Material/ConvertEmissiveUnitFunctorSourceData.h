@@ -8,11 +8,10 @@
 
 #pragma once
 
-
-#include "./ConvertEmissiveUnitFunctor.h"
-#include <AzCore/Math/Vector2.h>
+#include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <AzCore/Math/Vector2.h>
 
 namespace AZ
 {

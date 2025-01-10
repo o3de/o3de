@@ -9,6 +9,7 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
 
 namespace AZ
@@ -86,7 +87,7 @@ namespace AZ
             AZ::RPI::MaterialPropertyGroupVisibility m_visibility;
         };
 
-        void ReflectMaterialDynamicMetadata(ReflectContext* context);
+        ATOM_RPI_REFLECT_API void ReflectMaterialDynamicMetadata(ReflectContext* context);
 
     } // namespace RPI
 

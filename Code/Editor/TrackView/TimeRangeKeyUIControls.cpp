@@ -17,7 +17,7 @@
 #include "TrackViewKeyPropertiesDlg.h"              // for CTrackViewKeyUIControls// Editor
 
 //////////////////////////////////////////////////////////////////////////
-bool CTimeRangeKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CTimeRangeKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

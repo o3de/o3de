@@ -44,7 +44,11 @@ real3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, real3 base
         }
         else
         {
+            #ifdef CS_SAMPLERS
+            sampledAbledo = real3(map.SampleLevel(mapSampler, uv, 0).rgb);
+            #else
             sampledAbledo = real3(map.Sample(mapSampler, uv).rgb);
+            #endif
         }
         //Convert to ACEScg as that is our intermediate working space. 
         //Todo - We should data drive this color space

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/GpuQuerySystemDescriptor.h>
 #include <Atom/RPI.Reflect/Image/ImageSystemDescriptor.h>
 
@@ -25,7 +26,7 @@ namespace AZ
             uint32_t m_dynamicBufferPoolSize = 16 * 1024 * 1024;
         };
 
-        struct RPISystemDescriptor final
+        struct ATOM_RPI_REFLECT_API RPISystemDescriptor final
         {
             AZ_TYPE_INFO(RPISystemDescriptor, "{96DAC3DA-40D4-4C03-8D6A-3181E843262A}");
             static void Reflect(AZ::ReflectContext* context);

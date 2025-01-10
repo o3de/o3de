@@ -278,7 +278,12 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
     }
 
     GetIEditor()->Notify(eNotify_OnBeginSceneOpen);
-    GetIEditor()->GetMovieSystem()->RemoveAllSequences();
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->RemoveAllSequences();
+    }
 
     {
         // Start recording errors

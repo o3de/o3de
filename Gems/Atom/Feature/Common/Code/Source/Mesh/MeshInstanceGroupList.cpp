@@ -21,7 +21,7 @@ namespace AZ::Render
             m_perViewDrawPackets.clear();
             for (auto modelDataInstance : m_associatedInstances)
             {
-                modelDataInstance->HandleDrawPacketUpdate(m_drawPacket);
+                modelDataInstance->HandleDrawPacketUpdate(m_key.m_lodIndex, m_key.m_meshIndex, m_drawPacket);
             }
             return true;
         }

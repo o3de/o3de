@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
@@ -19,7 +20,7 @@ namespace AZ
     namespace RPI
     {
         //! Specifies a connection that will be pointed to by the pipeline for global reference
-        struct PipelineGlobalConnection final
+        struct ATOM_RPI_REFLECT_API PipelineGlobalConnection final
         {
             AZ_TYPE_INFO(PipelineGlobalConnection, "{8D708E59-E94C-4B25-8B0A-5D890BC8E6FE}");
 
@@ -38,7 +39,7 @@ namespace AZ
         //! If custom data is specified in both the PassTemplate and the PassRequest, the data
         //! specified in the PassRequest will take precedent and the data in PassTemplate ignored.
         //! All classes for custom pass data must inherit from this or one of it's derived classes.
-        struct PassData
+        struct ATOM_RPI_REFLECT_API PassData
         {
             AZ_RTTI(PassData, "{F8594AE8-2588-4D64-89E5-B078A46A9AE4}");
             AZ_CLASS_ALLOCATOR(PassData, SystemAllocator);

@@ -55,8 +55,8 @@ namespace AZ
             void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
             void SetQuadData(LightHandle handle, const QuadLightData& data) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer()const;
-            uint32_t GetLightCount()const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const override;
+            uint32_t GetLightCount() const override;
 
         private:
             QuadLightFeatureProcessor(const QuadLightFeatureProcessor&) = delete;
