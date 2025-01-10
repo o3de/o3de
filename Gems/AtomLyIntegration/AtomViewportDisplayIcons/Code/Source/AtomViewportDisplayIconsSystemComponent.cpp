@@ -229,24 +229,20 @@ namespace AZ::Render
         const auto [viewportWidth, viewportHeight] = viewportContext->GetViewportSize();
         const auto viewportSize = AzFramework::ScreenSize(viewportWidth, viewportHeight);
 
-        for (auto &drawIcon : m_drawRequests)
+        for (auto &[iconId, drawIconRequests] : m_drawRequests)
         {
             // Find our icon, falling back on a gray placeholder if its image is unavailablec
-            AZStd::vector<DrawParameters>& drawIconRequests = drawIcon.second;
-            
             if (drawIconRequests.empty())
             {
                 continue;
             }
-
-            IconId iconId = drawIcon.first;
 
             AZ::Data::Instance<AZ::RPI::Image> image = GetImageForIconId(iconId);
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = CreateIconSRG(m_drawRequestViewportId, image);
 
             // add all of the icons to draw buffers.
             m_vertexCache.clear();
-            m_vertexCache.reserve(drawIcon.second.size() * 4);
+            m_vertexCache.reserve(drawIconRequests.size() * 4);
             
             float minZ = aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::max());
             float maxZ = aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::min());
