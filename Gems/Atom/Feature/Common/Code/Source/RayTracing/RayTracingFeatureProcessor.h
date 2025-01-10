@@ -11,12 +11,13 @@
 #include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/Feature/RayTracing/RayTracingIndexList.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
 #include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/RayTracingCompactionQueryPool.h>
+#include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -106,6 +107,11 @@ namespace AZ
             RHI::AttachmentId GetTlasAttachmentId() const override { return m_tlasAttachmentId; }
             BlasInstanceMap& GetBlasInstances() override { return m_blasInstanceMap; }
             AZStd::mutex& GetBlasBuiltMutex() override { return m_blasBuiltMutex; }
+            BlasBuildList& GetBlasBuildList(int deviceId) override { return m_blasToBuild[deviceId]; }
+            const BlasBuildList& GetSkinnedMeshBlasList() override { return m_skinnedBlasIds; };
+            BlasBuildList& GetBlasCompactionList(int deviceId) override { return m_blasToCompact[deviceId]; }
+            const void MarkBlasInstanceForCompaction(int deviceId, Data::AssetId assetId) override;
+            const void MarkBlasInstanceAsCompactionEnqueued(int deviceId, Data::AssetId assetId) override;
 
             bool HasMeshGeometry() const override { return m_subMeshCount != 0; }
             bool HasProceduralGeometry() const override { return !m_proceduralGeometry.empty(); }
@@ -114,12 +120,14 @@ namespace AZ
         private:
             AZ_DISABLE_COPY_MOVE(RayTracingFeatureProcessor);
 
+            void UpdateBlasInstances();
             void UpdateMeshInfoBuffer();
             void UpdateProceduralGeometryInfoBuffer();
             void UpdateMaterialInfoBuffer();
             void UpdateIndexLists();
             void UpdateRayTracingSceneSrg();
             void UpdateRayTracingMaterialSrg();
+            void RemoveBlasInstance(Data::AssetId id);
 
             static RHI::RayTracingAccelerationStructureBuildFlags CreateRayTracingAccelerationStructureBuildFlags(bool isSkinnedMesh);
 
@@ -230,6 +238,16 @@ namespace AZ
             // side list for looking up existing BLAS objects so they can be re-used when the same mesh is added multiple times
             BlasInstanceMap m_blasInstanceMap;
 
+            BlasBuildList m_blasToCreate;
+            AZStd::unordered_map<int, BlasBuildList> m_blasToBuild;
+            AZStd::unordered_map<int, BlasBuildList> m_blasToCompact;
+            BlasBuildList m_skinnedBlasIds;
+
+            AZStd::unordered_map<int, AZStd::unordered_map<Data::AssetId, int>> m_blasEnqueuedForCompact;
+            AZStd::unordered_map<int, AZStd::unordered_map<Data::AssetId, int>> m_blasEnqueuedForUncompactDeletion;
+
+            int m_frameIndex = 0;
+
 #if !USE_BINDLESS_SRG
             // Mesh buffer and material texture resources are managed with a RayTracingResourceList, which contains an internal
             // indirection list.  This allows resource entries to be swapped inside the RayTracingResourceList when removing entries,
@@ -259,6 +277,8 @@ namespace AZ
             ProceduralGeometryTypeList m_proceduralGeometryTypes;
             ProceduralGeometryList m_proceduralGeometry;
             AZStd::unordered_map<Uuid, size_t> m_proceduralGeometryLookup;
+
+            RHI::Ptr<RHI::RayTracingCompactionQueryPool> m_compactionQueryPool;
 
             void ConvertMaterial(MaterialInfo& materialInfo, const SubMeshMaterial& subMeshMaterial, int deviceIndex);
         };

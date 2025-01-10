@@ -67,4 +67,6 @@ set(FILES
     Source/RHI/RayTracingPipelineState.h
     Source/RHI/RayTracingShaderTable.cpp
     Source/RHI/RayTracingShaderTable.h
+    Source/RHI/RayTracingCompactionQueryPool.h
+    Source/RHI/RayTracingCompactionQueryPool.cpp
 )

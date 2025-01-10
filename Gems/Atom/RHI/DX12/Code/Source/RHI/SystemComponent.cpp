@@ -6,8 +6,10 @@
  *
  */
 
+#include <Atom/RHI.Reflect/DX12/Base.h>
+#include <Atom/RHI/FactoryManagerBus.h>
 #include <AzCore/PlatformIncl.h>
-#include <RHI/SystemComponent.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
@@ -21,25 +23,24 @@
 #include <RHI/ImageView.h>
 #include <RHI/IndirectBufferSignature.h>
 #include <RHI/IndirectBufferWriter.h>
+#include <RHI/PhysicalDevice.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>
-#include <RHI/PhysicalDevice.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
-#include <RHI/RayTracingBufferPools.h>
 #include <RHI/RayTracingBlas.h>
-#include <RHI/RayTracingTlas.h>
+#include <RHI/RayTracingBufferPools.h>
+#include <RHI/RayTracingCompactionQueryPool.h>
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
+#include <RHI/RayTracingTlas.h>
 #include <RHI/Scope.h>
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/ShaderResourceGroupPool.h>
 #include <RHI/StreamingImagePool.h>
 #include <RHI/SwapChain.h>
+#include <RHI/SystemComponent.h>
 #include <RHI/TransientAttachmentPool.h>
-#include <Atom/RHI.Reflect/DX12/Base.h>
-#include <Atom/RHI/FactoryManagerBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -246,6 +247,16 @@ namespace AZ
         RHI::Ptr<RHI::DeviceDispatchRaysIndirectBuffer> SystemComponent::CreateDispatchRaysIndirectBuffer()
         {
             return DispatchRaysIndirectBuffer::Create();
+        }
+
+        RHI::Ptr<RHI::DeviceRayTracingCompactionQueryPool> SystemComponent::CreateRayTracingCompactionQueryPool()
+        {
+            return RayTracingCompactionQueryPool::Create();
+        }
+
+        RHI::Ptr<RHI::DeviceRayTracingCompactionQuery> SystemComponent::CreateRayTracingCompactionQuery()
+        {
+            return RayTracingCompactionQuery::Create();
         }
     }
 }

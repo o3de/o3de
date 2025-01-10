@@ -41,6 +41,8 @@ namespace AZ
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingBlas& rayTracingBlas) override {}
             void UpdateBottomLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingBlas& rayTracingBlas) override {}
+            void QueryBlasCompactionSizes(const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery) override { }
+            void CompactBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas) override{}
             void BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingTlas& rayTracingTlas, [[maybe_unused]] const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList) override {}
             void SetFragmentShadingRate(
                 [[maybe_unused]] RHI::ShadingRate rate,

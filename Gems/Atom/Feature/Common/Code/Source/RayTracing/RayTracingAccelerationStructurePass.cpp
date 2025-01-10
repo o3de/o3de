@@ -14,6 +14,7 @@
 #include <Atom/RHI/ScopeProducerFunction.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
+#include <Atom/RPI.Public/GpuQuery/QueryPool.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Mesh/MeshFeatureProcessor.h>
@@ -218,53 +219,122 @@ namespace AZ
 
             BeginScopeQuery(context);
 
-            // build newly added or skinned BLAS objects
             AZStd::vector<const AZ::RHI::DeviceRayTracingBlas*> changedBlasList;
+            AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>> compactionQueries;
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
-            for (auto& blasInstance : blasInstances)
+
+            // Build newly added Blas instances
+            auto& toBuildList = rayTracingFeatureProcessor->GetBlasBuildList(context.GetDeviceIndex());
+            for (auto assetId : toBuildList)
             {
-                const bool isSkinnedMesh = blasInstance.second.m_isSkinnedMesh;
-                const bool buildBlas = (blasInstance.second.m_blasBuilt & RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex())) ==
-                    RHI::MultiDevice::NoDevices;
-                if (buildBlas || isSkinnedMesh)
+                auto it = blasInstances.find(assetId);
+                if (it == blasInstances.end())
                 {
-                    for (auto submeshIndex = 0; submeshIndex < blasInstance.second.m_subMeshes.size(); ++submeshIndex)
-                    {
-                        auto& submeshBlasInstance = blasInstance.second.m_subMeshes[submeshIndex];
-                        changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
-                        if (buildBlas)
-                        {
-                            // Always build the BLAS, if it has not previously been built
-                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
-                            continue;
-                        }
-
-                        // Determine if a skinned mesh BLAS needs to be updated or completely rebuilt. For now, we want to rebuild a BLAS every
-                        // SKINNED_BLAS_REBUILD_FRAME_INTERVAL frames, while updating it all other frames. This is based on the assumption that
-                        // by adding together the asset ID hash, submesh index, and frame count, we get a value that allows us to uniformly
-                        // distribute rebuilding all skinned mesh BLASs over all frames.
-                        auto assetGuid = blasInstance.first.m_guid.GetHash();
-                        if (isSkinnedMesh && (assetGuid + submeshIndex + m_frameCount) % SKINNED_BLAS_REBUILD_FRAME_INTERVAL != 0)
-                        {
-                            // Skinned mesh that simply needs an update
-                            context.GetCommandList()->UpdateBottomLevelAccelerationStructure(
-                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
-                        }
-                        else
-                        {
-                            // Fall back to building the BLAS in any case
-                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(
-                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
-                        }
-                    }
-
-                    AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
-                    blasInstance.second.m_blasBuilt |= RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex());
+                    continue;
                 }
+
+                bool enqueuedForCompaction = false;
+                auto& blasInstance = it->second;
+                for (auto& submeshBlasInstance : blasInstance.m_subMeshes)
+                {
+                    changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
+
+                    context.GetCommandList()->BuildBottomLevelAccelerationStructure(
+                        *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                    auto query = submeshBlasInstance.m_compactionSizeQuery;
+                    if (query)
+                    {
+                        auto deviceQuery = query->GetDeviceRayTracingCompactionQuery(context.GetDeviceIndex());
+                        compactionQueries.push_back(
+                            { submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get(), deviceQuery.get() });
+                        enqueuedForCompaction = true;
+                    }
+                    else
+                    {
+                        AZ_Assert(!enqueuedForCompaction, "All or none Blas of an asset need to be compacted");
+                    }
+                }
+                AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
+                if (enqueuedForCompaction)
+                {
+                    rayTracingFeatureProcessor->MarkBlasInstanceForCompaction(context.GetDeviceIndex(), assetId);
+                }
+                blasInstance.m_blasBuilt |= RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex());
+            }
+            toBuildList.clear();
+
+            // Build, update, or rebuild skinned mesh Blas instances
+            for (auto assetId : rayTracingFeatureProcessor->GetSkinnedMeshBlasList())
+            {
+                auto it = blasInstances.find(assetId);
+                if (it == blasInstances.end())
+                {
+                    continue;
+                }
+                auto& blasInstance = it->second;
+                const bool buildBlas =
+                    (blasInstance.m_blasBuilt & RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex())) == RHI::MultiDevice::NoDevices;
+                for (auto submeshIndex = 0; submeshIndex < blasInstance.m_subMeshes.size(); ++submeshIndex)
+                {
+                    auto& submeshBlasInstance = blasInstance.m_subMeshes[submeshIndex];
+                    // Determine if a skinned mesh BLAS needs to be updated or completely rebuilt. For now, we want to rebuild a BLAS
+                    // every SKINNED_BLAS_REBUILD_FRAME_INTERVAL frames, while updating it all other frames. This is based on the
+                    // assumption that by adding together the asset ID hash, submesh index, and frame count, we get a value that allows
+                    // us to uniformly distribute rebuilding all skinned mesh BLASs over all frames.
+                    auto assetGuid = it->first.m_guid.GetHash();
+                    if (!buildBlas && ((assetGuid + submeshIndex + m_frameCount) % SKINNED_BLAS_REBUILD_FRAME_INTERVAL != 0))
+                    {
+                        // Skinned mesh that simply needs an update
+                        context.GetCommandList()->UpdateBottomLevelAccelerationStructure(
+                            *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                    }
+                    else
+                    {
+                        // Fall back to building the BLAS in any case
+                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(
+                            *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                    }
+                    changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
+                }
+                AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
+                blasInstance.m_blasBuilt |= RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex());
             }
 
+            // Compact Blas instances
+            auto& toCompactList = rayTracingFeatureProcessor->GetBlasCompactionList(context.GetDeviceIndex());
+            for (auto assetId : toCompactList)
+            {
+                auto it = blasInstances.find(assetId);
+                if (it == blasInstances.end())
+                {
+                    continue;
+                }
+
+                auto& blasInstance = it->second;
+                for (auto& submeshBlasInstance : blasInstance.m_subMeshes)
+                {
+                    auto query = submeshBlasInstance.m_compactionSizeQuery;
+                    if (query)
+                    {
+                        context.GetCommandList()->CompactBottomLevelAccelerationStructure(
+                            *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()),
+                            *submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                        changedBlasList.push_back(
+                            submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
+                    }
+                }
+                AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
+                rayTracingFeatureProcessor->MarkBlasInstanceAsCompactionEnqueued(context.GetDeviceIndex(), assetId);
+            }
+            toCompactList.clear();
+
             // build the TLAS object
-            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
+            context.GetCommandList()->BuildTopLevelAccelerationStructure(
+                *rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
+            if (!compactionQueries.empty())
+            {
+                context.GetCommandList()->QueryBlasCompactionSizes(compactionQueries);
+            }
 
             ++m_frameCount;
 

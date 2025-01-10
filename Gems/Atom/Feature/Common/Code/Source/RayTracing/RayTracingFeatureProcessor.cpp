@@ -6,23 +6,24 @@
  *
  */
 
-#include <RayTracing/RayTracingFeatureProcessor.h>
 #include <Atom/Feature/RayTracing/RayTracingPass.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/RayTracingCompactionQueryPool.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <CoreLights/CapsuleLightFeatureProcessor.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
+#include <CoreLights/DiskLightFeatureProcessor.h>
+#include <CoreLights/PointLightFeatureProcessor.h>
+#include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
-#include <CoreLights/PointLightFeatureProcessor.h>
-#include <CoreLights/DiskLightFeatureProcessor.h>
-#include <CoreLights/CapsuleLightFeatureProcessor.h>
-#include <CoreLights/QuadLightFeatureProcessor.h>
 #include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -91,6 +92,18 @@ namespace AZ
             const AZ::Name rayTracingMaterialSrgName("RayTracingMaterialSrg");
             m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingMaterialSrg"));
             AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
+
+            // Setup RayTracingCompactionQueryPool
+            {
+                auto rpiDesc = RPI::RPISystemInterface::Get()->GetDescriptor();
+                RHI::RayTracingCompactionQueryPoolDescriptor desc;
+                desc.m_deviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
+                desc.m_budget = rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize;
+                desc.m_readbackBufferPool = AZ::RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::ReadBack);
+                desc.m_copyBufferPool = AZ::RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::ReadWrite);
+                m_compactionQueryPool = aznew RHI::RayTracingCompactionQueryPool;
+                m_compactionQueryPool->Init(desc);
+            }
 
             EnableSceneNotification();
         }
@@ -165,7 +178,9 @@ namespace AZ
 
             MeshBlasInstance meshBlasInstance;
             meshBlasInstance.m_count = 1;
-            meshBlasInstance.m_subMeshes.push_back(SubMeshBlasInstance{ rayTracingBlas });
+            SubMeshBlasInstance subMeshBlasInstance;
+            subMeshBlasInstance.m_blas = rayTracingBlas;
+            meshBlasInstance.m_subMeshes.push_back(subMeshBlasInstance);
 
             MaterialInfo materialInfo;
 
@@ -181,6 +196,15 @@ namespace AZ
                 ConvertMaterial(m_proceduralGeometryMaterialInfos[deviceIndex].back(), material, deviceIndex);
             }
             m_blasInstanceMap.emplace(Data::AssetId(uuid), meshBlasInstance);
+
+            RHI::MultiDeviceObject::IterateDevices(
+                RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                [&](int deviceIndex)
+                {
+                    m_blasToBuild[deviceIndex].insert(Data::AssetId(uuid));
+                    return true;
+                });
+
             geometryTypeHandle->m_instanceCount++;
 
             m_revision++;
@@ -277,8 +301,8 @@ namespace AZ
                 materialInfos.pop_back();
             }
 
-            m_blasInstanceMap.erase(uuid);
             m_proceduralGeometryLookup.erase(uuid);
+            RemoveBlasInstance(uuid);
 
             m_revision++;
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
@@ -351,58 +375,35 @@ namespace AZ
                 meshBlasInstance.m_subMeshes.reserve(mesh.m_subMeshIndices.size());
                 meshBlasInstance.m_isSkinnedMesh = mesh.m_isSkinnedMesh;
                 itMeshBlasInstance = m_blasInstanceMap.insert({ mesh.m_assetId, meshBlasInstance }).first;
-                if (mesh.m_isSkinnedMesh)
+
+                // Note: the build flags are set to be the same for each BLAS created for the mesh
+                RHI::RayTracingAccelerationStructureBuildFlags buildFlags =
+                    CreateRayTracingAccelerationStructureBuildFlags(mesh.m_isSkinnedMesh);
+                for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
                 {
-                    ++m_skinnedMeshCount;
+                    const SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
+
+                    SubMeshBlasInstance subMeshBlasInstance;
+                    subMeshBlasInstance.m_blasDescriptor.Build()
+                        ->Geometry()
+                        ->VertexFormat(subMesh.m_positionFormat)
+                        ->VertexBuffer(subMesh.m_positionVertexBufferView)
+                        ->IndexBuffer(subMesh.m_indexBufferView)
+                        ->BuildFlags(buildFlags);
+
+                    itMeshBlasInstance->second.m_subMeshes.push_back(subMeshBlasInstance);
                 }
+                m_blasToCreate.insert(mesh.m_assetId);
             }
             else
             {
                 itMeshBlasInstance->second.m_count++;
+                AZ_Assert(itMeshBlasInstance->second.m_subMeshes.size() == mesh.m_subMeshIndices.size(), "");
             }
 
-            // create the BLAS buffers for each sub-mesh, or re-use existing BLAS objects if they were already created.
-            // Note: all sub-meshes must either create new BLAS objects or re-use existing ones, otherwise it's an error (it's the same model in both cases)
-            // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
-            // Note: the build flags are set to be the same for each BLAS created for the mesh
-            RHI::RayTracingAccelerationStructureBuildFlags buildFlags = CreateRayTracingAccelerationStructureBuildFlags(mesh.m_isSkinnedMesh);
-            [[maybe_unused]] bool blasInstanceFound = false;
             for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
             {
-                SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
-
-                RHI::RayTracingBlasDescriptor blasDescriptor;
-                blasDescriptor.Build()
-                    ->Geometry()
-                        ->VertexFormat(subMesh.m_positionFormat)
-                        ->VertexBuffer(subMesh.m_positionVertexBufferView)
-                        ->IndexBuffer(subMesh.m_indexBufferView)
-                        ->BuildFlags(buildFlags)
-                ;
-
-                // determine if we have an existing BLAS object for this subMesh
-                if (itMeshBlasInstance->second.m_subMeshes.size() >= subMeshIndex + 1)
-                {
-                    // re-use existing BLAS
-                    subMesh.m_blas = itMeshBlasInstance->second.m_subMeshes[subMeshIndex].m_blas;
-
-                    // keep track of the fact that we re-used a BLAS
-                    blasInstanceFound = true;
-                }
-                else
-                {
-                    AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
-
-                    // create the BLAS object and store it in the BLAS list
-                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = aznew RHI::RayTracingBlas;
-                    itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
-
-                    // create the buffers from the BLAS descriptor
-                    rayTracingBlas->CreateBuffers(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &blasDescriptor, *m_bufferPools);
-
-                    // store the BLAS in the mesh
-                    subMesh.m_blas = rayTracingBlas;
-                }
+                m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]].m_blasInstanceId = { mesh.m_assetId, subMeshIndex };
             }
 
             AZ::Transform noScaleTransform = mesh.m_transform;
@@ -515,7 +516,7 @@ namespace AZ
                         {
                             --m_skinnedMeshCount;
                         }
-                        m_blasInstanceMap.erase(itBlas);
+                        RemoveBlasInstance(mesh.m_assetId);
                     }
                 }
 
@@ -749,6 +750,11 @@ namespace AZ
 
         uint32_t RayTracingFeatureProcessor::BeginFrame()
         {
+            m_frameIndex++;
+
+            m_compactionQueryPool->BeginFrame(m_frameIndex);
+            UpdateBlasInstances();
+
             if (m_tlasRevision != m_revision)
             {
                 m_tlasRevision = m_revision;
@@ -760,14 +766,20 @@ namespace AZ
                 uint32_t instanceIndex = 0;
                 for (auto& subMesh : m_subMeshes)
                 {
-                    tlasDescriptorBuild->Instance()
-                        ->InstanceID(instanceIndex)
-                        ->InstanceMask(subMesh.m_mesh->m_instanceMask)
-                        ->HitGroupIndex(0)
-                        ->Blas(subMesh.m_blas)
-                        ->Transform(subMesh.m_mesh->m_transform)
-                        ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
-                        ->Transparent(subMesh.m_material.m_irradianceColor.GetA() < 1.0f);
+                    const auto& blasInstance =
+                        m_blasInstanceMap.at(subMesh.m_blasInstanceId.first).m_subMeshes[subMesh.m_blasInstanceId.second];
+                    auto& blas = blasInstance.m_compactBlas ? blasInstance.m_compactBlas : blasInstance.m_blas;
+                    if (blas)
+                    {
+                        tlasDescriptorBuild->Instance()
+                            ->InstanceID(instanceIndex)
+                            ->InstanceMask(subMesh.m_mesh->m_instanceMask)
+                            ->HitGroupIndex(0)
+                            ->Blas(blas)
+                            ->Transform(subMesh.m_mesh->m_transform)
+                            ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
+                            ->Transparent(subMesh.m_material.m_irradianceColor.GetA() < 1.0f);
+                    }
 
                     instanceIndex++;
                 }
@@ -840,6 +852,228 @@ namespace AZ
 
             UpdateRayTracingSceneSrg();
             UpdateRayTracingMaterialSrg();
+        }
+
+        const void RayTracingFeatureProcessor::MarkBlasInstanceForCompaction(int deviceId, Data::AssetId assetId)
+        {
+            auto it = m_blasInstanceMap.find(assetId);
+            if (RHI::Validation::IsEnabled())
+            {
+                if (it != m_blasInstanceMap.end())
+                {
+                    for (auto& subMeshInstance : it->second.m_subMeshes)
+                    {
+                        AZ_Assert(
+                            subMeshInstance.m_compactionSizeQuery, "Enqueuing a Blas without an compaction size query for compaction");
+                    }
+                }
+            }
+
+            m_blasEnqueuedForCompact[deviceId][assetId] = static_cast<int>(m_frameIndex + RHI::Limits::Device::FrameCountMax + 1);
+        }
+
+        const void RayTracingFeatureProcessor::MarkBlasInstanceAsCompactionEnqueued(int deviceId, Data::AssetId assetId)
+        {
+            auto it = m_blasInstanceMap.find(assetId);
+            if (RHI::Validation::IsEnabled())
+            {
+                if (it != m_blasInstanceMap.end())
+                {
+                    for (auto& subMeshInstance : it->second.m_subMeshes)
+                    {
+                        AZ_Assert(subMeshInstance.m_compactBlas, "Marking a Blas without a compacted Blas as enqueued for compaction");
+                    }
+                }
+            }
+
+            m_blasEnqueuedForUncompactDeletion[deviceId][assetId] = static_cast<int>(m_frameIndex + RHI::Limits::Device::FrameCountMax + 1);
+        }
+
+        void RayTracingFeatureProcessor::UpdateBlasInstances()
+        {
+            bool changed = false;
+            auto rpiDesc = RPI::RPISystemInterface::Get()->GetDescriptor();
+            {
+                int numModelBlasCreated = 0;
+                AZStd::unordered_set<Data::AssetId> toRemoveFromCreateList;
+                for (auto assetId : m_blasToCreate)
+                {
+                    auto it = m_blasInstanceMap.find(assetId);
+                    if (it == m_blasInstanceMap.end())
+                    {
+                        toRemoveFromCreateList.insert(assetId);
+                        continue;
+                    }
+                    auto& instance = it->second;
+
+                    for (auto& subMeshInstance : instance.m_subMeshes)
+                    {
+                        // create the BLAS object and store it in the BLAS list
+                        RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = aznew RHI::RayTracingBlas;
+                        if (RHI::CheckBitsAny(
+                                subMeshInstance.m_blasDescriptor.GetBuildFlags(),
+                                RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
+                        {
+                            subMeshInstance.m_compactionSizeQuery = aznew RHI::RayTracingCompactionQuery;
+                            m_compactionQueryPool->InitQuery(subMeshInstance.m_compactionSizeQuery.get());
+                        }
+                        subMeshInstance.m_blas = rayTracingBlas;
+                        // create the buffers from the BLAS descriptor
+                        subMeshInstance.m_blas->CreateBuffers(
+                            RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &subMeshInstance.m_blasDescriptor, *m_bufferPools);
+                    }
+
+                    if (instance.m_isSkinnedMesh)
+                    {
+                        ++m_skinnedMeshCount;
+                        m_skinnedBlasIds.insert(assetId);
+                    }
+                    else
+                    {
+                        RHI::MultiDeviceObject::IterateDevices(
+                            RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                            [&](int deviceIndex)
+                            {
+                                m_blasToBuild[deviceIndex].insert(assetId);
+                                return true;
+                            });
+                    }
+                    toRemoveFromCreateList.insert(assetId);
+                    changed = true;
+                    numModelBlasCreated++;
+                    if (rpiDesc.m_rayTracingSystemDescriptor.m_maxBlasCreatedPerFrame > 0 &&
+                        numModelBlasCreated >= rpiDesc.m_rayTracingSystemDescriptor.m_maxBlasCreatedPerFrame)
+                    {
+                        break;
+                    }
+                }
+                for (auto toRemove : toRemoveFromCreateList)
+                {
+                    m_blasToCreate.erase(toRemove);
+                }
+            }
+
+            // Check which Blas are ready for compaction and create compacted acceleration structures for them
+            {
+                AZStd::unordered_map<Data::AssetId, AZStd::vector<AZStd::unordered_map<int, uint64_t>>> compactedBlasToCreate;
+                for (auto& [deviceId, entries] : m_blasEnqueuedForCompact)
+                {
+                    for (const auto& [assetId, frameNumber] : entries)
+                    {
+                        if (frameNumber <= m_frameIndex)
+                        {
+                            auto it = m_blasInstanceMap.find(assetId);
+                            if (it != m_blasInstanceMap.end())
+                            {
+                                {
+                                    compactedBlasToCreate[assetId].resize(it->second.m_subMeshes.size());
+                                    for (int subMeshIdx = 0; subMeshIdx < it->second.m_subMeshes.size(); subMeshIdx++)
+                                    {
+                                        auto& subMeshInstance = it->second.m_subMeshes[subMeshIdx];
+                                        AZ_Assert(!subMeshInstance.m_compactBlas, "Trying to compact a Blas twice");
+                                        auto result = subMeshInstance.m_compactionSizeQuery->GetDeviceRayTracingCompactionQuery(deviceId)
+                                                          ->GetResult();
+                                        compactedBlasToCreate[assetId][subMeshIdx][deviceId] = result;
+                                        {
+                                            // TODO debug delete
+                                            int old = static_cast<int>(
+                                                subMeshInstance.m_blas->GetDeviceRayTracingBlas(0)->GetAccelerationStructureByteSize());
+                                            int compact = static_cast<int>(result);
+                                            float ratio = static_cast<float>(compact) / old;
+                                            AZ_Printf(
+                                                "BLAS", "Compact %s %d -> %d (%f)\n", assetId.ToFixedString().c_str(), old, compact, ratio);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                int numToCompactEnqueued = 0;
+                for (const auto& [assetId, sizes] : compactedBlasToCreate)
+                {
+                    auto it = m_blasInstanceMap.find(assetId);
+                    if (it != m_blasInstanceMap.end())
+                    {
+                        // Limit the number of blas we enqueue per frame to the size of the compaction query pool
+                        if (numToCompactEnqueued + sizes.size() > rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize)
+                        {
+                            break;
+                        }
+                        bool foundSubMesh = false;
+                        for (int subMeshIdx = 0; subMeshIdx < it->second.m_subMeshes.size(); subMeshIdx++)
+                        {
+                            auto& subMeshInstance = it->second.m_subMeshes[subMeshIdx];
+                            if (!subMeshInstance.m_compactBlas)
+                            {
+                                if (RHI::Validation::IsEnabled())
+                                {
+                                    RHI::MultiDevice::DeviceMask sizeDeviceMask = {};
+                                    for (auto& [deviceId, size] : sizes[subMeshIdx])
+                                    {
+                                        sizeDeviceMask = RHI::SetBit(sizeDeviceMask, deviceId);
+                                    }
+                                    AZ_Assert(
+                                        sizeDeviceMask == RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                                        "All device Blas of a SubMesh must be compacted in the same frame");
+                                }
+                                subMeshInstance.m_compactBlas = aznew RHI::RayTracingBlas;
+                                subMeshInstance.m_compactBlas->CreateCompactedBuffers(
+                                    *subMeshInstance.m_blas, sizes[subMeshIdx], *m_bufferPools);
+                                changed = true;
+                                foundSubMesh = true;
+                                numToCompactEnqueued++;
+                            }
+                        }
+                        if (foundSubMesh)
+                        {
+                            RHI::MultiDeviceObject::IterateDevices(
+                                RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                                [&, assetId = assetId](int deviceId)
+                                {
+                                    m_blasToCompact[deviceId].insert(assetId);
+                                    m_blasEnqueuedForCompact[deviceId].erase(assetId);
+                                    return true;
+                                });
+                        }
+                    }
+                }
+            }
+
+            // Check which uncompacted Blas can be deleted, and delete them
+            for (auto& [deviceId, entries] : m_blasEnqueuedForUncompactDeletion)
+            {
+                AZStd::unordered_map<Data::AssetId, int> newEntries;
+                for (const auto& [assetId, frameNumber] : entries)
+                {
+                    if (frameNumber <= m_frameIndex)
+                    {
+                        auto it = m_blasInstanceMap.find(assetId);
+                        if (it != m_blasInstanceMap.end())
+                        {
+                            for (auto& subMeshInstance : it->second.m_subMeshes)
+                            {
+                                AZ_Assert(
+                                    subMeshInstance.m_compactBlas, "Deleting a uncompacted Blas from a submesh without a compacted one");
+                                // We assume here that all device Blas are handled at the same frame for all devices
+                                subMeshInstance.m_blas = {};
+                                subMeshInstance.m_compactionSizeQuery = {};
+                                changed = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        newEntries.insert({ assetId, frameNumber });
+                    }
+                }
+                entries = newEntries;
+            }
+
+            if (changed)
+            {
+                m_revision++;
+            }
         }
 
         void RayTracingFeatureProcessor::UpdateMeshInfoBuffer()
@@ -1185,6 +1419,29 @@ namespace AZ
             }
         }
 
+        void RayTracingFeatureProcessor::RemoveBlasInstance(Data::AssetId id)
+        {
+            m_blasInstanceMap.erase(id);
+            m_blasToCreate.erase(id);
+            m_skinnedBlasIds.erase(id);
+            for (auto& [deviceId, entries] : m_blasToBuild)
+            {
+                entries.erase(id);
+            }
+            for (auto& [deviceId, entries] : m_blasToCompact)
+            {
+                entries.erase(id);
+            }
+            for (auto& [deviceId, entries] : m_blasEnqueuedForCompact)
+            {
+                entries.erase(id);
+            }
+            for (auto& [deviceId, entries] : m_blasEnqueuedForUncompactDeletion)
+            {
+                entries.erase(id);
+            }
+        }
+
         AZ::RHI::RayTracingAccelerationStructureBuildFlags RayTracingFeatureProcessor::CreateRayTracingAccelerationStructureBuildFlags(bool isSkinnedMesh)
         {
             AZ::RHI::RayTracingAccelerationStructureBuildFlags buildFlags;
@@ -1195,6 +1452,12 @@ namespace AZ
             else
             {
                 buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
+
+                auto rpiDesc = RPI::RPISystemInterface::Get()->GetDescriptor();
+                if (rpiDesc.m_rayTracingSystemDescriptor.m_enableBlasCompaction)
+                {
+                    buildFlags = buildFlags | RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION;
+                }
             }
 
             return buildFlags;
@@ -1237,5 +1500,5 @@ namespace AZ
 #endif
             });
         }
-    }
+    } // namespace Render
 }

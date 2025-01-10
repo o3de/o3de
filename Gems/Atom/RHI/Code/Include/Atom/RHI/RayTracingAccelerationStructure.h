@@ -104,6 +104,11 @@ namespace AZ::RHI
             const RayTracingBlasDescriptor* descriptor,
             const RayTracingBufferPools& rayTracingBufferPools);
 
+        ResultCode CreateCompactedBuffers(
+            const RayTracingBlas& sourceBlas,
+            const AZStd::unordered_map<int, uint64_t>& compactedSizes,
+            const RayTracingBufferPools& rayTracingBufferPools);
+
         //! Returns true if the RayTracingBlas has been initialized
         bool IsValid() const;
 

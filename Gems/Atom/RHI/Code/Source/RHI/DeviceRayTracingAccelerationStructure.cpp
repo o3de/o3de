@@ -142,6 +142,21 @@ namespace AZ::RHI
         return rayTracingBlas;
     }
 
+    ResultCode DeviceRayTracingBlas::CreateCompactedBuffers(
+        Device& device,
+        RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+        uint64_t compactedBufferSize,
+        const DeviceRayTracingBufferPools& rayTracingBufferPools)
+    {
+        ResultCode resultCode = CreateCompactedBuffersInternal(device, sourceBlas, compactedBufferSize, rayTracingBufferPools);
+        if (resultCode == ResultCode::Success)
+        {
+            DeviceObject::Init(device);
+            m_geometries = sourceBlas->m_geometries;
+        }
+        return resultCode;
+    }
+
     ResultCode DeviceRayTracingBlas::CreateBuffers(Device& device, const DeviceRayTracingBlasDescriptor* descriptor, const DeviceRayTracingBufferPools& rayTracingBufferPools)
     {
         ResultCode resultCode = CreateBuffersInternal(device, descriptor, rayTracingBufferPools);
