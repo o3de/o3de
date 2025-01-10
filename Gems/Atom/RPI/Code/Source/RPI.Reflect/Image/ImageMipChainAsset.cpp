@@ -61,15 +61,21 @@ namespace AZ
 
         AZStd::span<const uint8_t> ImageMipChainAsset::GetSubImageData(uint32_t subImageIndex) const
         {
-            // Gruber patch begin // VMED // error instead mipmap assert (MADPORT-459)
-            // AZ_Assert(subImageIndex < m_subImageDataOffsets.size() && subImageIndex < m_subImageDatas.size(), "subImageIndex is out of range");
+
+#if defined(CARBONATED)
             if (subImageIndex + 1 >= m_subImageDataOffsets.size() || subImageIndex >= m_subImageDatas.size())
             {
-                AZ_Error("ImageMipChainAsset", false, "subImageIndex is out of range");
+                // MAD-14291 extended diagnostic
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, GetId());
+                AZ_Assert(false, "MipError: subImageIndex %d is out of range, %d/%d for %s",
+                    subImageIndex, m_subImageDatas.size(), m_subImageDataOffsets.size(), assetInfo.m_relativePath.c_str());
+
                 return AZStd::span<const uint8_t>();
             }
-            // Gruber patch end // VMED 
-
+#else
+            AZ_Assert(subImageIndex < m_subImageDataOffsets.size() && subImageIndex < m_subImageDatas.size(), "subImageIndex is out of range");
+#endif
             // The offset vector contains an extra sentinel value.
             const size_t dataSize = m_subImageDataOffsets[subImageIndex + 1] - m_subImageDataOffsets[subImageIndex];
 

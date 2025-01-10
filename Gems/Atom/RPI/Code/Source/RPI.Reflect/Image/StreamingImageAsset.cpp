@@ -59,11 +59,18 @@ namespace AZ
 
         size_t StreamingImageAsset::GetMipChainIndex(size_t mipLevel) const
         {
+#if defined(CARBONATED)
             if (mipLevel >= m_imageDescriptor.m_mipLevels)
             {
-                AZ_Error("StreamingImageAsset", false, "Input mipLevel doesn't exist"); // Gruber patch begin // VMED // error instead mipmap assert (MADPORT-459)
+                // MAD-14291 extended diagnostic
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, GetId());
+                AZ_Assert(false, "MipError: mipLevel %d is out of range, %d for %s",
+                    mipLevel, m_imageDescriptor.m_mipLevels, assetInfo.m_relativePath.c_str());
+
                 mipLevel = m_imageDescriptor.m_mipLevels - 1;
             }
+#endif
             return m_mipLevelToChainIndex[mipLevel];
         }
 
