@@ -20,6 +20,8 @@ namespace LmbrCentral
     {
     public:
 #if defined(CARBONATED)
+        using MutexType = AZStd::recursive_mutex;
+
         /**
          * Loads a specific bundle
          */
