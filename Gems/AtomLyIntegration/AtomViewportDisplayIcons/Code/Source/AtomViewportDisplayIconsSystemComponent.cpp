@@ -108,7 +108,7 @@ namespace AZ::Render
         AzToolsFramework::EditorViewportIconDisplay::Unregister(this);
     }
 
-    void AtomViewportDisplayIconsSystemComponent::AddIcon(DrawParameters&& drawParameters)
+    void AtomViewportDisplayIconsSystemComponent::AddIcon(const DrawParameters& drawParameters)
     {
         if (drawParameters.m_viewport == AzFramework::InvalidViewportId)
         {
@@ -126,12 +126,12 @@ namespace AZ::Render
             AZ_WarningOnce("AtomViewportDisplayIconsSystemComponent", false, "Multiple viewports provided for a single icon draw batch, discarded.");
             return;
         }
-        m_drawRequests[drawParameters.m_icon].emplace_back(AZStd::move(drawParameters));
+        m_drawRequests[drawParameters.m_icon].emplace_back(drawParameters);
 
         // the maximum we can batch at a time would be the largest index that can fit into a u16, (65535), and it eats 4 index values per icon
         // since the indices go (0, 1, 2, 0, 2, 3), ie, 2 triangles making up 6 indices per quad but only using four actual index numbers (0,1,2,3) per.
         // So we can only batch (max_uint16 / 4) icons at a time before the u16 would overflow (about 16k icons).
-        const AZStd::vector<Indice>::size_type maxQuads = (AZStd::numeric_limits<Indice>::max() / 4) - 1;
+        const AZStd::vector<Index>::size_type maxQuads = (AZStd::numeric_limits<Index>::max() / 4) - 1;
         if (m_drawRequests[drawParameters.m_icon].size() >= maxQuads)
         {
             DrawIcons(); // flush all buffers immediately.
@@ -296,7 +296,7 @@ namespace AZ::Render
             if (!m_vertexCache.empty())
             {
                 // the indexes are always the same (0,1,2,0,2,3, 4,5,6,4,6,7, etc) and thus don't need to be updated unless more quads are added
-                using IndexCacheSize = AZStd::vector<Indice>::size_type;
+                using IndexCacheSize = AZStd::vector<Index>::size_type;
 
                 IndexCacheSize numQuadsInVertexBuffer = m_vertexCache.size() / 4;
                 IndexCacheSize numIndicesRequired = numQuadsInVertexBuffer * 6;
@@ -305,7 +305,7 @@ namespace AZ::Render
                 if (currentIndexCacheSize < numIndicesRequired)
                 {
                     m_indexCache.resize_no_construct(numIndicesRequired);
-                    Indice baseIndex = aznumeric_cast<Indice>(currentIndexCacheSize / 6);
+                    Index baseIndex = aznumeric_cast<Index>(currentIndexCacheSize / 6);
                     while (currentIndexCacheSize < numIndicesRequired)
                     {
                         m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 0;
@@ -332,8 +332,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::DrawIcon(const DrawParameters& drawParameters)
     {
-        DrawParameters drawParams = drawParameters;
-        AddIcon(AZStd::move(drawParams));
+        AddIcon(drawParameters);
         DrawIcons();
     }
 

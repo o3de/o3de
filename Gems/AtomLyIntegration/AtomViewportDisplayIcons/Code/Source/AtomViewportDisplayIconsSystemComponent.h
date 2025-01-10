@@ -47,7 +47,7 @@ namespace AZ
 
             // AzToolsFramework::EditorViewportIconDisplayInterface overrides...
             void DrawIcon(const DrawParameters& drawParameters) override;
-            void AddIcon(DrawParameters&& drawParameters) override;
+            void AddIcon(const DrawParameters& drawParameters) override;
             void DrawIcons() override;
 
             IconId GetOrLoadIconForPath(AZStd::string_view path) override;
@@ -89,7 +89,7 @@ namespace AZ
             RHI::Ptr<RPI::DynamicDrawContext> GetDynamicDrawContextForViewport(AzFramework::ViewportId viewportId);
             AZ::Data::Instance<AZ::RPI::Image> GetImageForIconId(IconId iconId);
             
-            using Indice = AZ::u16;
+            using Index = AZ::u16;
             struct Vertex
             {
                 float m_position[3];
@@ -100,7 +100,7 @@ namespace AZ
 
             // re-used between frames so that we don't constantly allocate new memory
             AZStd::vector<Vertex> m_vertexCache;
-            AZStd::vector<Indice> m_indexCache;
+            AZStd::vector<Index> m_indexCache;
 
         };
     } // namespace Render

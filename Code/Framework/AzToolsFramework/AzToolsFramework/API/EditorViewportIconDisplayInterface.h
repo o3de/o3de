@@ -69,10 +69,9 @@ namespace AzToolsFramework
 
         //! Adds an icon to the upcoming draw batch.
         //! Use DrawIcons() after adding them all to actually commit them to the renderer.
-        //! Note that this function moves drawParameters - don't use it after handing it to this function.
         //! DrawParameters.m_viewport must be set to a valid viewport and must be the same viewport
         //! as all other invocations of AddIcon since the last call to DrawIcons (do one viewport at a time!)
-        virtual void AddIcon(DrawParameters&& drawParameters) = 0;
+        virtual void AddIcon(const DrawParameters& drawParameters) = 0;
 
         //! Call this after adding all of the icons via AddIcon.
         //! This commits all of them to the renderer, in batches organized per icon texture.
