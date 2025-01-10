@@ -35,10 +35,6 @@
             "isTemplated": true
         },
         {
-            "file": "Config/default_aws_resource_mappings.json",
-            "isTemplated": false
-        },
-        {
             "file": "Config/shader_global_build_options.json",
             "isTemplated": false
         },
@@ -89,10 +85,6 @@
         {
             "file": "Registry/assetprocessor_settings.setreg",
             "isTemplated": true
-        },
-        {
-            "file": "Registry/awscoreconfiguration.setreg",
-            "isTemplated": false
         },
         {
             "file": "Resources/GameSDK.ico",
