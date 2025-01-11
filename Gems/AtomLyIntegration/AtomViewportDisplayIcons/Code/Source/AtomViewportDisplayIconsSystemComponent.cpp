@@ -20,6 +20,8 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
+#include <AtomCore/Instance/Instance.h>
+
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -94,7 +96,7 @@ namespace AZ::Render
         Data::AssetBus::Handler::BusDisconnect();
         Bootstrap::NotificationBus::Handler::BusDisconnect();
 
-        auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
+        AZ::AtomBridge::PerViewportDynamicDrawInterface* perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
         if (!perViewportDynamicDrawInterface)
         {
             return;
@@ -131,7 +133,7 @@ namespace AZ::Render
         // the maximum we can batch at a time would be the largest index that can fit into a u16, (65535), and it eats 4 index values per icon
         // since the indices go (0, 1, 2, 0, 2, 3), ie, 2 triangles making up 6 indices per quad but only using four actual index numbers (0,1,2,3) per.
         // So we can only batch (max_uint16 / 4) icons at a time before the u16 would overflow (about 16k icons).
-        const AZStd::vector<Index>::size_type maxQuads = (AZStd::numeric_limits<Index>::max() / 4) - 1;
+        constexpr AZStd::vector<IconIndexData>::size_type maxQuads = (AZStd::numeric_limits<IconIndexData>::max() / 4) - 1;
         if (m_drawRequests[drawParameters.m_icon].size() >= maxQuads)
         {
             DrawIcons(); // flush all buffers immediately.
@@ -145,7 +147,7 @@ namespace AZ::Render
 
         RHI::Ptr<RPI::DynamicDrawContext> dynamicDraw = GetDynamicDrawContextForViewport(m_drawRequestViewportId);
 
-        auto viewportContext = RPI::ViewportContextRequests::Get()->GetViewportContextById(viewportId);
+        AZ::RPI::ViewportContextPtr viewportContext = RPI::ViewportContextRequests::Get()->GetViewportContextById(viewportId);
         if (viewportContext == nullptr)
         {
             return {};
@@ -163,7 +165,7 @@ namespace AZ::Render
 
     RHI::Ptr<RPI::DynamicDrawContext> AtomViewportDisplayIconsSystemComponent::GetDynamicDrawContextForViewport(AzFramework::ViewportId viewportId)
     {
-        auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
+        AZ::AtomBridge::PerViewportDynamicDrawInterface* perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
         if (!perViewportDynamicDrawInterface)
         {
             return {};
@@ -231,7 +233,7 @@ namespace AZ::Render
 
         for (auto &[iconId, drawIconRequests] : m_drawRequests)
         {
-            // Find our icon, falling back on a gray placeholder if its image is unavailablec
+            // Find our icon, falling back on a gray placeholder if its image is unavailable
             if (drawIconRequests.empty())
             {
                 continue;
@@ -271,9 +273,9 @@ namespace AZ::Render
 
                 // Create a vertex offset from the position to draw from based on the icon size
                 // Vertex positions are in screen space coordinates
-                auto createVertex = [&](float offsetX, float offsetY, float u, float v) -> Vertex
+                auto createVertex = [&](float offsetX, float offsetY, float u, float v) -> IconVertexData
                 {
-                    Vertex vertex;
+                    IconVertexData vertex;
                     screenPosition.StoreToFloat3(vertex.m_position);
                     vertex.m_position[0] += offsetX * drawParameters.m_size.GetX() * scalingFactor;
                     vertex.m_position[1] += offsetY * drawParameters.m_size.GetY() * scalingFactor;
@@ -292,7 +294,7 @@ namespace AZ::Render
             if (!m_vertexCache.empty())
             {
                 // the indexes are always the same (0,1,2,0,2,3, 4,5,6,4,6,7, etc) and thus don't need to be updated unless more quads are added
-                using IndexCacheSize = AZStd::vector<Index>::size_type;
+                using IndexCacheSize = AZStd::vector<IconIndexData>::size_type;
 
                 IndexCacheSize numQuadsInVertexBuffer = m_vertexCache.size() / 4;
                 IndexCacheSize numIndicesRequired = numQuadsInVertexBuffer * 6;
@@ -301,7 +303,7 @@ namespace AZ::Render
                 if (currentIndexCacheSize < numIndicesRequired)
                 {
                     m_indexCache.resize_no_construct(numIndicesRequired);
-                    Index baseIndex = aznumeric_cast<Index>(currentIndexCacheSize / 6);
+                    IconIndexData baseIndex = aznumeric_cast<IconIndexData>(currentIndexCacheSize / 6);
                     while (currentIndexCacheSize < numIndicesRequired)
                     {
                         m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 0;
@@ -312,7 +314,6 @@ namespace AZ::Render
                         m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 3;
                         ++baseIndex;
                     }
-
                 }
 
                 dynamicDraw->SetSortKey((maxZ - minZ) * 0.5f  * aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::max()));
@@ -329,6 +330,8 @@ namespace AZ::Render
     void AtomViewportDisplayIconsSystemComponent::DrawIcon(const DrawParameters& drawParameters)
     {
         AddIcon(drawParameters);
+        // Be careful when using this method as it does not support batching.
+        // Prefer using AddIcon, AddIcon, AddIcon, ..., DrawIcons() to render them in a batch.
         DrawIcons();
     }
 

@@ -60,8 +60,7 @@ namespace AzToolsFramework
             Error
         };
 
-        //! @deprecated use AddIcon and then DrawIcons to batch correctly.
-        //! Draws an icon to a viewport given a set of draw parameters.
+        //! Draws an icon (immediately) to a viewport given a set of draw parameters.
         //! Requires an IconId retrieved from GetOrLoadIconForPath.
         //! Note that this is an immediate draw request for backward compatability.
         //! For more efficient rendering, use the AddIcon method.
