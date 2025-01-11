@@ -598,18 +598,12 @@ void DebugCallStack::SaveExceptionInfoAndTriggerExternalCrashHandler(EXCEPTION_P
     }
     else
     {
-        // TODO trigger the Tools/CrashHandler. See EXTERNAL_CRASH_REPORTING ifdefs
-        // lawsonn: Disabling the JIRA-based crash reporter for now
-        // we'll need to deal with it our own way, pending QA.
-        // if you're customizing the engine this is also your opportunity to deal with it.
-
-        // ------------ place custom crash handler here ---------------------
-        // it should launch an executable!
-        /// by  this time, error.bmp will be in the engine root folder
-        // error.log and error.dmp will also be present in the engine root folder
-        // if your error dumper wants those, it should zip them up and send them or offer to do so.
-        // ------------------------------------------------------------------
+        // TODO launch an external .exe to submit github or jira issue with the on-disk dump and log
+        // Could be a special mode of the external crash reporting tool. See EXTERNAL_CRASH_REPORTING ifdefs
+        // This system and the external tool are mutually exclusive via ExceptionHandlerIsSet
+        // But as dump creation here is straightforward and stable, it might be wise to keep this code around and up-to-par (even if its windows-only)
     }
+
     const bool bQuitting = !gEnv || !gEnv->pSystem || gEnv->pSystem->IsQuitting();
 
     if (g_cvars.sys_no_crash_dialog == 0 && g_bUserDialog && gEnv->IsEditor() && !bQuitting && pex)
@@ -618,12 +612,13 @@ void DebugCallStack::SaveExceptionInfoAndTriggerExternalCrashHandler(EXCEPTION_P
 
         if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
         {
-            constexpr bool showCancel = false;
+            AZStd::string logPath = path + "error.log";
             AZStd::string msg = AZStd::string::format(
                 "An unexpected error occured. Do you want to try to save your changes ?"
-                "\nInformations about the issue have been saved in %s\\error.log",
-                path.c_str());
+                "\nInformations about the issue have been saved in %s",
+                logPath.c_str());
 
+            constexpr bool showCancel = false;
             AZStd::string res = nativeUI->DisplayYesNoDialog("O3DE error. Try to save level ?", msg, showCancel);
             if (res == "Yes")
             {
@@ -769,20 +764,23 @@ DebugCallStack::UserPostExceptionChoice DebugCallStack::AskUserToRecoverOrCrash(
     if (exception_pointer->ExceptionRecord->ExceptionFlags & EXCEPTION_NONCONTINUABLE)
         return UserPostExceptionChoice::Exit;
 
-    UserPostExceptionChoice res = UserPostExceptionChoice::Recover;
+    UserPostExceptionChoice res = UserPostExceptionChoice::Exit;
     if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
     {
         DebugCallStack* pDCS = static_cast<DebugCallStack*>(DebugCallStack::instance());
         AZStd::string msg = AZStd::string::format(
             "O3DE encountered an error but can recover from it.\nDo you want to try to recover ?\n\nException Code: %s\nException Addr: "
-            "%s\nException Module: %s\nException Description: %s",
+            "%s\nException Module: %s\nException Description: %s\nCallstack:\n%.600s",
             pDCS->m_excCode,
             pDCS->m_excAddr,
             pDCS->m_excModule,
-            pDCS->m_excDesc);
+            pDCS->m_excDesc,
+            pDCS->m_excCallstack);
 
         constexpr bool showCancel = false;
-        nativeUI->DisplayYesNoDialog("Try to recover ?", msg, showCancel);
+        AZStd::string dialogRes = nativeUI->DisplayYesNoDialog("Try to recover ?", msg, showCancel);
+        if (dialogRes == "Yes")
+            res = UserPostExceptionChoice::Recover;
     }
     return res;
 }
