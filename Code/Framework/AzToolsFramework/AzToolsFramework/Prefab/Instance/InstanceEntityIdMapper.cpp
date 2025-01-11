@@ -167,10 +167,11 @@ namespace AzToolsFramework
 
                 if (!owningInstanceReference)
                 {
+#if !defined(CARBONATED)
                     AZ_Warning("Prefabs", m_acceptUnregisteredEntity,
                         "Prefab - EntityIdMapper: Entity with Id %s has no registered owning instance",
                         entityId.ToString().c_str());
-
+#endif
                     return {};
                 }
 
