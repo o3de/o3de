@@ -62,7 +62,7 @@ protected:
 
     static UserPostExceptionChoice AskUserToRecoverOrCrash(EXCEPTION_POINTERS* exception_pointer);
 
-    void SaveExceptionInfoAndTriggerExternalCrashHandler(EXCEPTION_POINTERS* exception_pointer);
+    void SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTERS* exception_pointer);
     bool BackupCurrentLevel();
     bool SaveCurrentLevel();
     UserPostExceptionChoice SubmitBugAndAskToRecoverOrCrash(EXCEPTION_POINTERS* exception_pointer);

@@ -348,7 +348,7 @@ void DebugCallStack::dumpCallStack(AZStd::vector<AZStd::string>& funcs)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void DebugCallStack::SaveExceptionInfoAndTriggerExternalCrashHandler(EXCEPTION_POINTERS* pex)
+void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTERS* pex)
 {
     AZStd::string path("");
     if ((gEnv) && (gEnv->pFileIO))
@@ -689,7 +689,7 @@ DebugCallStack::UserPostExceptionChoice DebugCallStack::SubmitBugAndAskToRecover
 
     AZ::Debug::Trace::Instance().PrintCallstack("", 2);
 
-    SaveExceptionInfoAndTriggerExternalCrashHandler(exception_pointer);
+    SaveExceptionInfoAndShowUserReportDialogs(exception_pointer);
 
     if (IsFloatingPointException(exception_pointer))
     {
