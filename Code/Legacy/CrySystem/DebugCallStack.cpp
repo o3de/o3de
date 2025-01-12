@@ -19,15 +19,20 @@
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/parallel/spin_mutex.h>
 
 #include <DbgHelp.h>
+#include <Shellapi.h>
 
 #define MAX_PATH_LENGTH 1024
 
 static HWND hwndException = 0;
 static bool g_bUserDialog = true; // true=on crash show dialog box, false=supress user interaction
+
+static constexpr const char* SettingKey_IssueReportLink = "/O3DE/Settings/Links/Issue/Create";
+static constexpr const char* IssueReportLinkFallback = "https://github.com/o3de/o3de/issues/new/choose";
 
 extern int prev_sys_float_exceptions;
 
@@ -356,7 +361,7 @@ void DebugCallStack::SaveExceptionInfoAndTriggerExternalCrashHandler(EXCEPTION_P
         if (logAlias)
         {
             path = logAlias;
-            path += "/";
+            path += "\\";
         }
     }
 
@@ -596,12 +601,29 @@ void DebugCallStack::SaveExceptionInfoAndTriggerExternalCrashHandler(EXCEPTION_P
     {
         m_postBackupProcess();
     }
-    else
+    else if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
     {
-        // TODO launch an external .exe to submit github or jira issue with the on-disk dump and log
-        // Could be a special mode of the external crash reporting tool. See EXTERNAL_CRASH_REPORTING ifdefs
-        // This system and the external tool are mutually exclusive via ExceptionHandlerIsSet
-        // But as dump creation here is straightforward and stable, it might be wise to keep this code around and up-to-par (even if its windows-only)
+        AZStd::string msg = AZStd::string::format(
+            "O3DE has encountered an unexpected error.\n\nDo you want to manually report the issue on Github ?\nInformation about the "
+            "crash are located in %s via error.log and error.dmp",
+            path.c_str());
+        constexpr bool showCancel = false;
+        AZStd::string res = nativeUI->DisplayYesNoDialog("O3DE unexpected error", msg, showCancel);
+        if (res == "Yes")
+        {
+            AZStd::wstring arg(path.begin(), path.end());
+            ShellExecuteW(nullptr, L"open", arg.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+            AZStd::string reportIssueUrl;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                settingsRegistry->Get(reportIssueUrl, SettingKey_IssueReportLink);
+
+            if (reportIssueUrl.empty())
+                reportIssueUrl = IssueReportLinkFallback;
+
+            arg = AZStd::wstring(reportIssueUrl.begin(), reportIssueUrl.end());
+            ShellExecuteW(nullptr, L"open", arg.c_str(), NULL, NULL, SW_SHOWNORMAL);
+        }
     }
 
     const bool bQuitting = !gEnv || !gEnv->pSystem || gEnv->pSystem->IsQuitting();
@@ -612,14 +634,11 @@ void DebugCallStack::SaveExceptionInfoAndTriggerExternalCrashHandler(EXCEPTION_P
 
         if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
         {
-            AZStd::string logPath = path + "error.log";
-            AZStd::string msg = AZStd::string::format(
-                "An unexpected error occured. Do you want to try to save your changes ?"
-                "\nInformations about the issue have been saved in %s",
-                logPath.c_str());
-
             constexpr bool showCancel = false;
-            AZStd::string res = nativeUI->DisplayYesNoDialog("O3DE error. Try to save level ?", msg, showCancel);
+            AZStd::string res = nativeUI->DisplayYesNoDialog(
+                "Save your changes ?",
+                "Do you want to try to save your changes ?\nAs O3DE is in panic state, it might corrupt your data",
+                showCancel);
             if (res == "Yes")
             {
                 if (SaveCurrentLevel())
