@@ -636,8 +636,8 @@ void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTER
         {
             constexpr bool showCancel = false;
             AZStd::string res = nativeUI->DisplayYesNoDialog(
-                "Save your changes ?",
-                "Do you want to try to save your changes ?\nAs O3DE is in panic state, it might corrupt your data",
+                "Save your changes?",
+                "Do you want to try to save your changes?\nAs O3DE is in a panic state, it might corrupt your data",
                 showCancel);
             if (res == "Yes")
             {
@@ -781,7 +781,9 @@ static bool IsFloatingPointException(EXCEPTION_POINTERS* pex)
 DebugCallStack::UserPostExceptionChoice DebugCallStack::AskUserToRecoverOrCrash(EXCEPTION_POINTERS* exception_pointer)
 {
     if (exception_pointer->ExceptionRecord->ExceptionFlags & EXCEPTION_NONCONTINUABLE)
+    {
         return UserPostExceptionChoice::Exit;
+    }
 
     UserPostExceptionChoice res = UserPostExceptionChoice::Exit;
     if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
@@ -797,9 +799,11 @@ DebugCallStack::UserPostExceptionChoice DebugCallStack::AskUserToRecoverOrCrash(
             pDCS->m_excCallstack);
 
         constexpr bool showCancel = false;
-        AZStd::string dialogRes = nativeUI->DisplayYesNoDialog("Try to recover ?", msg, showCancel);
+        AZStd::string dialogRes = nativeUI->DisplayYesNoDialog("Try to recover?", msg, showCancel);
         if (dialogRes == "Yes")
+        {
             res = UserPostExceptionChoice::Recover;
+        }
     }
     return res;
 }
