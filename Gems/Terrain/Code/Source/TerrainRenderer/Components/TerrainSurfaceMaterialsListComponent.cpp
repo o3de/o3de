@@ -328,6 +328,22 @@ namespace Terrain
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
+        // REMARK: This function is typically invoked within the context of one of the AssetBus::OnAssetXXX functions,
+        // which may hold a mutex, in turn when instantiating StreamingImages, which is a multi-threaded operation,
+        // a deadlock may arise when the main thread is waiting on one of those threads to complete, but when
+        // one of those threads releases another StreamingImage object, that class executes
+        // Data::AssetBus::MultiHandler::BusDisconnect(GetAssetId()); which will acquire the same mutex of the original
+        // AssetBus::OnAssetXXX and triggers a deadlock.
+        // The solution is to enqueue texture update on the next tick.
+        auto postTickLambda = [=]()
+        {
+            OnAssetReadyPostTick(asset);
+        };
+        AZ::SystemTickBus::QueueFunction(AZStd::move(postTickLambda));
+    }
+
+    void TerrainSurfaceMaterialsListComponent::OnAssetReadyPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
         // Find the missing material instance with the correct id.
         auto handleCreateMaterial = [&](TerrainSurfaceMaterialMapping& mapping, const AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
@@ -363,6 +379,22 @@ namespace Terrain
     }
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        // REMARK: This function is typically invoked within the context of one of the AssetBus::OnAssetXXX functions,
+        // which may hold a mutex, in turn when instantiating StreamingImages, which is a multi-threaded operation,
+        // a deadlock may arise when the main thread is waiting on one of those threads to complete, but when
+        // one of those threads releases another StreamingImage object, that class executes
+        // Data::AssetBus::MultiHandler::BusDisconnect(GetAssetId()); which will acquire the same mutex of the original
+        // AssetBus::OnAssetXXX and triggers a deadlock.
+        // The solution is to enqueue texture update on the next tick.
+        auto postTickLambda = [=]()
+        {
+            OnAssetReloadedPostTick(asset);
+        };
+        AZ::SystemTickBus::QueueFunction(AZStd::move(postTickLambda));
+    }
+
+    void TerrainSurfaceMaterialsListComponent::OnAssetReloadedPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         // Find the material instance with the correct id.
         auto handleUpdateMaterial = [&](TerrainSurfaceMaterialMapping& mapping, const AZ::Data::Asset<AZ::Data::AssetData>& asset)

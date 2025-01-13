@@ -17,6 +17,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 
+
 namespace AZStd
 {
     class any;
@@ -246,6 +247,12 @@ namespace AZ
             mutable AZStd::recursive_mutex m_databaseMutex;
             AZStd::unordered_map<InstanceId, Type*> m_database;
 
+            // There are several classes in Atom, like ShaderResourceGroup, that are not threadsafe
+            // because they share the same ShaderResourceGroupPool, so it is important that for each
+            // InstanceType there's a mutex that prevents several of those classes from being instantiated
+            // simultaneously.
+            AZStd::recursive_mutex m_instanceCreationMutex;
+
             // All instances created by this InstanceDatabase will be for assets derived from this type.
             AssetType m_baseAssetType;
 
@@ -316,19 +323,6 @@ namespace AZ
                 return nullptr;
             }
 
-            // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
-            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
-
-            // Search again in case someone else got here first.
-            auto iter = m_database.find(id);
-            if (iter != m_database.end())
-            {
-                InstanceData* data = static_cast<InstanceData*>(iter->second);
-                ValidateSameAsset(data, asset);
-
-                return iter->second;
-            }
-
             return EmplaceInstance(id, assetLocal, param);
         }
 
@@ -351,8 +345,6 @@ namespace AZ
                 return nullptr;
             }
 
-            // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
-            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
             return EmplaceInstance(id, assetLocal, param);
         }
 
@@ -391,41 +383,60 @@ namespace AZ
         Data::Instance<Type> InstanceDatabase<Type>::EmplaceInstance(
             const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param)
         {
-            // This assert is here to catch any potential non-randomness in our id generation. If it triggers,
-            // there might be a bug / race condition in the id generator. The same assert also occurs *after*
-            // instance creation to help differentiate between a non-random id vs recursive creation of the same id.
-            AZ_Assert(
-                !m_database.contains(id),
-                "Database already contains an instance for this id (%s), possibly a random id generation collision?",
-                id.ToString<AZStd::fixed_string<64>>().c_str());
+            // It's very important to have m_databaseMutex unlocked while an instance is being created because
+            // there can be cases like in StreamingImage(s), where multiple threads are involved and some of those threads
+            // attempt to release a StreamingImage, which in turn will lock m_databaseMutex and it could incurr
+            // in potential deadlocks.
 
-            // Emplace a new instance and return it.
+            // If the instance was created redundantly, it will be temporarily stored here for destruction
+            // before this function returns.
+            Data::Instance<Type> redundantInstance = nullptr;
+
             // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
             // the contents of m_database may change within this call.
             Data::Instance<Type> instance = nullptr;
-            if (!param)
+
             {
-                instance = m_instanceHandler.m_createFunction(asset.Get());
-            }
-            else
-            {
-                instance = m_instanceHandler.m_createFunctionWithParam(asset.Get(), param);
+                AZStd::scoped_lock<decltype(m_instanceCreationMutex)> lock(m_instanceCreationMutex);
+                if (!param)
+                {
+                    instance = m_instanceHandler.m_createFunction(asset.Get());
+                }
+                else
+                {
+                    instance = m_instanceHandler.m_createFunctionWithParam(asset.Get(), param);
+                }
             }
 
+            // Lock the database. There's still a chance that the same instance was created in parallel.
+            // in such case we return the first one that made it into the database and gracefully release the
+            // redundant one.
             if (instance)
             {
-                AZ_Assert(
-                    !m_database.contains(id),
-                    "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
-                    "This asset might be erroneously referencing itself as a dependent asset.",
-                    asset.GetHint().c_str());
-
-                instance->m_id = id;
-                instance->m_parentDatabase = this;
-                instance->m_assetId = asset.GetId();
-                instance->m_assetType = asset.GetType();
-                m_database.emplace(id, instance.get());
+                AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+                auto iter = m_database.find(id);
+                if (iter != m_database.end())
+                {
+                    InstanceData* data = static_cast<InstanceData*>(iter->second);
+                    ValidateSameAsset(data, asset);
+                    redundantInstance = instance;
+                    instance = iter->second;
+                }
+                else
+                {
+                    instance->m_id = id;
+                    instance->m_parentDatabase = this;
+                    instance->m_assetId = asset.GetId();
+                    instance->m_assetType = asset.GetType();
+                    m_database.emplace(id, instance.get());
+                }
             }
+
+            if (redundantInstance)
+            {
+                redundantInstance.reset();
+            }
+
             return instance;
         }
 

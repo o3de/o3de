@@ -131,22 +131,35 @@ namespace AZ
 
         void ImageBasedLightComponentController::UpdateWithAsset(Data::Asset<Data::AssetData> updatedAsset)
         {
-            if (m_configuration.m_specularImageAsset.GetId() == updatedAsset.GetId())
+            // REMARK: This function is typically invoked within the context of one of the AssetBus::OnAssetXXX functions,
+            // which may hold a mutex, in turn when instantiating StreamingImages, which is a multi-threaded operation,
+            // a deadlock may arise when the main thread is waiting on one of those threads to complete, but when
+            // one of those threads releases another StreamingImage object, that class executes
+            // Data::AssetBus::MultiHandler::BusDisconnect(GetAssetId()); which will acquire the same mutex of the original
+            // AssetBus::OnAssetXXX and triggers a deadlock.
+            // The solution is to enqueue texture update on the next tick.
+            auto postTickLambda = [=]()
             {
-                if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_specularImageAsset))
+                if (m_configuration.m_specularImageAsset.GetId() == updatedAsset.GetId())
                 {
-                    m_featureProcessor->SetSpecularImage(m_configuration.m_specularImageAsset);
-                    ImageBasedLightComponentNotificationBus::Event(m_entityId, &ImageBasedLightComponentNotifications::OnSpecularImageUpdated);
+                    if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_specularImageAsset))
+                    {
+                        m_featureProcessor->SetSpecularImage(m_configuration.m_specularImageAsset);
+                        ImageBasedLightComponentNotificationBus::Event(
+                            m_entityId, &ImageBasedLightComponentNotifications::OnSpecularImageUpdated);
+                    }
                 }
-            }
-            else if (m_configuration.m_diffuseImageAsset.GetId() == updatedAsset.GetId())
-            {
-                if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_diffuseImageAsset))
+                else if (m_configuration.m_diffuseImageAsset.GetId() == updatedAsset.GetId())
                 {
-                    m_featureProcessor->SetDiffuseImage(m_configuration.m_diffuseImageAsset);
-                    ImageBasedLightComponentNotificationBus::Event(m_entityId, &ImageBasedLightComponentNotifications::OnDiffuseImageUpdated);
+                    if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_diffuseImageAsset))
+                    {
+                        m_featureProcessor->SetDiffuseImage(m_configuration.m_diffuseImageAsset);
+                        ImageBasedLightComponentNotificationBus::Event(
+                            m_entityId, &ImageBasedLightComponentNotifications::OnDiffuseImageUpdated);
+                    }
                 }
-            }
+            };
+            AZ::SystemTickBus::QueueFunction(AZStd::move(postTickLambda));
         }
 
         bool ImageBasedLightComponentController::HandleAssetUpdate(Data::Asset<Data::AssetData> updatedAsset, Data::Asset<RPI::StreamingImageAsset>& configAsset)

@@ -292,7 +292,7 @@ namespace AZ
             }
         }
 
-        void MaterialComponentController::InitializeMaterialInstance(const Data::Asset<Data::AssetData>& asset)
+        void MaterialComponentController::InitializeMaterialInstancePostTick(Data::Asset<Data::AssetData> asset)
         {
             bool allReady = true;
             auto updateAsset = [&](AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset)
@@ -338,6 +338,22 @@ namespace AZ
                 QueueMaterialsCreatedNotification();
                 QueueMaterialsUpdatedNotification();
             }
+        }
+
+        void MaterialComponentController::InitializeMaterialInstance(Data::Asset<Data::AssetData> asset)
+        {
+            // REMARK: This function is typically invoked within the context of one of the AssetBus::OnAssetXXX functions,
+            // which may hold a mutex, in turn when instantiating StreamingImages, which is a multi-threaded operation,
+            // a deadlock may arise when the main thread is waiting on one of those threads to complete, but when
+            // one of those threads releases another StreamingImage object, that class executes
+            // Data::AssetBus::MultiHandler::BusDisconnect(GetAssetId()); which will acquire the same mutex of the original
+            // AssetBus::OnAssetXXX and triggers a deadlock.
+            // The solution is to enqueue texture update on the next tick.
+            auto postTickLambda = [=]()
+            {
+                InitializeMaterialInstancePostTick(asset);
+            };
+            AZ::SystemTickBus::QueueFunction(AZStd::move(postTickLambda));
         }
 
         void MaterialComponentController::ReleaseMaterials()
