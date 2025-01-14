@@ -39,6 +39,7 @@
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
 
+
 int CMovieSystem::m_mov_NoCutscenes = 0;
 float CMovieSystem::m_mov_cameraPrecacheTime = 1.f;
 #if !defined(_RELEASE)
@@ -262,11 +263,11 @@ CMovieSystem::~CMovieSystem()
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::DoNodeStaticInitialisation()
 {
-    CAnimPostFXNode::Initialize();
-    CAnimSceneNode::Initialize();
-    CAnimScreenFaderNode::Initialize();
-    CCommentNode::Initialize();
-    CLayerNode::Initialize();
+    Maestro::CAnimPostFXNode::Initialize();
+    Maestro::CAnimSceneNode::Initialize();
+    Maestro::CAnimScreenFaderNode::Initialize();
+    Maestro::CCommentNode::Initialize();
+    Maestro::CLayerNode::Initialize();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -277,7 +278,7 @@ IAnimSequence* CMovieSystem::CreateSequence(const char* sequenceName, bool load,
         id = m_nextSequenceId++;
     }
 
-    IAnimSequence* sequence = aznew CAnimSequence(id, sequenceType);
+    IAnimSequence* sequence = aznew Maestro::CAnimSequence(id, sequenceType);
     sequence->SetName(sequenceName);
     sequence->SetSequenceEntityId(entityId);
 
@@ -678,7 +679,7 @@ void CMovieSystem::PlaySequence(IAnimSequence* sequence, IAnimSequence* parentSe
 
     sequence->Activate();
     sequence->Resume();
-    static_cast<CAnimSequence*>(sequence)->OnStart();
+    static_cast<Maestro::CAnimSequence*>(sequence)->OnStart();
 
     PlayingSequence ps;
     ps.sequence = sequence;
@@ -843,7 +844,7 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
     }
 
     sequence->Resume();
-    static_cast<CAnimSequence*>(sequence)->OnStop();
+    static_cast<Maestro::CAnimSequence*>(sequence)->OnStop();
 
     return true;
 }
@@ -1088,7 +1089,7 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
 
     float fps = 60.0f;
 
-    std::vector<IAnimSequence*> stopSequences;
+    AZStd::vector<IAnimSequence*> stopSequences;
 
     const size_t numPlayingSequences = m_playingSequences.size();
     for (size_t i = 0; i < numPlayingSequences; ++i)
@@ -1437,7 +1438,7 @@ IMovieSystem::ESequenceStopBehavior CMovieSystem::GetSequenceStopBehavior()
 bool CMovieSystem::AddMovieListener(IAnimSequence* sequence, IMovieListener* pListener)
 {
     assert (pListener != 0);
-    if (sequence != NULL && std::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
+    if (sequence != NULL && AZStd::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
     {
         gEnv->pLog->Log ("CMovieSystem::AddMovieListener: Sequence %p unknown to CMovieSystem", sequence);
         return false;
@@ -1449,8 +1450,7 @@ bool CMovieSystem::AddMovieListener(IAnimSequence* sequence, IMovieListener* pLi
 bool CMovieSystem::RemoveMovieListener(IAnimSequence* sequence, IMovieListener* pListener)
 {
     assert (pListener != 0);
-    if (sequence != NULL
-        && std::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
+    if (sequence != NULL && AZStd::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
     {
         gEnv->pLog->Log ("CMovieSystem::AddMovieListener: Sequence %p unknown to CMovieSystem", sequence);
         return false;
@@ -1903,5 +1903,4 @@ CAnimParamType CMovieSystem::GetParamTypeFromString(const char* pString) const
     return CAnimParamType(pString);
 }
 #endif
-
 

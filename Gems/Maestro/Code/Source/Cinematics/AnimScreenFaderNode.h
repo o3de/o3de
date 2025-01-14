@@ -6,74 +6,71 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_ANIMSCREENFADERNODE_H
-#define CRYINCLUDE_CRYMOVIE_ANIMSCREENFADERNODE_H
 #pragma once
 
 #include "AnimNode.h"
 
-class CScreenFaderTrack;
-
-class CAnimScreenFaderNode
-    : public CAnimNode
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CAnimScreenFaderNode, AZ::SystemAllocator);
-    AZ_RTTI(CAnimScreenFaderNode, "{C24D5F2D-B17A-4350-8381-539202A99FDD}", CAnimNode);
 
-    //-----------------------------------------------------------------------------
-    //!
-    CAnimScreenFaderNode(const int id);
-    CAnimScreenFaderNode();
-    ~CAnimScreenFaderNode();
+    class CScreenFaderTrack;
 
-    static void Initialize();
+    class CAnimScreenFaderNode : public CAnimNode
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CAnimScreenFaderNode, AZ::SystemAllocator);
+        AZ_RTTI(CAnimScreenFaderNode, "{C24D5F2D-B17A-4350-8381-539202A99FDD}", CAnimNode);
 
-    //-----------------------------------------------------------------------------
-    //! Overrides from CAnimNode
-    void Animate(SAnimContext& ac) override;
+        CAnimScreenFaderNode(const int id);
+        CAnimScreenFaderNode();
+        ~CAnimScreenFaderNode();
 
-    void CreateDefaultTracks() override;
+        static void Initialize();
 
-    void OnReset() override;
+        //-----------------------------------------------------------------------------
+        //! Overrides from CAnimNode
+        void Animate(SAnimContext& ac) override;
 
-    void Activate(bool bActivate) override;
+        void CreateDefaultTracks() override;
 
-    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
+        void OnReset() override;
 
-    //-----------------------------------------------------------------------------
-    //! Overrides from IAnimNode
-    unsigned int GetParamCount() const override;
-    CAnimParamType GetParamType(unsigned int nIndex) const override;
-    void SetFlags(int flags) override;
+        void Activate(bool bActivate) override;
 
-    void Render() override;
+        void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-    bool IsAnyTextureVisible() const;
+        //-----------------------------------------------------------------------------
+        //! Overrides from IAnimNode
+        unsigned int GetParamCount() const override;
+        CAnimParamType GetParamType(unsigned int nIndex) const override;
+        void SetFlags(int flags) override;
 
-    static void Reflect(AZ::ReflectContext* context);
+        void Render() override;
 
-protected:
-    bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
+        bool IsAnyTextureVisible() const;
 
-    bool NeedToRender() const override { return true; }
+        static void Reflect(AZ::ReflectContext* context);
 
-private:
-    CAnimScreenFaderNode(const CAnimScreenFaderNode&);
-    CAnimScreenFaderNode& operator = (const CAnimScreenFaderNode&);
+    protected:
+        bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
-private:
-    //-----------------------------------------------------------------------------
-    //!
-    void PrecacheTexData();
+        bool NeedToRender() const override
+        {
+            return true;
+        }
 
-    Vec4        m_startColor;
-    bool        m_bActive;
-    float       m_screenWidth, m_screenHeight;
-    int         m_lastActivatedKey;
+    private:
+        CAnimScreenFaderNode(const CAnimScreenFaderNode&);
 
-    bool        m_texPrecached;
-};
+    private:
+        void PrecacheTexData();
 
-#endif // CRYINCLUDE_CRYMOVIE_ANIMSCREENFADERNODE_H
+        Vec4 m_startColor;
+        bool m_bActive;
+        float m_screenWidth, m_screenHeight;
+        int m_lastActivatedKey;
+
+        bool m_texPrecached;
+    };
+
+} // namespace Maestro

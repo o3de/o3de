@@ -495,4 +495,5 @@ namespace Maestro
             return true;
         }
     } // namespace ClassConverters
+
 } // namespace Maestro

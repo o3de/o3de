@@ -9,10 +9,8 @@
 
 // TODO - Determine if this code is deprecated. A CVar closely tied to its use was removed
 
-#ifndef CRYINCLUDE_CRYMOVIE_MOVIE_H
-#define CRYINCLUDE_CRYMOVIE_MOVIE_H
-
 #pragma once
+
 #include <AzCore/std/containers/map.h>
 #include <AzCore/Time/ITime.h>
 
@@ -20,6 +18,9 @@
 #include <CryCommon/StlUtils.h>
 
 #include "IMovieSystem.h"
+
+struct IConsoleCmdArgs;
+
 
 struct PlayingSequence
 {
@@ -37,12 +38,10 @@ struct PlayingSequence
     bool bSingleFrame;
 };
 
-struct IConsoleCmdArgs;
-
 class CMovieSystem
     : public IMovieSystem
 {
-    typedef std::vector<PlayingSequence> PlayingSequences;
+    typedef AZStd::vector<PlayingSequence> PlayingSequences;
 
 public:
     AZ_CLASS_ALLOCATOR(CMovieSystem, AZ::SystemAllocator);
@@ -282,5 +281,3 @@ public:
     static int m_mov_debugCamShake;
 #endif
 };
-
-#endif // CRYINCLUDE_CRYMOVIE_MOVIE_H

@@ -18,15 +18,15 @@ namespace Maestro
 {
     class EditorSequenceComponent
         : public AzToolsFramework::Components::EditorComponentBase
-        , public Maestro::EditorSequenceComponentRequestBus::Handler
-        , public Maestro::SequenceComponentRequestBus::Handler
+        , public EditorSequenceComponentRequestBus::Handler
+        , public SequenceComponentRequestBus::Handler
         , public AZ::TickBus::Handler       // for refreshing propertyGrids after SetAnimatedPropertyValue events
     {
     public:
         AZ_EDITOR_COMPONENT(EditorSequenceComponent, EditorSequenceComponentTypeId);    // EditorSequenceComponentTypeId is defined in EditorSequenceComponentBus.h
 
-        using AnimatablePropertyAddress = Maestro::SequenceComponentRequests::AnimatablePropertyAddress;
-        using AnimatedValue = Maestro::SequenceComponentRequests::AnimatedValue;
+        using AnimatablePropertyAddress = SequenceComponentRequests::AnimatablePropertyAddress;
+        using AnimatedValue = SequenceComponentRequests::AnimatedValue;
 
         EditorSequenceComponent();
         ~EditorSequenceComponent();
@@ -70,7 +70,7 @@ namespace Maestro
         */
         bool SetAnimatedPropertyValue(const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress, const AnimatedValue& value) override;
 
-        AZ::Uuid GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) override;
+        AZ::Uuid GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) override;
 
         void GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId) override;
 
@@ -104,7 +104,7 @@ namespace Maestro
         void BuildGameEntity(AZ::Entity* gameEntity) override;
         ////////////////////////////////////////////////////////////////////////
     private:
-        // pointer and id of the CryMovie anim sequence responsible for playback/recording
+        // pointer and id of the CryMovie animation sequence responsible for playback/recording
         AZStd::intrusive_ptr<IAnimSequence> m_sequence;
         uint32                           m_sequenceId;
 
@@ -112,4 +112,5 @@ namespace Maestro
         static const double              s_refreshPeriodMilliseconds;       // property refresh period for SetAnimatedPropertyValue events
         static const uint32              s_invalidSequenceId;
     };
+
 } // namespace Maestro

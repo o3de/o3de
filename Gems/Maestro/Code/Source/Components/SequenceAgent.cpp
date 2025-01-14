@@ -75,7 +75,7 @@ namespace Maestro
                         AZ::BehaviorEBus* behaviorEbus = findBusIter->second;
                         for (auto virtualPropertyIter = behaviorEbus->m_virtualProperties.begin(); virtualPropertyIter != behaviorEbus->m_virtualProperties.end(); virtualPropertyIter++)
                         {
-                            Maestro::SequenceComponentRequests::AnimatablePropertyAddress   address(component->GetId(), virtualPropertyIter->first);
+                            SequenceComponentRequests::AnimatablePropertyAddress   address(component->GetId(), virtualPropertyIter->first);
                             m_addressToBehaviorVirtualPropertiesMap[address] = &virtualPropertyIter->second;
                         }
 
@@ -124,7 +124,7 @@ namespace Maestro
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::Uuid SequenceAgent::GetVirtualPropertyTypeId(const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) const
+    AZ::Uuid SequenceAgent::GetVirtualPropertyTypeId(const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) const
     {
         AZ::Uuid retTypeUuid = AZ::Uuid::CreateNull();
 
@@ -144,7 +144,7 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    bool SequenceAgent::SetAnimatedPropertyValue(AZ::EntityId entityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress, const Maestro::SequenceComponentRequests::AnimatedValue& value)
+    bool SequenceAgent::SetAnimatedPropertyValue(AZ::EntityId entityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress, const SequenceComponentRequests::AnimatedValue& value)
     {
         bool changed = false;
         const AZ::Uuid propertyTypeId = GetVirtualPropertyTypeId(animatableAddress);
@@ -216,7 +216,7 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    void SequenceAgent::GetAnimatedPropertyValue(Maestro::SequenceComponentRequests::AnimatedValue& returnValue, AZ::EntityId entityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
+    void SequenceAgent::GetAnimatedPropertyValue(SequenceComponentRequests::AnimatedValue& returnValue, AZ::EntityId entityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
     {
         const AZ::Uuid propertyTypeId = GetVirtualPropertyTypeId(animatableAddress);
 
@@ -275,7 +275,7 @@ namespace Maestro
         }
     }
 
-    void SequenceAgent::GetAssetDuration(Maestro::SequenceComponentRequests::AnimatedValue& returnValue, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
+    void SequenceAgent::GetAssetDuration(SequenceComponentRequests::AnimatedValue& returnValue, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
     {
         auto findIter = m_addressToGetAssetDurationMap.find(componentId);
         if (findIter != m_addressToGetAssetDurationMap.end())
@@ -297,4 +297,4 @@ namespace Maestro
         }
     }
 
-}// namespace Maestro
+} // namespace Maestro
