@@ -24,6 +24,7 @@ namespace AZ
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            using MutexType = AZStd::recursive_mutex;
 
             //! This notification is sent when a material preview image for a given entity and material assignment has been rendered by the
             //! preview rendering system
