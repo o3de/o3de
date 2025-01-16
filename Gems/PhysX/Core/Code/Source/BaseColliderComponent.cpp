@@ -25,6 +25,10 @@
 #include <PhysX/PhysXLocks.h>
 #include <Scene/PhysXScene.h>
 
+#if defined(CARBONATED)
+#include <PhysX/Material/PhysXMaterial.h>
+#endif
+
 namespace PhysX
 {
     // ShapeInfoCache
@@ -122,6 +126,27 @@ namespace PhysX
     }
 
 #if defined(CARBONATED)
+    void BaseColliderComponent::SetMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    {
+        auto* scene = Utils::GetDefaultScene();
+        if (scene == nullptr)
+        {
+            return;
+        }
+
+        auto pMaterial = PhysX::Material::FindOrCreateMaterial(materialAsset);
+        if (!pMaterial)
+            return;
+
+        auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+        PHYSX_SCENE_WRITE_LOCK(pxScene);
+
+        for (auto& shape : m_shapes)
+        {
+            shape->SetMaterial(pMaterial);
+        }
+    }
+
     AZ::Vector3 BaseColliderComponent::GetBoxDimensions()
     {
         auto* scene = Utils::GetDefaultScene();

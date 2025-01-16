@@ -190,6 +190,11 @@ namespace PhysX
     }
 
 #if defined(CARBONATED)
+    void HeightfieldColliderComponent::SetMaterial([[maybe_unused]] const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    {
+
+    }
+
     AZ::Vector3 HeightfieldColliderComponent::GetBoxDimensions()
     {
         return AZ::Vector3::CreateZero();

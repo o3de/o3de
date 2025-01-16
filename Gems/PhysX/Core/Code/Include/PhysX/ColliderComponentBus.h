@@ -32,6 +32,8 @@ namespace PhysX
         virtual AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() = 0;
 
 #if defined(CARBONATED)
+        virtual void SetMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) = 0;
+
         virtual AZ::Vector3 GetBoxDimensions() = 0;
         virtual void SetBoxDimensions(const AZ::Vector3& dimensions) = 0;
 #endif

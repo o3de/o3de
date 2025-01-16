@@ -43,6 +43,8 @@ namespace PhysX
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
 
 #if defined(CARBONATED)
+        void SetMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) override;
+
         AZ::Vector3 GetBoxDimensions() override;
         void SetBoxDimensions(const AZ::Vector3& dimensions) override;
 #endif
