@@ -26,7 +26,11 @@
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
 
 #if !defined(AZCORE_SYSTEM_ALLOCATOR)
-    #define AZCORE_SYSTEM_ALLOCATOR AZCORE_SYSTEM_ALLOCATOR_HPHA
+    // Using basic OS malloc because it's been found that, when using Vulkan, and working with levels that have
+    // large amount of meshes, entering/Exiting game mode puts lost of stress in memory allocation that crashes
+    // when using HPHA.
+    // TODO: Revert back to HPHA once the issue is resolved.
+    #define AZCORE_SYSTEM_ALLOCATOR AZCORE_SYSTEM_ALLOCATOR_MALLOC
 #endif
 
 #if (AZCORE_SYSTEM_ALLOCATOR != AZCORE_SYSTEM_ALLOCATOR_HPHA) && (AZCORE_SYSTEM_ALLOCATOR != AZCORE_SYSTEM_ALLOCATOR_MALLOC)

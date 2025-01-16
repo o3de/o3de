@@ -353,7 +353,7 @@ namespace AZ
             {
                 InitializeMaterialInstancePostTick(asset);
             };
-            AZ::SystemTickBus::QueueFunction(AZStd::move(postTickLambda));
+            AZ::TickBus::QueueFunction(AZStd::move(postTickLambda));
         }
 
         void MaterialComponentController::ReleaseMaterials()

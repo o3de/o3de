@@ -339,7 +339,7 @@ namespace Terrain
         {
             OnAssetReadyPostTick(asset);
         };
-        AZ::SystemTickBus::QueueFunction(AZStd::move(postTickLambda));
+        AZ::TickBus::QueueFunction(AZStd::move(postTickLambda));
     }
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReadyPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -391,7 +391,7 @@ namespace Terrain
         {
             OnAssetReloadedPostTick(asset);
         };
-        AZ::SystemTickBus::QueueFunction(AZStd::move(postTickLambda));
+        AZ::TickBus::QueueFunction(AZStd::move(postTickLambda));
     }
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReloadedPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset)

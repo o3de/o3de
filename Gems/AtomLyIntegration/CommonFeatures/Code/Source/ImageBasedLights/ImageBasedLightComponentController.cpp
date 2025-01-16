@@ -159,7 +159,7 @@ namespace AZ
                     }
                 }
             };
-            AZ::SystemTickBus::QueueFunction(AZStd::move(postTickLambda));
+            AZ::TickBus::QueueFunction(AZStd::move(postTickLambda));
         }
 
         bool ImageBasedLightComponentController::HandleAssetUpdate(Data::Asset<Data::AssetData> updatedAsset, Data::Asset<RPI::StreamingImageAsset>& configAsset)
