@@ -419,7 +419,7 @@ namespace AZ
                 {
                     InstanceData* data = static_cast<InstanceData*>(iter->second);
                     ValidateSameAsset(data, asset);
-                    redundantInstance = instance;
+                    redundantInstance = instance; // Will be destroyed as soon as we return from this function.
                     instance = iter->second;
                 }
                 else
@@ -430,11 +430,6 @@ namespace AZ
                     instance->m_assetType = asset.GetType();
                     m_database.emplace(id, instance.get());
                 }
-            }
-
-            if (redundantInstance)
-            {
-                redundantInstance.reset();
             }
 
             return instance;
