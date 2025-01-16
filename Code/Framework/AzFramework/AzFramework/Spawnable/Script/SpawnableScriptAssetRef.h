@@ -36,7 +36,7 @@ namespace AzFramework::Scripts
         AZ::Data::Asset<Spawnable> GetAsset() const;
         //! Sets the Asset by AssetId, which is convenient for automation
         //! or in-game scripting.
-        void SetAssetId(const AZ::Data::AssetId& assetId );
+        void SetAssetId(const AZ::Data::AssetId& assetId);
         // helpful for automation to get the AssetId.
         AZ::Data::AssetId GetAssetId() const;
         // Returns true if the AssetId is valid.

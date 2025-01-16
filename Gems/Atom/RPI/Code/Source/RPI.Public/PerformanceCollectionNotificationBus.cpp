@@ -24,7 +24,9 @@ namespace AZ::RPI
     public:
         AZ_EBUS_BEHAVIOR_BINDER(
             PerformaceCollectionBehaviorHandler, "{61464725-BDE4-465B-96BA-0409D32E29A9}",
-            AZ::SystemAllocator, OnPerformanceCollectionJobFinished);
+            AZ::SystemAllocator,
+            OnPerformanceCollectionJobFinished
+            );
 
         void OnPerformanceCollectionJobFinished(const AZStd::string& outputfilePath) override
         {
