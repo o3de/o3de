@@ -131,22 +131,43 @@ namespace AZ
 
         void ImageBasedLightComponentController::UpdateWithAsset(Data::Asset<Data::AssetData> updatedAsset)
         {
-            if (m_configuration.m_specularImageAsset.GetId() == updatedAsset.GetId())
+            // REMARK: This function is typically invoked within the context of one of the AssetBus::OnAssetXXX functions,
+            // and a deadlock may occur according to the following sequence:
+            // 1. Starting from Main thread, AssetBus locks a mutex.
+            // 2. AssetBus calls OnAssetReady and it enters in this function.
+            // 3. Start the instantiation of a new StreamingImage.
+            // 4. StreamingImage asynchronously queues work in the "Seconday Copy Queue".
+            // 5. StreamingImage waits until the work completes.
+            // 6. The thread of "Seconday Copy Queue" gets a new work item, which may hold a reference
+            //    to an old StreamingImage.
+            // 7. The old StreamingImage gets destroyed and it calls AssetBus::MultiHandler::BusDisconnect(GetAssetId());
+            // 8. When calling AssetBus::MultiHandler::BusDisconnect(GetAssetId()); it tries to lock the same mutex
+            //    from step 1. But the mutex is already locked on Main Thread in step 1.
+            // 9. The "Seconday Copy Queue" thread deadlocks and never completes the work.
+            // 10. Main thread is also deadlocked waiting for "Seconday Copy Queue" to complete.
+            // The solution is to enqueue texture update on the next tick.
+            auto postTickLambda = [=]()
             {
-                if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_specularImageAsset))
+                if (m_configuration.m_specularImageAsset.GetId() == updatedAsset.GetId())
                 {
-                    m_featureProcessor->SetSpecularImage(m_configuration.m_specularImageAsset);
-                    ImageBasedLightComponentNotificationBus::Event(m_entityId, &ImageBasedLightComponentNotifications::OnSpecularImageUpdated);
+                    if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_specularImageAsset))
+                    {
+                        m_featureProcessor->SetSpecularImage(m_configuration.m_specularImageAsset);
+                        ImageBasedLightComponentNotificationBus::Event(
+                            m_entityId, &ImageBasedLightComponentNotifications::OnSpecularImageUpdated);
+                    }
                 }
-            }
-            else if (m_configuration.m_diffuseImageAsset.GetId() == updatedAsset.GetId())
-            {
-                if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_diffuseImageAsset))
+                else if (m_configuration.m_diffuseImageAsset.GetId() == updatedAsset.GetId())
                 {
-                    m_featureProcessor->SetDiffuseImage(m_configuration.m_diffuseImageAsset);
-                    ImageBasedLightComponentNotificationBus::Event(m_entityId, &ImageBasedLightComponentNotifications::OnDiffuseImageUpdated);
+                    if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_diffuseImageAsset))
+                    {
+                        m_featureProcessor->SetDiffuseImage(m_configuration.m_diffuseImageAsset);
+                        ImageBasedLightComponentNotificationBus::Event(
+                            m_entityId, &ImageBasedLightComponentNotifications::OnDiffuseImageUpdated);
+                    }
                 }
-            }
+            };
+            AZ::TickBus::QueueFunction(AZStd::move(postTickLambda));
         }
 
         bool ImageBasedLightComponentController::HandleAssetUpdate(Data::Asset<Data::AssetData> updatedAsset, Data::Asset<RPI::StreamingImageAsset>& configAsset)
