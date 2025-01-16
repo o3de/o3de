@@ -78,7 +78,7 @@ namespace UnitTest
 
         // When this sort happens, the transformComponent should move to the top, the AssetDatabase should move to second, the order of the others should be unaltered, 
         // merely moved to after the AssetDatabase.
-        EntityPropertyEditor::SortComponentsByPriority(orderedComponents);
+        SortComponentsByPriority(orderedComponents);
 
         // Check the component arrays are intact.
         EXPECT_EQ(orderedComponents.size(), unorderedComponents.size());
