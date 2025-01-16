@@ -14,6 +14,8 @@
 
 // carbonated begin (alukyanov)
 #if defined(CARBONATED)
+#include <platform.h>
+
 #if defined(LINUX64) && !defined(ANDROID) && !defined(APPLE)
 #include <Linux64Specific.h>
 #endif
