@@ -64,9 +64,9 @@ namespace Maestro
     void CAnimAzEntityNode::SetSkipInterpolatedCameraNode(const bool skipNodeCameraAnimation)
     {
         // Skip animations on transforms
-        if (CAnimComponentNode* transformNode = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            transformNode->SetSkipComponentAnimationUpdates(skipNodeCameraAnimation);
+            transformComponentNode->SetSkipComponentAnimationUpdates(skipNodeCameraAnimation);
         }
 
         // Skip animations on cameras
@@ -127,60 +127,60 @@ namespace Maestro
 
     void CAnimAzEntityNode::SetPos(float time, const AZ::Vector3& pos)
     {
-        if (CAnimComponentNode* transformComponent = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            transformComponent->SetPos(time, pos);
+            transformComponentNode->SetPos(time, pos);
         }
     }
 
     Vec3 CAnimAzEntityNode::GetPos()
     {
-        if (CAnimComponentNode* transformComponent = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            return transformComponent->GetPos();
+            return transformComponentNode->GetPos();
         }
         return Vec3(.0f, .0f, .0f);
     }
 
     void CAnimAzEntityNode::SetRotate(float time, const AZ::Quaternion& rotation)
     {
-        if (CAnimComponentNode* transformComponent = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            transformComponent->SetRotate(time, rotation);
+            transformComponentNode->SetRotate(time, rotation);
         }
     }
 
     Quat CAnimAzEntityNode::GetRotate()
     {
-        if (CAnimComponentNode* transformComponent = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            return transformComponent->GetRotate();
+            return transformComponentNode->GetRotate();
         }
         return Quat::CreateIdentity();
     }
 
     Quat CAnimAzEntityNode::GetRotate(float time)
     {
-        if (CAnimComponentNode* transformComponent = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            return transformComponent->GetRotate(time);
+            return transformComponentNode->GetRotate(time);
         }
         return Quat::CreateIdentity();
     }
 
     void CAnimAzEntityNode::SetScale(float time, const AZ::Vector3& scale)
     {
-        if (CAnimComponentNode* transformComponent = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            transformComponent->SetScale(time, scale);
+            transformComponentNode->SetScale(time, scale);
         }
     }
 
     Vec3 CAnimAzEntityNode::GetScale()
     {
-        if (CAnimComponentNode* transformComponent = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            return transformComponent->GetScale();
+            return transformComponentNode->GetScale();
         }
 
         return Vec3(.0f, .0f, .0f);
@@ -188,9 +188,9 @@ namespace Maestro
 
     Vec3 CAnimAzEntityNode::GetOffsetPosition(const Vec3& position)
     {
-        if (CAnimComponentNode* transformComponent = GetTransformComponentNode())
+        if (auto transformComponentNode = GetTransformComponentNode())
         {
-            return position - transformComponent->GetPos();
+            return position - transformComponentNode->GetPos();
         }
         return Vec3(.0f, .0f, .0f);
     }
