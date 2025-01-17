@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 #include <Maestro/Types/AssetBlendKey.h>
 #include <Maestro/Types/AssetBlends.h>

@@ -21,8 +21,9 @@ namespace Maestro
         AZ_CLASS_ALLOCATOR(CAnimScreenFaderNode, AZ::SystemAllocator);
         AZ_RTTI(CAnimScreenFaderNode, "{C24D5F2D-B17A-4350-8381-539202A99FDD}", CAnimNode);
 
-        CAnimScreenFaderNode(const int id);
         CAnimScreenFaderNode();
+        explicit CAnimScreenFaderNode(const int id);
+
         ~CAnimScreenFaderNode();
 
         static void Initialize();

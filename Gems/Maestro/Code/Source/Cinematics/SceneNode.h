@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Time/ITime.h>
 
 #include "AnimNode.h"

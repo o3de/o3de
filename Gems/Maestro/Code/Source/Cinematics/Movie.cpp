@@ -6,38 +6,38 @@
  *
  */
 
+
+#include "Movie.h"
+
+#include "AnimPostFXNode.h"
+#include "AnimScreenFaderNode.h"
+#include "AnimSequence.h"
+#include "AnimSerializer.h"
+#include "AnimSplineTrack.h"
+#include "CommentNode.h"
+#include "CVarNode.h"
+#include "EventNode.h"
+#include "LayerNode.h"
+#include "SceneNode.h"
+#include "ScriptVarNode.h"
+#include "ShadowsSetupNode.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/Components/CameraBus.h>
-#include <Maestro/Bus/SequenceComponentBus.h>
-#include "Movie.h"
-#include "AnimSplineTrack.h"
-#include "AnimSerializer.h"
-#include "AnimSequence.h"
-#include "CVarNode.h"
-#include "ScriptVarNode.h"
-#include "SceneNode.h"
-#include "EventNode.h"
-#include "AnimPostFXNode.h"
-#include "AnimScreenFaderNode.h"
-#include "CommentNode.h"
-#include "LayerNode.h"
-#include "ShadowsSetupNode.h"
-
-#include <MathConversion.h>
-
-#include <ISystem.h>
-#include <ILog.h>
 #include <IConsole.h>
-#include <IRenderer.h>
-
+#include <ILog.h>
+#include <ISystem.h>
+#include <Maestro/Bus/SequenceComponentBus.h>
 #include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/SequenceType.h>
+#include <MathConversion.h>
 
 
 int CMovieSystem::m_mov_NoCutscenes = 0;
@@ -51,13 +51,13 @@ int CMovieSystem::m_mov_debugCamShake = 0;
 struct SMovieSequenceAutoComplete
     : public IConsoleArgumentAutoComplete
 {
-    virtual int GetCount() const
+    int GetCount() const override
     {
         IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         return movieSystem ? movieSystem->GetNumSequences() : 0;
     }
 
-    virtual const char* GetValue(int nIndex) const
+    const char* GetValue(int nIndex) const override
     {
         IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
         if (movieSystem)
@@ -78,13 +78,14 @@ struct SMovieSequenceAutoComplete
 static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-// Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(!m_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
+// Serialization for animation nodes & param types
+#define REGISTER_NODE_TYPE(name) \
+    AZ_Assert(!m_animNodeEnumToStringMap.contains(AnimNodeType::name), "m_animNodeEnumToStringMap contains AnimNodeType::" #name); \
     m_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
     m_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
 
-#define REGISTER_PARAM_TYPE(name) assert(!m_animParamEnumToStringMap.contains(AnimParamType::name)); \
+#define REGISTER_PARAM_TYPE(name) \
+    AZ_Assert(!m_animParamEnumToStringMap.contains(AnimParamType::name), "m_animParamEnumToStringMap contains AnimNodeType::" #name); \
     m_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
     m_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
 
@@ -190,7 +191,7 @@ void CMovieSystem::RegisterParamTypes()
 
 namespace Internal
 {
-    float ApplyDeltaTimeOverrideIfEnabled(float deltaTime)
+    static float ApplyDeltaTimeOverrideIfEnabled(float deltaTime)
     {
         if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
         {
@@ -204,7 +205,6 @@ namespace Internal
     }
 } // namespace Internal
 
-//////////////////////////////////////////////////////////////////////////
 CMovieSystem::CMovieSystem(ISystem* pSystem)
 {
     if (!AZ::Interface<IMovieSystem>::Get())
@@ -244,13 +244,11 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     RegisterParamTypes();
 }
 
-//////////////////////////////////////////////////////////////////////////
 CMovieSystem::CMovieSystem()
     : CMovieSystem(gEnv->pSystem)
 {
 }
 
-//////////////////////////////////////////////////////////////////////////
 CMovieSystem::~CMovieSystem()
 {
     if (AZ::Interface<IMovieSystem>::Get() == this)
@@ -260,7 +258,6 @@ CMovieSystem::~CMovieSystem()
 
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::DoNodeStaticInitialisation()
 {
     Maestro::CAnimPostFXNode::Initialize();
@@ -270,7 +267,6 @@ void CMovieSystem::DoNodeStaticInitialisation()
     Maestro::CLayerNode::Initialize();
 }
 
-//////////////////////////////////////////////////////////////////////////
 IAnimSequence* CMovieSystem::CreateSequence(const char* sequenceName, bool load, uint32 id, SequenceType sequenceType, AZ::EntityId entityId)
 {
     if (!load)
@@ -287,13 +283,12 @@ IAnimSequence* CMovieSystem::CreateSequence(const char* sequenceName, bool load,
     return sequence;
 }
 
-//////////////////////////////////////////////////////////////////////////
 IAnimSequence* CMovieSystem::FindLegacySequenceByName(const char* pSequenceName) const
 {
-    assert(pSequenceName);
+    AZ_Assert(pSequenceName, "pSequenceName is null");
     if (!pSequenceName)
     {
-        return NULL;
+        return nullptr;
     }
 
     for (Sequences::const_iterator it = m_sequences.begin(); it != m_sequences.end(); ++it)
@@ -301,16 +296,15 @@ IAnimSequence* CMovieSystem::FindLegacySequenceByName(const char* pSequenceName)
         IAnimSequence* pCurrentSequence = it->get();
         const char* fullname = pCurrentSequence->GetName();
 
-        if (_stricmp(fullname, pSequenceName) == 0)
+        if (azstricmp(fullname, pSequenceName) == 0)
         {
             return pCurrentSequence;
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////////
 IAnimSequence* CMovieSystem::FindSequence(const AZ::EntityId& componentEntitySequenceId) const
 {
     IAnimSequence* retSequence = nullptr;
@@ -329,12 +323,11 @@ IAnimSequence* CMovieSystem::FindSequence(const AZ::EntityId& componentEntitySeq
     return retSequence;
 }
 
-//////////////////////////////////////////////////////////////////////////
 IAnimSequence* CMovieSystem::FindSequenceById(uint32 id) const
 {
     if (id == 0 || id >= m_nextSequenceId)
     {
-        return NULL;
+        return nullptr;
     }
 
     for (Sequences::const_iterator it = m_sequences.begin(); it != m_sequences.end(); ++it)
@@ -346,10 +339,9 @@ IAnimSequence* CMovieSystem::FindSequenceById(uint32 id) const
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::FindSequence(IAnimSequence* sequence, PlayingSequences::const_iterator& sequenceIteratorOut) const
 {
     PlayingSequences::const_iterator itend = m_playingSequences.end();
@@ -365,7 +357,6 @@ bool CMovieSystem::FindSequence(IAnimSequence* sequence, PlayingSequences::const
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::FindSequence(IAnimSequence* sequence, PlayingSequences::iterator& sequenceIteratorOut)
 {
     PlayingSequences::const_iterator itend = m_playingSequences.end();
@@ -381,45 +372,40 @@ bool CMovieSystem::FindSequence(IAnimSequence* sequence, PlayingSequences::itera
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 IAnimSequence* CMovieSystem::GetSequence(int i) const
 {
-    assert(i >= 0 && i < GetNumSequences());
+    AZ_Assert(i >= 0 && i < GetNumSequences(), "Sequence index %i is out of range", i);
 
     if (i < 0 || i >= GetNumSequences())
     {
-        return NULL;
+        return nullptr;
     }
 
     return m_sequences[i].get();
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CMovieSystem::GetNumSequences() const
 {
     return static_cast<int>(m_sequences.size());
 }
 
-//////////////////////////////////////////////////////////////////////////
 IAnimSequence* CMovieSystem::GetPlayingSequence(int i) const
 {
-    assert(i >= 0 && i < GetNumPlayingSequences());
+    AZ_Assert(i >= 0 && i < GetNumPlayingSequences(), "Playing sequence index %i is out of range", i);
 
     if (i < 0 || i >= GetNumPlayingSequences())
     {
-        return NULL;
+        return nullptr;
     }
 
     return m_playingSequences[i].sequence.get();
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CMovieSystem::GetNumPlayingSequences() const
 {
     return static_cast<int>(m_playingSequences.size());
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::AddSequence(IAnimSequence* sequence)
 {
     [[maybe_unused]] const AZ::EntityId& sequenceEntityId = sequence->GetSequenceEntityId();
@@ -434,7 +420,6 @@ void CMovieSystem::AddSequence(IAnimSequence* sequence)
     }    
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::IsCutScenePlaying() const
 {
     const uint numPlayingSequences = static_cast<uint>(m_playingSequences.size());
@@ -450,7 +435,6 @@ bool CMovieSystem::IsCutScenePlaying() const
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::RemoveSequence(IAnimSequence* sequence)
 {
     AZ_Assert(sequence != nullptr, "sequence should not be nullptr.");
@@ -506,7 +490,6 @@ void CMovieSystem::RemoveSequence(IAnimSequence* sequence)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::OnSetSequenceId(uint32 sequenceId)
 {
     if (sequenceId >= m_nextSequenceId)
@@ -515,15 +498,15 @@ void CMovieSystem::OnSetSequenceId(uint32 sequenceId)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CMovieSystem::OnSequenceRenamed(const char* before, const char* after)
 {
-    assert(before && after);
-    if (before == NULL || after == NULL)
+    AZ_Assert(before, "Previous sequence name is null");
+    AZ_Assert(after, "New sequence name is null");
+    if (before == nullptr || after == nullptr)
     {
         return 0;
     }
-    if (_stricmp(before, after) == 0)
+    if (azstricmp(before, after) == 0)
     {
         return 0;
     }
@@ -550,7 +533,7 @@ int CMovieSystem::OnSequenceRenamed(const char* before, const char* after)
                     ISequenceKey seqKey;
                     track->GetKey(m, &seqKey);
                     // For each key that refers the sequence, update the name.
-                    if (!seqKey.szSelection.empty() && (_stricmp(seqKey.szSelection.c_str(), before) == 0))
+                    if (!seqKey.szSelection.empty() && (azstricmp(seqKey.szSelection.c_str(), before) == 0))
                     {
                         seqKey.szSelection = after;
                         track->SetKey(m, &seqKey);
@@ -565,7 +548,6 @@ int CMovieSystem::OnSequenceRenamed(const char* before, const char* after)
     return count;
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CMovieSystem::OnCameraRenamed(const char* before, const char* after)
 {
     int count = 0;
@@ -591,7 +573,7 @@ int CMovieSystem::OnCameraRenamed(const char* before, const char* after)
                     ISelectKey selKey;
                     track->GetKey(m, &selKey);
                     // For each key that refers the camera, update the name.
-                    if (_stricmp(selKey.szSelection.c_str(), before) == 0)
+                    if (azstricmp(selKey.szSelection.c_str(), before) == 0)
                     {
                         selKey.szSelection = after;
                         track->SetKey(m, &selKey);
@@ -606,11 +588,10 @@ int CMovieSystem::OnCameraRenamed(const char* before, const char* after)
     return count;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::RemoveAllSequences()
 {
     IMovieCallback* pCallback = GetCallback();
-    SetCallback(NULL);
+    SetCallback(nullptr);
     InternalStopAllSequences(true, false);
     m_sequences.clear();
 
@@ -628,7 +609,6 @@ void CMovieSystem::RemoveAllSequences()
     SetCallback(pCallback);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PlaySequence(const char* pSequenceName, IAnimSequence* pParentSeq, bool bResetFx, bool bTrackedSequence, float startTime, float endTime)
 {
     IAnimSequence* sequence = FindLegacySequenceByName(pSequenceName);
@@ -638,15 +618,14 @@ void CMovieSystem::PlaySequence(const char* pSequenceName, IAnimSequence* pParen
     }
     else
     {
-        gEnv->pLog->Log ("CMovieSystem::PlaySequence: Error: Sequence \"%s\" not found", pSequenceName);
+        AZ_Printf("CMovieSystem::PlaySequence", "Error : Sequence \"%s\" not found", pSequenceName);
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PlaySequence(IAnimSequence* sequence, IAnimSequence* parentSeq,
     bool bResetFx, bool bTrackedSequence, float startTime, float endTime)
 {
-    assert(sequence != 0);
+    AZ_Assert(sequence, "Sequence is null");
     if (!sequence || IsPlaying(sequence))
     {
         return;
@@ -759,7 +738,6 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::StopSequence(const char* pSequenceName)
 {
     IAnimSequence* sequence = FindLegacySequenceByName(pSequenceName);
@@ -771,13 +749,11 @@ bool CMovieSystem::StopSequence(const char* pSequenceName)
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::StopSequence(IAnimSequence* sequence)
 {
     return InternalStopSequence(sequence, false, true);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::InternalStopAllSequences(bool bAbort, bool bAnimate)
 {
     while (!m_playingSequences.empty())
@@ -788,10 +764,9 @@ void CMovieSystem::InternalStopAllSequences(bool bAbort, bool bAnimate)
     stl::free_container(m_playingSequences);
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bool bAnimate)
 {
-    assert(sequence != 0);
+    AZ_Assert(sequence, "Sequence is null");
 
     PlayingSequences::iterator it;
 
@@ -831,7 +806,7 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
             }
         }
 
-        sequence->SetParentSequence(NULL);
+        sequence->SetParentSequence(nullptr);
     }
 
     // tell all interested listeners
@@ -849,19 +824,16 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
     return true;
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::AbortSequence(IAnimSequence* sequence, bool bLeaveTime)
 {
     return InternalStopSequence(sequence, true, !bLeaveTime);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::StopAllSequences()
 {
     InternalStopAllSequences(false, true);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::StopAllCutScenes()
 {
     bool bAnyStoped;
@@ -889,7 +861,6 @@ void CMovieSystem::StopAllCutScenes()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::IsPlaying(IAnimSequence* sequence) const
 {
     if (nullptr == sequence)
@@ -908,7 +879,6 @@ bool CMovieSystem::IsPlaying(IAnimSequence* sequence) const
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
 {
     InternalStopAllSequences(true, false);
@@ -948,7 +918,6 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
     SetCameraParams(CamParams);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PlayOnLoadSequences()
 {
     for (Sequences::const_iterator sit = m_sequences.cbegin(); sit != m_sequences.cend(); ++sit)
@@ -968,7 +937,6 @@ void CMovieSystem::PlayOnLoadSequences()
     SetCameraParams(CamParams);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::StillUpdate()
 {
     if (!gEnv->IsEditor())
@@ -990,7 +958,6 @@ void CMovieSystem::StillUpdate()
     CheckForEndCapture();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::ShowPlayedSequencesDebug()
 {
     float y = 10.0f;
@@ -1044,7 +1011,6 @@ void CMovieSystem::ShowPlayedSequencesDebug()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PreUpdate(float deltaTime)
 {
     // Sequences can be spawned in game via a dynamic slice, so process newly activated sequences to see
@@ -1062,13 +1028,11 @@ void CMovieSystem::PreUpdate(float deltaTime)
     UpdateInternal(Internal::ApplyDeltaTimeOverrideIfEnabled(deltaTime), true);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PostUpdate(float deltaTime)
 {
     UpdateInternal(Internal::ApplyDeltaTimeOverrideIfEnabled(deltaTime), false);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
 {
     SAnimContext animContext;
@@ -1111,8 +1075,7 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
 
         // Skip sequence if current update does not apply
         const bool bSequenceEarlyUpdate = (playingSequence.sequence->GetFlags() & IAnimSequence::eSeqFlags_EarlyMovieUpdate) != 0;
-        if ((bPreUpdate && !bSequenceEarlyUpdate ) || (!bPreUpdate && bSequenceEarlyUpdate)
-)
+        if ((bPreUpdate && !bSequenceEarlyUpdate ) || (!bPreUpdate && bSequenceEarlyUpdate))
         {
             continue;
         }
@@ -1196,7 +1159,6 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::Render()
 {
     for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
@@ -1206,7 +1168,6 @@ void CMovieSystem::Render()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::Callback(IMovieCallback::ECallbackReason reason, IAnimNode* pNode)
 {
     if (m_pCallback)
@@ -1215,7 +1176,6 @@ void CMovieSystem::Callback(IMovieCallback::ECallbackReason reason, IAnimNode* p
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::Reflect(AZ::ReflectContext* context)
 {
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -1228,7 +1188,6 @@ void CMovieSystem::Reflect(AZ::ReflectContext* context)
     AnimSerializer::ReflectAnimTypes(context);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::SetCameraParams(const SCameraParams& Params)
 {
     m_ActiveCameraParams = Params;
@@ -1256,7 +1215,6 @@ void CMovieSystem::SetCameraParams(const SCameraParams& Params)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::SendGlobalEvent(const char* pszEvent)
 {
     if (m_pUser)
@@ -1265,19 +1223,16 @@ void CMovieSystem::SendGlobalEvent(const char* pszEvent)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::Pause()
 {
     m_bPaused = true;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::Resume()
 {
     m_bPaused = false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PauseCutScenes()
 {
     m_bCutscenesPausedInEditor = true;
@@ -1294,7 +1249,6 @@ void CMovieSystem::PauseCutScenes()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::ResumeCutScenes()
 {
     if (m_mov_NoCutscenes != 0)
@@ -1316,7 +1270,6 @@ void CMovieSystem::ResumeCutScenes()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 float CMovieSystem::GetPlayingTime(IAnimSequence* sequence)
 {
     if (!sequence || !IsPlaying(sequence))
@@ -1437,10 +1390,10 @@ IMovieSystem::ESequenceStopBehavior CMovieSystem::GetSequenceStopBehavior()
 
 bool CMovieSystem::AddMovieListener(IAnimSequence* sequence, IMovieListener* pListener)
 {
-    assert (pListener != 0);
-    if (sequence != NULL && AZStd::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
+    AZ_Assert(pListener, "Movie listener is null");
+    if (sequence != nullptr && AZStd::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
     {
-        gEnv->pLog->Log ("CMovieSystem::AddMovieListener: Sequence %p unknown to CMovieSystem", sequence);
+        AZ_Printf("CMovieSystem::AddMovieListener", "Sequence %p unknown to CMovieSystem", sequence);
         return false;
     }
 
@@ -1449,10 +1402,10 @@ bool CMovieSystem::AddMovieListener(IAnimSequence* sequence, IMovieListener* pLi
 
 bool CMovieSystem::RemoveMovieListener(IAnimSequence* sequence, IMovieListener* pListener)
 {
-    assert (pListener != 0);
-    if (sequence != NULL && AZStd::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
+    AZ_Assert(pListener, "Movie listener is null");
+    if (sequence != nullptr && AZStd::find(m_sequences.begin(), m_sequences.end(), sequence) == m_sequences.end())
     {
-        gEnv->pLog->Log ("CMovieSystem::AddMovieListener: Sequence %p unknown to CMovieSystem", sequence);
+        AZ_Printf("CMovieSystem::AddMovieListener", "Sequence %p unknown to CMovieSystem", sequence);
         return false;
     }
     return stl::find_and_erase(m_movieListenerMap[sequence], pListener);
@@ -1463,7 +1416,7 @@ void CMovieSystem::GoToFrameCmd(IConsoleCmdArgs* pArgs)
 {
     if (pArgs->GetArgCount() < 3)
     {
-        gEnv->pLog->LogError("GoToFrame failed! You should provide two arguments of 'sequence name' & 'frame time'.");
+        AZ_Error("CMovieSystem::GoToFrameCmd", false, "GoToFrame failed! You should provide two arguments of 'sequence name' & 'frame time'.");
         return;
     }
 
@@ -1494,7 +1447,7 @@ void CMovieSystem::ListSequencesCmd([[maybe_unused]] IConsoleCmdArgs* pArgs)
             IAnimSequence* pSeq = movieSystem->GetSequence(i);
             if (pSeq)
             {
-                CryLogAlways("%s", pSeq->GetName());
+                AZ_Printf("CMovieSystem::ListSequencesCmd", "%s", pSeq->GetName());
             }
         }
     }
@@ -1518,7 +1471,7 @@ void CMovieSystem::GoToFrame(const char* seqName, float targetFrame)
 {
     AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
 
-    assert(seqName != NULL);
+    AZ_Assert(seqName, "Sequence name is null");
 
     if (gEnv->IsEditor() && gEnv->IsEditorGameMode() == false)
     {
@@ -1535,7 +1488,8 @@ void CMovieSystem::GoToFrame(const char* seqName, float targetFrame)
         const char* fullname = ps.sequence->GetName();
         if (strcmp(fullname, seqName) == 0)
         {
-            assert(ps.sequence->GetTimeRange().start <= targetFrame && targetFrame <= ps.sequence->GetTimeRange().end);
+            AZ_Assert(ps.sequence->GetTimeRange().start <= targetFrame && targetFrame <= ps.sequence->GetTimeRange().end,
+                "Target frame time %f is out of range", targetFrame);
             ps.currentTime = targetFrame;
             ps.bSingleFrame = true;
             break;
@@ -1599,7 +1553,7 @@ void CMovieSystem::ControlCapture()
 {
 #if !defined(NDEBUG)
     bool bBothStartAndEnd = m_bStartCapture && m_bEndCapture;
-    assert(!bBothStartAndEnd);
+    AZ_Assert(!bBothStartAndEnd, "Invalid state to turn on/off the capturing");
 #endif
 
     bool bAllCVarsReady
@@ -1617,7 +1571,7 @@ void CMovieSystem::ControlCapture()
         = m_cvar_capture_frame_once
             && m_cvar_capture_folder && m_cvar_capture_frames
             && m_cvar_capture_file_prefix;
-    assert(bAllCVarsReady);
+    AZ_Assert(bAllCVarsReady, "Invalid CVArs to turn on/off the capturing");
 
     if (!bAllCVarsReady)
     {
@@ -1640,13 +1594,11 @@ void CMovieSystem::ControlCapture()
     CheckForEndCapture();
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::IsCapturing() const
 {
     return m_cvar_capture_frames ? m_cvar_capture_frames->GetIVal() != 0 : false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xmlNode, bool bLoading, const uint version, int flags)
 {
     static const char* kType = "Type";
@@ -1690,16 +1642,17 @@ void CMovieSystem::SerializeNodeType(AnimNodeType& animNodeType, XmlNodeRef& xml
             XmlString nodeTypeString;
             if (xmlNode->getAttr(kType, nodeTypeString))
             {
-                assert(m_animNodeStringToEnumMap.find(nodeTypeString.c_str()) != m_animNodeStringToEnumMap.end());
+                AZ_Assert(m_animNodeStringToEnumMap.find(nodeTypeString.c_str()) != m_animNodeStringToEnumMap.end(),
+                    "Node type %s is not found in string to enum map", nodeTypeString.c_str());
                 animNodeType = stl::find_in_map(m_animNodeStringToEnumMap, nodeTypeString.c_str(), AnimNodeType::Invalid);
             }
         }
     }
     else
     {
-        const char* pTypeString = "Invalid";
-        assert(m_animNodeEnumToStringMap.find(animNodeType) != m_animNodeEnumToStringMap.end());
-        pTypeString = m_animNodeEnumToStringMap[animNodeType].c_str();
+        AZ_Assert(m_animNodeEnumToStringMap.find(animNodeType) != m_animNodeEnumToStringMap.end(),
+            "Node type %i is not found in enum to string map", static_cast<int>(animNodeType));
+        const char* pTypeString = m_animNodeEnumToStringMap[animNodeType].c_str();
         xmlNode->setAttr(kType, pTypeString);
     }
 }
@@ -1710,7 +1663,6 @@ namespace CAnimParamTypeXmlNames
     static const char* kVirtualPropertyName = "virtualPropertyName";
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::LoadParamTypeFromXml(CAnimParamType& animParamType, const XmlNodeRef& xmlNode, const uint version)
 {
     static const char* kByNameAttrName = "paramIdIsName";
@@ -1768,14 +1720,14 @@ void CMovieSystem::LoadParamTypeFromXml(CAnimParamType& animParamType, const Xml
                     animParamType.m_name = virtualPropertyValue;
                 }
 
-                assert(m_animParamStringToEnumMap.find(paramTypeString.c_str()) != m_animParamStringToEnumMap.end());
+                AZ_Assert(m_animParamStringToEnumMap.find(paramTypeString.c_str()) != m_animParamStringToEnumMap.end(),
+                    "Param type %s is not found in string to enum map", paramTypeString.c_str());
                 animParamType.m_type = stl::find_in_map(m_animParamStringToEnumMap, paramTypeString.c_str(), AnimParamType::Invalid);
             }
         }
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNodeRef& xmlNode)
 {
     static const char* kParamType = "paramType";
@@ -1799,14 +1751,14 @@ void CMovieSystem::SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNo
             xmlNode->setAttr(CAnimParamTypeXmlNames::kVirtualPropertyName, animParamType.m_name.c_str());
         }
 
-        assert(m_animParamEnumToStringMap.find(animParamType.m_type) != m_animParamEnumToStringMap.end());
+        AZ_Assert(m_animParamEnumToStringMap.find(animParamType.m_type) != m_animParamEnumToStringMap.end(),
+            "Anim param type %i is not found in enum to string map", static_cast<int>(animParamType.m_type));
         pTypeString = m_animParamEnumToStringMap[animParamType.m_type].c_str();
     }
 
     xmlNode->setAttr(kParamType, pTypeString);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::SerializeParamType(CAnimParamType& animParamType, XmlNodeRef& xmlNode, bool bLoading, const uint version)
 {
 
@@ -1820,7 +1772,6 @@ void CMovieSystem::SerializeParamType(CAnimParamType& animParamType, XmlNodeRef&
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 const char* CMovieSystem::GetParamTypeName(const CAnimParamType& animParamType)
 {
     if (animParamType.m_type == AnimParamType::ByString)
@@ -1842,7 +1793,6 @@ const char* CMovieSystem::GetParamTypeName(const CAnimParamType& animParamType)
     return "Invalid";
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::OnCameraCut()
 {
 }
@@ -1876,7 +1826,6 @@ const AZStd::string& CMovieSystem::GetUserNotificationMsgs() const
 #endif
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CMovieSystem::OnSequenceActivated(IAnimSequence* sequence)
 {
     // Queue for processing, sequences will be removed after checked for auto start.
@@ -1884,13 +1833,11 @@ void CMovieSystem::OnSequenceActivated(IAnimSequence* sequence)
 }
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
-//////////////////////////////////////////////////////////////////////////
 AnimNodeType CMovieSystem::GetNodeTypeFromString(const char* pString) const
 {
     return stl::find_in_map(m_animNodeStringToEnumMap, pString, AnimNodeType::Invalid);
 }
 
-//////////////////////////////////////////////////////////////////////////
 CAnimParamType CMovieSystem::GetParamTypeFromString(const char* pString) const
 {
     const AnimParamType paramType = stl::find_in_map(m_animParamStringToEnumMap, pString, AnimParamType::Invalid);

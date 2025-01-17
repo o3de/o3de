@@ -20,7 +20,7 @@ namespace Maestro
         AZ_RTTI(CAnimEventNode, "{F9F306E0-FF9C-4FF4-B1CC-5A96746364FE}", CAnimNode);
 
         CAnimEventNode();
-        CAnimEventNode(const int id);
+        explicit CAnimEventNode(const int id);
 
         //////////////////////////////////////////////////////////////////////////
         // Overrides from CAnimNode

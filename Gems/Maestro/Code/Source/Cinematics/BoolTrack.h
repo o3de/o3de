@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
 namespace Maestro
@@ -30,7 +30,7 @@ namespace Maestro
         void GetValue(float time, bool& value) override;
         void SetValue(float time, const bool& value, bool bDefault = false) override;
 
-        void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) override {};
+        void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) override {}
         void GetKeyInfo(int key, const char*& description, float& duration) override;
 
         void SetDefaultValue(const bool bDefaultValue);

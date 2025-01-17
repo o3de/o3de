@@ -8,29 +8,29 @@
 
 // Description : Implementation of IAnimSequence interface.
 
-#include <Maestro/Bus/EditorSequenceComponentBus.h>
 
-#include "AnimSequence.h"
+
+
 #include "AnimAZEntityNode.h"
 #include "AnimComponentNode.h"
-#include "CVarNode.h"
-#include "ScriptVarNode.h"
-#include "SceneNode.h"
-#include "StlUtils.h"
-#include "EventNode.h"
-#include "LayerNode.h"
-#include "CommentNode.h"
+#include "AnimNodeGroup.h"
 #include "AnimPostFXNode.h"
 #include "AnimScreenFaderNode.h"
-#include "ShadowsSetupNode.h"
+#include "AnimSequence.h"
+#include "CommentNode.h"
+#include "CVarNode.h"
+#include "EventNode.h"
+#include "LayerNode.h"
+#include "SceneNode.h"
+#include "ScriptVarNode.h"
 #include "SequenceTrack.h"
-#include "AnimNodeGroup.h"
-
-#include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/SequenceType.h>
-#include <Maestro/Types/AnimParamType.h>
-
+#include "ShadowsSetupNode.h"
 #include <AzCore/Serialization/SerializeContext.h>
+#include <CryCommon/StlUtils.h>
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/SequenceType.h>
 
 namespace Maestro
 {
@@ -829,7 +829,7 @@ namespace Maestro
             return;
         }
 
-        gEnv->pLog->Log("=== Precaching render data for cutscene: %s ===", GetName());
+        AZ_Printf("CAnimSequence::PrecacheStatic", "Precaching render data for cutscene: %s", GetName());
 
         m_precached = true;
     }

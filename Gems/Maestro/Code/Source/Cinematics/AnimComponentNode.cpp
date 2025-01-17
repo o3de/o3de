@@ -20,9 +20,9 @@
 #include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AnimParamType.h>
 #include <Maestro/Types/AssetBlends.h>
+#include <MathConversion.h>
 
 #include "CharacterTrack.h"
-#include "MathConversion.h"
 
 namespace Maestro
 {
@@ -43,11 +43,7 @@ namespace Maestro
 
     CAnimComponentNode::~CAnimComponentNode()
     {
-        if (m_characterTrackAnimator)
-        {
-            delete m_characterTrackAnimator;
-            m_characterTrackAnimator = nullptr;
-        }
+        SAFE_DELETE(m_characterTrackAnimator);
     }
 
     void CAnimComponentNode::OnStart()
@@ -81,7 +77,7 @@ namespace Maestro
     {
         (void)nIndex;
         return AnimParamType::Invalid;
-    };
+    }
 
 
     void CAnimComponentNode::SetComponent(AZ::ComponentId componentId, const AZ::Uuid& componentTypeId)

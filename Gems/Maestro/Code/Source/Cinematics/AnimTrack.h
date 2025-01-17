@@ -135,7 +135,7 @@ namespace Maestro
         int GetNumKeys() const override
         {
             return static_cast<int>(m_keys.size());
-        };
+        }
 
         //! Return true if keys exists in this track
         bool HasKeys() const override

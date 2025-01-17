@@ -30,7 +30,7 @@ namespace Maestro
             param.valueType = valueType;
             s_nodeParameters.push_back(param);
         }
-    }; // namespace
+    } // namespace
 
     CCommentNode::CCommentNode(const int id)
         : CAnimNode(id, AnimNodeType::Comment)

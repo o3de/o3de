@@ -10,6 +10,7 @@
 // Description : CryMovie animation node for shadow settings
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/vector.h>
 
 #include "ShadowsSetupNode.h"
 #include "Maestro/Types/AnimNodeType.h"

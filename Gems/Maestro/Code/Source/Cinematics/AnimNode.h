@@ -11,7 +11,10 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
+
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include "Movie.h"
 
 namespace Maestro
@@ -221,7 +224,7 @@ namespace Maestro
         void SetTimeRange(Range timeRange) override;
         void AddTrack(IAnimTrack* pTrack) override;
         bool RemoveTrack(IAnimTrack* pTrack) override;
-        void CreateDefaultTracks() override {};
+        void CreateDefaultTracks() override {}
 
         void SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
         //////////////////////////////////////////////////////////////////////////
@@ -292,7 +295,7 @@ namespace Maestro
         //////////////////////////////////////////////////////////////////////////
         // AnimateSound() calls ApplyAudioKey() to trigger audio on sound key frames. Nodes which support audio must override
         // this to trigger audio
-        virtual void ApplyAudioKey([[maybe_unused]] char const* const sTriggerName, [[maybe_unused]] bool const bPlay = true) {};
+        virtual void ApplyAudioKey([[maybe_unused]] char const* const sTriggerName, [[maybe_unused]] bool const bPlay = true) {}
         void AnimateSound(AZStd::vector<SSoundInfo>& nodeSoundInfo, SAnimContext& ec, IAnimTrack* pTrack, size_t numAudioTracks);
         //////////////////////////////////////////////////////////////////////////
 

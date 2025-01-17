@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimNode.h"
 
 namespace Maestro
@@ -25,7 +25,7 @@ namespace Maestro
         AZ_RTTI(CAnimNodeGroup, "{6BDA5C06-7C15-4622-9550-68368E84D653}", CAnimNode);
 
         CAnimNodeGroup();
-        CAnimNodeGroup(const int id);
+        explicit CAnimNodeGroup(const int id);
 
         CAnimParamType GetParamType(unsigned int nIndex) const override;
 

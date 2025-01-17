@@ -9,8 +9,11 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "TrackEventTrack.h"
+#include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 namespace Maestro
 {
@@ -83,7 +86,7 @@ namespace Maestro
         Range GetTimeRange() override
         {
             return m_timeRange;
-        };
+        }
 
         void AdjustKeysToTimeRange(const Range& timeRange) override;
 

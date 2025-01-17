@@ -8,7 +8,10 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
+
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 namespace Maestro
 {
@@ -41,7 +44,7 @@ namespace Maestro
         int GetSubTrackCount() const override
         {
             return m_nDimensions;
-        };
+        }
         IAnimTrack* GetSubTrack(int nIndex) const override;
         AZStd::string GetSubTrackName(int nIndex) const override;
         void SetSubTrackName(int nIndex, const char* name) override;
@@ -49,16 +52,17 @@ namespace Maestro
         EAnimCurveType GetCurveType() override
         {
             return eAnimCurveType_BezierFloat;
-        };
+        }
         AnimValueType GetValueType() override
         {
             return m_valueType;
-        };
+        }
 
         const CAnimParamType& GetParameterType() const override
         {
             return m_nParamType;
-        };
+        }
+
         void SetParameterType(CAnimParamType type) override
         {
             m_nParamType = type;

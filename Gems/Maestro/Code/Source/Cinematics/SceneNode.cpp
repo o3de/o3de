@@ -6,35 +6,35 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Math/Quaternion.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Time/ITime.h>
-#include <AzFramework/Components/CameraBus.h>
 
-#include "MathConversion.h"
-#include "SceneNode.h"
-#include "AnimSequence.h"
-#include "AnimTrack.h"
-#include "EventTrack.h"
-#include "ConsoleTrack.h"
-#include "SequenceTrack.h"
-#include "GotoTrack.h"
-#include "CaptureTrack.h"
-#include "ISystem.h"
+
+
 #include "AnimAZEntityNode.h"
 #include "AnimComponentNode.h"
-#include "Movie.h"
+#include "AnimSequence.h"
+#include "AnimTrack.h"
+#include "CaptureTrack.h"
+#include "ConsoleTrack.h"
+#include "EventTrack.h"
+#include "GotoTrack.h"
 #include "Maestro/Types/AnimNodeType.h"
-#include "Maestro/Types/AnimValueType.h"
 #include "Maestro/Types/AnimParamType.h"
-
+#include "Maestro/Types/AnimValueType.h"
+#include "Movie.h"
+#include "SceneNode.h"
+#include "SequenceTrack.h"
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MathUtils.h>
-
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Time/ITime.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <IAudioSystem.h>
 #include <IConsole.h>
+#include <ISystem.h>
+#include <MathConversion.h>
 
 namespace Maestro
 {
@@ -345,11 +345,6 @@ namespace Maestro
         CConsoleTrack* pConsoleTrack = nullptr;
         CGotoTrack* pGotoTrack = nullptr;
         CCaptureTrack* pCaptureTrack = nullptr;
-        /*
-        bool bTimeJump = false;
-        if (ec.time < m_time)
-            bTimeJump = true;
-        */
 
         if (gEnv->IsEditor() && m_time > ec.time)
         {
@@ -1056,7 +1051,7 @@ namespace Maestro
             }
             else if (pAnimTrack->GetParameterType() == AnimParamType::Camera)
             {
-                const float fPrecacheCameraTime = CMovieSystem::m_mov_cameraPrecacheTime;
+                const float fPrecacheCameraTime = CMovieSystem::GetCameraPrecacheTime();
                 if (fPrecacheCameraTime > 0.f)
                 {
                     CSelectTrack* pCameraTrack = static_cast<CSelectTrack*>(pAnimTrack);

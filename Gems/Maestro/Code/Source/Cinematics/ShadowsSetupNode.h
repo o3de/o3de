@@ -23,7 +23,8 @@ namespace Maestro
         AZ_RTTI(CShadowsSetupNode, "{419F9F77-FC64-43D1-ABCF-E78E90889DF8}", CAnimNode);
 
         CShadowsSetupNode();
-        CShadowsSetupNode(const int id);
+        explicit CShadowsSetupNode(const int id);
+
         static void Initialize();
 
         //-----------------------------------------------------------------------------

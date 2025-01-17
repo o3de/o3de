@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
 namespace Maestro

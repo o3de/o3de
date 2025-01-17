@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
+#include <AzCore/std/containers/vector.h>
+
 #include "AnimTrack.h"
 
 namespace Maestro

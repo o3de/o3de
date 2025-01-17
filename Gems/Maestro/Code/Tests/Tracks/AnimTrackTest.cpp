@@ -53,7 +53,7 @@ namespace Maestro
             void GetKeyInfo([[maybe_unused]] int index, [[maybe_unused]] const char*& description, [[maybe_unused]] float& duration)
             {
             }
-            void SerializeKey([[maybe_unused]] ITestKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) {};
+            void SerializeKey([[maybe_unused]] ITestKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) {}
         };
 
         class TAnimTrackTest : public ::testing::Test

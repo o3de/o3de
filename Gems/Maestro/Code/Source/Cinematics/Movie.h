@@ -11,13 +11,14 @@
 
 #pragma once
 
+#include <IMovieSystem.h>
+
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/Time/ITime.h>
-
-#include <CryCommon/TimeValue.h>
 #include <CryCommon/StlUtils.h>
-
-#include "IMovieSystem.h"
+#include <CryCommon/TimeValue.h>
 
 struct IConsoleCmdArgs;
 
@@ -86,9 +87,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Sequence playback.
     //////////////////////////////////////////////////////////////////////////
-    void PlaySequence(const char* sequence, IAnimSequence* parentSeq = NULL, bool bResetFX = true,
+    void PlaySequence(const char* sequence, IAnimSequence* parentSeq = nullptr, bool bResetFX = true,
         bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX) override;
-    void PlaySequence(IAnimSequence* seq, IAnimSequence* parentSeq = NULL, bool bResetFX = true,
+    void PlaySequence(IAnimSequence* seq, IAnimSequence* parentSeq = nullptr, bool bResetFX = true,
         bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX) override;
     void PlayOnLoadSequences() override;
 
@@ -98,7 +99,6 @@ public:
 
     void StopAllSequences() override;
     void StopAllCutScenes() override;
-    void Pause(bool bPause);
 
     void Reset(bool bPlayOnReset, bool bSeekToStart) override;
     void StillUpdate() override;
@@ -121,8 +121,8 @@ public:
     void PauseCutScenes() override;
     void ResumeCutScenes() override;
 
-    void SetRecording(bool recording) override { m_bRecording = recording; };
-    bool IsRecording() const override { return m_bRecording; };
+    void SetRecording(bool recording) override { m_bRecording = recording; }
+    bool IsRecording() const override { return m_bRecording; }
 
     void SetCallback(IMovieCallback* pCallback) override { m_pCallback = pCallback; }
     IMovieCallback* GetCallback() override { return m_pCallback; }
@@ -171,6 +171,11 @@ public:
     void OnSequenceActivated(IAnimSequence* sequence) override;
 
     static void Reflect(AZ::ReflectContext* context);
+
+    static float GetCameraPrecacheTime()
+    {
+        return m_mov_cameraPrecacheTime;
+    }
 
 private:
 
@@ -274,7 +279,7 @@ private:
     void RegisterNodeTypes();
     void RegisterParamTypes();
 
-public:
+private:
     static float m_mov_cameraPrecacheTime;
 #if !defined(_RELEASE)
     static int m_mov_DebugEvents;

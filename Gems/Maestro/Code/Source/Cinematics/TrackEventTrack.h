@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
-#include "AnimTrack.h"
+#include <IMovieSystem.h>
+
 #include "AnimKey.h"
+#include "AnimTrack.h"
 #include <AzCore/std/containers/unordered_map.h>
-#include "StlUtils.h"
+#include <CryCommon/StlUtils.h>
 
 namespace Maestro
 {
@@ -63,8 +64,8 @@ namespace Maestro
         AZ_CLASS_ALLOCATOR(CTrackEventTrack, AZ::SystemAllocator);
         AZ_RTTI(CTrackEventTrack, "{3F659864-D66B-4211-93FB-1401EF4614D4}", IAnimTrack);
 
-        explicit CTrackEventTrack(IAnimStringTable* pStrings);
         CTrackEventTrack(); // default constructor needed for AZ Serialization
+        explicit CTrackEventTrack(IAnimStringTable* pStrings);
 
         //////////////////////////////////////////////////////////////////////////
         // Overrides of IAnimTrack.

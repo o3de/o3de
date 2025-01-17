@@ -601,4 +601,4 @@ namespace spline
         static void Reflect(AZ::ReflectContext* context);
     };
 
-}; // namespace spline
+} // namespace spline

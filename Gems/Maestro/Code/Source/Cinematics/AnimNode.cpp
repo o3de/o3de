@@ -1208,6 +1208,6 @@ namespace Maestro
     IMovieSystem* CAnimNode::GetMovieSystem() const
     {
         return AZ::Interface<IMovieSystem>::Get();
-    };
+    }
 
 } // namespace Maestro

@@ -53,11 +53,11 @@ namespace Maestro
 
         char* pPageEnd = &m_pLastPage->mem[sizeof(m_pLastPage->mem)];
         size_t nAvailable = pPageEnd - m_pEnd;
-        size_t nLen = strlen(p);
+        const size_t nLen = strlen(p);
 
         if (nLen >= sizeof(m_pLastPage->mem))
         {
-            CryFatalError("String table can't accommodate string");
+            AZ_Fatal("CAnimStringTable", "String table can't accommodate string");
         }
 
         if (nAvailable <= nLen)

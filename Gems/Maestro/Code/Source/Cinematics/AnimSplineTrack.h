@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include "2DSpline.h"
 
 namespace Maestro
@@ -70,7 +71,7 @@ namespace Maestro
 
         IAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const override
         {
-            return 0;
+            return nullptr;
         }
 
         AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const override
@@ -467,6 +468,7 @@ namespace Maestro
             m_defaultValue = value;
         }
 
+#ifdef MOVIESYSTEM_SUPPORT_EDITING
         ColorB GetCustomColor() const override
         {
             return m_customColor;
@@ -487,6 +489,7 @@ namespace Maestro
         {
             m_bCustomColorSet = false;
         }
+#endif
 
         void SetMultiplier(float trackMultiplier) override
         {
@@ -527,7 +530,7 @@ namespace Maestro
                 // prevents fill sliders from being inoperable when min and max are identical (or close to it)
                 m_fMaxKeyValue = (m_fMinKeyValue + MinValueRange);
             }
-        };
+        }
 
     private:
         //! Spawns new instance of Tcb spline.
