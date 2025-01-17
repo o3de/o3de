@@ -665,16 +665,19 @@ namespace AzToolsFramework
     
     AZStd::optional<int> GetFixedComponentListIndex(const AZ::Component* component)
     {
-        auto componentClassData = component ? GetComponentClassData(component) : nullptr;
-        if (componentClassData && componentClassData->m_editData)
+        if (component)
         {
-            if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
+            auto componentClassData = GetComponentClassData(component);
+            if (componentClassData && componentClassData->m_editData)
             {
-                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::FixedComponentListIndex))
+                if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
                 {
-                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<int>*>(attribute))
+                    if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::FixedComponentListIndex))
                     {
-                        return { attributeData->Get(nullptr) };
+                        if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<int>*>(attribute))
+                        {
+                            return { attributeData->Get(nullptr) };
+                        }
                     }
                 }
             }

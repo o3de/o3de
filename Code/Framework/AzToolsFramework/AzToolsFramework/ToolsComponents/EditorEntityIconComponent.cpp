@@ -260,7 +260,7 @@ namespace AzToolsFramework
                 }
             }
 
-            if(m_firstComponentIdCache != componentIdToSet)
+            if (m_firstComponentIdCache != componentIdToSet)
             {
                 m_firstComponentIdCache = componentIdToSet;
                 firstComponentIdChanged = true;

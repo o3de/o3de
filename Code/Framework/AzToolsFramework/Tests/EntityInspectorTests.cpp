@@ -403,6 +403,7 @@ namespace UnitTest
             }
         }
     }
+    
     class EditorInspectorTestComponentBase : public AZ::Component
     {
     public:
