@@ -37,6 +37,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
+            AZ::ToolsCrashHandler
             Gem::CommonFeaturesAtom.Static
             Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static

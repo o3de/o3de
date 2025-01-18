@@ -161,6 +161,7 @@ namespace CrashHandler
     {
         ReadConfigFile();
 
+        // If url or token is empty, the client will exit after launch, returning false for WaitForHandlerStart
         const std::string url{ crashUrl.length() ? crashUrl : GetCrashSubmissionURL() };
         const std::string token{ crashToken.length() ? crashToken : GetCrashSubmissionToken() };
 
