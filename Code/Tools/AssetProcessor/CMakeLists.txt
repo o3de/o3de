@@ -74,10 +74,13 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AssetProcessor.Static
-            AZ::ToolsCrashHandler
     RUNTIME_DEPENDENCIES
         AZ::AssetBuilder
 )
+
+if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+    ly_target_link_libraries(AssetProcessor PRIVATE AZ::ToolsCrashHandler)
+endif()
 
 # Adds the AssetProcessor target as a C preprocessor define so that it can be used as a Settings Registry
 # specialization in order to look up the generated .setreg which contains the dependencies

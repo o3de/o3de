@@ -107,7 +107,6 @@ ly_add_target(
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework
-            AZ::ToolsCrashHandler
             Gem::LmbrCentral.Static
             AZ::AtomCore
             Gem::Atom_RPI.Edit
@@ -123,6 +122,11 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Legacy::EditorCommon
 )
+
+if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+    ly_target_link_libraries(EditorLib PRIVATE AZ::ToolsCrashHandler)
+endif()
+
 ly_add_source_properties(
     SOURCES CryEdit.cpp
     PROPERTY COMPILE_DEFINITIONS 
