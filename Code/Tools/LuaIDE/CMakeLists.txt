@@ -34,6 +34,7 @@ ly_add_target(
             AZ::AzToolsFramework
             AZ::AzNetworking
             AZ::AzQtComponents
+            AZ::ToolsCrashHandler
             ${additional_dependencies}
     COMPILE_DEFINITIONS 
         PRIVATE

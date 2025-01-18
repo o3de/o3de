@@ -74,6 +74,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AssetProcessor.Static
+            AZ::ToolsCrashHandler
     RUNTIME_DEPENDENCIES
         AZ::AssetBuilder
 )

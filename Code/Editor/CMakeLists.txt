@@ -107,6 +107,7 @@ ly_add_target(
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework
+            AZ::ToolsCrashHandler
             Gem::LmbrCentral.Static
             AZ::AtomCore
             Gem::Atom_RPI.Edit
