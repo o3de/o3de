@@ -36,25 +36,23 @@ namespace AZ
 
         void InstanceData::release()
         {
-            // It is possible that some other thread, not us, will delete this InstanceData after we
-            // decrement m_useCount. For example, another thread could create and release an instance
-            // immediately after we decrement. So we copy the necessary data to the callstack before
-            // decrementing. This ensures the call to ReleaseInstance() below won't crash even if this
-            // InstanceData gets deleted by another thread first.
-            InstanceDatabaseInterface* parentDatabase = m_parentDatabase;
-            InstanceId instanceId = GetId();
-
-            const int prevUseCount = m_useCount.fetch_sub(1);
-
-            AZ_Assert(prevUseCount >= 1, "m_useCount is negative");
-
-            if (prevUseCount == 1)
+            // If @m_parentDatabase is valid we can't just simply decrement the ref count
+            // InstanceDatabase also supports the case of Orphaned instances. The only
+            // way to guarantee correcteness is to delegate ref count subtraction to the
+            // instanceDatabase under its database mutex.
+            // TODO: Ideally we should call `m_useCount.fetch_sub(1)` first and if it reaches the value
+            //       0, then we'd ask @m_parentDatabase to release. Investigate why Mesh Model Loading
+            //       needs to Orphan instances. Once Orphaned instance API is removed then we can call
+            //       m_useCount.fetch_sub(1) before having to lock the instanceDatabase mutex.
+            if (m_parentDatabase)
             {
-                if (parentDatabase)
-                {
-                    parentDatabase->ReleaseInstance(this, instanceId);
-                }
-                else
+                m_parentDatabase->ReleaseInstance(this);
+            }
+            else
+            {
+                const int prevUseCount = m_useCount.fetch_sub(1);
+                AZ_Assert(prevUseCount >= 1, "m_useCount is negative");
+                if (prevUseCount == 1)
                 {
                     // This is a standalone object not created through the InstanceDatabase so
                     // we can just delete it.

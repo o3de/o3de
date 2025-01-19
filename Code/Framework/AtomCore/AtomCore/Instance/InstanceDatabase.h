@@ -75,7 +75,7 @@ namespace AZ
         {
             friend class InstanceData;
         protected:
-            virtual void ReleaseInstance(InstanceData* instance, const InstanceId& instanceId) = 0;
+            virtual void ReleaseInstance(InstanceData* instance) = 0;
         };
 
         /**
@@ -236,7 +236,7 @@ namespace AZ
             Data::Instance<Type> EmplaceInstance(const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param);
 
             // Utility function called by InstanceData to remove the instance from the database.
-            void ReleaseInstance(InstanceData* instance, const InstanceId& instanceId) override;
+            void ReleaseInstance(InstanceData* instance) override;
 
             void ValidateSameAsset(InstanceData* instance, const Data::Asset<AssetData>& asset) const;
 
@@ -436,14 +436,24 @@ namespace AZ
         }
 
         template<typename Type>
-        void InstanceDatabase<Type>::ReleaseInstance(InstanceData* instance, const InstanceId& instanceId)
+        void InstanceDatabase<Type>::ReleaseInstance(InstanceData* instance)
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
             
+            const int prevUseCount = instance->m_useCount.fetch_sub(1);
+            AZ_Assert(prevUseCount >= 1, "m_useCount is negative");
+            if (prevUseCount > 1)
+            {
+                // This instance is still being used.
+                return;
+            }
+        
             // If instanceId doesn't exist in m_database that means the instance was already deleted on another thread.
             // We check and make sure the pointers match before erasing, just in case some other InstanceData was created with the same ID.
             // We re-check the m_useCount in case some other thread requested an instance from the database after we decremented m_useCount.
-            // We change m_useCount to -1 to be sure another thread doesn't try to clean up the instance (though the other checks probably cover that).
+            // We change m_useCount to -1 to be sure another thread doesn't try to clean up the instance (though the other checks
+            // probably cover that).
+            auto instanceId = instance->GetId();
             auto instanceItr = m_database.find(instanceId);
             int32_t expectedRefCount = 0;
             if (instanceItr != m_database.end() &&
