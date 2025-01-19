@@ -15,6 +15,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
+#include <limits>
+
 namespace Maestro
 {
 
@@ -179,7 +181,7 @@ namespace Maestro
 
         unsigned int GetUniqueTrackIdAndGenerateNext() override
         {
-            AZ_Assert(m_nextTrackId < UINT_MAX, "Max unique track ids used.");
+            AZ_Assert(m_nextTrackId < std::numeric_limits<AZ::u32>::max(), "Max unique track ids used.");
             return m_nextTrackId++;
         }
 

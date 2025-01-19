@@ -47,11 +47,9 @@ namespace Maestro
     {
         // Old deprecated IDs
         constexpr AnimParamType APARAM_CHARACTER4 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x10);
-        constexpr AnimParamType APARAM_CHARACTER5 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x11);
         constexpr AnimParamType APARAM_CHARACTER6 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x12);
         constexpr AnimParamType APARAM_CHARACTER7 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x13);
         constexpr AnimParamType APARAM_CHARACTER8 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x14);
-        constexpr AnimParamType APARAM_CHARACTER9 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x15);
         constexpr AnimParamType APARAM_CHARACTER10 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x16);
     }
 

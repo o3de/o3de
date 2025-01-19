@@ -248,7 +248,6 @@ private:
     ICVar* m_cvar_sys_maxTimeStepForMovieSystem;
     ICVar* m_cvar_capture_frames;
     ICVar* m_cvar_capture_file_prefix;
-    ICVar* m_cvar_capture_buffer;
 
     static int m_mov_NoCutscenes;
     ICVar* m_mov_overrideCam;
