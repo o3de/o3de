@@ -16,7 +16,6 @@
 #include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
 
-//////////////////////////////////////////////////////////////////////////
 bool CCommentKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
@@ -47,7 +46,7 @@ bool CCommentKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sele
     }
     return bAssigned;
 }
-//////////////////////////////////////////////////////////////////////////
+
 // Called when UI variable changes.
 void CCommentKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {

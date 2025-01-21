@@ -16,7 +16,6 @@
 #include "KeyUIControls.h"
 #include "TrackViewDialog.h"
 
-//////////////////////////////////////////////////////////////////////////
 bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
@@ -34,7 +33,6 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sel
         {
             CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
 
-            /////////////////////////////////////////////////////////////////////////////////
             // fill sequence comboBox with available sequences
             mv_sequence.SetEnumList(nullptr);
 
@@ -56,7 +54,6 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sel
                 }
             }
 
-            /////////////////////////////////////////////////////////////////////////////////
             // fill Key Properties with selected key values
             ISequenceKey sequenceKey;
             keyHandle.GetKey(&sequenceKey);

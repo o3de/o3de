@@ -8,8 +8,8 @@
 
 #include "TrackViewMessageBox.h"
 
-#include <IConsole.h>
 #include <CryEdit.h>
+#include <IConsole.h>
 #include <ISystem.h>
 
 QMessageBox::StandardButton TrackViewMessageBox::Information(

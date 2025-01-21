@@ -19,7 +19,6 @@
 #include "TrackViewNodeFactories.h"
 
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrackBundle::AppendTrack(CTrackViewTrack* pTrack)
 {
     // Check if newly added key has different type than existing ones
@@ -38,7 +37,6 @@ void CTrackViewTrackBundle::AppendTrack(CTrackViewTrack* pTrack)
     stl::push_back_unique(m_tracks, pTrack);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrackBundle::AppendTrackBundle(const CTrackViewTrackBundle& bundle)
 {
     for (auto iter = bundle.m_tracks.begin(); iter != bundle.m_tracks.end(); ++iter)
@@ -52,7 +50,6 @@ bool CTrackViewTrackBundle::RemoveTrack(CTrackViewTrack* trackToRemove)
     return stl::find_and_erase(m_tracks, trackToRemove);
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewTrack::CTrackViewTrack(IAnimTrack* pTrack, CTrackViewAnimNode* pTrackAnimNode,
     CTrackViewNode* pParentNode, bool bIsSubTrack, unsigned int subTrackIndex)
     : CTrackViewNode(pParentNode)
@@ -69,7 +66,7 @@ CTrackViewTrack::CTrackViewTrack(IAnimTrack* pTrack, CTrackViewAnimNode* pTrackA
 
         CTrackViewTrackFactory trackFactory;
         CTrackViewTrack* pNewTVTrack = trackFactory.BuildTrack(pSubTrack, pTrackAnimNode, this, true, subTrackI);
-        m_childNodes.push_back(std::unique_ptr<CTrackViewNode>(pNewTVTrack));
+        m_childNodes.push_back(AZStd::unique_ptr<CTrackViewNode>(pNewTVTrack));
     }
 
     m_bIsCompoundTrack = subTrackCount > 0;
@@ -83,13 +80,11 @@ CTrackViewTrack::~CTrackViewTrack()
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewAnimNode* CTrackViewTrack::GetAnimNode() const
 {
     return m_pTrackAnimNode;
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewTrack::SnapTimeToPrevKey(float& time) const
 {
     CTrackViewKeyHandle prevKey = const_cast<CTrackViewTrack*>(this)->GetPrevKey(time);
@@ -103,7 +98,6 @@ bool CTrackViewTrack::SnapTimeToPrevKey(float& time) const
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewTrack::SnapTimeToNextKey(float& time) const
 {
     CTrackViewKeyHandle prevKey = const_cast<CTrackViewTrack*>(this)->GetNextKey(time);
@@ -117,7 +111,6 @@ bool CTrackViewTrack::SnapTimeToNextKey(float& time) const
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SetExpanded(bool expanded)
 {
     if (m_pAnimTrack)
@@ -142,13 +135,11 @@ void CTrackViewTrack::SetExpanded(bool expanded)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewTrack::GetExpanded() const
 {
     return (m_pAnimTrack) ? m_pAnimTrack->GetExpanded() : false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewTrack::GetPrevKey(const float time)
 {
     CTrackViewKeyHandle keyHandle;
@@ -174,7 +165,6 @@ CTrackViewKeyHandle CTrackViewTrack::GetPrevKey(const float time)
     return keyHandle;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewTrack::GetNextKey(const float time)
 {
     CTrackViewKeyHandle keyHandle;
@@ -197,7 +187,6 @@ CTrackViewKeyHandle CTrackViewTrack::GetNextKey(const float time)
 }
 
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys()
 {
     CTrackViewKeyBundle bundle;
@@ -217,7 +206,6 @@ CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys()
     return bundle;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyBundle CTrackViewTrack::GetAllKeys()
 {
     CTrackViewKeyBundle bundle;
@@ -237,7 +225,6 @@ CTrackViewKeyBundle CTrackViewTrack::GetAllKeys()
     return bundle;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const float t0, const float t1)
 {
     CTrackViewKeyBundle bundle;
@@ -257,7 +244,6 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const float t0, const fl
     return bundle;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const float t0, const float t1)
 {
     CTrackViewKeyBundle bundle;
@@ -278,7 +264,6 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const flo
     return bundle;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewTrack::CreateKey(const float time)
 {
     const int keyIndex = m_pAnimTrack->CreateKey(time);
@@ -289,7 +274,6 @@ CTrackViewKeyHandle CTrackViewTrack::CreateKey(const float time)
     return createdKeyHandle;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SlideKeys(const float time0, const float timeOffset)
 {
     for (int i = 0; i < m_pAnimTrack->GetNumKeys(); ++i)
@@ -302,7 +286,6 @@ void CTrackViewTrack::SlideKeys(const float time0, const float timeOffset)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM)
 {
     AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
@@ -320,7 +303,6 @@ void CTrackViewTrack::UpdateKeyDataAfterParentChanged(const AZ::Transform& oldPa
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewTrack::GetKey(unsigned int index)
 {
     if (index < GetKeyCount())
@@ -331,7 +313,6 @@ CTrackViewKeyHandle CTrackViewTrack::GetKey(unsigned int index)
     return CTrackViewKeyHandle();
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyConstHandle CTrackViewTrack::GetKey(unsigned int index) const
 {
     if (index < GetKeyCount())
@@ -342,7 +323,6 @@ CTrackViewKeyConstHandle CTrackViewTrack::GetKey(unsigned int index) const
     return CTrackViewKeyConstHandle();
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewTrack::GetKeyByTime(const float time)
 {
     if (m_bIsCompoundTrack)
@@ -375,7 +355,6 @@ CTrackViewKeyHandle CTrackViewTrack::GetKeyByTime(const float time)
     return CTrackViewKeyHandle(this, keyIndex);
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewTrack::GetNearestKeyByTime(const float time)
 {
     int minDelta = std::numeric_limits<int>::max();
@@ -394,7 +373,7 @@ CTrackViewKeyHandle CTrackViewTrack::GetNearestKeyByTime(const float time)
             return CTrackViewKeyHandle(this, i - 1);
         }
 
-        minDelta = std::min(minDelta, deltaT);
+        minDelta = AZStd::min(minDelta, deltaT);
     }
 
     // If we didn't return above and there are keys, then the
@@ -408,43 +387,36 @@ CTrackViewKeyHandle CTrackViewTrack::GetNearestKeyByTime(const float time)
     return CTrackViewKeyHandle();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::GetKeyValueRange(float& min, float& max) const
 {
     m_pAnimTrack->GetKeyValueRange(min, max);
 }
 
-//////////////////////////////////////////////////////////////////////////
 ColorB CTrackViewTrack::GetCustomColor() const
 {
     return m_pAnimTrack->GetCustomColor();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SetCustomColor(ColorB color)
 {
     m_pAnimTrack->SetCustomColor(color);
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewTrack::HasCustomColor() const
 {
     return m_pAnimTrack->HasCustomColor();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::ClearCustomColor()
 {
     m_pAnimTrack->ClearCustomColor();
 }
 
-//////////////////////////////////////////////////////////////////////////
 IAnimTrack::EAnimTrackFlags CTrackViewTrack::GetFlags() const
 {
     return (IAnimTrack::EAnimTrackFlags)m_pAnimTrack->GetFlags();
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewTrackMemento CTrackViewTrack::GetMemento() const
 {
     CTrackViewTrackMemento memento;
@@ -453,7 +425,6 @@ CTrackViewTrackMemento CTrackViewTrack::GetMemento() const
     return memento;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::RestoreFromMemento(const CTrackViewTrackMemento& memento)
 {
     // We're going to de-serialize, so this is const safe
@@ -461,7 +432,6 @@ void CTrackViewTrack::RestoreFromMemento(const CTrackViewTrackMemento& memento)
     m_pAnimTrack->Serialize(xmlNode, true);
 }
 
-//////////////////////////////////////////////////////////////////////////
 AZStd::string CTrackViewTrack::GetName() const
 {
     CTrackViewNode* pParentNode = GetParentNode();
@@ -475,7 +445,6 @@ AZStd::string CTrackViewTrack::GetName() const
     return GetAnimNode()->GetParamName(GetParameterType());
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SetDisabled(bool bDisabled)
 {
     if (bDisabled)
@@ -490,13 +459,11 @@ void CTrackViewTrack::SetDisabled(bool bDisabled)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewTrack::IsDisabled() const
 {
     return m_pAnimTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SetMuted(bool bMuted)
 {
     if (UsesMute())
@@ -514,27 +481,23 @@ void CTrackViewTrack::SetMuted(bool bMuted)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 // Returns whether the track is muted, or false if the track does not use muting
 bool CTrackViewTrack::IsMuted() const
 {
     return m_pAnimTrack->UsesMute() ? (m_pAnimTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Muted) : false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SetKey(unsigned int keyIndex, IKey* pKey)
 {
     m_pAnimTrack->SetKey(keyIndex, pKey);
     m_pTrackAnimNode->GetSequence()->OnKeysChanged();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::GetKey(unsigned int keyIndex, IKey* pKey) const
 {
     m_pAnimTrack->GetKey(keyIndex, pKey);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SelectKey(unsigned int keyIndex, bool bSelect)
 {
     const bool bWasSelected = m_pAnimTrack->IsKeySelected(keyIndex);
@@ -547,7 +510,6 @@ void CTrackViewTrack::SelectKey(unsigned int keyIndex, bool bSelect)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SetKeyTime(const int index, const float time, bool notifyListeners)
 {
     const float bOldTime = m_pAnimTrack->GetKeyTime(index);
@@ -565,20 +527,17 @@ void CTrackViewTrack::SetKeyTime(const int index, const float time, bool notifyL
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 float CTrackViewTrack::GetKeyTime(const int index) const
 {
     return m_pAnimTrack->GetKeyTime(index);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::RemoveKey(const int index)
 {
     m_pAnimTrack->RemoveKey(index);
     m_pTrackAnimNode->GetSequence()->OnKeysChanged();
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewTrack::CloneKey(const int index)
 {
     int newIndex = m_pAnimTrack->CloneKey(index);
@@ -586,7 +545,6 @@ int CTrackViewTrack::CloneKey(const int index)
     return newIndex;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SelectKeys(const bool bSelected)
 {
     m_pTrackAnimNode->GetSequence()->QueueNotifications();
@@ -616,7 +574,6 @@ void CTrackViewTrack::SelectKeys(const bool bSelected)
 }
 
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewTrack::IsKeySelected(unsigned int keyIndex) const
 {
     if (m_pAnimTrack)
@@ -627,7 +584,6 @@ bool CTrackViewTrack::IsKeySelected(unsigned int keyIndex) const
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SetSortMarkerKey(unsigned int keyIndex, bool enabled)
 {
     if (m_pAnimTrack)
@@ -636,7 +592,6 @@ void CTrackViewTrack::SetSortMarkerKey(unsigned int keyIndex, bool enabled)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewTrack::IsSortMarkerKey(unsigned int keyIndex) const
 {
     if (m_pAnimTrack)
@@ -647,7 +602,6 @@ bool CTrackViewTrack::IsSortMarkerKey(unsigned int keyIndex) const
     return false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewTrack::GetSubTrackKeyHandle(unsigned int index) const
 {
     // Return handle to sub track key
@@ -668,7 +622,6 @@ CTrackViewKeyHandle CTrackViewTrack::GetSubTrackKeyHandle(unsigned int index) co
     return CTrackViewKeyHandle();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::SetAnimationLayerIndex(const int index)
 {
     if (m_pAnimTrack)
@@ -677,12 +630,10 @@ void CTrackViewTrack::SetAnimationLayerIndex(const int index)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewTrack::GetAnimationLayerIndex() const
 {
     return m_pAnimTrack->GetAnimationLayerIndex();
 }
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::OnStartPlayInEditor()
 {
     // remap any AZ::EntityId's used in tracks
@@ -739,7 +690,6 @@ void CTrackViewTrack::OnStartPlayInEditor()
         }
     }
 }
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::OnStopPlayInEditor()
 {
     // restore any AZ::EntityId's remapped in OnStartPlayInEditor
@@ -777,7 +727,6 @@ void CTrackViewTrack::OnStopPlayInEditor()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks)
 {
     if (bOnlyFromSelectedTracks && !IsSelected())
@@ -807,7 +756,6 @@ void CTrackViewTrack::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlyS
     m_pAnimTrack->SerializeSelection(childNode, false, bOnlySelectedKeys);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrack::PasteKeys(XmlNodeRef xmlNode, const float timeOffset)
 {
 

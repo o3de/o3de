@@ -11,24 +11,13 @@
 
 #include "TrackViewCurveEditor.h"
 
+#include <AzCore/std/containers/set.h>
+
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "TrackView/ui_TrackViewCurveEditor.h"
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-#define IDC_TRACKVIEWGRAPH_CURVE 1
-#define IDC_TIMELINE             2
-
-#define IDC_HORIZON_SLIDER      3
-#define IDC_VERTICAL_SLIDER     4
-
-//! It's for mapping from a slider control range to a real zoom range, and vice versa.
-#define SLIDER_MULTIPLIER       100.f
-#define SLIDERRANGE_TO_ZOOM(SLIDERVALUE)    (float)SLIDERVALUE / SLIDER_MULTIPLIER
-#define ZOOMRANGE_TO_SLIDER(ZOOMVALUE)      (int)(ZOOMVALUE * SLIDER_MULTIPLIER)
-
-
-//////////////////////////////////////////////////////////////////////////
 TrackViewCurveEditorDialog::TrackViewCurveEditorDialog(QWidget* parent)
     : QWidget(parent)
 {
@@ -39,7 +28,6 @@ TrackViewCurveEditorDialog::TrackViewCurveEditorDialog(QWidget* parent)
     setLayout(l);
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewCurveEditor::CTrackViewCurveEditor(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::TrackViewCurveEditor)
@@ -75,7 +63,6 @@ CTrackViewCurveEditor::CTrackViewCurveEditor(QWidget* parent)
     connect(m_ui->buttonFreezeTangents,   &QToolButton::clicked, this, [&]() {OnSplineCmd(ID_FREEZE_TANGENTS); });
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewCurveEditor::~CTrackViewCurveEditor()
 {
     GetIEditor()->GetAnimation()->RemoveListener(this);
@@ -83,23 +70,21 @@ CTrackViewCurveEditor::~CTrackViewCurveEditor()
 }
 
 
-
 // CTrackViewGraph message handlers
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnSequenceChanged([[maybe_unused]] CTrackViewSequence* pSequence)
 {
     UpdateSplines();
     update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
     if (m_bIgnoreSelfEvents)
     {
         return;
     }
+
     switch (event)
     {
     case eNotify_OnCloseScene:
@@ -113,7 +98,6 @@ void CTrackViewCurveEditor::OnEditorNotifyEvent(EEditorNotifyEvent event)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::UpdateSplines()
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -135,14 +119,14 @@ void CTrackViewCurveEditor::UpdateSplines()
     CTrackViewTrackBundle selectedTracks;
     selectedTracks = pSequence->GetSelectedTracks();
 
-    std::set<CTrackViewTrack*> oldTracks;
+    AZStd::set<CTrackViewTrack*> oldTracks;
     for (auto iter = m_ui->m_wndSpline->GetTracks().begin(); iter != m_ui->m_wndSpline->GetTracks().end(); ++iter)
     {
         CTrackViewTrack* pTrack = *iter;
         oldTracks.insert(pTrack);
     }
 
-    std::set<CTrackViewTrack*> newTracks;
+    AZStd::set<CTrackViewTrack*> newTracks;
     if (selectedTracks.AreAllOfSameType())
     {
         for (unsigned int i = 0; i < selectedTracks.GetCount(); i++)
@@ -193,7 +177,6 @@ void CTrackViewCurveEditor::UpdateSplines()
     return;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::AddSpline(CTrackViewTrack* pTrack)
 {
     if (!pTrack->GetSpline())
@@ -242,7 +225,6 @@ void CTrackViewCurveEditor::showEvent(QShowEvent* event)
     OnSplineCmdUpdateUI();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnSplineChange()
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -255,14 +237,12 @@ void CTrackViewCurveEditor::OnSplineChange()
     m_ui->m_wndSpline->setFocus();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnSplineCmd(UINT cmd)
 {
     m_ui->m_wndSpline->OnUserCommand(cmd);
     OnSplineCmdUpdateUI();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnSplineCmdUpdateUI()
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -279,46 +259,39 @@ void CTrackViewCurveEditor::OnSplineCmdUpdateUI()
     m_ui->buttonFreezeTangents->setChecked(m_ui->m_wndSpline->IsTangentsFrozen());
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnTimeChanged(float newTime)
 {
     m_ui->m_wndSpline->SetTimeMarker(newTime);
     m_ui->m_wndSpline->update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::SetEditLock(bool bLock)
 {
     m_ui->m_wndSpline->SetEditLock(bLock);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnTimelineChange()
 {
     float fTime = m_timelineCtrl.GetTimeMarker();
     GetIEditor()->GetAnimation()->SetTime(fTime);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnSplineTimeMarkerChange()
 {
     float fTime = m_ui->m_wndSpline->GetTimeMarker();
     GetIEditor()->GetAnimation()->SetTime(fTime);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::SetFPS(float fps)
 {
     m_timelineCtrl.SetFPS(fps);
 }
 
-//////////////////////////////////////////////////////////////////////////
 float CTrackViewCurveEditor::GetFPS() const
 {
     return m_timelineCtrl.GetFPS();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::SetTickDisplayMode(ETVTickMode mode)
 {
     if (mode == eTVTickMode_InFrames)
@@ -335,20 +308,17 @@ void CTrackViewCurveEditor::SetTickDisplayMode(ETVTickMode mode)
     m_timelineCtrl.update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::ResetSplineCtrlZoomLevel()
 {
     m_ui->m_wndSpline->FitSplineToViewHeight();
     m_ui->m_wndSpline->FitSplineToViewWidth();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnKeysChanged([[maybe_unused]] CTrackViewSequence* pSequence)
 {
     m_ui->m_wndSpline->update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnKeyAdded(CTrackViewKeyHandle& addedKeyHandle)
 {
     EAnimCurveType trType = addedKeyHandle.GetTrack()->GetCurveType();
@@ -368,7 +338,6 @@ void CTrackViewCurveEditor::OnKeyAdded(CTrackViewKeyHandle& addedKeyHandle)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnKeySelectionChanged([[maybe_unused]] CTrackViewSequence* pSequence)
 {
     if (isVisible())
@@ -378,7 +347,6 @@ void CTrackViewCurveEditor::OnKeySelectionChanged([[maybe_unused]] CTrackViewSeq
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnNodeChanged([[maybe_unused]] CTrackViewNode* pNode, ENodeChangeType type)
 {
     if (isVisible() && type == ITrackViewSequenceListener::eNodeChangeType_Removed)
@@ -387,7 +355,6 @@ void CTrackViewCurveEditor::OnNodeChanged([[maybe_unused]] CTrackViewNode* pNode
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewCurveEditor::OnNodeSelectionChanged([[maybe_unused]] CTrackViewSequence* pSequence)
 {
     if (isVisible())

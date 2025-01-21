@@ -20,7 +20,7 @@ public:
     ~CTrackViewDoubleSpinBox() override;
 
 protected:
-    virtual void stepBy(int steps) override;
+    void stepBy(int steps) override;
 
 signals:
     void stepByFinished();

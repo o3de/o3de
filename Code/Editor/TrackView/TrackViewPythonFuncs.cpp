@@ -20,6 +20,7 @@
 #include "AnimationContext.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/std/containers/set.h>
 
 namespace
 {
@@ -52,9 +53,7 @@ namespace
 
 namespace
 {
-    //////////////////////////////////////////////////////////////////////////
     // Misc
-    //////////////////////////////////////////////////////////////////////////
     void PyTrackViewSetRecording(bool bRecording)
     {
         CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -64,9 +63,7 @@ namespace
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////
     // Sequences
-    //////////////////////////////////////////////////////////////////////////
     void PyTrackViewNewSequence(const char* name, int sequenceType)
     {
         CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
@@ -177,9 +174,7 @@ namespace
         pAnimationContext->SetTime(time);
     }
 
-    //////////////////////////////////////////////////////////////////////////
     // Nodes
-    //////////////////////////////////////////////////////////////////////////
     void PyTrackViewAddNode(const char* nodeTypeString, const char* nodeName)
     {
         CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -396,9 +391,7 @@ namespace
         return foundNodes.GetNode(index)->GetName();
     }
 
-    //////////////////////////////////////////////////////////////////////////
     // Tracks
-    //////////////////////////////////////////////////////////////////////////
     CTrackViewTrack* GetTrack(const char* paramName, uint32 index, const char* nodeName, const char* parentDirectorName)
     {
         CTrackViewAnimNode* pNode = GetNodeFromName(nodeName, parentDirectorName);
@@ -425,9 +418,9 @@ namespace
         }
     }
 
-    std::set<float> GetKeyTimeSet(CTrackViewTrack* pTrack)
+    AZStd::set<float> GetKeyTimeSet(CTrackViewTrack* pTrack)
     {
-        std::set<float> keyTimeSet;
+        AZStd::set<float> keyTimeSet;
         for (uint i = 0; i < pTrack->GetKeyCount(); ++i)
         {
             CTrackViewKeyHandle keyHandle = pTrack->GetKey(i);
@@ -501,14 +494,14 @@ namespace
     {
         CTrackViewTrack* pTrack = GetTrack(paramName, trackIndex, nodeName, parentDirectorName);
 
-        std::set<float> keyTimeSet = GetKeyTimeSet(pTrack);
+        AZStd::set<float> keyTimeSet = GetKeyTimeSet(pTrack);
         if (keyIndex < 0 || keyIndex >= keyTimeSet.size())
         {
             throw std::runtime_error("Invalid key index");
         }
 
         auto keyTimeIter = keyTimeSet.begin();
-        std::advance(keyTimeIter, keyIndex);
+        AZStd::advance(keyTimeIter, keyIndex);
         const float keyTime = *keyTimeIter;
 
         return PyTrackViewGetInterpolatedValue(paramName, trackIndex, keyTime, nodeName, parentDirectorName);

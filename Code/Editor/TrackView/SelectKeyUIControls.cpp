@@ -22,7 +22,6 @@ CSelectKeyUIControls::~CSelectKeyUIControls()
     Camera::CameraNotificationBus::Handler::BusDisconnect();
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CSelectKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())

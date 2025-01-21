@@ -17,13 +17,13 @@
 // Editor
 #include "TrackView/TrackViewSequenceManager.h"     // for CTrackViewSequence
 
+// AzCore
+#include <AzCore/std/containers/vector.h>
 
-////////////////////////////////////////////////////////////////////////////
 CDirectorNodeAnimator::CDirectorNodeAnimator([[maybe_unused]] CTrackViewAnimNode* pDirectorNode)
 {
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CDirectorNodeAnimator::Animate(CTrackViewAnimNode* pNode, const SAnimContext& ac)
 {
     if (!pNode->IsActiveDirector())
@@ -35,8 +35,8 @@ void CDirectorNodeAnimator::Animate(CTrackViewAnimNode* pNode, const SAnimContex
     CTrackViewTrack* pSequenceTrack = pNode->GetTrackForParameter(AnimParamType::Sequence);
     if (pSequenceTrack && !pSequenceTrack->IsDisabled())
     {
-        std::vector<CTrackViewSequence*> inactiveSequences;
-        std::vector<CTrackViewSequence*> activeSequences;
+        AZStd::vector<CTrackViewSequence*> inactiveSequences;
+        AZStd::vector<CTrackViewSequence*> activeSequences;
 
         // Construct sets of sequences that need to be bound/unbound at this point
         const float time = ac.time;
@@ -109,7 +109,6 @@ void CDirectorNodeAnimator::Animate(CTrackViewAnimNode* pNode, const SAnimContex
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CDirectorNodeAnimator::Render(CTrackViewAnimNode* pNode, const SAnimContext& ac)
 {
     if (!pNode->IsActiveDirector())
@@ -132,7 +131,6 @@ void CDirectorNodeAnimator::Render(CTrackViewAnimNode* pNode, const SAnimContext
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CDirectorNodeAnimator::ForEachActiveSequence(const SAnimContext& ac, CTrackViewTrack* pSequenceTrack,
     const bool bHandleOtherKeys, std::function<void(CTrackViewSequence*, const SAnimContext&)> animateFunction,
     std::function<void(CTrackViewSequence*, const SAnimContext&)> resetFunction)
@@ -158,7 +156,7 @@ void CDirectorNodeAnimator::ForEachActiveSequence(const SAnimContext& ac, CTrack
                 const float sequenceTime = ac.time - sequenceKey.time + sequenceKey.fStartTime;
                 const float sequenceDuration = duration + sequenceKey.fStartTime;
 
-                newAnimContext.time = std::min(sequenceTime, sequenceDuration);
+                newAnimContext.time = AZStd::min(sequenceTime, sequenceDuration);
                 const bool bInsideKeyRange = (sequenceTime >= 0.0f) && (sequenceTime <= sequenceDuration);
 
                 if (!bInsideKeyRange)
@@ -191,7 +189,7 @@ void CDirectorNodeAnimator::ForEachActiveSequence(const SAnimContext& ac, CTrack
             const float sequenceTime = ac.time - sequenceKey.time + sequenceKey.fStartTime;
             const float sequenceDuration = duration + sequenceKey.fStartTime;
 
-            newAnimContext.time = std::min(sequenceTime, sequenceDuration);
+            newAnimContext.time = AZStd::min(sequenceTime, sequenceDuration);
             const bool bInsideKeyRange = (sequenceTime >= 0.0f) && (sequenceTime <= sequenceDuration);
 
             if ((bInsideKeyRange && (newAnimContext.time != pSequence->GetTime() || ac.forcePlay)))
@@ -202,7 +200,6 @@ void CDirectorNodeAnimator::ForEachActiveSequence(const SAnimContext& ac, CTrack
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
 void CDirectorNodeAnimator::UnBind([[maybe_unused]] CTrackViewAnimNode* pNode)
 {
     const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
@@ -241,4 +238,3 @@ void CDirectorNodeAnimator::UnBind([[maybe_unused]] CTrackViewAnimNode* pNode)
 
     return retSequence;
 }
-
