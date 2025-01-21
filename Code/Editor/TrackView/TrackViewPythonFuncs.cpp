@@ -21,6 +21,7 @@
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/iterator.h>
 
 namespace
 {

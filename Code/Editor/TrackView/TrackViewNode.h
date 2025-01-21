@@ -13,6 +13,7 @@ class CTrackViewSequence;
 class CTrackViewTrack;
 struct IKey;
 
+#include <AzCore/std/containers/vector.h>
 
 class CTrackViewKeyConstHandle
 {

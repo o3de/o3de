@@ -12,11 +12,12 @@
 #include "TrackViewDopeSheetBase.h"
 
 // Qt
-#include <QToolTip>
-#include <QTimer>
-#include <QScrollBar>
-#include <QPainter>
+#include <QColor>
 #include <QMenu>
+#include <QPainter>
+#include <QScrollBar>
+#include <QTimer>
+#include <QToolTip>
 
 // AzCore
 #include <AzCore/std/containers/set.h>

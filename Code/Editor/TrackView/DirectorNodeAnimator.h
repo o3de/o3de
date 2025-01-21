@@ -11,7 +11,7 @@
 
 #include "TrackViewAnimNode.h"
 
-#include <functional>
+#include <AzCore/std/functional.h>
 
 // This is used to bind/unbind sub sequences in director nodes
 // when the sequence time changes. A sequence only gets bound if it was already

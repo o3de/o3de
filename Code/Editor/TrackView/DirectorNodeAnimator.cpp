@@ -18,6 +18,7 @@
 #include "TrackView/TrackViewSequenceManager.h"     // for CTrackViewSequence
 
 // AzCore
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/vector.h>
 
 CDirectorNodeAnimator::CDirectorNodeAnimator([[maybe_unused]] CTrackViewAnimNode* pDirectorNode)

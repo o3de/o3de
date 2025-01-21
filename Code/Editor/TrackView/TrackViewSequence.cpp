@@ -16,6 +16,8 @@
 #include <QMessageBox>
 
 // AzCore
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/set.h>
 #include <AzCore/std/sort.h>
 
 // AzToolsFramework
@@ -913,7 +915,7 @@ CTrackViewSequence::GetMatchedPasteLocations(XmlNodeRef clipboardContent, CTrack
             {
                 CTrackViewTrack* pMatchedTrack = *iter;
                 // Pick the first track that was matched *and* was not already matched
-                if (!stl::find(matchedTracks, pMatchedTrack))
+                if (!AZStd::find(matchedTracks.begin(), matchedTracks.end(), pMatchedTrack))
                 {
                     stl::push_back_unique(matchedTracks, pMatchedTrack);
                     matchedLocations.push_back(TMatchedTrackLocation(pMatchedTrack, trackNode));

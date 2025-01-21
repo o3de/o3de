@@ -18,8 +18,8 @@
 #include "AnimationContext.h"
 
 // AzCore
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/list.h>
-
 
 class CUndoTrackViewSplineCtrl
     : public ISplineCtrlUndo

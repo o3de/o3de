@@ -11,9 +11,9 @@
 
 #include <IMovieSystem.h>
 #include "Controls/SplineCtrlEx.h"
-#include <functional>
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/functional.h>
 
 class CTrackViewTrack;
 

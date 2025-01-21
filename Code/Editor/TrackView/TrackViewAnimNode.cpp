@@ -41,7 +41,9 @@
 
 // AzCore
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/set.h>
+
 
 // static class data
 const AZ::Uuid CTrackViewAnimNode::s_nullUuid = AZ::Uuid::CreateNull();
@@ -139,7 +141,7 @@ void CTrackViewAnimNodeBundle::AppendAnimNode(CTrackViewAnimNode* node)
 
 void CTrackViewAnimNodeBundle::AppendAnimNodeBundle(const CTrackViewAnimNodeBundle& bundle)
 {
-    for (auto node : bundle.m_animNodes)
+    for (auto* node : bundle.m_animNodes)
     {
         AppendAnimNode(node);
     }
@@ -151,7 +153,7 @@ void CTrackViewAnimNodeBundle::ExpandAll(bool bAlsoExpandParentNodes)
 
     if (bAlsoExpandParentNodes)
     {
-        for (auto node : nodesToExpand)
+        for (const auto* node : nodesToExpand)
         {
             for (CTrackViewNode* pParent = node->GetParentNode(); pParent; pParent = pParent->GetParentNode())
             {
@@ -160,7 +162,7 @@ void CTrackViewAnimNodeBundle::ExpandAll(bool bAlsoExpandParentNodes)
         }
     }
 
-    for (auto node : nodesToExpand)
+    for (auto* node : nodesToExpand)
     {
         node->SetExpanded(true);
     }
@@ -168,7 +170,7 @@ void CTrackViewAnimNodeBundle::ExpandAll(bool bAlsoExpandParentNodes)
 
 void CTrackViewAnimNodeBundle::CollapseAll()
 {
-    for (auto node : m_animNodes)
+    for (auto* node : m_animNodes)
     {
         node->SetExpanded(false);
     }
@@ -176,7 +178,7 @@ void CTrackViewAnimNodeBundle::CollapseAll()
 
 const bool CTrackViewAnimNodeBundle::DoesContain(const CTrackViewNode* pTargetNode)
 {
-    return stl::find(m_animNodes, pTargetNode);
+    return AZStd::find(m_animNodes.begin(), m_animNodes.end(), pTargetNode);
 }
 
 void CTrackViewAnimNodeBundle::Clear()

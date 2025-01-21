@@ -15,7 +15,7 @@
 
 #include <QWidget>
 
-#include <functional>
+#include <AzCore/std/functional.h>
 
 namespace Ui
 {

@@ -9,6 +9,9 @@
 
 #include "EditorDefs.h"
 
+// AzCore
+#include <AzCore/std/algorithm.h>
+
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimParamType.h>  // for AnimParamType
 
