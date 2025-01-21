@@ -180,6 +180,13 @@ namespace AZ
                 }
             }
 #else  //[GFX_TODO][ATOM-13564] This is a temporary implementation that submits all of the skinning compute shaders without any culling:
+#if defined(CARBONATED) && !defined(_RELEASE)
+            int forcedLodIndex = -1;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("q_forceLodIndex", forcedLodIndex);
+            }
+#endif
             for (SkinnedMeshRenderProxy& renderProxy : m_renderProxies)
             {
                 if (renderProxy.m_inputBuffers->GetModel()->IsUploadPending())
@@ -195,6 +202,32 @@ namespace AZ
                 ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
                 const RPI::Cullable& cullable = modelDataInstance.GetCullable();
 
+#if defined(CARBONATED) && !defined(_RELEASE)
+                if (forcedLodIndex >= 0)
+                {
+                    const size_t lodIndex = AZStd::min(size_t(forcedLodIndex), cullable.m_lodData.m_lods.size() - 1);
+                    for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
+                    {
+                        // Add one skinning dispatch item for each mesh in the lod
+                        if (skinnedMeshDispatchItem->IsEnabled())
+                        {
+                            m_skinningDispatches.insert(&skinnedMeshDispatchItem->GetRHIDispatchItem());
+                        }
+                    }
+
+                    for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size();
+                         morphTargetIndex++)
+                    {
+                        const MorphTargetDispatchItem* dispatchItem =
+                            renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
+                        if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
+                        {
+                            m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                        }
+                    }
+                    continue; // early exit to skip what is below the closing bracket on the next line
+                }
+#endif
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {
                     RPI::View* view = viewPtr.get();
