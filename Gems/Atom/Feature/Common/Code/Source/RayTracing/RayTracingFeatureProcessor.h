@@ -96,7 +96,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> GetRayTracingMaterialSrg() const override { return m_rayTracingMaterialSrg; }
             const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const override { return m_meshInfoGpuBuffer.GetCurrentBuffer(); }
             const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const override { return m_materialInfoGpuBuffer.GetCurrentBuffer(); }
-            uint32_t BeginFrame() override;
+            void Render(const RenderPacket&) override;
             uint32_t GetRevision() const override { return m_revision; }
             uint32_t GetProceduralGeometryTypeRevision() const override { return m_proceduralGeometryTypeRevision; }
             RHI::RayTracingBufferPools& GetBufferPools() override { return *m_bufferPools; }

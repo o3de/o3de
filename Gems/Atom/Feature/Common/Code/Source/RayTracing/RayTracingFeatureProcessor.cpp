@@ -748,7 +748,7 @@ namespace AZ
             }
         }
 
-        uint32_t RayTracingFeatureProcessor::BeginFrame()
+        void RayTracingFeatureProcessor::Render(const RenderPacket&)
         {
             m_frameIndex++;
 
@@ -814,8 +814,6 @@ namespace AZ
             // be set on the RayTracingSceneSrg for this frame, and the ray tracing mesh data in the RayTracingSceneSrg must
             // exactly match the TLAS.  Any mismatch in this data may result in a TDR.
             UpdateRayTracingSrgs();
-
-            return m_revision;
         }
 
         void RayTracingFeatureProcessor::UpdateRayTracingSrgs()
