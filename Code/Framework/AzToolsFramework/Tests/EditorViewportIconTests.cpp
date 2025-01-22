@@ -83,6 +83,9 @@ namespace UnitTest
             .WillByDefault(Return(AZ::Vector3(0.0f, insideNearClip, 0.0f)));
 
         EXPECT_CALL(*m_editorViewportIconDisplayMock, DrawIcon(_)).Times(0);
+        EXPECT_CALL(*m_editorViewportIconDisplayMock, AddIcon(_)).Times(0);
+        EXPECT_CALL(*m_editorViewportIconDisplayMock, DrawIcons()).Times(1);
+
 
         // when
         m_editorHelpers->DisplayHelpers(
@@ -104,6 +107,8 @@ namespace UnitTest
         ON_CALL(*m_entityVisibleEntityDataCacheMock, GetVisibleEntityPosition(_)).WillByDefault(Return(AZ::Vector3(0.0f, -1.0f, 0.0f)));
 
         EXPECT_CALL(*m_editorViewportIconDisplayMock, DrawIcon(_)).Times(0);
+        EXPECT_CALL(*m_editorViewportIconDisplayMock, AddIcon(_)).Times(0);
+        EXPECT_CALL(*m_editorViewportIconDisplayMock, DrawIcons()).Times(1);
 
         // when
         m_editorHelpers->DisplayHelpers(

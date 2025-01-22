@@ -1205,6 +1205,16 @@ void CSystem::CreateSystemVars()
             GetISystem()->Quit();
         });
 
+    static AZ::ConsoleFunctor<void, false> s_functorCrash(
+        "crash",
+        "Crash the engine",
+        AZ::ConsoleFunctorFlags::IsInvisible | AZ::ConsoleFunctorFlags::DontReplicate,
+        AZ::TypeId::CreateNull(),
+        []([[maybe_unused]] const AZ::ConsoleCommandContainer& params)
+        {
+            AZ_Crash();
+        });
+
     m_sys_load_files_to_memory = REGISTER_STRING(
         "sys_load_files_to_memory",
         "shadercache.pak",

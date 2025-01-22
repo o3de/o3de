@@ -1043,8 +1043,15 @@ void CTrackViewAnimNode::SetNodeEntityId(const AZ::EntityId entityId)
             AZ::EntityId sequenceComponentEntityId(m_animSequence->GetSequenceEntityId());
 
             // Notify the SequenceComponent that we're binding an entity to the sequence
-            Maestro::EditorSequenceComponentRequestBus::Event(
+            bool wasInvoked = false;
+            Maestro::EditorSequenceComponentRequestBus::EventResult(
+                wasInvoked,
                 sequenceComponentEntityId, &Maestro::EditorSequenceComponentRequestBus::Events::AddEntityToAnimate, entityId);
+
+            AZ_Trace(
+                "CTrackViewAnimNode::SetNodeEntityId", "AddEntityToAnimate %s sequenceComponentEntityId %s was invoked %s", entityId.ToString().c_str(),
+                sequenceComponentEntityId.ToString().c_str(),
+                wasInvoked ? "true" : "false");
 
             if (entityId != m_animNode->GetAzEntityId())
             {

@@ -96,7 +96,10 @@ namespace AZ
             void OnSystemTick() override;
 
             void LoadMaterials();
-            void InitializeMaterialInstance(const Data::Asset<Data::AssetData>& asset);
+            // Typically called from thread context of Data::AssetBus::MultiHandler::OnAssetXXX.
+            void InitializeMaterialInstance(Data::Asset<Data::AssetData> asset);
+            // Must be called on main thread.
+            void InitializeMaterialInstancePostTick(Data::Asset<Data::AssetData> asset);
             void ReleaseMaterials();
             //! Queue applying property overrides to material instances until tick
             void QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId);

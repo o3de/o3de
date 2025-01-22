@@ -306,7 +306,7 @@ namespace Multiplayer
         MultiplayerAgentType GetAgentType() const override { return {}; }
         void InitializeMultiplayer([[maybe_unused]] MultiplayerAgentType state) override {}
         bool StartHosting([[maybe_unused]] uint16_t port, [[maybe_unused]] bool isDedicated) override { return {}; }
-        bool Connect([[maybe_unused]] const AZStd::string& remoteAddress, [[maybe_unused]] uint16_t port) override { return {}; }
+        bool Connect([[maybe_unused]] const AZStd::string& remoteAddress, [[maybe_unused]] uint16_t port, [[maybe_unused]] const AZStd::string& connectionTicket) override { return {}; }
         void Terminate([[maybe_unused]] AzNetworking::DisconnectReason reason) override {}
         void AddNetworkInitHandler([[maybe_unused]] NetworkInitEvent::Handler& handler) override {}
         void AddEndpointDisconnectedHandler([[maybe_unused]] EndpointDisconnectedEvent::Handler& handler) override {}

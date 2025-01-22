@@ -15,8 +15,8 @@
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/Features/ShaderQualityOptions.azsli>
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #ifndef ENABLE_PHYSICAL_SKY
 #define ENABLE_PHYSICAL_SKY              1

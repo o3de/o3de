@@ -35,6 +35,8 @@ namespace AzNetworking
     public:
 
         static constexpr uint32_t MaxIpStringLength = 32;
+        static constexpr uint32_t InvalidAddress = 0;
+        static constexpr uint32_t InvalidPort = 0;
         using IpString = AZStd::fixed_string<MaxIpStringLength>;
 
         IpAddress() = default;
@@ -96,6 +98,10 @@ namespace AzNetworking
         //! Returns just the ip address with no port number in a human readable string form.
         //! @return just the ip address with no port number in a human readable string form
         IpString GetIpString() const;
+
+        //! Returns whether or not this IP address is valid.
+        //! @return true if the IPv4 address and port are valid; otherwise false.
+        bool IsValid() const;
 
         //! Equality operator.
         //! @param rhs base type value to compare against

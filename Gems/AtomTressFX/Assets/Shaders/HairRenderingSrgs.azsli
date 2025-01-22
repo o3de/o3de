@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 //------------------------------------------------------------------------------
 #define g_mVP               ViewSrg::m_viewProjectionMatrix

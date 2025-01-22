@@ -19,7 +19,6 @@
     "gem_names": [
         "Atom",
         "AudioSystem",
-        "AWSCore",
         "CameraFramework",
         "Compression",
         "DebugDraw",

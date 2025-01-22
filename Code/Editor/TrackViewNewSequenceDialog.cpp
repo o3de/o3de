@@ -48,29 +48,34 @@ class CTVNewSequenceDialogValidator : public QValidator
         {
             constexpr int MaxInputLength = 160;
 
+            SetEnabled(true);
+            SetToolTip("");
+
             if (input.isEmpty())
             {
-                SetEnabled(false);
-                return QValidator::Acceptable;
+                return QValidator::Acceptable; // Allow further editing
             }
 
-            bool isValid = false;
-            SetEnabled(true);
             if (input.contains('/'))
             {
                 SetToolTip("A sequence name cannot contain a '/' character");
+                return QValidator::Invalid; // Undo this change
             }
+
             if (input.length() > MaxInputLength)
             {
                 SetToolTip(QString("A sequence name cannot exceed %1 characters").arg(MaxInputLength).toStdString().c_str());
+                return QValidator::Invalid; // Undo this change
             }
-            else if (input == LIGHT_ANIMATION_SET_NAME)
+
+            bool isValid = true;
+            if (input == LIGHT_ANIMATION_SET_NAME)
             {
                 SetToolTip("The sequence name " LIGHT_ANIMATION_SET_NAME " is reserved.\nPlease choose a different name");
+                isValid = false;
             }
             else
             {
-                bool isNewName = true;
                 for (unsigned int k = 0; k < GetIEditor()->GetSequenceManager()->GetCount(); ++k)
                 {
                     CTrackViewSequence* pSequence = GetIEditor()->GetSequenceManager()->GetSequenceByIndex(k);
@@ -78,27 +83,15 @@ class CTVNewSequenceDialogValidator : public QValidator
 
                     if (fullname.compare(input, Qt::CaseInsensitive) == 0)
                     {
-                        isNewName = false;
+                        isValid = false;
+                        SetToolTip("Sequence with this name already exists");
                         break;
                     }
                 }
-                if (!isNewName)
-                {
-                    SetToolTip("Sequence with this name already exists");
-                }
-                else
-                {
-                    isValid = true;
-                }
             }
 
-            if (isValid)
-            {
-                SetToolTip("");
-                return QValidator::Acceptable;
-            }
-
-            return QValidator::Invalid;
+            SetEnabled(isValid);  // Disable OK button if input is invalid.
+            return QValidator::Acceptable; // Accept the change and allow further name editing even if input is invalid.
         }
 
     private:

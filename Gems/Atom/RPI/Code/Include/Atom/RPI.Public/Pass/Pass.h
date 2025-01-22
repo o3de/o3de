@@ -565,7 +565,7 @@ namespace AZ
             
             // For read back attachment
             AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
-            PassAttachmentReadbackOption m_readbackOption;
+            PassAttachmentReadbackOption m_readbackOption = PassAttachmentReadbackOption::Input;
 
             // For image attachment preview
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;

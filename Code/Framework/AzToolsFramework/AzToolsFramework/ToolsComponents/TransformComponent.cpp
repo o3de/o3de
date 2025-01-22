@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/MathUtils.h>
@@ -1064,6 +1065,39 @@ namespace AzToolsFramework
             return FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()) != nullptr;
         }
 
+        bool TransformComponent::AddNonUniformScaleComponent(const AZ::Vector3& nonUniformScale)
+        {
+            // Only add the component if it doesn't exist
+            if (!FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()))
+            {
+                const AZStd::vector<AZ::EntityId> entityList = { GetEntityId() };
+                const AZ::ComponentTypeList componentsToAdd = { EditorNonUniformScaleComponent::TYPEINFO_Uuid() };
+
+                AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome addComponentsOutcome;
+                AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(
+                    addComponentsOutcome,
+                    &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+                    entityList,
+                    componentsToAdd);
+
+                const auto nonUniformScaleComponent = FindPresentOrPendingComponent(EditorNonUniformScaleComponent::RTTI_Type());
+                AZ::ComponentId nonUniformScaleComponentId =
+                    nonUniformScaleComponent ? nonUniformScaleComponent->GetId() : AZ::InvalidComponentId;
+
+                if (!addComponentsOutcome.IsSuccess() || !nonUniformScaleComponent)
+                {
+                    AZ_Warning("Transform component", false, "Failed to add non-uniform scale component.");
+                    return false;
+                }
+
+                AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
+                    &AzToolsFramework::EntityPropertyEditorRequests::SetNewComponentId, nonUniformScaleComponentId);
+            }
+
+            AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequestBus::Events::SetScale, nonUniformScale);
+            return true;
+        }
+
         AZ::Crc32 TransformComponent::OnAddNonUniformScaleButtonPressed()
         {
             // if there is already a non-uniform scale component, do nothing
@@ -1072,27 +1106,29 @@ namespace AzToolsFramework
                 return AZ::Edit::PropertyRefreshLevels::None;
             }
 
-            const AZStd::vector<AZ::EntityId> entityList = { GetEntityId() };
-            const AZ::ComponentTypeList componentsToAdd = { EditorNonUniformScaleComponent::TYPEINFO_Uuid() };
-
-            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome addComponentsOutcome;
-            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(addComponentsOutcome,
-                &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, entityList, componentsToAdd);
-
-            const auto nonUniformScaleComponent = FindPresentOrPendingComponent(EditorNonUniformScaleComponent::RTTI_Type());
-            AZ::ComponentId nonUniformScaleComponentId =
-                nonUniformScaleComponent ? nonUniformScaleComponent->GetId() : AZ::InvalidComponentId;
-
-            if (!addComponentsOutcome.IsSuccess() || !nonUniformScaleComponent)
+            if (!AddNonUniformScaleComponent(AZ::Vector3::CreateOne()))
             {
-                AZ_Warning("Transform component", false, "Failed to add non-uniform scale component.");
                 return AZ::Edit::PropertyRefreshLevels::None;
             }
 
-            AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
-                &AzToolsFramework::EntityPropertyEditorRequests::SetNewComponentId, nonUniformScaleComponentId);
-
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        // Exposed as a global method on the BehaviorContext for Automation.
+        static void AddNonUniformScaleComponentInternal(AZ::EntityId entityId, const AZ::Vector3& nonUniformScale)
+        {
+            using TransformComponent = AzToolsFramework::Components::TransformComponent;
+            auto* component = AZ::EntityUtils::FindFirstDerivedComponent(entityId, AZ::AzTypeInfo<TransformComponent>::Uuid());
+            if (!component)
+            {
+                AZ_Error("Tools::TransformComponent", false, "Can't find the TransformComponent.");
+                return;
+            }
+            if (auto* transformComponent = azrtti_cast<TransformComponent*>(component))
+            {
+                AzToolsFramework::ScopedUndoBatch undo("Add NonUniform Scale Component ");
+                transformComponent->AddNonUniformScaleComponent(nonUniformScale);
+            }
         }
 
         void TransformComponent::Reflect(AZ::ReflectContext* context)
@@ -1177,6 +1213,11 @@ namespace AzToolsFramework
             {
                 // string-name differs from class-name to avoid collisions with the other "TransformComponent" (AzFramework::TransformComponent).
                 behaviorContext->Class<TransformComponent>("EditorTransformBus")->RequestBus("TransformBus");
+                behaviorContext->Method("AddNonUniformScaleComponent", &AddNonUniformScaleComponentInternal)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Script::Attributes::Module, "editor");
+                    ;
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);

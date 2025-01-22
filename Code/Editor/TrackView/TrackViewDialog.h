@@ -207,7 +207,6 @@ private:
 
     void BeginUndoTransaction() override;
     void EndUndoTransaction() override;
-    void SaveSequenceTimingToXML();
 
     // ToolsApplicationNotificationBus ...
     void AfterEntitySelectionChanged(

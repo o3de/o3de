@@ -263,7 +263,12 @@ namespace AZ
             AZStd::string materialProductPath;
             AZStd::string fileName;
             AzFramework::StringFunc::Path::GetFileName(materialSourcePath.c_str(), fileName);
-            AzFramework::StringFunc::Path::ReplaceExtension(fileName, MaterialAsset::Extension);
+            // REMARK: The reason we shouldn't call StringFunc::Path::ReplaceExtension(fileName, MaterialAsset::Extension);
+            // is because if materialSourcePath == "<folder>/bed_frame.001.material", then GetFileName (called above) returns
+            // "bed_frame.001", and calling ReplaceExtension would result in "bed_frame.azmaterial" and we'd lose
+            // the original material name. Instead, by using the append operator, the fileName results in "bed_frame.001.azmaterial".
+            fileName += ".";
+            fileName += MaterialAsset::Extension;
             AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), fileName.c_str(), materialProductPath, true);
 
             if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_BINARY, materialAsset.Get()))

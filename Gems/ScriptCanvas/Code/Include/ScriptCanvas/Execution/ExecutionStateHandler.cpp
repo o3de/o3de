@@ -126,10 +126,10 @@ namespace ScriptCanvas
         if (m_executionState)
         {
             m_executionState->StopExecution();
-            Execution::Destruct(m_executionStateStorage);
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
             ScriptCanvas::ExecutionNotificationsBus::Broadcast(
-                &ScriptCanvas::ExecutionNotifications::GraphDeactivated, GraphActivation(GraphInfo(m_executionState)));
+                &ScriptCanvas::ExecutionNotifications::GraphDeactivated, GraphDeactivation(GraphInfo(m_executionState)));
+            Execution::Destruct(m_executionStateStorage);
             m_executionState = nullptr;
         }
     }

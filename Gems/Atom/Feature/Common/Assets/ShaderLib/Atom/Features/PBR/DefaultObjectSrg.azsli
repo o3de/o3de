@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <scenesrg.srgi>
+#include <scenesrg_all.srgi>
 #include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
 
 #ifndef MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS

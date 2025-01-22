@@ -114,8 +114,9 @@ namespace Multiplayer
         //! Connects to the specified IP as a Client.
         //! @param remoteAddress The domain or IP to connect to
         //! @param port The port to connect to
+        //! @param connectionTicket Some form of authentication to validate the connection (if required by the server)
         //! @result if a connection was successfully created
-        virtual bool Connect(const AZStd::string& remoteAddress, uint16_t port) = 0;
+        virtual bool Connect(const AZStd::string& remoteAddress, uint16_t port, const AZStd::string& connectionTicket = "") = 0;
 
         // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context.
         //! @param reason The reason for terminating connections

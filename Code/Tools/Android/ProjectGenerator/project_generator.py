@@ -93,6 +93,10 @@ class ProjectGenerator(ThreadedLambda):
             ]
         if config.is_meta_quest_project:
             arg_list.extend(["--oculus-project"])
+        if config.extra_cmake_args:
+            # It is imperative to wrap the extra cmake arguments in double quotes "-DFOO=ON -DBAR=OFF"
+            # because the cmake arguments/variables are separated by spaces.
+            arg_list.extend(["--extra-cmake-args", f'"{config.extra_cmake_args}"'])
         self._generate_project_cmd = SubprocessRunner(
             arg_list,
             timeOutSeconds=60,

@@ -252,6 +252,19 @@ class EditorComponent:
             get_component_property_outcome.IsSuccess()
         ), f"Failure: Could not get value from {self.get_component_name()} : {component_property_path}"
         return get_component_property_outcome.GetValue()
+    
+    def check_component_property_value(self, component_property_path: str) -> tuple[bool, object]:
+        """
+        Similar as get_component_property_value, but does not assert.
+        :return: a tuple with a boolean that is True if the property exists, if the
+                 property exists, the second value in the tuple is the Value of the property.
+        """
+        get_component_property_outcome = editor.EditorComponentAPIBus(
+            bus.Broadcast, "GetComponentProperty", self.id, component_property_path
+        )
+        if get_component_property_outcome.IsSuccess():
+            return True, get_component_property_outcome.GetValue()
+        return False, None 
 
     def set_component_property_value(self, component_property_path: str, value: object):
         """

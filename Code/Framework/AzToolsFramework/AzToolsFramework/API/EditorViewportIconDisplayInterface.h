@@ -60,9 +60,22 @@ namespace AzToolsFramework
             Error
         };
 
-        //! Draws an icon to a viewport given a set of draw parameters.
+        //! Draws an icon (immediately) to a viewport given a set of draw parameters.
         //! Requires an IconId retrieved from GetOrLoadIconForPath.
+        //! Note that this is an immediate draw request for backward compatability.
+        //! For more efficient rendering, use the AddIcon method.
         virtual void DrawIcon(const DrawParameters& drawParameters) = 0;
+
+        //! Adds an icon to the upcoming draw batch.
+        //! Use DrawIcons() after adding them all to actually commit them to the renderer.
+        //! DrawParameters.m_viewport must be set to a valid viewport and must be the same viewport
+        //! as all other invocations of AddIcon since the last call to DrawIcons (do one viewport at a time!)
+        virtual void AddIcon(const DrawParameters& drawParameters) = 0;
+
+        //! Call this after adding all of the icons via AddIcon.
+        //! This commits all of them to the renderer, in batches organized per icon texture.
+        virtual void DrawIcons() = 0;
+
         //! Retrieves a reusable IconId for an icon at a given path.
         //! This will load the icon, if it has not already been loaded.
         //! @param path should be a relative asset path to an icon image asset.

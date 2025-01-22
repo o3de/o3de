@@ -94,18 +94,6 @@ namespace AzToolsFramework
 
     using ComponentEditorVector = AZStd::vector<ComponentEditor*>;
 
-    struct OrderedSortComponentEntry
-    {
-        AZ::Component* m_component;
-        int m_originalOrder;
-
-        OrderedSortComponentEntry(AZ::Component* component, int originalOrder)
-        {
-            m_component = component;
-            m_originalOrder = originalOrder;
-        }
-    };
-
     /**
      * the entity property editor shows all components for a given entity or set of entities.
      * it displays their values and lets you edit them.  The editing actually happens through the sub editor parts, though.
@@ -185,8 +173,6 @@ namespace AzToolsFramework
         void SetOverrideEntityIds(const AzToolsFramework::EntityIdSet& entities);
 
         void SetSystemEntityEditor(bool isSystemEntityEditor);
-
-        static void SortComponentsByPriority(AZ::Entity::ComponentArrayType& componentsOnEntity);
 
         bool IsLockedToSpecificEntities() const { return !m_overrideSelectedEntityIds.empty(); }
 
@@ -306,10 +292,7 @@ namespace AzToolsFramework
         void UpdateEntityIcon();
         void UpdateEntityDisplay();
         static bool DoesComponentPassFilter(const AZ::Component* component, const ComponentFilter& filter);
-        static bool IsComponentRemovable(const AZ::Component* component);
         bool AreComponentsRemovable(AZStd::span<AZ::Component* const> components) const;
-        static AZStd::optional<int> GetFixedComponentListIndex(const AZ::Component* component);
-        static bool IsComponentDraggable(const AZ::Component* component);
         bool AllowAnyComponentModification() const;
         bool AreComponentsDraggable(AZStd::span<AZ::Component* const> components) const;
         bool AreComponentsCopyable(AZStd::span<AZ::Component* const> components) const;

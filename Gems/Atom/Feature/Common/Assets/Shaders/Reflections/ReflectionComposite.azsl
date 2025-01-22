@@ -14,7 +14,7 @@
 // fullscreen pass, for pixels that have a non-zero stencil value.  Output values are
 // box-filtered from the MSAA sub-pixels of the reflection texture.
 
-#include <scenesrg.srgi>
+#include <scenesrg_all.srgi>
 
 #include <Atom/Features/Debug.azsli>
 

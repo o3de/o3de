@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <scenesrg.srgi>
+#include <scenesrg_all.srgi>
 
 /*
 // Utilize the following PerDraw srg for instancing - currently not used yet.

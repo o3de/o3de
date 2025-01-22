@@ -51,6 +51,7 @@ public:
     void OnDeleteSequenceEntity(const AZ::EntityId& entityId) override;
     void OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence) override;
     void OnSequenceActivated(const AZ::EntityId& entityId) override;
+    void OnSequenceDeactivated(const AZ::EntityId& entityId) override;
     //~ ITrackViewSequenceManager Overrides
 
 private:

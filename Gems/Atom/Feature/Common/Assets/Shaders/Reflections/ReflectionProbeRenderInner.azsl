@@ -14,8 +14,8 @@
 // by the inner probe volume so there is no blending.  Note that this shader only considers 
 // pixels stenciled to the inner volume.
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include "ReflectionProbeRenderObjectSrg.azsli"
 

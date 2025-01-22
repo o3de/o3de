@@ -77,22 +77,20 @@ namespace AzToolsFramework
             int GetEntityIconTextureId() override;
             bool IsEntityIconHiddenInViewport() override;
 
-            // EntityBus
-            void OnEntityActivated(const AZ::EntityId&) override;
-
             // EditorInspectorComponentNotificationBus
             void OnComponentOrderChanged() override;
 
             /// Return the path of the entity icon asset identified by \ref m_entityIconAssetId if it's valid,
             /// else return the path of the icon of the first component in this entity's EditorInspector list,
             /// otherwise return the path of the default entity icon.
-            AZStd::string CalculateEntityIconPath(AZ::ComponentId firstComponentId);
+            AZStd::string CalculateEntityIconPath();
             AZStd::string GetEntityIconAssetPath();
-            AZStd::string GetDefaultEntityIconPath(AZ::ComponentId firstComponentId);
+            AZStd::string GetDefaultEntityIconPath();
 
             /// Return a boolean indicating if \ref m_firstComponentIdCache has been changed.
             bool UpdateFirstComponentIdCache();
             bool UpdatePreferNoViewportIconFlag();
+            void RefreshCachesIfNecessary();
 
             AZ::Data::AssetId m_entityIconAssetId = AZ::Data::AssetId();
 
@@ -103,6 +101,8 @@ namespace AzToolsFramework
 
             bool m_preferNoViewportIcon = false; ///< Indicates if any component of this entity
                                                  ///< has the PreferNoViewportIcon Edit Attribute.
+
+            bool m_needsInitialUpdate = true;
         };
     }
 }

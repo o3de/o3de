@@ -321,7 +321,7 @@ private:
     int RecordTrackChangesForNode(CTrackViewAnimNode* componentNode);
 
     // Current time when animated
-    float m_time;
+    float m_time = 0.f;
 
     // Stores if sequence is bound
     bool m_bBoundToEditorObjects = false;

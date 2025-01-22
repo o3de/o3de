@@ -211,6 +211,7 @@ namespace Maestro
                 changed = true;
             }
         }
+        AZ_Trace("SequenceAgent::SetAnimatedPropertyValue", "Value changed: %s", changed ? "true" : "false");
         return changed;
     }
 

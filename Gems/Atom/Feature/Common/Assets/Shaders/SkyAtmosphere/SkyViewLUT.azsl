@@ -11,7 +11,7 @@
 // SkyViewLUT does not support shadows currently because it does not bind or sample the depth buffer
 #define ENABLE_ATMOSPHERE_SHADOWS 0
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <SkyAtmosphereCommon.azsli>

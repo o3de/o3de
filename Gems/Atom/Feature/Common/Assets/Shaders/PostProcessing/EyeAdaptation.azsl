@@ -6,8 +6,8 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/RPI/Math.azsli>
 #include "EyeAdaptationUtil.azsli"

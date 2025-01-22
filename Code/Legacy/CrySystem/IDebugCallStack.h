@@ -15,6 +15,9 @@
 
 #include "System.h"
 
+#include <AzCore/std/string/string.h>
+#include <AzCore/IO/FileIO.h>
+
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_FORWARD_EXCEPTION_POINTERS
 struct EXCEPTION_POINTERS;
 #endif

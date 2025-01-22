@@ -826,7 +826,15 @@ struct IAnimSequence
         eSeqFlags_DisplayAsFramesOrSeconds = BIT(18), //!< Display Start/End time as frames or seconds
     };
 
-    virtual ~IAnimSequence() {};
+    IAnimSequence()
+    {
+        AZ_Trace("IAnimSequence", "IAnimSequence");
+    }
+
+    virtual ~IAnimSequence()
+    {
+        AZ_Trace("IAnimSequence", "~IAnimSequence");
+    }
 
     // for intrusive_ptr support
     virtual void add_ref() = 0;

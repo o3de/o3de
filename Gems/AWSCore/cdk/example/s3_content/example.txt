@@ -1,1 +1,0 @@
-This is the content from the example s3 bucket

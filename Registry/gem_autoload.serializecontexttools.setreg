@@ -21,36 +21,6 @@
             "AutoLoad": false
           }
         }
-      },
-      "AWSCore": {
-        "Targets": {
-          "AWSCore": {
-            "AutoLoad": false
-          },
-          "AWSCore.Editor": {
-            "AutoLoad": false
-          }
-        }
-      },
-      "AWSClientAuth": {
-        "Targets": {
-          "AWSClientAuth": {
-            "AutoLoad": false
-          },
-          "AWSClientAuth.Editor": {
-            "AutoLoad": false
-          }
-        }
-      },
-      "AWSMetrics": {
-        "Targets": {
-          "AWSMetrics": {
-            "AutoLoad": false
-          },
-          "AWSMetrics.Editor": {
-            "AutoLoad": false
-          }
-        }
       }
     }
   }

@@ -647,8 +647,6 @@ BOOL SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft)
     return TRUE;
 }
 
-#define Int32x32To64(a, b) ((uint64)((uint64)(a)) * (uint64)((uint64)(b)))
-
 //////////////////////////////////////////////////////////////////////////
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION WINBASE_CPP_SECTION_4

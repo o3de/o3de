@@ -8,7 +8,7 @@
 
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 //==============================================================================
 // Generate a fullscreen triangle from pipeline provided vertex id 

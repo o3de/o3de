@@ -12,8 +12,8 @@
 #define USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT 0
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <viewsrg.srgi>
-#include <scenesrg.srgi>
+#include <viewsrg_all.srgi>
+#include <scenesrg_all.srgi>
 
 #include <Atom/RPI/Math.azsli>
 

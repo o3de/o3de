@@ -8,13 +8,15 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/optional.h>
+
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-#include <AzCore/Component/ComponentApplication.h>
 
 namespace AzToolsFramework
 {
@@ -109,6 +111,30 @@ namespace AzToolsFramework
     /// Return true if the editor should show this component to users,
     /// false if the component should be hidden from users.
     bool ShouldInspectorShowComponent(const AZ::Component* component);
+
+    //! Components can set an attribute (@ref AZ::Edit::Attributes::FixedComponentListIndex) to specify
+    //! that they should appear at a fixed position in the property editor and should not be draggable.
+    //! This helper function will return that index if it is set, or an empty optional if it is not.
+    AZStd::optional<int> GetFixedComponentListIndex(const AZ::Component* component);
+
+    //! Returns true if the component can be removed by the entity inspector.
+    bool IsComponentRemovable(const AZ::Component* component);
+
+    //! Returns true if the given component is draggable in the entity inspector.
+    bool IsComponentDraggable(const AZ::Component* component);
+
+    //! Given a ComponentArrayType, sort them into the order they would by default be sorted
+    //! based on various attributes such as whether they can be dragged, deleted, whether they are
+    //! visible, etc, but does not take into account the user modified order from dragging and dropping
+    //! Note that this sort will try its best to keep things in the order they were in the original array
+    //! and will attempt to only move elements around if necessary, so they can be sorted in another way first,
+    //! then sorted by this function to ensure any additional constraints are met.
+    void SortComponentsByPriority(AZ::Entity::ComponentArrayType& componentsOnEntity);
+
+    //! Sorts the components on the entity based on the order specified in the componentOrder array on the entity.
+    //! The order will shuffle around since this is not a stable sort, but it can be sorted by priority afterwards to stabilize.
+    //! Helper function, same as above, but sorts components by order by getting the order from the given entityId.
+    void SortComponentsByOrder(const AZ::EntityId entityId, AZ::Entity::ComponentArrayType& componentsOnEntity);
 
     AZ::EntityId GetEntityIdForSortInfo(const AZ::EntityId parentId);
 

@@ -48,6 +48,7 @@ class TkApp(tk.Tk):
         self._init_load_save_ui()
         self._init_keystore_settings_ui()
         self._init_sdk_settings_ui()
+        self._init_additional_build_settings_ui()
 
         # Add the project generation button.
         btn = tk.Button(self, text="Generate Project", command=self.on_generate_project_button)
@@ -134,6 +135,17 @@ class TkApp(tk.Tk):
 
         # Add the meta quest project checkbox
         self._android_quest_flag_var, _, row_number = self._add_checkbox(sdk_frame, "This is a Meta Quest project", cf.is_meta_quest_project)
+
+    
+    def _init_additional_build_settings_ui(self):
+        build_settings_frame = tk.LabelFrame(self, text="Additional Build Settings")
+        build_settings_frame.columnconfigure(0, weight=0)
+        build_settings_frame.columnconfigure(1, weight=1)
+        build_settings_frame.grid(padx=self._frame_pad_x, pady=self._frame_pad_y,sticky=tk.EW)
+
+        cf = self._config
+        self._extra_cmake_args_var = self._add_label_entry(build_settings_frame, "Extra CMake Arguments", cf.extra_cmake_args, entry_colspan=3, label_width=28)[0]
+
 
 
     def _add_label_entry(self, parent_frame: tk.Frame, lbl_name: str, default_value: str = "", entry_colspan=1, label_width=None, entry_read_only=False) -> tuple[tk.StringVar, tk.Entry, int]:
@@ -244,6 +256,7 @@ class TkApp(tk.Tk):
         config.android_ndk_version = self._android_ndk_version_var.get()
         config.android_sdk_api_level = self._android_sdk_api_level_var.get()
         config.is_meta_quest_project = self._android_quest_flag_var.get()
+        config.extra_cmake_args = self._extra_cmake_args_var.get()
         config.keystore_settings = self.create_keystore_settings_from_widgets()
         return config
 
@@ -266,6 +279,7 @@ class TkApp(tk.Tk):
         self._android_ndk_version_var.set(config.android_ndk_version)
         self._android_sdk_api_level_var.set(config.android_sdk_api_level)
         self._android_quest_flag_var.set(config.is_meta_quest_project)
+        self._extra_cmake_args_var.set(config.extra_cmake_args)
         self.update_widgets_from_keystore_settings(config.keystore_settings)
 
 

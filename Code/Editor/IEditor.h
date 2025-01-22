@@ -327,6 +327,7 @@ struct ITrackViewSequenceManager
     virtual void OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence) = 0;
 
     virtual void OnSequenceActivated(const AZ::EntityId& entityId) = 0;
+    virtual void OnSequenceDeactivated(const AZ::EntityId& entityId) = 0;
 };
 
 //! Interface to expose TrackViewSequence functionality to SequenceComponent
