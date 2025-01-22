@@ -641,6 +641,13 @@ namespace AZ
                 }
             }
 
+            /*
+                In order to compare timestamps recorded on multiple devices to one another, they need to be related to a common reference
+               frame. To this end, calibrated timestamps are recorded for each device, which represent a "simultaneous" timestamp on both
+               CPU and a specified GPU. With these timestamps at hand at hand, device timestamps are first related to the common CPU time
+               reference frame to allow for proper positioning and scaling of the resulting timestamp bars. The final values are again
+               displayed as device timestamps in the end.
+            */
             int64_t minimumHostTime{ INT64_MAX };
             int64_t maximumHostTime{ INT64_MIN };
 
@@ -884,18 +891,18 @@ namespace AZ
 
                                     // If pass duration is too small, it is not visible in the timeline
                                     // Increase the size to at least 1.5f and color them to denote this change
-                                    bool notVisible{ false };
+                                    bool tooNarrow{ false };
                                     if (buttonWidth < 1.5f)
                                     {
                                         buttonWidth = 1.5f;
-                                        notVisible = true;
+                                        tooNarrow = true;
                                     }
 
                                     ImGui::SetCursorPosX(buttonStartX);
                                     ImGui::SetCursorPosY(rowStartY);
 
                                     // If the size or position needed to be modified, color it red to make this clear
-                                    if (notVisible)
+                                    if (tooNarrow)
                                     {
                                         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 1.0f, 0.0f, 0.0f, 1.0f });
                                     }
@@ -903,7 +910,7 @@ namespace AZ
                                     // Adds a button and the hover colors.
                                     ImGui::Button(passEntry->m_name.GetCStr(), ImVec2(buttonWidth, passBarHeight));
 
-                                    if (notVisible)
+                                    if (tooNarrow)
                                     {
                                         ImGui::PopStyleColor(1);
                                     }
