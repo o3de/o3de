@@ -244,7 +244,17 @@ namespace EMotionFX
                 }
 
                 const float distance = worldPos.GetDistance(defaultViewportContext->GetCameraTransform().GetTranslation());
+#if defined(CARBONATED) && !defined(_RELEASE)
+                int forcedLodIndex = -1;
+                if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+                {
+                    console->GetCvarValue("q_forceLodIndex", forcedLodIndex);
+                }
+                const size_t requestedLod = forcedLodIndex >= 0 ? size_t(forcedLodIndex) : GetLodByDistance(configuration.m_lodDistances, distance);
+#else
                 const size_t requestedLod = GetLodByDistance(configuration.m_lodDistances, distance);
+#endif
+
                 actorInstance->SetLODLevel(requestedLod);
 
                 if (configuration.m_enableLodSampling)
@@ -268,7 +278,11 @@ namespace EMotionFX
                 // This means that the current LOD level might differ from the requested one. We need to sync the Atom LOD level with the
                 // current LOD level of the actor instance to avoid skinning artifacts. The requested LOD level will be present and applied
                 // the following frame.
+#if defined(CARBONATED) && !defined(_RELEASE)
+                const size_t currentLod = forcedLodIndex >= 0 ? size_t(forcedLodIndex) : actorInstance->GetLODLevel();
+#else
                 const size_t currentLod = actorInstance->GetLODLevel();
+#endif
                 AZ::Render::MeshComponentRequestBus::Event(entityId,
                     &AZ::Render::MeshComponentRequestBus::Events::SetLodOverride,
                     static_cast<AZ::RPI::Cullable::LodOverride>(currentLod));

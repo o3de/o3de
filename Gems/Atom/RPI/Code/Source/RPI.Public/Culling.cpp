@@ -58,6 +58,10 @@ namespace AZ
         AZ_CVAR(int, r_shadowCascadeExtrusionAmount, -1, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount of meters to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
 
 
+#if defined(CARBONATED) && !defined(_RELEASE)
+        AZ_CVAR(int, q_forceLodIndex, -1, nullptr, AZ::ConsoleFunctorFlags::Null, "Force this LOD number if >= 0, default LOD rules if negative");
+#endif
+
 #ifdef AZ_CULL_DEBUG_ENABLED
         void DebugDrawWorldCoordinateAxes(AuxGeomDraw* auxGeom)
         {
@@ -954,6 +958,15 @@ namespace AZ
                 }
             };
 
+#if defined(CARBONATED) && !defined(_RELEASE)
+            if (q_forceLodIndex >= 0)
+            {
+                const size_t forceLodIndex = q_forceLodIndex;
+                const size_t lodIndex = AZStd::min(forceLodIndex, lodData.m_lods.size() - 1);
+                addLodToDrawPacket(lodData.m_lods.at(lodIndex));
+                return numVisibleDrawPackets;  // fast exit to avoid all the below
+            }
+#endif
             switch (lodData.m_lodConfiguration.m_lodType)
             {
                 case Cullable::LodType::SpecificLod:
