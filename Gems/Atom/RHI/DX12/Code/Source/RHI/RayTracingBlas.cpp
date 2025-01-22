@@ -151,7 +151,7 @@ namespace AZ
         }
 
         RHI::ResultCode RayTracingBlas::CreateCompactedBuffersInternal(
-            RHI::Device& device,
+            [[maybe_unused]] RHI::Device& device,
             RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
             uint64_t compactedBufferSize,
             const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools)

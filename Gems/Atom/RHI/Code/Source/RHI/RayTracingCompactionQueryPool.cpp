@@ -63,7 +63,7 @@ namespace AZ::RHI
     void RayTracingCompactionQueryPool::BeginFrame(int frame)
     {
         IterateObjects<DeviceRayTracingCompactionQueryPool>(
-            [&](auto deviceIndex, auto deviceQueryPool)
+            [&]([[maybe_unused]] auto deviceIndex, auto deviceQueryPool)
             {
                 deviceQueryPool->BeginFrame(frame);
             });
