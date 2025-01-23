@@ -243,8 +243,22 @@ namespace AZ
             AZStd::unordered_map<int, BlasBuildList> m_blasToCompact;
             BlasBuildList m_skinnedBlasIds;
 
-            AZStd::unordered_map<int, AZStd::unordered_map<Data::AssetId, int>> m_blasEnqueuedForCompact;
-            AZStd::unordered_map<int, AZStd::unordered_map<Data::AssetId, int>> m_blasEnqueuedForUncompactDeletion;
+            // Mutex for the queues that are modified by the RaytracingAccelerationStructurePasses
+            // The BuildCommandList of these passes are on different threads so we need lock access to the queues
+            AZStd::mutex m_queueMutex;
+
+            struct BlasFrameEvent
+            {
+                int m_frameIndex = -1;
+                RHI::MultiDevice::DeviceMask m_deviceMask;
+            };
+            // List of Blas instances that are enqueued for compaction
+            // The frame index corresponds to the frame where the compaction query is ready
+            AZStd::unordered_map<Data::AssetId, BlasFrameEvent> m_blasEnqueuedForCompact;
+
+            // List of Blas instances where the compacted Blas is already built
+            // The frame index corresponds to the frame where the uncompacted Blas is no longer needed and can be deleted
+            AZStd::unordered_map<Data::AssetId, BlasFrameEvent> m_uncompactedBlasEnqueuedForDeletion;
 
             int m_frameIndex = 0;
 
