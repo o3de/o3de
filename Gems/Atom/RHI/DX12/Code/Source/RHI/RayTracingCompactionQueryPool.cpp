@@ -108,7 +108,7 @@ namespace AZ
             m_currentFrame = frame;
             for (auto& buffers : m_buffers)
             {
-                if (buffers.m_enqueuedFrame == m_currentFrame - RHI::Limits::Device::FrameCountMax)
+                if (buffers.m_enqueuedFrame == m_currentFrame - static_cast<int>(RHI::Limits::Device::FrameCountMax))
                 {
                     auto pool = azrtti_cast<RHI::DeviceBufferPool*>(buffers.m_cpuBuffers->GetPool());
                     RHI::DeviceBufferMapRequest request;
