@@ -169,7 +169,7 @@ namespace AZ
             AZ::RHI::DeviceBufferInitRequest blasBufferRequest;
             blasBufferRequest.m_buffer = buffers.m_blasBuffer.get();
             blasBufferRequest.m_descriptor = blasBufferDescriptor;
-            auto resultCode = rayTracingBufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);
+            [[maybe_unused]] auto resultCode = rayTracingBufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS buffer");
 
             MemoryView& blasMemoryView = static_cast<Buffer*>(buffers.m_blasBuffer.get())->GetMemoryView();

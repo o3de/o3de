@@ -76,7 +76,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             VkResult vkResult = device.GetContext().GetQueryPoolResults(
                 device.GetNativeDevice(), m_nativeQueryPool, index, 1, sizeof(uint64_t), &result, sizeof(uint64_t), vkFlags);
-            auto resultCode = ConvertResult(vkResult);
+            [[maybe_unused]] auto resultCode = ConvertResult(vkResult);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "RayTracingCompactionQuery::GetResult: Result not ready");
             return result;
         }
@@ -98,7 +98,7 @@ namespace AZ
 
             auto vkResult =
                 device.GetContext().CreateQueryPool(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeQueryPool);
-            auto resultCode = ConvertResult(vkResult);
+            [[maybe_unused]] auto resultCode = ConvertResult(vkResult);
             AZ_Assert(
                 resultCode == RHI::ResultCode::Success, "RayTracingCompactionQuery::InitInternal: Could not initialize vulkan query pool");
 

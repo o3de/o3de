@@ -859,7 +859,7 @@ namespace AZ
             {
                 if (it != m_blasInstanceMap.end())
                 {
-                    for (auto& subMeshInstance : it->second.m_subMeshes)
+                    for ([[maybe_unused]] auto& subMeshInstance : it->second.m_subMeshes)
                     {
                         AZ_Assert(
                             subMeshInstance.m_compactionSizeQuery, "Enqueuing a Blas without an compaction size query for compaction");
@@ -877,7 +877,7 @@ namespace AZ
             {
                 if (it != m_blasInstanceMap.end())
                 {
-                    for (auto& subMeshInstance : it->second.m_subMeshes)
+                    for ([[maybe_unused]] auto& subMeshInstance : it->second.m_subMeshes)
                     {
                         AZ_Assert(subMeshInstance.m_compactBlas, "Marking a Blas without a compacted Blas as enqueued for compaction");
                     }
@@ -1006,7 +1006,7 @@ namespace AZ
                             {
                                 if (RHI::Validation::IsEnabled())
                                 {
-                                    RHI::MultiDevice::DeviceMask sizeDeviceMask = {};
+                                    [[maybe_unused]] RHI::MultiDevice::DeviceMask sizeDeviceMask = {};
                                     for (auto& [deviceId, size] : sizes[subMeshIdx])
                                     {
                                         sizeDeviceMask = RHI::SetBit(sizeDeviceMask, deviceId);
