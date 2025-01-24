@@ -599,8 +599,8 @@ namespace AZ
                 AZStd::vector<PassEntry*> sortedPassEntries;
                 AZStd::vector<AZStd::vector<PassEntry*>> sortedPassGrid;
                 RPI::TimestampResult gpuTimestamp;
-                int64_t deviceReferenceDuration;
-                int64_t hostReferenceDuration;
+                int64_t deviceReferenceDuration{};
+                int64_t hostReferenceDuration{};
             };
 
             AZStd::map<int, PerDevicePassData> passEntriesMap;
@@ -654,7 +654,7 @@ namespace AZ
             for (auto& [deviceIndex, passEntries] : passEntriesMap)
             {
                 // Only calibrate when taking new measurements to prevent flickering
-                if (!m_paused)
+                if (!m_paused || m_calibratedTimestamps[deviceIndex] == m_lastCalibratedTimestamps[deviceIndex])
                 {
                     m_calibratedTimestamps[deviceIndex] = rhiSystem->GetDevice(deviceIndex)->GetCalibratedTimestamp();
                 }
@@ -966,7 +966,10 @@ namespace AZ
                 // Reset m_lastCalibratedTimestamps every frame if not paused
                 if (!m_paused)
                 {
-                    m_lastCalibratedTimestamps = m_calibratedTimestamps;
+                    for (auto& [deviceIndex, timestamps] : m_calibratedTimestamps)
+                    {
+                        m_lastCalibratedTimestamps[deviceIndex] = timestamps;
+                    }
                 }
 
                 // Draw the timestamp view.
