@@ -99,7 +99,8 @@ namespace AZ
             // Typically called from thread context of Data::AssetBus::MultiHandler::OnAssetXXX.
             void InitializeMaterialInstance(Data::Asset<Data::AssetData> asset);
             // Must be called on main thread.
-            void InitializeMaterialInstancePostTick(Data::Asset<Data::AssetData> asset);
+            // Called for each asset in @m_notifiedMaterialAssets only during SystemTick.
+            void InitializeNotifiedMaterialAsset(Data::Asset<Data::AssetData> asset);
             void ReleaseMaterials();
             //! Queue applying property overrides to material instances until tick
             void QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId);
@@ -124,6 +125,24 @@ namespace AZ
             MaterialAssignmentMap m_defaultMaterialMap;
             AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_uniqueMaterialMap;
             AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
+            //! We store here references to all the material assets for which we are connected to the
+            //! AssetBus for notifications. Instead of taking action upon being notified, we simply store
+            //! the asset here, and in the next SystemTick we'll process the assets. This is done, for the following reason:
+            //! When AssetBus::OnAssetXXX functions are called, a deadlock may occur according to the following sequence:
+            // 1. Starting from Main thread, AssetBus locks a mutex.
+            // 2. AssetBus calls OnAssetReady and it enters in this function.
+            // 3. Start the instantiation of a new StreamingImage.
+            // 4. StreamingImage asynchronously queues work in the "Seconday Copy Queue".
+            // 5. StreamingImage waits until the work completes.
+            // 6. The thread of "Seconday Copy Queue" gets a new work item, which may hold a reference
+            //    to an old StreamingImage.
+            // 7. The old StreamingImage gets destroyed and it calls AssetBus::MultiHandler::BusDisconnect(GetAssetId());
+            // 8. When calling AssetBus::MultiHandler::BusDisconnect(GetAssetId()); it tries to lock the same mutex
+            //    from step 1. But the mutex is already locked on Main Thread in step 1.
+            // 9. The "Seconday Copy Queue" thread deadlocks and never completes the work.
+            // 10. Main thread is also deadlocked waiting for "Seconday Copy Queue" to complete.
+            // The solution is to enqueue texture update on the next tick.
+            AZStd::queue<Data::Asset<Data::AssetData>> m_notifiedMaterialAssets;
             bool m_queuedMaterialsCreatedNotification = false;
             bool m_queuedMaterialsUpdatedNotification = false;
             bool m_queuedLoadMaterials = false;
