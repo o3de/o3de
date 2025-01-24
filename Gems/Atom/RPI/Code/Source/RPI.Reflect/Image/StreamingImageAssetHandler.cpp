@@ -22,7 +22,8 @@ namespace AZ
     {
 
 #if defined(CARBONATED) && defined(AZ_MIP_REMOVAL)
-        AZ_CVAR(int, q_dropMips, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "Set to non-zero to drop this number of high quality MIPs per StreamingImage.");
+        AZ_CVAR(int, q_dropMips, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "Set to non-zero to drop this number of high quality MIPs per StreamingImage");
+        AZ_CVAR(int, q_capRes, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "Set to non-zero to cap max texture size after mips drop applied");
 #endif
 
         StreamingImageAssetHandler::~StreamingImageAssetHandler()
@@ -84,6 +85,17 @@ namespace AZ
                         console->GetCvarValue("q_dropMips", numMipsToRemove);
                         if (numMipsToRemove > 0 && assetData->GetMipChainCount() > 1)
                         {
+                            size_t capRes = 0;
+                            console->GetCvarValue("q_capRes", capRes);
+                            if (capRes > 0)
+                            {
+                                RHI::ImageDescriptor imageDescriptor = assetData->GetImageDescriptor();
+                                uint32_t maxSize = AZStd::max(imageDescriptor.m_size.m_width, imageDescriptor.m_size.m_height);
+                                while (maxSize >> numMipsToRemove > capRes)
+                                {
+                                    numMipsToRemove++;
+                                }
+                            }
                             assetData->RemoveFrontMipchains(AZStd::min(numMipsToRemove, assetData->GetMipChainCount() - 1));
                         }
                     }
