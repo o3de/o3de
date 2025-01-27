@@ -372,11 +372,13 @@ namespace AzToolsFramework
                     EditorEntityIconComponentRequestBus::EventResult(
                         iconTextureId, entityId, &EditorEntityIconComponentRequestBus::Events::GetEntityIconTextureId);
 
-                    editorViewportIconDisplay->DrawIcon(EditorViewportIconDisplayInterface::DrawParameters{
+                    editorViewportIconDisplay->AddIcon(EditorViewportIconDisplayInterface::DrawParameters{
                         viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
                         EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace, AZ::Vector2(GetIconSize(distanceFromCamera)) });
                 }
             }
+
+            editorViewportIconDisplay->DrawIcons();
         }
     }
 
