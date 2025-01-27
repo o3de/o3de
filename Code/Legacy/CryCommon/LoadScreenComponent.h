@@ -65,6 +65,14 @@ public:
     void Resume() override;
     void Stop() override;
     bool IsPlaying() override;
+
+#if defined(CARBONATED)
+    void SetManualNotify() override
+    {
+        m_notify = false;
+    }
+    void NotifyEnd() override;
+#endif
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -106,6 +114,10 @@ private:
     float m_fixedDeltaTimeInSeconds{ -1.0f };
     float m_maxDeltaTimeInSeconds{ -1.0f };
     float m_minimumLoadTimeInSeconds{ 0.0f };
+
+#if defined(CARBONATED)
+    bool m_notify = true;
+#endif
 
     CTimeValue m_lastStartTime;
     CTimeValue m_previousCallTimeForUpdateAndRender;

@@ -10,6 +10,10 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#if defined(CARBONATED)
+#include <AzCore/RTTI/BehaviorContext.h>
+#endif
+
 #include <AzCore/Utils/LogNotification.h>
 #include <AzCore/Time/ITime.h>
 #include <CryCommon/ISystem.h>
@@ -71,6 +75,14 @@ void LoadScreenComponent::Reflect(AZ::ReflectContext* context)
             ;
         }
     }
+
+#if defined(CARBONATED)
+    AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+    if (behaviorContext)
+    {
+        behaviorContext->EBus<LoadScreenBus>("LoadScreenBus")->Event("NotifyEnd", &LoadScreenBus::Events::NotifyEnd);
+    }
+#endif
 }
 
 void LoadScreenComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -374,15 +386,27 @@ void LoadScreenComponent::Stop()
         // FIXME: GetGlobalEnv()->pRenderer->StopLoadtimePlayback();
     }
 
+#if defined(CARBONATED)
+    if (m_loadScreenState != LoadScreenState::None && m_notify)
+#else
     if (m_loadScreenState != LoadScreenState::None)
+#endif
     {
         EBUS_EVENT(LoadScreenNotificationBus, NotifyLoadEnd);
     }
+
 
     Reset();
 
     m_loadScreenState = LoadScreenState::None;
 }
+
+#if defined(CARBONATED)
+void LoadScreenComponent::NotifyEnd()
+{
+    EBUS_EVENT(LoadScreenNotificationBus, NotifyLoadEnd);
+}
+#endif
 
 bool LoadScreenComponent::IsPlaying()
 {

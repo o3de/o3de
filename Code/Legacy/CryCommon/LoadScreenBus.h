@@ -39,6 +39,12 @@ public:
 
     //! Invoked to find out if loading screen is playing.
     virtual bool IsPlaying() = 0;
+
+#if defined(CARBONATED)
+    virtual void SetManualNotify() = 0;
+
+    virtual void NotifyEnd() = 0;
+#endif
 };
 using LoadScreenBus = AZ::EBus<LoadScreenInterface>;
 
