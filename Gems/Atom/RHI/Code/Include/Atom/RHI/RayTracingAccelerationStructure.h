@@ -104,6 +104,8 @@ namespace AZ::RHI
             const RayTracingBlasDescriptor* descriptor,
             const RayTracingBufferPools& rayTracingBufferPools);
 
+        //! Creates the internal BLAS buffers for the compacted version of the sourceBlas
+        //! The compactedBufferSizes can be queried using a RayTracingCompactionQuery
         ResultCode CreateCompactedBuffers(
             const RayTracingBlas& sourceBlas,
             const AZStd::unordered_map<int, uint64_t>& compactedSizes,
