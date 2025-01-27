@@ -69,7 +69,7 @@ namespace AZ
             void BeginFrame(int frame) override;
             //////////////////////////////////////////////////////////////////////////
 
-            struct Buffers
+            struct QueryPoolBuffers
             {
                 RHI::Ptr<RHI::DeviceBuffer> m_gpuBuffers;
                 RHI::Ptr<RHI::DeviceBuffer> m_cpuBuffers;
@@ -79,7 +79,7 @@ namespace AZ
                 AZStd::vector<AZStd::pair<RHI::Ptr<RayTracingCompactionQuery>, int>> enqueuedQueries;
             };
 
-            AZStd::array<Buffers, RHI::Limits::Device::FrameCountMax + 1> m_buffers;
+            AZStd::array<QueryPoolBuffers, RHI::Limits::Device::FrameCountMax> m_queryPoolBuffers;
             int m_currentBufferIndex = 0;
 
             int m_currentFrame = -1;

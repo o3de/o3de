@@ -15,6 +15,8 @@ namespace AZ::RHI
 {
     class RayTracingCompactionQueryPool;
 
+    //! Class for querying the compacted size of a Raytracing Acceleration Structure
+    //! For more information see DeviceRayTracingCompactionQuery
     class RayTracingCompactionQuery : public MultiDeviceObject
     {
         friend class RayTracingCompactionQueryPool;
@@ -27,6 +29,7 @@ namespace AZ::RHI
         RayTracingCompactionQuery() = default;
     };
 
+    //! Provides storage for DeviceRayTracingCompactionQuery objects and handles
     class RayTracingCompactionQueryPool : public MultiDeviceObject
     {
     public:

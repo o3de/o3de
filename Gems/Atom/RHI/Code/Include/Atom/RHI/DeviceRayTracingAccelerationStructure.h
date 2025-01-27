@@ -123,6 +123,8 @@ namespace AZ::RHI
 
         static RHI::Ptr<RHI::DeviceRayTracingBlas> CreateRHIRayTracingBlas();
 
+        //! Creates the internal BLAS buffers for the compacted version of the sourceBlas
+        //! The compactedBufferSize can be queried using a RayTracingCompactionQuery
         ResultCode CreateCompactedBuffers(
             Device& device,
             RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,

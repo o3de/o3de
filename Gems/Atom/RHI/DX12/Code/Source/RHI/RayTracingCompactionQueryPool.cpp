@@ -50,7 +50,7 @@ namespace AZ
 
         int RayTracingCompactionQueryPool::Allocate(RayTracingCompactionQuery* query)
         {
-            auto& buffers = m_buffers[m_currentBufferIndex];
+            auto& buffers = m_queryPoolBuffers[m_currentBufferIndex];
             AZ_Assert(buffers.m_nextFreeIndex < m_desc.m_budget, "RayTracingCompactionQueryPool: Pool is full");
             buffers.enqueuedQueries.emplace_back(query, buffers.m_nextFreeIndex);
             buffers.m_nextFreeIndex++;
@@ -59,17 +59,17 @@ namespace AZ
 
         RHI::DeviceBuffer* RayTracingCompactionQueryPool::GetCurrentGPUBuffer()
         {
-            return m_buffers[m_currentBufferIndex].m_gpuBuffers.get();
+            return m_queryPoolBuffers[m_currentBufferIndex].m_gpuBuffers.get();
         }
 
         RHI::DeviceBuffer* RayTracingCompactionQueryPool::GetCurrentCPUBuffer()
         {
-            return m_buffers[m_currentBufferIndex].m_cpuBuffers.get();
+            return m_queryPoolBuffers[m_currentBufferIndex].m_cpuBuffers.get();
         }
 
         RHI::ResultCode RayTracingCompactionQueryPool::InitInternal(RHI::RayTracingCompactionQueryPoolDescriptor desc)
         {
-            for (auto& buffers : m_buffers)
+            for (auto& buffers : m_queryPoolBuffers)
             {
                 {
                     buffers.m_cpuBuffers = RHI::Factory::Get().CreateBuffer();
@@ -106,7 +106,7 @@ namespace AZ
         void RayTracingCompactionQueryPool::BeginFrame(int frame)
         {
             m_currentFrame = frame;
-            for (auto& buffers : m_buffers)
+            for (auto& buffers : m_queryPoolBuffers)
             {
                 if (buffers.m_enqueuedFrame == m_currentFrame - static_cast<int>(RHI::Limits::Device::FrameCountMax))
                 {
@@ -133,9 +133,9 @@ namespace AZ
                 }
             }
 
-            m_currentBufferIndex = (m_currentFrame + 1) % m_buffers.size();
-            m_buffers[m_currentBufferIndex].m_nextFreeIndex = 0;
-            m_buffers[m_currentBufferIndex].m_enqueuedFrame = m_currentFrame;
+            m_currentBufferIndex = (m_currentFrame + 1) % m_queryPoolBuffers.size();
+            m_queryPoolBuffers[m_currentBufferIndex].m_nextFreeIndex = 0;
+            m_queryPoolBuffers[m_currentBufferIndex].m_enqueuedFrame = m_currentFrame;
         }
     } // namespace DX12
 } // namespace AZ

@@ -254,12 +254,15 @@ namespace AZ
                         AZ_Assert(!enqueuedForCompaction, "All or none Blas of an asset need to be compacted");
                     }
                 }
-                AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
                 if (enqueuedForCompaction)
                 {
                     rayTracingFeatureProcessor->MarkBlasInstanceForCompaction(context.GetDeviceIndex(), assetId);
                 }
-                blasInstance.m_blasBuilt |= RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex());
+                {
+                    // Lock is needed because multiple RayTracingAccelerationPasses for multiple devices may be built simultaneously
+                    AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
+                    blasInstance.m_blasBuilt |= RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex());
+                }
             }
             toBuildList.clear();
 
@@ -296,8 +299,11 @@ namespace AZ
                     }
                     changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
                 }
-                AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
-                blasInstance.m_blasBuilt |= RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex());
+                {
+                    // Lock is needed because multiple RayTracingAccelerationPasses for multiple devices may be built simultaneously
+                    AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
+                    blasInstance.m_blasBuilt |= RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex());
+                }
             }
 
             // Compact Blas instances
@@ -314,14 +320,11 @@ namespace AZ
                 for (auto& submeshBlasInstance : blasInstance.m_subMeshes)
                 {
                     auto query = submeshBlasInstance.m_compactionSizeQuery;
-                    if (query)
-                    {
-                        context.GetCommandList()->CompactBottomLevelAccelerationStructure(
-                            *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()),
-                            *submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
-                        changedBlasList.push_back(
-                            submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
-                    }
+                    AZ_Assert(query, "Blas was enqueued for compaction without having a compaction query");
+                    context.GetCommandList()->CompactBottomLevelAccelerationStructure(
+                        *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()),
+                        *submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                    changedBlasList.push_back(submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
                 }
                 AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
                 rayTracingFeatureProcessor->MarkBlasInstanceAsCompactionEnqueued(context.GetDeviceIndex(), assetId);
