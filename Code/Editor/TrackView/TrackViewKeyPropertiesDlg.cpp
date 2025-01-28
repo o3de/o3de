@@ -29,7 +29,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyUIControls::OnInternalVariableChange(IVariable* var)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -41,7 +40,6 @@ void CTrackViewKeyUIControls::OnInternalVariableChange(IVariable* var)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     : QWidget(hParentWnd)
     , m_pLastTrackSelected(nullptr)
@@ -88,7 +86,6 @@ CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     CreateAllVars();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::OnVarChange(IVariable* pVar)
 {
     // If it was a motion that just changed, we need to rebuild the controls
@@ -99,7 +96,6 @@ void CTrackViewKeyPropertiesDlg::OnVarChange(IVariable* pVar)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::CreateAllVars()
 {
     for (const auto& keyControl : m_keyControls)
@@ -109,7 +105,6 @@ void CTrackViewKeyPropertiesDlg::CreateAllVars()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::PopulateVariables()
 {
     // Must first clear any selection in properties window.
@@ -123,7 +118,6 @@ void CTrackViewKeyPropertiesDlg::PopulateVariables()
     ReloadValues();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::PopulateVariables(ReflectedPropertyControl* propCtrl)
 {
     propCtrl->RemoveAllItems();
@@ -132,7 +126,6 @@ void CTrackViewKeyPropertiesDlg::PopulateVariables(ReflectedPropertyControl* pro
     propCtrl->ReloadValues();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::OnKeysChanged(CTrackViewSequence* pSequence)
 {
     const CTrackViewKeyBundle& selectedKeys = pSequence->GetSelectedKeys();
@@ -156,7 +149,6 @@ void CTrackViewKeyPropertiesDlg::OnKeysChanged(CTrackViewSequence* pSequence)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* sequence)
 {
     m_sequence = sequence;
@@ -244,7 +236,6 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
     OnKeysChanged(sequence);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::AddVars(CTrackViewKeyUIControls* pUI)
 {
     CVarBlock* pVB = pUI->GetVarBlock();
@@ -255,7 +246,6 @@ void CTrackViewKeyPropertiesDlg::AddVars(CTrackViewKeyUIControls* pUI)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::ReloadValues()
 {
     m_wndProps->ReloadValues();
@@ -267,9 +257,6 @@ void CTrackViewKeyPropertiesDlg::OnSequenceChanged(CTrackViewSequence* sequence)
     m_wndTrackProps->OnSequenceChanged();
 }
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 CTrackViewTrackPropsDlg::CTrackViewTrackPropsDlg(QWidget* parent /* = 0 */)
     : QWidget(parent)
     , ui(new Ui::CTrackViewTrackPropsDlg)
@@ -291,7 +278,6 @@ CTrackViewTrackPropsDlg::~CTrackViewTrackPropsDlg()
 {
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrackPropsDlg::OnSequenceChanged()
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -303,8 +289,6 @@ void CTrackViewTrackPropsDlg::OnSequenceChanged()
     }
 }
 
-
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewTrackPropsDlg::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     m_keyHandle = CTrackViewKeyHandle();

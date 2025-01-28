@@ -6,23 +6,23 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWDOPESHEETBASE_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWDOPESHEETBASE_H
 #pragma once
 
-
 #include <IMovieSystem.h>
+#include "AnimationContext.h"
 #include "TrackViewNode.h"
 #include "TrackViewSequence.h"
-#include "AnimationContext.h"
+
 #include <QWidget>
 
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
+
 class CTVTrackPropsDialog;
-class CTrackViewNodesCtrl;
-class CTrackViewKeyPropertiesDlg;
-class CTrackViewNode;
 class CTrackViewTrack;
+class CTrackViewNodesCtrl;
+class CTrackViewNode;
+class CTrackViewKeyPropertiesDlg;
 class CTrackViewAnimNode;
 
 class QRubberBand;
@@ -70,7 +70,7 @@ public:
     void SetNodesCtrl(CTrackViewNodesCtrl* pNodesCtrl) { m_pNodesCtrl = pNodesCtrl; }
 
     void SetTimeScale(float timeScale, float fAnchorTime);
-    float GetTimeScale() { return m_timeScale; }
+    float GetTimeScale() const { return m_timeScale; }
 
     void SetScrollOffset(int hpos);
 
@@ -94,7 +94,7 @@ public:
     void SetEditLock(bool bLock) { m_bEditLock = bLock; }
 
     // IAnimationContextListener
-    virtual void OnTimeChanged(float newTime) override;
+    void OnTimeChanged(float newTime) override;
 
     float TickSnap(float time) const;
 
@@ -189,8 +189,6 @@ private:
     void MouseMoveDragEndMarker(const QPoint& point, Qt::KeyboardModifiers modifiers);
 
     void CancelDrag();
-
-    float SnapTime(Qt::KeyboardModifiers modifiers, const QPoint& p);
 
     void MouseMoveDragStartMarker(const QPoint& point, Qt::KeyboardModifiers modifiers);
     void MouseMoveStartEndTimeAdjust(const QPoint& point, bool bStart);
@@ -340,14 +338,12 @@ private:
 
         // Also need to store key selection states,
         // because RestoreMemento will destroy them
-        std::vector<bool> m_keySelectionStates;
+        AZStd::vector<bool> m_keySelectionStates;
     };
 
-    std::unordered_map<CTrackViewTrack*, TrackMemento> m_trackMementos;
+    AZStd::unordered_map<CTrackViewTrack*, TrackMemento> m_trackMementos;
 
-#ifdef DEBUG
+#ifdef AZ_DEBUG_BUILD
     unsigned int m_redrawCount;
 #endif
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWDOPESHEETBASE_H
