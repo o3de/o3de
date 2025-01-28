@@ -96,7 +96,8 @@ namespace AZ
                                     numMipsToRemove++;
                                 }
                             }
-                            assetData->RemoveFrontMipchains(AZStd::min(numMipsToRemove, assetData->GetMipChainCount() - 1));
+                            const size_t finalToRemove = AZStd::min(numMipsToRemove, assetData->GetMipChainCount() - 1);
+                            assetData->RemoveFrontMipchains(finalToRemove);
                         }
                     }
 #endif
