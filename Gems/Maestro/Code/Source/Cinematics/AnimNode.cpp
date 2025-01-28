@@ -45,12 +45,21 @@ namespace Maestro
 
     namespace
     {
-        // Old deprecated IDs
-        constexpr AnimParamType APARAM_CHARACTER4 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x10);
-        constexpr AnimParamType APARAM_CHARACTER6 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x12);
-        constexpr AnimParamType APARAM_CHARACTER7 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x13);
-        constexpr AnimParamType APARAM_CHARACTER8 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x14);
-        constexpr AnimParamType APARAM_CHARACTER10 = static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x16);
+        constexpr bool IsSoundRange(AnimParamType animParamType)
+        {
+            return animParamType >= AnimParamType::Sound &&
+                animParamType <= static_cast<AnimParamType>(static_cast<int>(AnimParamType::Sound) + 2);
+        }
+        constexpr bool IsAnimRange(AnimParamType animParamType)
+        {
+            return animParamType >= AnimParamType::Animation && animParamType <=
+                static_cast<AnimParamType>(static_cast<int>(AnimParamType::Animation) + 2);
+        }
+        constexpr bool IsUserAnimRange(AnimParamType animParamType)
+        {
+            return animParamType >= static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x10) &&
+                animParamType <= static_cast<AnimParamType>(static_cast<int>(AnimParamType::User) + 0x16);
+        }
     }
 
     static const EAnimCurveType DEFAULT_TRACK_TYPE = eAnimCurveType_BezierFloat;
@@ -490,15 +499,12 @@ namespace Maestro
                         //
                         // Legacy animation track.
                         // Collapse parameter ID to the single type
-                        if (paramType.GetType() >= AnimParamType::Sound && paramType.GetType() <= static_cast<AnimParamType>(static_cast<int>(AnimParamType::Sound) + 2))
+                        const auto animParamType = paramType.GetType();
+                        if (IsSoundRange(animParamType))
                         {
                             paramType = AnimParamType::Sound;
                         }
-                        if (paramType.GetType() >= AnimParamType::Animation && paramType.GetType() <= static_cast<AnimParamType>(static_cast<int>(AnimParamType::Animation) + 2))
-                        {
-                            paramType = AnimParamType::Animation;
-                        }
-                        if (paramType.GetType() >= APARAM_CHARACTER4 && paramType.GetType() <= APARAM_CHARACTER10)
+                        else if (IsAnimRange(animParamType) || IsUserAnimRange(animParamType))
                         {
                             paramType = AnimParamType::Animation;
                         }
