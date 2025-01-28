@@ -22,6 +22,9 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
+#if defined(CARBONATED)
+#include <AzFramework/IO/LocalFileIO.h>
+#endif
 
 #include <ISystem.h>
 
@@ -605,7 +608,7 @@ namespace AZ
                         resolution.m_height = static_cast<uint32_t>(windowSize.m_height * scale);
                     }
 #endif
-                    
+
                     m_nativeWindow->SetRenderResolution(resolution);
                     m_nativeWindow->SetFullScreenState(r_fullscreen);
                 }
@@ -814,6 +817,16 @@ namespace AZ
             {
                 SetWindowResolution();
             }
+
+            void BootstrapSystemComponent::SetWindowResolutionDirectly(AzFramework::WindowSize resolution)
+            {
+                if (m_nativeWindow)
+                {
+                    m_nativeWindow->SetRenderResolution(resolution);
+                    m_nativeWindow->SetFullScreenState(r_fullscreen);
+                }
+            }
+
 
             RPI::RenderPipelinePtr BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
                                                     AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, AZ::RHI::MultisampleState& multisampleState)
