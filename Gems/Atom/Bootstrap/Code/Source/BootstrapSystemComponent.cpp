@@ -22,9 +22,6 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
-#if defined(CARBONATED)
-#include <AzFramework/IO/LocalFileIO.h>
-#endif
 
 #include <ISystem.h>
 
