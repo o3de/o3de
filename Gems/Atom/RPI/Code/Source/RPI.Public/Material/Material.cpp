@@ -87,7 +87,6 @@ namespace AZ
             m_generalShaderCollection = {};
             m_materialPipelineData = {};
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
-
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             if (!m_materialAsset.IsReady())
             {
@@ -350,32 +349,10 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderVariantReinitialized %s", this, shaderVariant.GetShaderVariantAsset().GetHint().c_str());
 
-            // Move m_shaderVariantReadyEvent to a local AZ::Event in order to allow
-            // the handlers to be signaled outside of the mutex lock.
-            // This allows other threads to register their handlers while this thread
-            // is invoking Signal() on the current snapshot of handlers.
-            decltype(m_shaderVariantReadyEvent) localShaderVariantReadyEvent;
-            {
-                AZStd::scoped_lock lock(m_shaderVariantReadyEventMutex);
-                localShaderVariantReadyEvent = AZStd::move(m_shaderVariantReadyEvent);
-            }
-
             // Note: we don't need to re-compile the material if a shader variant is ready or changed
             // The DrawPacket created for the material need to be updated since the PSO need to be re-creaed.
-            // This event can be used to notify the owners to update their DrawPackets.
-            localShaderVariantReadyEvent.Signal();
-
-            // Finally restore m_shaderVariantReadyEvent but making sure to claim any new handlers that were added
-            // in other threads while Signal() was being called.
-            {
-                // Swap the local handlers with the current m_notifiers which
-                // will contain any handlers added during the signaling of the
-                // local event
-                AZStd::scoped_lock lock(m_shaderVariantReadyEventMutex);
-                AZStd::swap(m_shaderVariantReadyEvent, localShaderVariantReadyEvent);
-                // Append any added handlers to the m_notifier structure
-                m_shaderVariantReadyEvent.ClaimHandlers(AZStd::move(localShaderVariantReadyEvent));
-            }
+            // This event can be used to notify the owners to update their DrawPackets
+            m_shaderVariantReadyEvent.Signal();
         }
 
         void Material::ReInitKeepPropertyValues()
@@ -427,7 +404,6 @@ namespace AZ
 
         void Material::ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler)
         {
-            AZStd::scoped_lock lock(m_shaderVariantReadyEventMutex);
             handler.Connect(m_shaderVariantReadyEvent);
         }
 

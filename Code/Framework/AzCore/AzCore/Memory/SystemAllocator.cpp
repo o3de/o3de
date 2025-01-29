@@ -26,11 +26,6 @@
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
 
 #if !defined(AZCORE_SYSTEM_ALLOCATOR)
-    // We are using here AZCORE_SYSTEM_ALLOCATOR_HPHA for the sake of passing unit tests.
-    // But it's been found that, when using Vulkan, and working with levels that have
-    // large amount of meshes, entering/Exiting game mode puts lost of stress in memory allocation that crashes
-    // when using HPHA. With AZCORE_SYSTEM_ALLOCATOR_MALLOC crashes don't occur.
-    // TODO: Review Github Issue #18597
     #define AZCORE_SYSTEM_ALLOCATOR AZCORE_SYSTEM_ALLOCATOR_HPHA
 #endif
 

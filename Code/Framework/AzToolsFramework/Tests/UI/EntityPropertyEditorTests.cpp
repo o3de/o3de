@@ -6,27 +6,27 @@
  *
  */
 
-#include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/sort.h>
 #include <AzCore/UnitTest/TestTypes.h>
-
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
-
-#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+
+#include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
+#include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
+#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
-#include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
-#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
-#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
+
+#include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/std/sort.h>
 
 #include <QApplication>
+
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace UnitTest
 {
@@ -78,7 +78,7 @@ namespace UnitTest
 
         // When this sort happens, the transformComponent should move to the top, the AssetDatabase should move to second, the order of the others should be unaltered, 
         // merely moved to after the AssetDatabase.
-        SortComponentsByPriority(orderedComponents);
+        EntityPropertyEditor::SortComponentsByPriority(orderedComponents);
 
         // Check the component arrays are intact.
         EXPECT_EQ(orderedComponents.size(), unorderedComponents.size());

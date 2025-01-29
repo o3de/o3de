@@ -14,7 +14,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -66,8 +65,8 @@ namespace AzToolsFramework
 
         void EditorEntityIconComponent::Activate()
         {
-            m_needsInitialUpdate = true;
             EditorComponentBase::Activate();
+            AZ::EntityBus::Handler::BusConnect(GetEntityId());
             EditorEntityIconComponentRequestBus::Handler::BusConnect(GetEntityId());
             EditorInspectorComponentNotificationBus::Handler::BusConnect(GetEntityId());
         }
@@ -76,6 +75,7 @@ namespace AzToolsFramework
         {
             EditorInspectorComponentNotificationBus::Handler::BusDisconnect();
             EditorEntityIconComponentRequestBus::Handler::BusDisconnect();
+            AZ::EntityBus::Handler::BusDisconnect();
             EditorComponentBase::Deactivate();
         }
 
@@ -83,14 +83,8 @@ namespace AzToolsFramework
         {
             if (m_entityIconAssetId != assetId)
             {
-                // Note that we could be going from a situation where we had an icon, to one where we don't so the cache needs refreshing.
-                if (!assetId.IsValid())
-                {
-                    m_needsInitialUpdate = true;
-                }
                 m_entityIconAssetId = assetId;
-                m_entityIconCache.SetEntityIconPath(CalculateEntityIconPath());
-                                
+                m_entityIconCache.SetEntityIconPath(CalculateEntityIconPath(m_firstComponentIdCache));
                 EditorEntityIconComponentNotificationBus::Event(GetEntityId(), &EditorEntityIconComponentNotificationBus::Events::OnEntityIconChanged, m_entityIconAssetId);
                 SetDirty();
             }
@@ -103,38 +97,36 @@ namespace AzToolsFramework
 
         AZStd::string EditorEntityIconComponent::GetEntityIconPath()
         {
-            RefreshCachesIfNecessary();
+            if (m_entityIconCache.Empty())
+            {
+                UpdateFirstComponentIdCache();
+                m_entityIconCache.SetEntityIconPath(CalculateEntityIconPath(m_firstComponentIdCache));
+            }
+
             return m_entityIconCache.GetEntityIconPath();
         }
 
         int EditorEntityIconComponent::GetEntityIconTextureId()
         {
-            RefreshCachesIfNecessary();
             return m_entityIconCache.GetEntityIconTextureId();
-        }
-
-        void EditorEntityIconComponent::RefreshCachesIfNecessary()
-        {
-            if (!m_needsInitialUpdate)
-            {
-                return;
-            }
-
-            m_needsInitialUpdate = false;
-
-            if (m_firstComponentIdCache == AZ::InvalidComponentId)
-            {
-                UpdatePreferNoViewportIconFlag();
-                UpdateFirstComponentIdCache();
-            }
-
-            m_entityIconCache.SetEntityIconPath(CalculateEntityIconPath());
         }
 
         bool EditorEntityIconComponent::IsEntityIconHiddenInViewport()
         {
-            RefreshCachesIfNecessary();
             return (!m_entityIconAssetId.IsValid() && m_preferNoViewportIcon);
+        }
+
+        void EditorEntityIconComponent::OnEntityActivated(const AZ::EntityId&)
+        {
+            if (m_entityIconCache.Empty())
+            {
+                /* The case where the entity is activated the first time. */
+
+                UpdatePreferNoViewportIconFlag();
+                UpdateFirstComponentIdCache();
+                m_entityIconCache.SetEntityIconPath(CalculateEntityIconPath(m_firstComponentIdCache));
+                EditorEntityIconComponentNotificationBus::Event(GetEntityId(), &EditorEntityIconComponentNotificationBus::Events::OnEntityIconChanged, m_entityIconAssetId);
+            }
         }
 
         void EditorEntityIconComponent::OnComponentOrderChanged()
@@ -146,23 +138,22 @@ namespace AzToolsFramework
 
                 if (firstComponentIdChanged)
                 {
-                    m_entityIconCache.SetEntityIconPath(GetDefaultEntityIconPath());
+                    m_entityIconCache.SetEntityIconPath(GetDefaultEntityIconPath(m_firstComponentIdCache));
                     EditorEntityIconComponentNotificationBus::Event(GetEntityId(), &EditorEntityIconComponentNotificationBus::Events::OnEntityIconChanged, m_entityIconAssetId);
                 }
                 else if (preferNoViewportIconFlagChanged)
                 {
                     EditorEntityIconComponentNotificationBus::Event(GetEntityId(), &EditorEntityIconComponentNotificationBus::Events::OnEntityIconChanged, m_entityIconAssetId);
                 }
-                m_needsInitialUpdate = false; // avoid doing the work twice.
             }
         }
 
-        AZStd::string EditorEntityIconComponent::CalculateEntityIconPath()
+        AZStd::string EditorEntityIconComponent::CalculateEntityIconPath(AZ::ComponentId firstComponentId)
         {
             AZStd::string entityIconPath = GetEntityIconAssetPath();
             if (entityIconPath.empty())
             {
-                entityIconPath = GetDefaultEntityIconPath();
+                entityIconPath = GetDefaultEntityIconPath(firstComponentId);
             }
             return entityIconPath;
         }
@@ -191,12 +182,9 @@ namespace AzToolsFramework
             }
         }
 
-        AZStd::string EditorEntityIconComponent::GetDefaultEntityIconPath()
+        AZStd::string EditorEntityIconComponent::GetDefaultEntityIconPath(AZ::ComponentId firstComponentId)
         {
             AZStd::string entityIconPath;
-
-            RefreshCachesIfNecessary();
-            AZ::ComponentId firstComponentId = m_firstComponentIdCache;
 
             if (firstComponentId != AZ::InvalidComponentId)
             {
@@ -222,48 +210,32 @@ namespace AzToolsFramework
 
         bool EditorEntityIconComponent::UpdateFirstComponentIdCache()
         {
-            // The idea here is to find the first component that is not a fixed component (like TransformComponent, UniformScaleComponent,
-            // etc.) on the entity and use that as the default icon.
-            // The entity only stores its component order if the component order is different from the default order, which is only the case
-            // if the user has personally modified the order of the components, which is not the case for the vast majority of entities in real levels.
-            // So to figure out the icon, we need to essentially do the same work the inspector would do, which is to take the components on the entity
-            // and filter out the invisible ones, then sort them by order if order is present, and then by priority.
             bool firstComponentIdChanged = false;
             ComponentOrderArray componentOrderArray;
             EditorInspectorComponentRequestBus::EventResult(componentOrderArray, GetEntityId(), &EditorInspectorComponentRequests::GetComponentOrderArray);
-            AZ::Entity::ComponentArrayType components;
-            components = GetEntity()->GetComponents();
-            RemoveHiddenComponents(components);
-            SortComponentsByOrder(GetEntity()->GetId(), components);
-            SortComponentsByPriority(components);
-
-            AZ::ComponentId componentIdToSet = AZ::InvalidComponentId;
-            // we want to use the first "non-fixed" component on the entity (ie, not the uniform scale, or transform) but we'll settle for
-            // the first visible component if we can't find one.
-            if (!components.empty())
+            if (componentOrderArray.empty())
             {
-                for (const AZ::Component* component : components)
+                if (m_firstComponentIdCache != AZ::InvalidComponentId)
                 {
-                    if (componentIdToSet == AZ::InvalidComponentId)
-                    {
-                        // initialize it to the first one as a fallback
-                        componentIdToSet = component->GetId();
-                    }
-                    else
-                    {
-                        if (IsComponentDraggable(component))
-                        {
-                            componentIdToSet = component->GetId();
-                            break;
-                        }
-                    }
+                    m_firstComponentIdCache = AZ::InvalidComponentId;
+                    firstComponentIdChanged = true;
                 }
             }
-
-            if (m_firstComponentIdCache != componentIdToSet)
+            else
             {
-                m_firstComponentIdCache = componentIdToSet;
-                firstComponentIdChanged = true;
+                if (componentOrderArray.size() > 1)
+                {
+                    if (m_firstComponentIdCache != componentOrderArray[1])
+                    {
+                        m_firstComponentIdCache = componentOrderArray[1];
+                        firstComponentIdChanged = true;
+                    }
+                }
+                else if(m_firstComponentIdCache != componentOrderArray.front())
+                {
+                    m_firstComponentIdCache = componentOrderArray.front();
+                    firstComponentIdChanged = true;
+                }
             }
 
             return firstComponentIdChanged;
