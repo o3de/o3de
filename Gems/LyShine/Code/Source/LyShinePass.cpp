@@ -120,10 +120,8 @@ namespace LyShine
         AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
         if (attachmentImage)
         {
-            auto passName = attachmentImage->GetRHIImage()->GetName(); // Use attachment name (but not attachment id) as pass name so the
-                                                                       // pass can be found by GetRttPass() function
-            AZ::RPI::Ptr<RttChildPass> rttChildPass =
-                azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), passName).get());
+            auto passName = attachmentImage->GetRHIImage()->GetName(); // Use attachment name (but not attachment id) as pass name so the pass can be found by GetRttPass() function
+            AZ::RPI::Ptr<RttChildPass> rttChildPass = azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), passName).get());
             AZ_Assert(rttChildPass, "[LyShinePass] Unable to create a RttChildPass.");
 
             // Store the info needed to attach to slots and set up frame graph dependencies
