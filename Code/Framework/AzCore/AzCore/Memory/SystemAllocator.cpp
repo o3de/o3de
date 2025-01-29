@@ -18,6 +18,13 @@
 #include <AzCore/Debug/Profiler.h>
 #include <memory>
 
+// Please note that AZCORE_SYSTEM_ALLOCATOR
+// are ONLY considered #defined for AzCore static library itself.
+// Do not use them in a header file or any other file.
+// If you need to change the system allocator behavior based on this define,
+//  then override the function from IAllocator in the header (without depending on the define),
+//  and then implement the different behavior in this cpp or another cpp in AzCore.
+
 // HPHA uses the high performance heap allocator for system allocations
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
 
@@ -40,8 +47,24 @@
 
 #include <AzCore/Memory/HphaAllocator.h>
 
+#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
+#include <AzCore/std/parallel/atomic.h>
+#endif
+
+
 namespace AZ
 {
+#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
+    namespace SystemAllocatorPrivate
+    {
+        // when using malloc, we track the number of allocated bytes directly instead of via a sub allocator.
+        // note that there should only be one instance, ever, of system allocator, and it is always accessed via the environment
+        // which ensures that the code below is always running in the same context (usually in o3dekernel shared library).
+        static AZStd::atomic<SystemAllocator::size_type> g_AllocatedBytes = {0};
+    };
+
+#endif
+
     //////////////////////////////////////////////////////////////////////////
     AZ_TYPE_INFO_WITH_NAME_IMPL(SystemAllocator, "SystemAllocator", "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}");
     AZ_RTTI_NO_TYPE_INFO_IMPL(SystemAllocator, AllocatorBase);
@@ -81,6 +104,16 @@ namespace AZ
             .ExcludeFromDebugging(false);
     }
 
+    SystemAllocator::size_type SystemAllocator::NumAllocatedBytes() const
+    {
+#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+        return SystemAllocatorPrivate::g_AllocatedBytes;
+#else
+        return m_subAllocator->NumAllocatedBytes();
+ #endif
+    }
+
+
     //=========================================================================
     // Allocate
     // [9/2/2009]
@@ -97,6 +130,10 @@ namespace AZ
 
 #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
         AllocateAddress address(AZ_OS_MALLOC(byteSize, alignment), byteSize);
+        if (address)
+        {
+            SystemAllocatorPrivate::g_AllocatedBytes += AZ_OS_MSIZE(address.m_value, alignment);
+        }
 #else
         byteSize = MemorySizeAdjustedUp(byteSize);
         AllocateAddress address =
@@ -133,7 +170,10 @@ namespace AZ
     {
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+            byteSize = byteSize == 0 ? AZ_OS_MSIZE(ptr, alignment) : byteSize;
             AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
+            AZ_Assert(SystemAllocatorPrivate::g_AllocatedBytes >= byteSize, "SystemAllocator: Deallocating more memory than allocated!");
+            SystemAllocatorPrivate::g_AllocatedBytes -= byteSize;
             AZ_OS_FREE(ptr);
             return byteSize;
         #else
@@ -152,7 +192,13 @@ namespace AZ
     {
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
+            AZ_Assert(SystemAllocatorPrivate::g_AllocatedBytes >= AZ_OS_MSIZE(ptr, newAlignment), "SystemAllocator: Deallocating more memory than allocated!");
+            SystemAllocatorPrivate::g_AllocatedBytes -= AZ_OS_MSIZE(ptr, newAlignment);
             AllocateAddress newAddress(AZ_OS_REALLOC(ptr, newSize, newAlignment), newSize);
+            if (newAddress)
+            {
+                SystemAllocatorPrivate::g_AllocatedBytes += newSize;
+            }
             [[maybe_unused]] const size_type allocatedSize = newSize;
         #else
             newSize = MemorySizeAdjustedUp(newSize);

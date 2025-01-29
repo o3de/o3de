@@ -26,6 +26,11 @@ namespace AZStd
 {
     namespace Internal
     {
+        inline bool IsValidUtf8(const char* str, size_t length)
+        {
+            return Utf8::is_valid(str, str + length);
+        }
+
         template<size_t Size = sizeof(wchar_t)>
         struct WCharTPlatformConverter
         {
@@ -82,28 +87,43 @@ namespace AZStd
             }
 
             template<class Allocator>
-            static inline void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
+            static inline bool to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
             {
+                if (!IsValidUtf8(src.begin(), src.size()))
+                {
+                    return false;
+                }
+
                 if constexpr (Size == 2)
                 {
                     Utf8::Unchecked::utf8to16(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf8to32(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
             }
 
+            // note that this template is only ever instantiated on size 2 and 4 so adding anything after the if statements will result in unreachable code.
             template<size_t MaxElementCount>
-            static inline void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
+            static inline bool to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
             {
+                if (!IsValidUtf8(src.begin(), src.size()))
+                {
+                    return false;
+                }
+
                 if constexpr (Size == 2)
                 {
                     Utf8::Unchecked::utf8to16(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf8to32(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
             }
 
@@ -426,26 +446,41 @@ namespace AZStd
     inline AZStd::wstring to_wstring(long double val)           { AZStd::wstring wstr; to_wstring(wstr, val); return wstr; }
 
     template<class Allocator>
-    void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
+    bool to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
     {
         dest.clear();
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         Internal::WCharTPlatformConverter<>::to_wstring(dest, src);
+        return true;
     }
 
     template<size_t MaxElementCount>
-    void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
+    bool to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
     {
         dest.clear();
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         Internal::WCharTPlatformConverter<>::to_wstring(dest, src);
+        return true;
     }
 
-    inline void to_wstring(wchar_t* dest, size_t destSize, AZStd::string_view src)
+    inline bool to_wstring(wchar_t* dest, size_t destSize, AZStd::string_view src)
     {
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         wchar_t* endWStr = Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, src);
         if (endWStr < (dest + destSize))
         {
             *endWStr = '\0'; // null terminator
         }
+        return true;
     }
 
 

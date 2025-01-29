@@ -297,7 +297,7 @@ namespace UnitTest
 
         // When
         RepeatDiagonalMouseMovements(
-            [this]
+            []
             {
                 return GetParam();
             });
