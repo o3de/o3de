@@ -321,7 +321,7 @@
                     "productAssetType": "{B36FEB5C-41B6-4B58-A212-21EF5AEF523C}"
                 },
                 "RC png-entityicon": {
-                    "pattern": "(.*EntityIcons\\\\/).*\\\\.png",
+                    "pattern": "(.*(EntityIcons|Editor\\\\/Icons)\\\\/).*\\\\.(png|svg)",
                     "productAssetType": "{3436C30E-E2C5-4C3B-A7B9-66C94A28701B}",
                     "params": "skip",
                     "tools": "copy"
