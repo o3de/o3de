@@ -20,7 +20,7 @@
                 "Name": "Greyscale",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "ASTC_4x4",
+                "PixelFormat": "ASTC_6x6",
                 "Swizzle": "rrr1",
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -31,7 +31,7 @@
                 "Name": "Greyscale",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "ASTC_4x4",
+                "PixelFormat": "ASTC_6x6",
                 "Swizzle": "rrr1",
                 "MipMapSetting": {
                     "MipGenType": "Box"

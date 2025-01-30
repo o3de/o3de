@@ -4,10 +4,11 @@
     "ClassName": "MultiplatformPresetSettings",
     "ClassData": {
         "DefaultPreset": {
-            "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
-            "Name": "AlbedoWithCoverage",
+            "UUID": "{4C32F246-5CEF-46BA-B7A1-9036A5ABE807}",
+            "Name": "WorldmaptileNoAlpha",
             "RGB_Weight": "CIEXYZ",
-            "PixelFormat": "BC1a",
+            "PixelFormat": "BC1",
+            "DiscardAlpha": true,
             "IsPowerOf2": true,
             "MipMapSetting": {
                 "MipGenType": "Box"
@@ -15,40 +16,46 @@
         },
         "PlatformsPresets": {
             "android": {
-                "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
-                "Name": "AlbedoWithCoverage",
+                "UUID": "{4C32F246-5CEF-46BA-B7A1-9036A5ABE807}",
+                "Name": "WorldmaptileNoAlpha",
                 "RGB_Weight": "CIEXYZ",
-                "PixelFormat": "ASTC_6x6",
+                "PixelFormat": "ASTC_8x8",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
             },
             "ios": {
-                "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
-                "Name": "AlbedoWithCoverage",
+                "UUID": "{4C32F246-5CEF-46BA-B7A1-9036A5ABE807}",
+                "Name": "WorldmaptileNoAlpha",
                 "RGB_Weight": "CIEXYZ",
-                "PixelFormat": "ASTC_6x6",
+                "PixelFormat": "ASTC_8x8",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
             },
             "mac": {
-                "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
-                "Name": "AlbedoWithCoverage",
+                "UUID": "{4C32F246-5CEF-46BA-B7A1-9036A5ABE807}",
+                "Name": "WorldmaptileNoAlpha",
                 "RGB_Weight": "CIEXYZ",
-                "PixelFormat": "BC1a",
+                "PixelFormat": "BC1",
+                "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
             },
             "provo": {
-                "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
-                "Name": "AlbedoWithCoverage",
+                "UUID": "{4C32F246-5CEF-46BA-B7A1-9036A5ABE807}",
+                "Name": "WorldmaptileNoAlpha",
                 "RGB_Weight": "CIEXYZ",
-                "PixelFormat": "BC1a",
+                "PixelFormat": "BC1",
+                "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
