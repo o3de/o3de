@@ -541,12 +541,45 @@ namespace UnitTest
     {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansXYZ(param.euler), IsClose(param.result));
+
+        // Test backwards computation Quaternion -> Tait-Brian angles
+        const auto sourceDegrees = Vector3RadToDeg(param.euler);
+        const bool isGimbleLock = fabs(fabs(sourceDegrees.GetY()) - 90.0f) < Constants::Tolerance;
+
+        const auto anglesTaitBryanRadiansXYZ = param.result.GetEulerRadiansXYZ();
+
+        const auto resultDegrees = Vector3RadToDeg(anglesTaitBryanRadiansXYZ);
+        auto succeeded = resultDegrees.IsClose(sourceDegrees);
+        EXPECT_TRUE((succeeded || isGimbleLock));
+
+        // O3DE_DEPRECATION_NOTICE(GHI-10929)
+        // Test backwards computation Quaternion -> Euler (actually Tait-Brian) angles
+        // with the method GetEulerRadians(), which is subject to deprecation,
+        // as methods to be deprecated are roughly equivalent in computations:
+        // - SetFromEulerRadians(), CreateFromEulerAnglesRadians(), ConvertEulerRadiansToQuaternion() - with CreateFromEulerRadiansXYZ();
+        // - SetFromEulerDegrees(), CreateFromEulerAnglesDegrees(), ConvertEulerDegreesToQuaternion() - with CreateFromEulerDegreesXYZ();
+        // - GetEulerRadians() - with GetEulerRadiansXYZ(), which is somewhat optimized;
+        // - GetEulerDegrees() - with GetEulerDegreesXYZ().
+        const auto anglesEulerRadians = param.result.GetEulerRadians();
+
+        const auto resultEulerDegrees = Vector3RadToDeg(anglesEulerRadians);
+        succeeded = succeeded && resultDegrees.IsClose(resultEulerDegrees);
+        EXPECT_TRUE((succeeded || isGimbleLock));
     }
 
     TEST_P(AngleRadianTestFixtureXYZ, EulerDegreesXYZ)
     {
         auto& param = GetParam();
-        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesXYZ(Vector3RadToDeg(param.euler)), IsClose(param.result));
+        const auto sourceDegrees = Vector3RadToDeg(param.euler);
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesXYZ(sourceDegrees), IsClose(param.result));
+
+        // Test backwards computation Quaternion -> Tait-Brian angles
+        const bool isGimbleLock = fabs(fabs(sourceDegrees.GetY()) - 90.0f) < Constants::Tolerance;
+
+        const auto anglesTaitBryanDegreesXYZ = param.result.GetEulerDegreesXYZ();
+
+        auto succeeded = anglesTaitBryanDegreesXYZ.IsClose(sourceDegrees);
+        EXPECT_TRUE((succeeded || isGimbleLock));
     }
 
     INSTANTIATE_TEST_CASE_P(
@@ -566,20 +599,20 @@ namespace UnitTest
             EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) *
                 AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
             EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
                 
             EulerTestArgs{ AZ::Vector3(AZ::Constants::HalfPi, 0, AZ::Constants::QuarterPi), 
                 AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
-            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, -AZ::Constants::HalfPi, AZ::Constants::QuarterPi), 
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
+            EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, -AZ::Constants::HalfPi, AZ::Constants::QuarterPi),
                 AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) *
                 AZ::Quaternion::CreateRotationY(-AZ::Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
             EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, AZ::Constants::HalfPi, AZ::Constants::TwoOverPi), 
                 AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) *
                 AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoOverPi)}
-                ));
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoOverPi) }
+        ));
 
     using AngleRadianTestFixtureYXZ = ::testing::TestWithParam<EulerTestArgs>;
 
@@ -587,12 +620,27 @@ namespace UnitTest
     {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansYXZ(param.euler), IsClose(param.result));
+
+        // Test backwards computation Quaternion -> Tait-Brian angles
+        const auto sourceDegrees = Vector3RadToDeg(param.euler);
+
+        const auto anglesTaitBryanRadiansYXZ = param.result.GetEulerRadiansYXZ();
+
+        const auto resultDegrees = Vector3RadToDeg(anglesTaitBryanRadiansYXZ);
+        EXPECT_TRUE(resultDegrees.IsClose(sourceDegrees));
     }
 
     TEST_P(AngleRadianTestFixtureYXZ, EulerDegreesYXZ)
     {
         auto& param = GetParam();
-        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesYXZ(Vector3RadToDeg(param.euler)), IsClose(param.result));
+        const auto sourceDegrees = Vector3RadToDeg(param.euler);
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesYXZ(sourceDegrees), IsClose(param.result));
+
+        // Test backwards computation Quaternion -> Tait-Brian angles
+        const auto anglesTaitBryanRadiansYXZ = param.result.GetEulerRadiansYXZ();
+
+        const auto resultDegrees = Vector3RadToDeg(anglesTaitBryanRadiansYXZ);
+        EXPECT_TRUE(resultDegrees.IsClose(sourceDegrees));
     }
 
     INSTANTIATE_TEST_CASE_P(
@@ -612,34 +660,52 @@ namespace UnitTest
             EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) *
                 AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
             EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
 
             EulerTestArgs{ AZ::Vector3(AZ::Constants::HalfPi, 0, AZ::Constants::QuarterPi), 
                 AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
             EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, -AZ::Constants::HalfPi, AZ::Constants::QuarterPi), 
                 AZ::Quaternion::CreateRotationY(-AZ::Constants::HalfPi) *
                 AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi)},
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
             EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, AZ::Constants::HalfPi, AZ::Constants::TwoOverPi), 
                 AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi) *
                 AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoOverPi)}
-                
+                AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoOverPi) }
         ));
 
     using AngleRadianTestFixtureZYX = ::testing::TestWithParam<EulerTestArgs>;
 
-    TEST_P(AngleRadianTestFixtureZYX, EulerRadiansYXZ)
+    TEST_P(AngleRadianTestFixtureZYX, EulerRadiansZYX)
     {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansZYX(param.euler), IsClose(param.result));
+
+        // Test backwards computation Quaternion -> Tait-Brian angles
+        const auto sourceDegrees = Vector3RadToDeg(param.euler);
+        const bool isGimbleLock = fabs(fabs(sourceDegrees.GetY()) - 90.0f) < Constants::Tolerance;
+
+        const auto anglesTaitBryanRadiansZYX = param.result.GetEulerRadiansZYX();
+
+        const auto resultDegrees = Vector3RadToDeg(anglesTaitBryanRadiansZYX);
+        const auto succeeded = resultDegrees.IsClose(sourceDegrees);
+        EXPECT_TRUE((succeeded || isGimbleLock));
     }
 
-    TEST_P(AngleRadianTestFixtureZYX, EulerDegreesYXZ)
+    TEST_P(AngleRadianTestFixtureZYX, EulerDegreesZYX)
     {
         auto& param = GetParam();
-        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesZYX(Vector3RadToDeg(param.euler)), IsClose(param.result));
+        const auto sourceDegrees = Vector3RadToDeg(param.euler);
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesZYX(sourceDegrees), IsClose(param.result));
+
+        // Test backwards computation Quaternion -> Tait-Brian angles
+        const bool isGimbleLock = fabs(fabs(sourceDegrees.GetY()) - 90.0f) < Constants::Tolerance;
+
+        const auto anglesTaitBryanDegreesZYX = param.result.GetEulerDegreesZYX();
+
+        const auto succeeded = anglesTaitBryanDegreesZYX.IsClose(sourceDegrees);
+        EXPECT_TRUE((succeeded || isGimbleLock));
     }
 
     INSTANTIATE_TEST_CASE_P(
@@ -659,19 +725,19 @@ namespace UnitTest
             EulerTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
                 AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) },
             EulerTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi)},
+                AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) },
                 
             EulerTestArgs{ AZ::Vector3(AZ::Constants::HalfPi, 0, AZ::Constants::QuarterPi), 
                 AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
-                AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi)},
+                AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi) },
             EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, -AZ::Constants::HalfPi, AZ::Constants::QuarterPi), 
                 AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
                 AZ::Quaternion::CreateRotationY(-AZ::Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi)},
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) },
             EulerTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, AZ::Constants::HalfPi, AZ::Constants::TwoOverPi), 
                 AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoOverPi) *
                 AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi) *
-                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi)}
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) }
         ));
 
 } // namespace UnitTest
