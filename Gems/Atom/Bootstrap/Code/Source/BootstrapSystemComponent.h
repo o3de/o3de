@@ -73,6 +73,9 @@ namespace AZ
                 void SwitchAntiAliasing(const AZStd::string& newAntiAliasing, AZ::RPI::ViewportContextPtr viewportContext) override;
                 void SwitchMultiSample(const uint16_t newSampleCount, AZ::RPI::ViewportContextPtr viewportContext) override;
                 void RefreshWindowResolution() override;
+#if defined(CARBONATED)
+                void SetWindowResolutionDirectly(AzFramework::WindowSize resolution) override;
+#endif
 
             protected:
                 // Component overrides ...

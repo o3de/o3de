@@ -605,7 +605,7 @@ namespace AZ
                         resolution.m_height = static_cast<uint32_t>(windowSize.m_height * scale);
                     }
 #endif
-                    
+
                     m_nativeWindow->SetRenderResolution(resolution);
                     m_nativeWindow->SetFullScreenState(r_fullscreen);
                 }
@@ -814,6 +814,17 @@ namespace AZ
             {
                 SetWindowResolution();
             }
+        
+#if defined(CARBONATED)
+            void BootstrapSystemComponent::SetWindowResolutionDirectly(AzFramework::WindowSize resolution)
+            {
+                if (m_nativeWindow)
+                {
+                    m_nativeWindow->SetRenderResolution(resolution);
+                    m_nativeWindow->SetFullScreenState(r_fullscreen);
+                }
+            }
+#endif
 
             RPI::RenderPipelinePtr BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
                                                     AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, AZ::RHI::MultisampleState& multisampleState)
