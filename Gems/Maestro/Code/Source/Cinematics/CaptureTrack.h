@@ -6,30 +6,26 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_CAPTURETRACK_H
-#define CRYINCLUDE_CRYMOVIE_CAPTURETRACK_H
-
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-/** A track for capturing a movie from the engine rendering.
-*/
-class CCaptureTrack
-    : public TAnimTrack<ICaptureKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CCaptureTrack, AZ::SystemAllocator);
-    AZ_RTTI(CCaptureTrack, "{72505F9F-C098-4435-9C95-79013C4DD70B}", IAnimTrack);
 
-    void SerializeKey(ICaptureKey& key, XmlNodeRef& keyNode, bool bLoading);
-    void GetKeyInfo(int key, const char*& description, float& duration);
+    /** A track for capturing a movie from the engine rendering.
+     */
+    class CCaptureTrack : public TAnimTrack<ICaptureKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CCaptureTrack, AZ::SystemAllocator);
+        AZ_RTTI(CCaptureTrack, "{72505F9F-C098-4435-9C95-79013C4DD70B}", IAnimTrack);
 
-    static void Reflect(AZ::ReflectContext* context);
-};
+        void SerializeKey(ICaptureKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
 
-#endif // CRYINCLUDE_CRYMOVIE_CAPTURETRACK_H
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
+} // namespace Maestro

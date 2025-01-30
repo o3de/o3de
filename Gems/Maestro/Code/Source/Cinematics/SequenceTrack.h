@@ -6,26 +6,24 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_SEQUENCETRACK_H
-#define CRYINCLUDE_CRYMOVIE_SEQUENCETRACK_H
-
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
-class CSequenceTrack
-    : public TAnimTrack<ISequenceKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CSequenceTrack, AZ::SystemAllocator);
-    AZ_RTTI(CSequenceTrack, "{5801883A-5289-4FA1-BECE-9EF02C1D62F5}", IAnimTrack);
 
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(ISequenceKey& key, XmlNodeRef& keyNode, bool bLoading);
+    class CSequenceTrack : public TAnimTrack<ISequenceKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CSequenceTrack, AZ::SystemAllocator);
+        AZ_RTTI(CSequenceTrack, "{5801883A-5289-4FA1-BECE-9EF02C1D62F5}", IAnimTrack);
 
-    static void Reflect(AZ::ReflectContext* context);
-};
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey(ISequenceKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
-#endif // CRYINCLUDE_CRYMOVIE_SEQUENCETRACK_H
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
+} // namespace Maestro

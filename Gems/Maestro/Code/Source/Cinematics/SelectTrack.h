@@ -6,32 +6,28 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_SELECTTRACK_H
-#define CRYINCLUDE_CRYMOVIE_SELECTTRACK_H
-
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-/** Select track. Used to select Cameras on a Director's Camera Track
-*/
-class CSelectTrack
-    : public TAnimTrack<ISelectKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CSelectTrack, AZ::SystemAllocator);
-    AZ_RTTI(CSelectTrack, "{D05D53BF-86D1-4D38-A3C6-4EFC09C16431}", IAnimTrack);
 
-    AnimValueType GetValueType();
+    /** Select track. Used to select Cameras on a Director's Camera Track
+     */
+    class CSelectTrack : public TAnimTrack<ISelectKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CSelectTrack, AZ::SystemAllocator);
+        AZ_RTTI(CSelectTrack, "{D05D53BF-86D1-4D38-A3C6-4EFC09C16431}", IAnimTrack);
 
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(ISelectKey& key, XmlNodeRef& keyNode, bool bLoading);
+        AnimValueType GetValueType() override;
 
-    static void Reflect(AZ::ReflectContext* context);
-};
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey(ISelectKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
-#endif // CRYINCLUDE_CRYMOVIE_SELECTTRACK_H
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
+} // namespace Maestro
