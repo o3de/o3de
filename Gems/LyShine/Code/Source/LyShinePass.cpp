@@ -118,18 +118,21 @@ namespace LyShine
     {
         // Add a pass that renders to the specified texture
         AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
-        auto passName = attachmentImage->GetRHIImage()->GetName(); // Use attachment name (but not attachment id) as pass name so the pass can be found by GetRttPass() function
-        AZ::RPI::Ptr<RttChildPass> rttChildPass = azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), passName).get());
-        AZ_Assert(rttChildPass, "[LyShinePass] Unable to create a RttChildPass.");
+        if (attachmentImage)
+        {
+            auto passName = attachmentImage->GetRHIImage()->GetName(); // Use attachment name (but not attachment id) as pass name so the pass can be found by GetRttPass() function
+            AZ::RPI::Ptr<RttChildPass> rttChildPass = azrtti_cast<RttChildPass*>(passSystem->CreatePassFromTemplate(AZ::Name("RttChildPassTemplate"), passName).get());
+            AZ_Assert(rttChildPass, "[LyShinePass] Unable to create a RttChildPass.");
 
-        // Store the info needed to attach to slots and set up frame graph dependencies
-        rttChildPass->m_attachmentImage = attachmentImage;
-        rttChildPass->m_attachmentImageDependencies = attachmentImageDependencies;
+            // Store the info needed to attach to slots and set up frame graph dependencies
+            rttChildPass->m_attachmentImage = attachmentImage;
+            rttChildPass->m_attachmentImageDependencies = attachmentImageDependencies;
 
-        // Disable by default, the RenderGraph will enable it when render to render target
-        rttChildPass->SetEnabled(false);
+            // Disable by default, the RenderGraph will enable it when render to render target
+            rttChildPass->SetEnabled(false);
 
-        AddChild(rttChildPass);
+            AddChild(rttChildPass);
+        }
     }
 
     void LyShinePass::AddUiCanvasChildPass(LyShine::AttachmentImagesAndDependencies AttachmentImagesAndDependencies)

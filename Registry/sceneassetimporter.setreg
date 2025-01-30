@@ -14,7 +14,8 @@
                     ".usd",
                     ".usda",
                     ".usdz",
-                    ".usdc"
+                    ".usdc",
+                    ".obj"
                 ]
             },
             "MaterialConverter": 
