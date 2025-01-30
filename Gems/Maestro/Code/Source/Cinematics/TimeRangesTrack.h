@@ -6,36 +6,33 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_TIMERANGESTRACK_H
-#define CRYINCLUDE_CRYMOVIE_TIMERANGESTRACK_H
 #pragma once
 
-
-//forward declarations.
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
-/** CTimeRangesTrack contains keys that represent generic time ranges
-*/
-class CTimeRangesTrack
-    : public TAnimTrack<ITimeRangeKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CTimeRangesTrack, AZ::SystemAllocator);
-    AZ_RTTI(CTimeRangesTrack, "{6BD2B893-7E42-47C7-92B3-5C58F8AE33F3}", IAnimTrack);
 
-    // IAnimTrack.
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
-    void SerializeKey(ITimeRangeKey& key, XmlNodeRef& keyNode, bool bLoading);
+    /** CTimeRangesTrack contains keys that represent generic time ranges
+     */
+    class CTimeRangesTrack : public TAnimTrack<ITimeRangeKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CTimeRangesTrack, AZ::SystemAllocator);
+        AZ_RTTI(CTimeRangesTrack, "{6BD2B893-7E42-47C7-92B3-5C58F8AE33F3}", IAnimTrack);
 
-    //! Gets the duration of an animation key.
-    float GetKeyDuration(int key) const;
+        // IAnimTrack.
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
+        void SerializeKey(ITimeRangeKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
-    int GetActiveKeyIndexForTime(const float time);
+        //! Gets the duration of an animation key.
+        float GetKeyDuration(int key) const;
 
-    static void Reflect(AZ::ReflectContext* context);
-};
+        int GetActiveKeyIndexForTime(const float time);
 
-#endif // CRYINCLUDE_CRYMOVIE_TIMERANGESTRACK_H
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
+} // namespace Maestro

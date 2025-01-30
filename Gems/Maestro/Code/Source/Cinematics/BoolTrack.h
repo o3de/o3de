@@ -7,44 +7,40 @@
  */
 
 
-#ifndef CRYINCLUDE_CRYMOVIE_BOOLTRACK_H
-#define CRYINCLUDE_CRYMOVIE_BOOLTRACK_H
-
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-/** Boolean track, every key on this track negates boolean value.
-*/
-class CBoolTrack
-    : public TAnimTrack<IBoolKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CBoolTrack, AZ::SystemAllocator);
-    AZ_RTTI(CBoolTrack, "{A98E28CB-DE42-47A3-8E4B-6B43A5F3D8B2}", IAnimTrack);
 
-    CBoolTrack();
+    /** Boolean track, every key on this track negates boolean value.
+     */
+    class CBoolTrack : public TAnimTrack<IBoolKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CBoolTrack, AZ::SystemAllocator);
+        AZ_RTTI(CBoolTrack, "{A98E28CB-DE42-47A3-8E4B-6B43A5F3D8B2}", IAnimTrack);
 
-    AnimValueType GetValueType() override;
+        CBoolTrack();
 
+        AnimValueType GetValueType() override;
 
-    void GetValue(float time, bool& value) override;
-    void SetValue(float time, const bool& value, bool bDefault = false) override;
+        void GetValue(float time, bool& value) override;
+        void SetValue(float time, const bool& value, bool bDefault = false) override;
 
-    void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) override {};
-    void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) override {}
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
 
-    void SetDefaultValue(const bool bDefaultValue);
+        void SetDefaultValue(const bool bDefaultValue);
 
-    bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true) override;
+        bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true) override;
 
-    static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-private:
-    bool m_bDefaultValue;
-};
+    private:
+        bool m_bDefaultValue;
+    };
 
-#endif // CRYINCLUDE_CRYMOVIE_BOOLTRACK_H
+} // namespace Maestro

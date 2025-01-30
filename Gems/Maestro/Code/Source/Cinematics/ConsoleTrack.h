@@ -6,32 +6,30 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_CONSOLETRACK_H
-#define CRYINCLUDE_CRYMOVIE_CONSOLETRACK_H
 #pragma once
 
-//forward declarations.
-#include "IMovieSystem.h"
-#include "AnimTrack.h"
+#include <IMovieSystem.h>
 #include "AnimKey.h"
+#include "AnimTrack.h"
 
-/** EntityTrack contains entity keys, when time reach event key, it fires script event or start animation etc...
-*/
-class CConsoleTrack
-    : public TAnimTrack<IConsoleKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CConsoleTrack, AZ::SystemAllocator);
-    AZ_RTTI(CConsoleTrack, "{5D61289C-DE66-40E6-8C2D-A6CBF41A6EF4}", IAnimTrack);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides of IAnimTrack.
-    //////////////////////////////////////////////////////////////////////////
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(IConsoleKey& key, XmlNodeRef& keyNode, bool bLoading);
+    /** EntityTrack contains entity keys, when time reach event key, it fires script event or start animation etc...
+     */
+    class CConsoleTrack : public TAnimTrack<IConsoleKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CConsoleTrack, AZ::SystemAllocator);
+        AZ_RTTI(CConsoleTrack, "{5D61289C-DE66-40E6-8C2D-A6CBF41A6EF4}", IAnimTrack);
 
-    static void Reflect(AZ::ReflectContext* context);
-};
+        //////////////////////////////////////////////////////////////////////////
+        // Overrides of IAnimTrack.
+        //////////////////////////////////////////////////////////////////////////
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey(IConsoleKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
-#endif // CRYINCLUDE_CRYMOVIE_CONSOLETRACK_H
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
+} // namespace Maestro

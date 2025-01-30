@@ -6,42 +6,38 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_EVENTTRACK_H
-#define CRYINCLUDE_CRYMOVIE_EVENTTRACK_H
-
 #pragma once
 
-
-//forward declarations.
-#include "IMovieSystem.h"
-#include "AnimTrack.h"
+#include <IMovieSystem.h>
 #include "AnimKey.h"
+#include "AnimTrack.h"
 
-/** EntityTrack contains entity keys, when time reach event key, it fires script event or start animation etc...
-*/
-class CEventTrack
-    : public TAnimTrack<IEventKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CEventTrack, AZ::SystemAllocator);
-    AZ_RTTI(CEventTrack, "{CA9D004F-7003-46E7-AB85-7D3846E8C10B}", IAnimTrack);
 
-    CEventTrack();
-    explicit CEventTrack(IAnimStringTable* pStrings);
+    /** EntityTrack contains entity keys, when time reach event key, it fires script event or start animation etc...
+     */
+    class CEventTrack : public TAnimTrack<IEventKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CEventTrack, AZ::SystemAllocator);
+        AZ_RTTI(CEventTrack, "{CA9D004F-7003-46E7-AB85-7D3846E8C10B}", IAnimTrack);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides of IAnimTrack.
-    //////////////////////////////////////////////////////////////////////////
-    void GetKeyInfo(int key, const char*& description, float& duration) override;
-    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading) override;
-    void SetKey(int index, IKey* key) override;
-    void InitPostLoad(IAnimSequence* sequence) override;
+        CEventTrack();
+        explicit CEventTrack(IAnimStringTable* pStrings);
 
-    static void Reflect(AZ::ReflectContext* context);
+        //////////////////////////////////////////////////////////////////////////
+        // Overrides of IAnimTrack.
+        //////////////////////////////////////////////////////////////////////////
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+        void SetKey(int index, IKey* key) override;
+        void InitPostLoad(IAnimSequence* sequence) override;
 
-private:
-    AZStd::intrusive_ptr<IAnimStringTable> m_pStrings;
-};
+        static void Reflect(AZ::ReflectContext* context);
 
-#endif // CRYINCLUDE_CRYMOVIE_EVENTTRACK_H
+    private:
+        AZStd::intrusive_ptr<IAnimStringTable> m_pStrings;
+    };
+
+} // namespace Maestro
