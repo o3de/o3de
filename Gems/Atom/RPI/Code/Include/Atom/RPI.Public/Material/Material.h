@@ -144,7 +144,8 @@ namespace AZ
             bool NeedsCompile() const;
 
             using OnMaterialShaderVariantReadyEvent = AZ::Event<>;
-            //! Connect a handler to listen to the event that a shader variant asset of the shaders used by this material is ready
+            //! Connect a handler to listen to the event that a shader variant asset of the shaders used by this material is ready.
+            //! This is a thread safe function.
             void ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler);
 
         private:
@@ -225,6 +226,9 @@ namespace AZ
 
             MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
 
+            //! AZ::Event is not thread safe, so we have to do our own thread safe code
+            //! because MeshDrawPacket can connect to this event from different threads.
+            AZStd::recursive_mutex m_shaderVariantReadyEventMutex;
             OnMaterialShaderVariantReadyEvent m_shaderVariantReadyEvent;
         };
 

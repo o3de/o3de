@@ -38,7 +38,8 @@ namespace AzFramework::Scripts
     private:
         class SerializationEvents : public AZ::SerializeContext::IEventHandler
         {
-            void OnReadEnd(void* classPtr) override
+            // Called when the Serializer has completed writing TO the c++ object in memory.
+            void OnWriteEnd(void* classPtr) override
             {
                 SpawnableScriptAssetRef* spawnableScriptAssetRef = reinterpret_cast<SpawnableScriptAssetRef*>(classPtr);
                 // Call SetAsset to connect AssetBus handler as soon as m_asset field is set

@@ -328,6 +328,30 @@ namespace Terrain
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
+        // REMARK: This function is typically invoked within the context of one of the AssetBus::OnAssetXXX functions,
+        // and a deadlock may occur according to the following sequence:
+        // 1. Starting from Main thread, AssetBus locks a mutex.
+        // 2. AssetBus calls OnAssetReady and it enters in this function.
+        // 3. Start the instantiation of a new StreamingImage.
+        // 4. StreamingImage asynchronously queues work in the "Seconday Copy Queue".
+        // 5. StreamingImage waits until the work completes.
+        // 6. The thread of "Seconday Copy Queue" gets a new work item, which may hold a reference
+        //    to an old StreamingImage.
+        // 7. The old StreamingImage gets destroyed and it calls AssetBus::MultiHandler::BusDisconnect(GetAssetId());
+        // 8. When calling AssetBus::MultiHandler::BusDisconnect(GetAssetId()); it tries to lock the same mutex
+        //    from step 1. But the mutex is already locked on Main Thread in step 1.
+        // 9. The "Seconday Copy Queue" thread deadlocks and never completes the work.
+        // 10. Main thread is also deadlocked waiting for "Seconday Copy Queue" to complete.
+        // The solution is to enqueue texture update on the next tick.
+        auto postTickLambda = [=]()
+        {
+            OnAssetReadyPostTick(asset);
+        };
+        AZ::TickBus::QueueFunction(AZStd::move(postTickLambda));
+    }
+
+    void TerrainSurfaceMaterialsListComponent::OnAssetReadyPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
         // Find the missing material instance with the correct id.
         auto handleCreateMaterial = [&](TerrainSurfaceMaterialMapping& mapping, const AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
@@ -363,6 +387,16 @@ namespace Terrain
     }
 
     void TerrainSurfaceMaterialsListComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        // REMARK: See OnAssetReady for details on why we postpone the work on the next tick.
+        auto postTickLambda = [=]()
+        {
+            OnAssetReloadedPostTick(asset);
+        };
+        AZ::TickBus::QueueFunction(AZStd::move(postTickLambda));
+    }
+
+    void TerrainSurfaceMaterialsListComponent::OnAssetReloadedPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         // Find the material instance with the correct id.
         auto handleUpdateMaterial = [&](TerrainSurfaceMaterialMapping& mapping, const AZ::Data::Asset<AZ::Data::AssetData>& asset)
