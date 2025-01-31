@@ -18,7 +18,7 @@
             "android": {
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
                 "Name": "Decal_AlbedoWithOpacity",
-                "PixelFormat": "ASTC_4x4",
+                "PixelFormat": "ASTC_6x6",
                 "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -30,7 +30,7 @@
             "ios": {
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
                 "Name": "Decal_AlbedoWithOpacity",
-                "PixelFormat": "ASTC_4x4",
+                "PixelFormat": "ASTC_6x6",
                 "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
