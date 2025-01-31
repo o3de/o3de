@@ -250,7 +250,7 @@ namespace AZ
         Vector3 GetEulerRadians() const;
 
         //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
-        //!  first x-axis (pitch), then y-axis (roll) and then z-axis (yaw).
+        //!  first x-axis (roll), then y-axis (pitch) and then z-axis (yaw).
         //! The quaternion us supposed to be created with CreateFromEulerRadiansXYZ() or CreateFromEulerDegreesXYZ().
         //! Note that a gimbal lock occurs with the y-axis rotation equal to +-90 degrees, loosing information
         //!  on initial yaw and roll, and then roll is deliberately zeroed.
@@ -258,7 +258,7 @@ namespace AZ
         Vector3 GetEulerDegreesXYZ() const;
 
         //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
-        //!  first x-axis (pitch), then y-axis (roll) and then z-axis (yaw).
+        //!  first x-axis (roll), then y-axis (pitch) and then z-axis (yaw).
         //! The quaternion us supposed to be created with CreateFromEulerRadiansXYZ() or CreateFromEulerDegreesXYZ().
         //! Note that a gimbal lock occurs with the y-axis rotation equal to +-90 degrees, loosing information
         //!  on initial yaw and roll, and then roll is deliberately zeroed.
@@ -266,19 +266,19 @@ namespace AZ
         Vector3 GetEulerRadiansXYZ() const;
 
         //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
-        //!  first y-axis (roll), then x-axis (pitch) and then z-axis (yaw).
+        //!  first y-axis (pitch), then x-axis (roll) and then z-axis (yaw).
         //! The quaternion us supposed to be created with CreateFromEulerRadiansYXZ() or CreateFromEulerDegreesYXZ().
         //! @return Vector3 A vector containing component-wise rotation angles in degrees.
         Vector3 GetEulerDegreesYXZ() const;
 
         //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
-        //!  first y-axis (roll), then x-axis (pitch) and then z-axis (yaw).
+        //!  first y-axis (pitch), then x-axis (roll) and then z-axis (yaw).
         //! The quaternion us supposed to be created with CreateFromEulerRadiansYXZ() or CreateFromEulerDegreesYXZ().
         //! @return Vector3 A vector containing component-wise rotation angles in radians.
         Vector3 GetEulerRadiansYXZ() const;
 
         //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
-        //!  first z-axis (yaw), then y-axis (roll) and then x-axis (pith).
+        //!  first z-axis (yaw), then y-axis (pitch) and then x-axis (roll).
         //! The quaternion us supposed to be created with CreateFromEulerRadiansZYX() or CreateFromEulerDegreesZYX().
         //! Note that a gimbal lock occurs with the y-axis rotation equal to +-90 degrees, loosing information
         //!  on initial yaw and roll, and then roll is deliberately zeroed.
@@ -286,7 +286,7 @@ namespace AZ
         Vector3 GetEulerDegreesZYX() const;
 
         //! Compute, from the quaternion, a set of Euler (actually Tait-Bryan) angles of rotations around:
-        //!  first z-axis (yaw), then y-axis (roll) and then x-axis (pith).
+        //!  first z-axis (yaw), then y-axis (pitch) and then x-axis (roll).
         //! The quaternion us supposed to be created with CreateFromEulerRadiansZYX() or CreateFromEulerDegreesZYX().
         //! Note that a gimbal lock occurs with the y-axis rotation equal to +-90 degrees, loosing information
         //!  on initial yaw and roll, and then roll is deliberately zeroed.
