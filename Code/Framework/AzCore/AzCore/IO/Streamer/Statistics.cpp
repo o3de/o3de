@@ -141,7 +141,7 @@ namespace AZ::IO
         [[maybe_unused]] double value)
     {
         // AZ_PROFILE_DATAPOINT requires a wstring as input, but you can't feed non-wstring parameters to wstring::format.
-        constexpr const size_t MaxStatNameLength = 256;
+        const size_t MaxStatNameLength = 256;
         wchar_t statBufferStack[MaxStatNameLength];
         statBufferStack[MaxStatNameLength - 1] = 0; // make sure it is null terminated
 

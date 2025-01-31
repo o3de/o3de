@@ -255,7 +255,7 @@ namespace AZ::IO
     void Streamer::RecordStatistics()
     {
         // create a buffer to reuse for wstring conversions in this loop calling AZStd::to_wstring:
-        constexpr const size_t MaxStatNameLength = 256;
+        const size_t MaxStatNameLength = 256;
         wchar_t statBufferStack[MaxStatNameLength];
         statBufferStack[MaxStatNameLength - 1] = 0; // make sure it is null terminated
 
