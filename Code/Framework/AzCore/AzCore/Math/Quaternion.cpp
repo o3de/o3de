@@ -243,11 +243,11 @@ namespace AZ
                 //! O3DE_DEPRECATION_NOTICE(GHI-10929)
                 //! @deprecated use GetEulerRadiansXYZ()
                 Method("GetEulerDegrees", &Quaternion::GetEulerDegrees)->
-                    Attribute(AZ::Script::Attributes::Deprecated, true)-> // Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
                 //! O3DE_DEPRECATION_NOTICE(GHI-10929)
                 //! @deprecated use GetEulerRadiansXYZ()
                 Method("GetEulerRadians", &Quaternion::GetEulerRadians)->
-                    Attribute(AZ::Script::Attributes::Deprecated, true)-> // Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
                 Method("GetEulerDegreesXYZ", &Quaternion::GetEulerDegreesXYZ)->
                 Method("GetEulerRadiansXYZ", &Quaternion::GetEulerRadiansXYZ)->
                 Method("GetEulerDegreesYXZ", &Quaternion::GetEulerDegreesYXZ)->
@@ -257,11 +257,11 @@ namespace AZ
                 //! O3DE_DEPRECATION_NOTICE(GHI-10929)
                 //! @deprecated use CreateFromEulerDegreesXYZ()
                 Method("SetFromEulerDegrees", &Quaternion::SetFromEulerDegrees)->
-                    Attribute(AZ::Script::Attributes::Deprecated, true)-> // Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
                 //! O3DE_DEPRECATION_NOTICE(GHI-10929)
                 //! @deprecated use CreateFromEulerRadiansXYZ()
                 Method("SetFromEulerRadians", &Quaternion::SetFromEulerRadians)->
-                    Attribute(AZ::Script::Attributes::Deprecated, true)-> // Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
                 Method("GetImaginary", &Quaternion::GetImaginary)->
                 Method("IsFinite", &Quaternion::IsFinite)->
                 Method("GetAngle", &Quaternion::GetAngle)->
@@ -282,7 +282,7 @@ namespace AZ
                 //! O3DE_DEPRECATION_NOTICE(GHI-10929)
                 //! @deprecated use CreateFromEulerDegreesXYZ()
                 Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)->
-                    Attribute(AZ::Script::Attributes::Deprecated, true)-> // Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)->
+                    Attribute(AZ::Script::Attributes::Deprecated, true)->
                 Method("CreateFromEulerRadiansXYZ", &Quaternion::CreateFromEulerRadiansXYZ)->
                 Method("CreateFromEulerDegreesXYZ", &Quaternion::CreateFromEulerDegreesXYZ)->
                 Method("CreateFromEulerRadiansYXZ", &Quaternion::CreateFromEulerRadiansYXZ)->
