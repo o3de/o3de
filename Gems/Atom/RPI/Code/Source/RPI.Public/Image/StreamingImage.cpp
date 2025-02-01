@@ -216,7 +216,11 @@ namespace AZ
             if (IsInitialized())
             {
 #if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
+#if defined(CARBONATED)
+                Data::AssetBus::MultiHandler::BusDisconnect(m_imageAsset.GetId());
+#else
                 Data::AssetBus::MultiHandler::BusDisconnect(GetAssetId());
+#endif
 #endif
 
                 if(m_pool)

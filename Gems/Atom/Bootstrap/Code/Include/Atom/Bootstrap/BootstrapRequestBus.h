@@ -28,6 +28,9 @@ namespace AZ::Render::Bootstrap
         virtual void SwitchAntiAliasing(const AZStd::string& newAntiAliasing, AZ::RPI::ViewportContextPtr viewportContext) = 0;
         virtual void SwitchMultiSample(const uint16_t newSampleCount, AZ::RPI::ViewportContextPtr viewportContext) = 0;
         virtual void RefreshWindowResolution() = 0;
+#if defined(CARBONATED)
+        virtual void SetWindowResolutionDirectly(AzFramework::WindowSize resolution) = 0;
+#endif
 
     protected:
         ~Request() = default;

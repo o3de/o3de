@@ -20,7 +20,7 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "MaxTextureSize": 2048,
-                "PixelFormat": "ASTC_4x4",
+                "PixelFormat": "ASTC_6x6",
                 "MipMapSetting": {
                   "MipGenType": "Box"
                 }
@@ -31,7 +31,7 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "MaxTextureSize": 2048,
-                "PixelFormat": "ASTC_4x4",
+                "PixelFormat": "ASTC_6x6",
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
