@@ -270,7 +270,7 @@ namespace AZ::IO
         m_streamStack->CollectStatistics(statistics);
         for (Statistic& stat : statistics)
         {
-            auto visitor = [&stat, &statBufferStack, MaxStatNameLength](auto&& value)
+            auto visitor = [&stat, &statBufferStack](auto&& value)
             {
                 AZ_UNUSED(stat);
                 using Type = AZStd::decay_t<decltype(value)>;
