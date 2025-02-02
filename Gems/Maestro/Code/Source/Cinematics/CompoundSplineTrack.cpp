@@ -183,12 +183,14 @@ namespace Maestro
         AZ_Assert(m_nDimensions == 3, "mismatched dimension %d", m_nDimensions);
         if (m_nDimensions == 3)
         {
-            // Assume Euler Angles XYZ
+            // Euler Angles XYZ
             float angles[3] = { 0, 0, 0 };
             for (int i = 0; i < m_nDimensions; i++)
             {
                 m_subTracks[i]->GetValue(time, angles[i]);
             }
+            // Use ZYX Euler (actually Tait-Bryan) rotation angles order instead of using CreateFromEulerDegreesXYZ(),
+            // in order to provide "pitch, roll, yaw" editing in TrackView
             value = AZ::Quaternion::CreateFromEulerDegreesZYX(AZ::Vector3(angles[0], angles[1], angles[2]));
         }
         else
@@ -226,8 +228,9 @@ namespace Maestro
         AZ_Assert(m_nDimensions == 3, "mismatched dimension %d", m_nDimensions);
         if (m_nDimensions == 3)
         {
-            // Assume Euler Angles XYZ
-            AZ::Vector3 eulerAngle = value.GetEulerDegrees();
+            // Use ZYX Euler (actually Tait-Bryan) rotation angles order instead of using
+            // GetEulerDegrees() (or GetEulerDegreesXYZ()), in order to provide "pitch, roll, yaw" editing in TrackView.
+            AZ::Vector3 eulerAngle = value.GetEulerDegreesZYX();
             for (int i = 0; i < 3; i++)
             {
                 float degree = eulerAngle.GetElement(i);
