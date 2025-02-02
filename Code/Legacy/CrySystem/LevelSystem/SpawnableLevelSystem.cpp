@@ -529,10 +529,13 @@ namespace LegacyLevelSystem
         AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
             &AzFramework::LevelSystemLifecycleNotifications::OnLoadingComplete, levelName);
 
+        #if defined(CARBONATED)
+        EBUS_EVENT(LoadScreenBus, Pause); //We will manually stop the loading screen to ensure it times well
+        #else
     #if AZ_LOADSCREENCOMPONENT_ENABLED
         EBUS_EVENT(LoadScreenBus, Stop);
     #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
-
+        #endif
         AZ_TracePrintf("LevelSystem", "Level load complete: '%s'\n", levelName);
     }
 

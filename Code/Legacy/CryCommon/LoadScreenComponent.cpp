@@ -80,7 +80,7 @@ void LoadScreenComponent::Reflect(AZ::ReflectContext* context)
     AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
     if (behaviorContext)
     {
-        behaviorContext->EBus<LoadScreenBus>("LoadScreenBus")->Event("NotifyEnd", &LoadScreenBus::Events::NotifyEnd);
+        behaviorContext->EBus<LoadScreenBus>("LoadScreenBus")->Event("Stop", &LoadScreenBus::Events::Stop);
     }
 #endif
 }
@@ -386,27 +386,15 @@ void LoadScreenComponent::Stop()
         // FIXME: GetGlobalEnv()->pRenderer->StopLoadtimePlayback();
     }
 
-#if defined(CARBONATED)
-    if (m_loadScreenState != LoadScreenState::None && m_notify)
-#else
     if (m_loadScreenState != LoadScreenState::None)
-#endif
     {
         EBUS_EVENT(LoadScreenNotificationBus, NotifyLoadEnd);
     }
-
 
     Reset();
 
     m_loadScreenState = LoadScreenState::None;
 }
-
-#if defined(CARBONATED)
-void LoadScreenComponent::NotifyEnd()
-{
-    EBUS_EVENT(LoadScreenNotificationBus, NotifyLoadEnd);
-}
-#endif
 
 bool LoadScreenComponent::IsPlaying()
 {
