@@ -275,9 +275,6 @@ namespace LegacyLevelSystem
         ApplyLevelLoadScreenConfig(validLevelName.c_str());
         // level start event (we could not call it before UnloadLevel() call)
         EBUS_EVENT(LoadScreenBus, LevelStart);
-
-        EBUS_EVENT(LoadScreenBus, SetManualNotify); //We will manually tell load screens when were ready
-
         AZ::AssetLoadNotification::AssetLoadNotificatorBus::Handler::BusConnect();
         // progress bar init
         m_fFilteredProgress = 0.f;

@@ -65,14 +65,6 @@ public:
     void Resume() override;
     void Stop() override;
     bool IsPlaying() override;
-
-#if defined(CARBONATED)
-    void SetManualNotify() override
-    {
-        m_notify = false;
-    }
-    void NotifyEnd() override;
-#endif
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
