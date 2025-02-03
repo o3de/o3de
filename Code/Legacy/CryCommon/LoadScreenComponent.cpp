@@ -10,6 +10,10 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#if defined(CARBONATED)
+#include <AzCore/RTTI/BehaviorContext.h>
+#endif
+
 #include <AzCore/Utils/LogNotification.h>
 #include <AzCore/Time/ITime.h>
 #include <CryCommon/ISystem.h>
@@ -71,6 +75,14 @@ void LoadScreenComponent::Reflect(AZ::ReflectContext* context)
             ;
         }
     }
+
+#if defined(CARBONATED)
+    AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+    if (behaviorContext)
+    {
+        behaviorContext->EBus<LoadScreenBus>("LoadScreenBus")->Event("Stop", &LoadScreenBus::Events::Stop);
+    }
+#endif
 }
 
 void LoadScreenComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
