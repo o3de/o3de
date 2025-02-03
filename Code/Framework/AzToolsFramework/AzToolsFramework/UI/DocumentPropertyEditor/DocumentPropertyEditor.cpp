@@ -1416,7 +1416,7 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName)
     {
         // We need to append some alphabetical characters to the key or it will be treated as a very large json array index
-        AZStd::string_view keyStr = AZStd::string::format("uuid%s", AZStd::to_string(key).c_str());
+        AZStd::string keyStr = AZStd::string::format("uuid%s", AZStd::to_string(key).c_str());
         // Free the settings ptr before creating a new one. If the registry key is the same, we want
         // the in-memory settings to be saved to disk (in settings destructor) before they're loaded
         // from disk (in settings constructor)

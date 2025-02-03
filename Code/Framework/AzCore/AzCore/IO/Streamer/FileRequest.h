@@ -272,6 +272,21 @@ namespace AZ::IO
 {
     class Streamer_SchedulerTest_RequestSorting_Test;
 
+    // Note to API Callers
+    // The FileRequest class is used to create requests that are processed by the Streamer, 
+    // If you do use this class, note that the read requests are hierarchical, and in general, a "Parent" high level request is created to
+    // for example read the entire contents of a file into a buffer, and the system then internally creates child requests with that parent
+    // to split reads up and to queue them and sort them, with one parent potentially having several child requests pointed at the same file name
+    // but potentially different sizes and offsets.
+    // To avoid copying strings all over the place, the child requests usually take the file name by const FilePath& reference, and establish a reference
+    // to the given memory instead of a copy.
+    //
+    // If you write code that exercises the low level child request APIs directly
+    // (For example, by using CreateRead instead of CreateReadRequest), be aware that input parameters such as `const RequestPath& path` 
+    // expect the given memory to be valid until the child request is complete as it is usually owned by the parent request.
+    // Be especially careful if writing tests that the memory is not from a temporary object that is going to be destroyed before the streamer
+    // system is exercised.
+
     class FileRequest final
     {
         friend Streamer_SchedulerTest_RequestSorting_Test;
@@ -295,24 +310,35 @@ namespace AZ::IO
 
         void CreateRequestLink(FileRequestPtr&& request);
         void CreateRequestPathStore(FileRequest* parent, RequestPath path);
+
+        // Public-facing API - creates a root request and stores the path and desired offset and size to be processed by the streamer.
         void CreateReadRequest(RequestPath path, void* output, u64 outputSize, u64 offset, u64 size,
             AZStd::chrono::steady_clock::time_point deadline, IStreamerTypes::Priority priority);
         void CreateReadRequest(RequestPath path, IStreamerTypes::RequestMemoryAllocator* allocator, u64 offset, u64 size,
             AZStd::chrono::steady_clock::time_point deadline, IStreamerTypes::Priority priority);
+
+        // Internal API.   The above internally creates the below individual child requests.  See note at the top of this class.
         void CreateRead(FileRequest* parent, void* output, u64 outputSize, const RequestPath& path, u64 offset, u64 size, bool sharedRead = false);
-        void CreateCompressedRead(FileRequest* parent, const CompressionInfo& compressionInfo, void* output,
-            u64 readOffset, u64 readSize);
-        void CreateCompressedRead(FileRequest* parent, CompressionInfo&& compressionInfo, void* output,
-            u64 readOffset, u64 readSize);
+
+        // Ensure compressionInfo& outlives the request if you call this API. 
+        void CreateCompressedRead(FileRequest* parent, const CompressionInfo& compressionInfo, void* output, u64 readOffset, u64 readSize);
+        void CreateCompressedRead(FileRequest* parent, CompressionInfo&& compressionInfo, void* output, u64 readOffset, u64 readSize);
+
         void CreateWait(FileRequest* parent);
+
+        // See the note at the top of this class about const & references to RequestPath.
         void CreateFileExistsCheck(const RequestPath& path);
         void CreateFileMetaDataRetrieval(const RequestPath& path);
+
         void CreateCancel(FileRequestPtr target);
         void CreateReschedule(FileRequestPtr target, AZStd::chrono::steady_clock::time_point newDeadline, IStreamerTypes::Priority newPriority);
         void CreateFlush(RequestPath path);
         void CreateFlushAll();
+
+        // The following copy the FileRange, so it does not need to exist beyond the call to this function.
         void CreateDedicatedCacheCreation(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
         void CreateDedicatedCacheDestruction(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
+
         void CreateReport(AZStd::vector<AZ::IO::Statistic>& output, IStreamerTypes::ReportType reportType);
         void CreateCustom(AZStd::any data, bool failWhenUnhandled = true, FileRequest* parent = nullptr);
 
