@@ -851,7 +851,14 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnBeginGameMode:
         if (m_pSequence)
         {
-            m_pSequence->Resume();
+            // Restart sequence at the beginning
+            auto savedTime = m_currTime;
+            AnimateActiveSequence();
+            m_currTime = savedTime;
+
+            // Force recent changes made in TrackView, updating in-memory prefab using Undo/Redo framework
+            AzToolsFramework::ScopedUndoBatch undoBatch("Update TrackView Sequence");
+            undoBatch.MarkEntityDirty(m_pSequence->GetSequenceComponentEntityId());
         }
         {
             // This notification arrives before even the OnStartPlayInEditorBegin and later OnStartPlayInEditor events
