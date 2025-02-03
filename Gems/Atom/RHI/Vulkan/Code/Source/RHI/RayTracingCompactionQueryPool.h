@@ -62,6 +62,7 @@ namespace AZ
             uint64_t GetResult(int index);
 
             VkQueryPool GetNativeQueryPool();
+            void ResetFreedQueries(CommandList* commandList);
 
         private:
             RayTracingCompactionQueryPool() = default;
@@ -73,6 +74,7 @@ namespace AZ
 
             VkQueryPool m_nativeQueryPool = VK_NULL_HANDLE;
             AZStd::vector<int> m_freeList;
+            AZStd::vector<int> m_queriesEnqueuedForReset;
         };
     } // namespace Vulkan
 } // namespace AZ

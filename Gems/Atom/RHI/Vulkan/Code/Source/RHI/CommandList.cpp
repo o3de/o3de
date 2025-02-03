@@ -1192,6 +1192,16 @@ namespace AZ
         {
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
+            AZStd::unordered_set<RayTracingCompactionQueryPool*> usedPools;
+            for (auto& [blas, compactionQuery] : blasToQuery)
+            {
+                usedPools.insert(static_cast<RayTracingCompactionQueryPool*>(compactionQuery->GetPool()));
+            }
+            for (auto pool : usedPools)
+            {
+                pool->ResetFreedQueries(this);
+            }
+
             VkMemoryBarrier memoryBarrier = {};
             memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             memoryBarrier.pNext = nullptr;

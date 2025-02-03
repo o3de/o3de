@@ -67,6 +67,7 @@ namespace AZ
         void RayTracingCompactionQueryPool::Deallocate(int index)
         {
             m_freeList.push_back(index);
+            m_queriesEnqueuedForReset.push_back(index);
         }
 
         uint64_t RayTracingCompactionQueryPool::GetResult(int index)
@@ -84,6 +85,27 @@ namespace AZ
         VkQueryPool RayTracingCompactionQueryPool::GetNativeQueryPool()
         {
             return m_nativeQueryPool;
+        }
+
+        void RayTracingCompactionQueryPool::ResetFreedQueries(CommandList* commandList)
+        {
+            AZStd::sort(m_queriesEnqueuedForReset.begin(), m_queriesEnqueuedForReset.end());
+            for (int i = 0; i < m_queriesEnqueuedForReset.size();)
+            {
+                // Find continuous interval after current element
+                int count = 1;
+                while (i + count < m_queriesEnqueuedForReset.size() &&
+                       m_queriesEnqueuedForReset[i + count] <= m_queriesEnqueuedForReset[i + count - 1] + 1)
+                {
+                    count++;
+                }
+
+                int startIndex = m_queriesEnqueuedForReset[i];
+                auto& device = static_cast<Device&>(GetDevice());
+                device.GetContext().CmdResetQueryPool(commandList->GetNativeCommandBuffer(), m_nativeQueryPool, startIndex, count);
+                i += count;
+            }
+            m_queriesEnqueuedForReset.clear();
         }
 
         RHI::ResultCode RayTracingCompactionQueryPool::InitInternal(RHI::RayTracingCompactionQueryPoolDescriptor desc)
@@ -107,6 +129,7 @@ namespace AZ
             {
                 m_freeList[i] = i;
             }
+            m_queriesEnqueuedForReset = m_freeList;
 
             return resultCode;
         }
