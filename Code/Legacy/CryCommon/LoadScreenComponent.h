@@ -107,10 +107,6 @@ private:
     float m_maxDeltaTimeInSeconds{ -1.0f };
     float m_minimumLoadTimeInSeconds{ 0.0f };
 
-#if defined(CARBONATED)
-    bool m_notify = true;
-#endif
-
     CTimeValue m_lastStartTime;
     CTimeValue m_previousCallTimeForUpdateAndRender;
     AZStd::atomic_bool m_processingLoadScreen{ false };
