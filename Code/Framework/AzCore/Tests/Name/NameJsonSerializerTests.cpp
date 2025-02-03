@@ -9,6 +9,8 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Name/NameJsonSerializer.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Serialization/Locale.h>
+
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 
@@ -182,6 +184,7 @@ namespace JsonSerializationTests
     TEST_F(NameJsonSerializerTests, Load_ParseFloatingPointValue_NumberReturnedAsString)
     {
         using namespace AZ::JsonSerializationResult;
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // For the purposes of test stability, assume the culture-invariant locale.
 
         rapidjson::Value testValue;
         testValue.SetDouble(3.1415);

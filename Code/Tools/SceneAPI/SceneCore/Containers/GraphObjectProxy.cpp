@@ -101,7 +101,7 @@ namespace AZ
                     bufferArg = *name;
                 }
 
-                AZStd::string_view type = FetchPythonType(*behaviorMethod.GetArgument(argIndex));
+                AZStd::string type = FetchPythonType(*behaviorMethod.GetArgument(argIndex));
                 if (!type.empty())
                 {
                     AzFramework::StringFunc::Append(bufferArg, ": ");
@@ -135,14 +135,14 @@ namespace AZ
             AzFramework::StringFunc::Append(buffer, "(");
             if (behaviorProperty.m_setter)
             {
-                AZStd::string_view type = FetchPythonType(*behaviorProperty.m_setter->GetArgument(1));
+                AZStd::string type = FetchPythonType(*behaviorProperty.m_setter->GetArgument(1));
                 AzFramework::StringFunc::Append(buffer, type.data());
             }
             AzFramework::StringFunc::Append(buffer, ")");
 
             if (behaviorProperty.m_getter)
             {
-                AZStd::string_view type = FetchPythonType(*behaviorProperty.m_getter->GetResult());
+                AZStd::string type = FetchPythonType(*behaviorProperty.m_getter->GetResult());
                 AzFramework::StringFunc::Append(buffer, "->");
                 AzFramework::StringFunc::Append(buffer, type.data());
             }
@@ -278,12 +278,41 @@ namespace AZ
 
                 // record the "this" pointer's meta data like its RTTI so that it can be
                 // down casted to a parent class type if needed to invoke a parent method
+
+                // When storing a parameter, if the behavior parameter indicates that it is a pointer, (TR_POINTER flag is set)
+                // it is expected that what is stored in that parameter is a pointer to the value, more specifically
+                // it will decode it on the other end by dereferencing it twice, like this:
+                //    if (m_traits & BehaviorParameter::TR_POINTER)
+                //    {
+                //       valueAddress = *reinterpret_cast<void**>(valueAddress); // pointer to a pointer
+                //    }
+                // Notice the it expects it to be a void** (double reference) and dereferences it to get the address of the object.
+                // 
+                // That means that when TR_POINTER is set, not only does the object pointed to have to survive until used
+                // but the memory storing that pointer also has to survive until used.
+                // for example, this would be a scope use-after-free bug:
+                // {
+                //    AZ::Entity entity;
+                //    AZ::BehaviorArgument arg;
+                //    arg.m_traits = BehaviorParameter::TR_POINTER;
+                // 
+                //    {
+                //       const void* objectPtr = &entity;   // this is a 64-bit object living in the stack, holding the addr of entity.
+                //       arg.m_value = const_cast<void*>(&objectPtr); // notice, we are referencing objectPtr again with & since its TR_POINTER
+                //    }
+                //
+                //    arg.GetValueAddress(); // double dereference causes memory error.
+                //
+                //  The above is a memory error because the objectPtr is a stack variable, and the ADDRESS of it is what's stored in m_value.
+
+                // to avoid this, we cache the self pointer to the graph object ahead of time.
+                const void* self = reinterpret_cast<const void*>(m_graphObject.get());
+
                 if (const AZ::BehaviorParameter* thisInfo = behaviorMethod->GetArgument(0); hasSelfPointer)
                 {
                     // avoiding the "Special handling for the generic object holder." since it assumes
                     // the BehaviorObject.m_value is a pointer; the reference version is already dereferenced
                     AZ::BehaviorArgument theThisPointer;
-                    const void* self = reinterpret_cast<const void*>(m_graphObject.get());
                     if ((thisInfo->m_traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
                     {
                         theThisPointer.m_value = &self;
