@@ -170,7 +170,14 @@ namespace ImageProcessingAtomEditor
         ImageProcessingAtom::TextureSettings& baseSetting = m_textureSetting.GetMultiplatformTextureSetting();
         for (auto& it : m_textureSetting.m_settingsMap)
         {
+#if defined (CARBONATED)
+            // tags are common settings, if we do not copy them to platform specific settings here then the platform patch will erase tags
+            ImageProcessingAtom::TextureSettings platformSetting = it.second;
+            platformSetting.m_tags = baseSetting.m_tags;
+            baseSetting.ApplySettings(platformSetting, it.first);
+#else
             baseSetting.ApplySettings(it.second, it.first);
+#endif
         }
 
         ImageProcessingAtom::StringOutcome outcome = ImageProcessingAtom::TextureSettings::WriteTextureSetting(outputPath, baseSetting);
