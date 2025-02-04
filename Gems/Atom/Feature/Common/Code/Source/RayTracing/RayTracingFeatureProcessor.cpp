@@ -899,6 +899,7 @@ namespace AZ
             auto rpiDesc = RPI::RPISystemInterface::Get()->GetDescriptor();
             {
                 int numModelBlasCreated = 0;
+                int numCompactionQueriesEnqueued = 0;
                 AZStd::unordered_set<Data::AssetId> toRemoveFromCreateList;
                 for (auto assetId : m_blasToCreate)
                 {
@@ -910,6 +911,25 @@ namespace AZ
                     }
                     auto& instance = it->second;
 
+                    {
+                        int numSubmeshesWithCompactionQuery = 0;
+                        for (auto& subMeshInstance : instance.m_subMeshes)
+                        {
+                            // create the BLAS object and store it in the BLAS list
+                            if (RHI::CheckBitsAny(
+                                    subMeshInstance.m_blasDescriptor.GetBuildFlags(),
+                                    RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
+                            {
+                                numSubmeshesWithCompactionQuery++;
+                            }
+                        }
+                        if (numCompactionQueriesEnqueued + numSubmeshesWithCompactionQuery >
+                            rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize)
+                        {
+                            break;
+                        }
+                    }
+
                     for (auto& subMeshInstance : instance.m_subMeshes)
                     {
                         // create the BLAS object and store it in the BLAS list
@@ -920,6 +940,7 @@ namespace AZ
                         {
                             subMeshInstance.m_compactionSizeQuery = aznew RHI::RayTracingCompactionQuery;
                             m_compactionQueryPool->InitQuery(subMeshInstance.m_compactionSizeQuery.get());
+                            numCompactionQueriesEnqueued++;
                         }
                         subMeshInstance.m_blas = rayTracingBlas;
                         // create the buffers from the BLAS descriptor
@@ -959,7 +980,6 @@ namespace AZ
 
             // Check which Blas are ready for compaction and create compacted acceleration structures for them
             {
-                int numToCompactEnqueued = 0;
                 AZStd::unordered_set<Data::AssetId> toDelete;
                 for (const auto& [assetId, frameEvent] : m_blasEnqueuedForCompact)
                 {
@@ -969,11 +989,6 @@ namespace AZ
                         if (it != m_blasInstanceMap.end())
                         {
                             // Limit the number of blas we enqueue per frame to the size of the compaction query pool
-                            if (numToCompactEnqueued + it->second.m_subMeshes.size() >
-                                rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize)
-                            {
-                                break;
-                            }
                             for (int subMeshIdx = 0; subMeshIdx < it->second.m_subMeshes.size(); subMeshIdx++)
                             {
                                 auto& subMeshInstance = it->second.m_subMeshes[subMeshIdx];
@@ -993,8 +1008,8 @@ namespace AZ
                                     });
                                 subMeshInstance.m_compactBlas = aznew RHI::RayTracingBlas;
                                 subMeshInstance.m_compactBlas->CreateCompactedBuffers(*subMeshInstance.m_blas, sizes, *m_bufferPools);
+                                subMeshInstance.m_compactionSizeQuery = {};
                                 changed = true;
-                                numToCompactEnqueued++;
                             }
                             RHI::MultiDeviceObject::IterateDevices(
                                 RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
@@ -1029,7 +1044,6 @@ namespace AZ
                                     subMeshInstance.m_compactBlas, "Deleting a uncompacted Blas from a submesh without a compacted one");
                                 // We assume here that all device Blas are handled at the same frame for all devices
                                 subMeshInstance.m_blas = {};
-                                subMeshInstance.m_compactionSizeQuery = {};
                                 changed = true;
                             }
                         }

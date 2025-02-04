@@ -320,7 +320,6 @@ namespace AZ
                 for (auto& submeshBlasInstance : blasInstance.m_subMeshes)
                 {
                     auto query = submeshBlasInstance.m_compactionSizeQuery;
-                    AZ_Assert(query, "Blas was enqueued for compaction without having a compaction query");
                     context.GetCommandList()->CompactBottomLevelAccelerationStructure(
                         *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()),
                         *submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
