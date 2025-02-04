@@ -1023,7 +1023,8 @@ namespace AzToolsFramework
             PrefabDom& afterState, InstanceOptionalConstReference instanceToSkipUpdateQueue )
         {
             // Update the state of the entity
-            PrefabUndoHelpers::UpdateEntity(beforeState, afterState, entityId, undoBatch, true, instanceToSkipUpdateQueue);
+            constexpr bool updateCache = true;
+            PrefabUndoHelpers::UpdateEntity(beforeState, afterState, entityId, undoBatch, updateCache, instanceToSkipUpdateQueue);
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
