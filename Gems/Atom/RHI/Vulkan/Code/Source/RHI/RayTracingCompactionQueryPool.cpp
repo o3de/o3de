@@ -110,7 +110,7 @@ namespace AZ
 
         RHI::ResultCode RayTracingCompactionQueryPool::InitInternal(RHI::RayTracingCompactionQueryPoolDescriptor desc)
         {
-            int queryPoolSize = desc.m_budget * (RHI::Limits::Device::FrameCountMax + 1);
+            int queryPoolSize = desc.m_budget * RHI::Limits::Device::FrameCountMax;
             VkQueryPoolCreateInfo createInfo = {};
             createInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
             createInfo.queryType = VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR;

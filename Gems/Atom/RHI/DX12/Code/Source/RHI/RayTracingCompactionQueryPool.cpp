@@ -133,7 +133,7 @@ namespace AZ
                 }
             }
 
-            m_currentBufferIndex = (m_currentFrame + 1) % m_queryPoolBuffers.size();
+            m_currentBufferIndex = (m_currentBufferIndex + 1) % m_queryPoolBuffers.size();
             m_queryPoolBuffers[m_currentBufferIndex].m_nextFreeIndex = 0;
             m_queryPoolBuffers[m_currentBufferIndex].m_enqueuedFrame = m_currentFrame;
         }

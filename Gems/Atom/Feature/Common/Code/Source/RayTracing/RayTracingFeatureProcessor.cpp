@@ -868,7 +868,7 @@ namespace AZ
                 }
             }
 
-            m_blasEnqueuedForCompact[assetId].m_frameIndex = static_cast<int>(m_frameIndex + RHI::Limits::Device::FrameCountMax + 1);
+            m_blasEnqueuedForCompact[assetId].m_frameIndex = static_cast<int>(m_frameIndex + RHI::Limits::Device::FrameCountMax);
             m_blasEnqueuedForCompact[assetId].m_deviceMask = RHI::SetBit(m_blasEnqueuedForCompact[assetId].m_deviceMask, deviceId);
         }
 
@@ -888,7 +888,7 @@ namespace AZ
             }
 
             m_uncompactedBlasEnqueuedForDeletion[assetId].m_frameIndex =
-                static_cast<int>(m_frameIndex + RHI::Limits::Device::FrameCountMax + 1);
+                static_cast<int>(m_frameIndex + RHI::Limits::Device::FrameCountMax);
             m_uncompactedBlasEnqueuedForDeletion[assetId].m_deviceMask =
                 RHI::SetBit(m_uncompactedBlasEnqueuedForDeletion[assetId].m_deviceMask, deviceId);
         }
