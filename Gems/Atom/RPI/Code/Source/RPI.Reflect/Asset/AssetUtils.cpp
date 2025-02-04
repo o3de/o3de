@@ -89,7 +89,7 @@ namespace AZ
             AsyncAssetLoader::~AsyncAssetLoader()
             {
                 Data::AssetBus::Handler::BusDisconnect();
-                SystemTickBus::Handler::BusConnect();
+                SystemTickBus::Handler::BusDisconnect();
             }
 
             void AsyncAssetLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
