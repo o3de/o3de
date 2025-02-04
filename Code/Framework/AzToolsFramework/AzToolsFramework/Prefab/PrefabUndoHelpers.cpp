@@ -109,12 +109,13 @@ namespace AzToolsFramework
                 const PrefabDomValue& entityDomAfterUpdatingEntity,
                 AZ::EntityId entityId,
                 UndoSystem::URSequencePoint* undoBatch,
-                bool updateCache)
+                bool updateCache,
+                InstanceOptionalConstReference instanceToSkipInUpdate)
             {
                 PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate("Undo Updating Entity");
                 state->SetParent(undoBatch);
                 state->Capture(entityDomBeforeUpdatingEntity, entityDomAfterUpdatingEntity, entityId, updateCache);
-                state->Redo();
+                state->Redo(instanceToSkipInUpdate);
             }
 
             void UpdateEntitiesAsOverrides(
