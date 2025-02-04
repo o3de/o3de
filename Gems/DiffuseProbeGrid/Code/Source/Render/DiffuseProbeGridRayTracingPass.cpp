@@ -102,7 +102,7 @@ namespace AZ
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = aznew RHI::RayTracingPipelineState;
-            m_rayTracingPipelineState->Init(RHI::MultiDevice::AllDevices, descriptor);
+            m_rayTracingPipelineState->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), descriptor);
 
             // Since the ray tracing pipeline state changed, we need to rebuilt the shader table
             m_rayTracingRevision = 0;
@@ -155,7 +155,7 @@ namespace AZ
                 RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
                 m_rayTracingShaderTable = aznew RHI::RayTracingShaderTable;
-                m_rayTracingShaderTable->Init(RHI::MultiDevice::AllDevices, rayTracingBufferPools);
+                m_rayTracingShaderTable->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), rayTracingBufferPools);
             }
 
             RenderPass::FrameBeginInternal(params);
