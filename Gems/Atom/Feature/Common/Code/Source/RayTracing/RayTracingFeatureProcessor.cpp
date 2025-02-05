@@ -979,7 +979,7 @@ namespace AZ
                     changed = true;
                     numModelBlasCreated++;
                     if (rpiDesc.m_rayTracingSystemDescriptor.m_maxBlasCreatedPerFrame > 0 &&
-                        numModelBlasCreated >= rpiDesc.m_rayTracingSystemDescriptor.m_maxBlasCreatedPerFrame)
+                        numModelBlasCreated >= static_cast<uint32_t>(rpiDesc.m_rayTracingSystemDescriptor.m_maxBlasCreatedPerFrame))
                     {
                         break;
                     }
