@@ -175,6 +175,13 @@ namespace AZ
 
         void MaterialComponentController::OnSystemTick()
         {
+            while (!m_notifiedMaterialAssets.empty())
+            {
+                auto materialAsset = m_notifiedMaterialAssets.front();
+                m_notifiedMaterialAssets.pop();
+                InitializeNotifiedMaterialAsset(materialAsset);
+            }
+
             if (m_queuedLoadMaterials)
             {
                 m_queuedLoadMaterials = false;
@@ -292,7 +299,7 @@ namespace AZ
             }
         }
 
-        void MaterialComponentController::InitializeMaterialInstance(const Data::Asset<Data::AssetData>& asset)
+        void MaterialComponentController::InitializeNotifiedMaterialAsset(Data::Asset<Data::AssetData> asset)
         {
             bool allReady = true;
             auto updateAsset = [&](AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset)
@@ -340,6 +347,13 @@ namespace AZ
             }
         }
 
+        void MaterialComponentController::InitializeMaterialInstance(Data::Asset<Data::AssetData> asset)
+        {
+            // See header file, where @m_notifiedMaterialAssets is declared for details.
+            m_notifiedMaterialAssets.push(asset);
+            SystemTickBus::Handler::BusConnect();
+        }
+
         void MaterialComponentController::ReleaseMaterials()
         {
             SystemTickBus::Handler::BusDisconnect();
@@ -354,6 +368,8 @@ namespace AZ
             {
                 materialPair.second.Release();
             }
+            decltype(m_notifiedMaterialAssets) tmpQueue;
+            AZStd::swap(m_notifiedMaterialAssets, tmpQueue);
         }
 
         MaterialAssignmentMap MaterialComponentController::GetDefaultMaterialMap() const

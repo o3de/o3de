@@ -13,12 +13,14 @@
 #include <Atom/RPI.Public/Image/ImageTagSystemComponent.h>
 #include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
 #include <RPI.Private/RPISystemComponent.h>
+#include <RPI.Private/PassTemplatesAutoLoader.h>
 
 AZ::RPI::Module::Module()
 {
     m_descriptors.push_back(AZ::RPI::RPISystemComponent::CreateDescriptor());
     m_descriptors.push_back(AZ::RPI::ImageTagSystemComponent::CreateDescriptor());
     m_descriptors.push_back(AZ::RPI::ModelTagSystemComponent::CreateDescriptor());
+    m_descriptors.push_back(AZ::RPI::PassTemplatesAutoLoader::CreateDescriptor());
 }
 
 AZ::ComponentTypeList AZ::RPI::Module::GetRequiredSystemComponents() const
@@ -27,7 +29,8 @@ AZ::ComponentTypeList AZ::RPI::Module::GetRequiredSystemComponents() const
     {
         azrtti_typeid<AZ::RPI::RPISystemComponent>(),
         azrtti_typeid<AZ::RPI::ImageTagSystemComponent>(),
-        azrtti_typeid<AZ::RPI::ModelTagSystemComponent>()
+        azrtti_typeid<AZ::RPI::ModelTagSystemComponent>(),
+        azrtti_typeid<AZ::RPI::PassTemplatesAutoLoader>()
     };
 }
 
