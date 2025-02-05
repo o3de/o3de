@@ -671,7 +671,8 @@ namespace AZ
                // As part of our initialization we need to create the BRDF texture generation pipeline
                AZ::RPI::RenderPipelineDescriptor pipelineDesc;
                pipelineDesc.m_mainViewTagName = "MainCamera";
-               pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%i", viewportContext->GetId());
+               const AzFramework::ViewportId viewportId = viewportContext ? viewportContext->GetId() : AzFramework::InvalidViewportId;
+               pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%i", viewportId);
                pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
                pipelineDesc.m_executeOnce = true;
 
