@@ -60,25 +60,8 @@ namespace AZ
                     // ImageMipChainAsset has some internal variables need to initialized after it was loaded.
                     assetData->m_tailMipChain.Init();
 
-                    if (const auto& imageTags = assetData->GetTags(); !imageTags.empty())
-                    {
-                        AssetQuality highestMiplevel = AssetQualityLowest;
-                        for (const AZ::Name& tag : imageTags)
-                        {
-                            AssetQuality tagQuality = AssetQualityHighest;
-                            ImageTagBus::BroadcastResult(tagQuality, &ImageTagBus::Events::GetQuality, tag);
-
-                            highestMiplevel = AZStd::min(highestMiplevel, tagQuality);
-                        }
-
-                        assetData->RemoveFrontMipchains(highestMiplevel);
-
-                        for (const AZ::Name& tag : imageTags)
-                        {
-                            ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterAsset, tag, assetData->GetId());
-                        }
-                    }
 #if defined(CARBONATED) && defined(AZ_MIP_REMOVAL)
+                    size_t finalToRemove = 0;
                     if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
                     {
                         size_t numMipsToRemove = 0;
@@ -96,8 +79,49 @@ namespace AZ
                                     numMipsToRemove++;
                                 }
                             }
-                            const size_t finalToRemove = AZStd::min(numMipsToRemove, assetData->GetMipChainCount() - 1);
-                            assetData->RemoveFrontMipchains(finalToRemove);
+                            finalToRemove = AZStd::min(numMipsToRemove, assetData->GetMipChainCount() - 1);
+                        }
+                    }
+
+                    if (const auto& imageTags = assetData->GetTags(); !imageTags.empty())
+                    {
+                        for (const AZ::Name& tag : imageTags)
+                        {
+                            AssetQuality tagQuality = AssetQualityHighest; // bad enum reuse designed by o3de, this is actually N MIPs to remove
+                            ImageTagBus::BroadcastResult(tagQuality, &ImageTagBus::Events::GetQuality, tag);
+                            const size_t numMipsToRemove = size_t(tagQuality);
+                            if (numMipsToRemove < finalToRemove) // it can improve the quality, but not make it worse
+                            {
+                                // the tags are like
+                                // Keep original quality = 0
+                                // Drop one MIP max = 1
+                                finalToRemove = numMipsToRemove;
+                            }
+                            // register in the same cycle before removing MIPs, this is unlike the original code piece below #else
+                            ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterAsset, tag, assetData->GetId());
+                        }
+                    }
+                    if (finalToRemove > 0)
+                    {
+                        assetData->RemoveFrontMipchains(finalToRemove);
+                    }
+#else
+                    if (const auto& imageTags = assetData->GetTags(); !imageTags.empty())
+                    {
+                        AssetQuality highestMiplevel = AssetQualityLowest;
+                        for (const AZ::Name& tag : imageTags)
+                        {
+                            AssetQuality tagQuality = AssetQualityHighest;
+                            ImageTagBus::BroadcastResult(tagQuality, &ImageTagBus::Events::GetQuality, tag);
+
+                            highestMiplevel = AZStd::min(highestMiplevel, tagQuality);
+                        }
+
+                        assetData->RemoveFrontMipchains(highestMiplevel);
+
+                        for (const AZ::Name& tag : imageTags)
+                        {
+                            ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterAsset, tag, assetData->GetId());
                         }
                     }
 #endif
