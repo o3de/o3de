@@ -70,6 +70,7 @@ namespace AZ
 
             if (rayTracingFeatureProcessor)
             {
+                rayTracingFeatureProcessor->BeginFrame();
                 auto revision = rayTracingFeatureProcessor->GetRevision();
                 m_rayTracingRevisionOutDated = revision != m_rayTracingRevision;
                 if (m_rayTracingRevisionOutDated)

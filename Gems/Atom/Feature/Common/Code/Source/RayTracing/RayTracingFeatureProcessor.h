@@ -97,6 +97,7 @@ namespace AZ
             const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const override { return m_meshInfoGpuBuffer.GetCurrentBuffer(); }
             const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const override { return m_materialInfoGpuBuffer.GetCurrentBuffer(); }
             void Render(const RenderPacket&) override;
+            void BeginFrame();
             uint32_t GetRevision() const override { return m_revision; }
             uint32_t GetProceduralGeometryTypeRevision() const override { return m_proceduralGeometryTypeRevision; }
             RHI::RayTracingBufferPools& GetBufferPools() override { return *m_bufferPools; }
@@ -261,6 +262,7 @@ namespace AZ
             AZStd::unordered_map<Data::AssetId, BlasFrameEvent> m_uncompactedBlasEnqueuedForDeletion;
 
             int m_frameIndex = 0;
+            int m_updatedFrameIndex = 0;
 
 #if !USE_BINDLESS_SRG
             // Mesh buffer and material texture resources are managed with a RayTracingResourceList, which contains an internal

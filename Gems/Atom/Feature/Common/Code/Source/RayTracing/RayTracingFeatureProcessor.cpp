@@ -751,6 +751,18 @@ namespace AZ
         void RayTracingFeatureProcessor::Render(const RenderPacket&)
         {
             m_frameIndex++;
+        }
+
+        void RayTracingFeatureProcessor::BeginFrame()
+        {
+            if (m_updatedFrameIndex == m_frameIndex)
+            {
+                // Make sure the update is only called once per frame
+                // When multiple devices are present a RayTracingAccelerationStructurePass is created per device
+                // Thus this function is called once for each device
+                return;
+            }
+            m_updatedFrameIndex = m_frameIndex;
 
             m_compactionQueryPool->BeginFrame(m_frameIndex);
             UpdateBlasInstances();
@@ -898,8 +910,8 @@ namespace AZ
             bool changed = false;
             auto rpiDesc = RPI::RPISystemInterface::Get()->GetDescriptor();
             {
-                int numModelBlasCreated = 0;
-                int numCompactionQueriesEnqueued = 0;
+                uint32_t numModelBlasCreated = 0;
+                uint32_t numCompactionQueriesEnqueued = 0;
                 AZStd::unordered_set<Data::AssetId> toRemoveFromCreateList;
                 for (auto assetId : m_blasToCreate)
                 {
