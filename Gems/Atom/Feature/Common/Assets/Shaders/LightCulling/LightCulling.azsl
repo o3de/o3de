@@ -107,12 +107,12 @@ bool TestSphereVsCone(float3 spherePos, float sphereRadius, float3 origin, float
     return angleOk && backOk && frontOk;
 }
 
-bool TestAabbVsLightHemisphere(float3 aabbCenter, float3 aabbExtents, float3 lightPosition, float lightRadiusSqr, float3 lightDirection)
+bool TestAabbVsLightHemisphere(float3 aabbCenter, float3 aabbHalfExtents, float3 lightPosition, float lightRadiusSqr, float3 lightDirection)
 {
-    bool potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabbCenter, aabbExtents);
+    bool potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabbCenter, aabbHalfExtents);
     if (potentiallyIntersects)
     {
-        float3 aabbRadiuses = aabbExtents;
+        float3 aabbRadiuses = aabbHalfExtents;
         float aabbRadius = max(max(aabbRadiuses.x, aabbRadiuses.y), aabbRadiuses.z);
         // Only one side is visible, check that we are above the hemisphere
         float3 toAABBCenter = aabbCenter - lightPosition;
@@ -258,7 +258,7 @@ float2 ComputeCapsuleLightMinMax(CapsuleLight light, float3 lightPosition, float
     return float2(nearZ, farZ);  
 }
 
-void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents, float2 tile_center_uv)
+void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabbCenter, float3 aabbHalfExtents, float2 tile_center_uv)
 {
     for (uint decalIndex = groupIndex ; decalIndex < PassSrg::m_decalCount ; decalIndex += TILE_DIM_X * TILE_DIM_Y)
     { 
@@ -269,7 +269,7 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         // ATOM-4224 - try AABB-AABB 
         float boundingSphereRadiusSqr = dot(decal.m_halfSize, decal.m_halfSize);
           
-        bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents);
+        bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabbCenter, aabbHalfExtents);
         
         if (potentiallyIntersects) 
         {                                           
@@ -283,10 +283,10 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
     }   
 }
 
-void CullPointLight(uint lightIndex, float3 lightPosition, float invLightRadius, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+void CullPointLight(uint lightIndex, float3 lightPosition, float invLightRadius, TileLightData tileLightData, float3 aabbCenter, float3 aabbHalfExtents)
 {
     lightPosition = WorldToView_Point(lightPosition); 
-    bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, invLightRadius, aabb_center, aabb_extents);
+    bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, invLightRadius, aabbCenter, aabbHalfExtents);
     if (potentiallyIntersects)
     {                                           
         // Implement and profile fine-grained light culling testing
@@ -301,26 +301,26 @@ void CullPointLight(uint lightIndex, float3 lightPosition, float invLightRadius,
     }       
 }
 
-void CullSimplePointLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+void CullSimplePointLights(uint groupIndex, TileLightData tileLightData, float3 aabbCenter, float3 aabbHalfExtents)
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_simplePointLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
         SimplePointLight light = PassSrg::m_simplePointLights[lightIndex];
-        CullPointLight(lightIndex, light.m_position, light.m_invAttenuationRadiusSquared, tileLightData, aabb_center, aabb_extents);
+        CullPointLight(lightIndex, light.m_position, light.m_invAttenuationRadiusSquared, tileLightData, aabbCenter, aabbHalfExtents);
     }  
 }
 
-void CullPointLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+void CullPointLights(uint groupIndex, TileLightData tileLightData, float3 aabbCenter, float3 aabbHalfExtents)
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_pointLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
         PointLight light = PassSrg::m_pointLights[lightIndex];
-        CullPointLight(lightIndex, light.m_position, light.m_invAttenuationRadiusSquared, tileLightData, aabb_center, aabb_extents);
+        CullPointLight(lightIndex, light.m_position, light.m_invAttenuationRadiusSquared, tileLightData, aabbCenter, aabbHalfExtents);
     }  
 }
 
 
-void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 aabbCenter, float3 aabbHalfExtents)
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_simpleSpotLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
@@ -331,12 +331,12 @@ void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 a
         float lightRadiusSqr = lightRadius * lightRadius;
         
         // This check works great if aabb is tall (in z) and light angle is wide.
-        if (!TestAabbVsLightHemisphere(aabb_center, aabb_extents, lightPosition, lightRadiusSqr, lightDirection))
+        if (!TestAabbVsLightHemisphere(aabbCenter, aabbHalfExtents, lightPosition, lightRadiusSqr, lightDirection))
         {
             continue;
         }
         // This check works great if aabb is short (in z) and light angle is narrow.
-        if (!TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared)))
+        if (!TestSphereVsCone(aabbCenter, length(aabbHalfExtents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared)))
         {
             continue;
         }
@@ -350,7 +350,7 @@ void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 a
     }   
 }
 
-void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabbCenter, float3 aabbHalfExtents)
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_diskLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
@@ -361,14 +361,14 @@ void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
         float3 lightDirection = WorldToView_Vector(light.m_direction);
 
         // This check works great if aabb is tall (in z) and light angle is wide.
-        if (!TestAabbVsLightHemisphere(aabb_center, aabb_extents, lightPosition, lightRadiusSqr, lightDirection))
+        if (!TestAabbVsLightHemisphere(aabbCenter, aabbHalfExtents, lightPosition, lightRadiusSqr, lightDirection))
         {
             continue;
         }
         // This check works great if aabb is short (in z) and light angle is narrow.
         if ((light.m_flags & DiskLightFlag::UseConeAngle) > 0)
         {
-            if (!TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset))
+            if (!TestSphereVsCone(aabbCenter, length(aabbHalfExtents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset))
             {
                 continue;
             }
@@ -386,7 +386,7 @@ void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
     }   
 }
 
-void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabbCenter, float3 aabbHalfExtents)
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_capsuleLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
@@ -397,7 +397,7 @@ void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabb
         float lightFalloffRadius = rsqrt(light.m_invAttenuationRadiusSquared);
         float lightConservativeBoundingRadius = lightFalloffRadius + light.m_length * 0.5f;
         
-        bool potentiallyIntersects = TestSphereVsAabb(lightMiddleView, lightConservativeBoundingRadius * lightConservativeBoundingRadius, aabb_center, aabb_extents);            
+        bool potentiallyIntersects = TestSphereVsAabb(lightMiddleView, lightConservativeBoundingRadius * lightConservativeBoundingRadius, aabbCenter, aabbHalfExtents);            
     
         if (potentiallyIntersects)
         {
@@ -414,7 +414,7 @@ void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabb
     }   
 }
 
-void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabbCenter, float3 aabbHalfExtents)
 {
     // Implement and profile fine-grained light culling testing
     // ATOM-3732
@@ -424,7 +424,7 @@ void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
         const QuadLight light = PassSrg::m_quadLights[lightIndex];
         const float3 lightPosition = WorldToView_Point(light.m_position);             
         
-        bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, light.m_invAttenuationRadiusSquared, aabb_center, aabb_extents);
+        bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, light.m_invAttenuationRadiusSquared, aabbCenter, aabbHalfExtents);
 
         if (potentiallyIntersects)
         {           
@@ -437,9 +437,9 @@ void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
                 const float3 leftDir = light.m_leftDir;
                 const float3 upDir = light.m_upDir;            
                 const float3 lightDirection = WorldToView_Vector(cross(leftDir, upDir));                        
-                const float3 toAABBCenter = aabb_center - lightPosition;
+                const float3 toAABBCenter = aabbCenter - lightPosition;
                 const float distanceToLightPlane = dot(lightDirection, toAABBCenter);
-                const float aabbRadius = length(aabb_extents);
+                const float aabbRadius = length(aabbHalfExtents);
                              
                 const bool aboveHemisphere = distanceToLightPlane >= -aabbRadius; 
                 if (aboveHemisphere)
@@ -536,7 +536,7 @@ float3 GetViewSpacePosition(float2 tileUv, float depth)
 
 // This function builds an AABB in view space that encompasses the tile
 // The AABB is built by taking the four corners of the tile and the center of the tile, and transforming them to view space
-void BuildAabb(TileLightData tileLightData, uint2 tileId, out float3 aabbCenter, out float3 aabbExtents, out float2 tileCenterUv)
+void BuildAabb(TileLightData tileLightData, uint2 tileId, out float3 aabbCenter, out float3 aabbHalfExtents, out float2 tileCenterUv)
 {
     float2 tileUvMin = float2(tileId) * PassSrg::m_constantData.m_gridPixel;
     float2 tileUvMax = tileUvMin + PassSrg::m_constantData.m_gridPixel;
@@ -555,7 +555,7 @@ void BuildAabb(TileLightData tileLightData, uint2 tileId, out float3 aabbCenter,
     float3 aabbMax = max(max(pt0, pt1), max(pt2, pt3));
 
     aabbCenter = (aabbMin + aabbMax) * 0.5f;
-    aabbExtents = (aabbCenter - aabbMin);
+    aabbHalfExtents = (aabbCenter - aabbMin);
 }
 
 // This shader is invoke one thread-group per on-screen tile
@@ -597,43 +597,43 @@ void MainCS(
     TileLightData tileLightData = ReadTileLightData(groupID);
   
     float2 tileCenterUv;
-    float3 aabb_center, aabb_extents;
-    BuildAabb(tileLightData, groupID.xy, aabb_center, aabb_extents, tileCenterUv);
+    float3 aabbCenter, aabbHalfExtents;
+    BuildAabb(tileLightData, groupID.xy, aabbCenter, aabbHalfExtents, tileCenterUv);
     GroupMemoryBarrierWithGroupSync();
     
-    CullDecals(groupIndex, tileLightData, aabb_center, aabb_extents, tileCenterUv); 
+    CullDecals(groupIndex, tileLightData, aabbCenter, aabbHalfExtents, tileCenterUv); 
     GroupMemoryBarrierWithGroupSync();    
     SortDecals(groupIndex);
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
     
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
             
-    CullSimplePointLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
+    CullSimplePointLights(groupIndex, tileLightData, aabbCenter, aabbHalfExtents); 
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
     
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullSimpleSpotLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
+    CullSimpleSpotLights(groupIndex, tileLightData, aabbCenter, aabbHalfExtents); 
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
     
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullPointLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
+    CullPointLights(groupIndex, tileLightData, aabbCenter, aabbHalfExtents); 
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
     
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullDiskLights(groupIndex, tileLightData, aabb_center, aabb_extents);
+    CullDiskLights(groupIndex, tileLightData, aabbCenter, aabbHalfExtents);
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
  
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullCapsuleLights(groupIndex, tileLightData, aabb_center, aabb_extents);
+    CullCapsuleLights(groupIndex, tileLightData, aabbCenter, aabbHalfExtents);
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
 
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullQuadLights(groupIndex, tileLightData, aabb_center, aabb_extents);
+    CullQuadLights(groupIndex, tileLightData, aabbCenter, aabbHalfExtents);
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
 
 
