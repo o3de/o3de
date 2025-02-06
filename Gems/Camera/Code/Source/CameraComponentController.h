@@ -57,6 +57,7 @@ namespace Camera
         bool m_specifyFrustumDimensions = false;
         bool m_makeActiveViewOnActivation = true;
         bool m_orthographic = false;
+        bool m_allowPipelineChanges = false;
         float m_orthographicHalfWidth = 5.f;
 
         AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
@@ -66,6 +67,9 @@ namespace Camera
         AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_renderTextureAsset;
         // The pass template name used for render pipeline's root template
         AZStd::string m_pipelineTemplate = "CameraPipeline";
+    private:
+        //! Check if experimental features are enabled
+        AZ::u32 GetAllowPipelineChangesVisibility() const;
     };
 
     class CameraComponentController
