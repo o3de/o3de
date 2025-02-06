@@ -112,8 +112,7 @@ bool TestAabbVsLightHemisphere(float3 aabbCenter, float3 aabbHalfExtents, float3
     bool potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabbCenter, aabbHalfExtents);
     if (potentiallyIntersects)
     {
-        float3 aabbRadiuses = aabbHalfExtents;
-        float aabbRadius = max(max(aabbRadiuses.x, aabbRadiuses.y), aabbRadiuses.z);
+        const float aabbRadius = length(aabbHalfExtents);
         // Only one side is visible, check that we are above the hemisphere
         float3 toAABBCenter = aabbCenter - lightPosition;
         float distanceToLightPlane = dot(lightDirection, toAABBCenter);
