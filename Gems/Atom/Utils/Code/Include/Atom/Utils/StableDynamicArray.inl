@@ -447,7 +447,7 @@ namespace AZ
     auto StableDynamicArray<T, ElementsPerPage, Allocator>::iterator::operator++(int) -> this_type
     {
         this_type temp = *this;
-        ++this;
+        ++*this;
         return temp;
     }
 
@@ -517,7 +517,7 @@ namespace AZ
     auto StableDynamicArray<T, ElementsPerPage, Allocator>::const_iterator::operator++(int) -> this_type
     {
         this_type temp = *this;
-        ++this;
+        ++*this;
         return temp;
     }
 
@@ -582,7 +582,7 @@ namespace AZ
     auto StableDynamicArray<T, ElementsPerPage, Allocator>::pageIterator::operator++(int) -> this_type
     {
         this_type temp = *this;
-        ++this;
+        ++*this;
         return temp;
     }
 

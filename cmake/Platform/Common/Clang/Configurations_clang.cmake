@@ -33,6 +33,8 @@ ly_append_configurations_options(
         -Wno-reorder
         -Wno-switch
         -Wno-undefined-var-template
+        -fno-relaxed-template-template-args
+        -Wno-deprecated-no-relaxed-template-template-args
 
         ###################
         # Enabled warnings (that are disabled by default)
