@@ -1,0 +1,173 @@
+name: Windows Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      compiler: 
+        required: true
+        type: string
+      config: 
+        required: true
+        type: string
+      image: 
+        required: true
+        type: string
+      platform: 
+        required: true
+        type: string
+      type: 
+        required: true
+        type: string
+      last-artifact: 
+        required: false
+        type: boolean
+
+run-name: ${{ inputs.platform }} - ${{ inputs.type }}
+
+jobs:
+  Build:
+    strategy:
+      fail-fast: false
+
+    runs-on: ${{ inputs.image }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
+
+      - name: Git LFS pull
+        run: |
+            git lfs install
+            if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+          
+      - name: Setup 3p, user, and build folders
+        run: |
+          "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
+          ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
+
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          windows_compile_environment: msvc
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=15G
+            cache_dir=${{ github.workspace }}\.ccache
+      
+      - name: Get last run
+        uses: dawidd6/action-download-artifact@v6
+        id: last-run-id
+        with:
+          workflow_search: true
+          workflow_conclusion: ""
+          search_artifacts: true
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          dry_run: true
+          if_no_artifact_found: warn
+    
+      - name: Restore artifact cache
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.last-artifact == true && fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id || github.run_id }}
+
+      - name: Extract artifact
+        continue-on-error: true
+        run: |
+          echo "Current Runid: ${{ github.run_id }}"
+          echo "${{ inputs.platform }}_ARTIFACT_RUNID: ${{ vars[format('{0}_ARTIFACT_RUNID', inputs.platform)] }}"
+          echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
+          
+          tar -xvpf ${{ github.workspace }}\cache.tar `
+            3rdParty/packages `
+            AutomatedTesting/Cache `
+            AutomatedTesting/user `
+            .ccache
+          rm ${{ github.workspace }}\cache.tar
+
+      - name: Setup cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.30.0"
+
+      - name: Remove build components
+        run: |
+          # For versions update see here: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
+          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          $componentsToRemove= @(
+          "Microsoft.VisualStudio.Component.Windows11SDK.26100"
+          )
+          [string]$workloadArgs = $componentsToRemove | ForEach-Object {" --remove " +  $_}
+          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
+          # should be run twice
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden      
+
+      - name: Install build components
+        run: |
+          # For versions update see here: https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
+          Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+          $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+          
+          $componentsToInstall= @(
+          "Microsoft.VisualStudio.Component.VC.14.42.17.12.x86.x64"
+          "Microsoft.VisualStudio.Component.VC.14.42.17.12.CLI.Support"
+          "Microsoft.VisualStudio.Component.VC.14.42.17.12.ATL"
+          "Microsoft.VisualStudio.Component.Windows11SDK.22621"
+          )
+          [string]$workloadArgs = $componentsToInstall | ForEach-Object {" --add " +  $_}
+          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
+          # should be run twice
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+
+      - name: Set MSBuild options
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          sdk: 10.0.22621.0
+
+      - name: Configure environment
+        run: |
+          echo "Installing dependancies"
+          echo "Getting python..."
+          python\get_python.bat
+          echo "Installing additional python dependancies..."
+          python\pip.sh install tempfile2 PyGithub
+          
+      - name: Build ${{ inputs.type }}
+        env:
+          LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
+        run: |
+          python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
+      
+      - name: Compress artifacts
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
+        run: |
+          tar --format=posix -cvpf ${{ github.workspace }}\cache.tar `
+            python `
+            3rdParty\packages `
+            AutomatedTesting\Cache `
+            AutomatedTesting\user `
+            .ccache
+  
+      - name: Save artifacts
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
+        with:
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          compression-level: 1
+          overwrite: true
+          path: |
+            ${{ github.workspace }}\cache.tar

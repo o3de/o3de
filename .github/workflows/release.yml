@@ -1,0 +1,109 @@
+name: Publish new release
+
+on:
+  # Allows you to run this workflow manually from the Actions tag
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'The repo to target for release'
+        required: true
+        type: choice
+        default: o3de
+        options:
+          - o3de
+          - o3de-atom-sampleviewer-changml
+          - o3de-multiplayersample
+          - o3de-netsoaktest
+      release_tag:
+        description: 'The release tag'
+        required: true 
+        type: string
+      release_notes_url:
+        description: 'The release notes url'
+        required: false
+        type: string
+      draft_release:
+        description: 'Stage release as draft. If unchecked, publish immediately'
+        default: true
+        required: true
+        type: boolean
+        
+run-name: Releasing ${{ inputs.repository }} for ${{ inputs.release_tag }}
+
+permissions: write-all
+
+jobs:
+  Publish:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }} # Check environment against branch
+
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository_owner }}/${{ inputs.repository }}
+          ref: main
+          fetch-depth: 0
+      
+      - name: Git LFS pull
+        run: |
+          git lfs install
+          git lfs fetch
+      
+      - name: Get repo vars
+        id: vars
+        run: |
+          echo ::set-output name=latest_tag::$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo ::set-output name=latest_main_sha::$(git log -n 1 --pretty=format:"%H" origin/main)
+          
+      - name: Archive repo as compressed files
+        run: |
+          git archive -o ${{ inputs.repository }}-${{ inputs.release_tag }}-lfs.zip HEAD
+          git archive -o ${{ inputs.repository }}-${{ inputs.release_tag }}-lfs.tar.gz HEAD
+          
+      # Creates a release tag based on imputs
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          repo: ${{ inputs.repository }}
+          owner: ${{ github.repository_owner }}
+          tag_name: ${{ inputs.release_tag }}
+          release_name: ${{ inputs.release_tag }}
+          commitish: ${{ steps.vars.outputs.latest_main_sha }}
+          body: |
+            ## Release Notes
+            ${{ inputs.release_notes_url }}
+            
+            **Full Changelog**:  https://github.com/${{ github.repository_owner }}/${{ inputs.repository }}/compare/${{ steps.vars.outputs.latest_tag }}...${{ inputs.release_tag }}
+          draft: ${{ inputs.draft_release }}
+          prerelease: false
+          
+      # Uploads zip archive to release
+      - name: Upload Release Asset Zip
+        id: upload-release-asset-zip
+        uses: actions/upload-release-asset@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`.
+          asset_path: ./${{ github.event.repository.name }}-${{ inputs.release_tag }}-lfs.zip
+          asset_name: ${{ github.event.repository.name }}-${{ inputs.release_tag }}-lfs.zip
+          asset_content_type: application/zip
+      
+      # Uploads Gzip archive to release
+      - name: Upload Release Asset Gzip
+        id: upload-release-asset-gzip
+        uses: actions/upload-release-asset@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ github.event.repository.name }}-${{ inputs.release_tag }}-lfs.tar.gz
+          asset_name: ${{ github.event.repository.name }}-${{ inputs.release_tag }}-lfs.tar.gz
+          asset_content_type: application/x-gzip
+       

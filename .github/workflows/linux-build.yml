@@ -1,0 +1,169 @@
+name: Linux Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      compiler: 
+        required: true
+        type: string
+      config: 
+        required: true
+        type: string
+      image: 
+        required: true
+        type: string
+      platform: 
+        required: true
+        type: string
+      type: 
+        required: true
+        type: string
+      desktop:
+        required: false
+        type: boolean
+      last-artifact: 
+        required: false
+        type: boolean
+
+run-name: ${{ inputs.platform }} - ${{ inputs.type }}
+
+jobs:
+  Build:
+    strategy:
+      fail-fast: false
+
+    runs-on: ${{ inputs.image }}
+
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@v10
+        with:
+          root-reserve-mb: 6000
+          swap-size-mb: 200
+          remove-dotnet: true
+          remove-haskell: true
+          remove-codeql: true
+          remove-docker-images: true
+            
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
+
+      - name: Git LFS pull
+        run: |
+          git lfs install
+          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull
+
+      - name: Setup 3p, user, and build folders
+        run: |
+          mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
+
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=15G
+            cache_dir=${{ github.workspace }}/.ccache
+
+      - name: Get last run
+        uses: dawidd6/action-download-artifact@v6
+        id: last-run-id
+        with:
+          workflow_search: true
+          workflow_conclusion: ""
+          search_artifacts: true
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          dry_run: true
+          if_no_artifact_found: warn
+        
+      - name: Restore artifact cache
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.last-artifact == true && fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id || github.run_id }}
+
+      - name: Extract artifact
+        continue-on-error: true
+        run: |
+          echo "Current Runid: ${{ github.run_id }}"
+          echo "${{ inputs.platform }}_ARTIFACT_RUNID: ${{ vars[format('{0}_ARTIFACT_RUNID', inputs.platform)] }}"
+          echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
+          
+          tar -xvpf ${{ github.workspace }}/cache.tar \
+            3rdParty/packages \
+            AutomatedTesting/Cache \
+            AutomatedTesting/user \
+            .ccache
+          rm ${{ github.workspace }}/cache.tar
+
+      - name: Setup cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.30.0"
+
+      - name: Configure environment
+        continue-on-error: true
+        run: |
+          echo "Installing dependancies"
+          pushd ./scripts/build/build_node/Platform/Linux
+          sudo ./install-ubuntu.sh
+          popd
+          echo "Getting python..."
+          ./python/get_python.sh
+          echo "Installing additional python dependancies..."
+          ./python/pip.sh install tempfile2 PyGithub
+
+          # If desktop is true, install desktop and x11 packages, otherwise install base packages
+          [[ "${{ inputs.desktop }}" == "true" ]] && \
+           sudo apt-get install -qq ubuntu-desktop xorg mesa-utils vulkan-tools libevdev-dev libevdev2 -y || \
+           sudo apt-get install -qq libevdev-dev libevdev2 -y
+          sudo apt -y autoremove --purge
+          sudo apt -y autoclean
+          sudo apt clean
+          df -h
+          
+      - name: Build ${{ inputs.type }}
+        env:
+          LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
+          CC:  ${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
+          CXX: ${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          DISPLAY: :0
+        run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          if [ "${{ inputs.desktop }}" == "true" ]; then 
+            Xvfb :0 -screen 0 1400x1050x16 &
+          fi
+          python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
+
+      - name: Compress artifacts
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
+        run: |
+          tar --format=posix -cvpf ${{ github.workspace }}/cache.tar \
+            python \
+            3rdParty/packages \
+            AutomatedTesting/Cache \
+            AutomatedTesting/user \
+            .ccache
+  
+      - name: Save artifacts
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: (contains(github.ref, 'development') || contains(github.ref, ${{ vars.STABILIZATION_BRANCH }}))
+        with:
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          compression-level: 1
+          overwrite: true
+          path: |
+            ${{ github.workspace }}/cache.tar

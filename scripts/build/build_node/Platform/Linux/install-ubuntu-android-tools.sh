@@ -56,6 +56,9 @@ do
 done
 
 # Add the path and necessary environment variable to build android based on NDK 25.2.9519653
+if [[ -d /etc/profile.d ]]; then
+    mkdir /etc/profile.d
+fi
 echo 'export PATH="$PATH:/opt/android-sdk-linux/cmdline-tools/latest/bin/"' > /etc/profile.d/android-env.sh
 echo "export LY_NDK_DIR=/opt/android-sdk-linux/ndk/25.2.9519653" >> /etc/profile.d/android-env.sh
 chmod a+x /etc/profile.d/android-env.sh

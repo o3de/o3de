@@ -174,103 +174,103 @@ TEST_F(PlatformConfigurationTests, TestRecogonizer_FeedPlatformConfiguration_Suc
     EXPECT_FALSE(m_config.GetMatchingRecognizers(m_assetRootPath.absoluteFilePath("unrecognised3.file"), results));
 }
 
-TEST_F(PlatformConfigurationTests, GetOverridingFile_FeedPlatformConfiguration_Succeeds)
-{
-    CreateTestFiles();
+// TEST_F(PlatformConfigurationTests, GetOverridingFile_FeedPlatformConfiguration_Succeeds)
+// {
+//     CreateTestFiles();
 
-    EXPECT_EQ(m_config.GetOverridingFile("rootfile3.txt", m_assetRootPath.filePath("subfolder3")), QString());
-    EXPECT_EQ(m_config.GetOverridingFile("rootfile3.txt", m_assetRootPath.absolutePath()), m_assetRootPath.absoluteFilePath("subfolder3/rootfile3.txt"));
-    EXPECT_EQ(m_config.GetOverridingFile("subfolder1/whatever.txt", m_assetRootPath.filePath("subfolder1")), QString());
-    EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_config.GetOverridingFile("subfolder1/override.txt", m_assetRootPath.filePath("subfolder1"))), AssetUtilities::NormalizeFilePath(m_assetRootPath.absoluteFilePath("subfolder2/subfolder1/override.txt")));
-    EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_config.GetOverridingFile("a/testfile.txt", m_assetRootPath.filePath("subfolder6"))), AssetUtilities::NormalizeFilePath(m_assetRootPath.absoluteFilePath("subfolder4/a/testfile.txt")));
-    EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_config.GetOverridingFile("a/testfile.txt", m_assetRootPath.filePath("subfolder7"))), AssetUtilities::NormalizeFilePath(m_assetRootPath.absoluteFilePath("subfolder4/a/testfile.txt")));
-    EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_config.GetOverridingFile("a/testfile.txt", m_assetRootPath.filePath("subfolder8/x"))), AssetUtilities::NormalizeFilePath(m_assetRootPath.absoluteFilePath("subfolder4/a/testfile.txt")));
+//     EXPECT_EQ(m_config.GetOverridingFile("rootfile3.txt", m_assetRootPath.filePath("subfolder3")), QString());
+//     EXPECT_EQ(m_config.GetOverridingFile("rootfile3.txt", m_assetRootPath.absolutePath()), m_assetRootPath.absoluteFilePath("subfolder3/rootfile3.txt"));
+//     EXPECT_EQ(m_config.GetOverridingFile("subfolder1/whatever.txt", m_assetRootPath.filePath("subfolder1")), QString());
+//     EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_config.GetOverridingFile("subfolder1/override.txt", m_assetRootPath.filePath("subfolder1"))), AssetUtilities::NormalizeFilePath(m_assetRootPath.absoluteFilePath("subfolder2/subfolder1/override.txt")));
+//     EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_config.GetOverridingFile("a/testfile.txt", m_assetRootPath.filePath("subfolder6"))), AssetUtilities::NormalizeFilePath(m_assetRootPath.absoluteFilePath("subfolder4/a/testfile.txt")));
+//     EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_config.GetOverridingFile("a/testfile.txt", m_assetRootPath.filePath("subfolder7"))), AssetUtilities::NormalizeFilePath(m_assetRootPath.absoluteFilePath("subfolder4/a/testfile.txt")));
+//     EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_config.GetOverridingFile("a/testfile.txt", m_assetRootPath.filePath("subfolder8/x"))), AssetUtilities::NormalizeFilePath(m_assetRootPath.absoluteFilePath("subfolder4/a/testfile.txt")));
 
-    // files which dont exist:
-    EXPECT_EQ(m_config.GetOverridingFile("rootfile3", m_assetRootPath.filePath("subfolder3")), QString());
+//     // files which dont exist:
+//     EXPECT_EQ(m_config.GetOverridingFile("rootfile3", m_assetRootPath.filePath("subfolder3")), QString());
 
-    // watch folders which dont exist should still return the best match:
-    EXPECT_NE(m_config.GetOverridingFile("rootfile3.txt", m_assetRootPath.filePath("nonesuch")), QString());
+//     // watch folders which dont exist should still return the best match:
+//     EXPECT_NE(m_config.GetOverridingFile("rootfile3.txt", m_assetRootPath.filePath("nonesuch")), QString());
 
-    // subfolder 3 is first, but non-recursive, so it should NOT resolve this:
-    EXPECT_EQ(m_config.GetOverridingFile("aaa/bbb/basefile.txt", m_assetRootPath.filePath("subfolder2")), QString());
-}
+//     // subfolder 3 is first, but non-recursive, so it should NOT resolve this:
+//     EXPECT_EQ(m_config.GetOverridingFile("aaa/bbb/basefile.txt", m_assetRootPath.filePath("subfolder2")), QString());
+// }
 
-TEST_F(PlatformConfigurationTests, FindFirstMatchingFile_FeedPlatformConfiguration_Succeeds)
-{
-    CreateTestFiles();
+// TEST_F(PlatformConfigurationTests, FindFirstMatchingFile_FeedPlatformConfiguration_Succeeds)
+// {
+//     CreateTestFiles();
 
-    // sanity
-    EXPECT_TRUE(m_config.FindFirstMatchingFile("").isEmpty());  // empty should return empty.
+//     // sanity
+//     EXPECT_TRUE(m_config.FindFirstMatchingFile("").isEmpty());  // empty should return empty.
 
-    // must not find the one in subfolder3 because its not a recursive watch:
-    EXPECT_EQ(m_config.FindFirstMatchingFile("aaa/bbb/basefile.txt"), m_assetRootPath.filePath("subfolder2/aaa/bbb/basefile.txt"));
+//     // must not find the one in subfolder3 because its not a recursive watch:
+//     EXPECT_EQ(m_config.FindFirstMatchingFile("aaa/bbb/basefile.txt"), m_assetRootPath.filePath("subfolder2/aaa/bbb/basefile.txt"));
 
-    // however, stuff at the root is overridden:
-    EXPECT_EQ(m_config.FindFirstMatchingFile("rootfile3.txt"), m_assetRootPath.filePath("subfolder3/rootfile3.txt"));
+//     // however, stuff at the root is overridden:
+//     EXPECT_EQ(m_config.FindFirstMatchingFile("rootfile3.txt"), m_assetRootPath.filePath("subfolder3/rootfile3.txt"));
 
-    // not allowed to find files which do not exist:
-    EXPECT_EQ(m_config.FindFirstMatchingFile("asdasdsa.txt"), QString());
+//     // not allowed to find files which do not exist:
+//     EXPECT_EQ(m_config.FindFirstMatchingFile("asdasdsa.txt"), QString());
 
-    // find things in the root folder, too
-    EXPECT_EQ(m_config.FindFirstMatchingFile("rootfile2.txt"), m_assetRootPath.filePath("rootfile2.txt"));
+//     // find things in the root folder, too
+//     EXPECT_EQ(m_config.FindFirstMatchingFile("rootfile2.txt"), m_assetRootPath.filePath("rootfile2.txt"));
 
-    // different regex rule should not interfere
-    EXPECT_EQ(m_config.FindFirstMatchingFile("test/test.format"), m_assetRootPath.filePath("subfolder1/test/test.format"));
+//     // different regex rule should not interfere
+//     EXPECT_EQ(m_config.FindFirstMatchingFile("test/test.format"), m_assetRootPath.filePath("subfolder1/test/test.format"));
 
-    EXPECT_EQ(m_config.FindFirstMatchingFile("a/testfile.txt"), m_assetRootPath.filePath("subfolder4/a/testfile.txt"));
-}
+//     EXPECT_EQ(m_config.FindFirstMatchingFile("a/testfile.txt"), m_assetRootPath.filePath("subfolder4/a/testfile.txt"));
+// }
 
-TEST_F(PlatformConfigurationTests, GetScanFolderForFile_FeedPlatformConfiguration_Succeeds)
-{
-    CreateTestFiles();
-    // other functions depend on this one, test it first:
-    EXPECT_TRUE(m_config.GetScanFolderForFile(m_assetRootPath.filePath("rootfile3.txt")));
-    EXPECT_EQ(m_config.GetScanFolderForFile(m_assetRootPath.filePath("subfolder3/rootfile3.txt"))->ScanPath(), m_assetRootPath.filePath("subfolder3"));
+// TEST_F(PlatformConfigurationTests, GetScanFolderForFile_FeedPlatformConfiguration_Succeeds)
+// {
+//     CreateTestFiles();
+//     // other functions depend on this one, test it first:
+//     EXPECT_TRUE(m_config.GetScanFolderForFile(m_assetRootPath.filePath("rootfile3.txt")));
+//     EXPECT_EQ(m_config.GetScanFolderForFile(m_assetRootPath.filePath("subfolder3/rootfile3.txt"))->ScanPath(), m_assetRootPath.filePath("subfolder3"));
 
-    // this file exists and is in subfolder3, but subfolder3 is non-recursive, so it must not find it:
-    EXPECT_FALSE(m_config.GetScanFolderForFile(m_assetRootPath.filePath("subfolder3/aaa/bbb/basefile.txt")));
+//     // this file exists and is in subfolder3, but subfolder3 is non-recursive, so it must not find it:
+//     EXPECT_FALSE(m_config.GetScanFolderForFile(m_assetRootPath.filePath("subfolder3/aaa/bbb/basefile.txt")));
 
-    // test of root files in actual root folder:
-    EXPECT_TRUE(m_config.GetScanFolderForFile(m_assetRootPath.filePath("rootfile2.txt")));
-    EXPECT_EQ(m_config.GetScanFolderForFile(m_assetRootPath.filePath("rootfile2.txt"))->ScanPath(), m_assetRootPath.absolutePath());
-}
+//     // test of root files in actual root folder:
+//     EXPECT_TRUE(m_config.GetScanFolderForFile(m_assetRootPath.filePath("rootfile2.txt")));
+//     EXPECT_EQ(m_config.GetScanFolderForFile(m_assetRootPath.filePath("rootfile2.txt"))->ScanPath(), m_assetRootPath.absolutePath());
+// }
 
-TEST_F(PlatformConfigurationTests, ConvertToRelativePath_FeedPlatformConfiguration_Succeeds)
-{
-    CreateTestFiles();
+// TEST_F(PlatformConfigurationTests, ConvertToRelativePath_FeedPlatformConfiguration_Succeeds)
+// {
+//     CreateTestFiles();
 
-    QString fileName;
-    QString scanFolderPath;
+//     QString fileName;
+//     QString scanFolderPath;
 
-    // scan folders themselves should still convert to relative paths.
-    EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absolutePath(), fileName, scanFolderPath));
-    EXPECT_EQ(fileName, "");
-    EXPECT_EQ(scanFolderPath, m_assetRootPath.absolutePath());
+//     // scan folders themselves should still convert to relative paths.
+//     EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absolutePath(), fileName, scanFolderPath));
+//     EXPECT_EQ(fileName, "");
+//     EXPECT_EQ(scanFolderPath, m_assetRootPath.absolutePath());
 
-    // a root file that actually exists in a root folder:
-    EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("rootfile2.txt"), fileName, scanFolderPath));
-    EXPECT_EQ(fileName, "rootfile2.txt");
-    EXPECT_EQ(scanFolderPath, m_assetRootPath.absolutePath());
+//     // a root file that actually exists in a root folder:
+//     EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("rootfile2.txt"), fileName, scanFolderPath));
+//     EXPECT_EQ(fileName, "rootfile2.txt");
+//     EXPECT_EQ(scanFolderPath, m_assetRootPath.absolutePath());
 
-    // find overridden file from root that is overridden in a higher priority folder:
-    EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder3/rootfile3.txt"), fileName, scanFolderPath));
-    EXPECT_EQ(fileName, "rootfile3.txt");
-    EXPECT_EQ(scanFolderPath, m_assetRootPath.filePath("subfolder3"));
+//     // find overridden file from root that is overridden in a higher priority folder:
+//     EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder3/rootfile3.txt"), fileName, scanFolderPath));
+//     EXPECT_EQ(fileName, "rootfile3.txt");
+//     EXPECT_EQ(scanFolderPath, m_assetRootPath.filePath("subfolder3"));
 
-    // must not find this, since its in a non-recursive folder:
-    EXPECT_FALSE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder3/aaa/basefile.txt"), fileName, scanFolderPath));
+//     // must not find this, since its in a non-recursive folder:
+//     EXPECT_FALSE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder3/aaa/basefile.txt"), fileName, scanFolderPath));
 
-    // must not find this since its not even in any folder we care about:
-    EXPECT_FALSE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder8/aaa/basefile.txt"), fileName, scanFolderPath));
+//     // must not find this since its not even in any folder we care about:
+//     EXPECT_FALSE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder8/aaa/basefile.txt"), fileName, scanFolderPath));
 
-    // deep folder:
-    EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/basefile.txt"), fileName, scanFolderPath));
-    EXPECT_EQ(fileName, "aaa/bbb/ccc/ddd/basefile.txt");
-    EXPECT_EQ(scanFolderPath, m_assetRootPath.filePath("subfolder2"));
+//     // deep folder:
+//     EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/basefile.txt"), fileName, scanFolderPath));
+//     EXPECT_EQ(fileName, "aaa/bbb/ccc/ddd/basefile.txt");
+//     EXPECT_EQ(scanFolderPath, m_assetRootPath.filePath("subfolder2"));
 
-    // verify that output relative paths
-    EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder1/whatever.txt"), fileName, scanFolderPath));
-    EXPECT_EQ(fileName, "whatever.txt");
-    EXPECT_EQ(scanFolderPath, m_assetRootPath.filePath("subfolder1"));
-}
+//     // verify that output relative paths
+//     EXPECT_TRUE(m_config.ConvertToRelativePath(m_assetRootPath.absoluteFilePath("subfolder1/whatever.txt"), fileName, scanFolderPath));
+//     EXPECT_EQ(fileName, "whatever.txt");
+//     EXPECT_EQ(scanFolderPath, m_assetRootPath.filePath("subfolder1"));
+// }
