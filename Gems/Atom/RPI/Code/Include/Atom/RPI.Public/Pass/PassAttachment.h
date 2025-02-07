@@ -13,6 +13,8 @@
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 
+#include <AzCore/std/containers/deque.h>
+
 namespace AZ
 {
     namespace RPI
@@ -210,8 +212,8 @@ namespace AZ
             Ptr<PassAttachment> m_originalAttachment = nullptr;
         };
 
-        using PassAttachmentBindingList = AZStd::vector<PassAttachmentBinding>;
-        using PassAttachmentBindingListView = AZStd::span<const PassAttachmentBinding>;
+        using PassAttachmentBindingList = AZStd::deque<PassAttachmentBinding>;
+        using PassAttachmentBindingListView = const AZStd::deque<PassAttachmentBinding>;
 
     }   // namespace RPI
 

@@ -253,25 +253,28 @@ namespace AZ
 
         PassAttachmentBinding& Pass::GetInputBinding(uint32_t index)
         {
+            AZ_Assert(m_inputBindingIndices.size() > index, "Index out of bounds.");
             uint32_t bindingIndex = m_inputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
         }
 
         PassAttachmentBinding& Pass::GetInputOutputBinding(uint32_t index)
         {
+            AZ_Assert(m_inputOutputBindingIndices.size() > index, "Index out of bounds.");
             uint32_t bindingIndex = m_inputOutputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
         }
 
         PassAttachmentBinding& Pass::GetOutputBinding(uint32_t index)
         {
+            AZ_Assert(m_outputBindingIndices.size() > index, "Index out of bounds.");
             uint32_t bindingIndex = m_outputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
         }
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
         {
-            auto index = static_cast<uint8_t>(m_attachmentBindings.size());
+            auto index = static_cast<uint8_t>(m_attachmentBindingIndex);
             if (attachmentBinding.m_scopeAttachmentStage == RHI::ScopeAttachmentStage::Uninitialized)
             {
                 attachmentBinding.m_scopeAttachmentStage = attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::Shader
@@ -280,7 +283,18 @@ namespace AZ
             }
 
             // Add the binding. This will assert if the fixed size array is full.
-            m_attachmentBindings.push_back(attachmentBinding);
+
+            if (m_attachmentBindingIndex < m_attachmentBindings.size())
+            {
+                m_attachmentBindings[m_attachmentBindingIndex] = attachmentBinding;
+                m_attachmentBindingPtrs.push_back(&m_attachmentBindings[m_attachmentBindingIndex]);
+            }
+            else
+            {
+                m_attachmentBindings.push_back(attachmentBinding);
+                m_attachmentBindingPtrs.push_back(&m_attachmentBindings.back());
+            }
+            ++m_attachmentBindingIndex;
 
             // Add the index of the binding to the input, output or input/output list based on the slot type
             switch (attachmentBinding.m_slotType)
@@ -888,7 +902,7 @@ namespace AZ
         void Pass::DeclareAttachmentsToFrameGraph(
             RHI::FrameGraphInterface frameGraph, PassSlotType slotType, RHI::ScopeAttachmentAccess accessMask) const
         {
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
+            for (size_t slotIndex = 0; slotIndex < m_attachmentBindingIndex; ++slotIndex)
             {
                 const auto& attachmentBinding = m_attachmentBindings[slotIndex];
                 if(slotType == PassSlotType::Uninitialized || slotType == attachmentBinding.m_slotType)
@@ -1097,7 +1111,7 @@ namespace AZ
             // An example of this could be reading from and writing to different mips of the same texture
 
             // Loop over all attachments bound to this pass
-            size_t size = m_attachmentBindings.size();
+            size_t size = m_attachmentBindingIndex;
             for (size_t i = 0; i < size; ++i)
             {
                 PassAttachmentBinding& binding01 = m_attachmentBindings[i];
@@ -1295,7 +1309,9 @@ namespace AZ
             m_inputBindingIndices.clear();
             m_inputOutputBindingIndices.clear();
             m_outputBindingIndices.clear();
-            m_attachmentBindings.clear();
+            // [GFX TODO][GHI-18438] we cannot clear the attamentBindings here (m_attachmentBindings.clear();)
+            m_attachmentBindingIndex = 0;
+            m_attachmentBindingPtrs.clear();
             m_ownedAttachments.clear();
             m_executeAfterPasses.clear();
             m_executeBeforePasses.clear();
@@ -1761,7 +1777,7 @@ namespace AZ
         void Pass::ReplaceSubpassInputs(RHI::SubpassInputSupportType supportedTypes)
         {
             m_flags.m_hasSubpassInput = false;
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
+            for (size_t slotIndex = 0; slotIndex < m_attachmentBindingIndex; ++slotIndex)
             {
                 PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
