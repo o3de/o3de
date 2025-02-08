@@ -690,6 +690,24 @@ CSprite* CSprite::LoadSprite(const AZStd::string& pathname)
     return sprite;
 }
 
+#if defined(CARBONATED) // CREATE_SPRITE_FROM_IMAGE
+////////////////////////////////////////////////////////////////////////////////////////////////////
+CSprite* CSprite::CreateSprite(AZ::Data::Instance<AZ::RPI::Image>& image)
+{
+    // create Sprite object
+    CSprite* sprite = new CSprite;
+
+    sprite->m_image = image;
+    sprite->m_pathname = image->GetRHIImage()->GetName().GetCStr();
+    sprite->m_texturePathname.clear();
+
+    // add sprite to list of loaded sprites
+    (*s_loadedSprites)[sprite->m_pathname] = sprite;
+
+    return sprite;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite* CSprite::CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {

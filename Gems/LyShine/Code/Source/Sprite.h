@@ -76,6 +76,9 @@ public: // static member functions
     static void Initialize();
     static void Shutdown();
     static CSprite* LoadSprite(const AZStd::string& pathname);
+#if defined(CARBONATED) // CREATE_SPRITE_FROM_IMAGE
+    static CSprite* CreateSprite(AZ::Data::Instance<AZ::RPI::Image>& image);
+#endif
     static CSprite* CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset);
     static bool DoesSpriteTextureAssetExist(const AZStd::string& pathname);
 
