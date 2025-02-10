@@ -690,10 +690,27 @@ CSprite* CSprite::LoadSprite(const AZStd::string& pathname)
     return sprite;
 }
 
-#if defined(CARBONATED) // CREATE_SPRITE_FROM_IMAGE
+#if defined(CARBONATED)
+#if defined(CARBONATED_CREATE_SPRITE_FROM_IMAGE)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite* CSprite::CreateSprite(AZ::Data::Instance<AZ::RPI::Image>& image)
 {
+    if (!image)
+    {
+        AZ_Warning("UI", false, "Image instance not valid!");
+        return nullptr;
+    }
+
+    // test if the sprite is already loaded, if so return loaded sprite
+    auto result = s_loadedSprites->find(image->GetRHIImage()->GetName().GetCStr());
+    CSprite* loadedSprite = (result == s_loadedSprites->end()) ? nullptr : result->second;
+
+    if (loadedSprite)
+    {
+        loadedSprite->AddRef();
+        return loadedSprite;
+    }
+
     // create Sprite object
     CSprite* sprite = new CSprite;
 
@@ -706,6 +723,7 @@ CSprite* CSprite::CreateSprite(AZ::Data::Instance<AZ::RPI::Image>& image)
 
     return sprite;
 }
+#endif // CARBONATED_CREATE_SPRITE_FROM_IMAGE
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -71,8 +71,10 @@ public:
 
     ISprite* LoadSprite(const AZStd::string& pathname) override;
 
-#if defined(CARBONATED) // CREATE_SPRITE_FROM_IMAGE
+#if defined(CARBONATED)
+#if defined(CARBONATED_CREATE_SPRITE_FROM_IMAGE)
     ISprite* CreateSprite(AZ::Data::Instance<AZ::RPI::Image>& image) override;
+#endif
 #endif
 
     ISprite* CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
