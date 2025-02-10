@@ -68,11 +68,6 @@ namespace AZ
 
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
 
-        const uint32_t PassAttachmentBindingCountMax = 32;
-        const uint32_t PassInputBindingCountMax = PassAttachmentBindingCountMax;
-        const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
-        const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
-                
         enum class PassAttachmentReadbackOption : uint8_t
         {
             Input = 0,
@@ -453,10 +448,10 @@ namespace AZ
             const Name PipelineGlobalKeyword{"PipelineGlobal"};
 
             // List of input, output and input/output attachment bindings
-            // Fixed size for performance and so we can hold pointers to the bindings for connections
-            int m_attachmentBindingIndex{ 0 };
+            // [GFX TODO][GHI-18438] Using a deque here that is not cleared, since pointers are held to the bindings for connections and are
+            // not expected to be changed even during a rebuild
+            int m_attachmentBindingsSize{ 0 };
             AZStd::deque<PassAttachmentBinding> m_attachmentBindings;
-            AZStd::vector<PassAttachmentBinding*> m_attachmentBindingPtrs;
 
             // List of attachments owned by this pass.
             // It includes both transient attachments and imported attachments

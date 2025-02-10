@@ -158,6 +158,9 @@ namespace AZ
             //! Updates the set attachment from the binding connection
             void UpdateConnection(bool useFallback);
 
+            //! Clears the smart pointers within to holding the memory too long.
+            void Clear();
+
             //! Name of the attachment binding so we can find it in a list of attachment binding
             Name m_name;
 
