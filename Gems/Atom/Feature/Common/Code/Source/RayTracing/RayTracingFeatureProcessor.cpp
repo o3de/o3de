@@ -864,7 +864,7 @@ namespace AZ
             UpdateRayTracingMaterialSrg();
         }
 
-        const void RayTracingFeatureProcessor::MarkBlasInstanceForCompaction(int deviceId, Data::AssetId assetId)
+        const void RayTracingFeatureProcessor::MarkBlasInstanceForCompaction(int deviceIndex, Data::AssetId assetId)
         {
             AZStd::unique_lock lock(m_queueMutex);
             auto it = m_blasInstanceMap.find(assetId);
@@ -881,10 +881,10 @@ namespace AZ
             }
 
             m_blasEnqueuedForCompact[assetId].m_frameIndex = static_cast<int>(m_frameIndex + RHI::Limits::Device::FrameCountMax);
-            m_blasEnqueuedForCompact[assetId].m_deviceMask = RHI::SetBit(m_blasEnqueuedForCompact[assetId].m_deviceMask, deviceId);
+            m_blasEnqueuedForCompact[assetId].m_deviceMask = RHI::SetBit(m_blasEnqueuedForCompact[assetId].m_deviceMask, deviceIndex);
         }
 
-        const void RayTracingFeatureProcessor::MarkBlasInstanceAsCompactionEnqueued(int deviceId, Data::AssetId assetId)
+        const void RayTracingFeatureProcessor::MarkBlasInstanceAsCompactionEnqueued(int deviceIndex, Data::AssetId assetId)
         {
             AZStd::unique_lock lock(m_queueMutex);
             auto it = m_blasInstanceMap.find(assetId);
@@ -902,7 +902,7 @@ namespace AZ
             m_uncompactedBlasEnqueuedForDeletion[assetId].m_frameIndex =
                 static_cast<int>(m_frameIndex + RHI::Limits::Device::FrameCountMax);
             m_uncompactedBlasEnqueuedForDeletion[assetId].m_deviceMask =
-                RHI::SetBit(m_uncompactedBlasEnqueuedForDeletion[assetId].m_deviceMask, deviceId);
+                RHI::SetBit(m_uncompactedBlasEnqueuedForDeletion[assetId].m_deviceMask, deviceIndex);
         }
 
         void RayTracingFeatureProcessor::UpdateBlasInstances()
@@ -1025,9 +1025,9 @@ namespace AZ
                             }
                             RHI::MultiDeviceObject::IterateDevices(
                                 RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
-                                [&, assetId = assetId](int deviceId)
+                                [&, assetId = assetId](int deviceIndex)
                                 {
-                                    m_blasToCompact[deviceId].insert(assetId);
+                                    m_blasToCompact[deviceIndex].insert(assetId);
                                     return true;
                                 });
                         }
@@ -1422,11 +1422,11 @@ namespace AZ
             m_blasInstanceMap.erase(id);
             m_blasToCreate.erase(id);
             m_skinnedBlasIds.erase(id);
-            for (auto& [deviceId, entries] : m_blasToBuild)
+            for (auto& [deviceIndex, entries] : m_blasToBuild)
             {
                 entries.erase(id);
             }
-            for (auto& [deviceId, entries] : m_blasToCompact)
+            for (auto& [deviceIndex, entries] : m_blasToCompact)
             {
                 entries.erase(id);
             }

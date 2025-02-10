@@ -385,7 +385,7 @@ namespace AZ::Render
         //! Returns the list of Blas instance asset ids that need to be built for the given device
         //! The returned asset ids can be used to access the Blas instance returned by GetBlasInstances
         //! The caller is responsible for deleting entries that where enqueued for building
-        virtual BlasBuildList& GetBlasBuildList(int deviceId) = 0;
+        virtual BlasBuildList& GetBlasBuildList(int deviceIndex) = 0;
 
         //! Returns the asset id of all skinned mesh Blas instances in the scene
         //! The returned asset ids can be used to access the Blas instance returned by GetBlasInstances
@@ -394,15 +394,15 @@ namespace AZ::Render
         //! Returns the list of Blas instance asset ids that are ready for compaction
         //! The returned asset ids can be used to access the Blas instance returned by GetBlasInstances
         //! The caller is responsible for deleting entries that where enqueued for building
-        virtual BlasBuildList& GetBlasCompactionList(int deviceId) = 0;
+        virtual BlasBuildList& GetBlasCompactionList(int deviceIndex) = 0;
 
         //! Signals that the compaction size queries of the asset have been enqueued
         //! The mesh will be inserted into the queue returned by GetBlasCompactionList when the compacted size is ready
-        virtual const void MarkBlasInstanceForCompaction(int deviceId, Data::AssetId assetId) = 0;
+        virtual const void MarkBlasInstanceForCompaction(int deviceIndex, Data::AssetId assetId) = 0;
 
         //! Signals that the Blas compaction has been enqueued
         //! The original uncompacted BLAS will be deleted when it's no longer needed
-        virtual const void MarkBlasInstanceAsCompactionEnqueued(int deviceId, Data::AssetId assetId) = 0;
+        virtual const void MarkBlasInstanceAsCompactionEnqueued(int deviceIndex, Data::AssetId assetId) = 0;
 
         //! Retrieves the list of all procedural geometry types in the scene
         virtual const ProceduralGeometryTypeList& GetProceduralGeometryTypes() const = 0;

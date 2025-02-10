@@ -108,11 +108,11 @@ namespace AZ
             RHI::AttachmentId GetTlasAttachmentId() const override { return m_tlasAttachmentId; }
             BlasInstanceMap& GetBlasInstances() override { return m_blasInstanceMap; }
             AZStd::mutex& GetBlasBuiltMutex() override { return m_blasBuiltMutex; }
-            BlasBuildList& GetBlasBuildList(int deviceId) override { return m_blasToBuild[deviceId]; }
+            BlasBuildList& GetBlasBuildList(int deviceIndex) override { return m_blasToBuild[deviceIndex]; }
             const BlasBuildList& GetSkinnedMeshBlasList() override { return m_skinnedBlasIds; };
-            BlasBuildList& GetBlasCompactionList(int deviceId) override { return m_blasToCompact[deviceId]; }
-            const void MarkBlasInstanceForCompaction(int deviceId, Data::AssetId assetId) override;
-            const void MarkBlasInstanceAsCompactionEnqueued(int deviceId, Data::AssetId assetId) override;
+            BlasBuildList& GetBlasCompactionList(int deviceIndex) override { return m_blasToCompact[deviceIndex]; }
+            const void MarkBlasInstanceForCompaction(int deviceIndex, Data::AssetId assetId) override;
+            const void MarkBlasInstanceAsCompactionEnqueued(int deviceIndex, Data::AssetId assetId) override;
 
             bool HasMeshGeometry() const override { return m_subMeshCount != 0; }
             bool HasProceduralGeometry() const override { return !m_proceduralGeometry.empty(); }
