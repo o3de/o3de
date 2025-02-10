@@ -38,7 +38,7 @@ namespace AZ::NativeUI
         AssertAction DisplayAssertDialog(const AZStd::string& message) const override;
         ////////////////////////////////////////////////////////////////////////
         
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
         bool m_inAtomicCallback = false;
 #endif
     };

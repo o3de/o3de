@@ -17,7 +17,7 @@
 
 #include <AzCore/Utils/SystemUtilsApple_Platform.h>
 
-#if defined(CARBONATED)
+#if defined(CARBONATED)  && defined(CARBONATED_OS_CALLBACK_ASSERT)
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #endif
 
