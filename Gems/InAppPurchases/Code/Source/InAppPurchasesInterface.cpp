@@ -53,7 +53,24 @@ namespace InAppPurchases
     {
         m_cachedPurchasedProducts.push_back(AZStd::unique_ptr<PurchasedProductDetails const>(purchasedProductDetails));
     }
-    
+            
+#if defined(CARBONATED)
+    void InAppPurchasesCache::RemovePurchasedProductDetails(const AZStd::string& orderId)
+    {
+        auto it = m_cachedPurchasedProducts.begin();
+        
+        while(it != m_cachedPurchasedProducts.end())
+        {
+            if((*it)->GetOrderId() == orderId)
+            {
+                m_cachedPurchasedProducts.erase(it);
+                break;
+            }
+            it++;
+        }
+    }   
+#endif
+
     const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >& InAppPurchasesCache::GetCachedProductDetails() const
     {
         return m_cachedProductDetails;

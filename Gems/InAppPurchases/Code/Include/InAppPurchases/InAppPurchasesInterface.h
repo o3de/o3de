@@ -74,12 +74,24 @@ namespace InAppPurchases
         const AZStd::string& GetDeveloperPayload() const { return m_developerPayload; }
         virtual AZ::u64 GetPurchaseTime() const { return m_purchaseTime; }
         PurchaseState GetPurchaseState() const { return m_purchaseState; }
+		
+#if defined(CARBONATED)
+        const AZStd::string& GetProductPrice() const { return m_productPrice; }
+        const AZStd::string& GetProductCurrencyCode() const { return m_productPriceCurrencyCode; }
+        AZ::u64 GetProductPriceMicro() const { return m_productPriceMicro; }
+#endif
         
         void SetProductId(const AZStd::string& productId) { m_productId = productId; }
         void SetOrderId(const AZStd::string& orderId) { m_orderId = orderId; }
         void SetDeveloperPayload(const AZStd::string& developerPayload) { m_developerPayload = developerPayload; }
         void SetPurchaseTime(AZ::u64 purchaseTime) { m_purchaseTime = purchaseTime; }
         void SetPurchaseState(PurchaseState purchaseState) { m_purchaseState = purchaseState; }
+        
+#if defined(CARBONATED)
+        void SetProductPrice(const AZStd::string& productPrice) { m_productPrice = productPrice; }
+        void SetProductCurrencyCode(const AZStd::string& productCurrencyCode) { m_productPriceCurrencyCode = productCurrencyCode; }
+        void SetProductPriceMicro(const AZ::u64& productPriceMicro) { m_productPriceMicro = productPriceMicro; }
+#endif
 
         virtual ~PurchasedProductDetails() {}
         PurchasedProductDetails(const PurchasedProductDetails&) = default;
@@ -89,8 +101,14 @@ namespace InAppPurchases
         AZStd::string m_productId;
         AZStd::string m_orderId;
         AZStd::string m_developerPayload;
-        AZ::u64 m_purchaseTime;
+        AZ::u64 m_purchaseTime = 0;
         PurchaseState m_purchaseState;
+        
+#if defined(CARBONATED)
+        AZStd::string m_productPrice;
+        AZStd::string m_productPriceCurrencyCode;
+        AZ::u64 m_productPriceMicro = 0;
+#endif
     };
 
 
@@ -105,6 +123,10 @@ namespace InAppPurchases
 
         void AddProductDetailsToCache(const ProductDetails* productDetails);
         void AddPurchasedProductDetailsToCache(const PurchasedProductDetails* purchasedProductDetails);
+        
+#if defined(CARBONATED)
+        void RemovePurchasedProductDetails(const AZStd::string& orderId);
+#endif
 
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >& GetCachedProductDetails() const;
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >& GetCachedPurchasedProductDetails() const;
@@ -139,6 +161,10 @@ namespace InAppPurchases
         virtual void QueryPurchasedProducts() const = 0;
         
         virtual void RestorePurchasedProducts() const = 0;
+        
+#if defined(CARBONATED)
+        virtual AZStd::string GetTransactionReceipt() const { return ""; }
+#endif
         
         virtual void ConsumePurchase(const AZStd::string& purchaseToken) const = 0;
         

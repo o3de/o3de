@@ -233,6 +233,28 @@ namespace InAppPurchases
             }
         }
     }
+
+#if defined(CARBONATED)
+    AZStd::string InAppPurchasesApple::GetTransactionReceipt() const
+    {
+        // iOS8 and later Receipt retrieval
+        // https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html#//apple_ref/doc/uid/TP40010573-CH104-SW1
+        // Load the receipt from the app bundle.
+        NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
+        NSData *receipt = [NSData dataWithContentsOfURL:receiptURL];
+        
+        if(!receipt)
+        {
+            // Error - no receipt.
+            return "";
+        }
+        
+        NSString *receiptStr = [receipt base64EncodedStringWithOptions:0];
+        
+        AZStd::string str = [receiptStr UTF8String];
+        return str;
+    }
+#endif
     
     void InAppPurchasesApple::ConsumePurchase(const AZStd::string& purchaseToken) const
     {

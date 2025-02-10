@@ -42,6 +42,20 @@
         purchasedProductDetails->SetDeveloperPayload("");
     }
     
+#if defined(CARBONATED)
+    const auto& cachedProductDetails = InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->GetCachedProductDetails();
+    for(const auto& productDetails : cachedProductDetails)
+    {
+        if(productDetails && productDetails->GetProductId() == purchasedProductDetails->GetProductId())
+        {
+            purchasedProductDetails->SetProductPrice(productDetails->GetProductPrice());
+            purchasedProductDetails->SetProductPriceMicro(productDetails->GetProductPriceMicro());
+            purchasedProductDetails->SetProductCurrencyCode(productDetails->GetProductCurrencyCode());
+            break;
+        }
+    }
+#endif
+    
     if (restored)
     {
         purchasedProductDetails->SetRestoredOrderId([transaction.transactionIdentifier cStringUsingEncoding:NSASCIIStringEncoding]);
@@ -142,10 +156,19 @@
     for (SKProduct* product in response.products)
     {
         InAppPurchases::ProductDetailsApple* productDetails = new InAppPurchases::ProductDetailsApple;
+      
+#if defined(CARBONATED)
+        AZStd::string description = product.localizedDescription ? [product.localizedDescription UTF8String] : "(no desc)";
+#endif
         
         productDetails->SetProductId([product.productIdentifier UTF8String]);
         productDetails->SetProductTitle([product.localizedTitle UTF8String]);
+        
+#if defined(CARBONATED)
+        productDetails->SetProductDescription(description);
+#else
         productDetails->SetProductDescription([product.localizedDescription UTF8String]);
+#endif
         productDetails->SetProductPrice([[self convertPriceToString:product.price forLocale:product.priceLocale] UTF8String]);
         productDetails->SetProductCurrencyCode([[product.priceLocale objectForKey:NSLocaleCurrencyCode] UTF8String]);
         AZStd::string priceMicro = [[NSString stringWithFormat:@"%@", product.price] UTF8String];
@@ -218,9 +241,34 @@
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "Transaction failed! Error: %s", [[transaction.error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
                     InAppPurchases::PurchasedProductDetailsApple* productDetails = [self parseTransactionDetails:transaction isRestored:false];
+#if defined(CARBONATED)
+                    if(transaction.error.code == SKErrorPaymentCancelled)
+                    {
+                        productDetails->SetPurchaseState(InAppPurchases::PurchaseState::CANCELLED);
+                        EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, PurchaseCancelled, productDetails);
+                    }
+                    else
+                    {
+                        productDetails->SetPurchaseState(InAppPurchases::PurchaseState::FAILED);
+                        [self.m_unfinishedTransactions addObject:transaction];
+                        AZ_TracePrintf("O3DEInAppPurchases", "SKError = %d", transaction.error.code);
+                        EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, PurchaseFailed, productDetails);
+                    }
+#else
                     productDetails->SetPurchaseState(InAppPurchases::PurchaseState::FAILED);
+#endif
+                    
+#if defined(CARBONATED)
+                    InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->AddPurchasedProductDetailsToCache(productDetails);
+#endif
                     [self.m_unfinishedTransactions addObject:transaction];
                     EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, PurchaseFailed, productDetails);
+                    
+#if defined(CARBONATED)
+                    // ..
+#else
+                    delete productDetails;
+#endif
                     delete productDetails;
                 }
             }
@@ -284,6 +332,12 @@
         {
             [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
             [self.m_unfinishedTransactions removeObject:transaction];
+            
+#if defined(CARBONATED)
+            AZStd::string orderId = [transactionId UTF8String];
+            InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->RemovePurchasedProductDetails(orderId);
+#endif
+            
             return;
         }
     }
