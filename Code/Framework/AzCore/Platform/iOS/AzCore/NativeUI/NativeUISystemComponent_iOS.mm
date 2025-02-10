@@ -124,7 +124,7 @@ namespace AZ
             NSString* nsMessage = [NSString stringWithUTF8String:message.c_str()];
             
 #if defined(CARBONATED)
-            if (m_inAtomicCallback)
+            if (NSThread.isMainThread && m_inAtomicCallback)  // we cannot interrupt the main thread only, the others are OK
             {
                 OnAtomicCallbackInterrupt(nsTitle, nsMessage);
                 abort();
