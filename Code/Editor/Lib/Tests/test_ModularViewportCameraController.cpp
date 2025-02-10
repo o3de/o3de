@@ -299,7 +299,12 @@ namespace UnitTest
         RepeatDiagonalMouseMovements(
             [this]
             {
-                return GetParam();
+                // note that earlier versions of GoogleMock required 'this' capture in order to call GetParam
+                // GetParam is not a static member, but only works on static class data, which can cause some compilers to complain
+                // about 'this' being captured but not used, and other situations to complain about this NOT being captured but used,
+                // depending on which version of googlemock we actually use.  To try to satisfy all versions, we will explicitly capture 'this'
+                // AND explicily use it despite it not being syntactically necessary (ie, 'this->' being impiled by GetParam()).
+                return this->GetParam();
             });
 
         // Then
