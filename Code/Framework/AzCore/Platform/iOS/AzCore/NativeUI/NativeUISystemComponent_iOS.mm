@@ -23,7 +23,7 @@ namespace AZ
         {
             return false;
         }
-    
+#if defined(CARBONATED_OS_CALLBACK_ASSERT)
         void NativeUISystem::BeforeAtomicCallback()
         {
             m_inAtomicCallback = true;
@@ -32,7 +32,7 @@ namespace AZ
         {
             m_inAtomicCallback = false;
         }
-    
+#endif
         template <
             class result_t   = std::chrono::milliseconds,
             class clock_t    = std::chrono::steady_clock,
