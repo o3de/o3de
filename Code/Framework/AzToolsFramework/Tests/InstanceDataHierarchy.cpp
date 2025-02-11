@@ -1647,7 +1647,7 @@ namespace UnitTest
     {
     };
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         InstanceDataHierarchyGroupTestFixture,
         InstanceDataHierarchyGroupTestFixtureParameterized,
         ::testing::Values("GroupFloat", "GroupToggle", "ToggleGroupInt", "SubInt", "SubToggle", "SubFloat"));

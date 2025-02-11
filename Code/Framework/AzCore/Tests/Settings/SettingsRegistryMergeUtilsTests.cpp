@@ -76,7 +76,7 @@ namespace SettingsRegistryMergeUtilsTests
             param.m_dumperSettings));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         DumpSettings,
         SettingsRegistryMergeUtilsParamFixture,
         ::testing::Values(
@@ -295,7 +295,7 @@ namespace SettingsRegistryMergeUtilsTests
         }
     }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ReadConfigFile,
     SettingsRegistryMergeUtilsConfigFileFixture,
     ::testing::Values(
@@ -654,7 +654,7 @@ tags=tools,renderer,metal)"
             } };
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MergeManifestJson,
         SettingsRegistryGemVisitFixture,
         ::testing::ValuesIn(MakeGemVisitTestingValues()));
@@ -1043,7 +1043,7 @@ tags=tools,renderer,metal)"
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         FindEngineRoot,
         SettingsRegistryMergeUtilsFindEngineRootFixture,
         ::testing::ValuesIn(MakeFindEngineRootTestingValues()));

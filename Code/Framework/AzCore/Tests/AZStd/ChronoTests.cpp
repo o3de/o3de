@@ -52,7 +52,7 @@ namespace UnitTest
         DurationExpectation<AZStd::chrono::seconds, 44, AZStd::ratio<1>>,
         DurationExpectation<AZStd::chrono::minutes, 28, AZStd::ratio<60>>,
         DurationExpectation<AZStd::chrono::hours, 22, AZStd::ratio<3600>>>;
-    TYPED_TEST_CASE(DurationTypedTest, ChronoTestTypes);
+    TYPED_TEST_SUITE(DurationTypedTest, ChronoTestTypes);
 
     //////////////////////////////////////////////////////////////////////////
     // Tests for std::duration  compile time requirements

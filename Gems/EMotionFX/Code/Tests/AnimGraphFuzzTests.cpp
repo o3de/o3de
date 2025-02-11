@@ -130,7 +130,7 @@ namespace EMotionFX
 
     const std::vector<Seed> randomSeeds = GetSeedsForTest(s_AnimGraphFuzzTestLoad);
 
-    INSTANTIATE_TEST_CASE_P(InstantiationName,
+    INSTANTIATE_TEST_SUITE_P(InstantiationName,
         AnimGraphFuzzTest,
         ::testing::ValuesIn(randomSeeds),
         ::testing::PrintToStringParamName()

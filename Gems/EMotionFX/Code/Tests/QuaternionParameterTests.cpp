@@ -133,7 +133,7 @@ namespace EMotionFX
         AZ::Quaternion(AZ::Constants::FloatMax, -AZ::Constants::FloatMax, AZ::Constants::FloatEpsilon, 1.0f)
     };
 
-    INSTANTIATE_TEST_CASE_P(QuaternionParameter_ValidOutputTests,
+    INSTANTIATE_TEST_SUITE_P(QuaternionParameter_ValidOutputTests,
         QuaternionParameterFixture,
         ::testing::ValuesIn(quaternionParameterTestData)
     );

@@ -428,6 +428,6 @@ namespace UnitTest
         return MultiDeviceImageBindFlagsToString(info.param.imageBindFlags) + "ImageWith" + MultiDeviceImageBindFlagsToString(info.param.viewBindFlags) + "ImageView";
     }
 
-    INSTANTIATE_TEST_CASE_P(ImageView, MultiDeviceImageBindFlagTests, ::testing::ValuesIn(GenerateCompatibleMultiDeviceImageBindFlagCombinations()), GenerateMultiDeviceImageBindFlagTestCaseName);
-    INSTANTIATE_TEST_CASE_P(ImageView, MultiDeviceImageBindFlagFailureCases, ::testing::ValuesIn(GenerateIncompatibleMultiDeviceImageBindFlagCombinations()), GenerateMultiDeviceImageBindFlagTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(ImageView, MultiDeviceImageBindFlagTests, ::testing::ValuesIn(GenerateCompatibleMultiDeviceImageBindFlagCombinations()), GenerateMultiDeviceImageBindFlagTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(ImageView, MultiDeviceImageBindFlagFailureCases, ::testing::ValuesIn(GenerateIncompatibleMultiDeviceImageBindFlagCombinations()), GenerateMultiDeviceImageBindFlagTestCaseName);
 }

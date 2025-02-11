@@ -905,7 +905,7 @@ namespace UnitTest
         , TreeSetConfig<AZStd::set<MoveOnlyIntType, MoveOnlyIntTypeCompare>>
         , TreeSetConfig<AZStd::multiset<MoveOnlyIntType, MoveOnlyIntTypeCompare>>
     >;
-    TYPED_TEST_CASE(TreeSetContainers, SetContainerConfigs);
+    TYPED_TEST_SUITE(TreeSetContainers, SetContainerConfigs);
 
     TYPED_TEST(TreeSetContainers, ExtractNodeHandleByKeySucceeds)
     {
@@ -1162,7 +1162,7 @@ namespace UnitTest
         TreeSetWithCustomAllocatorConfig<AZStd::set>
         , TreeSetWithCustomAllocatorConfig<AZStd::multiset>
     >;
-    TYPED_TEST_CASE(TreeSetDifferentAllocatorFixture, SetTemplateConfigs);
+    TYPED_TEST_SUITE(TreeSetDifferentAllocatorFixture, SetTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
 #if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
@@ -1243,7 +1243,7 @@ namespace UnitTest
         , TreeMapConfig<AZStd::map<MoveOnlyIntType, int32_t, MoveOnlyIntTypeCompare>>
         , TreeMapConfig<AZStd::multimap<MoveOnlyIntType, int32_t, MoveOnlyIntTypeCompare>>
     >;
-    TYPED_TEST_CASE(TreeMapContainers, MapContainerConfigs);
+    TYPED_TEST_SUITE(TreeMapContainers, MapContainerConfigs);
 
     TYPED_TEST(TreeMapContainers, ExtractNodeHandleByKeySucceeds)
     {
@@ -1643,7 +1643,7 @@ namespace UnitTest
         TreeMapWithCustomAllocatorConfig<AZStd::map>
         , TreeMapWithCustomAllocatorConfig<AZStd::multimap>
     >;
-    TYPED_TEST_CASE(TreeMapDifferentAllocatorFixture, MapTemplateConfigs);
+    TYPED_TEST_SUITE(TreeMapDifferentAllocatorFixture, MapTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
 #if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
@@ -1773,7 +1773,7 @@ namespace UnitTest
         , TreeContainerTransparentConfig<AZStd::multimap<TreeContainerTransparentTestInternal::TrackConstructorCalls, int, AZStd::less<>>>
     >;
 
-    TYPED_TEST_CASE(TreeContainerTransparentFixture, TreeContainerConfigs);
+    TYPED_TEST_SUITE(TreeContainerTransparentFixture, TreeContainerConfigs);
 
     TYPED_TEST(TreeContainerTransparentFixture, FindDoesNotConstructKeyForTransparentHashEqual_NoKeyConstructed_Succeeds)
     {

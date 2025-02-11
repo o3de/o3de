@@ -195,7 +195,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphNodeProcessingTests,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphNodeProcessingTests,
         AnimGraphNodeProcessingTestFixture,
         ::testing::ValuesIn(AnimGraphNodeProcessingTestTestData));
 } // namespace EMotionFX

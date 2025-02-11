@@ -107,7 +107,7 @@ namespace UnitTest
         StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::shared_mutex>,
         StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::shared_mutex>
     >;
-    TYPED_TEST_CASE(StatisticalProfilerFixture, StatisticalProfilerTestTypes);
+    TYPED_TEST_SUITE(StatisticalProfilerFixture, StatisticalProfilerTestTypes);
 
     TYPED_TEST(StatisticalProfilerFixture, ProfileCode_SingleThread_ValidateStatistics)
     {
@@ -159,7 +159,7 @@ namespace UnitTest
         StatisticalProfilerTestTraits<AZ::HashValue32, AZStd::shared_mutex>,
         StatisticalProfilerTestTraits<AZ::HashValue64, AZStd::shared_mutex>
     >;
-    TYPED_TEST_CASE(ThreadedStatisticalProfilerFixture, ThreadedStatisticalProfilerTestTypes);
+    TYPED_TEST_SUITE(ThreadedStatisticalProfilerFixture, ThreadedStatisticalProfilerTestTypes);
 
     TYPED_TEST(ThreadedStatisticalProfilerFixture, ProfileCode_4Threads_ValidateStatistics)
     {

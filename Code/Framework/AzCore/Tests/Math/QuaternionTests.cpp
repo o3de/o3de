@@ -360,7 +360,7 @@ namespace UnitTest
         EXPECT_TRUE(recoveredQuaternion1.IsClose(recoveredQuaternion2) || recoveredQuaternion1.IsClose(-recoveredQuaternion2));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Quaternion, QuaternionEulerFixture, ::testing::ValuesIn(TestUnitQuaternions));
+    INSTANTIATE_TEST_SUITE_P(MATH_Quaternion, QuaternionEulerFixture, ::testing::ValuesIn(TestUnitQuaternions));
 
     TEST(MATH_Quaternion, FromEulerDegrees)
     {
@@ -515,7 +515,7 @@ namespace UnitTest
         EXPECT_THAT(testQuat, IsCloseTolerance(backFromAxisAngle, 1e-6f));
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Quaternion, QuaternionScaledAxisAngleConversionFixture, ::testing::ValuesIn(RotationRepresentationConversionTestQuats));
+    INSTANTIATE_TEST_SUITE_P(MATH_Quaternion, QuaternionScaledAxisAngleConversionFixture, ::testing::ValuesIn(RotationRepresentationConversionTestQuats));
 
     TEST(MATH_Quaternion, ShortestEquivalent)
     {
@@ -582,7 +582,7 @@ namespace UnitTest
         EXPECT_TRUE((succeeded || isGimbleLock));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MATH_Quaternion,
         AngleRadianTestFixtureXYZ,
         ::testing::Values(
@@ -643,7 +643,7 @@ namespace UnitTest
         EXPECT_TRUE(resultDegrees.IsClose(sourceDegrees));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MATH_Quaternion,
         AngleRadianTestFixtureYXZ,
         ::testing::Values(
@@ -708,7 +708,7 @@ namespace UnitTest
         EXPECT_TRUE((succeeded || isGimbleLock));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MATH_Quaternion,
         AngleRadianTestFixtureZYX,
         ::testing::Values(
