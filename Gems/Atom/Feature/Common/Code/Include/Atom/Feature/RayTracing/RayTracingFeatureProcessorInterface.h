@@ -343,6 +343,10 @@ namespace AZ::Render
         //! Retrieves the GPU buffer containing information for all ray tracing materials.
         virtual const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const = 0;
 
+        //! If necessary recreates TLAS buffers and updates the ray tracing SRGs. Should only be called by the
+        //! RayTracingAccelerationStructurePass.
+        virtual void BeginFrame() = 0;
+
         //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the
         //! RayTracingAccelerationStructurePass
         virtual void UpdateRayTracingSrgs() = 0;
