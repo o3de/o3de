@@ -45,8 +45,13 @@ namespace Maestro
                     ->Attribute(AZ::Edit::Attributes::Category, "Cinematics")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SequenceAgent.png")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/SequenceAgent.png")
-                    ->Attribute(AZ::Edit::Attributes::AddableByUser, false)     // SequenceAgents are only added by TrackView
+                    ->Attribute(AZ::Edit::Attributes::AddableByUser, false) // SequenceAgents are only added by TrackView
+#if defined (CARBONATED)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::EntityId, &EditorSequenceAgentComponent::m_sequenceEntityIds, "Sequence Ids", "");
+#else
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+#endif
             }
         }
     }
