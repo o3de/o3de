@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 #include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/DeviceIndirectBufferSignature.h>
+#include <Atom/RHI/DeviceRayTracingCompactionQueryPool.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/lock.h>
@@ -30,12 +31,14 @@
 #include <RHI/QueryPool.h>
 #include <RHI/RayTracingAccelerationStructure.h>
 #include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingCompactionQueryPool.h>
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RenderPass.h>
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/SwapChain.h>
+
 
 namespace AZ
 {
@@ -1182,6 +1185,73 @@ namespace AZ
             // submit the command to build the BLAS
             const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
             context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tempBuildInfo, &rangeInfos);
+        }
+
+        void CommandList::QueryBlasCompactionSizes(
+            const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
+        {
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
+            AZStd::unordered_set<RayTracingCompactionQueryPool*> usedPools;
+            for (auto& [blas, compactionQuery] : blasToQuery)
+            {
+                usedPools.insert(static_cast<RayTracingCompactionQueryPool*>(compactionQuery->GetPool()));
+            }
+            for (auto pool : usedPools)
+            {
+                pool->ResetFreedQueries(this);
+            }
+
+            VkMemoryBarrier memoryBarrier = {};
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.pNext = nullptr;
+            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            context.CmdPipelineBarrier(
+                GetNativeCommandBuffer(),
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                0,
+                1,
+                &memoryBarrier,
+                0,
+                nullptr,
+                0,
+                nullptr);
+
+            for (auto& [blas, compactionQuery] : blasToQuery)
+            {
+                auto vulkanRayTracingBlas = static_cast<const RayTracingBlas*>(blas);
+                auto vulkanCompactionQuery = static_cast<RayTracingCompactionQuery*>(compactionQuery);
+                auto vulkanCompactionQueryPool = static_cast<RayTracingCompactionQueryPool*>(compactionQuery->GetPool());
+                auto acc = vulkanRayTracingBlas->GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
+
+                vulkanCompactionQuery->Allocate();
+                context.CmdWriteAccelerationStructuresPropertiesKHR(
+                    GetNativeCommandBuffer(),
+                    1,
+                    &acc,
+                    VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR,
+                    vulkanCompactionQueryPool->GetNativeQueryPool(),
+                    vulkanCompactionQuery->GetIndexInPool());
+            }
+        }
+
+        void CommandList::CompactBottomLevelAccelerationStructure(
+            const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas)
+        {
+            const RayTracingBlas& vulkanSourceBlas = static_cast<const RayTracingBlas&>(sourceBlas);
+            const RayTracingBlas& vulkanCompactBlas = static_cast<const RayTracingBlas&>(compactBlas);
+
+            VkCopyAccelerationStructureInfoKHR copyInfo;
+            copyInfo.sType = VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR;
+            copyInfo.pNext = nullptr;
+            copyInfo.src = vulkanSourceBlas.GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
+            copyInfo.dst = vulkanCompactBlas.GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
+            copyInfo.mode = VK_COPY_ACCELERATION_STRUCTURE_MODE_COMPACT_KHR;
+
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+            context.CmdCopyAccelerationStructureKHR(GetNativeCommandBuffer(), &copyInfo);
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(

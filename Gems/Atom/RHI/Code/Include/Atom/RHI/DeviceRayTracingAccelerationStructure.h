@@ -33,6 +33,7 @@ namespace AZ::RHI
         FAST_TRACE = AZ_BIT(1),
         FAST_BUILD = AZ_BIT(2),
         ENABLE_UPDATE = AZ_BIT(3),
+        ENABLE_COMPACTION = AZ_BIT(4),
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::RayTracingAccelerationStructureBuildFlags);
 
@@ -122,6 +123,14 @@ namespace AZ::RHI
 
         static RHI::Ptr<RHI::DeviceRayTracingBlas> CreateRHIRayTracingBlas();
 
+        //! Creates the internal BLAS buffers for the compacted version of the sourceBlas
+        //! The compactedBufferSize can be queried using a RayTracingCompactionQuery
+        ResultCode CreateCompactedBuffers(
+            Device& device,
+            RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+            uint64_t compactedBufferSize,
+            const DeviceRayTracingBufferPools& rayTracingBufferPools);
+
         //! Creates the internal BLAS buffers from the descriptor
         ResultCode CreateBuffers(Device& device, const DeviceRayTracingBlasDescriptor* descriptor, const DeviceRayTracingBufferPools& rayTracingBufferPools);
 
@@ -133,9 +142,16 @@ namespace AZ::RHI
             return m_geometries;
         }
 
+        virtual uint64_t GetAccelerationStructureByteSize() = 0;
+
     private:
         // Platform API
         virtual RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingBlasDescriptor* descriptor, const DeviceRayTracingBufferPools& rayTracingBufferPools) = 0;
+        virtual RHI::ResultCode CreateCompactedBuffersInternal(
+            Device& device,
+            RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+            uint64_t compactedBufferSize,
+            const DeviceRayTracingBufferPools& rayTracingBufferPools) = 0;
 
         DeviceRayTracingGeometryVector m_geometries;
     };

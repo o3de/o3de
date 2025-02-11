@@ -97,5 +97,9 @@ namespace UnitTest
         AZ::RHI::Ptr<AZ::RHI::DeviceRayTracingShaderTable> CreateRayTracingShaderTable() override;
 
         AZ::RHI::Ptr<AZ::RHI::DeviceDispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() override;
+
+        AZ::RHI::Ptr<AZ::RHI::DeviceRayTracingCompactionQueryPool> CreateRayTracingCompactionQueryPool() override;
+
+        AZ::RHI::Ptr<AZ::RHI::DeviceRayTracingCompactionQuery> CreateRayTracingCompactionQuery() override;
     };
 }

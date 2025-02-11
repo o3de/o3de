@@ -284,4 +284,8 @@ set(FILES
     Include/Atom/RHI/DispatchRaysIndirectBuffer.h
     Include/Atom/RHI/SpecializationConstant.h
     Source/RHI/SpecializationConstant.cpp
+    Source/RHI/RayTracingCompactionQueryPool.cpp
+    Include/Atom/RHI/RayTracingCompactionQueryPool.h
+    Source/RHI/DeviceRayTracingCompactionQueryPool.cpp
+    Include/Atom/RHI/DeviceRayTracingCompactionQueryPool.h
 )

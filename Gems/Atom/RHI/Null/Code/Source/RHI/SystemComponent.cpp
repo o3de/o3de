@@ -5,39 +5,41 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/FactoryManagerBus.h>
+#include <Atom/RHI.Reflect/Null/Base.h>
 #include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/DeviceIndirectBufferSignature.h>
 #include <Atom/RHI/DeviceIndirectBufferWriter.h>
-#include <Atom/RHI/PhysicalDevice.h>
 #include <Atom/RHI/DeviceQueryPool.h>
-#include <Atom/RHI.Reflect/Null/Base.h>
+#include <Atom/RHI/DeviceRayTracingCompactionQueryPool.h>
+#include <Atom/RHI/FactoryManagerBus.h>
+#include <Atom/RHI/PhysicalDevice.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
 #include <RHI/DispatchRaysIndirectBuffer.h>
 #include <RHI/Fence.h>
-#include <RHI/FrameGraphExecuter.h>
 #include <RHI/FrameGraphCompiler.h>
+#include <RHI/FrameGraphExecuter.h>
 #include <RHI/Image.h>
-#include <RHI/ImageView.h>
 #include <RHI/ImagePool.h>
+#include <RHI/ImageView.h>
 #include <RHI/PhysicalDevice.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
-#include <RHI/RayTracingBufferPools.h>
 #include <RHI/RayTracingBlas.h>
-#include <RHI/RayTracingTlas.h>
+#include <RHI/RayTracingBufferPools.h>
+#include <RHI/RayTracingCompactionQueryPool.h>
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
+#include <RHI/RayTracingTlas.h>
 #include <RHI/Scope.h>
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/ShaderResourceGroupPool.h>
 #include <RHI/StreamingImagePool.h>
-#include <RHI/SystemComponent.h>
 #include <RHI/SwapChain.h>
+#include <RHI/SystemComponent.h>
 #include <RHI/TransientAttachmentPool.h>
 
 namespace AZ
@@ -235,6 +237,16 @@ namespace AZ
         RHI::Ptr<RHI::DeviceDispatchRaysIndirectBuffer> SystemComponent::CreateDispatchRaysIndirectBuffer()
         {
             return DispatchRaysIndirectBuffer::Create();
+        }
+
+        RHI::Ptr<RHI::DeviceRayTracingCompactionQueryPool> SystemComponent::CreateRayTracingCompactionQueryPool()
+        {
+            return RayTracingCompactionQueryPool::Create();
+        }
+
+        RHI::Ptr<RHI::DeviceRayTracingCompactionQuery> SystemComponent::CreateRayTracingCompactionQuery()
+        {
+            return RayTracingCompactionQuery::Create();
         }
     }
 }
