@@ -29,8 +29,14 @@ namespace AZ::NativeUI
 #if defined(CARBONATED)
         bool IsDisplayingBlockingDialog() const override;
 #if defined(CARBONATED_OS_CALLBACK_ASSERT)
-        virtual void BeforeAtomicCallback() override;
-        virtual void AfterAtomicCallback() override;
+        virtual void BeforeAtomicCallback() override
+        {
+            m_inAtomicCallback = true;
+        }
+        virtual void AfterAtomicCallback() override
+        {
+            m_inAtomicCallback = false;
+        }
 #endif
 #endif
         AZStd::string DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
