@@ -143,6 +143,10 @@ namespace AZ
                 m_supportedPipelineStageFlagsMask &= ~(VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT);
             }
 
+            static_assert(
+                AZStd::to_underlying(RHI::HardwareQueueClass::Count) == 3,
+                "Vulkan queue selection needs to be updated when new hardware queue classes are introduced.");
+
             int graphicsFamilyIndex = -1;
             int computeFamilyIndex = -1;
             int transferFamilyIndex = -1;
