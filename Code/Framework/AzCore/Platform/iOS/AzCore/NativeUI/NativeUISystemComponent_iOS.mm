@@ -19,7 +19,6 @@ namespace AZ
     namespace NativeUI
     {
 #if defined(CARBONATED)
-        // TODO : implement for platform
         bool NativeUISystem::IsDisplayingBlockingDialog() const
         {
             return false;
@@ -68,6 +67,37 @@ namespace AZ
             NSLog(@"Dialog title: %@", nsTitle);
             NSLog(@"Dialog message: %@\n", nsMessage);
         }
+#if defined(CARBONATED_OS_CALLBACK_ASSERT)
+    // There is no perfect solution for callbacks like AppWillEnterForeground because we cannot interrupt such callback with a cycle
+    static void OnAtomicCallbackInterrupt(NSString* nsTitle, NSString* nsMessage)
+    {
+        // Save the popup data into a file and abort the application.
+        // The file will be located in the Documents dir and can be fetched to Mac as a part of the app container.
+        NSDate* date = [NSDate date];
+        NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+        NSTimeZone* destinationTimeZone = [NSTimeZone systemTimeZone];
+        formatter.timeZone = destinationTimeZone;
+        [formatter setDateStyle:NSDateFormatterLongStyle];
+        [formatter setDateFormat:@"MM-dd-yyyy hh.mma"];
+        NSString* dateString = [formatter stringFromDate:date];
+        
+        // Include the date in the file name to not overwrite previous artifacts.
+        NSString* fileName = [NSString stringWithFormat:@"BlockingDialogInAtomicCallback %@.txt", dateString];
+        
+        NSArray* allPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString* documentsDirectory = [allPaths objectAtIndex:0];
+        NSString* pathForLog = [documentsDirectory stringByAppendingPathComponent:fileName];
+
+        // Redirect NSLog messages to the file.
+        freopen([pathForLog cStringUsingEncoding:NSASCIIStringEncoding], "a+", stderr);
+        
+        // These messages go to the file.
+        NSLog(@"Atomic callbac cannot be interrupted at %@. The app cannot display a blocking dialog.", dateString);
+
+        NSLog(@"Dialog title: %@", nsTitle);
+        NSLog(@"Dialog message: %@\n", nsMessage);
+    }
+#endif
 #endif
     
         AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
@@ -86,6 +116,13 @@ namespace AZ
             NSString* nsMessage = [NSString stringWithUTF8String:message.c_str()];
             
 #if defined(CARBONATED)
+#if defined(CARBONATED_OS_CALLBACK_ASSERT)
+            if (NSThread.isMainThread && m_inAtomicCallback)  // we cannot interrupt the main thread only, the others are OK
+            {
+                OnAtomicCallbackInterrupt(nsTitle, nsMessage);
+                abort();
+            }
+#endif
             // these 3 can be used later after this call is over
             [nsTitle retain];
             [nsMessage retain];
