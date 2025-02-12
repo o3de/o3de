@@ -42,7 +42,6 @@
 #include "TVCustomizeTrackColorsDlg.h"
 #include "TrackView/TrackViewKeyPropertiesDlg.h"
 
-
 namespace
 {
     const int kMarginForMagnetSnapping = 10;
@@ -1391,7 +1390,7 @@ bool CTrackViewDopeSheetBase::IsOkToAddKeyHere(const CTrackViewTrack* pTrack, fl
     {
         const CTrackViewKeyConstHandle& keyHandle = pTrack->GetKey(i);
 
-        if (keyHandle.GetTime() == time)
+        if ((AZStd::abs(keyHandle.GetTime() - time) <= AZ::Constants::Tolerance))
         {
             return false;
         }
@@ -1564,7 +1563,7 @@ void CTrackViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Qt
     extendedTimeRange.ClipValue(newTime);
 
     timeOffset = newTime - oldTime; // Re-compute the time offset using snapped & clipped 'newTime'.
-    if (timeOffset == 0.0f)
+    if ((AZStd::abs(timeOffset) < AZ::Constants::Tolerance))
     {
         return;
     }
@@ -2503,46 +2502,62 @@ void CTrackViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter* 
         ISelectKey selectKey;
         keyHandle.GetKey(&selectKey);
 
-        if (!selectKey.szSelection.empty() || selectKey.cameraAzEntityId.IsValid())
+        float time = keyHandle.GetTime();
+        float nextTime = timeRange.end;
+
+        if (selectKey.fDuration > 0)
         {
-            float time = keyHandle.GetTime();
-            float nextTime = timeRange.end;
-            if (i < numKeys - 1)
+            nextTime = time + selectKey.fDuration;
+        }
+        else
+        {
+            // Try to find a 2nd key to draw to, skipping invalid keys.
+            ISelectKey secondKey;
+            for (int nextKeyIdx = i + 1; nextKeyIdx < numKeys; ++nextKeyIdx)
             {
-                nextTime = pTrack->GetKey(i + 1).GetTime();
+                const CTrackViewKeyHandle& nextKeyHandle = pTrack->GetKey(nextKeyIdx);
+
+                ISelectKey nextKey;
+                nextKeyHandle.GetKey(&nextKey);
+
+                if (nextKey.IsValid())
+                {
+                    nextTime = nextKey.time;
+                    break;
+                }
             }
+        }
 
-            time = clamp_tpl(time, timeRange.start, timeRange.end);
-            nextTime = clamp_tpl(nextTime, timeRange.start, timeRange.end);
+        time = clamp_tpl(time, timeRange.start, timeRange.end);
+        nextTime = clamp_tpl(nextTime, timeRange.start, timeRange.end);
 
-            int x0_2 = TimeToClient(time);
+        int x0_2 = TimeToClient(time);
 
-            float fBlendTime = selectKey.fBlendTime;
-            int blendTimeEnd = 0;
+        float fBlendTime = selectKey.fBlendTime;
+        int blendTimeEnd = 0;
 
-            if (fBlendTime > 0.0f && fBlendTime < (nextTime - time))
-            {
-                blendTimeEnd = TimeToClient(nextTime);
-                nextTime -= fBlendTime;
-            }
+        if (fBlendTime > 0.0f && fBlendTime < (nextTime - time))
+        {
+            blendTimeEnd = TimeToClient(nextTime);
+            nextTime -= fBlendTime;
+        }
 
-            int x = TimeToClient(nextTime);
+        int x = TimeToClient(nextTime);
 
-            if (x != x0_2)
-            {
-                QLinearGradient gradient(x0_2, rc.top() + 1, x0_2, rc.bottom());
-                gradient.setColorAt(0, Qt::white);
-                gradient.setColorAt(1, QColor(100, 190, 255));
-                painter->fillRect(QRect(QPoint(x0_2, rc.top() + 1), QPoint(x, rc.bottom())), gradient);
-            }
+        if (x != x0_2) // draw duration bar
+        {
+            QLinearGradient gradient(x0_2, rc.top() + 1, x0_2, rc.bottom());
+            gradient.setColorAt(0, Qt::white);
+            gradient.setColorAt(1, QColor(100, 190, 255));
+            painter->fillRect(QRect(QPoint(x0_2, rc.top() + 1), QPoint(x, rc.bottom())), gradient);
+        }
 
-            if (fBlendTime > 0.0f)
-            {
-                QLinearGradient gradient(x, rc.top() + 1, x, rc.bottom());
-                gradient.setColorAt(0, Qt::white);
-                gradient.setColorAt(1, QColor(0, 115, 230));
-                painter->fillRect(QRect(QPoint(x, rc.top() + 1), QPoint(blendTimeEnd, rc.bottom())), gradient);
-            }
+        if (fBlendTime > 0.0f) // draw blend time bar
+        {
+            QLinearGradient gradient(x, rc.top() + 1, x, rc.bottom());
+            gradient.setColorAt(0, Qt::white);
+            gradient.setColorAt(1, QColor(0, 115, 230));
+            painter->fillRect(QRect(QPoint(x, rc.top() + 1), QPoint(blendTimeEnd, rc.bottom())), gradient);
         }
     }
     painter->setBrush(prevBrush);
@@ -2708,8 +2723,9 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
                 continue;
             }
 
-            if (duration > 0)
+            if (duration > 0 && pTrack->GetValueType() != AnimValueType::Select)
             {
+                // Draw duration bar for all tacks except CSelectTrack, as specific drawer has already painted duration and blend
                 DrawKeyDuration(pTrack, painter, rect, i);
             }
 
@@ -2751,17 +2767,32 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
             && abs(x - prevKeyPixel) < 2)
         {
             // If multiple keys on the same time.
-            painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_02.png"));
+            painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_02.png")); // red
         }
         else
         {
             if (keyHandle.IsSelected())
             {
-                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_01.png"));
+                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_01.png")); // white
             }
             else
             {
-                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_00.png"));
+                // Colorize current key for Select track: green if key is valid, red if invalid
+                bool isValidKey = true;
+                if ((pTrack->GetValueType() == AnimValueType::Select))
+                {
+                    ISelectKey cameraKey;
+                    keyHandle.GetKey(&cameraKey);
+                    isValidKey = cameraKey.IsValid();
+                }
+                if (isValidKey)
+                {
+                    painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_00.png")); // green
+                }
+                else
+                {
+                    painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_02.png")); // red
+                }
             }
         }
 
@@ -2826,7 +2857,7 @@ void CTrackViewDopeSheetBase::DrawTrackClipboardKeys(QPainter* painter, CTrackVi
         if (keyNode->getAttr("time", time))
         {
             int x = TimeToClient(time + timeOffset);
-            painter->drawPixmap(QPoint(x - 6, trackRect.top() + 2), QPixmap(":/Trackview/trackview_keys_03.png"));
+            painter->drawPixmap(QPoint(x - 6, trackRect.top() + 2), QPixmap(":/Trackview/trackview_keys_03.png")); // yellow
             painter->drawLine(x, m_rcClient.top(), x, m_rcClient.bottom());
         }
     }
@@ -2870,6 +2901,8 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::DurationKeyFromPoint(const QPoint& 
 
     float t = TimeFromPointUnsnapped(point);
 
+    const bool isSelectTrack = pTrack->GetParameterType().GetType() == AnimParamType::Camera;
+
     int numKeys = pTrack->GetKeyCount();
     // Iterate in a reverse order to prioritize later nodes.
     for (int i = numKeys - 1; i >= 0; --i)
@@ -2877,7 +2910,15 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::DurationKeyFromPoint(const QPoint& 
         const CTrackViewKeyHandle& keyHandle = pTrack->GetKey(i);
 
         const float time = keyHandle.GetTime();
-        const float duration = keyHandle.GetDuration();
+
+        // The ISelectKey::fDuration in CSelectTrack is not user-defined, but calculated for compatibility and correct representation of UI sliders ranges.
+        // So ignore ISelectKey::fDuration and only allow to select keys, which are very close in timeline.
+        if (isSelectTrack && (AZStd::abs(t - time) > AZ::Constants::Tolerance))
+        {
+            continue;
+        }
+
+        const float duration =  keyHandle.GetDuration();
 
         if (t >= time && t <= time + duration)
         {
@@ -2913,7 +2954,7 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::CheckCursorOnStartEndTimeAdjustBar(
         const float time = keyHandle.GetTime();
         const float duration = keyHandle.GetDuration();
 
-        if (duration == 0)
+        if (duration < AZ::Constants::Tolerance)
         {
             continue;
         }
