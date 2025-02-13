@@ -67,7 +67,8 @@ namespace AZ
 
             AZStd::pair<AssImpSDKWrapper::AssImpSceneWrapper::AxisVector, int32_t> frontAxisAndSign = assImpScene->GetFrontVectorAndSign();
 
-            if (upAxisAndSign.first != AssImpSDKWrapper::AssImpSceneWrapper::AxisVector::Z)
+            if (upAxisAndSign.first != AssImpSDKWrapper::AssImpSceneWrapper::AxisVector::Z &&
+                upAxisAndSign.first != AssImpSDKWrapper::AssImpSceneWrapper::AxisVector::Unknown)
             {
                 AZ::Matrix4x4 currentCoordMatrix = AZ::Matrix4x4::CreateIdentity();
                 //(UpVector = +Z, FrontVector = +Y, CoordSystem = -X(RightHanded))
