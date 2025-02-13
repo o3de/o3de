@@ -42,7 +42,7 @@ bool CSelectKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
             // Get All cameras.
             mv_camera.SetEnumList(nullptr);
 
-            mv_camera->AddEnumItem(QObject::tr(defaulNoneKeyName), QString::number(static_cast<AZ::u64>(AZ::EntityId::InvalidEntityId)));
+            mv_camera->AddEnumItem(QObject::tr(defaultNoneKeyName), QString::number(static_cast<AZ::u64>(AZ::EntityId::InvalidEntityId)));
 
             // Find all Component Entity Cameras
             AZ::EBusAggregateResults<AZ::EntityId> cameraComponentEntities;
