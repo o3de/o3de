@@ -101,7 +101,7 @@ void CSelectKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
                 QString entityIdString = mv_camera;
                 selectKey.cameraAzEntityId = AZ::EntityId(entityIdString.toULongLong());
                 selectKey.szSelection =  mv_camera.GetVar()->GetDisplayValue().toUtf8().data();
-                if (selectKey.szSelection == defaulNoneKeyName)
+                if (selectKey.szSelection == defaultNoneKeyName)
                 {
                     selectKey.szSelection.clear(); // Erase "<None>" got from menu for unassigned key 
                 }
