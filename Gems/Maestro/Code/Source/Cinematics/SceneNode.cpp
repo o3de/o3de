@@ -849,26 +849,46 @@ namespace Maestro
                 return; // When starting Play Game in Editor, camera EntityId may still be invalid for a couple of frames.
             }
 
-            activeCameraId = currKey.cameraAzEntityId;
-
             // Corner case: user switched to the default Editor camera before starting animation
-            SequenceComponentNotificationBus::Event( m_pSequence->GetSequenceEntityId(),
-                &SequenceComponentNotificationBus::Events::OnCameraChanged, activeCameraId, activeCameraId);
-            Camera::CameraRequestBus::Event(activeCameraId, &Camera::CameraRequestBus::Events::MakeActiveView);
-              m_movieSystem->SetActiveCamera(activeCameraId);
+            activeCameraId = currKey.cameraAzEntityId;
+            m_movieSystem->SetActiveCamera(activeCameraId);
+            if (isAutostart)
+            {
+                SequenceComponentNotificationBus::Event(m_pSequence->GetSequenceEntityId(),
+                    &SequenceComponentNotificationBus::Events::OnCameraChanged, activeCameraId, activeCameraId);
+                Camera::CameraRequestBus::Event(activeCameraId, &Camera::CameraRequestBus::Events::MakeActiveView);
+                m_movieSystem->SetActiveCamera(activeCameraId);
+            }
         }
 
-        // Interpolate cameras' properties and / or switch to the 1st camera if needed.
+        // Switch to the current camera if needed.
+        const auto lastCameraEntityId = m_movieSystem->GetActiveCamera();
+        if (lastCameraEntityId != currKey.cameraAzEntityId)
+        {
+            // Broadcast camera changes: works in editing mode only, when animating in Track View with the "Autostart" (eSeqFlags_PlayOnReset) flag cleared
+            if (isEditing && !isAutostart)
+            {
+                SequenceComponentNotificationBus::Event(m_pSequence->GetSequenceEntityId(),
+                    &SequenceComponentNotificationBus::Events::OnCameraChanged, lastCameraEntityId, currKey.cameraAzEntityId);
+                // note: only update the active view if we're currently exporting/capturing a sequence
+                if (m_movieSystem->IsInBatchRenderMode())
+                {
+                    Camera::CameraRequestBus::Event(currKey.cameraAzEntityId, &Camera::CameraRequestBus::Events::MakeActiveView);
+                }
+            }
+            m_movieSystem->SetActiveCamera(currKey.cameraAzEntityId);
+        }
 
-        // If the active camera differs from selected one, - apply actual camera properties,
-        // or if 2 different cameras, - apply interpolated camera properties.
-        if ((activeCameraId != currKey.cameraAzEntityId) || (secondKeyIdx != currKeyIdx))
+        // Interpolate and apply camera properties always, unchanged values will not actually be transferred. 
         {
             // A valid Scene Camera (Camera Component Camera) helper is needed to apply camera properties.
             auto activeCamera = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(activeCameraId));
 
-            float t = 1 - ((secondKey.time - ec.time) / currKey.fBlendTime); // interpolation parameter
-            t = AZ::GetClamp(t, 0.0f, 1.0f); // "t" can be negative when forcing interpolation before blending started
+            // time interpolation parameter
+            float t = (currKey.fBlendTime < AZ::Constants::Tolerance)
+                ? 0.0f // corner case for no blending
+                : 1.0f - (secondKey.time - ec.time) / currKey.fBlendTime;
+            t = AZ::GetClamp(t, 0.0f, 1.0f); // "t" can be negative when interpolating before blending starts;
             t = aznumeric_cast<float>(pow(t, 3) * (t * (t * 6 - 15) + 10)); // use a cubic curve for the camera blend
 
             // Interpolate and update camera's FOV (in degrees) and Near Clip Distance
@@ -883,24 +903,6 @@ namespace Maestro
 
             // clean-up
             delete activeCamera;
-        }
-
-        const auto lastCameraEntityId = m_movieSystem->GetActiveCamera();
-        if (lastCameraEntityId != currKey.cameraAzEntityId)
-        {
-            // Broadcast camera changes: works in editing mode only, when animating in Track View with the "Autostart" (eSeqFlags_PlayOnReset) flag cleared
-            if (isEditing && !isAutostart)
-            {
-                SequenceComponentNotificationBus::Event(m_pSequence->GetSequenceEntityId(),
-                    &SequenceComponentNotificationBus::Events::OnCameraChanged, lastCameraEntityId, currKey.cameraAzEntityId);
-
-                // note: only update the active view if we're currently exporting/capturing a sequence
-                if (m_movieSystem->IsInBatchRenderMode())
-                {
-                    Camera::CameraRequestBus::Event(currKey.cameraAzEntityId, &Camera::CameraRequestBus::Events::MakeActiveView);
-                }
-            }
-            m_movieSystem->SetActiveCamera(currKey.cameraAzEntityId);
         }
     }
 
