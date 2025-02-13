@@ -231,7 +231,7 @@ struct ISequenceKey
         fStartTime = 0;
         fEndTime = 0;
         bOverrideTimes = false;
-        bDoNotStop = false; // default crisis behavior
+        bDoNotStop = false;
     }
 };
 
