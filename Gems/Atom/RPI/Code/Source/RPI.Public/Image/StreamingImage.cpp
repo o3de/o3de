@@ -503,6 +503,7 @@ namespace AZ
                 // the callback is executed
                 request.m_completeCallback = [=, thisPtr = RHI::Ptr<StreamingImage>(this)]()
                 {
+                    AZ_UNUSED(thisPtr);
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                     AZ_TracePrintf("StreamingImage", "Upload mipchain done [%s]\n", mipChainAsset.GetHint().c_str());
 #endif
