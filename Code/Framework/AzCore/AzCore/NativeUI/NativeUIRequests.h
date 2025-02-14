@@ -42,9 +42,15 @@ namespace AZ::NativeUI
         {
             return {};
         }
-#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
-            // returns true if a blocking dialog is displayed
-            virtual bool IsDisplayingBlockingDialog() const { return false; }
+#if defined(CARBONATED)
+        // aefimov MAD-10299 assert modal dialog fix
+        // returns true if a blocking dialog is displayed
+        virtual bool IsDisplayingBlockingDialog() const { return false; }
+#if defined(CARBONATED_OS_CALLBACK_ASSERT)
+        // aefimov beckground & foreground callbacks fix, we cannot interrupt these calls by a blocking dialog
+        virtual void BeforeAtomicCallback() {}
+        virtual void AfterAtomicCallback() {}
+#endif
 #endif
 
         //! Waits for user to select an option ('Ok' or optionally 'Cancel') before execution continues

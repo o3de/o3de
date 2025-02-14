@@ -26,12 +26,26 @@ namespace AZ::NativeUI
         ////////////////////////////////////////////////////////////////////////
         // NativeUIRequestBus interface implementation
         AZStd::string DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const override;
-#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+#if defined(CARBONATED)
         bool IsDisplayingBlockingDialog() const override;
-#endif        
+#if defined(CARBONATED_OS_CALLBACK_ASSERT)
+        virtual void BeforeAtomicCallback() override
+        {
+            m_inAtomicCallback = true;
+        }
+        virtual void AfterAtomicCallback() override
+        {
+            m_inAtomicCallback = false;
+        }
+#endif
+#endif
         AZStd::string DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
         AZStd::string DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
         AssertAction DisplayAssertDialog(const AZStd::string& message) const override;
         ////////////////////////////////////////////////////////////////////////
+        
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+        bool m_inAtomicCallback = false;
+#endif
     };
 } // namespace AZ::NativeUI

@@ -690,6 +690,42 @@ CSprite* CSprite::LoadSprite(const AZStd::string& pathname)
     return sprite;
 }
 
+#if defined(CARBONATED)
+#if defined(CARBONATED_CREATE_SPRITE_FROM_IMAGE)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+CSprite* CSprite::CreateSprite(AZ::Data::Instance<AZ::RPI::Image>& image)
+{
+    if (!image)
+    {
+        AZ_Warning("UI", false, "Image instance not valid!");
+        return nullptr;
+    }
+
+    // test if the sprite is already loaded, if so return loaded sprite
+    auto result = s_loadedSprites->find(image->GetRHIImage()->GetName().GetCStr());
+    CSprite* loadedSprite = (result == s_loadedSprites->end()) ? nullptr : result->second;
+
+    if (loadedSprite)
+    {
+        loadedSprite->AddRef();
+        return loadedSprite;
+    }
+
+    // create Sprite object
+    CSprite* sprite = new CSprite;
+
+    sprite->m_image = image;
+    sprite->m_pathname = image->GetRHIImage()->GetName().GetCStr();
+    sprite->m_texturePathname.clear();
+
+    // add sprite to list of loaded sprites
+    (*s_loadedSprites)[sprite->m_pathname] = sprite;
+
+    return sprite;
+}
+#endif // CARBONATED_CREATE_SPRITE_FROM_IMAGE
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite* CSprite::CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {

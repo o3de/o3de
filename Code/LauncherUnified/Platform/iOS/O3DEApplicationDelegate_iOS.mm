@@ -17,6 +17,10 @@
 
 #include <AzCore/Utils/SystemUtilsApple_Platform.h>
 
+#if defined(CARBONATED)  && defined(CARBONATED_OS_CALLBACK_ASSERT)
+#include <AzCore/NativeUI/NativeUIRequests.h>
+#endif
+
 #import <UIKit/UIKit.h>
 
 
@@ -94,26 +98,50 @@ namespace
 
 - (void)applicationWillResignActive:(UIApplication*)application
 {
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+    AZ::NativeUI::NativeUIRequestBus::Broadcast(&AZ::NativeUI::NativeUIRequestBus::Events::BeforeAtomicCallback);
+#endif
     AzFramework::IosLifecycleEvents::Bus::Broadcast(
         &AzFramework::IosLifecycleEvents::Bus::Events::OnWillResignActive);
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+    AZ::NativeUI::NativeUIRequestBus::Broadcast(&AZ::NativeUI::NativeUIRequestBus::Events::AfterAtomicCallback);
+#endif
 }
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
 {
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+    AZ::NativeUI::NativeUIRequestBus::Broadcast(&AZ::NativeUI::NativeUIRequestBus::Events::BeforeAtomicCallback);
+#endif
     AzFramework::IosLifecycleEvents::Bus::Broadcast(
         &AzFramework::IosLifecycleEvents::Bus::Events::OnDidEnterBackground);
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+    AZ::NativeUI::NativeUIRequestBus::Broadcast(&AZ::NativeUI::NativeUIRequestBus::Events::AfterAtomicCallback);
+#endif
 }
 
 - (void)applicationWillEnterForeground:(UIApplication*)application
 {
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+    AZ::NativeUI::NativeUIRequestBus::Broadcast(&AZ::NativeUI::NativeUIRequestBus::Events::BeforeAtomicCallback);
+#endif
     AzFramework::IosLifecycleEvents::Bus::Broadcast(
         &AzFramework::IosLifecycleEvents::Bus::Events::OnWillEnterForeground);
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+    AZ::NativeUI::NativeUIRequestBus::Broadcast(&AZ::NativeUI::NativeUIRequestBus::Events::AfterAtomicCallback);
+#endif
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
 {
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+    AZ::NativeUI::NativeUIRequestBus::Broadcast(&AZ::NativeUI::NativeUIRequestBus::Events::BeforeAtomicCallback);
+#endif
     AzFramework::IosLifecycleEvents::Bus::Broadcast(
         &AzFramework::IosLifecycleEvents::Bus::Events::OnDidBecomeActive);
+#if defined(CARBONATED) && defined(CARBONATED_OS_CALLBACK_ASSERT)
+    AZ::NativeUI::NativeUIRequestBus::Broadcast(&AZ::NativeUI::NativeUIRequestBus::Events::AfterAtomicCallback);
+#endif
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
