@@ -45,6 +45,7 @@ namespace AZ
                     ->Event("GetMaterialLabel", &MaterialComponentRequestBus::Events::GetMaterialLabel, "GetMaterialSlotLabel")
                     ->Event("SetMaterialMap", &MaterialComponentRequestBus::Events::SetMaterialMap, "SetMaterialOverrides")
                     ->Event("GetMaterialMap", &MaterialComponentRequestBus::Events::GetMaterialMap, "GetMaterialOverrides")
+                    ->Event("GetMaterialMapCopy", &MaterialComponentRequestBus::Events::GetMaterialMapCopy)
                     ->Event("ClearMaterialMap", &MaterialComponentRequestBus::Events::ClearMaterialMap, "ClearAllMaterialOverrides")
                     ->Event("SetMaterialAssetIdOnDefaultSlot", &MaterialComponentRequestBus::Events::SetMaterialAssetIdOnDefaultSlot, "SetDefaultMaterialOverride")
                     ->Event("GetMaterialAssetIdOnDefaultSlot", &MaterialComponentRequestBus::Events::GetMaterialAssetIdOnDefaultSlot, "GetDefaultMaterialOverride")
@@ -130,6 +131,7 @@ namespace AZ
 
         void MaterialComponentController::Deactivate()
         {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect();
             MaterialComponentRequestBus::Handler::BusDisconnect();
             MaterialConsumerNotificationBus::Handler::BusDisconnect();
 
@@ -239,7 +241,8 @@ namespace AZ
             if (!m_queuedLoadMaterials &&
                 !m_queuedMaterialsCreatedNotification &&
                 !m_queuedMaterialsUpdatedNotification &&
-                m_materialsWithDirtyProperties.empty())
+                m_materialsWithDirtyProperties.empty() &&
+                m_notifiedMaterialAssets.empty())
             {
                 SystemTickBus::Handler::BusDisconnect();
             }
@@ -421,6 +424,11 @@ namespace AZ
             return m_configuration.m_materials;
         }
 
+        MaterialAssignmentMap MaterialComponentController::GetMaterialMapCopy() const
+        {
+            return m_configuration.m_materials;
+        }
+
         void MaterialComponentController::ClearMaterialMap()
         {
             if (!m_configuration.m_materials.empty())
@@ -560,6 +568,13 @@ namespace AZ
                     materialIt->second.m_propertyOverrides.empty() &&
                     materialIt->second.m_matModUvOverrides.empty())
                 {
+                    // TODO: Although this works, we need to make sure that the previous material AssetId
+                    // is not being used in other slots before Disconnecting from the AssetBus.
+                    //const auto& prevAssetId = materialIt->second.m_materialAsset.GetId();
+                    //if (prevAssetId.IsValid())
+                    //{
+                    //    AZ::Data::AssetBus::MultiHandler::BusDisconnect(prevAssetId);
+                    //}
                     m_configuration.m_materials.erase(materialAssignmentId);
                     QueueMaterialsUpdatedNotification();
                     return;
@@ -568,6 +583,13 @@ namespace AZ
                 // If the asset ID is different than what's already assigned then replace it
                 if (materialIt->second.m_materialAsset.GetId() != materialAssetId)
                 {
+                    // TODO: Although this works, we need to make sure that the previous material AssetId
+                    // is not being used in other slots before Disconnecting from the AssetBus.
+                    //const auto& prevAssetId = materialIt->second.m_materialAsset.GetId();
+                    //if (prevAssetId.IsValid())
+                    //{
+                    //    AZ::Data::AssetBus::MultiHandler::BusDisconnect(prevAssetId);
+                    //}
                     materialIt->second.m_materialAsset =
                         AZ::Data::Asset<AZ::RPI::MaterialAsset>(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
                     QueueLoadMaterials();
