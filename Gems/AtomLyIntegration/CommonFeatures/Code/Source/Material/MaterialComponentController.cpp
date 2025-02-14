@@ -45,6 +45,7 @@ namespace AZ
                     ->Event("GetMaterialLabel", &MaterialComponentRequestBus::Events::GetMaterialLabel, "GetMaterialSlotLabel")
                     ->Event("SetMaterialMap", &MaterialComponentRequestBus::Events::SetMaterialMap, "SetMaterialOverrides")
                     ->Event("GetMaterialMap", &MaterialComponentRequestBus::Events::GetMaterialMap, "GetMaterialOverrides")
+                    ->Event("GetMaterialMapCopy", &MaterialComponentRequestBus::Events::GetMaterialMapCopy)
                     ->Event("ClearMaterialMap", &MaterialComponentRequestBus::Events::ClearMaterialMap, "ClearAllMaterialOverrides")
                     ->Event("SetMaterialAssetIdOnDefaultSlot", &MaterialComponentRequestBus::Events::SetMaterialAssetIdOnDefaultSlot, "SetDefaultMaterialOverride")
                     ->Event("GetMaterialAssetIdOnDefaultSlot", &MaterialComponentRequestBus::Events::GetMaterialAssetIdOnDefaultSlot, "GetDefaultMaterialOverride")
@@ -239,7 +240,8 @@ namespace AZ
             if (!m_queuedLoadMaterials &&
                 !m_queuedMaterialsCreatedNotification &&
                 !m_queuedMaterialsUpdatedNotification &&
-                m_materialsWithDirtyProperties.empty())
+                m_materialsWithDirtyProperties.empty() &&
+                m_notifiedMaterialAssets.empty())
             {
                 SystemTickBus::Handler::BusDisconnect();
             }
@@ -417,6 +419,11 @@ namespace AZ
         }
 
         const MaterialAssignmentMap& MaterialComponentController::GetMaterialMap() const
+        {
+            return m_configuration.m_materials;
+        }
+
+        MaterialAssignmentMap MaterialComponentController::GetMaterialMapCopy() const
         {
             return m_configuration.m_materials;
         }
