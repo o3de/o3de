@@ -799,7 +799,8 @@ namespace Maestro
     {
         if (!m_movieSystem || !m_pSequence || !m_CurrentSelectTrack || !currKey.IsInitialized())
         {
-            const auto text = AZStd::string::format("ApplyCameraKey(%d, %s, time=%f)", currKeyIdx, currKey.cameraAzEntityId.ToString().c_str(), ec.time).c_str();
+            [[maybe_unused]] const auto text =
+                AZStd::string::format("ApplyCameraKey(%d, %s, time=%f)", currKeyIdx, currKey.cameraAzEntityId.ToString().c_str(), ec.time).c_str();
             AZ_Assert(m_movieSystem, "%s: invalid movie system pointer.", text);
             AZ_Assert(m_pSequence, "%s: invalid sequence pointer.", text);
             AZ_Assert(m_CurrentSelectTrack, "%s: invalid track pointer.", text);
