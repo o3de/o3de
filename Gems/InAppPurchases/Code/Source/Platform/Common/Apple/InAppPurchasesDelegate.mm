@@ -157,14 +157,11 @@
     {
         InAppPurchases::ProductDetailsApple* productDetails = new InAppPurchases::ProductDetailsApple;
       
-#if defined(CARBONATED)
-        AZStd::string description = product.localizedDescription ? [product.localizedDescription UTF8String] : "(no desc)";
-#endif
-        
         productDetails->SetProductId([product.productIdentifier UTF8String]);
         productDetails->SetProductTitle([product.localizedTitle UTF8String]);
         
 #if defined(CARBONATED)
+        const AZStd::string description = product.localizedDescription ? [product.localizedDescription UTF8String] : "(no desc)";
         productDetails->SetProductDescription(description);
 #else
         productDetails->SetProductDescription([product.localizedDescription UTF8String]);
@@ -269,7 +266,6 @@
 #else
                     delete productDetails;
 #endif
-                    delete productDetails;
                 }
             }
                 break;
