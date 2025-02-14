@@ -2242,6 +2242,12 @@ namespace AZ
             // NOTE: Write it all out, can't have recursive functions for lambdas.
             const AZStd::function<void(const RPI::Pass*, PassEntry*)> getPassEntryRecursive = [&addPassEntry, &getPassEntryRecursive](const RPI::Pass* pass, PassEntry* parent) -> void
             {
+                if (pass->GetRenderPipeline() && pass->GetRenderPipeline()->GetRenderMode() == RPI::RenderPipeline::RenderMode::NoRender)
+                {
+                    // Ignore passes from render pipelines that are currently not rendering
+                    // E.g. the Preview pipeline
+                    return;
+                }
                 // Add new entry to the timestamp map.
                 if (pass->IsEnabled())
                 {
