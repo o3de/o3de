@@ -1,7 +1,7 @@
 {
     "ENV": {
         "GRADLE_HOME": "C:/Gradle/gradle-7.0",
-        "NODE_LABEL": "windows-2024-07",
+        "NODE_LABEL": "windows-latest",
         "LY_3RDPARTY_PATH": "D:\\workspace\\3rdParty",
         "LY_NDK_DIR": "C:/Android/android-sdk/ndk/25.1.8937393",
         "TIMEOUT": 30,
