@@ -52,6 +52,7 @@ namespace AZ
             AZStd::string GetMaterialLabel(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetMaterialMap(const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialMap() const override;
+            MaterialAssignmentMap GetMaterialMapCopy() const override;
             void ClearMaterialMap() override;
             void ClearMaterialsOnModelSlots() override;
             void ClearMaterialsOnLodSlots() override;
