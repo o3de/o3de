@@ -29,7 +29,6 @@ namespace AtomToolsFramework
 
         //! Track the amount of time since the capture request was initiated
         AZStd::chrono::steady_clock::time_point m_startTime = AZStd::chrono::steady_clock::now();
-        AZStd::chrono::steady_clock::time_point m_captureTime = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(5);
         AZStd::chrono::steady_clock::time_point m_abortTime = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(5000);
         bool m_captureComplete = false;
     };
