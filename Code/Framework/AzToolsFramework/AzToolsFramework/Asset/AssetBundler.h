@@ -6,12 +6,14 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Outcome/Outcome.h>
-#include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzToolsFramework/Asset/AssetSeedManager.h>
 
 namespace AZ
 {
@@ -21,7 +23,7 @@ namespace AZ
 namespace AzToolsFramework
 {
     constexpr AZ::u64 MaxBundleSizeInMB = 2 * 1024;
-    class AssetBundleSettings
+    class AZTF_API AssetBundleSettings
     {
     public:
         AZ_TYPE_INFO(AssetBundleSettings, "{B9597C91-540E-41A9-9572-80A629061914}");
@@ -65,7 +67,7 @@ namespace AzToolsFramework
    * This class can we used to create a new AssetFileInfoList based on the
    * comparison type specified by the user
    */
-    class AssetFileInfoListComparison
+    class AZTF_API AssetFileInfoListComparison
     {
     public:
         enum class ComparisonType : AZ::u8

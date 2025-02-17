@@ -93,22 +93,22 @@ set(FILES
     API/SettingsRegistryUtils.h
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
-    Application/Ticker.h
-    Application/Ticker.cpp
-    Application/EditorEntityManager.cpp
-    Application/EditorEntityManager.h
-    Asset/AssetDebugInfo.h
-    Asset/AssetDebugInfo.cpp
-    Asset/AssetProcessorMessages.cpp
-    Asset/AssetProcessorMessages.h
-    Asset/AssetSystemComponent.cpp
-    Asset/AssetSystemComponent.h
-    Asset/AssetSeedManager.h
-    Asset/AssetSeedManager.cpp
-    Asset/AssetBundler.h
-    Asset/AssetBundler.cpp
-    Asset/AssetUtils.h
-    Asset/AssetUtils.cpp
+#    Application/Ticker.h
+#    Application/Ticker.cpp
+#    Application/EditorEntityManager.cpp
+#    Application/EditorEntityManager.h
+#    Asset/AssetDebugInfo.h
+#    Asset/AssetDebugInfo.cpp
+#    Asset/AssetProcessorMessages.cpp
+#    Asset/AssetProcessorMessages.h
+#    Asset/AssetSystemComponent.cpp
+#    Asset/AssetSystemComponent.h
+#    Asset/AssetSeedManager.h
+#    Asset/AssetSeedManager.cpp
+#    Asset/AssetBundler.h
+#    Asset/AssetBundler.cpp
+#    Asset/AssetUtils.h
+#    Asset/AssetUtils.cpp
     AssetCatalog/PlatformAddressedAssetCatalogBus.h
     AssetCatalog/PlatformAddressedAssetCatalog.h
     AssetCatalog/PlatformAddressedAssetCatalog.cpp
@@ -777,8 +777,8 @@ set(FILES
     AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h
     AssetBrowser/Favorites/FavoritesEntryDelegate.cpp
     AssetBrowser/Favorites/FavoritesEntryDelegate.h
-    Archive/ArchiveComponent.h
-    Archive/ArchiveComponent.cpp
+#    Archive/ArchiveComponent.h
+#    Archive/ArchiveComponent.cpp
     Archive/ArchiveAPI.h
     UI/PropertyEditor/Model/AssetCompleterModel.h
     UI/PropertyEditor/Model/AssetCompleterModel.cpp

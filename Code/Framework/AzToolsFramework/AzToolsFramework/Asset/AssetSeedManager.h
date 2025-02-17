@@ -7,6 +7,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/array.h>
@@ -14,6 +15,7 @@
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzFramework/Asset/AssetSeedList.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -28,7 +30,7 @@ namespace AzToolsFramework
     // AssetFileInfo class will be used to store information
     // related to the asset file including modification time
     // and the the hash of the entire file content.
-    class AssetFileInfo
+    class AZTF_API AssetFileInfo
     {
     public:
 
@@ -47,7 +49,7 @@ namespace AzToolsFramework
         AZStd::array<AZ::u32, s_arraySize> m_hash;// hash of the file content
     };
 
-    class AssetFileInfoList
+    class AZTF_API AssetFileInfoList
     {
     public:
 
@@ -70,7 +72,7 @@ namespace AzToolsFramework
    * Given a list of seed assets, this class can retrieve a complete
    * list of all the product dependencies.
    */
-    class AssetSeedManager
+    class AZTF_API AssetSeedManager
     {
     public:
         AZ_TYPE_INFO(AssetSeedManager, "{0DD7913A-EAD2-43DF-9A30-8A6FA6111E98}");

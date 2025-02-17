@@ -6,12 +6,14 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Gem/GemInfo.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 class QString;
 
@@ -22,16 +24,16 @@ namespace AzToolsFramework::AssetUtils
 
     //! Reads the "/Amazon/AssetProcessor/Settings/Platforms" entry from the settings registry
     //! to retrieve all enabled platforms
-    void ReadEnabledPlatformsFromSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry,
+    AZTF_API void ReadEnabledPlatformsFromSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry,
         AZStd::vector<AZStd::string>& enabledPlatforms);
 
     //! Returns all the enabledPlatforms by reading the specified config files in order.  
-    AZStd::vector<AZStd::string> GetEnabledPlatforms(AZ::SettingsRegistryInterface& settingsRegistry,
+    AZTF_API AZStd::vector<AZStd::string> GetEnabledPlatforms(AZ::SettingsRegistryInterface& settingsRegistry,
         const AZStd::vector<AZ::IO::Path>& configFiles);
 
     //! Returns the platform specific AssetProcessorPlatformConfig.ini/setreg files
     //! Please note that config files are order dependent
-    bool AddPlatformConfigFilePaths(AZStd::string_view root, AZStd::vector<AZ::IO::Path>& configFilePaths);
+    AZTF_API bool AddPlatformConfigFilePaths(AZStd::string_view root, AZStd::vector<AZ::IO::Path>& configFilePaths);
 
     //! Returns all the config files including the the platform and gems ones.
     //! Please note that config files are order dependent
@@ -40,7 +42,7 @@ namespace AzToolsFramework::AssetUtils
     //! Also note that if the project has any "game project gems", then those will also be inserted last, 
     //! and thus have a higher priority than the root or non - project gems.
     //! Also note that the game project could be in a different location to the engine therefore we need the assetRoot param.
-    AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view projectPath,
+    AZTF_API AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view projectPath,
         bool addPlatformConfigs = true, bool addGemsConfigs = true, AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
     //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
@@ -55,5 +57,5 @@ namespace AzToolsFramework::AssetUtils
     //!                             replacing the file extension or file name only.
     //! @return if such a file does NOT exist, it returns FALSE, else returns TRUE.
     //! @note A very expensive function!  Call sparingly.
-    bool UpdateFilePathToCorrectCase(AZStd::string_view root, AZStd::string& relativePathFromRoot, bool checkEntirePath = true);
+    AZTF_API bool UpdateFilePathToCorrectCase(AZStd::string_view root, AZStd::string& relativePathFromRoot, bool checkEntirePath = true);
 } //namespace AzToolsFramework::AssetUtils

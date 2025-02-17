@@ -5,6 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
+//AZTF-SHARED
+
 #if !defined(Q_MOC_RUN)
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
@@ -13,13 +16,13 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #endif
 
-#pragma once
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! Qt suppresses all timer events during modal dialogs, this object allows us to 
     //! emit a Tick event from which we can broadcast a SystemTick event.
-    class Ticker
+    class AZTF_API Ticker
         : public QObject
     {
     public:

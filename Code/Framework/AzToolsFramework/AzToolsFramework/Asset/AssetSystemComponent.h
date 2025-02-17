@@ -7,11 +7,13 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Network/SocketConnection.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 
@@ -25,7 +27,7 @@ namespace AzToolsFramework
         * Currently used to translate between full and relative asset paths, 
         * and to query information about asset processor jobs
         */
-        class AssetSystemComponent
+        class AZTF_API AssetSystemComponent
             : public AZ::Component
             , private AzToolsFramework::AssetSystemRequestBus::Handler
             , private AzToolsFramework::AssetSystemJobRequestBus::Handler

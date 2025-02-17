@@ -37,6 +37,27 @@ set(FILES
     ActionManager/ActionManagerSystemComponent.cpp
     ActionManager/ActionManagerSystemComponent.h
 
+    Application/EditorEntityManager.cpp
+    Application/EditorEntityManager.h
+    Application/Ticker.cpp
+    Application/Ticker.h
+    
+    Archive/ArchiveComponent.cpp
+    Archive/ArchiveComponent.h
+    
+    Asset/AssetBundler.cpp
+    Asset/AssetBundler.h
+    Asset/AssetDebugInfo.cpp
+    Asset/AssetDebugInfo.h
+    Asset/AssetProcessorMessages.cpp
+    Asset/AssetProcessorMessages.h
+    Asset/AssetSeedManager.h
+    Asset/AssetSeedManager.cpp
+    Asset/AssetSystemComponent.cpp
+    Asset/AssetSystemComponent.h
+    Asset/AssetUtils.cpp
+    Asset/AssetUtils.h
+
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

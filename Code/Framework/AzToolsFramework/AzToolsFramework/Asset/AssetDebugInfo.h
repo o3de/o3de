@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -16,6 +17,7 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -27,7 +29,7 @@ namespace AzToolsFramework
 
     struct DependencyNode;
 
-    class AssetFileDebugInfo
+    class AZTF_API AssetFileDebugInfo
     {
     public:
         AZ_TYPE_INFO(AssetFileDebugInfo, "{1F7C8B0E-4403-49CA-A11F-ACBA05BEBF6A}");
@@ -45,7 +47,7 @@ namespace AzToolsFramework
         AZStd::set<AZ::Data::AssetId> m_filesThatReferenceMe;
     };
 
-    class AssetFileDebugInfoList
+    class AZTF_API AssetFileDebugInfoList
     {
     public:
         AZ_TYPE_INFO(AssetFileDebugInfoList, "{FD66D05D-B4F4-4F48-A4E8-FFE231BCC128}");

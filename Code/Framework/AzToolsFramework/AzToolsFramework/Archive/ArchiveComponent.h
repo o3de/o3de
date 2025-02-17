@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/base.h>
 #include <AzCore/Component/Component.h>
@@ -17,12 +18,13 @@
 #include <AzCore/std/containers/unordered_set.h>
 
 #include <AzFramework/Archive/IArchive.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 
 namespace AzToolsFramework
 {
     // the ArchiveComponent's job is to create and manipulate zip archives.
-    class ArchiveComponent
+    class AZTF_API ArchiveComponent
         : public AZ::Component
         , private ArchiveCommandsBus::Handler
     {
