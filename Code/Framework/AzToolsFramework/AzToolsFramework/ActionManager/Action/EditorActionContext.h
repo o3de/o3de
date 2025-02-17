@@ -13,6 +13,7 @@
 #include <AzCore/std/function/function_base.h>
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QAction>
 #include <QList>
@@ -26,7 +27,7 @@ namespace AzToolsFramework
 
     //! Editor Action Context class definition.
     //! Identifies a collection of Actions and their accessibility in the context of the whole O3DE Editor.
-    class EditorActionContext
+    class AZTF_API EditorActionContext
     {
     public:
         EditorActionContext() = default;

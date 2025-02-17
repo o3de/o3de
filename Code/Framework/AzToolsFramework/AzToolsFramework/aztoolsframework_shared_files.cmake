@@ -9,6 +9,34 @@
 set(FILES
     Application/ToolsApplication.cpp
     Application/ToolsApplication.h
+
+    ActionManager/Action/ActionManager.cpp
+    ActionManager/Action/ActionManager.h
+    ActionManager/Action/EditorAction.cpp
+    ActionManager/Action/EditorAction.h
+    ActionManager/Action/EditorActionContext.cpp
+    ActionManager/Action/EditorActionContext.h
+    ActionManager/Action/EditorWidgetAction.cpp
+    ActionManager/Action/EditorWidgetAction.h
+    ActionManager/HotKey/HotKeyManager.cpp
+    ActionManager/HotKey/HotKeyManager.h
+    ActionManager/HotKey/HotKeyWidgetRegistrationHelper.cpp
+    ActionManager/HotKey/HotKeyWidgetRegistrationHelper.h
+    ActionManager/Menu/EditorMenu.cpp
+    ActionManager/Menu/EditorMenu.h
+    ActionManager/Menu/EditorMenuBar.cpp
+    ActionManager/Menu/EditorMenuBar.h
+    ActionManager/Menu/MenuManager.cpp
+    ActionManager/Menu/MenuManager.h
+    ActionManager/ToolBar/EditorToolBar.cpp
+    ActionManager/ToolBar/EditorToolBar.h
+    ActionManager/ToolBar/EditorToolBarArea.cpp
+    ActionManager/ToolBar/EditorToolBarArea.h
+    ActionManager/ToolBar/ToolBarManager.cpp
+    ActionManager/ToolBar/ToolBarManager.h
+    ActionManager/ActionManagerSystemComponent.cpp
+    ActionManager/ActionManagerSystemComponent.h
+
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

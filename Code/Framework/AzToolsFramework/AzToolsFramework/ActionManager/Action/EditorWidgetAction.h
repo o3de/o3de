@@ -7,17 +7,19 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QAction>
 #include <QIcon>
 
 namespace AzToolsFramework
 {
-    class EditorWidgetAction
+    class AZTF_API EditorWidgetAction
     {
     public:
         EditorWidgetAction() = default;

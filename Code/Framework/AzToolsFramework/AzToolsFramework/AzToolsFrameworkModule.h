@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Module/Module.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>

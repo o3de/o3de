@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -16,6 +17,8 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QEvent>
 #include <QMouseEvent>
@@ -34,7 +37,7 @@ namespace AzToolsFramework
     class ToolBarManagerInterface;
 
     //! A watcher class to handle the expander menu for a toolbar.
-    class ToolBarExpanderWatcher : public QObject
+    class AZTF_API ToolBarExpanderWatcher : public QObject
     {
     public:
         explicit ToolBarExpanderWatcher(QObject* parent);
@@ -52,7 +55,7 @@ namespace AzToolsFramework
 
     //! Editor ToolBar class definitions.
     //! Wraps a QToolBar and provides additional functionality to handle and sort its items.
-    class EditorToolBar final
+    class AZTF_API EditorToolBar final
     {
     public:
         AZ_CLASS_ALLOCATOR(EditorToolBar, AZ::SystemAllocator);

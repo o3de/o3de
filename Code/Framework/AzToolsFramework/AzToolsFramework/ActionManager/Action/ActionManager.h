@@ -7,9 +7,11 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/containers/unordered_map.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
@@ -19,7 +21,7 @@
 namespace AzToolsFramework
 {
     //! This class is used to mute KeyPress events that are triggered after a shortcut has fired.
-    class ApplicationWatcher : public QObject
+    class AZTF_API ApplicationWatcher : public QObject
     {
     public:
         void SetShortcutTriggeredFlag();
@@ -31,7 +33,7 @@ namespace AzToolsFramework
 
     //! This class is used to install an event filter on each widget assigned to an action context
     //! to properly handle ambiguous shorcuts.
-    class ActionContextWidgetWatcher : public QObject
+    class AZTF_API ActionContextWidgetWatcher : public QObject
     {
     public:
         explicit ActionContextWidgetWatcher(ApplicationWatcher* applicationWatcher, EditorActionContext* editorActionContext);
@@ -52,7 +54,7 @@ namespace AzToolsFramework
 
     //! Action Manager class definition.
     //! Handles Editor Actions and allows registration and access across tools.
-    class ActionManager final
+    class AZTF_API ActionManager final
         : private ActionManagerInterface
         , private ActionManagerInternalInterface
     {

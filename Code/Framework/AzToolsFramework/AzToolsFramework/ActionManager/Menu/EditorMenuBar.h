@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -14,6 +15,8 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 class QMainWindow;
 class QWidget;
@@ -23,7 +26,7 @@ namespace AzToolsFramework
     class MenuManagerInterface;
     class MenuManagerInternalInterface;
 
-    class EditorMenuBar final
+    class AZTF_API EditorMenuBar final
     {
     public:
         AZ_CLASS_ALLOCATOR(EditorMenuBar, AZ::SystemAllocator);

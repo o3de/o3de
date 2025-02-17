@@ -7,10 +7,12 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyWidgetRegistrationInterface.h>
 
@@ -21,7 +23,7 @@ namespace AzToolsFramework
     class HotKeyManagerInterface;
     class HotKeyWidgetRegistrationInterface;
 
-    class HotKeyWidgetRegistrationHelper final
+    class AZTF_API HotKeyWidgetRegistrationHelper final
         : private ActionManagerRegistrationNotificationBus::Handler
         , public HotKeyWidgetRegistrationInterface
     {
@@ -38,7 +40,12 @@ namespace AzToolsFramework
 
         bool m_isRegistrationCompleted = false;
 
-        struct HotKeyActionContextPair;
+        struct HotKeyActionContextPair
+        {
+            AZStd::string actionContextIdentifier;
+            QWidget* widget;
+        };
+
         AZStd::vector<HotKeyActionContextPair> m_widgetContextQueue;
 
         HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;

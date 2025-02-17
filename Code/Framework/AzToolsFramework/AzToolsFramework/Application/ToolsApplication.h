@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/base.h>
 #include <AzFramework/Application/Application.h>
