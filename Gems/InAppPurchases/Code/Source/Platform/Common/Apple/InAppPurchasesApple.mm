@@ -147,9 +147,13 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::QueryProductInfo(AZStd::vector<AZStd::string>& productIds) const
     {        
+        AZ_Info("O3DEInAppPurchases", "QueryProductInfo(ids)");
+        
         NSMutableArray* productIdStrings = [[NSMutableArray alloc] init];
         for (int i = 0; i < productIds.size(); i++)
         {
+            AZ_Info("O3DEInAppPurchases", "product id %s", productIds[i].c_str());
+            
             NSString* productId = [NSString stringWithCString:productIds[i].c_str() encoding:NSUTF8StringEncoding];
             [productIdStrings addObject:productId];
         }
@@ -160,6 +164,8 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::QueryProductInfo() const
     {
+        AZ_Info("O3DEInAppPurchases", "QueryProductInfo()");
+        
         NSURL* url = [[NSBundle mainBundle] URLForResource:@"product_ids" withExtension:@"plist"];
         if (url != nil)
         {
@@ -181,6 +187,8 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::PurchaseProduct(const AZStd::string& productId, const AZStd::string& developerPayload) const
     {
+        AZ_Info("O3DEInAppPurchases", "PurchaseProduct %s", productId.c_str());
+        
         NSString* productIdString = [NSString stringWithCString:productId.c_str() encoding:NSUTF8StringEncoding];
         if (!developerPayload.empty())
         {
@@ -200,12 +208,16 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::RestorePurchasedProducts() const
     {
+        AZ_Info("O3DEInAppPurchases", "RestorePurchasedProducts");
+        
         InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedPurchasedProductDetails();
         [m_delegate restorePurchasedProducts];
     }
     
     void InAppPurchasesApple::QueryPurchasedProducts() const
     {
+        AZ_Info("O3DEInAppPurchases", "QueryPurchasedProducts");
+        
         [m_delegate refreshAppReceipt];
         InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedPurchasedProductDetails();
         NSURL* url = [[NSBundle mainBundle] appStoreReceiptURL];
@@ -243,11 +255,13 @@ namespace InAppPurchases
         NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
         NSData *receipt = [NSData dataWithContentsOfURL:receiptURL];
         
-        if(!receipt)
+        if (!receipt)
         {
-            // Error - no receipt.
+            AZ_Error("O3DEInAppPurchases", false, "No receipt");
             return "";
         }
+        
+        AZ_Info("O3DEInAppPurchases", "Make receipt from %s", [receiptURL.absoluteString UTF8String]);
         
         NSString *receiptStr = [receipt base64EncodedStringWithOptions:0];
         
@@ -258,11 +272,13 @@ namespace InAppPurchases
     
     void InAppPurchasesApple::ConsumePurchase(const AZStd::string& purchaseToken) const
     {
-        
+        AZ_Info("O3DEInAppPurchases", "ConsumePurchase");
     }
     
     void InAppPurchasesApple::FinishTransaction(const AZStd::string& transactionId, bool downloadHostedContent) const
     {
+        AZ_Info("O3DEInAppPurchases", "FinishTransaction");
+        
         NSString* transactionIdString = [NSString stringWithCString:transactionId.c_str() encoding:NSASCIIStringEncoding];
         
         if (downloadHostedContent)

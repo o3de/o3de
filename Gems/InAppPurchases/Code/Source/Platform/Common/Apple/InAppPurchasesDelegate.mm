@@ -17,6 +17,21 @@
 
 @implementation InAppPurchasesDelegate
 
+#if defined(CARBONATED)
+-(const char*) getStateName: (SKPaymentTransactionState) state
+{
+    switch (state)
+    {
+        case SKPaymentTransactionStatePurchasing: return "purchasing";
+        case SKPaymentTransactionStatePurchased: return "purchased";
+        case SKPaymentTransactionStateFailed: return "failed";
+        case SKPaymentTransactionStateRestored: return "restored";
+        case SKPaymentTransactionStateDeferred: return "deferred";
+    }
+    return "unknown";
+}
+#endif
+
 -(NSString*) convertPriceToString:(NSDecimalNumber*) price forLocale:(NSLocale*) locale
 {
     NSNumberFormatter* numberFormatter = [[NSNumberFormatter alloc] init];
@@ -183,6 +198,8 @@
 
 -(void) purchaseProduct:(NSString *) productId withUserName:(NSString *) userName
 {
+    AZ_Info("O3DEInAppPurchasesDelegate", "purchaseProduct %s", [productId cStringUsingEncoding:NSASCIIStringEncoding]);
+
     SKProduct* productToPurchase = nil;
     for (SKProduct* product in self.m_products)
     {
@@ -203,6 +220,8 @@
             NSString* userNameHash = [self hashUserName:userName];
             payment.applicationUsername = userNameHash;
         }
+        
+        AZ_Info("O3DEInAppPurchasesDelegate", "addPayment");
         
         [[SKPaymentQueue defaultQueue] addPayment:payment];
     }
@@ -234,6 +253,7 @@
                 
             case SKPaymentTransactionStateFailed:
             {
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction failed");
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "Transaction failed! Error: %s", [[transaction.error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
@@ -258,8 +278,6 @@
 #if defined(CARBONATED)
                     InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->AddPurchasedProductDetailsToCache(productDetails);
 #endif
-                    [self.m_unfinishedTransactions addObject:transaction];
-                    EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, PurchaseFailed, productDetails);
                     
 #if defined(CARBONATED)
                     // ..
@@ -267,11 +285,19 @@
                     delete productDetails;
 #endif
                 }
+#if defined(CARBONATED)
+                else
+                {
+                    AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
+                                   [transaction.transactionIdentifier UTF8String], [self getStateName:transaction.transactionState]);
+                }
+#endif
             }
                 break;
                 
             case SKPaymentTransactionStatePurchased:
             {
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction purchased");
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "Transaction succeeded");
@@ -288,11 +314,19 @@
                     }
                     EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, NewProductPurchased, productDetails);
                 }
+#if defined(CARBONATED)
+                else
+                {
+                    AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
+                                   [transaction.transactionIdentifier UTF8String], [self getStateName:transaction.transactionState]);
+                }
+#endif
             }
                 break;
                 
             case SKPaymentTransactionStateRestored:
             {
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction restored");
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "Transaction restored");
@@ -309,6 +343,18 @@
                     }
                     isRestoredTransaction = true;
                 }
+#if defined(CARBONATED)
+                else
+                {
+                    AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
+                                   [transaction.transactionIdentifier UTF8String], [self getStateName:transaction.transactionState]);
+                }
+#endif
+            }
+                break;
+            default:
+            {
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction unknown");
             }
                 break;
         }
@@ -322,6 +368,8 @@
 
 -(void) finishTransaction:(NSString*) transactionId
 {
+    AZ_TracePrintf("O3DEInAppPurchases", "finishTransaction %s", [transactionId UTF8String]);
+    
     for (SKPaymentTransaction* transaction in self.m_unfinishedTransactions)
     {
         if ([transaction.transactionIdentifier isEqualToString:transactionId])
@@ -337,8 +385,12 @@
             return;
         }
     }
-    
+
+#if defined(CARBONATED)
+    AZ_Error("O3DEInAppPurchases", false, "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
+#else
     AZ_TracePrintf("O3DEInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
+#endif
 }
 
 -(void) downloadAppleHostedContentAndFinishTransaction:(NSString*) transactionId
