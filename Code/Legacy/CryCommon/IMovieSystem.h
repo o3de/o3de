@@ -195,24 +195,13 @@ struct SAnimContext
     float startTime;        //!< The start time of this playing sequence
 };
 
-/** Parameters for cut-scene cameras
-*/
-struct SCameraParams
-{
-    SCameraParams();
-    AZ::EntityId cameraEntityId;
-    float fov;
-    float nearZ;
-    bool justActivated;
-};
-
 //! Interface for movie-system implemented by user for advanced function-support
 struct IMovieUser
 {
     // <interfuscator:shuffle>
     virtual ~IMovieUser(){}
     //! Called when movie system requests a camera-change.
-    virtual void SetActiveCamera(const SCameraParams& Params) = 0;
+    virtual void SetActiveCamera(const AZ::EntityId& cameraEntityId) = 0;
     //! Called when movie system enters into cut-scene mode.
     virtual void BeginCutScene(IAnimSequence* pSeq, unsigned long dwFlags, bool bResetFX) = 0;
     //! Called when movie system exits from cut-scene mode.
@@ -318,7 +307,7 @@ struct IAnimTrack
     virtual void SetNumKeys(int numKeys) = 0;
 
     //! Remove specified key.
-    virtual void RemoveKey(int num) = 0;
+    virtual void RemoveKey(int index) = 0;
 
     //! Get key at specified location.
     //! @param key Must be valid pointer to compatible key structure, to be filled with specified key location.
@@ -372,9 +361,10 @@ struct IAnimTrack
     virtual int CopyKey(IAnimTrack* pFromTrack, int nFromKey) = 0;
 
     //! Get info about specified key.
-    //! @param Short human readable text description of this key.
-    //! @param duration of this key in seconds.
-    virtual void GetKeyInfo(int key, const char*& description, float& duration) = 0;
+    //! @param index The index specifying the this key.
+    //! @param description The short human readable text description of this key.
+    //! @param duration The duration of this key in seconds.
+    virtual void GetKeyInfo(int index, const char*& description, float& duration) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Get track value at specified time.
@@ -1223,14 +1213,14 @@ struct IMovieSystem
 
     virtual IMovieCallback* GetCallback() = 0;
 
-    virtual const SCameraParams& GetCameraParams() const = 0;
-    virtual void SetCameraParams(const SCameraParams& Params) = 0;
+    virtual AZ::EntityId GetActiveCamera() const = 0;
+    virtual void SetActiveCamera(const AZ::EntityId& entityId) = 0;
     virtual void SendGlobalEvent(const char* pszEvent) = 0;
 
     // Gets the float time value for a sequence that is already playing
     virtual float GetPlayingTime(IAnimSequence* pSeq) = 0;
     virtual float GetPlayingSpeed(IAnimSequence* pSeq) = 0;
-    // Sets the time progression of an already playing cutscene.
+    // Sets the time progression of an already playing cut-scene.
     // If IAnimSequence:NO_SEEK flag is set on pSeq, this call is ignored.
     virtual bool SetPlayingTime(IAnimSequence* pSeq, float fTime) = 0;
     virtual bool SetPlayingSpeed(IAnimSequence* pSeq, float fSpeed) = 0;
