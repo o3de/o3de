@@ -122,6 +122,14 @@ namespace Maestro
                 track->SetMultiplier(255.0f);
                 trackMultiplierWasSet = true;
             }
+            else if (propertyTypeId == AZ::Vector3::TYPEINFO_Uuid() &&
+                paramType.GetType() == AnimParamType::ByString && (AZStd::string("FogColor") == paramType.GetName()))
+            {
+                // The AZ::Render::DeferredFogSettings::m_FogColor is essentially AZ::Vector3,
+                // but should be edited in DeferredFog->FogColor track as AZ::Color.
+                track->SetMultiplier(255.0f);
+                trackMultiplierWasSet = true;
+            }
         }
 
         return trackMultiplierWasSet;
@@ -552,7 +560,14 @@ namespace Maestro
 
         if (retTrack)
         {
-            SetTrackMultiplier(retTrack);
+            if (SetTrackMultiplier(retTrack))
+            {
+                // Re-initialize default value, now using multiplier.
+                // For example, AZ::Color and DeferredFog->FogColor->Vector3 tracks are using m_trackMultiplier==255.0,
+                // and the method below calls pTrack->SetValue(0, vector3Value, /*setDefault=*/true, /*applyMultiplier=*/true);
+                InitializeTrackDefaultValue(retTrack, paramType);
+            }
+
             if (paramType.GetType() == AnimParamType::Animation && !m_characterTrackAnimator)
             {
                 m_characterTrackAnimator = new CCharacterTrackAnimator();

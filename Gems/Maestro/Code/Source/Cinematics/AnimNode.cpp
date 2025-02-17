@@ -963,9 +963,10 @@ namespace Maestro
             pTrack->SetSubTrackName(2, "BlurAmount");
             return pTrack;
         }
-        else if (animValue == AnimValueType::RGB || paramType == AnimParamType::LightDiffuse ||
-                 paramType == AnimParamType::MaterialDiffuse || paramType == AnimParamType::MaterialSpecular
-                 || paramType == AnimParamType::MaterialEmissive)
+        else if (animValue == AnimValueType::RGB || paramType == AnimParamType::LightDiffuse
+                 || paramType == AnimParamType::MaterialDiffuse || paramType == AnimParamType::MaterialSpecular || paramType == AnimParamType::MaterialEmissive
+                 // The AZ::Render::DeferredFogSettings::m_FogColor is essentially AZ::Vector3, but should be edited as AZ::Color
+                 || (paramType.GetType() == AnimParamType::ByString && (AZStd::string("FogColor") == paramType.GetName())))
         {
             subTrackParamTypes[0] = AnimParamType::ColorR;
             subTrackParamTypes[1] = AnimParamType::ColorG;
