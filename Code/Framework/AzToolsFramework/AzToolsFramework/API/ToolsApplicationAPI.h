@@ -1072,7 +1072,7 @@ namespace AzToolsFramework
     bool UndoRedoOperationInProgress();
 } // namespace AzToolsFramework
 
-AZ_DECLARE_BUDGET(AzToolsFramework);
+AZ_DECLARE_BUDGET_SHARED(AzToolsFramework);
 DECLARE_EBUS_EXTERN(AzToolsFramework::EditorRequests);
 DECLARE_EBUS_EXTERN(AzToolsFramework::ToolsApplicationEvents);
 DECLARE_EBUS_EXTERN(AzToolsFramework::EntitySelectionEvents);

@@ -11,7 +11,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
-AZ_DECLARE_BUDGET(AzToolsFramework);
+AZ_DECLARE_BUDGET_SHARED(AzToolsFramework);
 
 namespace WhiteBox
 {

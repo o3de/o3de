@@ -63,8 +63,6 @@ set(FILES
     UI/SearchWidget/SearchCriteriaWidget.hxx
     UI/SearchWidget/SearchCriteriaWidget.cpp
     UI/SearchWidget/SearchWidgetTypes.hxx
-    AzToolsFrameworkModule.h
-    AzToolsFrameworkModule.cpp
     API/ToolsApplicationAPI.h
     API/ToolsApplicationAPI.cpp
     API/EditorAssetSystemAPI.h
@@ -99,8 +97,6 @@ set(FILES
     Application/Ticker.cpp
     Application/EditorEntityManager.cpp
     Application/EditorEntityManager.h
-    Application/ToolsApplication.cpp
-    Application/ToolsApplication.h
     Asset/AssetDebugInfo.h
     Asset/AssetDebugInfo.cpp
     Asset/AssetProcessorMessages.cpp
@@ -999,8 +995,6 @@ set(FILES
 # Prevent the following files from being grouped in UNITY builds
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
     # The following files are skipped from unity to avoid duplicated symbols related to an ebus
-    AzToolsFrameworkModule.cpp
-    Application/ToolsApplication.cpp
     UI/PropertyEditor/PropertyEntityIdCtrl.cpp
     UI/PropertyEditor/PropertyManagerComponent.cpp
     ViewportSelection/EditorDefaultSelection.cpp

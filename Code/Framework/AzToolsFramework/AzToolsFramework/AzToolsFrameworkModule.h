@@ -8,10 +8,11 @@
 #pragma once
 
 #include <AzCore/Module/Module.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    class AzToolsFrameworkModule
+    class AZTF_API AzToolsFrameworkModule
         : public AZ::Module
     {
     public:

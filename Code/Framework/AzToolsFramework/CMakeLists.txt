@@ -13,7 +13,7 @@ endif()
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
 ly_add_target(
-    NAME AzToolsFramework STATIC
+    NAME AzToolsFramework.Static STATIC
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC
@@ -46,6 +46,35 @@ ly_add_target(
             AZ::AzQtComponents
 )
 
+ly_add_target(
+    NAME AzToolsFramework SHARED
+    NAMESPACE AZ
+    AUTOMOC
+    AUTORCC
+    FILES_CMAKE
+        AzToolsFramework/aztoolsframework_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            .
+            AzToolsFramework
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AZTF_EXPORTS
+            $<$<CONFIG:debug>:ENABLE_UNDOCACHE_CONSISTENCY_CHECKS>
+            O3DE_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
+    BUILD_DEPENDENCIES
+        PRIVATE
+            3rdParty::SQLite
+            AZ::AzCore
+        PUBLIC
+            3rdParty::Qt::Core
+            3rdParty::Qt::Gui
+            3rdParty::Qt::Widgets
+            AZ::AzFramework
+            AZ::AzFramework.NativeUI
+            AZ::AzToolsFramework.Static
+            AZ::AzQtComponents
+)
 
 ################################################################################
 # Tests
