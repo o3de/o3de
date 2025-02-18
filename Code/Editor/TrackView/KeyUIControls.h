@@ -465,6 +465,8 @@ protected:
 private:
 
     void ResetCameraEntries();
+
+    static constexpr const char* defaultNoneKeyName = "<None>"; // Name used in menu when no camera is selected
 };
 
 //////////////////////////////////////////////////////////////////////////

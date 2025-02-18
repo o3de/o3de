@@ -326,7 +326,7 @@ namespace Maestro
         /** Get last key before specified time.
                 @return Index of key, or -1 if such key not exist.
         */
-        int GetActiveKey(float time, KeyType* key);
+        virtual int GetActiveKey(float time, KeyType* key);
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
         ColorB GetCustomColor() const override
