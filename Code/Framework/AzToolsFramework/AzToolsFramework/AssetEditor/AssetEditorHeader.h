@@ -6,10 +6,12 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QWidget>
 #include <QTimer>
@@ -21,7 +23,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace Ui
 {
-    class AssetEditorHeader
+    class AZTF_API AssetEditorHeader
         : public QFrame
     {
         Q_OBJECT

@@ -154,6 +154,7 @@ set(FILES
 
     AssetBundle/AssetBundleComponent.cpp
     AssetBundle/AssetBundleComponent.h
+
     AssetCatalog/PlatformAddressedAssetCatalog.cpp
     AssetCatalog/PlatformAddressedAssetCatalog.h
     AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
@@ -161,7 +162,18 @@ set(FILES
     
     AssetDatabase/AssetDatabaseConnection.cpp
     AssetDatabase/AssetDatabaseConnection.h
-    
+    AssetDatabase/PathOrUuid.cpp
+    AssetDatabase/PathOrUuid.h
+        
+    AssetEditor/AssetEditorHeader.cpp
+    AssetEditor/AssetEditorHeader.h
+    AssetEditor/AssetEditorStatusBar.ui
+    AssetEditor/AssetEditorTab.cpp
+    AssetEditor/AssetEditorTab.h
+    AssetEditor/AssetEditorToolbar.ui
+    AssetEditor/AssetEditorWidget.cpp
+    AssetEditor/AssetEditorWidget.h
+        
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

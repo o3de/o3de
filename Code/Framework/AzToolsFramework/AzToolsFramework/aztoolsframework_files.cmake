@@ -49,13 +49,13 @@ set(FILES
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorStatusBar.ui
-    AssetEditor/AssetEditorWidget.cpp
-    AssetEditor/AssetEditorWidget.h
-    AssetEditor/AssetEditorHeader.cpp
-    AssetEditor/AssetEditorHeader.h
+#    AssetEditor/AssetEditorWidget.cpp
+#    AssetEditor/AssetEditorWidget.h
+#    AssetEditor/AssetEditorHeader.cpp
+#    AssetEditor/AssetEditorHeader.h
     AssetEditor/AssetEditorUtils.h
-    AssetEditor/AssetEditorTab.cpp
-    AssetEditor/AssetEditorTab.h
+#    AssetEditor/AssetEditorTab.cpp
+#    AssetEditor/AssetEditorTab.h
     AssetEditor/Resources/AssetEditorResources.qrc
     UI/Logging/LogLine.h
     UI/Logging/LogLine.cpp
@@ -136,8 +136,8 @@ set(FILES
 #    AssetBundle/AssetBundleComponent.h
 #    AssetDatabase/AssetDatabaseConnection.cpp
 #    AssetDatabase/AssetDatabaseConnection.h
-    AssetDatabase/PathOrUuid.h
-    AssetDatabase/PathOrUuid.cpp
+#    AssetDatabase/PathOrUuid.h
+#    AssetDatabase/PathOrUuid.cpp
     Debug/TraceContext.inl
     Debug/TraceContext.h
     Debug/TraceContextStackInterface.h

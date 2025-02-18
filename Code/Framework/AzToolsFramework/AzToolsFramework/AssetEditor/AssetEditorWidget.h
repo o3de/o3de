@@ -6,11 +6,13 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QWidget>
 #include <QToolButton>
@@ -49,7 +51,7 @@ namespace AzToolsFramework
     {
         class AssetEditorTab;
 
-        class AssetEditorWidgetUserSettings : public AZ::UserSettings
+        class AZTF_API AssetEditorWidgetUserSettings : public AZ::UserSettings
         {
         public:
             AZ_RTTI(AssetEditorWidgetUserSettings, "{382FE424-4541-4D93-9BA4-DE17A6DF8676}", AZ::UserSettings);
@@ -69,7 +71,7 @@ namespace AzToolsFramework
         /**
          * Provides ability to create, edit, and save reflected assets.
          */
-        class AssetEditorWidget
+        class AZTF_API AssetEditorWidget
             : public QWidget
         {
             Q_OBJECT
