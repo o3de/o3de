@@ -444,10 +444,11 @@ namespace Maestro
         return pTrack;
     }
 
-    IAnimTrack* CAnimNode::CreateTrack(const CAnimParamType& paramType)
+    IAnimTrack* CAnimNode::CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType)
     {
-        IAnimTrack* pTrack = CreateTrackInternal(paramType, DEFAULT_TRACK_TYPE, AnimValueType::Unknown);
-        InitializeTrackDefaultValue(pTrack, paramType);
+        IAnimTrack* pTrack = CreateTrackInternal(paramType, DEFAULT_TRACK_TYPE, remapValueType);
+        SetTrackMultiplier(pTrack, remapValueType);
+        InitializeTrackDefaultValue(pTrack, paramType, remapValueType);
         return pTrack;
     }
 
@@ -964,9 +965,7 @@ namespace Maestro
             return pTrack;
         }
         else if (animValue == AnimValueType::RGB || paramType == AnimParamType::LightDiffuse
-                 || paramType == AnimParamType::MaterialDiffuse || paramType == AnimParamType::MaterialSpecular || paramType == AnimParamType::MaterialEmissive
-                 // The AZ::Render::DeferredFogSettings::m_FogColor is essentially AZ::Vector3, but should be edited as AZ::Color
-                 || (paramType.GetType() == AnimParamType::ByString && (AZStd::string("FogColor") == paramType.GetName())))
+                 || paramType == AnimParamType::MaterialDiffuse || paramType == AnimParamType::MaterialSpecular || paramType == AnimParamType::MaterialEmissive)
         {
             subTrackParamTypes[0] = AnimParamType::ColorR;
             subTrackParamTypes[1] = AnimParamType::ColorG;
