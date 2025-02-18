@@ -38,7 +38,7 @@ namespace UnitTest
     using AllocatorTypes = ::testing::Types<
         AZStd::static_pool_concurrent_allocator<NodeType, s_allocatorCapacity>
     >;
-    TYPED_TEST_CASE(ConcurrentAllocatorTestFixture, AllocatorTypes);
+    TYPED_TEST_SUITE(ConcurrentAllocatorTestFixture, AllocatorTypes);
 
     TYPED_TEST(ConcurrentAllocatorTestFixture, Name)
     {

@@ -524,7 +524,7 @@ namespace FileWatcherTests
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(FileWatcherUnitTest, FileWatcherUnitTest_FloodTests, ::testing::Bool());
+    INSTANTIATE_TEST_SUITE_P(FileWatcherUnitTest, FileWatcherUnitTest_FloodTests, ::testing::Bool());
     
     TEST_F(FileWatcherUnitTest, DirectoryRemoves_ShowUp)
     {
@@ -788,6 +788,6 @@ namespace FileWatcherTests
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(FileWatcherUnitTest, FileWatcherUnitTest_DefaultExclusions, ::testing::Bool());
+    INSTANTIATE_TEST_SUITE_P(FileWatcherUnitTest, FileWatcherUnitTest_DefaultExclusions, ::testing::Bool());
 
 } // namespace File Watcher Tests.

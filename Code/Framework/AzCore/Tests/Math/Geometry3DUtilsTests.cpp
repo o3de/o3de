@@ -33,5 +33,5 @@ namespace UnitTest
         EXPECT_NEAR(maxRadius, 1.0f, 1e-3f);
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_Geometry3DUtilsTests, Geometry3DUtilsFixture, ::testing::Values(0u, 1u, 2u, 3u));
+    INSTANTIATE_TEST_SUITE_P(MATH_Geometry3DUtilsTests, Geometry3DUtilsFixture, ::testing::Values(0u, 1u, 2u, 3u));
 } // namespace UnitTest

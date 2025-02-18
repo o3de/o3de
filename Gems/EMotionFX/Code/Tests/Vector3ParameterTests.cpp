@@ -131,7 +131,7 @@ namespace EMotionFX
         AZ::Vector3(AZ::Constants::FloatMax, -AZ::Constants::FloatMax, AZ::Constants::FloatEpsilon)
     };
 
-    INSTANTIATE_TEST_CASE_P(Vector3Parameter_ValidOutputTests,
+    INSTANTIATE_TEST_SUITE_P(Vector3Parameter_ValidOutputTests,
         Vector3ParameterFixture,
         ::testing::ValuesIn(Vector3ParameterTestData)
     );
