@@ -283,7 +283,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(EventFilterTests,
+    INSTANTIATE_TEST_SUITE_P(EventFilterTests,
         AnimGraphNodeEventFilterTestFixture,
         ::testing::ValuesIn(EventFilteringTestData));
 } // namespace EMotionFX

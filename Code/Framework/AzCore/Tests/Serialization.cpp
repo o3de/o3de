@@ -7816,7 +7816,7 @@ namespace UnitTest
         GenericsLoadInPlaceHolder<T> m_holder;
     };
 
-    TYPED_TEST_CASE_P(GenericsLoadInPlaceFixture);
+    TYPED_TEST_SUITE_P(GenericsLoadInPlaceFixture);
 
     TYPED_TEST_P(GenericsLoadInPlaceFixture, ClearsOnLoadInPlace)
     {
@@ -7879,7 +7879,7 @@ namespace UnitTest
         EXPECT_THAT(got.m_data, ::testing::ContainerEq(this->m_holder.m_data));
     }
 
-    REGISTER_TYPED_TEST_CASE_P(GenericsLoadInPlaceFixture, ClearsOnLoadInPlace);
+    REGISTER_TYPED_TEST_SUITE_P(GenericsLoadInPlaceFixture, ClearsOnLoadInPlace);
 
     // The test ClearsOnLoadInPlace is run once for each type in this list
     typedef ::testing::Types<
@@ -7890,7 +7890,7 @@ namespace UnitTest
         AZStd::unordered_set<int>,
         AZStd::unordered_multiset<int>
     > TypesThatShouldBeClearedWhenLoadedInPlace;
-    INSTANTIATE_TYPED_TEST_CASE_P(Clears, GenericsLoadInPlaceFixture, TypesThatShouldBeClearedWhenLoadedInPlace);
+    INSTANTIATE_TYPED_TEST_SUITE_P(Clears, GenericsLoadInPlaceFixture, TypesThatShouldBeClearedWhenLoadedInPlace);
 
     enum TestUnscopedSerializationEnum : int32_t
     {

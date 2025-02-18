@@ -137,7 +137,7 @@ namespace PhysX::Pipeline
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         ArgumentPackingTestFixture,
         ::testing::Values(
@@ -176,7 +176,7 @@ namespace PhysX::Pipeline
         EXPECT_NEAR(testData.m_shape->GetVolume(), testData.m_expectedVolume, 1e-6);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         VolumeTestFixture,
         ::testing::Values(
@@ -234,7 +234,7 @@ namespace PhysX::Pipeline
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         SquaredDistanceTestFixture,
         ::testing::Values(
@@ -477,7 +477,7 @@ namespace PhysX::Pipeline
         EXPECT_THAT(pair.second, ::testing::IsNull());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         GetDegenerateShapeConfigurationTestFixture,
         ::testing::Values(
@@ -661,7 +661,7 @@ namespace PhysX::Pipeline
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         FitPrimitiveShapeTestFixture,
         ::testing::ValuesIn(TestTransforms)
