@@ -47,8 +47,8 @@ set(FILES
     ActionManager/ToolBar/ToolBarManagerInternalInterface.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
-    AssetEditor/AssetEditorToolbar.ui
-    AssetEditor/AssetEditorStatusBar.ui
+#    AssetEditor/AssetEditorToolbar.ui
+#    AssetEditor/AssetEditorStatusBar.ui
 #    AssetEditor/AssetEditorWidget.cpp
 #    AssetEditor/AssetEditorWidget.h
 #    AssetEditor/AssetEditorHeader.cpp
@@ -150,11 +150,11 @@ set(FILES
     Debug/TraceContextLogFormatter.cpp
     Debug/TraceContextLogFormatter.h
     Component/EditorComponentAPIBus.h
-    Component/EditorComponentAPIComponent.cpp
-    Component/EditorComponentAPIComponent.h
+#    Component/EditorComponentAPIComponent.cpp
+#    Component/EditorComponentAPIComponent.h
     Component/EditorLevelComponentAPIBus.h
-    Component/EditorLevelComponentAPIComponent.cpp
-    Component/EditorLevelComponentAPIComponent.h
+#    Component/EditorLevelComponentAPIComponent.cpp
+#    Component/EditorLevelComponentAPIComponent.h
     ContainerEntity/ContainerEntityInterface.h
     ContainerEntity/ContainerEntityNotificationBus.h
     ContainerEntity/ContainerEntitySystemComponent.cpp
@@ -562,12 +562,12 @@ set(FILES
     Undo/UndoSystem.cpp
     Undo/UndoSystem.h
     Undo/UndoCacheInterface.h
-    Commands/ComponentModeCommand.cpp
-    Commands/ComponentModeCommand.h
-    Commands/EntityManipulatorCommand.h
-    Commands/EntityManipulatorCommand.cpp
-    Commands/SelectionCommand.cpp
-    Commands/SelectionCommand.h
+#    Commands/ComponentModeCommand.cpp
+#    Commands/ComponentModeCommand.h
+#    Commands/EntityManipulatorCommand.h
+#    Commands/EntityManipulatorCommand.cpp
+#    Commands/SelectionCommand.cpp
+#    Commands/SelectionCommand.h
     Viewport/ActionBus.h
     Viewport/EditorContextMenu.h
     Viewport/EditorContextMenu.cpp

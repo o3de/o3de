@@ -173,7 +173,20 @@ set(FILES
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorWidget.cpp
     AssetEditor/AssetEditorWidget.h
-        
+
+    Commands/ComponentModeCommand.cpp
+    Commands/ComponentModeCommand.h
+    Commands/EntityManipulatorCommand.cpp
+    Commands/EntityManipulatorCommand.h
+    Commands/SelectionCommand.cpp
+    Commands/SelectionCommand.h
+
+    Component/EditorComponentAPIComponent.cpp
+    Component/EditorComponentAPIComponent.h
+
+    Component/EditorLevelComponentAPIComponent.cpp
+    Component/EditorLevelComponentAPIComponent.h
+                    
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

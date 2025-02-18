@@ -6,18 +6,20 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
         //! A System Component to reflect Editor operations on Components to Behavior Context
-        class EditorLevelComponentAPIComponent
+        class AZTF_API EditorLevelComponentAPIComponent
             : public AZ::Component
             , public EditorLevelComponentAPIBus::Handler
         {
