@@ -6,10 +6,14 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/Previewer/Previewer.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/ui_EmptyPreviewer.h>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace Ui
 {
@@ -23,7 +27,7 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
 
         //! Widget displaying "no preview available" text
-        class EmptyPreviewer
+        class AZTF_API EmptyPreviewer
             : public Previewer
         {
             Q_OBJECT

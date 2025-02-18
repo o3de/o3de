@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
@@ -14,6 +15,7 @@
 #include <QPointer>
 #endif
 #include <Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -22,7 +24,7 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class AssetBrowserEntry;
 
-        class AssetBrowserListModel
+        class AZTF_API AssetBrowserListModel
             : public QSortFilterProxyModel
             , public AssetBrowserComponentNotificationBus::Handler
         {

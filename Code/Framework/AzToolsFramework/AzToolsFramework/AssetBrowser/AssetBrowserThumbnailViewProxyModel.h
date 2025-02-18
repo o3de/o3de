@@ -6,16 +6,18 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <QIdentityProxyModel>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserThumbnailViewProxyModel : public QIdentityProxyModel
+        class AZTF_API AssetBrowserThumbnailViewProxyModel : public QIdentityProxyModel
         {
             Q_OBJECT
 

@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
@@ -13,13 +14,16 @@
 #include <QObject>
 #endif
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
         class AssetBrowserEntry;
 
-        class AssetBrowserFavoriteItem
+        class AZTF_API AssetBrowserFavoriteItem
             : public QObject
         {
             Q_OBJECT

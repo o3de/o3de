@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 
@@ -16,7 +17,9 @@
 
 #include <QString>
 #endif
-
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesModel.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/FavoritesEntryDelegate.h>
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -26,7 +29,7 @@ namespace AzToolsFramework
         class FavoritesEntryDelegate;
         class SearchWidget;
 
-        class AssetBrowserFavoritesView
+        class AZTF_API AssetBrowserFavoritesView
             : public QTreeViewWithStateSaving
         {
             Q_OBJECT

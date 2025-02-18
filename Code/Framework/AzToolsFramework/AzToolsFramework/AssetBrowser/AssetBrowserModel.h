@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
@@ -28,6 +29,8 @@ AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: con
 #include <QMimeData>
 #endif
 AZ_POP_DISABLE_WARNING
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzToolsFramework
 {
@@ -38,7 +41,7 @@ namespace AzToolsFramework
         class AssetEntryChangeset;
         class AssetBrowserFilterModel;
 
-        class AssetBrowserModel
+        class AZTF_API AssetBrowserModel
             : public QAbstractItemModel
             , public AssetBrowserModelRequestBus::Handler
             , public AZ::TickBus::Handler

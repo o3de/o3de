@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
@@ -13,6 +14,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Uuid.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -45,7 +47,7 @@ namespace AzToolsFramework
         using SourceWithFileID = AZStd::pair<AZ::s64, AssetDatabase::SourceDatabaseEntry>;
 
         //! RootAssetBrowserEntry is a root node for Asset Browser tree view, it's not related to any asset path.
-        class RootAssetBrowserEntry
+        class AZTF_API RootAssetBrowserEntry
             : public AssetBrowserEntry
         {
         public:

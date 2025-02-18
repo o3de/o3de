@@ -7,10 +7,12 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 
 namespace AZ
@@ -34,7 +36,7 @@ namespace AzToolsFramework
         * This exists to handle memory caches that the AssetBrowser system needs
         * which need to be available across DLLs but still with managed life cycles and not leaking memory
         */
-        class EntryCache
+        class AZTF_API EntryCache
         {
             AZ_CLASS_ALLOCATOR(EntryCache, AZ::SystemAllocator);
         public:

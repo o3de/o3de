@@ -7,9 +7,12 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace Ui
 {
@@ -20,7 +23,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserTreeViewDialog
+        class AZTF_API AssetBrowserTreeViewDialog
             : public AzToolsFramework::AssetBrowser::AssetPickerDialog
         {
             Q_OBJECT

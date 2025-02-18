@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
@@ -16,6 +17,7 @@
 #include <QString>
 #include <QSettings>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -23,7 +25,7 @@ namespace AzToolsFramework
     {
         class SearchWidget;
 
-        class SearchAssetBrowserFavoriteItem : public AssetBrowserFavoriteItem
+        class AZTF_API SearchAssetBrowserFavoriteItem : public AssetBrowserFavoriteItem
         {
         public:
             struct SavedTypeFilter

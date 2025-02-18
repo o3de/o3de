@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 /*********************************************************************************************
  * SearchParametersWidget has been deprecated, use AzQtComponents::FilteredSearchWidget instead.
@@ -22,6 +23,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: 'QBrush:
 #include <QScopedPointer>
 AZ_POP_DISABLE_WARNING
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace Ui
 {
@@ -32,7 +35,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class SearchParametersWidget
+        class AZTF_API SearchParametersWidget
             : public QWidget
         {
             Q_OBJECT

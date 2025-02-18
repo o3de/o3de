@@ -50,6 +50,7 @@ ly_add_target(
     NAME AzToolsFramework SHARED
     NAMESPACE AZ
     AUTOMOC
+    AUTOUIC
     AUTORCC
     FILES_CMAKE
         AzToolsFramework/aztoolsframework_shared_files.cmake

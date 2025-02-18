@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 /*********************************************************************************************
  * SearchAssetTypeSelectorWidget has been deprecated, use AzQtComponents::FilteredSearchWidget instead.
@@ -30,6 +31,9 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: 'QBrush:
 AZ_POP_DISABLE_WARNING
 #endif
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+
 class QMenu;
 class QAction;
 
@@ -44,7 +48,7 @@ namespace AzToolsFramework
     {
         class FilterByWidget;
 
-        class SearchAssetTypeSelectorWidget
+        class AZTF_API SearchAssetTypeSelectorWidget
             : public QWidget
         {
             Q_OBJECT

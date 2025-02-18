@@ -6,6 +6,8 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -18,6 +20,8 @@
 #include <QModelIndex>
 #include <QPointer>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzToolsFramework
 {
@@ -28,7 +32,7 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class SearchEntryDelegate;
 
-        class AssetBrowserListView //! List view that displays the asset browser entries in a list.
+        class AZTF_API AssetBrowserListView //! List view that displays the asset browser entries in a list.
             : public AzQtComponents::TableView
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler

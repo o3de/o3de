@@ -6,11 +6,13 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -22,7 +24,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         //! SourceAssetBrowserEntry represents source entry.
-        class SourceAssetBrowserEntry
+        class AZTF_API SourceAssetBrowserEntry
             : public AssetBrowserEntry
         {
             friend class RootAssetBrowserEntry;

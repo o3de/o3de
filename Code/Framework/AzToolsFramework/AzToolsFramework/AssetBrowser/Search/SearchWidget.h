@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
@@ -18,12 +19,14 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QSharedPointer>
 AZ_POP_DISABLE_WARNING
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class SearchWidget
+        class AZTF_API SearchWidget
             : public AzQtComponents::FilteredSearchWidget
         {
             Q_OBJECT

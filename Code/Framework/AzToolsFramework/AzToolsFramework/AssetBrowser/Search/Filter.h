@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetTypeInfoBus.h>
@@ -18,6 +19,7 @@
 #include <QSharedPointer>
 #include <QString>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -31,7 +33,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         //! Filters are used to fascilitate searching asset browser for specific asset
         //! They are also used for enforcing selection constraints for asset picking
-        class AssetBrowserEntryFilter : public QObject
+        class AZTF_API AssetBrowserEntryFilter : public QObject
         {
             Q_OBJECT
         public:
@@ -103,7 +105,7 @@ namespace AzToolsFramework
         // StringFilter
         //////////////////////////////////////////////////////////////////////////
         //! StringFilter filters assets based on their name
-        class StringFilter : public AssetBrowserEntryFilter
+        class AZTF_API StringFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
@@ -126,7 +128,7 @@ namespace AzToolsFramework
         // CustomFilter
         //////////////////////////////////////////////////////////////////////////
         //! CustomFilter filters assets based on a custom filter function
-        class CustomFilter : public AssetBrowserEntryFilter
+        class AZTF_API CustomFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
@@ -146,7 +148,7 @@ namespace AzToolsFramework
         // CustomFilter
         //////////////////////////////////////////////////////////////////////////
         //! RegExpFilter filters assets based on a regular expression pattern
-        class RegExpFilter : public AssetBrowserEntryFilter
+        class AZTF_API RegExpFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
@@ -168,7 +170,7 @@ namespace AzToolsFramework
         // AssetTypeFilter
         //////////////////////////////////////////////////////////////////////////
         //! AssetTypeFilter filters products based on their asset type
-        class AssetTypeFilter : public AssetBrowserEntryFilter
+        class AZTF_API AssetTypeFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
@@ -192,7 +194,7 @@ namespace AzToolsFramework
         // AssetGroupFilter
         //////////////////////////////////////////////////////////////////////////
         //! AssetGroupFilter filters products based on their asset group
-        class AssetGroupFilter : public AssetBrowserEntryFilter
+        class AZTF_API AssetGroupFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
@@ -217,7 +219,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // EntryTypeFilter
         //////////////////////////////////////////////////////////////////////////
-        class EntryTypeFilter : public AssetBrowserEntryFilter
+        class AZTF_API EntryTypeFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
@@ -244,7 +246,7 @@ namespace AzToolsFramework
             If more complex logic operations required, CompositeFilters can be nested
             with different logic operator types
         */
-        class CompositeFilter : public AssetBrowserEntryFilter
+        class AZTF_API CompositeFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
@@ -281,7 +283,7 @@ namespace AzToolsFramework
         // InverseFilter
         //////////////////////////////////////////////////////////////////////////
         //! Inverse filter negates result of its child filter
-        class InverseFilter : public AssetBrowserEntryFilter
+        class AZTF_API InverseFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
@@ -304,7 +306,7 @@ namespace AzToolsFramework
         // CleanerProductsFilter
         //////////////////////////////////////////////////////////////////////////
         //! Filters out products that shouldn't be shown
-        class CleanerProductsFilter : public AssetBrowserEntryFilter
+        class AZTF_API CleanerProductsFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:

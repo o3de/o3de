@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 
@@ -22,6 +23,9 @@
 
 #endif
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -32,7 +36,7 @@ namespace AzToolsFramework
         class EntryAssetBrowserFavoriteItem;
         class SearchAssetBrowserFavoriteItem;
 
-        class AssetBrowserFavoritesModel
+        class AZTF_API AssetBrowserFavoritesModel
             : public QAbstractItemModel
             , private AssetBrowserFavoritesNotificationBus::Handler
         {
