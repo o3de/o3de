@@ -110,10 +110,10 @@ set(FILES
 #    Asset/AssetUtils.h
 #    Asset/AssetUtils.cpp
     AssetCatalog/PlatformAddressedAssetCatalogBus.h
-    AssetCatalog/PlatformAddressedAssetCatalog.h
-    AssetCatalog/PlatformAddressedAssetCatalog.cpp
-    AssetCatalog/PlatformAddressedAssetCatalogManager.h
-    AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
+#    AssetCatalog/PlatformAddressedAssetCatalog.h
+#    AssetCatalog/PlatformAddressedAssetCatalog.cpp
+#    AssetCatalog/PlatformAddressedAssetCatalogManager.h
+#    AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
     Thumbnails/ThumbnailerComponent.cpp
     Thumbnails/ThumbnailerComponent.h
     Thumbnails/ThumbnailerNullComponent.cpp
@@ -132,10 +132,10 @@ set(FILES
     Thumbnails/ThumbnailWidget.cpp
     Thumbnails/ThumbnailWidget.h
     AssetBundle/AssetBundleAPI.h
-    AssetBundle/AssetBundleComponent.cpp
-    AssetBundle/AssetBundleComponent.h
-    AssetDatabase/AssetDatabaseConnection.cpp
-    AssetDatabase/AssetDatabaseConnection.h
+#    AssetBundle/AssetBundleComponent.cpp
+#    AssetBundle/AssetBundleComponent.h
+#    AssetDatabase/AssetDatabaseConnection.cpp
+#    AssetDatabase/AssetDatabaseConnection.h
     AssetDatabase/PathOrUuid.h
     AssetDatabase/PathOrUuid.cpp
     Debug/TraceContext.inl

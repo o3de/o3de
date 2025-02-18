@@ -6,9 +6,11 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -23,7 +25,7 @@ namespace AzFramework
 namespace AzToolsFramework
 {
     // System component to handle requests to the AssetBundleCommands bus.
-    class AssetBundleComponent
+    class AZTF_API AssetBundleComponent
         : public AZ::Component
         , private AssetBundleCommands::Bus::Handler
     {

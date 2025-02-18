@@ -152,6 +152,16 @@ set(FILES
     AssetBrowser/AssetSelectionModel.cpp
     AssetBrowser/AssetSelectionModel.h
 
+    AssetBundle/AssetBundleComponent.cpp
+    AssetBundle/AssetBundleComponent.h
+    AssetCatalog/PlatformAddressedAssetCatalog.cpp
+    AssetCatalog/PlatformAddressedAssetCatalog.h
+    AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
+    AssetCatalog/PlatformAddressedAssetCatalogManager.h
+    
+    AssetDatabase/AssetDatabaseConnection.cpp
+    AssetDatabase/AssetDatabaseConnection.h
+    
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

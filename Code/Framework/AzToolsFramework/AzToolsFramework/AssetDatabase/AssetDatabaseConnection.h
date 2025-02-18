@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZTOOLSFRAMEWORK_Connection_H
-#define AZTOOLSFRAMEWORK_Connection_H
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -16,6 +15,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SQLite/SQLiteQueryLogBus.h>
 #include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 // At the time of writing, AZStd::function does not support RVALUE-Refs.  We use std::function instead.
 #include <functional>
@@ -82,7 +82,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //DatabaseInfoEntry
-        class DatabaseInfoEntry
+        class AZTF_API DatabaseInfoEntry
         {
         public:
             DatabaseInfoEntry() = default;
@@ -98,7 +98,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //ScanFolderDatabaseEntry
-        class ScanFolderDatabaseEntry
+        class AZTF_API ScanFolderDatabaseEntry
         {
         public:
             ScanFolderDatabaseEntry() = default;
@@ -132,7 +132,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //SourceDatabaseEntry
-        class SourceDatabaseEntry
+        class AZTF_API SourceDatabaseEntry
         {
         public:
             SourceDatabaseEntry() = default;
@@ -152,7 +152,7 @@ namespace AzToolsFramework
         typedef AZStd::vector<SourceDatabaseEntry> SourceDatabaseEntryContainer;
 
         //////////////////////////////////////////////////////////////////////////
-        class BuilderInfoEntry
+        class AZTF_API BuilderInfoEntry
         {
         public:
             BuilderInfoEntry() = default;
@@ -169,7 +169,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //JobDatabaseEntry
-        class JobDatabaseEntry
+        class AZTF_API JobDatabaseEntry
         {
         public:
             JobDatabaseEntry() = default;
@@ -205,7 +205,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //SourceFileDependencyEntry
-        class SourceFileDependencyEntry
+        class AZTF_API SourceFileDependencyEntry
         {
         public:
             /// This is also used as a bitset when making queries.
@@ -237,7 +237,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //ProductDatabaseEntry
-        class ProductDatabaseEntry
+        class AZTF_API ProductDatabaseEntry
         {
         public:
             ProductDatabaseEntry() = default;
@@ -271,7 +271,7 @@ namespace AzToolsFramework
         };
         typedef AZStd::vector<ProductDatabaseEntry> ProductDatabaseEntryContainer;
 
-        class LegacySubIDsEntry
+        class AZTF_API LegacySubIDsEntry
         {
         public:
             LegacySubIDsEntry() = default;
@@ -291,7 +291,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //ProductDependencyDatabaseEntry
-        class ProductDependencyDatabaseEntry
+        class AZTF_API ProductDependencyDatabaseEntry
         {
         public:
             enum DependencyType : AZ::u32
@@ -324,7 +324,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //MissingProductDependencyDatabaseEntry
-        class MissingProductDependencyDatabaseEntry
+        class AZTF_API MissingProductDependencyDatabaseEntry
         {
         public:
             MissingProductDependencyDatabaseEntry() = default;
@@ -371,7 +371,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //CombinedDatabaseEntry
-        class CombinedDatabaseEntry
+        class AZTF_API CombinedDatabaseEntry
             : public ScanFolderDatabaseEntry
             , public SourceDatabaseEntry
             , public JobDatabaseEntry
@@ -389,7 +389,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //FileDatabaseEntry
-        class FileDatabaseEntry
+        class AZTF_API FileDatabaseEntry
         {
         public:
             FileDatabaseEntry() = default;
@@ -416,7 +416,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //SourceAndScanFolderDatabaseEntry
-        class SourceAndScanFolderDatabaseEntry
+        class AZTF_API SourceAndScanFolderDatabaseEntry
             : public ScanFolderDatabaseEntry
             , public SourceDatabaseEntry
         {
@@ -428,7 +428,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         // StatDatabaseEntry
-        class StatDatabaseEntry
+        class AZTF_API StatDatabaseEntry
         {
         public:
             StatDatabaseEntry() = default;
@@ -467,7 +467,7 @@ namespace AzToolsFramework
         //! sense for their specific purpose, otherwise that statement should be added to this class so
         //! it can be reused by any system that needs it. Note that if a system needs read only access
         //! and has no special query needs, then this class can be used directly.
-        class AssetDatabaseConnection : public SQLite::SQLiteQueryLogBus::Handler
+        class AZTF_API AssetDatabaseConnection : public SQLite::SQLiteQueryLogBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(AssetDatabaseConnection, AZ::SystemAllocator);
@@ -735,5 +735,3 @@ namespace AZStd
         }
     };
 }
-
-#endif // AZTOOLSFRAMEWORK_Connection_H

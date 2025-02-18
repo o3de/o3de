@@ -7,13 +7,14 @@
  */
 
 #pragma once
-
+//AZTF-SHARED
 #include <AzFramework/Asset/AssetCatalog.h>
 
 #include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogBus.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -24,7 +25,7 @@ namespace AzToolsFramework
     /*
      * Implements an asset catalog for a particular platform, listening to requests based on platform ID
      */
-    class PlatformAddressedAssetCatalog :
+    class AZTF_API PlatformAddressedAssetCatalog :
         public AzFramework::AssetCatalog,
         public AzToolsFramework::AssetCatalog::PlatformAddressedAssetCatalogRequestBus::Handler
     {
