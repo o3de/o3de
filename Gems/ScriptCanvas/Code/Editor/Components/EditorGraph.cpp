@@ -2428,7 +2428,8 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, false);
+        constexpr bool functionScope = false; // Promoted variables are used as references, thus they need to be a member variable
+        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, functionScope);
 
         if (addOutcome.IsSuccess())
         {
