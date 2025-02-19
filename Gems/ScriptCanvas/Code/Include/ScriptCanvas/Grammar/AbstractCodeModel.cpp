@@ -231,10 +231,7 @@ namespace ScriptCanvas
             AZStd::set<const GraphVariable*, GraphVariable::Comparator> sortedVariables;
             for (const auto& variablePair : sourceVariables)
             {
-                if (variablePair.second.GetScope() != VariableFlags::Scope::FunctionReadOnly)
-                {
-                    sortedVariables.insert(&variablePair.second);
-                }
+                sortedVariables.insert(&variablePair.second);
 
                 if (auto datum = variablePair.second.GetDatum())
                 {
@@ -5561,3 +5558,4 @@ namespace ScriptCanvas
         }
     }
 }
+
