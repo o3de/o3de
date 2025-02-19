@@ -53,7 +53,9 @@ namespace InAppPurchases
             {
                 ec->Class<SystemComponent>("InAppPurchases", "Adds support for in app purchases on iOS and Android")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+#if defined(CARBONATED)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
+#endif
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

@@ -147,13 +147,12 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::QueryProductInfo(AZStd::vector<AZStd::string>& productIds) const
     {        
-        AZ_Info("O3DEInAppPurchases", "QueryProductInfo(ids)");
-        
         NSMutableArray* productIdStrings = [[NSMutableArray alloc] init];
         for (int i = 0; i < productIds.size(); i++)
         {
-            AZ_Info("O3DEInAppPurchases", "product id %s", productIds[i].c_str());
-            
+#if defined(CARBONATED)
+            AZ_Info("O3DEInAppPurchases", "Query product id %s", productIds[i].c_str());
+#endif
             NSString* productId = [NSString stringWithCString:productIds[i].c_str() encoding:NSUTF8StringEncoding];
             [productIdStrings addObject:productId];
         }
@@ -164,8 +163,6 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::QueryProductInfo() const
     {
-        AZ_Info("O3DEInAppPurchases", "QueryProductInfo()");
-        
         NSURL* url = [[NSBundle mainBundle] URLForResource:@"product_ids" withExtension:@"plist"];
         if (url != nil)
         {
@@ -187,8 +184,9 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::PurchaseProduct(const AZStd::string& productId, const AZStd::string& developerPayload) const
     {
+#if defined(CARBONATED)
         AZ_Info("O3DEInAppPurchases", "PurchaseProduct %s", productId.c_str());
-        
+#endif
         NSString* productIdString = [NSString stringWithCString:productId.c_str() encoding:NSUTF8StringEncoding];
         if (!developerPayload.empty())
         {
@@ -208,8 +206,9 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::RestorePurchasedProducts() const
     {
+#if defined(CARBONATED)
         AZ_Info("O3DEInAppPurchases", "RestorePurchasedProducts");
-        
+#endif
         InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedPurchasedProductDetails();
         [m_delegate restorePurchasedProducts];
     }
@@ -272,13 +271,16 @@ namespace InAppPurchases
     
     void InAppPurchasesApple::ConsumePurchase(const AZStd::string& purchaseToken) const
     {
+#if defined(CARBONATED)
         AZ_Info("O3DEInAppPurchases", "ConsumePurchase");
+#endif
     }
     
     void InAppPurchasesApple::FinishTransaction(const AZStd::string& transactionId, bool downloadHostedContent) const
     {
+#if defined(CARBONATED)
         AZ_Info("O3DEInAppPurchases", "FinishTransaction");
-        
+#endif
         NSString* transactionIdString = [NSString stringWithCString:transactionId.c_str() encoding:NSASCIIStringEncoding];
         
         if (downloadHostedContent)
