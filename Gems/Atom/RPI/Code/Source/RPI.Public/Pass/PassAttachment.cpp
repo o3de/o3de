@@ -398,5 +398,11 @@ namespace AZ
             SetAttachment(targetAttachment);
         }
 
+        void PassAttachmentBinding::Clear()
+        {
+            m_attachment.reset();
+            m_originalAttachment.reset();
+        }
+
     } // namespace RPI
 } // namespace AZ
