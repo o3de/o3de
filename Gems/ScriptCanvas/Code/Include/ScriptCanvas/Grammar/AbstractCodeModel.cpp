@@ -231,7 +231,10 @@ namespace ScriptCanvas
             AZStd::set<const GraphVariable*, GraphVariable::Comparator> sortedVariables;
             for (const auto& variablePair : sourceVariables)
             {
-                sortedVariables.insert(&variablePair.second);
+                if (variablePair.second.GetScope() != VariableFlags::Scope::FunctionReadOnly)
+                {
+                    sortedVariables.insert(&variablePair.second);
+                }
 
                 if (auto datum = variablePair.second.GetDatum())
                 {
@@ -246,7 +249,7 @@ namespace ScriptCanvas
                 AZ_Assert(datum != nullptr, "the datum must be valid");
 
                 // #functions2 slot<->variable check to verify if it is a member variable
-                auto variable = sourceVariable->GetScope() == VariableFlags::Scope::Graph
+                auto variable = (sourceVariable->GetScope() == VariableFlags::Scope::Graph)
                     ? AddMemberVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId())
                     : AddVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId());
 
