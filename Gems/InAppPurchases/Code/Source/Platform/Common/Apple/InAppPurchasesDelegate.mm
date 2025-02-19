@@ -50,6 +50,7 @@
     purchasedProductDetails->SetProductId([payment.productIdentifier UTF8String]);
     if ([payment.applicationUsername length] > 0)
     {
+        AZ_Info("O3DEInAppPurchases", "SetDeveloperPayload %s", [payment.applicationUsername UTF8String]);
         purchasedProductDetails->SetDeveloperPayload([payment.applicationUsername UTF8String]);
     }
     else
@@ -63,6 +64,8 @@
     {
         if(productDetails && productDetails->GetProductId() == purchasedProductDetails->GetProductId())
         {
+            AZ_Info("O3DEInAppPurchases", "Set price %s %s", productDetails->GetProductPrice().c_str(), productDetails->GetProductCurrencyCode().c_str());
+            
             purchasedProductDetails->SetProductPrice(productDetails->GetProductPrice());
             purchasedProductDetails->SetProductPriceMicro(productDetails->GetProductPriceMicro());
             purchasedProductDetails->SetProductCurrencyCode(productDetails->GetProductCurrencyCode());
@@ -80,7 +83,20 @@
     }
     else
     {
+#if defined(CARBONATED)
+        // there is no order ID for a cancelled transaction
+        if (transaction.transactionIdentifier != nil)
+        {
+            purchasedProductDetails->SetOrderId([transaction.transactionIdentifier cStringUsingEncoding:NSASCIIStringEncoding]);
+        }
+        else
+        {
+            AZ_Info("O3DEInAppPurchases", "No transaction id");
+            purchasedProductDetails->SetOrderId("");
+        }
+#else
         purchasedProductDetails->SetOrderId([transaction.transactionIdentifier cStringUsingEncoding:NSASCIIStringEncoding]);
+#endif
         purchasedProductDetails->SetPurchaseTime([transaction.transactionDate timeIntervalSince1970]);
         purchasedProductDetails->SetRestoredOrderId("");
         purchasedProductDetails->SetRestoredPurchaseTime(0);
@@ -261,6 +277,7 @@
 #if defined(CARBONATED)
                     if(transaction.error.code == SKErrorPaymentCancelled)
                     {
+                        AZ_TracePrintf("O3DEInAppPurchases", "Transaction payment cancelled");
                         productDetails->SetPurchaseState(InAppPurchases::PurchaseState::CANCELLED);
                         EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, PurchaseCancelled, productDetails);
                     }
