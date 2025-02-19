@@ -7,16 +7,18 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/ComponentModes/BaseShapeViewportEdit.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! Wraps a linear manipulator, providing a viewport experience for modifying the radius of a sphere.
     //! It is designed to be usable either by a component mode or by other contexts which are not associated with a
     //! particular component, so editing does not rely on an EntityComponentIdPair or other component-based identifier.
-    class SphereViewportEdit : public BaseShapeViewportEdit
+    class AZTF_API SphereViewportEdit : public BaseShapeViewportEdit
     {
     public:
         void InstallGetSphereRadius(AZStd::function<float()> getSphereRadius);

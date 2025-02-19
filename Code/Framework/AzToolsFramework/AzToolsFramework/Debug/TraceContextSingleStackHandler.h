@@ -6,10 +6,12 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/parallel/thread.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/Debug/TraceContextStack.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -17,7 +19,7 @@ namespace AzToolsFramework
     {
         // TraceContextStack provides a standard implementation for the TraceContextBus that
         //      can be used to track the trace context for a specific thread.
-        class TraceContextSingleStackHandler : public TraceContextBus::Handler
+        class AZTF_API TraceContextSingleStackHandler : public TraceContextBus::Handler
         {
         public:
             // Sets up trace context recording for the current thread.

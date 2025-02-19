@@ -7,12 +7,14 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeActionHandler.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeViewportUi.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -22,7 +24,7 @@ namespace AzToolsFramework
     namespace ComponentModeFramework
     {
         /// Manages all individual ComponentModes for a single instance of Editor wide ComponentMode.
-        class ComponentModeCollection
+        class AZTF_API ComponentModeCollection
             : public ComponentModeCollectionInterface
         {
         public:

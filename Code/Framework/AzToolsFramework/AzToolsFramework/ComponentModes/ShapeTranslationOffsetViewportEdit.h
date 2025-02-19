@@ -7,15 +7,17 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/ComponentModes/BaseShapeViewportEdit.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! Wraps translation manipulators for editing shape translation offsets.
-    class ShapeTranslationOffsetViewportEdit : public BaseShapeViewportEdit
+    class AZTF_API ShapeTranslationOffsetViewportEdit : public BaseShapeViewportEdit
     {
     public:
         ShapeTranslationOffsetViewportEdit() = default;

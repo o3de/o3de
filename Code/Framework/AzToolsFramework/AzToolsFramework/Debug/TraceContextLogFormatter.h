@@ -6,8 +6,10 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Serialization/ObjectStream.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -31,7 +33,7 @@ namespace AzToolsFramework
         //          [Float] = 3.141500
         //          [Uuid] = B0E342BA-0D79-412D-ABDE-11FC29D4875C
 
-        class TraceContextLogFormatter
+        class AZTF_API TraceContextLogFormatter
         {
         public:
             // Prints all entries in the trace context stack to a string, except any object or tags.

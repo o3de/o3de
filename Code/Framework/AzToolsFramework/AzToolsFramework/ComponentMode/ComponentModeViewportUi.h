@@ -7,18 +7,20 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include "ComponentModeViewportUiRequestBus.h"
 
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
          //! Handles adding Viewport UI widgets from a specific ComponentMode onto the render viewport UI.
-        class ComponentModeViewportUi
+        class AZTF_API ComponentModeViewportUi
             : public ComponentModeViewportUiRequestBus::Handler
         {
         public:

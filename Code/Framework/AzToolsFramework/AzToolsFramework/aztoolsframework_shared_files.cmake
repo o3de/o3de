@@ -186,7 +186,59 @@ set(FILES
 
     Component/EditorLevelComponentAPIComponent.cpp
     Component/EditorLevelComponentAPIComponent.h
-                    
+
+    ComponentMode/ComponentModeActionHandler.cpp
+    ComponentMode/ComponentModeActionHandler.h
+
+    ComponentMode/ComponentModeActionHandler.cpp
+    ComponentMode/ComponentModeActionHandler.h
+    
+    ComponentMode/ComponentModeCollection.cpp
+    ComponentMode/ComponentModeCollection.h
+    
+    ComponentMode/ComponentModeSwitcher.cpp
+    ComponentMode/ComponentModeSwitcher.h
+    
+    ComponentMode/ComponentModeViewportUi.cpp
+    ComponentMode/ComponentModeViewportUi.h
+
+    ComponentModes/BaseShapeComponentMode.cpp
+    ComponentModes/BaseShapeComponentMode.h
+
+    ComponentModes/BaseShapeViewportEdit.cpp
+    ComponentModes/BaseShapeViewportEdit.h
+
+    ComponentModes/BoxComponentMode.cpp
+    ComponentModes/BoxComponentMode.h
+    
+    ComponentModes/BoxViewportEdit.cpp
+    ComponentModes/BoxViewportEdit.h
+
+    ComponentModes/CapsuleViewportEdit.cpp
+    ComponentModes/CapsuleViewportEdit.h
+
+    ComponentModes/CylinderViewportEdit.cpp
+    ComponentModes/CylinderViewportEdit.h
+
+    ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
+    ComponentModes/ShapeTranslationOffsetViewportEdit.h
+
+    ComponentModes/SphereViewportEdit.cpp
+    ComponentModes/SphereViewportEdit.h
+
+    Debug/TraceContextLogFormatter.cpp
+    Debug/TraceContextLogFormatter.h
+
+    Debug/TraceContextMultiStackHandler.cpp
+    Debug/TraceContextMultiStackHandler.h
+    
+    Debug/TraceContextSingleStackHandler.cpp
+    Debug/TraceContextSingleStackHandler.h
+
+    Debug/TraceContextStack.cpp
+    Debug/TraceContextStack.h
+    
+        
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

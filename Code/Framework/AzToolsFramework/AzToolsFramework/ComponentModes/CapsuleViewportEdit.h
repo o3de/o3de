@@ -7,9 +7,11 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/ComponentModes/BaseShapeViewportEdit.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -17,7 +19,7 @@ namespace AzToolsFramework
     //! modifying the radius and height of a capsule.
     //! It is designed to be usable either by a component mode or by other contexts which are not associated with a
     //! particular component, so editing does not rely on an EntityComponentIdPair or other component-based identifier.
-    class CapsuleViewportEdit : public BaseShapeViewportEdit
+    class AZTF_API CapsuleViewportEdit : public BaseShapeViewportEdit
     {
     public:
         CapsuleViewportEdit(bool allowAsymmetricalEditing = false);

@@ -6,11 +6,13 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/Debug/TraceContextStack.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -18,7 +20,7 @@ namespace AzToolsFramework
     {
         // TraceContextMultiStack provides a standard implementation for the TraceContextBus that 
         //      can be used for tracking trace context stacks for multiple threads.
-        class TraceContextMultiStackHandler : public TraceContextBus::Handler
+        class AZTF_API TraceContextMultiStackHandler : public TraceContextBus::Handler
         {
         public:
             TraceContextMultiStackHandler();

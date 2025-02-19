@@ -141,14 +141,14 @@ set(FILES
     Debug/TraceContext.inl
     Debug/TraceContext.h
     Debug/TraceContextStackInterface.h
-    Debug/TraceContextStack.h
-    Debug/TraceContextStack.cpp
-    Debug/TraceContextSingleStackHandler.h
-    Debug/TraceContextSingleStackHandler.cpp
-    Debug/TraceContextMultiStackHandler.h
-    Debug/TraceContextMultiStackHandler.cpp
-    Debug/TraceContextLogFormatter.cpp
-    Debug/TraceContextLogFormatter.h
+#    Debug/TraceContextStack.h
+#    Debug/TraceContextStack.cpp
+#    Debug/TraceContextSingleStackHandler.h
+#    Debug/TraceContextSingleStackHandler.cpp
+#    Debug/TraceContextMultiStackHandler.h
+#    Debug/TraceContextMultiStackHandler.cpp
+#    Debug/TraceContextLogFormatter.cpp
+#    Debug/TraceContextLogFormatter.h
     Component/EditorComponentAPIBus.h
 #    Component/EditorComponentAPIComponent.cpp
 #    Component/EditorComponentAPIComponent.h
@@ -611,44 +611,44 @@ set(FILES
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiDisplayLayout.h
     ViewportUi/ViewportUiDisplayLayout.cpp
-    ComponentMode/ComponentModeActionHandler.h
-    ComponentMode/ComponentModeActionHandler.cpp
+#    ComponentMode/ComponentModeActionHandler.h
+#    ComponentMode/ComponentModeActionHandler.cpp
     ComponentMode/EditorComponentModeBus.h
-    ComponentMode/ComponentModeCollection.h
-    ComponentMode/ComponentModeCollection.cpp
+#    ComponentMode/ComponentModeCollection.h
+#    ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeDelegate.cpp
     ComponentMode/ComponentModeDelegateBus.h
-    ComponentMode/ComponentModeSwitcher.h
-    ComponentMode/ComponentModeSwitcher.cpp
-    ComponentMode/ComponentModeViewportUi.h
-    ComponentMode/ComponentModeViewportUi.cpp
+#    ComponentMode/ComponentModeSwitcher.h
+#    ComponentMode/ComponentModeSwitcher.cpp
+#    ComponentMode/ComponentModeViewportUi.h
+#    ComponentMode/ComponentModeViewportUi.cpp
     ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentMode/EditorBaseComponentMode.h
     ComponentMode/EditorBaseComponentMode.cpp
-    ComponentModes/BaseShapeComponentMode.h
-    ComponentModes/BaseShapeComponentMode.cpp
-    ComponentModes/BaseShapeViewportEdit.h
-    ComponentModes/BaseShapeViewportEdit.cpp
-    ComponentModes/BoxComponentMode.h
-    ComponentModes/BoxComponentMode.cpp
-    ComponentModes/BoxViewportEdit.h
-    ComponentModes/BoxViewportEdit.cpp
+#    ComponentModes/BaseShapeComponentMode.h
+#    ComponentModes/BaseShapeComponentMode.cpp
+#    ComponentModes/BaseShapeViewportEdit.h
+#    ComponentModes/BaseShapeViewportEdit.cpp
+#    ComponentModes/BoxComponentMode.h
+#    ComponentModes/BoxComponentMode.cpp
+#    ComponentModes/BoxViewportEdit.h
+#    ComponentModes/BoxViewportEdit.cpp
     ComponentModes/CapsuleComponentMode.h
     ComponentModes/CapsuleComponentMode.cpp
-    ComponentModes/CapsuleViewportEdit.h
-    ComponentModes/CapsuleViewportEdit.cpp
+#    ComponentModes/CapsuleViewportEdit.h
+#    ComponentModes/CapsuleViewportEdit.cpp
     ComponentModes/CylinderComponentMode.cpp 
     ComponentModes/CylinderComponentMode.h 
-    ComponentModes/CylinderViewportEdit.cpp 
-    ComponentModes/CylinderViewportEdit.h 
+#    ComponentModes/CylinderViewportEdit.cpp 
+#    ComponentModes/CylinderViewportEdit.h 
     ComponentModes/ShapeComponentModeBus.h
-    ComponentModes/ShapeTranslationOffsetViewportEdit.h
-    ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
+#    ComponentModes/ShapeTranslationOffsetViewportEdit.h
+#    ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
     ComponentModes/SphereComponentMode.h
     ComponentModes/SphereComponentMode.cpp
-    ComponentModes/SphereViewportEdit.h
-    ComponentModes/SphereViewportEdit.cpp
+#    ComponentModes/SphereViewportEdit.h
+#    ComponentModes/SphereViewportEdit.cpp
     ComponentModes/ViewportEditUtilities.h
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp
