@@ -634,7 +634,7 @@ namespace Maestro
         CAnimNode::InitPostLoad(sequence);
 
         // Check if multiplier, which is not serialized, is to be set again after loading a prefab.
-        for (const auto ipTrack : m_tracks)
+        for (AZStd::intrusive_ptr<IAnimTrack> const& ipTrack : m_tracks)
         {
             if (const auto pTrack = ipTrack.get())
             {
