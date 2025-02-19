@@ -28,6 +28,18 @@ namespace AZ
                 : public DataTypes::ILodRule
             {
             public:
+                struct AutoLodGenerationSettings
+                {
+                    AZ_TYPE_INFO(AutoLodGenerationSettings, "{67B46817-7216-4F94-97D6-BD0B28D2601D}");
+                    static void Reflect(ReflectContext* context);
+                    bool m_preserveTopology = false;
+                    bool m_limitError = false;
+                    bool m_lockBorder = false;
+                    bool m_sparse = false;
+                    bool m_prune = false;
+                    float m_targetError = 0.1f; // Default target error for simplification
+                    float m_indexThreshold = 0.5f; // Default index threshold for simplification
+                };
                 AZ_RTTI(LodRule, "{6E796AC8-1484-4909-860A-6D3F22A7346F}", DataTypes::ILodRule);
                 AZ_CLASS_ALLOCATOR(LodRule, AZ::SystemAllocator)
 
@@ -41,12 +53,18 @@ namespace AZ
 
                 SCENE_DATA_API void AddLod();
 
+                SCENE_DATA_API bool IsAutoLodGenerationEnabled() const;
+
+                SCENE_DATA_API const AutoLodGenerationSettings& GetAutoLodGenerationSettings() const;
+
                 static void Reflect(ReflectContext* context);
                 //The engine supports 6 total lods.  1 for the base model then 5 more lods.
                 //The rule only captures lods past level 0 so this is set to 5.
                 static const size_t m_maxLods = 5;
             protected:
 
+                bool m_isAutoLodGenerationEnabled = false;
+                AutoLodGenerationSettings m_autoLodGenerationSettings;
                 AZStd::fixed_vector<SceneNodeSelectionList, m_maxLods> m_nodeSelectionLists;
             };
         } // SceneData
