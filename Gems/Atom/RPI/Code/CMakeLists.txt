@@ -6,6 +6,32 @@
 #
 #
 
+include(FetchContent)
+FetchContent_Declare(
+        meshoptimizer
+        GIT_REPOSITORY "https://github.com/zeux/meshoptimizer.git"
+        GIT_TAG "v0.22"
+)
+set(MESHOPT_INSTALL OFF)
+FetchContent_MakeAvailable(meshoptimizer)
+
+message(STATUS "Atom gem uses meshoptimizer-0.22 (MIT-Clause) https://github.com/zeux/meshoptimizer.git")
+get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)
+set_property(TARGET ${MESHOPTIMIZER_TARGET} PROPERTY FOLDER "${relative_this_gem_root}/External")
+set(MESHOPTIMIZER_TARGET meshoptimizer)
+add_library(3rdParty::${MESHOPTIMIZER_TARGET} ALIAS ${MESHOPTIMIZER_TARGET})
+
+set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
+    message(STATUS "Atom gem uses meshoptimizer-0.22 (MIT-Clause) https://github.com/zeux/meshoptimizer.git")
+    get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+    ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)
+    set_property(TARGET ${MESHOPTIMIZER_TARGET} PROPERTY FOLDER "${relative_this_gem_root}/External")
+    set(MESHOPTIMIZER_TARGET meshoptimizer)
+    add_library(3rdParty::${MESHOPTIMIZER_TARGET} ALIAS ${MESHOPTIMIZER_TARGET})
+]]
+)
+
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 #for PAL_TRAIT_BUILD_ATOM_RPI_ASSETS_SUPPORTED and PAL_TRAIT_BUILD_ATOM_RPI_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -275,6 +301,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RHI.Public
                 Gem::${gem_name}.Edit
                 Gem::${gem_name}.Public
+                3rdParty::meshoptimizer
     )
 
     ly_add_target(
