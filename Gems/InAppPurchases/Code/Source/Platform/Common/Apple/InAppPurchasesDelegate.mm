@@ -66,7 +66,7 @@
     {
         if(productDetails && productDetails->GetProductId() == purchasedProductDetails->GetProductId())
         {
-            AZ_Info("O3DEInAppPurchases", "Set price %s %s", productDetails->GetProductPrice().c_str(), productDetails->GetProductCurrencyCode().c_str());
+            AZ_Info("O3DEInAppPurchases", "Set price %s", productDetails->GetProductPrice().c_str());
             
             purchasedProductDetails->SetProductPrice(productDetails->GetProductPrice());
             purchasedProductDetails->SetProductPriceMicro(productDetails->GetProductPriceMicro());
@@ -216,9 +216,6 @@
 
 -(void) purchaseProduct:(NSString *) productId withUserName:(NSString *) userName
 {
-#if defined(CARBONATED)
-    AZ_Info("O3DEInAppPurchasesDelegate", "purchaseProduct %s", [productId cStringUsingEncoding:NSASCIIStringEncoding]);
-#endif
     SKProduct* productToPurchase = nil;
     for (SKProduct* product in self.m_products)
     {
@@ -239,9 +236,6 @@
             NSString* userNameHash = [self hashUserName:userName];
             payment.applicationUsername = userNameHash;
         }
-#if defined(CARBONATED)
-        AZ_Info("O3DEInAppPurchasesDelegate", "addPayment");
-#endif
         [[SKPaymentQueue defaultQueue] addPayment:payment];
     }
     else
