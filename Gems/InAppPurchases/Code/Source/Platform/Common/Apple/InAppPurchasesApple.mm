@@ -150,9 +150,6 @@ namespace InAppPurchases
         NSMutableArray* productIdStrings = [[NSMutableArray alloc] init];
         for (int i = 0; i < productIds.size(); i++)
         {
-#if defined(CARBONATED)
-            AZ_Info("O3DEInAppPurchases", "Query product id %s", productIds[i].c_str());
-#endif
             NSString* productId = [NSString stringWithCString:productIds[i].c_str() encoding:NSUTF8StringEncoding];
             [productIdStrings addObject:productId];
         }
@@ -259,8 +256,6 @@ namespace InAppPurchases
             AZ_Error("O3DEInAppPurchases", false, "No receipt");
             return "";
         }
-        
-        AZ_Info("O3DEInAppPurchases", "Make receipt from %s", [receiptURL.absoluteString UTF8String]);
         
         NSString *receiptStr = [receipt base64EncodedStringWithOptions:0];
         

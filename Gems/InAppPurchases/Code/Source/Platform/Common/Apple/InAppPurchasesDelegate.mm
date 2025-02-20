@@ -394,9 +394,6 @@
 
 -(void) finishTransaction:(NSString*) transactionId
 {
-#if defined(CARBONATED)
-    AZ_TracePrintf("O3DEInAppPurchases", "finishTransaction %s", [transactionId UTF8String]);
-#endif
     for (SKPaymentTransaction* transaction in self.m_unfinishedTransactions)
     {
         if ([transaction.transactionIdentifier isEqualToString:transactionId])
