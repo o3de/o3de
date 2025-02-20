@@ -346,8 +346,9 @@ namespace AZ
 
         PassAttachmentBinding* Pass::FindAttachmentBinding(const Name& slotName)
         {
-            for (PassAttachmentBinding& binding : m_attachmentBindings)
+            for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
             {
+                auto& binding = m_attachmentBindings[slotIndex];
                 if (slotName == binding.m_name)
                 {
                     return &binding;
@@ -358,8 +359,9 @@ namespace AZ
 
         const PassAttachmentBinding* Pass::FindAttachmentBinding(const Name& slotName) const
         {
-            for (const PassAttachmentBinding& binding : m_attachmentBindings)
+            for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
             {
+                const auto& binding = m_attachmentBindings[slotIndex];
                 if (slotName == binding.m_name)
                 {
                     return &binding;
@@ -1164,8 +1166,9 @@ namespace AZ
         {
             // Depending on whether a pass is enabled or not, it may switch it's bindings to become a pass-through
             // For this reason we update connecting bindings on a per-frame basis
-            for (PassAttachmentBinding& binding : m_attachmentBindings)
+            for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
             {
+                auto& binding = m_attachmentBindings[slotIndex];
                 UpdateConnectedBinding(binding);
             }
         }
@@ -1670,8 +1673,9 @@ namespace AZ
                 return false;
             }
             uint32_t bindingIndex = 0;
-            for (auto& binding : m_attachmentBindings)
+            for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
             {
+                auto& binding = m_attachmentBindings[slotIndex];
                 if (slotName == binding.m_name)
                 {
                     RHI::AttachmentType type = binding.GetAttachment()->GetAttachmentType();
@@ -1867,8 +1871,9 @@ namespace AZ
                 AZStd::string stringOutput;
                 PrintPassName(stringOutput);
 
-                for (const PassAttachmentBinding& binding : m_attachmentBindings)
+                for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
                 {
+                    const auto& binding = m_attachmentBindings[slotIndex];
                     uint32_t bindingMask = (1 << uint32_t(binding.m_slotType));
                     if ((bindingMask & slotTypeMask) && (binding.GetAttachment() == nullptr))
                     {
