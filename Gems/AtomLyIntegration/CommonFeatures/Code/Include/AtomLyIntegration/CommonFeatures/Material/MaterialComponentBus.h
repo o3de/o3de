@@ -53,6 +53,15 @@ namespace AZ
             //! @returns Map of material assigned data including materials, property overrides, and other parameters.
             virtual const MaterialAssignmentMap& GetMaterialMap() const = 0;
 
+            //! Similar as above, but returns a deep copy of all materials.
+            //! This "Copy" function is useful for Lua because GetMaterialMap()
+            //! returns a reference and Lua treats it a as a reference too.
+            //! Making further chages to the material component, for example by calling SetMaterialAssetId()
+            //! would indirectly affect the MaterialAssignmentMap that was returned by reference.
+            //! To avoid this scenario, a Lua script can call this function to get an actual copy that remains
+            //! unaffected by calling functions like SetMaterialAssetId().
+            virtual MaterialAssignmentMap GetMaterialMapCopy() const = 0;
+
             //! Clears all overridden materials and properties from the material component.
             virtual void ClearMaterialMap() = 0;
 
