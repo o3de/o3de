@@ -634,14 +634,12 @@ namespace Maestro
         CAnimNode::InitPostLoad(sequence);
 
         // Check if multiplier, which is not serialized, is to be set again after loading a prefab.
-        for (AZStd::intrusive_ptr<IAnimTrack> const& ipTrack : m_tracks)
+        for (size_t i = 0; i < m_tracks.size(); ++i)
         {
-            if (const auto pTrack = ipTrack.get())
+            IAnimTrack* pTrack = m_tracks[i].get();
+            if (pTrack && (pTrack->GetValueType() == AnimValueType::RGB))
             {
-                if (pTrack->GetValueType() == AnimValueType::RGB)
-                {
-                    pTrack->SetMultiplier(s_rgbMultiplier);
-                }
+                pTrack->SetMultiplier(s_rgbMultiplier);
             }
         }
     }
