@@ -32,3 +32,8 @@ AZ_GFX_VEC2_PARAM(NoiseTexCoord2Velocity, m_noiseVelocityUV2, Vector2(0.00275f, 
 
 // Amount of blend between octaves: noise = (1 - blend) * octave1 + blend * octave2
 AZ_GFX_FLOAT_PARAM(OctavesBlendFactor, m_octavesBlendFactor, 0.4f)
+
+// Unified bool flags, moved here from DeferredFogSettings.h and DeferredFogComponentConfig.h.
+AZ_GFX_BOOL_PARAM(Enabled, m_enabled, true)
+AZ_GFX_BOOL_PARAM(UseNoiseTextureShaderOption, m_useNoiseTextureShaderOption, true)
+AZ_GFX_BOOL_PARAM(EnableFogLayerShaderOption, m_enableFogLayerShaderOption, true)
