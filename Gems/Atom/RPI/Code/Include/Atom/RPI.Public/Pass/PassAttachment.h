@@ -13,6 +13,8 @@
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 
+#include <AzCore/std/containers/deque.h>
+
 namespace AZ
 {
     namespace RPI
@@ -156,6 +158,9 @@ namespace AZ
             //! Updates the set attachment from the binding connection
             void UpdateConnection(bool useFallback);
 
+            //! Clears the smart pointers within to holding the memory too long.
+            void Clear();
+
             //! Name of the attachment binding so we can find it in a list of attachment binding
             Name m_name;
 
@@ -210,8 +215,8 @@ namespace AZ
             Ptr<PassAttachment> m_originalAttachment = nullptr;
         };
 
-        using PassAttachmentBindingList = AZStd::vector<PassAttachmentBinding>;
-        using PassAttachmentBindingListView = AZStd::span<const PassAttachmentBinding>;
+        using PassAttachmentBindingList = AZStd::deque<PassAttachmentBinding>;
+        using PassAttachmentBindingListView = const AZStd::deque<PassAttachmentBinding>;
 
     }   // namespace RPI
 

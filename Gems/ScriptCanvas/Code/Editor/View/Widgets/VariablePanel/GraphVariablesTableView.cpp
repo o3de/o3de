@@ -627,8 +627,8 @@ namespace ScriptCanvasEditor
 
             if (graphVariable->GetScope() != ScriptCanvas::VariableFlags::Scope::FunctionReadOnly)
             {
-            itemFlags |= Qt::ItemIsEditable;
-        }
+                itemFlags |= Qt::ItemIsEditable;
+            }
 
         }
         else if (index.column() == ColumnIndex::InitialValueSource)
