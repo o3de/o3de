@@ -212,8 +212,9 @@ namespace InAppPurchases
     
     void InAppPurchasesApple::QueryPurchasedProducts() const
     {
+#if defined(CARBONATED)
         AZ_Info("O3DEInAppPurchases", "QueryPurchasedProducts");
-        
+#endif
         [m_delegate refreshAppReceipt];
         InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedPurchasedProductDetails();
         NSURL* url = [[NSBundle mainBundle] appStoreReceiptURL];
