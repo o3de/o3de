@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -16,6 +17,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -26,7 +28,7 @@ namespace AzToolsFramework
         class TemplateInstanceMapperInterface;
         class InstanceDomGeneratorInterface;
 
-        class InstanceUpdateExecutor
+        class AZTF_API InstanceUpdateExecutor
             : public InstanceUpdateExecutorInterface
         {
         public:

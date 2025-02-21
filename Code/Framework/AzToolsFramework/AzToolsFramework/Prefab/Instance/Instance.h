@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/Path/Path.h>
@@ -21,6 +22,7 @@
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -61,7 +63,7 @@ namespace AzToolsFramework
         };
 
         //! Class that represents a prefab instance instantiated from a prefab template.
-        class Instance
+        class AZTF_API Instance
         {
         public:
             AZ_CLASS_ALLOCATOR(Instance, AZ::SystemAllocator);

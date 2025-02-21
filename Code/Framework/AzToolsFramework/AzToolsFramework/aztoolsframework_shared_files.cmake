@@ -272,46 +272,94 @@ set(FILES
     Manipulators/ManipulatorSpace.h
     Manipulators/ManipulatorView.cpp
     Manipulators/ManipulatorView.h
-
     Manipulators/MultiLinearManipulator.cpp
     Manipulators/MultiLinearManipulator.h
-    
     Manipulators/PaintBrushManipulator.cpp
     Manipulators/PaintBrushManipulator.h	
-        
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
-    
     Manipulators/RotationManipulators.cpp
     Manipulators/RotationManipulators.h
-    
     Manipulators/ScaleManipulators.cpp
     Manipulators/ScaleManipulators.h
-    
     Manipulators/SelectionManipulator.cpp
     Manipulators/SelectionManipulator.h
-    
     Manipulators/SplineHoverSelection.cpp
     Manipulators/SplineHoverSelection.h
-    
     Manipulators/SplineSelectionManipulator.cpp
     Manipulators/SplineSelectionManipulator.h
-    
     Manipulators/SurfaceManipulator.cpp
     Manipulators/SurfaceManipulator.h
-    
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
-    
     Metadata/MetadataManager.cpp
     Metadata/MetadataManager.h
-    
     Metadata/MetaUuidEntry.cpp
     Metadata/MetaUuidEntry.h
-        
     Metadata/UuidUtils.cpp
     Metadata/UuidUtils.h	
-        
+
+    PaintBrush/GlobalPaintBrushSettings.cpp
+    PaintBrush/GlobalPaintBrushSettings.h
+    
+    PaintBrush/GlobalPaintBrushSettingsSystemComponent.cpp
+    PaintBrush/GlobalPaintBrushSettingsSystemComponent.h
+    
+    PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h
+    
+    PaintBrush/GlobalPaintBrushSettingsWindow.cpp
+    PaintBrush/GlobalPaintBrushSettingsWindow.h
+    
+    PaintBrush/PaintBrushSubModeCluster.cpp
+    PaintBrush/PaintBrushSubModeCluster.h
+    
+    Picking/Manipulators/ManipulatorBoundManager.cpp
+    Picking/Manipulators/ManipulatorBoundManager.h
+    
+    Picking/Manipulators/ManipulatorBounds.cpp
+    Picking/Manipulators/ManipulatorBounds.h
+    
+    Prefab/DocumentPropertyEditor/PrefabComponentAdapter.cpp
+    Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h
+    
+    Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.cpp
+    Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h
+    
+    Prefab/Instance/Instance.cpp
+    Prefab/Instance/Instance.h
+    
+    Prefab/Instance/InstanceDomGenerator.cpp
+    Prefab/Instance/InstanceDomGenerator.h
+    
+    Prefab/Instance/InstanceEntityIdMapper.cpp
+    Prefab/Instance/InstanceEntityIdMapper.h
+    
+    Prefab/Instance/InstanceEntityMapper.cpp
+    Prefab/Instance/InstanceEntityMapper.h
+    
+    Prefab/Instance/InstanceEntityScrubber.cpp
+    Prefab/Instance/InstanceEntityScrubber.h
+    
+    Prefab/Instance/InstanceSerializer.cpp
+    Prefab/Instance/InstanceSerializer.h
+    
+    Prefab/Instance/InstanceToTemplatePropagator.cpp
+    Prefab/Instance/InstanceToTemplatePropagator.h
+    
+    Prefab/Instance/InstanceUpdateExecutor.cpp
+    Prefab/Instance/InstanceUpdateExecutor.h
+    
+    Prefab/Instance/TemplateInstanceMapper.cpp
+    Prefab/Instance/TemplateInstanceMapper.h
+    
+    Prefab/Overrides/PrefabOverrideHandler.cpp
+    Prefab/Overrides/PrefabOverrideHandler.h
+    
+    Prefab/Overrides/PrefabOverridePublicHandler.cpp
+    Prefab/Overrides/PrefabOverridePublicHandler.h
+
+    
+    
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

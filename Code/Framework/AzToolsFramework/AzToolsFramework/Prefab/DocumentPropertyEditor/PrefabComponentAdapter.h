@@ -7,15 +7,17 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework::Prefab
 {
     class PrefabOverridePublicInterface;
     class PrefabPublicInterface;
 
-    class PrefabComponentAdapter
+    class AZTF_API PrefabComponentAdapter
         : public AZ::DocumentPropertyEditor::ComponentAdapter
     {
     public:

@@ -7,11 +7,13 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -23,7 +25,7 @@ namespace AzToolsFramework
         class PrefabSystemComponentInterface;
         struct InstanceClimbUpResult;
 
-        class InstanceDomGenerator
+        class AZTF_API InstanceDomGenerator
             : public InstanceDomGeneratorInterface
         {
         public:

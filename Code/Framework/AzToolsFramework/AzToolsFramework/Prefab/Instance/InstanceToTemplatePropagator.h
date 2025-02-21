@@ -7,18 +7,21 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class InstanceToTemplatePropagator
+        class AZTF_API InstanceToTemplatePropagator
             : private InstanceToTemplateInterface
         {
         public:

@@ -7,16 +7,19 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class InstanceEntityMapper final
+        class AZTF_API InstanceEntityMapper final
             : public InstanceEntityMapperInterface
         {
         public:

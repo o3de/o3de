@@ -273,23 +273,23 @@ set(FILES
 #    Metadata/MetaUuidEntry.h
 #    Metadata/MetaUuidEntry.cpp
     Maths/TransformUtils.h
-    PaintBrush/PaintBrushSubModeCluster.cpp
-    PaintBrush/PaintBrushSubModeCluster.h
-    PaintBrush/GlobalPaintBrushSettings.cpp
-    PaintBrush/GlobalPaintBrushSettings.h
+#    PaintBrush/PaintBrushSubModeCluster.cpp
+#    PaintBrush/PaintBrushSubModeCluster.h
+#    PaintBrush/GlobalPaintBrushSettings.cpp
+#    PaintBrush/GlobalPaintBrushSettings.h
     PaintBrush/GlobalPaintBrushSettingsNotificationBus.h
     PaintBrush/GlobalPaintBrushSettingsRequestBus.h
-    PaintBrush/GlobalPaintBrushSettingsSystemComponent.cpp
-    PaintBrush/GlobalPaintBrushSettingsSystemComponent.h
-    PaintBrush/GlobalPaintBrushSettingsWindow.cpp
-    PaintBrush/GlobalPaintBrushSettingsWindow.h
-    PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h
+#    PaintBrush/GlobalPaintBrushSettingsSystemComponent.cpp
+#    PaintBrush/GlobalPaintBrushSettingsSystemComponent.h
+#    PaintBrush/GlobalPaintBrushSettingsWindow.cpp
+#    PaintBrush/GlobalPaintBrushSettingsWindow.h
+#    PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h
     Picking/BoundInterface.h
     Picking/ContextBoundAPI.h
-    Picking/Manipulators/ManipulatorBoundManager.cpp
-    Picking/Manipulators/ManipulatorBoundManager.h
-    Picking/Manipulators/ManipulatorBounds.cpp
-    Picking/Manipulators/ManipulatorBounds.h
+ #   Picking/Manipulators/ManipulatorBoundManager.cpp
+ #   Picking/Manipulators/ManipulatorBoundManager.h
+ #   Picking/Manipulators/ManipulatorBounds.cpp
+ #   Picking/Manipulators/ManipulatorBounds.h
     PropertyTreeEditor/PropertyTreeEditor.cpp
     PropertyTreeEditor/PropertyTreeEditor.h
     PropertyTreeEditor/PropertyTreeEditorComponent.cpp
@@ -784,10 +784,10 @@ set(FILES
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
     UI/PropertyEditor/View/AssetCompleterListView.h
     UI/PropertyEditor/View/AssetCompleterListView.cpp
-    Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h
-    Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.cpp
-    Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h
-    Prefab/DocumentPropertyEditor/PrefabComponentAdapter.cpp
+#    Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h
+#    Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.cpp
+#    Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h
+#    Prefab/DocumentPropertyEditor/PrefabComponentAdapter.cpp
     Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h
     Prefab/DocumentPropertyEditor/Resources/OverrideResources.qrc
     Prefab/EditorPrefabComponent.h
@@ -822,36 +822,36 @@ set(FILES
     Prefab/PrefabSystemScriptingBus.h
     Prefab/PrefabSystemScriptingHandler.h
     Prefab/PrefabSystemScriptingHandler.cpp
-    Prefab/Instance/Instance.h
-    Prefab/Instance/Instance.cpp
-    Prefab/Instance/InstanceDomGenerator.h
-    Prefab/Instance/InstanceDomGenerator.cpp
+#    Prefab/Instance/Instance.h
+#    Prefab/Instance/Instance.cpp
+#    Prefab/Instance/InstanceDomGenerator.h
+#    Prefab/Instance/InstanceDomGenerator.cpp
     Prefab/Instance/InstanceDomGeneratorInterface.h
-    Prefab/Instance/InstanceSerializer.h
-    Prefab/Instance/InstanceSerializer.cpp
-    Prefab/Instance/InstanceEntityScrubber.h
-    Prefab/Instance/InstanceEntityScrubber.cpp
-    Prefab/Instance/InstanceEntityIdMapper.h
-    Prefab/Instance/InstanceEntityIdMapper.cpp
-    Prefab/Instance/InstanceEntityMapper.h
-    Prefab/Instance/InstanceEntityMapper.cpp
+#    Prefab/Instance/InstanceSerializer.h
+#    Prefab/Instance/InstanceSerializer.cpp
+#    Prefab/Instance/InstanceEntityScrubber.h
+#    Prefab/Instance/InstanceEntityScrubber.cpp
+#    Prefab/Instance/InstanceEntityIdMapper.h
+#    Prefab/Instance/InstanceEntityIdMapper.cpp
+#    Prefab/Instance/InstanceEntityMapper.h
+#    Prefab/Instance/InstanceEntityMapper.cpp
     Prefab/Instance/InstanceEntityMapperInterface.h
     Prefab/Instance/InstanceToTemplateInterface.h
-    Prefab/Instance/InstanceToTemplatePropagator.h
-    Prefab/Instance/InstanceToTemplatePropagator.cpp
-    Prefab/Instance/InstanceUpdateExecutor.h
-    Prefab/Instance/InstanceUpdateExecutor.cpp
+ #   Prefab/Instance/InstanceToTemplatePropagator.h
+ #   Prefab/Instance/InstanceToTemplatePropagator.cpp
+#    Prefab/Instance/InstanceUpdateExecutor.h
+#    Prefab/Instance/InstanceUpdateExecutor.cpp
     Prefab/Instance/InstanceUpdateExecutorInterface.h
-    Prefab/Instance/TemplateInstanceMapper.h
-    Prefab/Instance/TemplateInstanceMapper.cpp
+#    Prefab/Instance/TemplateInstanceMapper.h
+#    Prefab/Instance/TemplateInstanceMapper.cpp
     Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.h
     Prefab/Link/Link.cpp
-    Prefab/Overrides/PrefabOverrideHandler.h
-    Prefab/Overrides/PrefabOverrideHandler.cpp
+#    Prefab/Overrides/PrefabOverrideHandler.h
+#    Prefab/Overrides/PrefabOverrideHandler.cpp
     Prefab/Overrides/PrefabOverridePublicInterface.h
-    Prefab/Overrides/PrefabOverridePublicHandler.h
-    Prefab/Overrides/PrefabOverridePublicHandler.cpp
+#    Prefab/Overrides/PrefabOverridePublicHandler.h
+#    Prefab/Overrides/PrefabOverridePublicHandler.cpp
     Prefab/Overrides/PrefabOverrideTypes.h
     Prefab/Procedural/ProceduralPrefabAsset.h
     Prefab/Procedural/ProceduralPrefabAsset.cpp

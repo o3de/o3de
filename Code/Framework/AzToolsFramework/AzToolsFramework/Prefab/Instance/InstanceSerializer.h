@@ -7,9 +7,11 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -17,7 +19,7 @@ namespace AzToolsFramework
     {
         class Instance;
 
-        class JsonInstanceSerializer
+        class AZTF_API JsonInstanceSerializer
             : public AZ::BaseJsonSerializer
         {
         public:
