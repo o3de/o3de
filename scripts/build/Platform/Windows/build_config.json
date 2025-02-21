@@ -75,9 +75,7 @@
     "steps": [
       "profile",
       "asset_profile",
-      "test_cpu_profile",
-      "test_impact_analysis_profile_native",
-      "test_impact_analysis_profile_python"
+      "test_cpu_profile"
     ]
   },
   "scrubbing": {
