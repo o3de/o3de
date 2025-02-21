@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -14,6 +15,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/Picking/Manipulators/ManipulatorBoundManager.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -52,7 +54,7 @@ namespace AzToolsFramework
     //! This class serves to manage all relevant mouse events and coordinate all registered manipulators to function properly.
     //! ManipulatorManager does not manage the life cycle of specific manipulators. The users of manipulators are responsible
     //! for creating and deleting them at right time, as well as registering and unregistering accordingly.
-    class ManipulatorManager
+    class AZTF_API ManipulatorManager
         : private ManipulatorManagerRequestBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
     {
@@ -135,6 +137,6 @@ namespace AzToolsFramework
 
     // The main/default ManipulatorManagerId to be used for
     // registering manipulators used by components in the level
-    extern const ManipulatorManagerId g_mainManipulatorManagerId;
+    AZTF_API ManipulatorManagerId GetMainManipulatorManagerId();
 
 } // namespace AzToolsFramework

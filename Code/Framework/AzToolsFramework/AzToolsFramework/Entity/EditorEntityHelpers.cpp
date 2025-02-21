@@ -30,47 +30,6 @@
 
 namespace AzToolsFramework
 {
-    namespace Internal
-    {
-        /// Internal helper function for CloneInstantiatedEntities. Performs the initial cloning of the given set of entities if they
-        /// are slice or sub-slice entities, recursively. Populates a list of loose entities to clone as it traverses the duplication set.
-        /// @param duplicationSet The set of entities to clone.
-        /// @param out_allEntityClones Output parameter populated with all cloned entities.
-        /// @param out_sourceToCloneEntityIdMap Output parameter populated with a map from all source entities to cloned entities.
-        /// @param out_looseEntitiesToClone Output parameter populated with all not yet cloned entities that are not associated with a slice.
-        ///         This will be used after slices are cloned to clone these entities.
-        void CloneSliceEntitiesAndChildren(
-            const EntityIdSet& duplicationSet,
-            EntityList& out_allEntityClones,
-            AZ::SliceComponent::EntityIdToEntityIdMap& out_sourceToCloneEntityIdMap,
-            EntityIdList& out_looseEntitiesToClone);
-
-        /// Internal helper function for CloneInstantiatedEntities. Updates entity ID references in all cloned entities based on
-        /// the given entity ID map. This handles cases like entity transform parents, entity attachments, and entity ID references
-        /// in scripting components. This will update all references in the pool of cloned entities to reference other cloned
-        /// entities, if they were previously referencing any of the source entities.
-        /// @param inout_allEntityClones The collection of entities that have been cloned and should have entity references updated
-        ///         based on the given map.
-        /// @param sourceToCloneEntityIdMap A map of entity IDs to update in the given clone list, any references to key will be
-        ///         changed to a reference to value instead.
-        void UpdateClonedEntityReferences(
-            AZ::SliceComponent::InstantiatedContainer& inout_allEntityClones,
-            const AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap);
-
-        /// Internal helper function for CloneInstantiatedEntities. Clones the given entity collection as loose entities.
-        /// @param duplicationList The collection of entities to clone.
-        /// @param out_allEntityClones Output parameter populated with all cloned entities.
-        /// @param out_sourceToCloneEntityIdMap Output parameter populated with a map from all source entities to cloned entities.
-        /// @param out_clonedLooseEntities Output parameter populated with all cloned loose entities.
-        void CloneLooseEntities(
-            const EntityIdList& duplicationList,
-            EntityList& out_allEntityClones,
-            AZ::SliceComponent::EntityIdToEntityIdMap& out_sourceToCloneEntityIdMap,
-            EntityList& out_clonedLooseEntities);
-
-    } // namespace Internal
-
-
     AZ::Entity* GetEntityById(const AZ::EntityId& entityId)
     {
         AZ_Assert(entityId.IsValid(), "Invalid EntityId provided.");

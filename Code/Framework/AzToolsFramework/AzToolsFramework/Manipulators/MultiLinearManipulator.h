@@ -7,18 +7,20 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include "BaseManipulator.h"
 #include "LinearManipulator.h"
 
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! MultiLinearManipulator serves as a visual tool for users to modify values
     //! in one or more dimensions on axes defined in 3D space.
-    class MultiLinearManipulator
+    class AZTF_API MultiLinearManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalTransform
     {

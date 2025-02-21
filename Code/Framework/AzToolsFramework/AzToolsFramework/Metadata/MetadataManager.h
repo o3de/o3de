@@ -7,10 +7,12 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -70,7 +72,7 @@ namespace AzToolsFramework
 
     //! Component that handles reading/writing to metadata files.
     //! Metadata files are stored alongside source assets and can contain any generic data that needs to be associated with a file.
-    class MetadataManager :
+    class AZTF_API MetadataManager :
         public AZ::Component,
         public AZ::Interface<IMetadataRequests>::Registrar
     {

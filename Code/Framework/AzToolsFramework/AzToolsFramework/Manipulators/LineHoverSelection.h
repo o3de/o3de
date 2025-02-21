@@ -7,10 +7,12 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/Manipulators/HoverSelection.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -25,7 +27,7 @@ namespace AzToolsFramework
     //! of vertices and a list of LineSegmentManipulators. The underlying manipulators are used to control selection
     //! by highlighting where on the line a new vertex will be inserted.
     template<typename Vertex>
-    class LineSegmentHoverSelection : public HoverSelection
+    class AZTF_API LineSegmentHoverSelection : public HoverSelection
     {
     public:
         explicit LineSegmentHoverSelection(const AZ::EntityComponentIdPair& entityComponentIdPair, ManipulatorManagerId managerId);

@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -24,6 +25,9 @@
 #include <QObject>
 #include <QPoint>
 #endif //! defined(Q_MOC_RUN)
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 class QWidget;
 class QKeyEvent;
@@ -44,12 +48,12 @@ namespace AzToolsFramework
         CursorModeWrappedY //!< Flags whether the cursor is going to wrap around the source widget only on the top and bottom side.
     };
 
-    AzFramework::InputDeviceId GetSyntheticKeyboardDeviceId(AzFramework::ViewportId viewportId);
-    AzFramework::InputDeviceId GetSyntheticMouseDeviceId(AzFramework::ViewportId viewportId);
+    AZTF_API AzFramework::InputDeviceId GetSyntheticKeyboardDeviceId(AzFramework::ViewportId viewportId);
+    AZTF_API AzFramework::InputDeviceId GetSyntheticMouseDeviceId(AzFramework::ViewportId viewportId);
 
     //! Maps events from the Qt input system to synthetic InputChannels in AzFramework
     //! that can be used by AzFramework::ViewportControllers.
-    class QtEventToAzInputMapper final
+    class AZTF_API QtEventToAzInputMapper final
         : public QObject
         , public AzFramework::InputChannelNotificationBus::Handler
     {

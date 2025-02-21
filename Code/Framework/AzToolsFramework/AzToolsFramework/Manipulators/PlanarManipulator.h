@@ -7,12 +7,14 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include "BaseManipulator.h"
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -21,7 +23,7 @@ namespace AzToolsFramework
 
     //! PlanarManipulator serves as a visual tool for users to modify values
     //! in two dimension in a plane defined two non-collinear axes in 3D space.
-    class PlanarManipulator
+    class AZTF_API PlanarManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalTransform
     {

@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include "BaseManipulator.h"
 
@@ -14,6 +15,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -21,7 +23,7 @@ namespace AzToolsFramework
 
     //! A manipulator to represent selection of a spline. Underlying spline data is
     //! used to test mouse picking ray against to preview closest point on spline.
-    class SplineSelectionManipulator
+    class AZTF_API SplineSelectionManipulator
         : public BaseManipulator
         , public ManipulatorSpace
     {
@@ -84,7 +86,7 @@ namespace AzToolsFramework
             m_keyboardModifiers; //!< What modifier keys are pressed when interacting with this manipulator.
     };
 
-    SplineSelectionManipulator::Action CalculateManipulationDataAction(
+    AZTF_API SplineSelectionManipulator::Action CalculateManipulationDataAction(
         const AZ::Transform& worldFromLocal,
         const AZ::Vector3& rayOrigin,
         const AZ::Vector3& rayDirection,

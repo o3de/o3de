@@ -7,9 +7,11 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzToolsFramework/Manipulators/HoverSelection.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -23,7 +25,7 @@ namespace AzToolsFramework
 
     //! SplineHoverSelection is a concrete implementation of HoverSelection wrapping a Spline and
     //! SplineManipulator. The underlying manipulators are used to control selection.
-    class SplineHoverSelection : public HoverSelection
+    class AZTF_API SplineHoverSelection : public HoverSelection
     {
     public:
         explicit SplineHoverSelection(

@@ -157,8 +157,8 @@ set(FILES
 #    Component/EditorLevelComponentAPIComponent.h
     ContainerEntity/ContainerEntityInterface.h
     ContainerEntity/ContainerEntityNotificationBus.h
-    ContainerEntity/ContainerEntitySystemComponent.cpp
-    ContainerEntity/ContainerEntitySystemComponent.h
+#    ContainerEntity/ContainerEntitySystemComponent.cpp
+#    ContainerEntity/ContainerEntitySystemComponent.h
     Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h
     Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h
     Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h
@@ -178,8 +178,8 @@ set(FILES
 #    Entity/EditorEntityActionComponent.h
 #    Entity/EditorEntityFixupComponent.cpp
 #    Entity/EditorEntityFixupComponent.h
-    Entity/EditorEntityHelpers.cpp
-    Entity/EditorEntityHelpers.h
+#    Entity/EditorEntityHelpers.cpp
+#    Entity/EditorEntityHelpers.h
 #    Entity/EditorEntityInfoBus.h
 #    Entity/EditorEntityModel.cpp
 #    Entity/EditorEntityModel.h
@@ -206,18 +206,18 @@ set(FILES
     Entity/ReadOnly/ReadOnlyEntityBus.h
 #    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
 #    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
-    Fingerprinting/TypeFingerprinter.h
-    Fingerprinting/TypeFingerprinter.cpp
+#    Fingerprinting/TypeFingerprinter.h
+#    Fingerprinting/TypeFingerprinter.cpp
     FocusMode/FocusModeInterface.h
     FocusMode/FocusModeNotificationBus.h
-    FocusMode/FocusModeSystemComponent.h
-    FocusMode/FocusModeSystemComponent.cpp
-    Logger/TraceLogger.cpp
-    Logger/TraceLogger.h
-    Manipulators/AngularManipulator.cpp
-    Manipulators/AngularManipulator.h
-    Manipulators/AngularManipulatorCircleViewFeedback.cpp
-    Manipulators/AngularManipulatorCircleViewFeedback.h
+    #FocusMode/FocusModeSystemComponent.h
+    #FocusMode/FocusModeSystemComponent.cpp
+    #Logger/TraceLogger.cpp
+    #Logger/TraceLogger.h
+    #Manipulators/AngularManipulator.cpp
+    #Manipulators/AngularManipulator.h
+#    Manipulators/AngularManipulatorCircleViewFeedback.cpp
+#    Manipulators/AngularManipulatorCircleViewFeedback.h
     Manipulators/BaseManipulator.cpp
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
@@ -227,51 +227,51 @@ set(FILES
     Manipulators/EditorVertexSelection.cpp
     Manipulators/EditorVertexSelectionBus.h
     Manipulators/HoverSelection.h
-    Manipulators/LineHoverSelection.h
-    Manipulators/LineHoverSelection.cpp
-    Manipulators/LineSegmentSelectionManipulator.cpp
-    Manipulators/LineSegmentSelectionManipulator.h
-    Manipulators/LinearManipulator.cpp
-    Manipulators/LinearManipulator.h
-    Manipulators/MultiLinearManipulator.cpp
-    Manipulators/MultiLinearManipulator.h
+#    Manipulators/LineHoverSelection.h
+#    Manipulators/LineHoverSelection.cpp
+#    Manipulators/LineSegmentSelectionManipulator.cpp
+#    Manipulators/LineSegmentSelectionManipulator.h
+#    Manipulators/LinearManipulator.cpp
+#    Manipulators/LinearManipulator.h
+#    Manipulators/MultiLinearManipulator.cpp
+#    Manipulators/MultiLinearManipulator.h
     Manipulators/ManipulatorBus.h
-    Manipulators/ManipulatorDebug.cpp
-    Manipulators/ManipulatorDebug.h
-    Manipulators/ManipulatorManager.cpp
-    Manipulators/ManipulatorManager.h
-    Manipulators/ManipulatorView.cpp
-    Manipulators/ManipulatorView.h
-    Manipulators/ManipulatorSnapping.cpp
-    Manipulators/ManipulatorSnapping.h
-    Manipulators/ManipulatorSpace.cpp
-    Manipulators/ManipulatorSpace.h
-    Manipulators/PaintBrushManipulator.cpp
-    Manipulators/PaintBrushManipulator.h
-    Manipulators/PlanarManipulator.cpp
-    Manipulators/PlanarManipulator.h
+#    Manipulators/ManipulatorDebug.cpp
+#    Manipulators/ManipulatorDebug.h
+#    Manipulators/ManipulatorManager.cpp
+#    Manipulators/ManipulatorManager.h
+#    Manipulators/ManipulatorView.cpp
+#    Manipulators/ManipulatorView.h
+#    Manipulators/ManipulatorSnapping.cpp
+#    Manipulators/ManipulatorSnapping.h
+#    Manipulators/ManipulatorSpace.cpp
+#    Manipulators/ManipulatorSpace.h
+#    Manipulators/PaintBrushManipulator.cpp
+#    Manipulators/PaintBrushManipulator.h
+#    Manipulators/PlanarManipulator.cpp
+#    Manipulators/PlanarManipulator.h
     Manipulators/RadiusManipulatorRequestBus.h
-    Manipulators/RotationManipulators.cpp
-    Manipulators/RotationManipulators.h
-    Manipulators/ScaleManipulators.cpp
-    Manipulators/ScaleManipulators.h
-    Manipulators/SelectionManipulator.cpp
-    Manipulators/SelectionManipulator.h
+#    Manipulators/RotationManipulators.cpp
+#    Manipulators/RotationManipulators.h
+#    Manipulators/ScaleManipulators.cpp
+#    Manipulators/ScaleManipulators.h
+#    Manipulators/SelectionManipulator.cpp
+#    Manipulators/SelectionManipulator.h
     Manipulators/ShapeManipulatorRequestBus.h
-    Manipulators/SplineHoverSelection.h
-    Manipulators/SplineHoverSelection.cpp
-    Manipulators/SplineSelectionManipulator.h
-    Manipulators/SplineSelectionManipulator.cpp
-    Manipulators/SurfaceManipulator.cpp
-    Manipulators/SurfaceManipulator.h
-    Manipulators/TranslationManipulators.cpp
-    Manipulators/TranslationManipulators.h
-    Metadata/MetadataManager.h
-    Metadata/MetadataManager.cpp
-    Metadata/UuidUtils.h
-    Metadata/UuidUtils.cpp
-    Metadata/MetaUuidEntry.h
-    Metadata/MetaUuidEntry.cpp
+#    Manipulators/SplineHoverSelection.h
+#    Manipulators/SplineHoverSelection.cpp
+#    Manipulators/SplineSelectionManipulator.h
+#    Manipulators/SplineSelectionManipulator.cpp
+#    Manipulators/SurfaceManipulator.cpp
+#    Manipulators/SurfaceManipulator.h
+#    Manipulators/TranslationManipulators.cpp
+#    Manipulators/TranslationManipulators.h
+#    Metadata/MetadataManager.h
+#    Metadata/MetadataManager.cpp
+#    Metadata/UuidUtils.h
+#    Metadata/UuidUtils.cpp
+#    Metadata/MetaUuidEntry.h
+#    Metadata/MetaUuidEntry.cpp
     Maths/TransformUtils.h
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h
@@ -982,8 +982,8 @@ set(FILES
     PythonTerminal/ScriptTermDialog.cpp
     PythonTerminal/ScriptTermDialog.h
     PythonTerminal/ScriptTermDialog.ui
-    Input/QtEventToAzInputMapper.h
-    Input/QtEventToAzInputMapper.cpp
+    #Input/QtEventToAzInputMapper.h
+    #Input/QtEventToAzInputMapper.cpp
     Script/LuaEditorSystemComponent.h
     Script/LuaEditorSystemComponent.cpp
     Script/LuaSymbolsReporterBus.h

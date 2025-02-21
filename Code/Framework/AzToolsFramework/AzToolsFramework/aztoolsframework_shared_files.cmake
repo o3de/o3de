@@ -205,6 +205,9 @@ set(FILES
     ComponentModes/SphereComponentMode.h
     ComponentModes/SphereViewportEdit.cpp
     ComponentModes/SphereViewportEdit.h
+    ContainerEntity/ContainerEntitySystemComponent.cpp
+    ContainerEntity/ContainerEntitySystemComponent.h
+
     Debug/TraceContextLogFormatter.cpp
     Debug/TraceContextLogFormatter.h
     Debug/TraceContextMultiStackHandler.cpp
@@ -223,6 +226,8 @@ set(FILES
     Entity/EditorEntityActionComponent.h
     Entity/EditorEntityFixupComponent.cpp
     Entity/EditorEntityFixupComponent.h
+    Entity/EditorEntityHelpers.cpp
+    Entity/EditorEntityHelpers.h
     Entity/EditorEntityModel.cpp
     Entity/EditorEntityModel.h
     Entity/EditorEntityModelComponent.cpp
@@ -239,6 +244,74 @@ set(FILES
     Entity/EditorEntityContextComponent.h
     Entity/EntityUtilityComponent.cpp
     Entity/EntityUtilityComponent.h
+	Fingerprinting/TypeFingerprinter.cpp
+	Fingerprinting/TypeFingerprinter.h
+	FocusMode/FocusModeSystemComponent.cpp
+	FocusMode/FocusModeSystemComponent.h
+	Input/QtEventToAzInputMapper.cpp
+	Input/QtEventToAzInputMapper.h
+	Logger/TraceLogger.cpp
+	Logger/TraceLogger.h
+	Manipulators/AngularManipulator.cpp
+	Manipulators/AngularManipulator.h
+    Manipulators/AngularManipulatorCircleViewFeedback.cpp	
+    Manipulators/AngularManipulatorCircleViewFeedback.h
+    Manipulators/LinearManipulator.cpp
+    Manipulators/LinearManipulator.h	
+    Manipulators/LineHoverSelection.cpp
+    Manipulators/LineHoverSelection.h
+    Manipulators/LineSegmentSelectionManipulator.cpp
+    Manipulators/LineSegmentSelectionManipulator.h
+    Manipulators/ManipulatorDebug.cpp
+    Manipulators/ManipulatorDebug.h
+    Manipulators/ManipulatorManager.cpp
+    Manipulators/ManipulatorManager.h
+    Manipulators/ManipulatorSnapping.cpp
+    Manipulators/ManipulatorSnapping.h
+    Manipulators/ManipulatorSpace.cpp
+    Manipulators/ManipulatorSpace.h
+    Manipulators/ManipulatorView.cpp
+    Manipulators/ManipulatorView.h
+
+    Manipulators/MultiLinearManipulator.cpp
+    Manipulators/MultiLinearManipulator.h
+    
+    Manipulators/PaintBrushManipulator.cpp
+    Manipulators/PaintBrushManipulator.h	
+        
+    Manipulators/PlanarManipulator.cpp
+    Manipulators/PlanarManipulator.h
+    
+    Manipulators/RotationManipulators.cpp
+    Manipulators/RotationManipulators.h
+    
+    Manipulators/ScaleManipulators.cpp
+    Manipulators/ScaleManipulators.h
+    
+    Manipulators/SelectionManipulator.cpp
+    Manipulators/SelectionManipulator.h
+    
+    Manipulators/SplineHoverSelection.cpp
+    Manipulators/SplineHoverSelection.h
+    
+    Manipulators/SplineSelectionManipulator.cpp
+    Manipulators/SplineSelectionManipulator.h
+    
+    Manipulators/SurfaceManipulator.cpp
+    Manipulators/SurfaceManipulator.h
+    
+    Manipulators/TranslationManipulators.cpp
+    Manipulators/TranslationManipulators.h
+    
+    Metadata/MetadataManager.cpp
+    Metadata/MetadataManager.h
+    
+    Metadata/MetaUuidEntry.cpp
+    Metadata/MetaUuidEntry.h
+        
+    Metadata/UuidUtils.cpp
+    Metadata/UuidUtils.h	
+        
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

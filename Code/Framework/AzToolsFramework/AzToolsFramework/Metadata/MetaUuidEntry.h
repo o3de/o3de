@@ -7,10 +7,12 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -20,7 +22,7 @@ namespace AZ
 namespace AzToolsFramework
 {
     //! Structure used to store UUID information for an asset in the metadata file
-    struct MetaUuidEntry
+    struct AZTF_API MetaUuidEntry
     {
         AZ_TYPE_INFO(MetaUuidEntry, "{FAD60D80-9B1D-421D-A4CA-DD2CA2EA80BB}");
 

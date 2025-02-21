@@ -85,7 +85,7 @@ namespace PhysX
                 m_manipulator->SetLocalTransform(AZ::Transform::CreateTranslation(localPosition));
             });
 
-        m_manipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_manipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
     }
 
     void JointsSubComponentModeLinearFloat::Refresh(const AZ::EntityComponentIdPair& idPair)

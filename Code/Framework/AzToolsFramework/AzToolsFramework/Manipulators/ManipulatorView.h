@@ -7,12 +7,14 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/Picking/ContextBoundAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -26,10 +28,10 @@ namespace AzToolsFramework
     using DecideColorFn =
         AZStd::function<AZ::Color(const ViewportInteraction::MouseInteraction&, bool mouseOver, const AZ::Color& defaultColor)>;
 
-    extern const float g_defaultManipulatorSphereRadius;
+    AZTF_API float GetDefaultManipulatorSphereRadius();
 
     //! State of an individual manipulator.
-    struct ManipulatorState
+    struct AZTF_API ManipulatorState
     {
         AZ::Transform m_worldFromLocal;
         AZ::Vector3 m_nonUniformScale;
@@ -48,7 +50,7 @@ namespace AzToolsFramework
     //! The View represents the appearance and bounds of the manipulator for
     //! the user to interact with. Any manipulator can have any view (some may
     //! be more appropriate than others in certain cases).
-    class ManipulatorView
+    class AZTF_API ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorView, AZ::SystemAllocator)
@@ -101,7 +103,7 @@ namespace AzToolsFramework
     using ManipulatorViews = AZStd::vector<AZStd::shared_ptr<ManipulatorView>>;
 
     //! Display a quad representing part of a plane, rendered as 4 lines.
-    class ManipulatorViewQuad : public ManipulatorView
+    class AZTF_API ManipulatorViewQuad : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewQuad, AZ::SystemAllocator)
@@ -131,7 +133,7 @@ namespace AzToolsFramework
     };
 
     //! A screen aligned quad, centered at the position of the manipulator, display filled.
-    class ManipulatorViewQuadBillboard : public ManipulatorView
+    class AZTF_API ManipulatorViewQuadBillboard : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewQuadBillboard, AZ::SystemAllocator)
@@ -152,7 +154,7 @@ namespace AzToolsFramework
 
     //! Displays a debug style line starting from the manipulator's transform,
     //! width determines the click area.
-    class ManipulatorViewLine : public ManipulatorView
+    class AZTF_API ManipulatorViewLine : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewLine, AZ::SystemAllocator)
@@ -178,7 +180,7 @@ namespace AzToolsFramework
 
     //! Variant of ManipulatorViewLine which instead of using an axis, provides begin and end
     //! points for the line. Used for selection when inserting points along a line.
-    class ManipulatorViewLineSelect : public ManipulatorView
+    class AZTF_API ManipulatorViewLineSelect : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewLineSelect, AZ::SystemAllocator)
@@ -202,7 +204,7 @@ namespace AzToolsFramework
     //! Displays a filled cone along the specified axis, offset is local translation from
     //! the manipulator transform (often used in conjunction with other views to build
     //! aggregate views such as arrows - e.g. a line and cone).
-    class ManipulatorViewCone : public ManipulatorView
+    class AZTF_API ManipulatorViewCone : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewCone, AZ::SystemAllocator)
@@ -232,7 +234,7 @@ namespace AzToolsFramework
     //! Displays a filled box, offset is local translation from the manipulator
     //! transform, box is often used in conjunction with other views, orientation allows
     //! the box to be orientated separately from the manipulator transform.
-    class ManipulatorViewBox : public ManipulatorView
+    class AZTF_API ManipulatorViewBox : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewBox, AZ::SystemAllocator)
@@ -257,7 +259,7 @@ namespace AzToolsFramework
     };
 
     //! Displays a filled cylinder along the axis provided.
-    class ManipulatorViewCylinder : public ManipulatorView
+    class AZTF_API ManipulatorViewCylinder : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewCylinder, AZ::SystemAllocator)
@@ -284,7 +286,7 @@ namespace AzToolsFramework
     //! Displays a filled sphere at the transform of the manipulator, often used as
     //! a selection manipulator. DecideColorFn allows more complex logic to be used
     //! to decide the color of the manipulator (based on hover state etc.)
-    class ManipulatorViewSphere : public ManipulatorView
+    class AZTF_API ManipulatorViewSphere : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewSphere, AZ::SystemAllocator)
@@ -306,7 +308,7 @@ namespace AzToolsFramework
     };
 
     //! Displays a wire circle that's projected and rotated into world space (useful for paint brush manipulators).
-    class ManipulatorViewProjectedCircle : public ManipulatorView
+    class AZTF_API ManipulatorViewProjectedCircle : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewProjectedCircle, AZ::SystemAllocator)
@@ -332,7 +334,7 @@ namespace AzToolsFramework
     //! Displays a wire circle. DrawCircleFunc can be used to either draw a full
     //! circle or a half dotted circle where the part of the circle facing away
     //! from the camera is dotted (useful for angular/rotation manipulators).
-    class ManipulatorViewCircle : public ManipulatorView
+    class AZTF_API ManipulatorViewCircle : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewCircle, AZ::SystemAllocator)
@@ -358,15 +360,15 @@ namespace AzToolsFramework
 
     // helpers to provide consistent function pointer interface for deciding
     // on type of circle to draw (see DrawCircleFunc in ManipulatorViewCircle above)
-    void DrawHalfDottedCircle(
+    AZTF_API void DrawHalfDottedCircle(
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& position, float radius, const AZ::Vector3& viewPos);
-    void DrawFullCircle(
+    AZTF_API void DrawFullCircle(
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& position, float radius, const AZ::Vector3& viewPos);
 
     //! Used for interaction with spline primitive - it will generate a spline bound
     //! to be interacted with and will display the intersection point on the spline
     //! where a user may wish to insert a point.
-    class ManipulatorViewSplineSelect : public ManipulatorView
+    class AZTF_API ManipulatorViewSplineSelect : public ManipulatorView
     {
     public:
         AZ_CLASS_ALLOCATOR(ManipulatorViewSplineSelect, AZ::SystemAllocator)
@@ -399,14 +401,14 @@ namespace AzToolsFramework
 
     //! @brief Return the world transform of the entity with uniform scale - choose
     //! the largest element.
-    AZ::Transform WorldFromLocalWithUniformScale(AZ::EntityId entityId);
+    AZTF_API AZ::Transform WorldFromLocalWithUniformScale(AZ::EntityId entityId);
 
     //! Get the non-uniform scale for this entity id.
-    AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId);
+    AZTF_API AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId);
 
     // Helpers to create various manipulator views.
 
-    AZStd::unique_ptr<ManipulatorViewQuad> CreateManipulatorViewQuad(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewQuad> CreateManipulatorViewQuad(
         const AZ::Vector3& axis1,
         const AZ::Vector3& axis2,
         const AZ::Color& axis1Color,
@@ -414,41 +416,41 @@ namespace AzToolsFramework
         const AZ::Vector3& offset,
         float size);
 
-    AZStd::unique_ptr<ManipulatorViewQuadBillboard> CreateManipulatorViewQuadBillboard(const AZ::Color& color, float size);
+    AZTF_API AZStd::unique_ptr<ManipulatorViewQuadBillboard> CreateManipulatorViewQuadBillboard(const AZ::Color& color, float size);
 
-    AZStd::unique_ptr<ManipulatorViewLine> CreateManipulatorViewLine(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewLine> CreateManipulatorViewLine(
         const LinearManipulator& linearManipulator, const AZ::Color& color, float length, float width);
 
-    AZStd::unique_ptr<ManipulatorViewLineSelect> CreateManipulatorViewLineSelect(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewLineSelect> CreateManipulatorViewLineSelect(
         const LineSegmentSelectionManipulator& lineSegmentManipulator, const AZ::Color& color, float width);
 
-    AZStd::unique_ptr<ManipulatorViewCone> CreateManipulatorViewCone(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewCone> CreateManipulatorViewCone(
         const LinearManipulator& linearManipulator, const AZ::Color& color, const AZ::Vector3& offset, float length, float radius);
 
-    AZStd::unique_ptr<ManipulatorViewBox> CreateManipulatorViewBox(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewBox> CreateManipulatorViewBox(
         const AZ::Transform& transform, const AZ::Color& color, const AZ::Vector3& offset, const AZ::Vector3& halfExtents);
 
-    AZStd::unique_ptr<ManipulatorViewCylinder> CreateManipulatorViewCylinder(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewCylinder> CreateManipulatorViewCylinder(
         const LinearManipulator& linearManipulator, const AZ::Color& color, float length, float radius);
 
-    AZStd::unique_ptr<ManipulatorViewSphere> CreateManipulatorViewSphere(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewSphere> CreateManipulatorViewSphere(
         const AZ::Color& color, float radius, const DecideColorFn& decideColor, bool enableDepthTest = false);
 
-    AZStd::unique_ptr<ManipulatorViewProjectedCircle> CreateManipulatorViewProjectedCircle(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewProjectedCircle> CreateManipulatorViewProjectedCircle(
         const PaintBrushManipulator& brushManipulator, const AZ::Color& color, float radius, float width);
 
-    AZStd::unique_ptr<ManipulatorViewCircle> CreateManipulatorViewCircle(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewCircle> CreateManipulatorViewCircle(
         const AngularManipulator& angularManipulator,
         const AZ::Color& color,
         float radius,
         float width,
         ManipulatorViewCircle::DrawCircleFunc drawFunc);
 
-    AZStd::unique_ptr<ManipulatorViewSplineSelect> CreateManipulatorViewSplineSelect(
+    AZTF_API AZStd::unique_ptr<ManipulatorViewSplineSelect> CreateManipulatorViewSplineSelect(
         const SplineSelectionManipulator& splineManipulator, const AZ::Color& color, float width);
 
     //! Returns the vector between the view (camera) and the manipulator in the space
     //! of the Manipulator (manipulator space + local transform).
-    AZ::Vector3 CalculateViewDirection(const Manipulators& manipulators, const AZ::Vector3& worldViewPosition);
+    AZTF_API AZ::Vector3 CalculateViewDirection(const Manipulators& manipulators, const AZ::Vector3& worldViewPosition);
 
 } // namespace AzToolsFramework

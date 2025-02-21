@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -21,9 +24,9 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    void DrawAxis(
+    AZTF_API void DrawAxis(
         AzFramework::DebugDisplayRequests& display, const AZ::Vector3& position, const AZ::Vector3& direction);
 
-    void DrawTransformAxes(
+    AZTF_API void DrawTransformAxes(
         AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform);
 } // namespace AzToolsFramework

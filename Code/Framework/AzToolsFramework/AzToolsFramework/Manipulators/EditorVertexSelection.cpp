@@ -1326,7 +1326,7 @@ namespace AzToolsFramework
 
         // setup selection manipulator
         const AZStd::shared_ptr<ManipulatorViewSphere> selectionView = AzToolsFramework::CreateManipulatorViewSphere(
-            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f), g_defaultManipulatorSphereRadius,
+            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f), GetDefaultManipulatorSphereRadius(),
             [&selectionManipulator](
                 const ViewportInteraction::MouseInteraction& /*mouseInteraction*/, const bool mouseOver, const AZ::Color& defaultColor)
             {
@@ -1378,7 +1378,7 @@ namespace AzToolsFramework
 
         // setup selection manipulator
         const AZStd::shared_ptr<ManipulatorViewSphere> manipulatorView = AzToolsFramework::CreateManipulatorViewSphere(
-            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f), g_defaultManipulatorSphereRadius,
+            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f), GetDefaultManipulatorSphereRadius(),
             [&selectionManipulator](
                 const ViewportInteraction::MouseInteraction& mouseInteraction, const bool mouseOver, const AZ::Color& defaultColor)
             {

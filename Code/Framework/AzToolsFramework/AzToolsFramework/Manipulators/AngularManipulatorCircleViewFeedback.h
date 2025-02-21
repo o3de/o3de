@@ -7,8 +7,10 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -19,7 +21,7 @@ namespace AzFramework
 namespace AzToolsFramework
 {
     //! A visual segment indicator of how much rotation has occurred about an AngularManipulator using a ManipulatorCircleView.
-    class AngularManipulatorCircleViewFeedback
+    class AZTF_API AngularManipulatorCircleViewFeedback
     {
     public:
         AngularManipulatorCircleViewFeedback() = default;

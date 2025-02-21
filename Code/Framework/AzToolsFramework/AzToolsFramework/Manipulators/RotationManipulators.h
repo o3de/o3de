@@ -7,11 +7,13 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
 #include <AzToolsFramework/Manipulators/AngularManipulatorCircleViewFeedback.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -22,7 +24,7 @@ namespace AzToolsFramework
 {
     //! RotationManipulators is an aggregation of 3 angular manipulators who share the same origin
     //! in addition to a view aligned angular manipulator (facing the camera).
-    class RotationManipulators : public Manipulators
+    class AZTF_API RotationManipulators : public Manipulators
     {
     public:
         AZ_RTTI(RotationManipulators, "{5D1F1D47-1D5B-4E42-B47E-23F108F8BF7D}")

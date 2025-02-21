@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include "BaseManipulator.h"
 
@@ -19,6 +20,7 @@
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -31,7 +33,7 @@ namespace AzToolsFramework
     //! Component Mode to manage the usage of the PaintBrushManipulator (and PaintBrush) to apply the painted values to a specific
     //! data source and to save the data appropriately.
     //! 
-    class PaintBrushManipulator
+    class AZTF_API PaintBrushManipulator
         : public BaseManipulator
         , public ManipulatorSpace
         , protected GlobalPaintBrushSettingsNotificationBus::Handler
