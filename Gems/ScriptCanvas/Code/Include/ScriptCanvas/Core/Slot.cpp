@@ -516,7 +516,6 @@ namespace ScriptCanvas
 
         m_variableReference = variableId;
         m_variable = nullptr;
-        VariableNotificationBus::Handler::BusDisconnect();
 
         if (IsDynamicSlot())
         {
@@ -798,7 +797,7 @@ namespace ScriptCanvas
             {
                 return AZ::Failure(AZStd::string::format("%s is a Container type and not a Value type.", ScriptCanvas::Data::GetName(otherType).c_str()));
             }
-        }        
+        }
 
         if (otherSlot.IsDynamicSlot())
         {
@@ -958,6 +957,11 @@ namespace ScriptCanvas
         return m_node->ConstructTransientIdentifier((*this));
     }
 
+    void Slot::OnVariableRenamed(AZStd::string_view variableName)
+    {
+        Rename(variableName);
+    }
+
     void Slot::SetDynamicGroup(const AZ::Crc32& dynamicGroup)
     {
         m_dynamicGroup = dynamicGroup;
@@ -969,3 +973,4 @@ namespace ScriptCanvas
     }
 
 }
+
