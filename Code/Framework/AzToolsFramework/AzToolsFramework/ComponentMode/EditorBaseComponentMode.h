@@ -7,10 +7,12 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -19,7 +21,7 @@ namespace AzToolsFramework
         /// Abstract class to be inherited from by concrete ComponentModes.
         /// Exposes ComponentMode interface and handles some useful common
         /// functionality all ComponentModes require.
-        class EditorBaseComponentMode
+        class AZTF_API EditorBaseComponentMode
             : public ComponentModeRequestBus::Handler
             , public Prefab::PrefabPublicNotificationBus::Handler
         {

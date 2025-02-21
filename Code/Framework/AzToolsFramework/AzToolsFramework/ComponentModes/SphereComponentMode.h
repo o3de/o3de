@@ -7,17 +7,19 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 #include <AzToolsFramework/ComponentModes/SphereViewportEdit.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    void InstallSphereViewportEditFunctions(
+    AZTF_API void InstallSphereViewportEditFunctions(
         SphereViewportEdit* sphereViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     //! The specific ComponentMode responsible for handling sphere editing.
-    class SphereComponentMode
+    class AZTF_API SphereComponentMode
         : public BaseShapeComponentMode
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {

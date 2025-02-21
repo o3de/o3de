@@ -7,8 +7,10 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/Component.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -16,7 +18,7 @@ namespace AzToolsFramework
 
     namespace Components
     {
-        class EditorEntityModelComponent
+        class AZTF_API EditorEntityModelComponent
             : public AZ::Component
         {
         public:

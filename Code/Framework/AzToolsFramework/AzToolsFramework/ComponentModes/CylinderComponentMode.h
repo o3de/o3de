@@ -7,17 +7,19 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 #include <AzToolsFramework/ComponentModes/CylinderViewportEdit.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    void InstallCylinderViewportEditFunctions(
+    AZTF_API void InstallCylinderViewportEditFunctions(
         CylinderViewportEdit* sphereViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     //! The specific ComponentMode responsible for handling sphere editing.
-    class CylinderComponentMode
+    class AZTF_API CylinderComponentMode
         : public BaseShapeComponentMode
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {

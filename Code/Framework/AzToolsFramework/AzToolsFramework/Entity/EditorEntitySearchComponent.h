@@ -6,16 +6,18 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
         //! A System Component to reflect Editor operations on Components to Behavior Context
-        class EditorEntitySearchComponent final
+        class AZTF_API EditorEntitySearchComponent final
             : public AZ::Component
             , public EditorEntitySearchBus::Handler
         {

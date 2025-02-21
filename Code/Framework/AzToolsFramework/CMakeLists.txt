@@ -47,6 +47,25 @@ ly_add_target(
 )
 
 ly_add_target(
+    NAME AzToolsFramework.EBus SHARED
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzToolsFramework/aztoolsframework_ebus_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            .
+            AzToolsFramework
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+        PUBLIC
+            AZ::AzFramework
+            AZ::AzFramework.NativeUI
+            AZ::AzToolsFramework.Static
+            AZ::AzQtComponents
+)
+
+ly_add_target(
     NAME AzToolsFramework SHARED
     NAMESPACE AZ
     AUTOMOC
@@ -74,6 +93,7 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzFramework.NativeUI
             AZ::AzToolsFramework.Static
+            AZ::AzToolsFramework.EBus
             AZ::AzQtComponents
 )
 

@@ -7,16 +7,18 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 class QWidget;
 
 namespace AzToolsFramework
 {
-    bool IsNewActionManagerEnabled();
+    AZTF_API bool IsNewActionManagerEnabled();
 
-    void AssignWidgetToActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget);
-    void RemoveWidgetFromActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget);
+    AZTF_API void AssignWidgetToActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget);
+    AZTF_API void RemoveWidgetFromActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget);
 
 } // namespace AzToolsFramework

@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzFramework/Entity/PrefabEntityOwnershipService.h>
 #include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
@@ -16,6 +17,7 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicHandler.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -32,7 +34,7 @@ namespace AzToolsFramework
     // Implementation with Assert(false), this will exist only during Slice->Prefab
     // development to pinpoint and replace specific calls to Slice system
 
-    class UnimplementedSliceEntityOwnershipService
+    class AZTF_API UnimplementedSliceEntityOwnershipService
         : public AzFramework::SliceEntityOwnershipServiceRequestBus::Handler
     {
     public:
@@ -63,7 +65,7 @@ namespace AzToolsFramework
     };
     //////////////////////////////////////////////////////////////////////////
 
-    class PrefabEditorEntityOwnershipService
+    class AZTF_API PrefabEditorEntityOwnershipService
         : public AzFramework::PrefabEntityOwnershipService
         , private PrefabEditorEntityOwnershipInterface
         , private AzFramework::SliceEntityRequestBus::MultiHandler

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTCOMPONENT_H
-#define AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTCOMPONENT_H
+#pragma once
+//AZTF-SHARED
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Math/Quaternion.h>
@@ -20,6 +20,7 @@
 #include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextPickingBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include "EditorEntityContextBus.h"
 
@@ -46,7 +47,7 @@ namespace AzToolsFramework
      * The editor entity context owns entities in the world, within the editor.
      * These entities typically own components inheriting from EditorComponentBase.
      */
-    class EditorEntityContextComponent
+    class AZTF_API EditorEntityContextComponent
         : public AZ::Component
         , public AzFramework::EntityContext
         , private EditorEntityContextRequestBus::Handler
@@ -177,4 +178,3 @@ namespace AzToolsFramework
     };
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTCOMPONENT_H

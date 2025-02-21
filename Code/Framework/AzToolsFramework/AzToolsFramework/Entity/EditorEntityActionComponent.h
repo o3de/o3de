@@ -6,10 +6,12 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -20,7 +22,7 @@ namespace AzToolsFramework
         *
         * Used to perform things such as add/remove components, cut/copy/paste, etc.
         */
-        class EditorEntityActionComponent
+        class AZTF_API EditorEntityActionComponent
             : public AZ::Component
             , public EntityCompositionRequestBus::Handler
         {

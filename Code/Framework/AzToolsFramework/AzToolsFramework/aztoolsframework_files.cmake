@@ -163,49 +163,49 @@ set(FILES
     Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h
     Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h
     Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h
-    Editor/ActionManagerUtils.cpp
-    Editor/ActionManagerUtils.h
+#    Editor/ActionManagerUtils.cpp
+#    Editor/ActionManagerUtils.h
     Editor/EditorSettingsAPIBus.h
-    Editor/RichTextHighlighter.h
-    Editor/RichTextHighlighter.cpp
+#    Editor/RichTextHighlighter.h
+#    Editor/RichTextHighlighter.cpp
     Entity/EditorEntityStartStatus.h
     Entity/EditorEntityAPIBus.h
-    Entity/EditorEntityContextComponent.cpp
-    Entity/EditorEntityContextComponent.h
+#    Entity/EditorEntityContextComponent.cpp
+#    Entity/EditorEntityContextComponent.h
     Entity/EditorEntityContextBus.h
     Entity/EditorEntityContextPickingBus.h
-    Entity/EditorEntityActionComponent.cpp
-    Entity/EditorEntityActionComponent.h
-    Entity/EditorEntityFixupComponent.cpp
-    Entity/EditorEntityFixupComponent.h
+#    Entity/EditorEntityActionComponent.cpp
+#    Entity/EditorEntityActionComponent.h
+#    Entity/EditorEntityFixupComponent.cpp
+#    Entity/EditorEntityFixupComponent.h
     Entity/EditorEntityHelpers.cpp
     Entity/EditorEntityHelpers.h
-    Entity/EditorEntityInfoBus.h
-    Entity/EditorEntityModel.cpp
-    Entity/EditorEntityModel.h
+#    Entity/EditorEntityInfoBus.h
+#    Entity/EditorEntityModel.cpp
+#    Entity/EditorEntityModel.h
     Entity/EditorEntityModelBus.h
-    Entity/EditorEntityModelComponent.cpp
-    Entity/EditorEntityModelComponent.h
+#    Entity/EditorEntityModelComponent.cpp
+#    Entity/EditorEntityModelComponent.h
     Entity/EditorEntityRuntimeActivationBus.h
     Entity/EditorEntitySearchBus.h
-    Entity/EditorEntitySearchComponent.cpp
-    Entity/EditorEntitySearchComponent.h
+#    Entity/EditorEntitySearchComponent.cpp
+#    Entity/EditorEntitySearchComponent.h
     Entity/EditorEntitySortBus.h
-    Entity/EditorEntitySortComponent.cpp
-    Entity/EditorEntitySortComponent.h
-    Entity/EditorEntitySortComponentSerializer.cpp
-    Entity/EditorEntitySortComponentSerializer.h
+#    Entity/EditorEntitySortComponent.cpp
+#    Entity/EditorEntitySortComponent.h
+#    Entity/EditorEntitySortComponentSerializer.cpp
+#    Entity/EditorEntitySortComponentSerializer.h
     Entity/EditorEntityTransformBus.h
     Entity/PrefabEditorEntityOwnershipInterface.h
-    Entity/PrefabEditorEntityOwnershipService.h
-    Entity/PrefabEditorEntityOwnershipService.cpp
+#    Entity/PrefabEditorEntityOwnershipService.h
+#    Entity/PrefabEditorEntityOwnershipService.cpp
     Entity/EntityTypes.h
-    Entity/EntityUtilityComponent.h
-    Entity/EntityUtilityComponent.cpp
+#    Entity/EntityUtilityComponent.h
+#    Entity/EntityUtilityComponent.cpp
     Entity/ReadOnly/ReadOnlyEntityInterface.h
     Entity/ReadOnly/ReadOnlyEntityBus.h
-    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
-    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
+#    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
+#    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
     Fingerprinting/TypeFingerprinter.h
     Fingerprinting/TypeFingerprinter.cpp
     FocusMode/FocusModeInterface.h
@@ -613,7 +613,7 @@ set(FILES
     ViewportUi/ViewportUiDisplayLayout.cpp
 #    ComponentMode/ComponentModeActionHandler.h
 #    ComponentMode/ComponentModeActionHandler.cpp
-    ComponentMode/EditorComponentModeBus.h
+#    ComponentMode/EditorComponentModeBus.h
 #    ComponentMode/ComponentModeCollection.h
 #    ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
@@ -624,8 +624,8 @@ set(FILES
 #    ComponentMode/ComponentModeViewportUi.h
 #    ComponentMode/ComponentModeViewportUi.cpp
     ComponentMode/ComponentModeViewportUiRequestBus.h
-    ComponentMode/EditorBaseComponentMode.h
-    ComponentMode/EditorBaseComponentMode.cpp
+#    ComponentMode/EditorBaseComponentMode.h
+#    ComponentMode/EditorBaseComponentMode.cpp
 #    ComponentModes/BaseShapeComponentMode.h
 #    ComponentModes/BaseShapeComponentMode.cpp
 #    ComponentModes/BaseShapeViewportEdit.h
@@ -634,19 +634,19 @@ set(FILES
 #    ComponentModes/BoxComponentMode.cpp
 #    ComponentModes/BoxViewportEdit.h
 #    ComponentModes/BoxViewportEdit.cpp
-    ComponentModes/CapsuleComponentMode.h
-    ComponentModes/CapsuleComponentMode.cpp
+#    ComponentModes/CapsuleComponentMode.h
+#    ComponentModes/CapsuleComponentMode.cpp
 #    ComponentModes/CapsuleViewportEdit.h
 #    ComponentModes/CapsuleViewportEdit.cpp
-    ComponentModes/CylinderComponentMode.cpp 
-    ComponentModes/CylinderComponentMode.h 
+#    ComponentModes/CylinderComponentMode.cpp 
+#    ComponentModes/CylinderComponentMode.h 
 #    ComponentModes/CylinderViewportEdit.cpp 
 #    ComponentModes/CylinderViewportEdit.h 
     ComponentModes/ShapeComponentModeBus.h
 #    ComponentModes/ShapeTranslationOffsetViewportEdit.h
 #    ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
-    ComponentModes/SphereComponentMode.h
-    ComponentModes/SphereComponentMode.cpp
+#    ComponentModes/SphereComponentMode.h
+#    ComponentModes/SphereComponentMode.cpp
 #    ComponentModes/SphereViewportEdit.h
 #    ComponentModes/SphereViewportEdit.cpp
     ComponentModes/ViewportEditUtilities.h
@@ -858,7 +858,6 @@ set(FILES
     Prefab/PrefabPublicHandler.h
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
-    Prefab/PrefabPublicNotificationBus.h
     Prefab/PrefabPublicNotificationHandler.h
     Prefab/PrefabPublicNotificationHandler.cpp
     Prefab/PrefabPublicRequestBus.h

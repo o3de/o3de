@@ -6,18 +6,19 @@
  *
  */
 #pragma once
-
+//AZTF-SHARED
 #include "EditorEntitySortBus.h"
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
-        class EditorEntitySortComponent
+        class AZTF_API EditorEntitySortComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorEntitySortRequestBus::Handler
             , public EditorEntityContextNotificationBus::Handler

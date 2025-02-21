@@ -36,15 +36,12 @@ set(FILES
     ActionManager/ToolBar/ToolBarManager.h
     ActionManager/ActionManagerSystemComponent.cpp
     ActionManager/ActionManagerSystemComponent.h
-
     Application/EditorEntityManager.cpp
     Application/EditorEntityManager.h
     Application/Ticker.cpp
     Application/Ticker.h
-    
     Archive/ArchiveComponent.cpp
     Archive/ArchiveComponent.h
-    
     Asset/AssetBundler.cpp
     Asset/AssetBundler.h
     Asset/AssetDebugInfo.cpp
@@ -57,7 +54,6 @@ set(FILES
     Asset/AssetSystemComponent.h
     Asset/AssetUtils.cpp
     Asset/AssetUtils.h
-
     AssetBrowser/AssetPicker/AssetPickerDialog.cpp
     AssetBrowser/AssetPicker/AssetPickerDialog.h
     AssetBrowser/AssetPicker/AssetPickerDialog.ui
@@ -114,7 +110,6 @@ set(FILES
     AssetBrowser/Thumbnails/ProductThumbnail.h
     AssetBrowser/Thumbnails/SourceThumbnail.cpp
     AssetBrowser/Thumbnails/SourceThumbnail.h
-    
     AssetBrowser/Views/AssetBrowserFolderWidget.cpp
     AssetBrowser/Views/AssetBrowserFolderWidget.h
     AssetBrowser/Views/AssetBrowserFolderWidget.qrc
@@ -130,7 +125,6 @@ set(FILES
     AssetBrowser/Views/AssetBrowserViewUtils.h
     AssetBrowser/Views/EntryDelegate.cpp
     AssetBrowser/Views/EntryDelegate.h
-    
     AssetBrowser/AssetBrowserComponent.cpp
     AssetBrowser/AssetBrowserComponent.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
@@ -151,20 +145,16 @@ set(FILES
     AssetBrowser/AssetEntryChangeset.h
     AssetBrowser/AssetSelectionModel.cpp
     AssetBrowser/AssetSelectionModel.h
-
     AssetBundle/AssetBundleComponent.cpp
     AssetBundle/AssetBundleComponent.h
-
     AssetCatalog/PlatformAddressedAssetCatalog.cpp
     AssetCatalog/PlatformAddressedAssetCatalog.h
     AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
     AssetCatalog/PlatformAddressedAssetCatalogManager.h
-    
     AssetDatabase/AssetDatabaseConnection.cpp
     AssetDatabase/AssetDatabaseConnection.h
     AssetDatabase/PathOrUuid.cpp
     AssetDatabase/PathOrUuid.h
-        
     AssetEditor/AssetEditorHeader.cpp
     AssetEditor/AssetEditorHeader.h
     AssetEditor/AssetEditorStatusBar.ui
@@ -173,72 +163,82 @@ set(FILES
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorWidget.cpp
     AssetEditor/AssetEditorWidget.h
-
     Commands/ComponentModeCommand.cpp
     Commands/ComponentModeCommand.h
     Commands/EntityManipulatorCommand.cpp
     Commands/EntityManipulatorCommand.h
     Commands/SelectionCommand.cpp
     Commands/SelectionCommand.h
-
     Component/EditorComponentAPIComponent.cpp
     Component/EditorComponentAPIComponent.h
-
     Component/EditorLevelComponentAPIComponent.cpp
     Component/EditorLevelComponentAPIComponent.h
-
     ComponentMode/ComponentModeActionHandler.cpp
     ComponentMode/ComponentModeActionHandler.h
-
-    ComponentMode/ComponentModeActionHandler.cpp
-    ComponentMode/ComponentModeActionHandler.h
-    
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeCollection.h
-    
     ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeSwitcher.h
-    
     ComponentMode/ComponentModeViewportUi.cpp
     ComponentMode/ComponentModeViewportUi.h
-
+    ComponentMode/EditorBaseComponentMode.cpp
+    ComponentMode/EditorBaseComponentMode.h
     ComponentModes/BaseShapeComponentMode.cpp
     ComponentModes/BaseShapeComponentMode.h
-
     ComponentModes/BaseShapeViewportEdit.cpp
     ComponentModes/BaseShapeViewportEdit.h
-
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxComponentMode.h
-    
     ComponentModes/BoxViewportEdit.cpp
     ComponentModes/BoxViewportEdit.h
-
+    ComponentModes/CapsuleComponentMode.cpp
+    ComponentModes/CapsuleComponentMode.h
     ComponentModes/CapsuleViewportEdit.cpp
     ComponentModes/CapsuleViewportEdit.h
-
+    ComponentModes/CylinderComponentMode.cpp
+    ComponentModes/CylinderComponentMode.h
     ComponentModes/CylinderViewportEdit.cpp
     ComponentModes/CylinderViewportEdit.h
-
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
-
+    ComponentModes/SphereComponentMode.cpp
+    ComponentModes/SphereComponentMode.h
     ComponentModes/SphereViewportEdit.cpp
     ComponentModes/SphereViewportEdit.h
-
     Debug/TraceContextLogFormatter.cpp
     Debug/TraceContextLogFormatter.h
-
     Debug/TraceContextMultiStackHandler.cpp
     Debug/TraceContextMultiStackHandler.h
-    
     Debug/TraceContextSingleStackHandler.cpp
     Debug/TraceContextSingleStackHandler.h
-
     Debug/TraceContextStack.cpp
     Debug/TraceContextStack.h
-    
-        
+    Editor/ActionManagerUtils.cpp		
+    Editor/ActionManagerUtils.h
+    Editor/RichTextHighlighter.cpp
+    Editor/RichTextHighlighter.h
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
+    Entity/EditorEntityActionComponent.cpp
+    Entity/EditorEntityActionComponent.h
+    Entity/EditorEntityFixupComponent.cpp
+    Entity/EditorEntityFixupComponent.h
+    Entity/EditorEntityModel.cpp
+    Entity/EditorEntityModel.h
+    Entity/EditorEntityModelComponent.cpp
+    Entity/EditorEntityModelComponent.h
+    Entity/EditorEntitySearchComponent.cpp
+    Entity/EditorEntitySearchComponent.h
+    Entity/EditorEntitySortComponent.cpp
+    Entity/EditorEntitySortComponent.h
+    Entity/EditorEntitySortComponentSerializer.cpp
+    Entity/EditorEntitySortComponentSerializer.h
+    Entity/PrefabEditorEntityOwnershipService.cpp
+    Entity/PrefabEditorEntityOwnershipService.h
+    Entity/EditorEntityContextComponent.cpp
+    Entity/EditorEntityContextComponent.h
+    Entity/EntityUtilityComponent.cpp
+    Entity/EntityUtilityComponent.h
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )

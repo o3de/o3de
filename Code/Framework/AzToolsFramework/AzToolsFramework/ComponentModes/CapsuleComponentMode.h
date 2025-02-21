@@ -7,17 +7,19 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 #include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    void InstallCapsuleViewportEditFunctions(
+    AZTF_API void InstallCapsuleViewportEditFunctions(
         CapsuleViewportEdit* capsuleViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     //! The specific ComponentMode responsible for handling capsule editing.
-    class CapsuleComponentMode
+    class AZTF_API CapsuleComponentMode
         : public BaseShapeComponentMode
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {
