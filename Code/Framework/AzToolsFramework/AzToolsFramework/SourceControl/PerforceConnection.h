@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
@@ -18,7 +21,7 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    class PerforceCommand
+    class AZTF_API PerforceCommand
     {
     public:
         AzFramework::ProcessOutput m_rawOutput;
@@ -94,7 +97,7 @@ namespace AzToolsFramework
         virtual void ExecuteRawCommand();
     };
 
-    class PerforceConnection
+    class AZTF_API PerforceConnection
     {
     public:
         PerforceMap m_infoResultMap;

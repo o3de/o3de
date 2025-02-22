@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
@@ -16,7 +18,7 @@
 
 namespace AzToolsFramework
 {
-    class LocalFileSCComponent
+    class AZTF_API LocalFileSCComponent
         : public AZ::Component
         , private SourceControlCommandBus::Handler
         , private SourceControlConnectionRequestBus::Handler

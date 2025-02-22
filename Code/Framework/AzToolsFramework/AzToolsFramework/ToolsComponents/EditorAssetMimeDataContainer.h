@@ -5,8 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef EDITOR_ASSET_ID_CONTAINER_H
-#define EDITOR_ASSET_ID_CONTAINER_H
+#pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -26,7 +28,7 @@ class QMimeData;
 
 namespace AzToolsFramework
 {
-    class EditorAssetMimeData
+    class AZTF_API EditorAssetMimeData
     {
     public:
         virtual ~EditorAssetMimeData() { }
@@ -52,7 +54,7 @@ namespace AzToolsFramework
 
     /// Mime data for copying assets into property fields via drag/drop.
     /// The type is used for validation before accepting drops.
-    class EditorAssetMimeDataContainer
+    class AZTF_API EditorAssetMimeDataContainer
     {
     public:
         virtual ~EditorAssetMimeDataContainer() { }
@@ -80,5 +82,3 @@ namespace AzToolsFramework
         static QString GetMimeType() { return "editor/assetinformation"; }
     };
 }
-
-#endif // EDITOR_ASSET_ID_CONTAINER_H

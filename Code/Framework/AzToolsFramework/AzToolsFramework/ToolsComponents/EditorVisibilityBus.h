@@ -70,4 +70,5 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityVisibilityNotifications);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EditorEntityVisibilityNotifications);
+

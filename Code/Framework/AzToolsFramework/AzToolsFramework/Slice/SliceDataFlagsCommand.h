@@ -6,7 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -22,7 +24,7 @@ namespace AzToolsFramework
      * Undoable command for setting a single data flag.
      * Data flags affect how inheritance works within a slice (see @ref AZ::DataPatch::Flag).
      */
-    class SliceDataFlagsCommand
+    class AZTF_API SliceDataFlagsCommand
         : public UndoSystem::URSequencePoint
     {
     public:
@@ -61,7 +63,7 @@ namespace AzToolsFramework
      * For example, removing data flags from a component and any data within it.
      * Data flags affect how inheritance works within a slice (see @ref AZ::DataPatch::Flag).
      */
-    class ClearSliceDataFlagsBelowAddressCommand
+    class AZTF_API ClearSliceDataFlagsBelowAddressCommand
         : public UndoSystem::URSequencePoint
     {
     public:

@@ -13,7 +13,9 @@
 */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceBus.h>
 #include <AzCore/Slice/SliceMetadataInfoBus.h>
@@ -36,7 +38,7 @@ namespace AzToolsFramework
      *
      * @note This class may be moved to the Framework for use in the game runtime.
      */
-    class SliceMetadataEntityContextComponent
+    class AZTF_API SliceMetadataEntityContextComponent
         : public AZ::Component
         , public AzFramework::EntityContext
         , protected AZ::SliceInstanceNotificationBus::Handler

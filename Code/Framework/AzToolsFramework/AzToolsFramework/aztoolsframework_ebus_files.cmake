@@ -11,6 +11,9 @@ ComponentMode/EditorComponentModeBus.h
 Entity/EditorEntityContextBus.h
     Entity/EditorEntityInfoBus.h
     Prefab/PrefabPublicNotificationBus.h
+    ToolsComponents/EditorComponentBus.h
+    ToolsComponents/EditorVisibilityBus.h
+    ToolsComponents/EditorLockComponentBus.h
     AzToolsFrameworkEBus.cpp    
 )
 

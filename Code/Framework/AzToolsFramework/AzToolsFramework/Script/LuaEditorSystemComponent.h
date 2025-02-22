@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
@@ -15,7 +17,7 @@ namespace AzToolsFramework
 {
     namespace Script
     {
-        class LuaEditorSystemComponent
+        class AZTF_API LuaEditorSystemComponent
             : public AZ::Component
             , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , private AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Handler

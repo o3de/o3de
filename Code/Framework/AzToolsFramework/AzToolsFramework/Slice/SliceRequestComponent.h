@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceBus.h>
@@ -16,7 +19,7 @@
 namespace AzToolsFramework
 {
     //! Component in charge of listening for SliceRequestBus requests
-    class SliceRequestComponent
+    class AZTF_API SliceRequestComponent
         : public AZ::Component
         , protected SliceRequestBus::Handler
     {

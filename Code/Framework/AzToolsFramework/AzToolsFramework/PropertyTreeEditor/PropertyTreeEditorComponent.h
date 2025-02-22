@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 
 namespace AzToolsFramework
@@ -15,7 +17,7 @@ namespace AzToolsFramework
     namespace Components
     {
 
-        class PropertyTreeEditorComponent
+        class AZTF_API PropertyTreeEditorComponent
             : public AZ::Component
         {
         public:

@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Component/ComponentExport.h>
@@ -25,7 +27,7 @@ namespace AzToolsFramework
     /**
      * Callback handler interface for processing compiled slices prior to stripping of editor-only entities.
      */
-    class EditorOnlyEntityHandler
+    class AZTF_API EditorOnlyEntityHandler
     {
     public:
         virtual ~EditorOnlyEntityHandler() = default;
@@ -69,7 +71,7 @@ namespace AzToolsFramework
      *   and correct relative transforms.
      * - Validates that no editor entities are referenced by non-editor entities.
      */
-    class WorldEditorOnlyEntityHandler : public AzToolsFramework::EditorOnlyEntityHandler
+    class AZTF_API WorldEditorOnlyEntityHandler : public AzToolsFramework::EditorOnlyEntityHandler
     {
     public:
         bool IsEntityUniquelyForThisHandler(AZ::Entity* entity) override;
@@ -93,7 +95,7 @@ namespace AzToolsFramework
     *    are removed "in-place".
     * - Validates that no editor entities are referenced by non-editor entities.
     */
-    class UiEditorOnlyEntityHandler : public AzToolsFramework::EditorOnlyEntityHandler
+    class AZTF_API UiEditorOnlyEntityHandler : public AzToolsFramework::EditorOnlyEntityHandler
     {
     public:
         bool IsEntityUniquelyForThisHandler(AZ::Entity* entity) override;
@@ -106,7 +108,7 @@ namespace AzToolsFramework
             AZ::SerializeContext& serializeContext) override;
     };
 
-    EditorOnlyEntityHandler::Result AdjustForEditorOnlyEntities(AZ::SliceComponent* slice, const AZStd::unordered_set<AZ::EntityId>& editorOnlyEntities, AZ::SerializeContext& serializeContext, EditorOnlyEntityHandler* customHandler);
+    AZTF_API EditorOnlyEntityHandler::Result AdjustForEditorOnlyEntities(AZ::SliceComponent* slice, const AZStd::unordered_set<AZ::EntityId>& editorOnlyEntities, AZ::SerializeContext& serializeContext, EditorOnlyEntityHandler* customHandler);
 
     /**
      * Converts a source editor slice to a runtime-usable slice (i.e. dynamic slice).
@@ -120,12 +122,12 @@ namespace AzToolsFramework
      * @return Result an AZ::Outcome with a valid slice asset as the success payload, and an error string for the error payload.
      */
     using EditorOnlyEntityHandlers = AZStd::vector<EditorOnlyEntityHandler*>;
-    SliceCompilationResult CompileEditorSlice(const AZ::Data::Asset<AZ::SliceAsset>& sourceSlice, const AZ::PlatformTagSet& platformTags, AZ::SerializeContext& serializeContext, const EditorOnlyEntityHandlers& editorOnlyEntityHandlers = EditorOnlyEntityHandlers());
+    AZTF_API SliceCompilationResult CompileEditorSlice(const AZ::Data::Asset<AZ::SliceAsset>& sourceSlice, const AZ::PlatformTagSet& platformTags, AZ::SerializeContext& serializeContext, const EditorOnlyEntityHandlers& editorOnlyEntityHandlers = EditorOnlyEntityHandlers());
 
     /**
      * Sort entities so parents are listed before children.
      * The entities must contain a component which can be azrtti_cast to AZ::TransformIterface.
      */
-    void SortTransformParentsBeforeChildren(AZStd::vector<AZ::Entity*>& entitiesInOut);
+    AZTF_API void SortTransformParentsBeforeChildren(AZStd::vector<AZ::Entity*>& entitiesInOut);
 
 } // AzToolsFramework

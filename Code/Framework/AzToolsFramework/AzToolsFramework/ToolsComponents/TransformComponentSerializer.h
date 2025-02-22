@@ -6,7 +6,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 
@@ -14,7 +16,7 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        class JsonTransformComponentSerializer
+        class AZTF_API JsonTransformComponentSerializer
             : public AZ::BaseJsonSerializer
         {
         public:

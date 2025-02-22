@@ -301,202 +301,278 @@ set(FILES
 
     PaintBrush/GlobalPaintBrushSettings.cpp
     PaintBrush/GlobalPaintBrushSettings.h
-    
     PaintBrush/GlobalPaintBrushSettingsSystemComponent.cpp
     PaintBrush/GlobalPaintBrushSettingsSystemComponent.h
-    
     PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h
-    
     PaintBrush/GlobalPaintBrushSettingsWindow.cpp
     PaintBrush/GlobalPaintBrushSettingsWindow.h
-    
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h
-    
     Picking/Manipulators/ManipulatorBoundManager.cpp
     Picking/Manipulators/ManipulatorBoundManager.h
-    
     Picking/Manipulators/ManipulatorBounds.cpp
     Picking/Manipulators/ManipulatorBounds.h
-    
     Prefab/DocumentPropertyEditor/PrefabComponentAdapter.cpp
     Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h
-    
     Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.cpp
     Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h
-    
     Prefab/Instance/Instance.cpp
     Prefab/Instance/Instance.h
-    
     Prefab/Instance/InstanceDomGenerator.cpp
     Prefab/Instance/InstanceDomGenerator.h
-    
     Prefab/Instance/InstanceEntityIdMapper.cpp
     Prefab/Instance/InstanceEntityIdMapper.h
-    
     Prefab/Instance/InstanceEntityMapper.cpp
     Prefab/Instance/InstanceEntityMapper.h
-    
     Prefab/Instance/InstanceEntityScrubber.cpp
     Prefab/Instance/InstanceEntityScrubber.h
-    
     Prefab/Instance/InstanceSerializer.cpp
     Prefab/Instance/InstanceSerializer.h
-    
     Prefab/Instance/InstanceToTemplatePropagator.cpp
     Prefab/Instance/InstanceToTemplatePropagator.h
-    
     Prefab/Instance/InstanceUpdateExecutor.cpp
     Prefab/Instance/InstanceUpdateExecutor.h
-    
     Prefab/Instance/TemplateInstanceMapper.cpp
     Prefab/Instance/TemplateInstanceMapper.h
-
     Prefab/Link/Link.cpp
     Prefab/Link/Link.h
-        
     Prefab/Overrides/PrefabOverrideHandler.cpp
     Prefab/Overrides/PrefabOverrideHandler.h
-    
     Prefab/Overrides/PrefabOverridePublicHandler.cpp
     Prefab/Overrides/PrefabOverridePublicHandler.h
-
-    
     Prefab/EditorPrefabComponent.cpp
     Prefab/EditorPrefabComponent.h
-    
     Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/Procedural/ProceduralPrefabAsset.h
-    
     Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h
-    
     Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.h
-    
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
-    
     Prefab/Spawnable/AssetPlatformComponentRemover.cpp
     Prefab/Spawnable/AssetPlatformComponentRemover.h
-    
     Prefab/Spawnable/ComponentRequirementsValidator.cpp
     Prefab/Spawnable/ComponentRequirementsValidator.h
-    
     Prefab/Spawnable/EditorInfoRemover.cpp
     Prefab/Spawnable/EditorInfoRemover.h
-    
     Prefab/Spawnable/InMemorySpawnableAssetUtils.cpp
     Prefab/Spawnable/InMemorySpawnableAssetUtils.h
-    
     Prefab/Spawnable/PrefabCatchmentProcessor.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h
-    
     Prefab/Spawnable/PrefabConversionPipeline.cpp
     Prefab/Spawnable/PrefabConversionPipeline.h
-    
     Prefab/Spawnable/PrefabDocument.cpp
     Prefab/Spawnable/PrefabDocument.h
     Prefab/Spawnable/PrefabDocument.inl
-    
     Prefab/Spawnable/PrefabInMemorySpawnableConverter.cpp
     Prefab/Spawnable/PrefabInMemorySpawnableConverter.h
-    
     Prefab/Spawnable/PrefabProcessorContext.cpp
     Prefab/Spawnable/PrefabProcessorContext.h
-    
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/ProcesedObjectStore.h
-    
     Prefab/Spawnable/SpawnableMetaDataBuilder.cpp
     Prefab/Spawnable/SpawnableMetaDataBuilder.h
-    
     Prefab/Spawnable/SpawnableUtils.cpp
     Prefab/Spawnable/SpawnableUtils.h
-    
     Prefab/Template/Template.cpp
     Prefab/Template/Template.h
-    
     Prefab/Undo/PrefabUndo.cpp
     Prefab/Undo/PrefabUndo.h
-    
     Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoAddEntity.h
-    
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
     Prefab/Undo/PrefabUndoAddEntityAsOverride.h
-    
     Prefab/Undo/PrefabUndoApplyOverrides.cpp
     Prefab/Undo/PrefabUndoApplyOverrides.h
-    
     Prefab/Undo/PrefabUndoBase.cpp
     Prefab/Undo/PrefabUndoBase.h
-    
     Prefab/Undo/PrefabUndoComponentPropertyEdit.cpp
     Prefab/Undo/PrefabUndoComponentPropertyEdit.h
-    
     Prefab/Undo/PrefabUndoComponentPropertyOverride.cpp
     Prefab/Undo/PrefabUndoComponentPropertyOverride.h
-    
     Prefab/Undo/PrefabUndoDelete.cpp
     Prefab/Undo/PrefabUndoDelete.h
-    
     Prefab/Undo/PrefabUndoDeleteAsOverride.cpp
     Prefab/Undo/PrefabUndoDeleteAsOverride.h
-    
     Prefab/Undo/PrefabUndoRevertOverrides.cpp
     Prefab/Undo/PrefabUndoRevertOverrides.h
-    
     Prefab/Undo/PrefabUndoUpdateLink.cpp
     Prefab/Undo/PrefabUndoUpdateLink.h
-    
     Prefab/Undo/PrefabUndoUtils.cpp
     Prefab/Undo/PrefabUndoUtils.h
-    
     Prefab/PrefabDomUtils.cpp
     Prefab/PrefabDomUtils.h
-    
     Prefab/PrefabEditorPreferences.cpp
     Prefab/PrefabEditorPreferences.h
-    
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusHandler.h
-    
     Prefab/PrefabFocusUndo.cpp
     Prefab/PrefabFocusUndo.h
-    
     Prefab/PrefabInstanceUtils.cpp
     Prefab/PrefabInstanceUtils.h
-    
     Prefab/PrefabLoader.cpp
     Prefab/PrefabLoader.h
-    
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicHandler.h
-    
     Prefab/PrefabPublicNotificationHandler.cpp
     Prefab/PrefabPublicNotificationHandler.h
-    
     Prefab/PrefabPublicRequestHandler.cpp
     Prefab/PrefabPublicRequestHandler.h	 
-    
     Prefab/PrefabSystemComponent.cpp
     Prefab/PrefabSystemComponent.h	 
-    
     Prefab/PrefabSystemScriptingHandler.cpp
     Prefab/PrefabSystemScriptingHandler.h
-    
     Prefab/PrefabUndoCache.cpp
     Prefab/PrefabUndoCache.h
-    
     Prefab/PrefabUndoHelpers.cpp
     Prefab/PrefabUndoHelpers.h
-    
     Prefab/ProceduralPrefabSystemComponent.cpp
     Prefab/ProceduralPrefabSystemComponent.h
-    
     Prefab/ScriptingPrefabLoader.cpp
     Prefab/ScriptingPrefabLoader.h
+    PropertyTreeEditor/PropertyTreeEditor.cpp
+    PropertyTreeEditor/PropertyTreeEditor.h
+    PropertyTreeEditor/PropertyTreeEditorComponent.cpp
+    PropertyTreeEditor/PropertyTreeEditorComponent.h
+    PythonTerminal/ScriptHelpDialog.cpp
+    PythonTerminal/ScriptHelpDialog.h
+    PythonTerminal/ScriptHelpDialog.ui
+    PythonTerminal/ScriptTermDialog.cpp
+    PythonTerminal/ScriptTermDialog.h
+    PythonTerminal/ScriptTermDialog.ui
+    Render/EditorIntersectorComponent.cpp
+    Render/EditorIntersectorComponent.h
+    Script/LuaEditorSystemComponent.cpp
+    Script/LuaEditorSystemComponent.h
+    Script/LuaSymbolsReporterSystemComponent.cpp
+    Script/LuaSymbolsReporterSystemComponent.h
+    Slice/SliceCompilation.cpp
+    Slice/SliceCompilation.h
+    Slice/SliceDataFlagsCommand.cpp
+    Slice/SliceDataFlagsCommand.h
+    Slice/SliceDependencyBrowserComponent.cpp
+    Slice/SliceDependencyBrowserComponent.h
+    Slice/SliceMetadataEntityContextComponent.cpp
+    Slice/SliceMetadataEntityContextComponent.h
+    Slice/SliceRelationshipNode.cpp
+    Slice/SliceRelationshipNode.h
+    Slice/SliceRequestComponent.cpp
+    Slice/SliceRequestComponent.h
+    Slice/SliceTransaction.cpp
+    Slice/SliceTransaction.h
+    Slice/SliceUtilities.cpp
+    Slice/SliceUtilities.h
+
+    PropertyTreeEditor/PropertyTreeEditor.cpp
+    PropertyTreeEditor/PropertyTreeEditor.h
+    PropertyTreeEditor/PropertyTreeEditorComponent.cpp
+    PropertyTreeEditor/PropertyTreeEditorComponent.h
+    PythonTerminal/ScriptHelpDialog.cpp
+    PythonTerminal/ScriptHelpDialog.h
+    PythonTerminal/ScriptHelpDialog.ui
+    PythonTerminal/ScriptTermDialog.cpp
+    PythonTerminal/ScriptTermDialog.h
+    PythonTerminal/ScriptTermDialog.ui
+    Render/EditorIntersectorComponent.cpp
+    Render/EditorIntersectorComponent.h
+    Script/LuaEditorSystemComponent.cpp
+    Script/LuaEditorSystemComponent.h
+    Script/LuaSymbolsReporterSystemComponent.cpp
+    Script/LuaSymbolsReporterSystemComponent.h
+    Slice/SliceCompilation.cpp
+    Slice/SliceCompilation.h
+    Slice/SliceDataFlagsCommand.cpp
+    Slice/SliceDataFlagsCommand.h
+    Slice/SliceDependencyBrowserComponent.cpp
+    Slice/SliceDependencyBrowserComponent.h
+    Slice/SliceMetadataEntityContextComponent.cpp
+    Slice/SliceMetadataEntityContextComponent.h
+    Slice/SliceRelationshipNode.cpp
+    Slice/SliceRelationshipNode.h
+    Slice/SliceRequestComponent.cpp
+    Slice/SliceRequestComponent.h
+    Slice/SliceTransaction.cpp
+    Slice/SliceTransaction.h
+    Slice/SliceUtilities.cpp
+    Slice/SliceUtilities.h
+    SourceControl/PerforceConnection.cpp
+    SourceControl/PerforceConnection.h
+    SourceControl/LocalFileSCComponent.cpp
+    SourceControl/LocalFileSCComponent.h
+    SourceControl/PerforceComponent.cpp
+    SourceControl/PerforceComponent.h
+    SourceControl/PerforceSettings.cpp
+    SourceControl/PerforceSettings.h
+    SourceControl/PerforceSettings.ui
+    SourceControl/QtSourceControlNotificationHandler.cpp
+    SourceControl/QtSourceControlNotificationHandler.h
+    SQLite/SQLiteConnection.cpp
+    SQLite/SQLiteConnection.h
+    SQLite/SQLiteQuery.cpp
+    SQLite/SQLiteQuery.h
+    Thumbnails/LoadingThumbnail.cpp
+    Thumbnails/LoadingThumbnail.h
+    Thumbnails/MissingThumbnail.cpp
+    Thumbnails/MissingThumbnail.h 
+    Thumbnails/SourceControlThumbnail.cpp
+    Thumbnails/SourceControlThumbnail.h
+    Thumbnails/Thumbnail.cpp
+    Thumbnails/Thumbnail.h
+    Thumbnails/Thumbnail.inl
+    Thumbnails/ThumbnailerComponent.cpp
+    Thumbnails/ThumbnailerComponent.h
+    Thumbnails/ThumbnailerNullComponent.cpp
+    Thumbnails/ThumbnailerNullComponent.h
+    Thumbnails/ThumbnailWidget.cpp
+    Thumbnails/ThumbnailWidget.h
+    ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.cpp
+    ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h
+    ToolsComponents/ComponentAssetMimeDataContainer.cpp
+    ToolsComponents/ComponentAssetMimeDataContainer.h
+    ToolsComponents/ComponentMimeData.cpp
+    ToolsComponents/ComponentMimeData.h
+    ToolsComponents/EditorAssetMimeDataContainer.cpp
+    ToolsComponents/EditorAssetMimeDataContainer.h
+    ToolsComponents/EditorAssetReference.cpp
+    ToolsComponents/EditorAssetReference.h
+    ToolsComponents/EditorComponentBase.cpp
+    ToolsComponents/EditorComponentBase.h
+    ToolsComponents/EditorDisabledCompositionComponent.cpp
+    ToolsComponents/EditorDisabledCompositionComponent.h
+    ToolsComponents/EditorEntityIconComponent.cpp
+    ToolsComponents/EditorEntityIconComponent.h
+    ToolsComponents/EditorEntityIdContainer.cpp
+    ToolsComponents/EditorEntityIdContainer.h
+    ToolsComponents/EditorInspectorComponent.cpp
+    ToolsComponents/EditorInspectorComponent.h
+    ToolsComponents/EditorLockComponent.cpp
+    ToolsComponents/EditorLockComponent.h
+    ToolsComponents/EditorNonUniformScaleComponent.cpp
+    ToolsComponents/EditorNonUniformScaleComponent.h
+    ToolsComponents/EditorNonUniformScaleComponentMode.cpp
+    ToolsComponents/EditorNonUniformScaleComponentMode.h
+    ToolsComponents/EditorOnlyEntityComponent.cpp
+    ToolsComponents/EditorOnlyEntityComponent.h
+    ToolsComponents/EditorPendingCompositionComponent.cpp
+    ToolsComponents/EditorPendingCompositionComponent.h
+    ToolsComponents/EditorSelectionAccentSystemComponent.cpp
+    ToolsComponents/EditorSelectionAccentSystemComponent.h
+    ToolsComponents/EditorVisibilityComponent.cpp
+    ToolsComponents/EditorVisibilityComponent.h
+    ToolsComponents/GenericComponentWrapper.cpp
+    ToolsComponents/GenericComponentWrapper.h
+    ToolsComponents/ScriptEditorComponent.cpp
+    ToolsComponents/ScriptEditorComponent.h
+    ToolsComponents/SelectionComponent.cpp
+    ToolsComponents/SelectionComponent.h
+    ToolsComponents/ToolsAssetCatalogComponent.cpp
+    ToolsComponents/ToolsAssetCatalogComponent.h
+    ToolsComponents/TransformComponent.cpp
+    ToolsComponents/TransformComponent.h
+    ToolsComponents/TransformComponentSerializer.cpp
+    ToolsComponents/TransformComponentSerializer.h
+
         
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h

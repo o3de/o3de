@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Script/ScriptProperty.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzCore/Script/ScriptContext.h>
@@ -24,7 +26,7 @@ namespace AzToolsFramework
         /**
         *
         */
-        class ScriptEditorComponent
+        class AZTF_API ScriptEditorComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , private AZ::Data::AssetBus::Handler
         {

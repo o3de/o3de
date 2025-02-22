@@ -6,6 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/TickBus.h>
@@ -28,7 +31,7 @@ namespace AzToolsFramework
             ThumbnailKey contains any kind of identifiable information to retrieve thumbnails (e.g. assetId, assetType, filename, etc.)
             To use thumbnail system, keep reference to your thumbnail key, and retrieve Thumbnail via ThumbnailerRequestBus
         */
-        class ThumbnailKey : public QObject
+        class AZTF_API ThumbnailKey : public QObject
         {
             Q_OBJECT
         public:
@@ -68,7 +71,7 @@ namespace AzToolsFramework
            to this thumbnail Because you should be storing reference to ThumbnailKey and not Thumbnail, connect to ThumbnailKey signal
            instead
         */
-        class Thumbnail : public QObject
+        class AZTF_API Thumbnail : public QObject
         {
             Q_OBJECT
         public:
@@ -108,7 +111,7 @@ namespace AzToolsFramework
         typedef QSharedPointer<Thumbnail> SharedThumbnail;
 
         //! Interface to retrieve thumbnails
-        class ThumbnailProvider
+        class AZTF_API ThumbnailProvider
         {
         public:
             ThumbnailProvider() = default;

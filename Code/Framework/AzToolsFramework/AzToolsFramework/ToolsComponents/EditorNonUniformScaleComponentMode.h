@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 
@@ -15,7 +17,7 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        class NonUniformScaleComponentMode
+        class AZTF_API NonUniformScaleComponentMode
             : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
         {
         public:

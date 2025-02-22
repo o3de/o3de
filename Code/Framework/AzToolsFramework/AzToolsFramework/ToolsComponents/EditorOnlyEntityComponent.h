@@ -5,11 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 
-#pragma once
 
 namespace AzToolsFramework
 {
@@ -18,7 +21,7 @@ namespace AzToolsFramework
         /**
          * Acts as storage for the "editor-only" flag on entities, and offers an API for getting/setting the value.
          */
-        class EditorOnlyEntityComponent
+        class AZTF_API EditorOnlyEntityComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorOnlyEntityComponentRequestBus::Handler
         {

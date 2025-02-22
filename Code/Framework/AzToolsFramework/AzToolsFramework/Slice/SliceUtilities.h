@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/base.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/UserSettings/UserSettings.h>
@@ -71,7 +73,7 @@ namespace AzToolsFramework
          * \param entitiesWithReferences - input/output set containing all referenced entities.
          * \param serializeContext - serialize context to use to traverse reflected data.
          */
-        void GatherAllReferencedEntities(AzToolsFramework::EntityIdSet& entitiesWithReferences,
+        AZTF_API void GatherAllReferencedEntities(AzToolsFramework::EntityIdSet& entitiesWithReferences,
                                          AZ::SerializeContext& serializeContext);
 
         /**
@@ -85,7 +87,7 @@ namespace AzToolsFramework
          * \param hasExternalReferences output true if there are referenced entities not in original entities set
          * \param serializeContext - serialize context to use to traverse reflected data.
          */
-        void GatherAllReferencedEntitiesAndCompare(const AzToolsFramework::EntityIdSet& entities,
+        AZTF_API void GatherAllReferencedEntitiesAndCompare(const AzToolsFramework::EntityIdSet& entities,
                                                    AzToolsFramework::EntityIdSet& entitiesAndReferencedEntities,
                                                    bool& hasExternalReferences,
                                                    AZ::SerializeContext& serializeContext);
@@ -96,7 +98,7 @@ namespace AzToolsFramework
          * The key aspect of this utility is the resulting clone has Ids remapped to that of the instance,
          * so entity references don't appear as changes/deltas due to Id remapping during slice instantiation.
          */
-        AZStd::unique_ptr<AZ::Entity> CloneSliceEntityForComparison(const AZ::Entity& sourceEntity,
+        AZTF_API AZStd::unique_ptr<AZ::Entity> CloneSliceEntityForComparison(const AZ::Entity& sourceEntity,
                                                                     const AZ::SliceComponent::SliceInstance& instance,
                                                                     AZ::SerializeContext& serializeContext);
 
@@ -107,7 +109,7 @@ namespace AzToolsFramework
          * \param targetInstanceToAddTo - the slice instance wanting to have instanceToAdd added to
          * \return true if safe to add. false if the slice addition would create a cyclic asset dependency (invalid).
          */
-        bool CheckSliceAdditionCyclicDependencySafe(const AZ::SliceComponent::SliceInstanceAddress& instanceToAdd,
+        AZTF_API bool CheckSliceAdditionCyclicDependencySafe(const AZ::SliceComponent::SliceInstanceAddress& instanceToAdd,
                                                     const AZ::SliceComponent::SliceInstanceAddress& targetInstanceToAddTo);
 
 
@@ -119,7 +121,7 @@ namespace AzToolsFramework
          * \param preSaveCallback the callback to use prior to the save to check that it is valid
          * \return AZ::Success if push is completed successfully, otherwise AZ::Failure with an AZStd::string payload.
          */
-        AZ::Outcome<void, AZStd::string> PushEntitiesBackToSlice(const AzToolsFramework::EntityIdList& entityIdList,
+        AZTF_API AZ::Outcome<void, AZStd::string> PushEntitiesBackToSlice(const AzToolsFramework::EntityIdList& entityIdList,
             const AZ::Data::Asset<AZ::SliceAsset>& sliceAsset, SliceTransaction::PreSaveCallback preSaveCallback);
 
         /**
@@ -131,7 +133,7 @@ namespace AzToolsFramework
         * \param preSaveCallback the callback to use prior to the save to check that it is valid
         * \return AZ::Success if push is completed successfully, otherwise AZ::Failure with an AZStd::string payload.
         */
-        AZ::Outcome<void, AZStd::string> PushEntitiesIncludingAdditionAndSubtractionBackToSlice(
+        AZTF_API AZ::Outcome<void, AZStd::string> PushEntitiesIncludingAdditionAndSubtractionBackToSlice(
             const AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
             const AZStd::unordered_set<AZ::EntityId>& entitiesToUpdate,
             const AZStd::unordered_set<AZ::EntityId>& entitiesToAdd,
@@ -148,7 +150,7 @@ namespace AzToolsFramework
          * \param preSaveCallback the callback to use prior to the save to check that it is valid
          * \return AZ::Success if push is completed successfully, otherwise AZ::Failure with an AZStd::string payload.
          */
-        AZ::Outcome<void, AZStd::string> PushEntityFieldBackToSlice(AZ::EntityId entityId,
+        AZTF_API AZ::Outcome<void, AZStd::string> PushEntityFieldBackToSlice(AZ::EntityId entityId,
             const AZ::Data::Asset<AZ::SliceAsset>& sliceAsset, const InstanceDataNode::Address& fieldAddress, SliceTransaction::PreSaveCallback preSaveCallback);
 
         /**
@@ -167,22 +169,22 @@ namespace AzToolsFramework
          *    return AZ::Success();
          * }
          */
-        SliceTransaction::Result SlicePreSaveCallbackForWorldEntities(SliceTransaction::TransactionPtr transaction, const char* fullPath, SliceTransaction::SliceAssetPtr& asset);
+        AZTF_API SliceTransaction::Result SlicePreSaveCallbackForWorldEntities(SliceTransaction::TransactionPtr transaction, const char* fullPath, SliceTransaction::SliceAssetPtr& asset);
 
-        void SlicePostPushCallback(SliceTransaction::TransactionPtr transaction, const char* fullSourcePath, const SliceTransaction::SliceAssetPtr& asset);
+        AZTF_API void SlicePostPushCallback(SliceTransaction::TransactionPtr transaction, const char* fullSourcePath, const SliceTransaction::SliceAssetPtr& asset);
 
-        void SlicePostSaveCallbackForNewSlice(SliceTransaction::TransactionPtr transaction, const char* fullPath, const SliceTransaction::SliceAssetPtr& transactionAsset);
+        AZTF_API void SlicePostSaveCallbackForNewSlice(SliceTransaction::TransactionPtr transaction, const char* fullPath, const SliceTransaction::SliceAssetPtr& transactionAsset);
 
         /**
          * Returns true if the entity has no transform parent.
          */
-        bool IsRootEntity(const AZ::Entity& entity);
+        AZTF_API bool IsRootEntity(const AZ::Entity& entity);
 
         /**
         * \brief Determines whether the provided entity id is the root of a slice or subslice
         * \param id The entity id to check
         */
-        bool IsSliceOrSubsliceRootEntity(const AZ::EntityId& id);
+        AZTF_API bool IsSliceOrSubsliceRootEntity(const AZ::EntityId& id);
 
         /**
          * Retrieves the \ref AZ::Edit::Attributes::SliceFlags assigned to a given data node.
@@ -190,21 +192,21 @@ namespace AzToolsFramework
          * \param classData - The class data to check for slice flags (some flags can cascade from class to all elements, can also be nullptr)
          * return ref AZ::Edit::SliceFlags
          */
-        AZ::u32 GetSliceFlags(const AZ::Edit::ElementData* editData, const AZ::Edit::ClassData* classData);
+        AZTF_API AZ::u32 GetSliceFlags(const AZ::Edit::ElementData* editData, const AZ::Edit::ClassData* classData);
 
         /**
          * Retrieves the \ref AZ::Edit::Attributes::SliceFlags assigned to a given data node.
          * \param node - instance data hierarchy node
          * return ref AZ::Edit::SliceFlags
          */
-        AZ::u32 GetNodeSliceFlags(const InstanceDataNode& node);
+        AZTF_API AZ::u32 GetNodeSliceFlags(const InstanceDataNode& node);
 
         /**
          * Returns true if the specified node is slice-pushable.
          * \param node instance data node to evaluate.
          * \param isRootEntity (optional) specifies whether the parent entity is a transform root.
          */
-        bool IsNodePushable(const InstanceDataNode& node, bool isRootEntity = false);
+        AZTF_API bool IsNodePushable(const InstanceDataNode& node, bool isRootEntity = false);
 
         /**
          * Displays "Save As" QFileDialog to user, generating suggested full slice path based on
@@ -218,7 +220,7 @@ namespace AzToolsFramework
          * \param outSliceFilePath - [out] full directory/filename path chosen by user/error checked
          * \return true if valid name chosen, false if not or if cancelled by user
          */
-        bool QueryUserForSliceFilename(const AZStd::string& suggestedName, 
+        AZTF_API bool QueryUserForSliceFilename(const AZStd::string& suggestedName, 
                                        const char* initialTargetDirectory,
                                        AZ::u32 sliceUserSettingsId,
                                        QWidget* activeWindow, 
@@ -233,7 +235,7 @@ namespace AzToolsFramework
         * \param newChildEntityIdAncestorPairs [out] Pairs of new child entity Id and the entity ancestor list
         * \param newEntityIds [out] Set of all added newly entityIds, whether pushable or not
         */
-        AZStd::unordered_set<AZ::EntityId> GetPushableNewChildEntityIds(
+        AZTF_API AZStd::unordered_set<AZ::EntityId> GetPushableNewChildEntityIds(
             const AzToolsFramework::EntityIdList& entityIdList,
             AZStd::unordered_map<AZ::Data::AssetId, EntityIdSet>& unpushableEntityIdsPerAsset,
             AZStd::unordered_map<AZ::EntityId, AZ::SliceComponent::EntityAncestorList>& sliceAncestryMapping,
@@ -246,7 +248,7 @@ namespace AzToolsFramework
         * \param assetEntityIdtoAssetEntityMappings [out] mappings from asset entity Id to asset entity
         * \param assetEntityIdtoInstanceAddressMappings [out] mappings from asset entity Id to instance address
         */
-        AZStd::unordered_set<AZ::EntityId> GetUniqueRemovedEntities(
+        AZTF_API AZStd::unordered_set<AZ::EntityId> GetUniqueRemovedEntities(
             const AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances,
             IdToEntityMapping& assetEntityIdtoAssetEntityMapping,
             IdToInstanceAddressMapping& assetEntityIdtoInstanceAddressMapping);
@@ -265,7 +267,7 @@ namespace AzToolsFramework
         * \param sliceSelectedCallback Callback for when a slice is selected, run before the asset selection. This allows this functionality to bridge module
         *                              boundaries. SliceUtilities is in AzToolsFramework, but the AssetBrowser largely exists in Sandbox.
         */
-        void PopulateSliceSubMenus(QMenu& outerMenu, const AzToolsFramework::EntityIdList& inputEntities, SliceSelectedCallback sliceSelectedCallback, SliceSelectedCallback sliceRelationshipViewCallback);
+        AZTF_API void PopulateSliceSubMenus(QMenu& outerMenu, const AzToolsFramework::EntityIdList& inputEntities, SliceSelectedCallback sliceSelectedCallback, SliceSelectedCallback sliceRelationshipViewCallback);
 
         /**
         * Creates and popluates a menu item associted with the passed in entity.
@@ -277,7 +279,7 @@ namespace AzToolsFramework
         * \param tooltip text to display when hovering over item
         * \param sliceAssetId [out] sliceAssetId of the passed in ancestor.
         */
-        QWidgetAction* MakeSliceMenuItem(const AZ::EntityId& selectedEntity, const AZ::SliceComponent::Ancestor& ancestor, QMenu* menu, int indentation, const QPixmap icon, QString tooltip, AZ::Data::AssetId& sliceAssetId);
+        AZTF_API QWidgetAction* MakeSliceMenuItem(const AZ::EntityId& selectedEntity, const AZ::SliceComponent::Ancestor& ancestor, QMenu* menu, int indentation, const QPixmap icon, QString tooltip, AZ::Data::AssetId& sliceAssetId);
 
         /**
          * Populates a QMenu with a sub-menu to select slices associated to the passed in entity list in the asset browser.
@@ -286,7 +288,7 @@ namespace AzToolsFramework
          * \param sliceSelectedCallback Callback for when a slice is selected, run before the asset selection. This allows this functionality to bridge module
          *                              boundaries. SliceUtilities is in AzToolsFramework, but the AssetBrowser largely exists in Sandbox.
          */
-        void PopulateFindSliceMenu(QMenu& outerMenu, const AZ::EntityId& selectedEntity, const AZ::SliceComponent::EntityAncestorList& ancestors, SliceSelectedCallback sliceSelectedCallback);
+        AZTF_API void PopulateFindSliceMenu(QMenu& outerMenu, const AZ::EntityId& selectedEntity, const AZ::SliceComponent::EntityAncestorList& ancestors, SliceSelectedCallback sliceSelectedCallback);
 
         /**
         * Populates a QMenu with a sub-menu to select slices associated to the passed in entity list in the slice relationship view.
@@ -295,13 +297,13 @@ namespace AzToolsFramework
         * \param sliceSelectedCallback Callback for when a slice is selected, run before the asset selection. This allows this functionality to bridge module
         *                              boundaries. SliceUtilities is in AzToolsFramework, but the AssetBrowser largely exists in Sandbox.
         */
-        void PopulateSliceRelationshipViewMenu(QMenu& outerMenu, const AZ::EntityId& selectedEntity, const AZ::SliceComponent::EntityAncestorList& ancestors, SliceSelectedCallback sliceSelectedCallback);
+        AZTF_API void PopulateSliceRelationshipViewMenu(QMenu& outerMenu, const AZ::EntityId& selectedEntity, const AZ::SliceComponent::EntityAncestorList& ancestors, SliceSelectedCallback sliceSelectedCallback);
 
         /**
          * Returns true if any of the given entities have slice overrides for their immediate slice ancestor (may be slow on a large group of entities).
          * \param inputEntities The entities to test. If any are not in a slice instance they are ignored.
          */
-        bool DoEntitiesHaveOverrides(const AzToolsFramework::EntityIdList& inputEntities);
+        AZTF_API bool DoEntitiesHaveOverrides(const AzToolsFramework::EntityIdList& inputEntities);
 
         /**
          * Check to see if a pending reparent request is non-trivial e.g. requires full or partial clones
@@ -333,77 +335,77 @@ namespace AzToolsFramework
          * \param entityId The target entity to reparent
          * \param newParentId The target parent entity
          */
-        bool IsReparentNonTrivial(const AZ::EntityId& entityId, const AZ::EntityId& newParentId);
+        AZTF_API bool IsReparentNonTrivial(const AZ::EntityId& entityId, const AZ::EntityId& newParentId);
 
         /**
         * Reflects slice tools related structures for serialization/editing.
         */
-        void Reflect(AZ::ReflectContext* context);
+        AZTF_API void Reflect(AZ::ReflectContext* context);
 
         /**
         * Gets the path to the icon used for representing slices.
         */
-        QString GetSliceItemIconPath();
+        AZTF_API QString GetSliceItemIconPath();
 
         /**
         * Gets the path to the icon used for representing modified slices.
         */
-        QString GetSliceItemChangedIconPath();
+        AZTF_API QString GetSliceItemChangedIconPath();
 
         /**
         * Gets the path to the L shape icon.
         */
-        QString GetLShapeIconPath();
+        AZTF_API QString GetLShapeIconPath();
 
         /**
         * Gets the path to the blue 3d box shape icon.
         */
-        QString GetSliceEntityIconPath();
+        AZTF_API QString GetSliceEntityIconPath();
 
         /**
         * Gets the path to the warning icon.
         */
-        QString GetWarningIconPath();
+        AZTF_API QString GetWarningIconPath();
 
         /**
         * Gets the height to use for rows that represent slices.
         */
-        AZ::u32 GetSliceItemHeight();
+        AZTF_API AZ::u32 GetSliceItemHeight();
 
         /**
         * Gets the size to use for icons representing slices.
         */
-        QSize GetSliceItemIconSize();
+        AZTF_API QSize GetSliceItemIconSize();
 
         /**
         * Gets the size of the L shape icon.
         */
-        QSize GetLShapeIconSize();
+        AZTF_API QSize GetLShapeIconSize();
 
         /**
         * Gets the size of the warning icon.
         */
-        QSize GetWarningIconSize();
+        AZTF_API QSize GetWarningIconSize();
 
         /**
         * Gets the minimum width of the warning label.
         */
-        int GetWarningLabelMinimumWidth();
+        AZTF_API int GetWarningLabelMinimumWidth();
 
         /**
         * Gets the depth to indent slices per level of that slice's hierarchy.
         */
-        AZ::u32 GetSliceHierarchyMenuIdentationPerLevel();
+        AZTF_API AZ::u32 GetSliceHierarchyMenuIdentationPerLevel();
 
         /**
         * Gets the font size to make the slice submenu look like the parent menu
         */
-        int GetSliceSelectFontSize();
+        AZTF_API int GetSliceSelectFontSize();
 
         /**
         * Structure for saving/retrieving user settings related to slice workflows.
         */
-        class SliceUserSettings
+        class AZTF_API SliceUserSettings
             : public AZ::UserSettings
         {
         public:
@@ -418,7 +420,7 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
         };
 
-        class DetachMenuActionWidget
+        class AZTF_API DetachMenuActionWidget
             : public QWidget
         {
         public:
@@ -433,7 +435,7 @@ namespace AzToolsFramework
             QLabel* m_toLabel;
         };
 
-        class MoveToSliceLevelConfirmation
+        class AZTF_API MoveToSliceLevelConfirmation
             : public QDialog
         {
         public:
@@ -456,7 +458,7 @@ namespace AzToolsFramework
         * \param invalidReferenceCount The number of references that will be cleared.
         * \param showDetailsButton True to show a details button to be used to open the advanced slice push window.
         */
-        InvalidSliceReferencesWarningResult DisplayInvalidSliceReferencesWarning(
+        AZTF_API InvalidSliceReferencesWarningResult DisplayInvalidSliceReferencesWarning(
             QWidget* parent,
             size_t invalidSliceCount,
             size_t invalidReferenceCount,
@@ -473,7 +475,7 @@ namespace AzToolsFramework
         * \param unpushableEntityIds [out] Set of unpushable entity Ids
         * \return True if there are changes
         */
-        bool CountPushableChangesToSlice(const AzToolsFramework::EntityIdList& inputEntities,
+        AZTF_API bool CountPushableChangesToSlice(const AzToolsFramework::EntityIdList& inputEntities,
             const InstanceDataNode::Address* fieldAddress,
             AZStd::unordered_map<AZ::Data::AssetId, EntityIdSet>& entitiesToAddPerAsset,
             AZStd::unordered_set<AZ::EntityId>& entitiesToRemove,
@@ -487,26 +489,26 @@ namespace AzToolsFramework
         /**
         * Returns the file extension (including .) used for slices.
         */
-        AZStd::string GetSliceFileExtension();
+        AZTF_API AZStd::string GetSliceFileExtension();
 
         //! Returns whether or not a given asset is a dynamic slice or not
-        bool IsDynamic(const AZ::Data::AssetId& assetId);
+        AZTF_API bool IsDynamic(const AZ::Data::AssetId& assetId);
 
         //! Toggles if a slice asset is dynamic and re-saves the slice
-        void SetIsDynamic(const AZ::Data::AssetId& assetId, bool isDynamic);
+        AZTF_API void SetIsDynamic(const AZ::Data::AssetId& assetId, bool isDynamic);
 
         /**
         * Creates the right click context menu for slices in the asset browser.
         * \param menu The menu to parent this to.
         * \param fullFilePath The full file path of the slice.
         */
-        void CreateSliceAssetContextMenu(QMenu* menu, const AZStd::string& fullFilePath);
+        AZTF_API void CreateSliceAssetContextMenu(QMenu* menu, const AZStd::string& fullFilePath);
 
         /**
         * Retrieves the desired save format for slices.
         * \return The slice save format.
         */
-        AZ::DataStream::StreamType GetSliceStreamFormat();
+        AZTF_API AZ::DataStream::StreamType GetSliceStreamFormat();
 
         /**
         * Prunes child order array entries that won't be in a pushed slice.
@@ -515,7 +517,7 @@ namespace AzToolsFramework
         * \param targetSlice Slice that the children are being pushed to.
         * \param willPushEntityCallback Callback routine that is called per entity in the array and returns true if the entity will be pushed.
         */
-        void RemoveInvalidChildOrderArrayEntries(const AZStd::vector<AZ::EntityId>& originalOrderArray,
+        AZTF_API void RemoveInvalidChildOrderArrayEntries(const AZStd::vector<AZ::EntityId>& originalOrderArray,
             AZStd::vector<AZ::EntityId>& prunedOrderArray,
             const AZ::Data::Asset<AZ::SliceAsset>& targetSlice,
             WillPushEntityCallback willPushEntityCallback);

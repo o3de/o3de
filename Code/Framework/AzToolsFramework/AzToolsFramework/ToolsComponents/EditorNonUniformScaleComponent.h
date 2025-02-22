@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponentMode.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
@@ -19,7 +21,7 @@ namespace AzToolsFramework
     namespace Components
     {
         //! Allows working with non-uniform scale in the editor.
-        class EditorNonUniformScaleComponent
+        class AZTF_API EditorNonUniformScaleComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public AZ::NonUniformScaleRequestBus::Handler
         {

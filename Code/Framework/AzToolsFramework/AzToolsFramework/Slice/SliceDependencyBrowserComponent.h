@@ -6,8 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
-
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
@@ -18,7 +19,7 @@
 
 namespace AzToolsFramework
 {
-    class SliceDependencyBrowserComponent
+    class AZTF_API SliceDependencyBrowserComponent
         : public AZ::Component
         , private AssetBrowser::AssetDatabaseLocationNotificationBus::Handler
         , private SliceDependencyBrowserRequestsBus::Handler

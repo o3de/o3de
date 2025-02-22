@@ -5,8 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COMPONENT_ASSET_MIME_DATA_CONTAINER_H
-#define COMPONENT_ASSET_MIME_DATA_CONTAINER_H
+#pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -26,7 +28,7 @@ class QMimeData;
 
 namespace AzToolsFramework
 {
-    class ComponentAssetMimeData
+    class AZTF_API ComponentAssetMimeData
     {
     public:
         virtual ~ComponentAssetMimeData() { }
@@ -53,7 +55,7 @@ namespace AzToolsFramework
 
     /// A mime container used for an asset and a component type to assign that asset into.
     /// Used for creating new components directly from assets.
-    class ComponentAssetMimeDataContainer
+    class AZTF_API ComponentAssetMimeDataContainer
     {
     public:
         virtual ~ComponentAssetMimeDataContainer() { }
@@ -77,4 +79,3 @@ namespace AzToolsFramework
     };
 }
 
-#endif // EDITOR_ASSET_ID_CONTAINER_H

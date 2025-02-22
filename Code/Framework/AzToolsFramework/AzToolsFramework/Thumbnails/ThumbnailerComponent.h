@@ -6,6 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
@@ -24,7 +27,7 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        class ThumbnailerComponent
+        class AZTF_API ThumbnailerComponent
             : public AZ::Component
             , public ThumbnailerRequestBus::Handler
         {

@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include "SQLiteConnection.h"
@@ -28,9 +31,9 @@ namespace AzToolsFramework
 
 namespace std
 {
-    ostream& operator<<(ostream& out, const AZ::Uuid& uuid);
-    ostream& operator<<(ostream& out, const AzToolsFramework::SQLite::SqlBlob&);
-    ostream& operator<<(ostream& out, const AzToolsFramework::AssetDatabase::PathOrUuid& pathOrUuid);
+    AZTF_API ostream& operator<<(ostream& out, const AZ::Uuid& uuid);
+    AZTF_API ostream& operator<<(ostream& out, const AzToolsFramework::SQLite::SqlBlob&);
+    AZTF_API ostream& operator<<(ostream& out, const AzToolsFramework::AssetDatabase::PathOrUuid& pathOrUuid);
 }
 
 namespace AzToolsFramework
@@ -57,18 +60,18 @@ namespace AzToolsFramework
 
         namespace Internal
         {
-            void LogQuery(const char* statement, const AZStd::string& params);
-            void LogResultId(AZ::s64 rowId);
+            AZTF_API void LogQuery(const char* statement, const AZStd::string& params);
+            AZTF_API void LogResultId(AZ::s64 rowId);
 
-            bool Bind(Statement* statement, int index, const AZ::Uuid& value);
-            bool Bind(Statement* statement, int index, const AssetDatabase::PathOrUuid& value);
-            bool Bind(Statement* statement, int index, double value);
-            bool Bind(Statement* statement, int index, AZ::s32 value);
-            bool Bind(Statement* statement, int index, AZ::u32 value);
-            bool Bind(Statement* statement, int index, const char* value);
-            bool Bind(Statement* statement, int index, AZ::s64 value);
-            bool Bind(Statement* statement, int index, AZ::u64 value);
-            bool Bind(Statement* statement, int index, const SqlBlob& value);
+            AZTF_API bool Bind(Statement* statement, int index, const AZ::Uuid& value);
+            AZTF_API bool Bind(Statement* statement, int index, const AssetDatabase::PathOrUuid& value);
+            AZTF_API bool Bind(Statement* statement, int index, double value);
+            AZTF_API bool Bind(Statement* statement, int index, AZ::s32 value);
+            AZTF_API bool Bind(Statement* statement, int index, AZ::u32 value);
+            AZTF_API bool Bind(Statement* statement, int index, const char* value);
+            AZTF_API bool Bind(Statement* statement, int index, AZ::s64 value);
+            AZTF_API bool Bind(Statement* statement, int index, AZ::u64 value);
+            AZTF_API bool Bind(Statement* statement, int index, const SqlBlob& value);
         }
 
         //! Helper object used to provide a query callback that needs to accept multiple arguments

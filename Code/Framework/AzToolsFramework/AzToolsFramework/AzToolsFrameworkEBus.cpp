@@ -20,3 +20,11 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabPublicNotifications);
 
+#include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorEntityVisibilityNotifications);
+
+#include <AzToolsFramework/ToolsComponents/EditorComponentBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+
+#include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorEntityLockComponentNotifications);

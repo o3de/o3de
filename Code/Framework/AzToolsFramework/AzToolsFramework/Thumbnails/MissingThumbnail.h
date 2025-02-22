@@ -6,6 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
@@ -15,7 +18,7 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        class MissingThumbnail
+        class AZTF_API MissingThumbnail
             : public Thumbnail
         {
             Q_OBJECT

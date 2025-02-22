@@ -114,23 +114,23 @@ set(FILES
 #    AssetCatalog/PlatformAddressedAssetCatalog.cpp
 #    AssetCatalog/PlatformAddressedAssetCatalogManager.h
 #    AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
-    Thumbnails/ThumbnailerComponent.cpp
-    Thumbnails/ThumbnailerComponent.h
-    Thumbnails/ThumbnailerNullComponent.cpp
-    Thumbnails/ThumbnailerNullComponent.h
-    Thumbnails/LoadingThumbnail.cpp
-    Thumbnails/LoadingThumbnail.h
-    Thumbnails/MissingThumbnail.cpp
-    Thumbnails/MissingThumbnail.h
-    Thumbnails/SourceControlThumbnail.cpp
-    Thumbnails/SourceControlThumbnail.h
+#    Thumbnails/ThumbnailerComponent.cpp
+#    Thumbnails/ThumbnailerComponent.h
+#    Thumbnails/ThumbnailerNullComponent.cpp
+#    Thumbnails/ThumbnailerNullComponent.h
+#    Thumbnails/LoadingThumbnail.cpp
+#    Thumbnails/LoadingThumbnail.h
+#    Thumbnails/MissingThumbnail.cpp
+#    Thumbnails/MissingThumbnail.h
+#    Thumbnails/SourceControlThumbnail.cpp
+#    Thumbnails/SourceControlThumbnail.h
     Thumbnails/SourceControlThumbnailBus.h
-    Thumbnails/Thumbnail.cpp
-    Thumbnails/Thumbnail.h
-    Thumbnails/Thumbnail.inl
+#    Thumbnails/Thumbnail.cpp
+#    Thumbnails/Thumbnail.h
+#    Thumbnails/Thumbnail.inl
     Thumbnails/ThumbnailerBus.h
-    Thumbnails/ThumbnailWidget.cpp
-    Thumbnails/ThumbnailWidget.h
+ #   Thumbnails/ThumbnailWidget.cpp
+ #   Thumbnails/ThumbnailWidget.h
     AssetBundle/AssetBundleAPI.h
 #    AssetBundle/AssetBundleComponent.cpp
 #    AssetBundle/AssetBundleComponent.h
@@ -290,108 +290,108 @@ set(FILES
  #   Picking/Manipulators/ManipulatorBoundManager.h
  #   Picking/Manipulators/ManipulatorBounds.cpp
  #   Picking/Manipulators/ManipulatorBounds.h
-    PropertyTreeEditor/PropertyTreeEditor.cpp
-    PropertyTreeEditor/PropertyTreeEditor.h
-    PropertyTreeEditor/PropertyTreeEditorComponent.cpp
-    PropertyTreeEditor/PropertyTreeEditorComponent.h
-    Render/EditorIntersectorComponent.cpp
-    Render/EditorIntersectorComponent.h
-    Slice/SliceDataFlagsCommand.h
-    Slice/SliceDataFlagsCommand.cpp
-    Slice/SliceUtilities.h
-    Slice/SliceUtilities.cpp
-    Slice/SliceCompilation.h
-    Slice/SliceCompilation.cpp
-    Slice/SliceTransaction.cpp
-    Slice/SliceTransaction.h
-    Slice/SliceDependencyBrowserComponent.h
-    Slice/SliceDependencyBrowserComponent.cpp
+#    PropertyTreeEditor/PropertyTreeEditor.cpp
+#    PropertyTreeEditor/PropertyTreeEditor.h
+#    PropertyTreeEditor/PropertyTreeEditorComponent.cpp
+#    PropertyTreeEditor/PropertyTreeEditorComponent.h
+#    Render/EditorIntersectorComponent.cpp
+#    Render/EditorIntersectorComponent.h
+#    Slice/SliceDataFlagsCommand.h
+#    Slice/SliceDataFlagsCommand.cpp
+#    Slice/SliceUtilities.h
+#    Slice/SliceUtilities.cpp
+#    Slice/SliceCompilation.h
+#    Slice/SliceCompilation.cpp
+#    Slice/SliceTransaction.cpp
+#    Slice/SliceTransaction.h
+#    Slice/SliceDependencyBrowserComponent.h
+#    Slice/SliceDependencyBrowserComponent.cpp
     Slice/SliceDependencyBrowserBus.h
-    Slice/SliceRelationshipNode.h
-    Slice/SliceRelationshipNode.cpp
+#    Slice/SliceRelationshipNode.h
+#    Slice/SliceRelationshipNode.cpp
     Slice/SliceRequestBus.h
-    Slice/SliceRequestComponent.h
-    Slice/SliceRequestComponent.cpp
+#    Slice/SliceRequestComponent.h
+#    Slice/SliceRequestComponent.cpp
     Slice/SliceMetadataEntityContextBus.h
-    Slice/SliceMetadataEntityContextComponent.h
-    Slice/SliceMetadataEntityContextComponent.cpp
-    SourceControl/LocalFileSCComponent.cpp
-    SourceControl/LocalFileSCComponent.h
-    SourceControl/PerforceComponent.cpp
-    SourceControl/PerforceComponent.h
-    SourceControl/PerforceConnection.cpp
-    SourceControl/PerforceConnection.h
-    SourceControl/QtSourceControlNotificationHandler.cpp
-    SourceControl/QtSourceControlNotificationHandler.h
+#    Slice/SliceMetadataEntityContextComponent.h
+#    Slice/SliceMetadataEntityContextComponent.cpp
+#    SourceControl/LocalFileSCComponent.cpp
+#    SourceControl/LocalFileSCComponent.h
+#    SourceControl/PerforceComponent.cpp
+#    SourceControl/PerforceComponent.h
+#    SourceControl/PerforceConnection.cpp
+#    SourceControl/PerforceConnection.h
+ #   SourceControl/QtSourceControlNotificationHandler.cpp
+ #   SourceControl/QtSourceControlNotificationHandler.h
     SourceControl/SourceControlAPI.h
-    SourceControl/PerforceSettings.cpp
-    SourceControl/PerforceSettings.h
-    SourceControl/PerforceSettings.ui
-    SQLite/SQLiteConnection.cpp
-    SQLite/SQLiteConnection.h
-    SQLite/SQLiteQuery.cpp
-    SQLite/SQLiteQuery.h
+#    SourceControl/PerforceSettings.cpp
+#    SourceControl/PerforceSettings.h
+#    SourceControl/PerforceSettings.ui
+#    SQLite/SQLiteConnection.cpp
+#    SQLite/SQLiteConnection.h
+#    SQLite/SQLiteQuery.cpp
+#    SQLite/SQLiteQuery.h
     SQLite/SQLiteQueryLogBus.h
     SQLite/SQLiteBoundColumnSet.h
     SQLite/SQLiteBoundColumnSet.cpp
-    ToolsComponents/ComponentAssetMimeDataContainer.cpp
-    ToolsComponents/ComponentAssetMimeDataContainer.h
-    ToolsComponents/ComponentMimeData.cpp
-    ToolsComponents/ComponentMimeData.h
-    ToolsComponents/EditorAssetMimeDataContainer.cpp
-    ToolsComponents/EditorAssetMimeDataContainer.h
-    ToolsComponents/EditorAssetReference.cpp
-    ToolsComponents/EditorAssetReference.h
+#    ToolsComponents/ComponentAssetMimeDataContainer.cpp
+#    ToolsComponents/ComponentAssetMimeDataContainer.h
+#    ToolsComponents/ComponentMimeData.cpp
+#    ToolsComponents/ComponentMimeData.h
+#    ToolsComponents/EditorAssetMimeDataContainer.cpp
+#    ToolsComponents/EditorAssetMimeDataContainer.h
+#    ToolsComponents/EditorAssetReference.cpp
+#    ToolsComponents/EditorAssetReference.h
     ToolsComponents/EditorComponentAdapter.inl
     ToolsComponents/EditorComponentAdapter.h
-    ToolsComponents/EditorComponentBase.cpp
-    ToolsComponents/EditorComponentBase.h
-    ToolsComponents/EditorDisabledCompositionComponent.h
-    ToolsComponents/EditorDisabledCompositionComponent.cpp
+#    ToolsComponents/EditorComponentBase.cpp
+#    ToolsComponents/EditorComponentBase.h
+#    ToolsComponents/EditorDisabledCompositionComponent.h
+#    ToolsComponents/EditorDisabledCompositionComponent.cpp
     ToolsComponents/EditorDisabledCompositionBus.h
-    ToolsComponents/EditorOnlyEntityComponent.h
-    ToolsComponents/EditorOnlyEntityComponent.cpp
+#    ToolsComponents/EditorOnlyEntityComponent.h
+#    ToolsComponents/EditorOnlyEntityComponent.cpp
     ToolsComponents/EditorOnlyEntityComponentBus.h
-    ToolsComponents/EditorEntityIdContainer.cpp
-    ToolsComponents/EditorEntityIdContainer.h
-    ToolsComponents/EditorEntityIconComponent.h
-    ToolsComponents/EditorEntityIconComponent.cpp
+#    ToolsComponents/EditorEntityIdContainer.cpp
+#    ToolsComponents/EditorEntityIdContainer.h
+#    ToolsComponents/EditorEntityIconComponent.h
+#    ToolsComponents/EditorEntityIconComponent.cpp
     ToolsComponents/EditorEntityIconComponentBus.h
-    ToolsComponents/EditorLockComponent.cpp
-    ToolsComponents/EditorLockComponent.h
-    ToolsComponents/EditorLockComponentBus.h
-    ToolsComponents/EditorInspectorComponent.h
-    ToolsComponents/EditorInspectorComponent.cpp
+#    ToolsComponents/EditorLockComponent.cpp
+#    ToolsComponents/EditorLockComponent.h
+#    ToolsComponents/EditorLockComponentBus.h
+#    ToolsComponents/EditorInspectorComponent.h
+#    ToolsComponents/EditorInspectorComponent.cpp
     ToolsComponents/EditorInspectorComponentBus.h
-    ToolsComponents/EditorPendingCompositionComponent.h
-    ToolsComponents/EditorPendingCompositionComponent.cpp
+#    ToolsComponents/EditorPendingCompositionComponent.h
+#    ToolsComponents/EditorPendingCompositionComponent.cpp
     ToolsComponents/EditorPendingCompositionBus.h
-    ToolsComponents/EditorSelectionAccentSystemComponent.cpp
-    ToolsComponents/EditorSelectionAccentSystemComponent.h
+#    ToolsComponents/EditorSelectionAccentSystemComponent.cpp
+#    ToolsComponents/EditorSelectionAccentSystemComponent.h
     ToolsComponents/EditorSelectionAccentingBus.h
-    ToolsComponents/EditorVisibilityComponent.cpp
-    ToolsComponents/EditorVisibilityComponent.h
-    ToolsComponents/EditorVisibilityBus.h
-    ToolsComponents/GenericComponentWrapper.cpp
-    ToolsComponents/GenericComponentWrapper.h
-    ToolsComponents/SelectionComponent.cpp
-    ToolsComponents/SelectionComponent.h
-    ToolsComponents/TransformComponent.h
-    ToolsComponents/TransformComponent.cpp
+#    ToolsComponents/EditorVisibilityComponent.cpp
+#    ToolsComponents/EditorVisibilityComponent.h
+#    ToolsComponents/EditorVisibilityBus.h
+#    ToolsComponents/GenericComponentWrapper.cpp
+#    ToolsComponents/GenericComponentWrapper.h
+#    ToolsComponents/SelectionComponent.cpp
+#    ToolsComponents/SelectionComponent.h
+#    ToolsComponents/TransformComponent.h
+#    ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
-    ToolsComponents/TransformComponentSerializer.h
-    ToolsComponents/TransformComponentSerializer.cpp
-    ToolsComponents/ScriptEditorComponent.cpp
-    ToolsComponents/ScriptEditorComponent.h
-    ToolsComponents/ToolsAssetCatalogComponent.cpp
-    ToolsComponents/ToolsAssetCatalogComponent.h
+#    ToolsComponents/TransformComponentSerializer.h
+#    ToolsComponents/TransformComponentSerializer.cpp
+#    ToolsComponents/ScriptEditorComponent.cpp
+#    ToolsComponents/ScriptEditorComponent.h
+#    ToolsComponents/ToolsAssetCatalogComponent.cpp
+#    ToolsComponents/ToolsAssetCatalogComponent.h
     ToolsComponents/ToolsAssetCatalogBus.h
-    ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h
-    ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.cpp
-    ToolsComponents/EditorNonUniformScaleComponent.h
-    ToolsComponents/EditorNonUniformScaleComponent.cpp
-    ToolsComponents/EditorNonUniformScaleComponentMode.h
-    ToolsComponents/EditorNonUniformScaleComponentMode.cpp
+#    ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h
+#    ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.cpp
+#    ToolsComponents/EditorNonUniformScaleComponent.h
+#    ToolsComponents/EditorNonUniformScaleComponent.cpp
+#    ToolsComponents/EditorNonUniformScaleComponentMode.h
+#    ToolsComponents/EditorNonUniformScaleComponentMode.cpp
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
@@ -976,19 +976,19 @@ set(FILES
     UI/Notifications/ToastNotificationsView.cpp
     UI/Notifications/ToastNotificationsView.h
     UI/Notifications/ToastBus.h
-    PythonTerminal/ScriptHelpDialog.cpp
-    PythonTerminal/ScriptHelpDialog.h
-    PythonTerminal/ScriptHelpDialog.ui
-    PythonTerminal/ScriptTermDialog.cpp
-    PythonTerminal/ScriptTermDialog.h
-    PythonTerminal/ScriptTermDialog.ui
+#    PythonTerminal/ScriptHelpDialog.cpp
+#    PythonTerminal/ScriptHelpDialog.h
+#    PythonTerminal/ScriptHelpDialog.ui
+#    PythonTerminal/ScriptTermDialog.cpp
+#    PythonTerminal/ScriptTermDialog.h
+#    PythonTerminal/ScriptTermDialog.ui
     #Input/QtEventToAzInputMapper.h
     #Input/QtEventToAzInputMapper.cpp
-    Script/LuaEditorSystemComponent.h
-    Script/LuaEditorSystemComponent.cpp
+#    Script/LuaEditorSystemComponent.h
+#    Script/LuaEditorSystemComponent.cpp
     Script/LuaSymbolsReporterBus.h
-    Script/LuaSymbolsReporterSystemComponent.h
-    Script/LuaSymbolsReporterSystemComponent.cpp
+#    Script/LuaSymbolsReporterSystemComponent.h
+#    Script/LuaSymbolsReporterSystemComponent.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds
