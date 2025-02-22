@@ -961,8 +961,6 @@ namespace ScriptCanvas
 
     void Slot::OnVariableRenamed(AZStd::string_view variableName)
     {
-        DisconnectVariableNotificationBus();
-
         Rename(variableName);
     }
 
