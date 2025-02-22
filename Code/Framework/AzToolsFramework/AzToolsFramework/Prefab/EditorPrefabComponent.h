@@ -6,14 +6,16 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class EditorPrefabComponent : public AzToolsFramework::Components::EditorComponentBase
+        class AZTF_API EditorPrefabComponent : public AzToolsFramework::Components::EditorComponentBase
         {
         public:
             static inline constexpr AZ::TypeId EditorPrefabComponentTypeId{ "{756E5F9C-3E08-4F8D-855C-A5AEEFB6FCDD}" };

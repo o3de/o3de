@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -19,7 +22,7 @@ namespace AZ
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class PrefabCatchmentProcessor
+    class AZTF_API PrefabCatchmentProcessor
         : public PrefabProcessor
     {
     public:

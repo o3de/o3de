@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -26,7 +28,7 @@ namespace AzToolsFramework
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
 
-        class PrefabUndoCache
+        class AZTF_API PrefabUndoCache
             : UndoSystem::UndoCacheInterface
         {
         public:

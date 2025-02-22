@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -19,7 +22,7 @@
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class PrefabConversionPipeline final
+    class AZTF_API PrefabConversionPipeline final
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabConversionPipeline, AZ::SystemAllocator);

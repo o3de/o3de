@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentExport.h>
@@ -19,7 +21,7 @@
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class ComponentRequirementsValidator
+    class AZTF_API ComponentRequirementsValidator
     {
     public:
         AZ_CLASS_ALLOCATOR(ComponentRequirementsValidator, AZ::SystemAllocator);

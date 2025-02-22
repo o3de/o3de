@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
@@ -22,7 +25,7 @@ namespace AzToolsFramework::Prefab
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class InMemorySpawnableAssetProcessor
+    class AZTF_API InMemorySpawnableAssetProcessor
     {
     public:
         AZ_CLASS_ALLOCATOR(InMemorySpawnableAssetProcessor, AZ::SystemAllocator);

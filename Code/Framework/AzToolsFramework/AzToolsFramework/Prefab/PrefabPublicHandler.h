@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string_view.h>
@@ -33,7 +35,7 @@ namespace AzToolsFramework
         class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
 
-        class PrefabPublicHandler final
+        class AZTF_API PrefabPublicHandler final
             : public PrefabPublicInterface
         {
         public:

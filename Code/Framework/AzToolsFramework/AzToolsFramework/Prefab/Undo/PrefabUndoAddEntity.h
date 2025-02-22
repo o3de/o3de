@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
 
 namespace AzToolsFramework
@@ -15,7 +17,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         //! Undo class for handling addition of an entity to a prefab instance.
-        class PrefabUndoAddEntity
+        class AZTF_API PrefabUndoAddEntity
             : public PrefabUndoBase
         {
         public:

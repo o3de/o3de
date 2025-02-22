@@ -42,6 +42,16 @@ namespace AzToolsFramework
             other.m_prefabSystemComponentInterface = nullptr;
         }
 
+        Link::Link([[maybe_unused]] const Link& other) noexcept
+        {
+            AZ_Assert(false,"Invalid copy constructor call");
+        }
+
+        Link& Link::operator=([[maybe_unused]] const Link& other) noexcept
+        {
+            AZ_Assert(false,"Invalid copy constructor call");
+            return *this;
+        }
 
         Link& Link::operator=(Link&& other) noexcept
         {

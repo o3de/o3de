@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -47,8 +49,8 @@ namespace AzToolsFramework
             * @param valueName A name of child value of parentValue.
             * @return Reference to the child value of parentValue with name valueName if the child value exists.
             */
-            PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, const char* valueName);
-            PrefabDomValueConstReference FindPrefabDomValue(const PrefabDomValue& parentValue, const char* valueName);
+            AZTF_API PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, const char* valueName);
+            AZTF_API PrefabDomValueConstReference FindPrefabDomValue(const PrefabDomValue& parentValue, const char* valueName);
 
             enum class StoreFlags : uint8_t
             {
@@ -85,7 +87,7 @@ namespace AzToolsFramework
             * @param flags Controls behavior such as whether to store default values.
             * @return bool on whether the operation succeeded.
             */
-            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreFlags flags = StoreFlags::None);
+            AZTF_API bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreFlags flags = StoreFlags::None);
 
             /**
              * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
@@ -95,7 +97,7 @@ namespace AzToolsFramework
              * @param flags Controls behavior such as whether to store default values.
              * @return bool on whether the operation succeeded.
              */
-            bool StoreInstanceInPrefabDom(
+            AZTF_API bool StoreInstanceInPrefabDom(
                 const Instance& instance,
                 PrefabDom& prefabDom,
                 AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
@@ -110,7 +112,7 @@ namespace AzToolsFramework
             * @param flags controls behavior such as whether to store default values
             * @return bool on whether the operation succeeded
             */
-            bool StoreEntityInPrefabDomFormat(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom,
+            AZTF_API bool StoreEntityInPrefabDomFormat(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom,
                 StoreFlags flags = StoreFlags::None);
 
             enum class LoadFlags : uint8_t
@@ -137,7 +139,7 @@ namespace AzToolsFramework
             * @param flags Controls behavior such as random entity id assignment.
             * @return bool on whether the operation succeeded.
             */
-            bool LoadInstanceFromPrefabDom(
+            AZTF_API bool LoadInstanceFromPrefabDom(
                 Instance& instance, const PrefabDom& prefabDom, LoadFlags flags = LoadFlags::None);
 
             /**
@@ -148,7 +150,7 @@ namespace AzToolsFramework
             * @param shouldClearContainers Whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
             */
-            bool LoadInstanceFromPrefabDom(
+            AZTF_API bool LoadInstanceFromPrefabDom(
                 Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
                 LoadFlags flags = LoadFlags::None);
 
@@ -161,7 +163,7 @@ namespace AzToolsFramework
             * @param shouldClearContainers Whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
             */
-            bool LoadInstanceFromPrefabDom(
+            AZTF_API bool LoadInstanceFromPrefabDom(
                 Instance& instance, EntityList& newlyAddedEntities, const PrefabDom& prefabDom,
                 LoadFlags flags = LoadFlags::None);
 
@@ -177,16 +179,16 @@ namespace AzToolsFramework
              * @param prefabDom The DOM to get the template source paths from.
              * @param[out] templateSourcePaths The set of template source paths to populate.
              */
-            void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+            AZTF_API void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 
             /**
              * Gets the instances DOM value from the given prefab DOM.
              * 
              * @return the instances DOM value or AZStd::nullopt if it instances can't be found.
              */
-            PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom);
+            AZTF_API PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom);
 
-            AZ::JsonSerializationResult::ResultCode ApplyPatches(
+            AZTF_API AZ::JsonSerializationResult::ResultCode ApplyPatches(
                 PrefabDomValue& prefabDomToApplyPatchesOn,
                 PrefabDom::AllocatorType& allocator,
                 const PrefabDomValue& patches);
@@ -196,29 +198,29 @@ namespace AzToolsFramework
              *
              * @return the instances DOM value or AZStd::nullopt if its instances can't be found.
              */
-            PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom);
+            AZTF_API PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom);
 
             //! Identifies instance members modified by inspecting the patches provided.
             //! @param patches The patches to inspect.
             //! @return PatchesMetada The metadata object indicating which instance members get modified with the provided patches.
-            PatchesMetadata IdentifyModifiedInstanceMembers(const PrefabDom& patches);
+            AZTF_API PatchesMetadata IdentifyModifiedInstanceMembers(const PrefabDom& patches);
 
             /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.
              * @param printMessage The message that will be printed before printing the PrefabDomValue
              * @param prefabDomValue The DOM value to be printed. A 'PrefabDom' type can also be passed into this variable.
              */
-            void PrintPrefabDomValue(
+            AZTF_API void PrintPrefabDomValue(
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const AzToolsFramework::Prefab::PrefabDomValue& prefabDomValue);
 
-            AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
+            AZTF_API AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
 
             //! Adds a nested instance to the prefab DOM and optionally initialize its contents.
             //! @param prefabDom The prefab DOM to update.
             //! @param nestedInstanceAlias The alias of the nested instance to be added.
             //! @param nestedInstanceDom An optional value to assign to the added nested instance in the prefab DOM.
-            void AddNestedInstance(
+            AZTF_API void AddNestedInstance(
                 PrefabDom& prefabDom,
                 const InstanceAlias& nestedInstanceAlias,
                 PrefabDomValueConstReference nestedInstanceDom = AZStd::nullopt);
@@ -230,7 +232,7 @@ namespace AzToolsFramework
             //! This may happen, for example, when loading a spoiled prefab stored with earlier O3DE versions.
             //! @param prefabDom The prefab DOM to check and conditionally update. Changes will be applied in place.
             //! @return True if all checks were successful, otherwise false. 
-            bool SubstituteInvalidParentsInEntities(PrefabDom& prefabDom);
+            AZTF_API bool SubstituteInvalidParentsInEntities(PrefabDom& prefabDom);
 
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.

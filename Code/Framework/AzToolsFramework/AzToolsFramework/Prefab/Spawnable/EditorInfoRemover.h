@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
@@ -30,7 +32,7 @@ namespace AzToolsFramework::Components
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class EditorInfoRemover
+    class AZTF_API EditorInfoRemover
         : public PrefabProcessor
     {
     public:

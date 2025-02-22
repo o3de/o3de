@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -35,7 +37,7 @@ namespace AzToolsFramework::Prefab
     class PrefabSystemComponentInterface;
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
-    class PrefabFocusHandler final
+    class AZTF_API PrefabFocusHandler final
         : public PrefabFocusPublicRequestBus::Handler
         , private PrefabFocusInterface
         , private PrefabPublicNotificationBus::Handler

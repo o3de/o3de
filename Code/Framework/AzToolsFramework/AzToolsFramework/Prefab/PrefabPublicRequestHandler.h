@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 
@@ -20,7 +22,7 @@ namespace AzToolsFramework
     {
         class PrefabPublicInterface;
 
-        class PrefabPublicRequestHandler final
+        class AZTF_API PrefabPublicRequestHandler final
             : public PrefabPublicRequestBus::Handler
         {
         public:

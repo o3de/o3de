@@ -77,11 +77,12 @@ ly_append_configurations_options(
         /GS             # Enable Buffer security check
         /MDd            # defines _DEBUG, _MT, and _DLL and causes the application to use the debug multithread-specific and DLL-specific version of the run-time library.
                         # It also causes the compiler to place the library name MSVCRTD.lib into the .obj file.
-        /Ob0            # Disables inline expansions
+        /Ob2            # Inline any suitable function
         /Od             # Disables optimization
     COMPILATION_PROFILE
         /GF             # Enable string pooling
         /Gy             # Function level linking
+        /Ob3            # Inline any suitable function
         /MD             # Causes the application to use the multithread-specific and DLL-specific version of the run-time library. Defines _MT and _DLL and causes the compiler
                         # to place the library name MSVCRT.lib into the .obj file.
         /O2             # Maximinize speed, equivalent to /Og /Oi /Ot /Oy /Ob2 /GF /Gy

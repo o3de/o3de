@@ -7,13 +7,15 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoBase.h>
 
 namespace AzToolsFramework::Prefab
 {
     //! Undo class for handling updating component properties of the focused prefab (which is also the owning prefab).
-    class PrefabUndoComponentPropertyEdit : public PrefabUndoBase
+    class AZTF_API PrefabUndoComponentPropertyEdit : public PrefabUndoBase
     {
     public:
         AZ_RTTI(PrefabUndoComponentPropertyEdit, "{2B54AD53-329F-45B7-BAEB-737592D0B726}", PrefabUndoBase);

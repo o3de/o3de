@@ -6,17 +6,20 @@
  *
  */
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AZ::Prefab
 {
     //! A wrapper around the JSON DOM type so that the assets can read in and write out
     //! JSON directly since Prefabs are JSON serialized entity-component data
-    class PrefabDomData final
+    class AZTF_API PrefabDomData final
     {
     public:
         AZ_RTTI(PrefabDomData, "{C73A3360-D772-4D41-9118-A039BF9340C1}");
@@ -35,7 +38,7 @@ namespace AZ::Prefab
     };
 
     //! Registered to help read/write JSON for the PrefabDomData::m_prefabDom
-    class PrefabDomDataJsonSerializer final
+    class AZTF_API PrefabDomDataJsonSerializer final
         : public AZ::BaseJsonSerializer
     {
     public:
@@ -60,7 +63,7 @@ namespace AZ::Prefab
 
     //! An asset type to register templates into the Prefab system so that they
     //! can instantiate like Authored Prefabs
-    class ProceduralPrefabAsset
+    class AZTF_API ProceduralPrefabAsset
         : public AZ::Data::AssetData
     {
     public:

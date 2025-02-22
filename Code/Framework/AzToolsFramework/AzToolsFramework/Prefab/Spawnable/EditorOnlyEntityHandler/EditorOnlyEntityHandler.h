@@ -7,16 +7,18 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Component/Entity.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     /**
      * Callback handler interface for processing prefab prior to stripping of editor-only entities.
      */
-    class EditorOnlyEntityHandler
+    class AZTF_API EditorOnlyEntityHandler
     {
     public:
         AZ_CLASS_ALLOCATOR(EditorOnlyEntityHandler, AZ::SystemAllocator);

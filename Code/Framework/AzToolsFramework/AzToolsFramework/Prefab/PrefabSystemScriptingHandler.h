@@ -7,13 +7,16 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <Prefab/PrefabSystemScriptingBus.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class PrefabSystemScriptingHandler
+        class AZTF_API PrefabSystemScriptingHandler
             : PrefabSystemScriptingBus::Handler
         {
         public:

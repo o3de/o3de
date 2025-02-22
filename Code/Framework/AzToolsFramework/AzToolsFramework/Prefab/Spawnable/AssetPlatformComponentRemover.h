@@ -7,11 +7,13 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessor.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -30,7 +32,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     //! For example, a headless server shouldn't need to load a mesh or material asset,
     //!   so remove any MeshComponents from the server asset spawnable.
     //! Excluded components are defined inside of Registry/prefab.tools.setreg
-    class AssetPlatformComponentRemover
+    class AZTF_API AssetPlatformComponentRemover
         : public PrefabProcessor
     {
         friend class UnitTest::PrefabProcessingTestFixture;

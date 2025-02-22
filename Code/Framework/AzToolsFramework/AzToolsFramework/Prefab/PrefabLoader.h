@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 
 #include <AzCore/IO/Path/Path.h>
@@ -33,7 +35,7 @@ namespace AzToolsFramework
         /**
         * The Prefab Loader helps saving/loading Prefab files.
         */
-        class PrefabLoader final
+        class AZTF_API PrefabLoader final
             : public PrefabLoaderInterface
         {
         public:

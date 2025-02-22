@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/ComponentExport.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -36,7 +38,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     using PrefabSpawnablePostProcessEvent = AZ::Event<const AZStd::string&, AzFramework::Spawnable&>;
 
-    class PrefabProcessorContext : private EntityIdPathMapperInterface
+    class AZTF_API PrefabProcessorContext : private EntityIdPathMapperInterface
     {
     public:
         using ProcessedObjectStoreContainer = AZStd::vector<ProcessedObjectStore>;

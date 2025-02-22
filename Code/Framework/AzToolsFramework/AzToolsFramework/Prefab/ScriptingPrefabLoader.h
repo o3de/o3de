@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <Prefab/PrefabLoaderInterface.h>
 #include <Prefab/PrefabLoaderScriptingBus.h>
 
@@ -20,7 +22,7 @@ namespace AzToolsFramework
         /**
         * The Scripting Prefab Loader handles scripting-friendly API requests for the prefab loader
         */
-        class ScriptingPrefabLoader
+        class AZTF_API ScriptingPrefabLoader
             : private PrefabLoaderScriptingBus::Handler
         {
         public:

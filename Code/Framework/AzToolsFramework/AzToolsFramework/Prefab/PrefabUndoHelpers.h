@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 
 namespace AzToolsFramework
@@ -16,13 +18,13 @@ namespace AzToolsFramework
     {
         namespace PrefabUndoHelpers
         {
-            void UpdatePrefabInstance(
+            AZTF_API void UpdatePrefabInstance(
                 const Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
                 UndoSystem::URSequencePoint* undoBatch);
-            LinkId CreateLink(
+            AZTF_API LinkId CreateLink(
                 TemplateId sourceTemplateId, TemplateId targetTemplateId, PrefabDom patch,
                 const InstanceAlias& instanceAlias, UndoSystem::URSequencePoint* undoBatch);
-            void RemoveLink(
+            AZTF_API void RemoveLink(
                 TemplateId sourceTemplateId, TemplateId targetTemplateId, const InstanceAlias& instanceAlias, LinkId linkId,
                 PrefabDom linkPatches, UndoSystem::URSequencePoint* undoBatch);
 
@@ -32,7 +34,7 @@ namespace AzToolsFramework
             //! @param owningInstance The owning prefab instance of both parentEntity and newEntity.
             //! @param focusedInstance The current focused prefab instance.
             //! @param undoBatch The undo batch node to register the add-entity undo node to.
-            void AddEntity(
+            AZTF_API void AddEntity(
                 const AZ::Entity& parentEntity,
                 const AZ::Entity& newEntity,
                 Instance& owningInstance,
@@ -44,7 +46,7 @@ namespace AzToolsFramework
             //! @param entityList The list of entities that will be added to template.
             //! @param templateId The id of the prefab template under which the entity DOMs will live.
             //! @param undoBatch The undo batch node to register the add-entitiy-doms undo node to.
-            void AddEntityDoms(
+            AZTF_API void AddEntityDoms(
                 const AZStd::vector<const AZ::Entity*>& entityList,
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch);
@@ -54,7 +56,7 @@ namespace AzToolsFramework
             //! @param entityDomAndPathList The list of pairs of entity DOM before removal and its alias path in template.
             //! @param templateId The id of the prefab template under which the removed entity DOMs will live.
             //! @param undoBatch The undo batch node to register the remove-entity-doms undo node to.
-            void RemoveEntityDoms(
+            AZTF_API void RemoveEntityDoms(
                 const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch);
@@ -67,7 +69,7 @@ namespace AzToolsFramework
             //! @param updateCache Flag that determines if the cached instance DOM is updated to avoid reloading in next tick.
             //! @param instanceToSkipInUpdate - if not nullopt, it indicates to this function that it can skip this entity
             //!                                 in the "propagate to other instances" queue, as this instance will have already been manually updated.
-            void UpdateEntity(
+            AZTF_API void UpdateEntity(
                 const PrefabDomValue& entityDomBeforeUpdatingEntity,
                 const PrefabDomValue& entityDomAfterUpdatingEntity,
                 AZ::EntityId entityId,
@@ -81,7 +83,7 @@ namespace AzToolsFramework
             //! @param owningInstance The common owning prefab instance of all inputs.
             //! @param focusedInstance The current focused prefab instance.
             //! @param undoBatch The undo batch node to register the update-entity undo node to.
-            void UpdateEntitiesAsOverrides(
+            AZTF_API void UpdateEntitiesAsOverrides(
                 const AZStd::vector<const AZ::Entity*>& entityList,
                 Instance& owningInstance,
                 const Instance& focusedInstance,
@@ -93,7 +95,7 @@ namespace AzToolsFramework
             //! @param parentEntityList The parent entity list that will be updated.
             //! @param focusedInstance The current focused prefab instance.
             //! @param undoBatch The undo batch node to register the removal undo nodes to.
-            void DeleteEntities(
+            AZTF_API void DeleteEntities(
                 const AZStd::vector<AZStd::string>& entityAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
                 Instance& focusedInstance,
@@ -106,7 +108,7 @@ namespace AzToolsFramework
             //! @param owningInstance The common owning prefab instance of all inputs.
             //! @param focusedInstance The current focused prefab instance.
             //! @param undoBatch The undo batch node to register the removal undo nodes to.
-            void DeleteEntitiesAndPrefabsAsOverride(
+            AZTF_API void DeleteEntitiesAndPrefabsAsOverride(
                 const AZStd::vector<AZStd::string>& entityAliasPathList,
                 const AZStd::vector<AZStd::string>& instanceAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,

@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 
@@ -17,7 +19,7 @@ namespace AzToolsFramework::Prefab
     class PrefabFocusPublicInterface;
 
     //! Undo node for prefab focus change operations.
-    class PrefabFocusUndo
+    class AZTF_API PrefabFocusUndo
         : public UndoSystem::URSequencePoint
     {
     public:

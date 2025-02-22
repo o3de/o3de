@@ -351,7 +351,10 @@ set(FILES
     
     Prefab/Instance/TemplateInstanceMapper.cpp
     Prefab/Instance/TemplateInstanceMapper.h
-    
+
+    Prefab/Link/Link.cpp
+    Prefab/Link/Link.h
+        
     Prefab/Overrides/PrefabOverrideHandler.cpp
     Prefab/Overrides/PrefabOverrideHandler.h
     
@@ -359,7 +362,142 @@ set(FILES
     Prefab/Overrides/PrefabOverridePublicHandler.h
 
     
+    Prefab/EditorPrefabComponent.cpp
+    Prefab/EditorPrefabComponent.h
     
+    Prefab/Procedural/ProceduralPrefabAsset.cpp
+    Prefab/Procedural/ProceduralPrefabAsset.h
+    
+    Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h
+    
+    Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.h
+    
+    Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
+    
+    Prefab/Spawnable/AssetPlatformComponentRemover.cpp
+    Prefab/Spawnable/AssetPlatformComponentRemover.h
+    
+    Prefab/Spawnable/ComponentRequirementsValidator.cpp
+    Prefab/Spawnable/ComponentRequirementsValidator.h
+    
+    Prefab/Spawnable/EditorInfoRemover.cpp
+    Prefab/Spawnable/EditorInfoRemover.h
+    
+    Prefab/Spawnable/InMemorySpawnableAssetUtils.cpp
+    Prefab/Spawnable/InMemorySpawnableAssetUtils.h
+    
+    Prefab/Spawnable/PrefabCatchmentProcessor.cpp
+    Prefab/Spawnable/PrefabCatchmentProcessor.h
+    
+    Prefab/Spawnable/PrefabConversionPipeline.cpp
+    Prefab/Spawnable/PrefabConversionPipeline.h
+    
+    Prefab/Spawnable/PrefabDocument.cpp
+    Prefab/Spawnable/PrefabDocument.h
+    Prefab/Spawnable/PrefabDocument.inl
+    
+    Prefab/Spawnable/PrefabInMemorySpawnableConverter.cpp
+    Prefab/Spawnable/PrefabInMemorySpawnableConverter.h
+    
+    Prefab/Spawnable/PrefabProcessorContext.cpp
+    Prefab/Spawnable/PrefabProcessorContext.h
+    
+    Prefab/Spawnable/ProcesedObjectStore.cpp
+    Prefab/Spawnable/ProcesedObjectStore.h
+    
+    Prefab/Spawnable/SpawnableMetaDataBuilder.cpp
+    Prefab/Spawnable/SpawnableMetaDataBuilder.h
+    
+    Prefab/Spawnable/SpawnableUtils.cpp
+    Prefab/Spawnable/SpawnableUtils.h
+    
+    Prefab/Template/Template.cpp
+    Prefab/Template/Template.h
+    
+    Prefab/Undo/PrefabUndo.cpp
+    Prefab/Undo/PrefabUndo.h
+    
+    Prefab/Undo/PrefabUndoAddEntity.cpp
+    Prefab/Undo/PrefabUndoAddEntity.h
+    
+    Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoAddEntityAsOverride.h
+    
+    Prefab/Undo/PrefabUndoApplyOverrides.cpp
+    Prefab/Undo/PrefabUndoApplyOverrides.h
+    
+    Prefab/Undo/PrefabUndoBase.cpp
+    Prefab/Undo/PrefabUndoBase.h
+    
+    Prefab/Undo/PrefabUndoComponentPropertyEdit.cpp
+    Prefab/Undo/PrefabUndoComponentPropertyEdit.h
+    
+    Prefab/Undo/PrefabUndoComponentPropertyOverride.cpp
+    Prefab/Undo/PrefabUndoComponentPropertyOverride.h
+    
+    Prefab/Undo/PrefabUndoDelete.cpp
+    Prefab/Undo/PrefabUndoDelete.h
+    
+    Prefab/Undo/PrefabUndoDeleteAsOverride.cpp
+    Prefab/Undo/PrefabUndoDeleteAsOverride.h
+    
+    Prefab/Undo/PrefabUndoRevertOverrides.cpp
+    Prefab/Undo/PrefabUndoRevertOverrides.h
+    
+    Prefab/Undo/PrefabUndoUpdateLink.cpp
+    Prefab/Undo/PrefabUndoUpdateLink.h
+    
+    Prefab/Undo/PrefabUndoUtils.cpp
+    Prefab/Undo/PrefabUndoUtils.h
+    
+    Prefab/PrefabDomUtils.cpp
+    Prefab/PrefabDomUtils.h
+    
+    Prefab/PrefabEditorPreferences.cpp
+    Prefab/PrefabEditorPreferences.h
+    
+    Prefab/PrefabFocusHandler.cpp
+    Prefab/PrefabFocusHandler.h
+    
+    Prefab/PrefabFocusUndo.cpp
+    Prefab/PrefabFocusUndo.h
+    
+    Prefab/PrefabInstanceUtils.cpp
+    Prefab/PrefabInstanceUtils.h
+    
+    Prefab/PrefabLoader.cpp
+    Prefab/PrefabLoader.h
+    
+    Prefab/PrefabPublicHandler.cpp
+    Prefab/PrefabPublicHandler.h
+    
+    Prefab/PrefabPublicNotificationHandler.cpp
+    Prefab/PrefabPublicNotificationHandler.h
+    
+    Prefab/PrefabPublicRequestHandler.cpp
+    Prefab/PrefabPublicRequestHandler.h	 
+    
+    Prefab/PrefabSystemComponent.cpp
+    Prefab/PrefabSystemComponent.h	 
+    
+    Prefab/PrefabSystemScriptingHandler.cpp
+    Prefab/PrefabSystemScriptingHandler.h
+    
+    Prefab/PrefabUndoCache.cpp
+    Prefab/PrefabUndoCache.h
+    
+    Prefab/PrefabUndoHelpers.cpp
+    Prefab/PrefabUndoHelpers.h
+    
+    Prefab/ProceduralPrefabSystemComponent.cpp
+    Prefab/ProceduralPrefabSystemComponent.h
+    
+    Prefab/ScriptingPrefabLoader.cpp
+    Prefab/ScriptingPrefabLoader.h
+        
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h
 )
