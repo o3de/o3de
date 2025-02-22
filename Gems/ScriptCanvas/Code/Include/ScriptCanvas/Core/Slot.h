@@ -43,7 +43,7 @@ namespace ScriptCanvas
     };
 
     class Slot final
-        : public VariableNotificationBus::Handler
+        : public VariableNotificationBus::MultiHandler
     {
         friend class Node;
     public:
