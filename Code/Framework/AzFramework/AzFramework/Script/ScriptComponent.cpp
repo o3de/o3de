@@ -64,7 +64,7 @@ namespace ScriptComponentCpp
             AZ_TracePrintf(errorWindow.data(), "Top of stack is not function!");
         }
 
-        const int stripBinaryRepresentation = 1;
+        const int stripBinaryRepresentation = 0;
         return lua_dump(l, LuaStreamWriter, &stream, stripBinaryRepresentation) == 0;
     }
 }

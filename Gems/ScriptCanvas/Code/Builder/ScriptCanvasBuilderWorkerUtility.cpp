@@ -235,10 +235,12 @@ namespace ScriptCanvasBuilder
         AZStd::string vmFullPath = input.request->m_fullPath;
         AzFramework::StringFunc::Path::StripExtension(vmFullPath);
         vmFullPath += ScriptCanvas::Grammar::k_internalRuntimeSuffix;
+
+        compileRequest.m_errorWindow = s_scriptCanvasBuilder;
+        compileRequest.m_sourceFile = input.request->m_sourceFile;
         compileRequest.m_fullPath = vmFullPath;
         compileRequest.m_fileName = input.fileNameOnly;
         compileRequest.m_tempDirPath = input.request->m_tempDirPath;
-        compileRequest.m_errorWindow = s_scriptCanvasBuilder;
         compileRequest.m_input = &inputStream;
         AzFramework::ConstructScriptAssetPaths(compileRequest);
 
