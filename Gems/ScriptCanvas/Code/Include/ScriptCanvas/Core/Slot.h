@@ -235,6 +235,8 @@ namespace ScriptCanvas
         void OnVariableRenamed(AZStd::string_view /*newVariableName*/) override;
         ///
 
+        void DisconnectVariableNotificationBus();
+
         bool m_isOverload = false;
         bool m_isVisible = true;
         bool m_isUserAdded = false;

@@ -391,10 +391,7 @@ namespace ScriptCanvas
 
             if (m_variable)
             {
-                if (VariableNotificationBus::MultiHandler::BusIsConnectedId(m_variable->GetGraphScopedId()))
-                {
-                    VariableNotificationBus::MultiHandler::BusDisconnect(m_variable->GetGraphScopedId());
-                }
+                DisconnectVariableNotificationBus();
 
                 VariableNotificationBus::MultiHandler::BusConnect(m_variable->GetGraphScopedId());
             }
@@ -964,10 +961,7 @@ namespace ScriptCanvas
 
     void Slot::OnVariableRenamed(AZStd::string_view variableName)
     {
-        if (VariableNotificationBus::MultiHandler::BusIsConnectedId(m_variable->GetGraphScopedId()))
-        {
-            VariableNotificationBus::MultiHandler::BusDisconnect(m_variable->GetGraphScopedId());
-        }
+        DisconnectVariableNotificationBus();
 
         Rename(variableName);
     }
@@ -982,5 +976,12 @@ namespace ScriptCanvas
         m_isVisible = isVisible;
     }
 
+    void Slot::DisconnectVariableNotificationBus()
+    {
+        if (VariableNotificationBus::MultiHandler::BusIsConnectedId(m_variable->GetGraphScopedId()))
+        {
+            VariableNotificationBus::MultiHandler::BusDisconnect(m_variable->GetGraphScopedId());
+        }
+    }
 }
 
