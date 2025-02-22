@@ -147,7 +147,7 @@ namespace AZ
         {
             byteSize = MemorySizeAdjustedDown(byteSize); // restore original size
         }
-
+#endif
         AZ_Assert(
             address != nullptr, "SystemAllocator: Failed to allocate %zu bytes aligned on %zu!", byteSize,
             alignment);
@@ -205,7 +205,6 @@ namespace AZ
 
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
         AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
-#endif
 
         return newAddress;
     }
@@ -216,8 +215,12 @@ namespace AZ
     //=========================================================================
     auto SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
     {
-        size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
-        return allocSize;
+        #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+            return AZ_OS_MSIZE(ptr, alignment);
+        #else
+            size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
+            return allocSize;
+        #endif
     }
 
 } // namespace AZ
