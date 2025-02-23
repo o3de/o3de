@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
@@ -73,7 +75,7 @@ namespace AzToolsFramework
     };
 
     //! Temporary manipulator frame used during selection.
-    struct OptionalFrame
+    struct AZTF_API OptionalFrame
     {
         bool HasTranslationOverride() const;
         bool HasOrientationOverride() const;
@@ -107,7 +109,7 @@ namespace AzToolsFramework
     };
 
     //! Grouping of viewport ui related state for controlling the current reference space of the Editor.
-    struct SpaceCluster
+    struct AZTF_API SpaceCluster
     {
         SpaceCluster() = default;
         // disable copying and moving (implicit)
@@ -123,7 +125,7 @@ namespace AzToolsFramework
     };
 
     //! Grouping of viewport ui related state for aligning transforms to a grid.
-    struct SnappingCluster
+    struct AZTF_API SnappingCluster
     {
         SnappingCluster() = default;
         // disable copying and moving (implicit)
@@ -140,7 +142,7 @@ namespace AzToolsFramework
 
     //! Entity selection/interaction handling.
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
-    class EditorTransformComponentSelection
+    class AZTF_API EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
         , public ActionManagerRegistrationNotificationBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
@@ -375,7 +377,7 @@ namespace AzToolsFramework
     };
 
     //! Updates whether accents (icon highlights) are added/removed for a given entity based on the cursor position.
-    void HandleAccents(
+    AZTF_API void HandleAccents(
         AZ::EntityId currentEntityIdUnderCursor,
         AZ::EntityId& hoveredEntityIdUnderCursor,
         const HandleAccentsContext& handleAccentsContext,
@@ -398,23 +400,23 @@ namespace AzToolsFramework
 
         //! Calculate the orientation for an individual entity based on the incoming reference frame.
         //! Note: If the entity is in a hierarchy the Parent reference frame will return the orientation of the parent.
-        PivotOrientationResult CalculatePivotOrientation(AZ::EntityId entityId, ReferenceFrame referenceFrame);
+        AZTF_API PivotOrientationResult CalculatePivotOrientation(AZ::EntityId entityId, ReferenceFrame referenceFrame);
 
         //! Calculate the orientation for a group of entities based on the incoming reference frame.
         template<typename EntityIdMap>
-        PivotOrientationResult CalculatePivotOrientationForEntityIds(const EntityIdMap& entityIdMap, const ReferenceFrame referenceFrame);
+        AZTF_API PivotOrientationResult CalculatePivotOrientationForEntityIds(const EntityIdMap& entityIdMap, const ReferenceFrame referenceFrame);
 
         //! Calculate the orientation for a group of entities based on the incoming
         //! reference frame with possible pivot override.
         template<typename EntityIdMap>
-        PivotOrientationResult CalculateSelectionPivotOrientation(
+        AZTF_API PivotOrientationResult CalculateSelectionPivotOrientation(
             const EntityIdMap& entityIdMap, const OptionalFrame& pivotOverrideFrame, const ReferenceFrame referenceFrame);
 
-        void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation, bool& internal);
-        void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation, bool& internal);
-        void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform, bool& internal);
-        void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
-        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
-        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
+        AZTF_API void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation, bool& internal);
+        AZTF_API void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation, bool& internal);
+        AZTF_API void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform, bool& internal);
+        AZTF_API void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
+        AZTF_API void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
+        AZTF_API void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
     } // namespace Etcs
 } // namespace AzToolsFramework

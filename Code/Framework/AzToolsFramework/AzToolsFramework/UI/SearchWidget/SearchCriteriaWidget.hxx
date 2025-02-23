@@ -6,6 +6,8 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <QtWidgets/QFrame>
@@ -31,7 +33,7 @@ namespace AzToolsFramework
     //! search terms. It contains a label and close button. Clicking the close
     //! button will notify the SearchCriteriaWidget to delete the button and
     //! remove the term from the search list.
-    class SearchCriteriaButton
+    class AZTF_API SearchCriteriaButton
         : public QFrame
     {
         Q_OBJECT
@@ -79,7 +81,7 @@ Q_SIGNALS:
     //! It emits one signal (criteriaChanged) whenever a parameter of the search changes.
     //! This signal gives the list of terms and the current operator. The parent widget is
     //! responsible for using this information to filter/search its contents.
-    class SearchCriteriaWidget
+    class AZTF_API SearchCriteriaWidget
         : public QWidget
     {
         Q_OBJECT

@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
@@ -18,7 +20,7 @@ namespace AzToolsFramework
 
     //! Viewport interaction helper that handles highlighting entities and picking them within the viewport.
     //! This helper can be used from within other Viewport Interaction modes, such as the EditorDefaultSelection mode.
-    class EditorPickEntitySelectionHelper
+    class AZTF_API EditorPickEntitySelectionHelper
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL

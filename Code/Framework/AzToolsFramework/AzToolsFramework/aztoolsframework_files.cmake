@@ -61,9 +61,9 @@ set(FILES
 #    UI/Logging/LogLine.h
 #    UI/Logging/LogLine.cpp
     UI/PropertyEditor/Resources/Icons.qrc
-    UI/SearchWidget/SearchCriteriaWidget.hxx
-    UI/SearchWidget/SearchCriteriaWidget.cpp
-    UI/SearchWidget/SearchWidgetTypes.hxx
+#    UI/SearchWidget/SearchCriteriaWidget.hxx
+#    UI/SearchWidget/SearchCriteriaWidget.cpp
+#    UI/SearchWidget/SearchWidgetTypes.hxx
     API/ToolsApplicationAPI.h
     API/ToolsApplicationAPI.cpp
     API/EditorAssetSystemAPI.h
@@ -534,37 +534,37 @@ set(FILES
 #    UI/PropertyEditor/ThumbnailPropertyCtrl.cpp
     UI/LegacyFramework/CustomMenus/CustomMenusAPI.h
     UI/LegacyFramework/CustomMenus/CustomMenusComponent.cpp
-    UI/Slice/SlicePushWidget.cpp
-    UI/Slice/SlicePushWidget.hxx
-    UI/Slice/SliceOverridesNotificationWindow.cpp
-    UI/Slice/SliceOverridesNotificationWindow.hxx
-    UI/Slice/SliceOverridesNotificationWindowManager.cpp
-    UI/Slice/SliceOverridesNotificationWindowManager.hxx
-    UI/Slice/NotificationWindow.ui
-    UI/Slice/Constants.h
-    UI/Slice/SliceRelationshipWidget.cpp
-    UI/Slice/SliceRelationshipWidget.hxx
-    UI/UICore/AspectRatioAwarePixmapWidget.hxx
-    UI/UICore/AspectRatioAwarePixmapWidget.cpp
-    UI/UICore/ClickableLabel.hxx
-    UI/UICore/ClickableLabel.cpp
-    UI/UICore/ConsoleTextEdit.hxx
-    UI/UICore/ConsoleTextEdit.cpp
-    UI/UICore/IconButton.hxx
-    UI/UICore/IconButton.cpp
-    UI/UICore/ProgressShield.hxx
-    UI/UICore/ProgressShield.cpp
-    UI/UICore/ProgressShield.ui
-    UI/UICore/QTreeViewStateSaver.hxx
-    UI/UICore/QTreeViewStateSaver.cpp
-    UI/UICore/QWidgetSavedState.h
-    UI/UICore/QWidgetSavedState.cpp
-    UI/UICore/TargetSelectorButton.hxx
-    UI/UICore/TargetSelectorButton.cpp
-    UI/UICore/WidgetHelpers.h
-    Undo/UndoSystem.cpp
-    Undo/UndoSystem.h
-    Undo/UndoCacheInterface.h
+#    UI/Slice/SlicePushWidget.cpp
+#    UI/Slice/SlicePushWidget.hxx
+#    UI/Slice/SliceOverridesNotificationWindow.cpp
+#    UI/Slice/SliceOverridesNotificationWindow.hxx
+#    UI/Slice/SliceOverridesNotificationWindowManager.cpp
+#    UI/Slice/SliceOverridesNotificationWindowManager.hxx
+#    UI/Slice/NotificationWindow.ui
+#    UI/Slice/Constants.h
+#    UI/Slice/SliceRelationshipWidget.cpp
+#    UI/Slice/SliceRelationshipWidget.hxx
+#    UI/UICore/AspectRatioAwarePixmapWidget.hxx
+#    UI/UICore/AspectRatioAwarePixmapWidget.cpp
+#    UI/UICore/ClickableLabel.hxx
+#    UI/UICore/ClickableLabel.cpp
+#    UI/UICore/ConsoleTextEdit.hxx
+#    UI/UICore/ConsoleTextEdit.cpp
+#    UI/UICore/IconButton.hxx
+#    UI/UICore/IconButton.cpp
+#    UI/UICore/ProgressShield.hxx
+#    UI/UICore/ProgressShield.cpp
+#    UI/UICore/ProgressShield.ui
+#    UI/UICore/QTreeViewStateSaver.hxx
+#    UI/UICore/QTreeViewStateSaver.cpp
+#    UI/UICore/QWidgetSavedState.h
+#    UI/UICore/QWidgetSavedState.cpp
+#    UI/UICore/TargetSelectorButton.hxx
+#    UI/UICore/TargetSelectorButton.cpp
+#    UI/UICore/WidgetHelpers.h
+#    Undo/UndoSystem.cpp
+#    Undo/UndoSystem.h
+#    Undo/UndoCacheInterface.h
 #    Commands/ComponentModeCommand.cpp
 #    Commands/ComponentModeCommand.h
 #    Commands/EntityManipulatorCommand.h
@@ -572,48 +572,48 @@ set(FILES
 #    Commands/SelectionCommand.cpp
 #    Commands/SelectionCommand.h
     Viewport/ActionBus.h
-    Viewport/EditorContextMenu.h
-    Viewport/EditorContextMenu.cpp
+#    Viewport/EditorContextMenu.h
+#    Viewport/EditorContextMenu.cpp
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
-    Viewport/LocalViewBookmarkComponent.h
-    Viewport/LocalViewBookmarkComponent.cpp
-    Viewport/SharedViewBookmarkComponent.h
-    Viewport/SharedViewBookmarkComponent.cpp
-    Viewport/LocalViewBookmarkLoader.h
-    Viewport/LocalViewBookmarkLoader.cpp
+#    Viewport/LocalViewBookmarkComponent.h
+#    Viewport/LocalViewBookmarkComponent.cpp
+#    Viewport/SharedViewBookmarkComponent.h
+#    Viewport/SharedViewBookmarkComponent.cpp
+#    Viewport/LocalViewBookmarkLoader.h
+#    Viewport/LocalViewBookmarkLoader.cpp
     Viewport/ViewBookmarkLoaderInterface.h
-    Viewport/ViewBookmarkSystemComponent.h
-    Viewport/ViewBookmarkSystemComponent.cpp
-    Viewport/ViewportInteractionHelpers.h
-    Viewport/ViewportInteractionHelpers.cpp
-    Viewport/ViewportMessages.h
-    Viewport/ViewportMessages.cpp
-    Viewport/ViewportTypes.h
-    Viewport/ViewportTypes.cpp
-    Viewport/ViewportSettings.h
-    Viewport/ViewportSettings.cpp
-    ViewportUi/Button.h
-    ViewportUi/Button.cpp
-    ViewportUi/ButtonGroup.h
-    ViewportUi/ButtonGroup.cpp
-    ViewportUi/TextField.h
-    ViewportUi/TextField.cpp
-    ViewportUi/ViewportUiDisplay.h
-    ViewportUi/ViewportUiDisplay.cpp
-    ViewportUi/ViewportUiManager.h
-    ViewportUi/ViewportUiManager.cpp
+#    Viewport/ViewBookmarkSystemComponent.h
+#    Viewport/ViewBookmarkSystemComponent.cpp
+#    Viewport/ViewportInteractionHelpers.h
+#    Viewport/ViewportInteractionHelpers.cpp
+#    Viewport/ViewportMessages.h
+#    Viewport/ViewportMessages.cpp
+#    Viewport/ViewportTypes.h
+#    Viewport/ViewportTypes.cpp
+#    Viewport/ViewportSettings.h
+#    Viewport/ViewportSettings.cpp
+#    ViewportUi/Button.h
+#    ViewportUi/Button.cpp
+#    ViewportUi/ButtonGroup.h
+#    ViewportUi/ButtonGroup.cpp
+#    ViewportUi/TextField.h
+#    ViewportUi/TextField.cpp
+#    ViewportUi/ViewportUiDisplay.h
+#    ViewportUi/ViewportUiDisplay.cpp
+#    ViewportUi/ViewportUiManager.h
+#    ViewportUi/ViewportUiManager.cpp
     ViewportUi/ViewportUiRequestBus.h
-    ViewportUi/ViewportUiTextField.h
-    ViewportUi/ViewportUiTextField.cpp
-    ViewportUi/ViewportUiCluster.h
-    ViewportUi/ViewportUiCluster.cpp
-    ViewportUi/ViewportUiSwitcher.h
-    ViewportUi/ViewportUiSwitcher.cpp
-    ViewportUi/ViewportUiWidgetCallbacks.h
-    ViewportUi/ViewportUiWidgetCallbacks.cpp
-    ViewportUi/ViewportUiDisplayLayout.h
-    ViewportUi/ViewportUiDisplayLayout.cpp
+#    ViewportUi/ViewportUiTextField.h
+#    ViewportUi/ViewportUiTextField.cpp
+#    ViewportUi/ViewportUiCluster.h
+#    ViewportUi/ViewportUiCluster.cpp
+#    ViewportUi/ViewportUiSwitcher.h
+#    ViewportUi/ViewportUiSwitcher.cpp
+#    ViewportUi/ViewportUiWidgetCallbacks.h
+#    ViewportUi/ViewportUiWidgetCallbacks.cpp
+#    ViewportUi/ViewportUiDisplayLayout.h
+#    ViewportUi/ViewportUiDisplayLayout.cpp
 #    ComponentMode/ComponentModeActionHandler.h
 #    ComponentMode/ComponentModeActionHandler.cpp
 #    ComponentMode/EditorComponentModeBus.h
@@ -653,29 +653,29 @@ set(FILES
 #    ComponentModes/SphereViewportEdit.h
 #    ComponentModes/SphereViewportEdit.cpp
     ComponentModes/ViewportEditUtilities.h
-    ViewportSelection/EditorBoxSelect.h
-    ViewportSelection/EditorBoxSelect.cpp
-    ViewportSelection/EditorDefaultSelection.h
-    ViewportSelection/EditorDefaultSelection.cpp
-    ViewportSelection/EditorHelpers.h
-    ViewportSelection/EditorHelpers.cpp
-    ViewportSelection/EditorInteractionSystemComponent.h
-    ViewportSelection/EditorInteractionSystemComponent.cpp
+#    ViewportSelection/EditorBoxSelect.h
+#    ViewportSelection/EditorBoxSelect.cpp
+#    ViewportSelection/EditorDefaultSelection.h
+#    ViewportSelection/EditorDefaultSelection.cpp
+#    ViewportSelection/EditorHelpers.h
+#    ViewportSelection/EditorHelpers.cpp
+#    ViewportSelection/EditorInteractionSystemComponent.h
+#    ViewportSelection/EditorInteractionSystemComponent.cpp
     ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h
-    ViewportSelection/EditorPickEntitySelection.h
-    ViewportSelection/EditorPickEntitySelection.cpp
-    ViewportSelection/EditorSelectionUtil.h
-    ViewportSelection/EditorSelectionUtil.cpp
-    ViewportSelection/EditorTransformComponentSelection.h
-    ViewportSelection/EditorTransformComponentSelection.cpp
+#    ViewportSelection/EditorPickEntitySelection.h
+#    ViewportSelection/EditorPickEntitySelection.cpp
+#    ViewportSelection/EditorSelectionUtil.h
+#    ViewportSelection/EditorSelectionUtil.cpp
+#    ViewportSelection/EditorTransformComponentSelection.h
+#    ViewportSelection/EditorTransformComponentSelection.cpp
     ViewportSelection/EditorTransformComponentSelectionRequestBus.h
     ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
-    ViewportSelection/EditorVisibleEntityDataCache.h
-    ViewportSelection/EditorVisibleEntityDataCache.cpp
-    ViewportSelection/InvalidClicks.h
-    ViewportSelection/InvalidClicks.cpp
-    ViewportSelection/ViewportEditorModeTracker.cpp
-    ViewportSelection/ViewportEditorModeTracker.h
+#    ViewportSelection/EditorVisibleEntityDataCache.h
+#    ViewportSelection/EditorVisibleEntityDataCache.cpp
+#    ViewportSelection/InvalidClicks.h
+#    ViewportSelection/InvalidClicks.cpp
+#    ViewportSelection/ViewportEditorModeTracker.cpp
+#    ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
     AssetBrowser/AssetBrowserBus.h
 #    AssetBrowser/AssetBrowserComponent.cpp
@@ -999,7 +999,7 @@ set(SKIP_UNITY_BUILD_INCLUSION_FILES
     # The following files are skipped from unity to avoid duplicated symbols related to an ebus
     #UI/PropertyEditor/PropertyEntityIdCtrl.cpp
     #UI/PropertyEditor/PropertyManagerComponent.cpp
-    ViewportSelection/EditorDefaultSelection.cpp
-    ViewportSelection/EditorInteractionSystemComponent.cpp
-    ViewportSelection/EditorTransformComponentSelection.cpp
+    # ViewportSelection/EditorDefaultSelection.cpp
+    #ViewportSelection/EditorInteractionSystemComponent.cpp
+    #ViewportSelection/EditorTransformComponentSelection.cpp
 )

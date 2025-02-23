@@ -7,9 +7,11 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
 namespace AzFramework
@@ -43,7 +45,7 @@ namespace AzToolsFramework
     };
 
     //! Display expanding fading circles for every click of the mouse that is invalid.
-    class ExpandingFadingCircles : public InvalidClick
+    class AZTF_API ExpandingFadingCircles : public InvalidClick
     {
     public:
         void Begin(const AzFramework::ScreenPoint& screenPoint) override;
@@ -66,7 +68,7 @@ namespace AzToolsFramework
 
     //! Display fading text where an invalid click happened.
     //! @note There is only one fading text, each click will update its position.
-    class FadingText : public InvalidClick
+    class AZTF_API FadingText : public InvalidClick
     {
     public:
         explicit FadingText(AZStd::string message)
@@ -87,11 +89,11 @@ namespace AzToolsFramework
     };
 
     //! Interface to begin invalid click feedback (will run all added InvalidClick behaviors).
-    class InvalidClicks : private AZ::TickBus::Handler
+    class AZTF_API InvalidClicks : private AZ::TickBus::Handler
     {
     public:
-        explicit InvalidClicks(AZStd::vector<AZStd::unique_ptr<InvalidClick>> invalidClickBehaviors)
-            : m_invalidClickBehaviors(AZStd::move(invalidClickBehaviors))
+        explicit InvalidClicks(AZStd::vector<AZStd::shared_ptr<InvalidClick>> invalidClickBehaviors)
+            : m_invalidClickBehaviors((invalidClickBehaviors))
         {
         }
 
@@ -105,6 +107,6 @@ namespace AzToolsFramework
         //! AZ::TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        AZStd::vector<AZStd::unique_ptr<InvalidClick>> m_invalidClickBehaviors; //!< Invalid click behaviors to run.
+        AZStd::vector<AZStd::shared_ptr<InvalidClick>> m_invalidClickBehaviors; //!< Invalid click behaviors to run.
     };
 } // namespace AzToolsFramework

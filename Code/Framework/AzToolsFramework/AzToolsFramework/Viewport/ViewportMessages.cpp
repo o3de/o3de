@@ -10,8 +10,6 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
-
 namespace AzToolsFramework
 {
     AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(

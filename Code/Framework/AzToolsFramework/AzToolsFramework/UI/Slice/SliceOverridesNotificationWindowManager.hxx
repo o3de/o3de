@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include "SliceOverridesNotificationWindow.hxx"
@@ -19,7 +21,7 @@ namespace AzToolsFramework
     /**
     * This class is used to manage the notification windows.
     */
-    class SliceOverridesNotificationWindowManager
+    class AZTF_API SliceOverridesNotificationWindowManager
         : public QObject
     {
         Q_OBJECT

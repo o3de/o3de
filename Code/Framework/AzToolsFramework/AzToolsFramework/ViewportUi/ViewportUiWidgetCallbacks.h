@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -19,7 +21,7 @@
 namespace AzToolsFramework::ViewportUi::Internal
 {
     //! Helper class to manage widgets and update them simultaneously.
-    class ViewportUiWidgetCallbacks
+    class AZTF_API ViewportUiWidgetCallbacks
     {
     public:
         ViewportUiWidgetCallbacks() = default;

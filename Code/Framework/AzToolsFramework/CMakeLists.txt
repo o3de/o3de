@@ -16,7 +16,7 @@ ly_add_target(
     NAME AzToolsFramework.Static STATIC
     NAMESPACE AZ
     AUTOMOC
-    AUTOUIC
+#    AUTOUIC
     AUTORCC
     FILES_CMAKE
         AzToolsFramework/aztoolsframework_files.cmake

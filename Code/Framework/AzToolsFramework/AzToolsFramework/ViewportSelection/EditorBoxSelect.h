@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
@@ -26,7 +28,7 @@ namespace AzToolsFramework
 {
     //! Utility to provide box select (click and drag) support for viewport types.
     //! Users can override the mouse event callbacks and display scene function to customize behavior.
-    class EditorBoxSelect
+    class AZTF_API EditorBoxSelect
     {
     public:
         EditorBoxSelect();

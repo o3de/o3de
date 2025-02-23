@@ -14,6 +14,7 @@ Entity/EditorEntityContextBus.h
     ToolsComponents/EditorComponentBus.h
     ToolsComponents/EditorVisibilityBus.h
     ToolsComponents/EditorLockComponentBus.h
+    Viewport/ViewportMessagesBus.h
     AzToolsFrameworkEBus.cpp    
 )
 

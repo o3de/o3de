@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#ifndef AZTOOLSFRAMEWORK_UI_UICORE_CLICKABLELABEL_H
-#define AZTOOLSFRAMEWORK_UI_UICORE_CLICKABLELABEL_H
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
@@ -24,7 +24,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
-    class ClickableLabel
+    class AZTF_API ClickableLabel
         : public QLabel
     {
         Q_OBJECT
@@ -45,4 +45,3 @@ namespace AzToolsFramework
     };
 }
 
-#endif

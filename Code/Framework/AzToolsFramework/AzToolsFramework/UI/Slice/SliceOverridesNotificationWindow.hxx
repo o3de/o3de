@@ -6,6 +6,8 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QtWidgets/QWidget>
 
@@ -23,7 +25,7 @@ namespace AzToolsFramework
     /**
     * This class defines the notification window widget
     */
-    class SliceOverridesNotificationWindow
+    class AZTF_API SliceOverridesNotificationWindow
         : public QWidget
     {
         Q_OBJECT

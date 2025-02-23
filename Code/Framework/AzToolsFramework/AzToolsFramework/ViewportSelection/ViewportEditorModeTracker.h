@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/array.h>
@@ -17,7 +19,7 @@
 namespace AzToolsFramework
 {
     //! The encapsulation of the editor modes for a given viewport.
-    class ViewportEditorModes
+    class AZTF_API ViewportEditorModes
         : public ViewportEditorModesInterface
     {
     public:
@@ -37,7 +39,7 @@ namespace AzToolsFramework
     };
 
     //! The implementation of the central editor mode state tracker for all viewports.
-    class ViewportEditorModeTracker
+    class AZTF_API ViewportEditorModeTracker
         : public ViewportEditorModeTrackerInterface
     {
     public:

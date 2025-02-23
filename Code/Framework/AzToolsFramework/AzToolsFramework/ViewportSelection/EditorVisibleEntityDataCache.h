@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/optional.h>
@@ -22,7 +24,7 @@ namespace AzToolsFramework
 {
     //! Read-only interface for EditorVisibleEntityDataCache to be used by systems that want to efficiently
     //! query the state of visible entities in the viewport.
-    class EditorVisibleEntityDataCacheInterface
+    class AZTF_API EditorVisibleEntityDataCacheInterface
     {
         using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
 
@@ -48,7 +50,7 @@ namespace AzToolsFramework
 
     //! A cache of packed EntityData that can be iterated over efficiently without
     //! the need to make individual EBus calls
-    class EditorVisibleEntityDataCache
+    class AZTF_API EditorVisibleEntityDataCache
         : public EditorVisibleEntityDataCacheInterface
         , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityLockComponentNotificationBus::Router

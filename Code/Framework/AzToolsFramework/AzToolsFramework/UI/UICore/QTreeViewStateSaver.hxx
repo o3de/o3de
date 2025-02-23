@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -37,7 +39,7 @@ namespace AzToolsFramework
     // data model and selection model.
     // Use this instead of QTreeView to handle most of the details of saving and loading
     // tree view state.
-    class QTreeViewWithStateSaving
+    class AZTF_API QTreeViewWithStateSaving
         : public QTreeView
     {
         Q_OBJECT
@@ -80,7 +82,7 @@ namespace AzToolsFramework
     // It's being left here for backwards compatibility. If you have a branch building with this class
     // either switch your QTreeView into a QTreeViewWithStateSaving or make QTreeViewStateSaver's main methods public
     // in your branch.
-    class QTreeViewStateSaver
+    class AZTF_API QTreeViewStateSaver
         : public QObject
     {
         Q_OBJECT
@@ -136,7 +138,7 @@ namespace AzToolsFramework
         Q_DISABLE_COPY(QTreeViewStateSaver)
     };
 
-    class TreeViewState
+    class AZTF_API TreeViewState
     {
     public:
         static AZStd::unique_ptr<TreeViewState> CreateTreeViewState();

@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
@@ -18,7 +20,7 @@ namespace AzToolsFramework
     class ViewportEditorModeTrackerInterface;
 
     //! The default selection/input handler for the editor (includes handling ComponentMode).
-    class EditorDefaultSelection
+    class AZTF_API EditorDefaultSelection
         : public ViewportInteraction::InternalViewportSelectionRequests
         , private ActionOverrideRequestBus::Handler
         , private ComponentModeFramework::ComponentModeSystemRequestBus::Handler

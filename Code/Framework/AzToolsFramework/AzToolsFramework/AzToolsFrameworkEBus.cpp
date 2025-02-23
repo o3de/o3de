@@ -28,3 +28,6 @@ DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::Compo
 
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorEntityLockComponentNotifications);
+
+#include <AzToolsFramework/Viewport/ViewportMessagesBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);

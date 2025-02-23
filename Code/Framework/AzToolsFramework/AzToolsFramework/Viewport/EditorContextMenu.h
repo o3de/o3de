@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QMenu>
 #include <QPoint>
@@ -27,5 +29,5 @@ namespace AzToolsFramework
     };
 
     //! Update to run for context menu (when should it appear/disappear etc).
-    void EditorContextMenuUpdate(EditorContextMenu& contextMenu, const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
+    AZTF_API void EditorContextMenuUpdate(EditorContextMenu& contextMenu, const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 } // namespace AzToolsFramework

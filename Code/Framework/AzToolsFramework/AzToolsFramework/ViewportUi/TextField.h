@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
@@ -15,7 +17,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 {
     //! Data class for a string label and text edit field.
     //! E.g.: ScaleX [_____].
-    class TextField
+    class AZTF_API TextField
     {
     public:
         TextField(

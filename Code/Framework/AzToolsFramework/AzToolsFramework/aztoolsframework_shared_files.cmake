@@ -754,7 +754,101 @@ set(FILES
     UI/PropertyEditor/ReflectedPropertyEditor.hxx
     UI/PropertyEditor/ThumbnailPropertyCtrl.cpp
     UI/PropertyEditor/ThumbnailPropertyCtrl.h
+    UI/SearchWidget/SearchCriteriaWidget.cpp
+    UI/SearchWidget/SearchCriteriaWidget.hxx
+    UI/SearchWidget/SearchWidgetTypes.hxx
+    UI/Slice/Constants.h
+    UI/Slice/NotificationWindow.ui
+    UI/Slice/SliceOverridesNotificationWindow.cpp
+    UI/Slice/SliceOverridesNotificationWindow.hxx
+    UI/Slice/SliceOverridesNotificationWindowManager.cpp
+    UI/Slice/SliceOverridesNotificationWindowManager.hxx
+    UI/Slice/SlicePushWidget.cpp
+    UI/Slice/SlicePushWidget.hxx
+    UI/Slice/SliceRelationshipWidget.cpp
+    UI/Slice/SliceRelationshipWidget.hxx
+    UI/UICore/AspectRatioAwarePixmapWidget.cpp
+    UI/UICore/AspectRatioAwarePixmapWidget.hxx
+    UI/UICore/ClickableLabel.cpp
+    UI/UICore/ClickableLabel.hxx
+    UI/UICore/ConsoleTextEdit.cpp
+    UI/UICore/ConsoleTextEdit.hxx
+    UI/UICore/IconButton.cpp
+    UI/UICore/IconButton.hxx
+    UI/UICore/ProgressShield.cpp
+    UI/UICore/ProgressShield.hxx
+    UI/UICore/ProgressShield.ui
+    UI/UICore/QTreeViewStateSaver.cpp
+    UI/UICore/QTreeViewStateSaver.hxx
+    UI/UICore/QWidgetSavedState.cpp
+    UI/UICore/QWidgetSavedState.h
+    UI/UICore/TargetSelectorButton.cpp
+    UI/UICore/TargetSelectorButton.hxx
+    UI/UICore/WidgetHelpers.h
+    Undo/UndoCacheInterface.h
+    Undo/UndoSystem.cpp
+    Undo/UndoSystem.h
+    Viewport/EditorContextMenu.cpp
+    Viewport/EditorContextMenu.h
+    Viewport/LocalViewBookmarkComponent.cpp
+    Viewport/LocalViewBookmarkComponent.h
+    Viewport/LocalViewBookmarkLoader.cpp
+    Viewport/LocalViewBookmarkLoader.h
+    Viewport/SharedViewBookmarkComponent.cpp
+    Viewport/SharedViewBookmarkComponent.h
+    Viewport/ViewBookmarkSystemComponent.cpp
+    Viewport/ViewBookmarkSystemComponent.h
+    Viewport/ViewportInteractionHelpers.cpp
+    Viewport/ViewportInteractionHelpers.h
+    Viewport/ViewportMessages.cpp
+    Viewport/ViewportMessages.h
+    Viewport/ViewportSettings.cpp
+    Viewport/ViewportSettings.h
+    Viewport/ViewportTypes.cpp
+    Viewport/ViewportTypes.h
+    ViewportSelection/EditorBoxSelect.cpp
+    ViewportSelection/EditorBoxSelect.h
+    ViewportSelection/EditorDefaultSelection.cpp
+    ViewportSelection/EditorDefaultSelection.h
+    ViewportSelection/EditorHelpers.cpp
+    ViewportSelection/EditorHelpers.h
+    ViewportSelection/EditorInteractionSystemComponent.cpp
+    ViewportSelection/EditorInteractionSystemComponent.h
+    ViewportSelection/EditorPickEntitySelection.cpp
+    ViewportSelection/EditorPickEntitySelection.h
+    ViewportSelection/EditorSelectionUtil.cpp
+    ViewportSelection/EditorSelectionUtil.h
+    ViewportSelection/EditorTransformComponentSelection.cpp
+    ViewportSelection/EditorTransformComponentSelection.h
+    ViewportSelection/EditorVisibleEntityDataCache.cpp
+    ViewportSelection/EditorVisibleEntityDataCache.h
+    ViewportSelection/InvalidClicks.cpp
+    ViewportSelection/InvalidClicks.h
+    ViewportSelection/ViewportEditorModeTracker.cpp
+    ViewportSelection/ViewportEditorModeTracker.h
+    ViewportUi/Button.cpp
+    ViewportUi/Button.h
+    ViewportUi/ButtonGroup.cpp
+    ViewportUi/ButtonGroup.h
+    ViewportUi/TextField.cpp
+    ViewportUi/TextField.h
+    ViewportUi/ViewportUiCluster.cpp
+    ViewportUi/ViewportUiCluster.h
+    ViewportUi/ViewportUiDisplay.cpp
+    ViewportUi/ViewportUiDisplay.h
+    ViewportUi/ViewportUiDisplayLayout.cpp
+    ViewportUi/ViewportUiDisplayLayout.h
+    ViewportUi/ViewportUiManager.cpp
+    ViewportUi/ViewportUiManager.h
+    ViewportUi/ViewportUiSwitcher.cpp
+    ViewportUi/ViewportUiSwitcher.h
+    ViewportUi/ViewportUiTextField.cpp
+    ViewportUi/ViewportUiTextField.h
+    ViewportUi/ViewportUiWidgetCallbacks.cpp
+    ViewportUi/ViewportUiWidgetCallbacks.h
 
+
+    
     
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h

@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
@@ -23,7 +25,7 @@ AZ_POP_DISABLE_WARNING
 namespace AzToolsFramework::ViewportUi::Internal
 {
     //! Helper class for a widget that holds and manages multiple LabelTextFields.
-    class ViewportUiTextField : public QWidget
+    class AZTF_API ViewportUiTextField : public QWidget
     {
         Q_OBJECT
 
