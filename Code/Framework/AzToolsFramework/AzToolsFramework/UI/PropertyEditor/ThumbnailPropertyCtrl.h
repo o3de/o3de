@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
@@ -27,7 +30,7 @@ namespace AzToolsFramework
     }
 
     //! Used by PropertyAssetCtrl to display thumbnail preview of the asset as well as additional drop-down actions
-    class ThumbnailPropertyCtrl : public QWidget
+    class AZTF_API ThumbnailPropertyCtrl : public QWidget
     {
         Q_OBJECT
     public:

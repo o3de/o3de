@@ -5,11 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef PROPERTY_INTSLIDER_CTRL
-#define PROPERTY_INTSLIDER_CTRL
-
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyIntCtrlCommon.h>
@@ -18,7 +17,7 @@
 
 namespace AzToolsFramework
 {
-    class PropertyIntSliderCtrl
+    class AZTF_API PropertyIntSliderCtrl
         : public QWidget
     {
         Q_OBJECT
@@ -64,7 +63,7 @@ namespace AzToolsFramework
     };
 
     // Base class to allow QObject inheritance and definitions for IntSpinBoxHandlerCommon class template
-    class IntSliderHandlerQObject
+    class AZTF_API IntSliderHandlerQObject
         : public QObject
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
@@ -135,7 +134,5 @@ namespace AzToolsFramework
         }
     }
 
-    void RegisterIntSliderHandlers();
+    AZTF_API void RegisterIntSliderHandlers();
 };
-
-#endif

@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Math/Uuid.h>
@@ -142,53 +145,53 @@ namespace LegacyFramework
 
     /** Retrieves the name of the app you set in your application descriptor before calling Run
     */
-    const char* appName();
+    AZTF_API const char* appName();
 
     /** Returns the name of the binary that this application belongs to (the full path)
     */
-    const char* appModule();
+    AZTF_API const char* appModule();
 
     /** Returns the full path to the folder that contains this application binary.
     */
-    const char* appDir();
+    AZTF_API  const char* appDir();
 
     /** Returns true if this is the first instance of this application run.  False if another instance is already running.
     */
-    bool isPrimary();
+    AZTF_API bool isPrimary();
 
     /** Returns true if someone issued a SetAbortRequested(true) on the application bus.
     * Can be used for console applications when someone presses CTRL+C or such.
     */
-    bool appAbortRequested();
+    AZTF_API bool appAbortRequested();
 
     /** returns true if the application descriptor was created using GUI Mode set to true.
     */
-    bool IsGUIMode();
+    AZTF_API bool IsGUIMode();
 
     /** Adds a given folder to the executable (and shared dynamic library) search path for the current process.
     * Does not alter the actual system environment, only for this run of the application.
     */
-    void AddToPATH(const char* folder);
+    AZTF_API void AddToPATH(const char* folder);
 
     /** Returns true if the application global configuration file (appname.xml) is writeable.
     */
-    bool IsAppConfigWritable();
+    AZTF_API bool IsAppConfigWritable();
 
     /** helper function which retrieves the serialize context and asserts if its not found.
     */
-    AZ::SerializeContext* GetSerializeContext();
+    AZTF_API AZ::SerializeContext* GetSerializeContext();
 
     /** Returns true if the application descriptor passed in during creation of the application had it set to true.
     * If false, it means that you have not requested that there be a "game project".
     * the project manager, which makes sure the project directory is set and can make new projects will in that case not activate
     * use this only if you're making a standalone app that needs no project (ie, no assets or anything from a project folder).
     */
-    bool RequiresGameProject();
+    AZTF_API bool RequiresGameProject();
 
     /** Returns true if this is an app which USES assets and needs them to be ready.
     * As opposed to pipeline tools such as the Project Creator or the asset processor itself.
     */
-    bool ShouldRunAssetProcessor();
+    AZTF_API bool ShouldRunAssetProcessor();
 
     /** FrameworkApplicationMessages is how you communicate to the framework itself (instead of the above /ref CoreMessages which goes the other way).
     */

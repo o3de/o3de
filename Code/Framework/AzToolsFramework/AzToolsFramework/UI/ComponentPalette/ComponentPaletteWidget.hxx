@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/map.h>
@@ -34,7 +37,7 @@ namespace AzToolsFramework
 {
     class ComponentPaletteModel;
 
-    class ComponentPaletteWidget
+    class AZTF_API ComponentPaletteWidget
         : public QFrame
     {
         Q_OBJECT

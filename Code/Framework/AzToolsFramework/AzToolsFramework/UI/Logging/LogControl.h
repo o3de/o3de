@@ -6,11 +6,10 @@
  *
  */
 
-#ifndef LOGCONTROL_H
-#define LOGCONTROL_H
-
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -48,7 +47,7 @@ namespace AzToolsFramework
 
     namespace LogPanel
     {
-        class BaseLogView
+        class AZTF_API BaseLogView
             : public QWidget
         {
             Q_OBJECT;
@@ -130,5 +129,3 @@ namespace AzToolsFramework
         };
     } // namespace LogPanel
 } // namespace AzToolsFramework
-
-#endif

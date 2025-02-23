@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -33,7 +36,7 @@ namespace AzToolsFramework
     // Audio Control Selector Request Bus
     // For connecting UI proper
     //=============================================================================
-    class AudioControlSelectorRequests
+    class AZTF_API AudioControlSelectorRequests
         : public AZ::EBusTraits
     {
     public:
@@ -53,7 +56,7 @@ namespace AzToolsFramework
     //=============================================================================
     // Audio Control Selector Widget
     //=============================================================================
-    class AudioControlSelectorWidget
+    class AZTF_API AudioControlSelectorWidget
         : public QWidget
     {
         Q_OBJECT
@@ -102,7 +105,7 @@ namespace AzToolsFramework
     //=============================================================================
     // Property Handler
     //=============================================================================
-    class AudioControlSelectorWidgetHandler
+    class AZTF_API AudioControlSelectorWidgetHandler
         : QObject
         , public AzToolsFramework::PropertyHandler<CReflectedVarAudioControl, AudioControlSelectorWidget>
     {
@@ -128,6 +131,6 @@ namespace AzToolsFramework
     };
 
 
-    void RegisterAudioPropertyHandler();
+    AZTF_API void RegisterAudioPropertyHandler();
 
 } // namespace AzToolsFramework

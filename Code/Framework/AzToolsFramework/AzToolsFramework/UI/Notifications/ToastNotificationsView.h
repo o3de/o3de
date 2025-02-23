@@ -6,6 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
@@ -31,7 +34,7 @@ namespace AzToolsFramework
     * or resized because toast notifications are displayed on top of the parent and are not part
     * of the layout, so they must be manually moved.
     */
-    class ToastNotificationsView final
+    class AZTF_API ToastNotificationsView final
         : public QWidget 
         , protected ToastRequestBus::Handler
     {

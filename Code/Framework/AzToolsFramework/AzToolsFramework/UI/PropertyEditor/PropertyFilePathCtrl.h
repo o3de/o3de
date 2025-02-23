@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/IO/Path/Path.h>
@@ -26,12 +29,12 @@ namespace AzQtComponents
 namespace AzToolsFramework
 {
     //! Helper method to retrieve an absolute path given a relative source path
-    AZ::IO::Path GetAbsolutePathFromRelativePath(const AZ::IO::Path& relativePath);
+    AZTF_API AZ::IO::Path GetAbsolutePathFromRelativePath(const AZ::IO::Path& relativePath);
 
     //! A control for representing an AZ::IO::Path field with
     //! a BrowseEdit whose popup button triggers a native
     //! file dialog.
-    class PropertyFilePathCtrl : public QWidget
+    class AZTF_API PropertyFilePathCtrl : public QWidget
     {
         Q_OBJECT
     public:
@@ -61,7 +64,7 @@ namespace AzToolsFramework
         void OnClearButtonClicked();
     };
 
-    class PropertyFilePathHandler
+    class AZTF_API PropertyFilePathHandler
         : public QObject
         , public PropertyHandler<AZ::IO::Path, PropertyFilePathCtrl>
     {
@@ -82,5 +85,5 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, PropertyFilePathCtrl* GUI, const property_t& instance, InstanceDataNode* node) override;
     };
 
-    void RegisterFilePathHandler();
+    AZTF_API void RegisterFilePathHandler();
 } // namespace AzToolsFramework

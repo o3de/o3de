@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
+//AZTF-SHARED
 
-#ifndef MAINWINDOWSAVEDSTATE_H
-#define MAINWINDOWSAVEDSTATE_H
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -27,7 +28,7 @@ namespace AzToolsFramework
     // the Main Window Saved State is a nice base class for you to derive your own Main Window state from
     // (or just use your own in addition).
     // it saves both the geometry and state of QMainWindows (so all splitter information, positioning, dock visibility, dock placement, etc)
-    class MainWindowSavedState
+    class AZTF_API MainWindowSavedState
         : public AZ::UserSettings
     {
     public:
@@ -49,4 +50,3 @@ namespace AzToolsFramework
     };
 }
 
-#endif

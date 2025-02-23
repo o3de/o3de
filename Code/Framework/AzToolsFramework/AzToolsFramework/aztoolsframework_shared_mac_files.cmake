@@ -13,7 +13,6 @@ set(FILES
     UI/LegacyFramework/UIFramework.cpp
     UI/LegacyFramework/UIFrameworkAPI.h
     UI/LegacyFramework/UIFrameworkPreferences.cpp
-    UI/LegacyFramework/Resources/sharedResources.qrc
     UI/LegacyFramework/Core/EditorContextBus.h
     UI/LegacyFramework/Core/EditorFrameworkAPI.h
     UI/LegacyFramework/Core/EditorFrameworkAPI.cpp
@@ -21,8 +20,6 @@ set(FILES
     UI/LegacyFramework/Core/EditorFrameworkApplication.cpp
     UI/LegacyFramework/Core/IPCComponent.h
     UI/LegacyFramework/Core/IPCComponent.cpp
-    UI/LegacyFramework/CustomMenus/CustomMenusAPI.h
-    UI/LegacyFramework/CustomMenus/CustomMenusComponent.cpp
     UI/UICore/OverwritePromptDialog.hxx
     UI/UICore/OverwritePromptDialog.cpp
     UI/UICore/OverwritePromptDialog.ui

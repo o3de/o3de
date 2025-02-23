@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef LOGENTRY_H
-#define LOGENTRY_H
-
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -23,7 +23,7 @@ namespace AzToolsFramework
     namespace Logging
     {
         class LogLine;
-        class LogEntry
+        class AZTF_API LogEntry
         {
         public:
             enum class Severity
@@ -87,5 +87,3 @@ namespace AzToolsFramework
         };
     } // Logging
 } // AzToolsFramework
-
-#endif

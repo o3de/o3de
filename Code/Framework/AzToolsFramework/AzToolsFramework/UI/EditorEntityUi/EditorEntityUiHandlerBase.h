@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/RTTI/RTTI.h>
 
@@ -21,7 +24,7 @@ class QTreeView;
 namespace AzToolsFramework
 {
     //! Defines a handler that can customize entity UI appearance and behavior in the Entity Outliner.
-    class EditorEntityUiHandlerBase
+    class AZTF_API EditorEntityUiHandlerBase
     {
     protected:
 

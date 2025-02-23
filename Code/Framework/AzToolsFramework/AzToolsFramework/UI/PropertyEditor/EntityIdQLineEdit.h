@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -17,7 +20,7 @@
 
 namespace AzToolsFramework
 {
-    class EntityIdQLineEdit
+    class AZTF_API EntityIdQLineEdit
         : public QLineEdit
     {
         Q_OBJECT // AUTOMOC

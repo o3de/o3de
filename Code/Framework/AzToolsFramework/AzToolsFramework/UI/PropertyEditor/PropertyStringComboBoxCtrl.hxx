@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef UI_PROPERTYEDITOR_PROPERTYSTRINGCOMBOBOX_CTRL
-#define UI_PROPERTYEDITOR_PROPERTYSTRINGCOMBOBOX_CTRL
-
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -24,7 +24,7 @@
 
 namespace AzToolsFramework
 {
-    class PropertyStringComboBoxCtrl
+    class AZTF_API PropertyStringComboBoxCtrl
         : public GenericComboBoxCtrl<AZStd::string>
     {
         Q_OBJECT
@@ -58,7 +58,7 @@ namespace AzToolsFramework
         void ConsumeAttribute(PropertyStringComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
     };
 
-    class StringEnumPropertyComboBoxHandler
+    class AZTF_API StringEnumPropertyComboBoxHandler
         : QObject
         , public PropertyComboBoxHandlerCommon < AZStd::string >
     {
@@ -73,7 +73,5 @@ namespace AzToolsFramework
         QWidget* CreateGUI(QWidget* pParent) override;
     };
 
-    void RegisterStringComboBoxHandler();
+    AZTF_API void RegisterStringComboBoxHandler();
 };
-
-#endif // UI_PROPERTYEDITOR_PROPERTYSTRINGCOMBOBOX_CTRL

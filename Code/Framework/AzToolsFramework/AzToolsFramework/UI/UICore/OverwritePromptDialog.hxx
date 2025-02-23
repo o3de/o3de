@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
+//AZTF-SHARED
 
-#ifndef OVERWRITEPROMPTDIALOG_HXX
-#define OVERWRITEPROMPTDIALOG_HXX
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -25,7 +26,7 @@ namespace Ui
 
 namespace AzToolsFramework
 {
-    class OverwritePromptDialog
+    class AZTF_API OverwritePromptDialog
         : public QDialog
     {
         Q_OBJECT;
@@ -46,5 +47,3 @@ namespace AzToolsFramework
         Ui::OverwritePromptDialog* guiConstructor;
     };
 }
-
-#endif//SAVECHANGESDIALOG_HXX

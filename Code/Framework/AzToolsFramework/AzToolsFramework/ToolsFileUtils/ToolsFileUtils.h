@@ -8,6 +8,9 @@
 
 #pragma once
 
+// AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/base.h>
 #include <QString>
 
@@ -15,8 +18,8 @@ namespace AzToolsFramework
 {
     namespace ToolsFileUtils
     {
-        bool SetModificationTime(const char* const filename, AZ::u64 modificationTime);
+        AZTF_API bool SetModificationTime(const char* const filename, AZ::u64 modificationTime);
 
-        bool GetFreeDiskSpace(const QString& path, qint64& outFreeDiskSpace);
+        AZTF_API bool GetFreeDiskSpace(const QString& path, qint64& outFreeDiskSpace);
     }
 }

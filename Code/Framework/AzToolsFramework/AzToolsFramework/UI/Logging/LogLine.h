@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,6 +6,10 @@
  *
  */
 
+ #pragma once
+ //AZTF-SHARED
+ 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/functional.h>
@@ -26,7 +28,7 @@ namespace AzToolsFramework
         //! LogLine is a structured version of raw text logged with our various logging mechanisms. It is meant to be just a
         //! blind data holder, so you can change its fields directly before submitting it to a model, or just create it via
         //! the constructor.  Its only not a struct because it has some functions on it to help.
-        class LogLine
+        class AZTF_API LogLine
         {
         public:
             AZ_CLASS_ALLOCATOR(LogLine, AZ::SystemAllocator);

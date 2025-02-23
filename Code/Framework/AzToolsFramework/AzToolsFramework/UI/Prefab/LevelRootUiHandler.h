@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
@@ -19,7 +22,7 @@ namespace AzToolsFramework
         class PrefabPublicInterface;
     };
 
-    class LevelRootUiHandler
+    class AZTF_API LevelRootUiHandler
         : public EditorEntityUiHandlerBase
     {
     public:

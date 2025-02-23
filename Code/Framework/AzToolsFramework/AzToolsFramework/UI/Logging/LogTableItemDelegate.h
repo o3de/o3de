@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/Widgets/TableView.h>
@@ -17,7 +20,7 @@ namespace AzToolsFramework
 {
     namespace Logging
     {
-        class LogTableItemDelegate
+        class AZTF_API LogTableItemDelegate
             : public AzQtComponents::TableViewItemDelegate
         {
             Q_OBJECT

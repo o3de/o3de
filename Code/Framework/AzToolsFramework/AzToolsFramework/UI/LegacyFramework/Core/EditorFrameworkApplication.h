@@ -6,8 +6,10 @@
  *
  */
 
-#ifndef EDITORFRAMEWORKAPPLICATION_H
-#define EDITORFRAMEWORKAPPLICATION_H
+ #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentApplication.h>
@@ -23,7 +25,7 @@ namespace AZ
 
 namespace LegacyFramework
 {
-    struct ApplicationDesc
+    struct AZTF_API ApplicationDesc
     {
         void* m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
         bool m_enableGUI; // false if you want none of the QT or GUI functionality to exist.  You cannot use project manager if you do this.
@@ -44,7 +46,7 @@ namespace LegacyFramework
     };
 
 
-    class Application
+    class AZTF_API Application
         : public AZ::ComponentApplication
         , protected FrameworkApplicationMessages::Handler
         , protected CoreMessageBus::Handler
@@ -142,5 +144,3 @@ namespace LegacyFramework
         ApplicationDesc m_desc;
     };
 }
-
-#endif // EDITORFRAMEWORKAPPLICATION_H

@@ -6,6 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
@@ -54,7 +57,7 @@ namespace AzToolsFramework
     /**
      * Widget for editing an AZ::Component (or multiple components of the same type).
      */
-    class ComponentEditor
+    class AZTF_API ComponentEditor
         : public AzQtComponents::Card
     {
         Q_OBJECT;

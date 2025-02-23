@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef PROPERTY_ENTITYIDCTRL_CTRL
-#define PROPERTY_ENTITYIDCTRL_CTRL
-
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -34,7 +34,7 @@ namespace AzToolsFramework
 
     //just a test to see how it would work to pop a dialog
 
-    class PropertyEntityIdCtrl
+    class AZTF_API PropertyEntityIdCtrl
         : public QWidget
         , private EditorPickModeRequestBus::Handler
         , private EditorEvents::Bus::Handler
@@ -114,7 +114,7 @@ namespace AzToolsFramework
         QIcon m_pickerIcon;
     };
 
-    class EntityIdPropertyHandler : QObject, public PropertyHandler<AZ::EntityId, PropertyEntityIdCtrl>
+    class AZTF_API EntityIdPropertyHandler : QObject, public PropertyHandler<AZ::EntityId, PropertyEntityIdCtrl>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
@@ -133,8 +133,6 @@ namespace AzToolsFramework
         virtual bool ReadValuesIntoGUI(size_t index, PropertyEntityIdCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    void RegisterEntityIdPropertyHandler();
+    AZTF_API void RegisterEntityIdPropertyHandler();
 
 } // namespace AzToolsFramework
-
-#endif

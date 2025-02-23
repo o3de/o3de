@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -22,7 +25,7 @@ namespace AzToolsFramework
         class PrefabPublicInterface;
 
         //! Ensures entities in a procedural prefab are correctly reported as read-only.
-        class ProceduralPrefabReadOnlyHandler
+        class AZTF_API ProceduralPrefabReadOnlyHandler
             : public ReadOnlyEntityQueryRequestBus::Handler
             , public PrefabFocusNotificationBus::Handler
         {

@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -17,7 +20,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
-    class ComponentPaletteModel
+    class AZTF_API ComponentPaletteModel
         : public QStandardItemModel
     {
         Q_OBJECT

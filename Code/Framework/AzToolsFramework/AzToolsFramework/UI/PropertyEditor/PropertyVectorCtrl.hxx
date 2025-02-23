@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef PROPERTYEDITOR_PROPERTY_VECTOR3CTRL_H
-#define PROPERTYEDITOR_PROPERTY_VECTOR3CTRL_H
-
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -39,7 +39,7 @@ namespace AzToolsFramework
      * \brief Common functionality that is needed by handlers that need to handle a configurable
      * number of floats
      */
-    class VectorPropertyHandlerCommon
+    class AZTF_API VectorPropertyHandlerCommon
     {
     public:
 
@@ -169,7 +169,7 @@ namespace AzToolsFramework
         }
     };
 
-    class Vector2PropertyHandler
+    class AZTF_API Vector2PropertyHandler
         : public VectorPropertyHandlerBase<AZ::Vector2>
     {
     public:
@@ -182,7 +182,7 @@ namespace AzToolsFramework
         AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::Vector2; }
     };
 
-    class Vector3PropertyHandler
+    class AZTF_API Vector3PropertyHandler
         : public VectorPropertyHandlerBase<AZ::Vector3>
     {
     public:
@@ -195,7 +195,7 @@ namespace AzToolsFramework
         AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::Vector3; }
     };
 
-    class Vector4PropertyHandler
+    class AZTF_API Vector4PropertyHandler
         : public VectorPropertyHandlerBase<AZ::Vector4>
     {
     public:
@@ -208,7 +208,7 @@ namespace AzToolsFramework
         AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::Vector4; }
     };
 
-    class QuaternionPropertyHandler
+    class AZTF_API QuaternionPropertyHandler
         : public VectorPropertyHandlerBase<AZ::Quaternion>
     {
     public:
@@ -223,6 +223,3 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, AzQtComponents::VectorInput* GUI, const AZ::Quaternion& instance, InstanceDataNode* node)  override;
     };
 }
-
-
-#endif // PROPERTYEDITOR_PROPERTY_VECTOR3CTRL_H

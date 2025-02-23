@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
+//AZTF-SHARED
 
-#ifndef ENTITY_ID_QLABEL_HXX
-#define ENTITY_ID_QLABEL_HXX
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -18,14 +20,13 @@
 #include <QtWidgets/QLabel>
 #endif
 
-#pragma once
 
 class QSpinBox;
 class QPushButton;
 
 namespace AzToolsFramework
 {
-    class EntityIdQLabel
+    class AZTF_API EntityIdQLabel
         : public QLabel
     {
         Q_OBJECT
@@ -49,5 +50,3 @@ namespace AzToolsFramework
         AZ::EntityId m_entityId;
     };
 }
-
-#endif

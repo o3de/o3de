@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 // This is a collection of methods to change QDockWidget internals to workaround bugs present in
 // 5.6.2, mainly related to restoring floating tabbed windows
@@ -30,45 +33,45 @@ namespace AzToolsFramework
         /**
          * Returns true if w is a QDockWidgetGroupWindow.
          */
-        bool isDockWidgetWindowGroup(QWidget* w);
+        AZTF_API bool isDockWidgetWindowGroup(QWidget* w);
 
         /**
          * Returns true if the dockwidget dw is inside QDockWidgetGroupWindow.
          */
-        bool isInDockWidgetWindowGroup(QDockWidget* dw);
+        AZTF_API bool isInDockWidgetWindowGroup(QDockWidget* dw);
 
         /**
          * After calling QMainWindow::restoreDockWidget(dw) it can happen that
          * the dockwidget is inside an hidden QDockWidgetGroupWindow, which needs to be shown.
          */
-        void correctVisibility(QDockWidget *dw);
+        AZTF_API void correctVisibility(QDockWidget *dw);
 
         /**
          * Returns true if either obj or one of its children is a QDockWidget.
          * Useful to check if a QDockWidgetGroupWindow has any QDockWidgets.
          */
-        bool containsDockWidget(QObject *obj);
+        AZTF_API bool containsDockWidget(QObject *obj);
 
         /**
          * Returns a list of QDockWidgetGroupWindow that are direct children of mainWindow.
          */
-        QList<QWidget*> getDockWindowGroups(QMainWindow *mainWindow);
+        AZTF_API QList<QWidget*> getDockWindowGroups(QMainWindow *mainWindow);
 
         /**
          * Deletes all QDockWidgetGroupWindow.
          * If onlyGhosts is true, then only the ones with no QDockWidget are deleted
          */
-        void deleteWindowGroups(QMainWindow *mainWindow, bool onlyGhosts = false);
+        AZTF_API void deleteWindowGroups(QMainWindow *mainWindow, bool onlyGhosts = false);
 
         /**
          * Prints a list of dock widgets and QDockWidgetGroupWindows to stderr.
          */
-        void dumpDockWidgets(QMainWindow *mainWindow);
+        AZTF_API void dumpDockWidgets(QMainWindow *mainWindow);
 
         /**
          * Calls dumpDockWidgets() every 5 seconds.
          */
-        void startPeriodicDebugDump(QMainWindow *mainWindow);
+        AZTF_API void startPeriodicDebugDump(QMainWindow *mainWindow);
 
         /**
          * This method is for debugging purposes.
@@ -76,12 +79,12 @@ namespace AzToolsFramework
          * Returns the dock names that would be restored. Eventually we can think of editing the saved data
          * to fix bugs.
          */
-        bool processSavedState(const QByteArray &savedData, QStringList &dockNames);
+        AZTF_API bool processSavedState(const QByteArray &savedData, QStringList &dockNames);
 
         /**
          * Looks for non-floating dock widgets that aren't in any dock area because QMainWindow wasn't able to restore it.
          * Should only happen in case of a crash.
          */
-        bool hasInvalidDockWidgets(QMainWindow *mainWindow);
+        AZTF_API bool hasInvalidDockWidgets(QMainWindow *mainWindow);
     }
 }

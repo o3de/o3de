@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
+//AZTF-SHARED
 
-#ifndef PROPERTYEDITORAPI_INTERNALS_H
-#define PROPERTYEDITORAPI_INTERNALS_H
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include "InstanceDataHierarchy.h"
 
@@ -103,7 +104,7 @@ namespace AzToolsFramework
     // this serves as the base class for all property managers.
     // you do not use this class directly.
     // derive from PropertyHandler instead.
-    class PropertyHandlerBase
+    class AZTF_API PropertyHandlerBase
     {
         friend class ReflectedPropertyEditor;
         friend PropertyRowWidget;
@@ -921,5 +922,3 @@ namespace AzToolsFramework
         PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId = PropertyEditorToolsSystemInterface::InvalidHandlerId;
     };
 }
-
-#endif

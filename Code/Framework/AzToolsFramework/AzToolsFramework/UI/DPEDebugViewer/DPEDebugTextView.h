@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
@@ -15,7 +18,7 @@
 
 namespace AzToolsFramework
 {
-    class DPEDebugTextView : public QTextEdit
+    class AZTF_API DPEDebugTextView : public QTextEdit
     {
         Q_OBJECT
 

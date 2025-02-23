@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
@@ -14,7 +17,7 @@
 
 namespace AzToolsFramework
 {
-    class GenericButtonHandler : public PropertyHandlerWidget<QToolButton>
+    class AZTF_API GenericButtonHandler : public PropertyHandlerWidget<QToolButton>
     {
     public:
         GenericButtonHandler();

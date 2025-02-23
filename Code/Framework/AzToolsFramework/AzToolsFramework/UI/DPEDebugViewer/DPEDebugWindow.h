@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
@@ -29,7 +32,7 @@ namespace AzToolsFramework
 {
     class DPEDebugModel;
 
-    class DPEDebugWindow
+    class AZTF_API DPEDebugWindow
         : public QMainWindow
     {
         Q_OBJECT

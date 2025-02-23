@@ -7,13 +7,16 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include "AzToolsFramework/UI/DocumentPropertyEditor/ui_KeyQueryDPE.h"
 #include <QDialog>
 
 namespace AzToolsFramework
 {
-    class KeyQueryDPE
+    class AZTF_API KeyQueryDPE
         : public QDialog
         , Ui::KeyQueryDPE
     {

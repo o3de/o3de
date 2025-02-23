@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -29,7 +32,7 @@ namespace AzToolsFramework
         // Returns true if the given component is addable by the user
         bool IsAddableByUser(const AZ::SerializeContext::ClassData* componentClass);
 
-        void BuildComponentTables(
+        AZTF_API void BuildComponentTables(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
             AZStd::span<const AZ::ComponentServiceType> serviceFilter,
@@ -38,7 +41,7 @@ namespace AzToolsFramework
             ComponentIconTable& componentIconTable
         );
 
-        void BuildComponentTables(
+        AZTF_API void BuildComponentTables(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
             AZStd::span<const AZ::ComponentServiceType> serviceFilter,
@@ -48,19 +51,19 @@ namespace AzToolsFramework
 
         // Returns true if any components in the given filter provide any of the services
         // specified and are addable/editable by the user
-        bool ContainsEditableComponents(
+        AZTF_API bool ContainsEditableComponents(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
             AZStd::span<const AZ::ComponentServiceType> serviceFilter,
             AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter
         );
 
-        bool ContainsEditableComponents(
+        AZTF_API bool ContainsEditableComponents(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
             AZStd::span<const AZ::ComponentServiceType> serviceFilter
         );
 
-        QRegExp BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
+        AZTF_API QRegExp BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
     }
 }

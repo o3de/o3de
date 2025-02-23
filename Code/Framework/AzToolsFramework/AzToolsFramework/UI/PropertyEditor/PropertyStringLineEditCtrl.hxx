@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef PROPERTY_STRINGLINEEDIT_CTRL
-#define PROPERTY_STRINGLINEEDIT_CTRL
-
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -23,7 +23,7 @@ class QPushButton;
 
 namespace AzToolsFramework
 {
-    class PropertyStringLineEditCtrl
+    class AZTF_API PropertyStringLineEditCtrl
         : public QWidget
     {
         friend class StringPropertyLineEditHandler;
@@ -55,7 +55,7 @@ namespace AzToolsFramework
         QLineEdit* m_pLineEdit;
     };
 
-    class StringPropertyLineEditHandler
+    class AZTF_API StringPropertyLineEditHandler
         : QObject
         , public PropertyHandler<AZStd::string, PropertyStringLineEditCtrl>
     {
@@ -78,5 +78,3 @@ namespace AzToolsFramework
 
     void RegisterStringLineEditHandler();
 };
-
-#endif

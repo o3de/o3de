@@ -6,6 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Casting/numeric_cast.h>
@@ -33,7 +36,7 @@ namespace AzToolsFramework
 {
     class EntityOutlinerSearchItemDelegate;
 
-    class EntityOutlinerSearchTypeSelector
+    class AZTF_API EntityOutlinerSearchTypeSelector
         : public AzQtComponents::SearchTypeSelector
     {
     public:
@@ -46,7 +49,7 @@ namespace AzToolsFramework
         int GetNumFixedItems() override;
     };
 
-    class OutlinerCriteriaButton
+    class AZTF_API OutlinerCriteriaButton
         : public AzQtComponents::FilterCriteriaButton
     {
         Q_OBJECT
@@ -55,7 +58,7 @@ namespace AzToolsFramework
         explicit OutlinerCriteriaButton(QString labelText, QWidget* parent = nullptr, int index = -1);
     };
 
-    class EntityOutlinerSearchWidget
+    class AZTF_API EntityOutlinerSearchWidget
         : public AzQtComponents::FilteredSearchWidget
     {
         Q_OBJECT
@@ -80,7 +83,7 @@ namespace AzToolsFramework
         EntityOutlinerSearchItemDelegate* m_delegate = nullptr;
     };
 
-    class EntityOutlinerIcons
+    class AZTF_API EntityOutlinerIcons
     {
     public:
         static EntityOutlinerIcons& GetInstance()
@@ -98,7 +101,7 @@ namespace AzToolsFramework
         QIcon m_globalIcons[aznumeric_cast<int>(EntityOutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter)];
     };
 
-    class EntityOutlinerSearchItemDelegate : public QStyledItemDelegate
+    class AZTF_API EntityOutlinerSearchItemDelegate : public QStyledItemDelegate
     {
     public:
         explicit EntityOutlinerSearchItemDelegate(QWidget* parent = nullptr);

@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -27,7 +30,7 @@ namespace AzToolsFramework
     * To change the default display text for "False" and "True",
     * use AZ::Edit::Attributes::FalseText or AZ::Edit::Attributes::TrueText repsectively
     */
-    class PropertyBoolRadioButtonsCtrl
+    class AZTF_API PropertyBoolRadioButtonsCtrl
         : public QWidget
     {
         Q_OBJECT
@@ -63,7 +66,7 @@ namespace AzToolsFramework
     * Property handler for use with the PropertyBoolRadioButtonsCtrl
     * To use this handler, create a reflected boolean variable and use handler name AZ::Edit::Handlers::RadioButton
     */
-    class BoolPropertyRadioButtonsHandler
+    class AZTF_API BoolPropertyRadioButtonsHandler
         : QObject
         , public PropertyHandler<bool, PropertyBoolRadioButtonsCtrl>
     {
@@ -84,5 +87,5 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, PropertyBoolRadioButtonsCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    void RegisterBoolRadioButtonsHandler();
+    AZTF_API void RegisterBoolRadioButtonsHandler();
 };

@@ -7,12 +7,14 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzFramework/DocumentPropertyEditor/FilterAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {
-    class ValueStringFilter : public RowFilterAdapter
+    class AZTF_API ValueStringFilter : public RowFilterAdapter
     {
     public:
         ValueStringFilter();

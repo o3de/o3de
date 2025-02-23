@@ -6,6 +6,9 @@
  *
  */
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include "LogPanel_Panel.h" // for TabSettings
@@ -21,7 +24,7 @@ namespace AzToolsFramework
     namespace LogPanel
     {
         // Replaces BaseLogPanel
-        class StyledLogPanel
+        class AZTF_API StyledLogPanel
             : public AzQtComponents::TabWidget
         {
             Q_OBJECT
@@ -75,7 +78,7 @@ namespace AzToolsFramework
         };
 
         // Replaces BaseLogView
-        class StyledLogTab
+        class AZTF_API StyledLogTab
             : public AzQtComponents::TableView
         {
             Q_OBJECT

@@ -7,7 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -20,7 +22,7 @@ namespace AZ::DocumentPropertyEditor
     class AdapterBuilder;
 
     //! ComponentAdapter is responsible to listening for signals that affect each component in the Entity Inspector
-    class ComponentAdapter
+    class AZTF_API ComponentAdapter
         : public ReflectionAdapter
         , private AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ToolsApplicationEvents::Bus::Handler

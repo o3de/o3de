@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -41,7 +44,7 @@ namespace AzToolsFramework
         class PrefabOverridePublicInterface;
         class PrefabPublicInterface;
 
-        class PrefabIntegrationManager final
+        class AZTF_API PrefabIntegrationManager final
             : public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
             , private PrefabFocusNotificationBus::Handler

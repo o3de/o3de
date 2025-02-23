@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 
@@ -49,7 +52,7 @@ namespace AzToolsFramework
     //! Model for items in the OutlinerTreeView.
     //! Each item represents an Entity.
     //! Items are parented in the tree according to their transform hierarchy.
-    class EntityOutlinerListModel
+    class AZTF_API EntityOutlinerListModel
         : public QAbstractItemModel
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
@@ -305,7 +308,7 @@ namespace AzToolsFramework
     * OutlinerItemDelegate exists to render custom item-types.
     * Other item-types render in the default fashion.
     */
-    class EntityOutlinerItemDelegate
+    class AZTF_API EntityOutlinerItemDelegate
         : public QStyledItemDelegate
     {
     public:

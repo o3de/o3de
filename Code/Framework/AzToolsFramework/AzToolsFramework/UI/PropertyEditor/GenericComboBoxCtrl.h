@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <QtWidgets/QWidget>
@@ -30,7 +33,7 @@ namespace AzToolsFramework
     template<typename T>
     class GenericComboBoxHandler;
 
-    class GenericComboBoxCtrlBase
+    class AZTF_API GenericComboBoxCtrlBase
         : public QWidget
     {
         Q_OBJECT

@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/IPC/SharedMemory.h>
@@ -22,7 +25,7 @@
 
 namespace LegacyFramework
 {
-    class IPCComponent
+    class AZTF_API IPCComponent
         : public AZ::Component
         , private IPCCommandBus::Handler
     {

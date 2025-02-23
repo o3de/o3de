@@ -7,6 +7,9 @@
  */
 
 #pragma once
+//AZTF-SHARED
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
@@ -19,7 +22,7 @@
 namespace AzToolsFramework
 {
     //! Handler for showing a generic QLabel
-    class LabelHandler
+    class AZTF_API LabelHandler
         : public GenericPropertyHandler<QLabel>
     {
     public:
@@ -32,5 +35,5 @@ namespace AzToolsFramework
         void ConsumeAttribute(QLabel* widget, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
     };
 
-    void RegisterLabelHandler();
+    AZTF_API void RegisterLabelHandler();
 }
