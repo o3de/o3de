@@ -127,6 +127,9 @@ namespace UnitTest
         QApplication::setActiveWindow(m_defaultParentWidget);
         childWidget->setFocus();
 
+        // setting Focus actually requires us to pump the event pump.
+        QCoreApplication::processEvents();
+
         // Trigger a shortcut event to our child widget, which should in turn only trigger our child action
         QShortcutEvent testEvent(QKeySequence("Ctrl+Z"), 0, true);
         QApplication::sendEvent(childWidget, &testEvent);

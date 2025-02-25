@@ -89,21 +89,26 @@ namespace AZ
             AsyncAssetLoader::~AsyncAssetLoader()
             {
                 Data::AssetBus::Handler::BusDisconnect();
+                SystemTickBus::Handler::BusDisconnect();
             }
 
             void AsyncAssetLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
             {
-                HandleCallback(asset);
+                Data::AssetBus::Handler::BusDisconnect();
+                m_asset = asset;
+                SystemTickBus::Handler::BusConnect();
+
             }
 
             void AsyncAssetLoader::OnAssetError(Data::Asset<Data::AssetData> asset)
             {
-                HandleCallback(asset);
+                Data::AssetBus::Handler::BusDisconnect();
+                m_asset = asset;
+                SystemTickBus::Handler::BusConnect();
             }
 
             void AsyncAssetLoader::HandleCallback(Data::Asset<Data::AssetData> asset)
             {
-                Data::AssetBus::Handler::BusDisconnect();
                 if (m_callback)
                 {
                     m_callback(asset);
@@ -111,6 +116,13 @@ namespace AZ
 
                 m_callback = {}; // Release the callback to avoid holding references to anything captured in the lambda.
                 m_asset = {}; // Release the asset in case this AsyncAssetLoader hangs around longer than the asset needs to.
+            }
+
+            // SystemTickBus::Handler overrides..
+            void AsyncAssetLoader::OnSystemTick()
+            {
+                SystemTickBus::Handler::BusDisconnect();
+                HandleCallback(m_asset);
             }
 
         } // namespace AssetUtils
