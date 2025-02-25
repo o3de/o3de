@@ -191,7 +191,11 @@ namespace InAppPurchases
 
             if (doc.HasParseError())
             {
+#if defined(CARBONATED)
                 AZ_Warning("O3DEInAppBilling", false, "Failed to parse product_ids: %s\n", rapidjson::GetParseError_En(doc.GetParseError()));
+#else
+                AZ_Warning("LumberyardInAppBilling", false, "Failed to parse product_ids: %s\n", rapidjson::GetParseError_En(doc.GetParseError()));
+#endif
                 return;
             }
 
