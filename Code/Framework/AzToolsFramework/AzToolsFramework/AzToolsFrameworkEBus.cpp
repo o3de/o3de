@@ -6,16 +6,84 @@
  *
  */
 
+#include <AzToolsFramework/API/AssetDatabaseBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);
 
- #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
- DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
- DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
+#include <AzToolsFramework/API/ComponentEntityObjectBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::ComponentEntityEditorRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::ComponentEntityObjectRequests);
+
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorComponentSelectionRequests);
+
+#include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorAnimationSystemRequests);
+
+#include <AzToolsFramework/API/EditorAssetSystemBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemNotifications);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemRequest);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemJobRequest);
+
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorPythonConsoleNotifications);
+
+#include <AzToolsFramework/API/EditorLevelNotificationBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorLevelNotifications);
+
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorPythonRunnerRequests);
+
+#include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorPythonScriptNotifications);
+
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorWindowRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorWindowUIRequests);
+
+#include <AzToolsFramework/API/EditorCameraBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(Camera::EditorCameraRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(Camera::EditorCameraSystemRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(Camera::EditorCameraNotifications);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(Camera::EditorCameraViewRequests);
+
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionNotifications);
+
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionRequests);
+
+#include <AzToolsFramework/API/EntityPropertyEditorNotificationBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorNotifications);
+
+#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorRequests);
+
+#include <AzToolsFramework/API/ToolsApplicationBus.h>
+// DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationEvents);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EntitySelectionEvents);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorPickModeRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorPickModeNotifications);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorEvents);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::ViewPaneCallbacks);
+
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::ViewportEditorModeNotifications);
+
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegateBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzFramework::ComponentModeDelegateNotifications);
+
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
  
- #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
- DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorEntityContextRequests);
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorEntityContextRequests);
 
- #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
- DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorEntityInfoRequests);
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorEntityInfoRequests);
  
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabPublicNotifications);
@@ -31,3 +99,4 @@ DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorEntityLockC
 
 #include <AzToolsFramework/Viewport/ViewportMessagesBus.h>
 DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+

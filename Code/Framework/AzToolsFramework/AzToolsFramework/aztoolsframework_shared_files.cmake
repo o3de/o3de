@@ -10,6 +10,10 @@ set(FILES
     Application/ToolsApplication.cpp
     Application/ToolsApplication.h
 
+    API/ComponentEntitySelection.h
+    API/ComponentEntitySelection.cpp
+	API/ToolsApplicationAPI.h
+    API/ToolsApplicationAPI.cpp
     ActionManager/Action/ActionManager.cpp
     ActionManager/Action/ActionManager.h
     ActionManager/Action/EditorAction.cpp
@@ -57,6 +61,9 @@ set(FILES
     AssetBrowser/AssetPicker/AssetPickerDialog.cpp
     AssetBrowser/AssetPicker/AssetPickerDialog.h
     AssetBrowser/AssetPicker/AssetPickerDialog.ui
+    AssetBrowser/Entries/AssetBrowserEntry.cpp
+    AssetBrowser/Entries/AssetBrowserEntry.h
+    AssetBrowser/Entries/AssetBrowserEntry.inl
     AssetBrowser/Entries/AssetBrowserEntryCache.cpp
     AssetBrowser/Entries/AssetBrowserEntryCache.h
     AssetBrowser/Entries/AssetBrowserEntryUtils.cpp
@@ -119,6 +126,8 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTableView.h
     AssetBrowser/Views/AssetBrowserThumbnailView.cpp
     AssetBrowser/Views/AssetBrowserThumbnailView.h
+    AssetBrowser/Views/AssetBrowserTreeView.cpp
+    AssetBrowser/Views/AssetBrowserTreeView.h
     AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
     AssetBrowser/Views/AssetBrowserTreeViewDialog.h
     AssetBrowser/Views/AssetBrowserViewUtils.cpp
@@ -177,6 +186,8 @@ set(FILES
     ComponentMode/ComponentModeActionHandler.h
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeCollection.h
+#	ComponentMode/ComponentModeDelegate.cpp
+#	ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeSwitcher.h
     ComponentMode/ComponentModeViewportUi.cpp
@@ -256,6 +267,10 @@ set(FILES
 	Manipulators/AngularManipulator.h
     Manipulators/AngularManipulatorCircleViewFeedback.cpp	
     Manipulators/AngularManipulatorCircleViewFeedback.h
+    Manipulators/BaseManipulator.cpp
+    Manipulators/BaseManipulator.h
+    Manipulators/EditorVertexSelection.h
+    Manipulators/EditorVertexSelection.cpp
     Manipulators/LinearManipulator.cpp
     Manipulators/LinearManipulator.h	
     Manipulators/LineHoverSelection.cpp
@@ -505,6 +520,8 @@ set(FILES
     SourceControl/PerforceSettings.ui
     SourceControl/QtSourceControlNotificationHandler.cpp
     SourceControl/QtSourceControlNotificationHandler.h
+    SQLite/SQLiteBoundColumnSet.h
+    SQLite/SQLiteBoundColumnSet.cpp
     SQLite/SQLiteConnection.cpp
     SQLite/SQLiteConnection.h
     SQLite/SQLiteQuery.cpp
@@ -796,6 +813,8 @@ set(FILES
     Viewport/LocalViewBookmarkLoader.h
     Viewport/SharedViewBookmarkComponent.cpp
     Viewport/SharedViewBookmarkComponent.h
+    Viewport/VertexContainerDisplay.h
+    Viewport/VertexContainerDisplay.cpp
     Viewport/ViewBookmarkSystemComponent.cpp
     Viewport/ViewBookmarkSystemComponent.h
     Viewport/ViewportInteractionHelpers.cpp
@@ -820,8 +839,8 @@ set(FILES
     ViewportSelection/EditorSelectionUtil.h
     ViewportSelection/EditorTransformComponentSelection.cpp
     ViewportSelection/EditorTransformComponentSelection.h
-    ViewportSelection/EditorVisibleEntityDataCache.cpp
-    ViewportSelection/EditorVisibleEntityDataCache.h
+#    ViewportSelection/EditorVisibleEntityDataCache.cpp
+#    ViewportSelection/EditorVisibleEntityDataCache.h
     ViewportSelection/InvalidClicks.cpp
     ViewportSelection/InvalidClicks.h
     ViewportSelection/ViewportEditorModeTracker.cpp

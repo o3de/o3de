@@ -64,30 +64,34 @@ set(FILES
 #    UI/SearchWidget/SearchCriteriaWidget.hxx
 #    UI/SearchWidget/SearchCriteriaWidget.cpp
 #    UI/SearchWidget/SearchWidgetTypes.hxx
-    API/ToolsApplicationAPI.h
-    API/ToolsApplicationAPI.cpp
+    API/AssetSystemJobInfo.cpp
+    API/AssetSystemJobInfo.h
+#    API/ToolsApplicationAPI.h
+#    API/ToolsApplicationAPI.cpp
     API/EditorAssetSystemAPI.h
-    API/EditorAssetSystemAPI.cpp
-    API/AssetDatabaseBus.h
-    API/ComponentEntityObjectBus.h
-    API/ComponentEntitySelectionBus.h
-    API/ComponentEntitySelectionBus.cpp
+#    API/AssetDatabaseBus.h
+#    API/ComponentEntityObjectBus.h
+    # API/ComponentEntitySelection.h
+    # API/ComponentEntitySelection.cpp
     API/ComponentModeCollectionInterface.h
-    API/EditorCameraBus.h
-    API/EditorCameraBus.cpp
-    API/EditorAnimationSystemRequestBus.h
+#    API/EditorCameraBus.h
+#    API/EditorCameraBus.cpp
+    API/EntityCompositionRequest.cpp
+    API/EntityCompositionRequest.h    
+#    API/EditorAnimationSystemRequestBus.h
     API/EditorEntityAPI.h
-    API/EditorLevelNotificationBus.h
-    API/ViewportEditorModeTrackerNotificationBus.h
-    API/ViewportEditorModeTrackerNotificationBus.cpp
-    API/EditorPythonConsoleBus.h
-    API/EditorPythonRunnerRequestsBus.h
-    API/EditorPythonScriptNotificationsBus.h
-    API/EntityPropertyEditorNotificationBus.h
-    API/EntityPropertyEditorRequestsBus.h
-    API/EditorWindowRequestBus.h
-    API/EntityCompositionRequestBus.h
-    API/EntityCompositionNotificationBus.h
+#    API/EditorLevelNotificationBus.h
+    API/EditorPythonInterface.h
+#    API/ViewportEditorModeTrackerNotificationBus.h
+#    API/ViewportEditorModeTrackerNotificationBus.cpp
+#    API/EditorPythonConsoleBus.h
+#    API/EditorPythonRunnerRequestsBus.h
+#    API/EditorPythonScriptNotificationsBus.h
+#    API/EntityPropertyEditorNotificationBus.h
+#    API/EntityPropertyEditorRequestsBus.h
+#   API/EditorWindowRequestBus.h
+#    API/EntityCompositionRequestBus.h
+#    API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
     API/PythonLoader.h
     API/PythonLoader.cpp
@@ -219,13 +223,13 @@ set(FILES
     #Manipulators/AngularManipulator.h
 #    Manipulators/AngularManipulatorCircleViewFeedback.cpp
 #    Manipulators/AngularManipulatorCircleViewFeedback.h
-    Manipulators/BaseManipulator.cpp
-    Manipulators/BaseManipulator.h
+#    Manipulators/BaseManipulator.cpp
+#    Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
     Manipulators/CapsuleManipulatorRequestBus.h
     Manipulators/CylinderManipulatorRequestBus.h
-    Manipulators/EditorVertexSelection.h
-    Manipulators/EditorVertexSelection.cpp
+#    Manipulators/EditorVertexSelection.h
+#    Manipulators/EditorVertexSelection.cpp
     Manipulators/EditorVertexSelectionBus.h
     Manipulators/HoverSelection.h
 #    Manipulators/LineHoverSelection.h
@@ -333,8 +337,8 @@ set(FILES
 #    SQLite/SQLiteQuery.cpp
 #    SQLite/SQLiteQuery.h
     SQLite/SQLiteQueryLogBus.h
-    SQLite/SQLiteBoundColumnSet.h
-    SQLite/SQLiteBoundColumnSet.cpp
+#    SQLite/SQLiteBoundColumnSet.h
+#    SQLite/SQLiteBoundColumnSet.cpp
 #    ToolsComponents/ComponentAssetMimeDataContainer.cpp
 #    ToolsComponents/ComponentAssetMimeDataContainer.h
 #    ToolsComponents/ComponentMimeData.cpp
@@ -372,7 +376,7 @@ set(FILES
     ToolsComponents/EditorSelectionAccentingBus.h
 #    ToolsComponents/EditorVisibilityComponent.cpp
 #    ToolsComponents/EditorVisibilityComponent.h
-#    ToolsComponents/EditorVisibilityBus.h
+    ToolsComponents/EditorVisibilityBus.h
 #    ToolsComponents/GenericComponentWrapper.cpp
 #    ToolsComponents/GenericComponentWrapper.h
 #    ToolsComponents/SelectionComponent.cpp
@@ -574,8 +578,10 @@ set(FILES
     Viewport/ActionBus.h
 #    Viewport/EditorContextMenu.h
 #    Viewport/EditorContextMenu.cpp
-    Viewport/VertexContainerDisplay.h
-    Viewport/VertexContainerDisplay.cpp
+#    Viewport/VertexContainerDisplay.h
+#    Viewport/VertexContainerDisplay.cpp
+    Viewport/VertexContainerDisplayDefaults.cpp
+    Viewport/VertexContainerDisplayDefaults.h
 #    Viewport/LocalViewBookmarkComponent.h
 #    Viewport/LocalViewBookmarkComponent.cpp
 #    Viewport/SharedViewBookmarkComponent.h
@@ -621,7 +627,7 @@ set(FILES
 #    ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeDelegate.cpp
-    ComponentMode/ComponentModeDelegateBus.h
+#    ComponentMode/ComponentModeDelegateBus.h
 #    ComponentMode/ComponentModeSwitcher.h
 #    ComponentMode/ComponentModeSwitcher.cpp
 #    ComponentMode/ComponentModeViewportUi.h
@@ -670,8 +676,8 @@ set(FILES
 #    ViewportSelection/EditorTransformComponentSelection.cpp
     ViewportSelection/EditorTransformComponentSelectionRequestBus.h
     ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
-#    ViewportSelection/EditorVisibleEntityDataCache.h
-#    ViewportSelection/EditorVisibleEntityDataCache.cpp
+    ViewportSelection/EditorVisibleEntityDataCache.h
+    ViewportSelection/EditorVisibleEntityDataCache.cpp
 #    ViewportSelection/InvalidClicks.h
 #    ViewportSelection/InvalidClicks.cpp
 #    ViewportSelection/ViewportEditorModeTracker.cpp
@@ -680,7 +686,7 @@ set(FILES
     AssetBrowser/AssetBrowserBus.h
 #    AssetBrowser/AssetBrowserComponent.cpp
 #    AssetBrowser/AssetBrowserComponent.h
-    AssetBrowser/AssetBrowserEntry.h
+     AssetBrowser/AssetBrowserEntry.h
 #    AssetBrowser/AssetBrowserEntityInspectorWidget.h
 #    AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
     AssetBrowser/AssetBrowserFilterModel.cpp
@@ -701,8 +707,8 @@ set(FILES
 #    AssetBrowser/AssetSelectionModel.cpp
 #    AssetBrowser/AssetSelectionModel.h
     AssetBrowser/EBusFindAssetTypeByName.h
-    AssetBrowser/Views/AssetBrowserTreeView.cpp
-    AssetBrowser/Views/AssetBrowserTreeView.h
+#    AssetBrowser/Views/AssetBrowserTreeView.cpp
+#    AssetBrowser/Views/AssetBrowserTreeView.h
 #    AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
 #    AssetBrowser/Views/AssetBrowserTreeViewDialog.h
 #    AssetBrowser/Views/AssetBrowserListView.cpp
@@ -718,9 +724,9 @@ set(FILES
 #    AssetBrowser/Views/AssetBrowserFolderWidget.cpp
 #    AssetBrowser/Views/AssetBrowserFolderWidget.h
 #    AssetBrowser/Views/AssetBrowserFolderWidget.qrc
-    AssetBrowser/Entries/AssetBrowserEntry.cpp
-    AssetBrowser/Entries/AssetBrowserEntry.h
-    AssetBrowser/Entries/AssetBrowserEntry.inl
+#    AssetBrowser/Entries/AssetBrowserEntry.cpp
+#    AssetBrowser/Entries/AssetBrowserEntry.h
+#    AssetBrowser/Entries/AssetBrowserEntry.inl
 #    AssetBrowser/Entries/AssetBrowserEntryCache.cpp
 #    AssetBrowser/Entries/AssetBrowserEntryCache.h
 #    AssetBrowser/Entries/AssetBrowserEntryUtils.h

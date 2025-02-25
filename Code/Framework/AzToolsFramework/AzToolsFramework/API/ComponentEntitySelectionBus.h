@@ -7,12 +7,13 @@
  */
 
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
+#include <AzToolsFramework/API/ComponentEntitySelection.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
-
 namespace AzFramework
 {
     struct ViewportInfo;
@@ -101,9 +102,6 @@ namespace AzToolsFramework
     //! Type to inherit to implement EditorComponentSelectionNotifications.
     using EditorComponentSelectionNotificationsBus = AZ::EBus<EditorComponentSelectionNotifications>;
 
-    //! Returns the union of all editor selection bounds on a given Entity.
-    //! @note The returned Aabb is in world space.
-    AZ::Aabb CalculateEditorEntitySelectionBounds(const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo);
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN(AzToolsFramework::EditorComponentSelectionRequests);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EditorComponentSelectionRequests);

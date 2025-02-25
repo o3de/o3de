@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef AZTOOLSFRAMEWORK_ASSETDATABASEAPI_H
-#define AZTOOLSFRAMEWORK_ASSETDATABASEAPI_H
+#pragma once
+//AZTF-EBUS
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
@@ -64,4 +63,5 @@ namespace AzToolsFramework
     } // namespace AssetDatabase
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_ASSETDATABASEAPI_H
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);

@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
@@ -39,3 +40,5 @@ namespace AzToolsFramework
     };
     using EditorPythonScriptNotificationsBus = AZ::EBus<EditorPythonScriptNotifications>;
 }
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorPythonScriptNotifications);

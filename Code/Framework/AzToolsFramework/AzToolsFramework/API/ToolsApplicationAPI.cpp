@@ -8,10 +8,6 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorRequests);
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::ToolsApplicationEvents);
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EntitySelectionEvents);
-
 namespace AzToolsFramework
 {
     ScopedUndoBatch::ScopedUndoBatch(const char* batchName)

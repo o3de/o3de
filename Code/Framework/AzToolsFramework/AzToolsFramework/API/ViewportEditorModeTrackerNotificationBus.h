@@ -7,9 +7,11 @@
  */
 
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/EBus/Event.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
 namespace AzToolsFramework
@@ -45,7 +47,7 @@ namespace AzToolsFramework
     //! Provides a bus to notify when the different editor modes are entered/exit.
     //! @note The editor modes are not discrete states but rather each progression of mode retain the active the parent
     //! mode that the new mode progressed from.
-    class ViewportEditorModeNotifications : public AZ::EBusTraits
+    class AZTF_EBUS_API ViewportEditorModeNotifications : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////
@@ -73,3 +75,5 @@ namespace AzToolsFramework
 
     using ViewportEditorModeNotificationsBus = AZ::EBus<ViewportEditorModeNotifications>;
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::ViewportEditorModeNotifications);

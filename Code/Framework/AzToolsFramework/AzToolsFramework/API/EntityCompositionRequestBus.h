@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
@@ -14,6 +15,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/EntityCompositionRequest.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 
 namespace AzToolsFramework
@@ -199,110 +201,7 @@ namespace AzToolsFramework
     };
 
     using EntityCompositionRequestBus = AZ::EBus<EntityCompositionRequests>;
-
-    //! Return whether component should appear in an entity's "Add Component" menu.
-    //! \param entityType The type of entity (ex: "Game", "System")
-    static bool AppearsInAddComponentMenu(const AZ::SerializeContext::ClassData& classData, const AZ::Crc32& entityType);
-
-    //! ComponentFilter for components that users can add to game entities.
-    static bool AppearsInGameComponentMenu(const AZ::SerializeContext::ClassData&);
-
-    //
-    // Implementation
-    //
-
-    inline bool AppearsInAddComponentMenu(const AZ::SerializeContext::ClassData& classData, const AZ::Crc32& entityType)
-    {
-        if (classData.m_editData)
-        {
-            if (auto editorDataElement = classData.m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
-            {
-                for (const AZ::Edit::AttributePair& attribPair : editorDataElement->m_attributes)
-                {
-                    if (attribPair.first == AZ::Edit::Attributes::AppearsInAddComponentMenu)
-                    {
-                        PropertyAttributeReader reader(nullptr, attribPair.second);
-                        AZ::Crc32 classEntityType = 0;
-                        AZStd::vector<AZ::Crc32> classEntityTypes;
-
-                        if (reader.Read<AZ::Crc32>(classEntityType))
-                        {
-                            if (static_cast<AZ::u32>(entityType) == classEntityType)
-                            {
-                                return true;
-                            }
-                        }
-                        else if (reader.Read<AZStd::vector<AZ::Crc32>>(classEntityTypes))
-                        {
-                            if (AZStd::find(classEntityTypes.begin(), classEntityTypes.end(), entityType) != classEntityTypes.end())
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    inline bool AppearsInGameComponentMenu(const AZ::SerializeContext::ClassData& classData)
-    {
-        // We don't call AppearsInAddComponentMenu(...) because we support legacy values.
-        // AppearsInAddComponentMenu used to be a bool,
-        // and it used to only be applied to components on in-game entities.
-        if (classData.m_editData)
-        {
-            if (auto editorDataElement = classData.m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
-            {
-                for (const AZ::Edit::AttributePair& attribPair : editorDataElement->m_attributes)
-                {
-                    if (attribPair.first == AZ::Edit::Attributes::AppearsInAddComponentMenu)
-                    {
-                        PropertyAttributeReader reader(nullptr, attribPair.second);
-                        AZ::Crc32 classEntityType;
-                        AZStd::vector<AZ::Crc32> classEntityTypes;
-                        if (reader.Read<AZ::Crc32>(classEntityType))
-                        {
-                            if (classEntityType == AZ_CRC_CE("Game"))
-                            {
-                                return true;
-                            }
-                        }
-                        else if (reader.Read<AZStd::vector<AZ::Crc32>>(classEntityTypes))
-                        {
-                            if (AZStd::find(classEntityTypes.begin(), classEntityTypes.end(), AZ_CRC_CE("Game")) != classEntityTypes.end())
-                            {
-                                return true;
-                            }
-                        }
-
-                        bool legacyAppearsInComponentMenu = false;
-                        if (reader.Read<bool>(legacyAppearsInComponentMenu))
-                        {
-                            AZ_WarningOnce(classData.m_name, false, "%s %s 'AppearsInAddComponentMenu' uses legacy value 'true', should be 'AZ_CRC(\"Game\")'.",
-                                classData.m_name, classData.m_typeId.ToString<AZStd::string>().c_str());
-                            return legacyAppearsInComponentMenu;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    inline bool AppearsInLayerComponentMenu(const AZ::SerializeContext::ClassData& classData)
-    {
-        return AppearsInAddComponentMenu(classData, AZ_CRC_CE("Layer"));
-    }
-
-    inline bool AppearsInLevelComponentMenu(const AZ::SerializeContext::ClassData& classData)
-    {
-        return AppearsInAddComponentMenu(classData, AZ_CRC_CE("Level"));
-    }
-
-    inline bool AppearsInAnyComponentMenu(const AZ::SerializeContext::ClassData& classData)
-    {
-        return (AppearsInGameComponentMenu(classData) || AppearsInLayerComponentMenu(classData) || AppearsInLevelComponentMenu(classData));
-    }
 }
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionRequests);
+

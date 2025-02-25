@@ -152,193 +152,193 @@ namespace AzToolsFramework
 
         void UpdateSliceInfoHierarchy(AZ::EntityId entityId);
 
-        class EditorEntityModelEntry
-            : private AZ::EntityBus::Handler
-            , private EditorLockComponentNotificationBus::Handler
-            , private EditorVisibilityNotificationBus::Handler
-            , private EntitySelectionEvents::Bus::Handler
-            , public EditorEntityAPIBus::Handler
-            , public EditorEntityInfoRequestBus::Handler
-            , public EditorInspectorComponentNotificationBus::Handler
-            , public PropertyEditorEntityChangeNotificationBus::Handler
-        {
-        public:
-            ~EditorEntityModelEntry();
+    class EditorEntityModelEntry
+        : private AZ::EntityBus::Handler
+        , private EditorLockComponentNotificationBus::Handler
+        , private EditorVisibilityNotificationBus::Handler
+        , private EntitySelectionEvents::Bus::Handler
+        , public EditorEntityAPIBus::Handler
+        , public EditorEntityInfoRequestBus::Handler
+        , public EditorInspectorComponentNotificationBus::Handler
+        , public PropertyEditorEntityChangeNotificationBus::Handler
+    {
+    public:
+        ~EditorEntityModelEntry();
 
-            // Separately connect to EditorEntityInfoRequestBus and refresh Entity
-            // visibility and lock state - happens as part of Connect() but is also
-            // refreshed earlier after Entity initialization.
-            void EntityInfoRequestConnect();
+        // Separately connect to EditorEntityInfoRequestBus and refresh Entity
+        // visibility and lock state - happens as part of Connect() but is also
+        // refreshed earlier after Entity initialization.
+        void EntityInfoRequestConnect();
 
-            void Connect();
-            void Disconnect();
+        void Connect();
+        void Disconnect();
 
-            // Slices
-            void UpdateSliceInfo();
+        // Slices
+        void UpdateSliceInfo();
 
-            // Sibling sort index
-            void UpdateOrderInfo(bool notify);
+        // Sibling sort index
+        void UpdateOrderInfo(bool notify);
 
-            void UpdateChildOrderInfo(bool forceAddToBack);
+        void UpdateChildOrderInfo(bool forceAddToBack);
 
-            void SetId(const AZ::EntityId& entityId);
-            void SetParentId(AZ::EntityId parentId);
-            void AddChild(AZ::EntityId childId);
-            void RemoveChild(AZ::EntityId childId);
-            bool HasChild(AZ::EntityId childId) const;
+        void SetId(const AZ::EntityId& entityId);
+        void SetParentId(AZ::EntityId parentId);
+        void AddChild(AZ::EntityId childId);
+        void RemoveChild(AZ::EntityId childId);
+        bool HasChild(AZ::EntityId childId) const;
 
-            /////////////////////////////
-            // EditorEntityAPIRequests
-            /////////////////////////////
-            void SetName(AZStd::string name) override;
-            void SetParent(AZ::EntityId parentId) override;
-            void SetLockState(bool isLocked) override;
-            void SetVisibilityState(bool isVisible) override;
-            void SetStartStatus(EditorEntityStartStatus status) override;
+        /////////////////////////////
+        // EditorEntityAPIRequests
+        /////////////////////////////
+        void SetName(AZStd::string name) override;
+        void SetParent(AZ::EntityId parentId) override;
+        void SetLockState(bool isLocked) override;
+        void SetVisibilityState(bool isVisible) override;
+        void SetStartStatus(EditorEntityStartStatus status) override;
 
-            /////////////////////////////
-            // EditorEntityInfoRequests
-            /////////////////////////////
-            AZ::EntityId GetId() const;
-            AZ::EntityId GetParent() const override;
-            EntityIdList GetChildren() const override;
-            AZ::EntityId GetChild(AZStd::size_t index) const override;
-            AZStd::size_t GetChildCount() const override;
-            AZ::u64 GetChildIndex(AZ::EntityId childId) const override;
-            AZStd::string GetName() const override;
-            AZStd::string GetSliceAssetName() const override;
-            bool IsSliceEntity() const override;
-            bool IsSubsliceEntity() const override;
-            bool IsSliceRoot() const override;
-            bool IsSubsliceRoot() const override;
-            //Does this entity have any children added or deleted. Ignore any other kind of change.
-            bool HasSliceEntityAnyChildrenAddedOrDeleted() const override;
-            // Does the entity have any property changes in its top level. Ignore any changes in children.
-            bool HasSliceEntityPropertyOverridesInTopLevel() const override;
-            bool HasSliceEntityOverrides() const override;
-            bool HasSliceChildrenOverrides() const override;
-            bool HasSliceAnyOverrides() const override;
-            bool HasCyclicDependency() const override;
-            AZ::u64 GetIndexForSorting() const override;
-            bool IsSelected() const override;
-            bool IsVisible() const override;
-            bool IsHidden() const override;
-            bool IsLocked() const override;
-            // Lock status can be overwritten if an entity is in a locked layer.
-            // However, in some cases (like the outliner), this entity's specific state needs to be known.
-            EditorEntityStartStatus GetStartStatus() const override;
-            bool IsJustThisEntityLocked() const override;
-            bool IsConnected() const;
-            void AddToCyclicDependencyList(const AZ::EntityId& entityId) override;
-            void RemoveFromCyclicDependencyList(const AZ::EntityId& entityId) override;
-            AzToolsFramework::EntityIdList GetCyclicDependencyList() const override;
+        /////////////////////////////
+        // EditorEntityInfoRequests
+        /////////////////////////////
+        AZ::EntityId GetId() const;
+        AZ::EntityId GetParent() const override;
+        EntityIdList GetChildren() const override;
+        AZ::EntityId GetChild(AZStd::size_t index) const override;
+        AZStd::size_t GetChildCount() const override;
+        AZ::u64 GetChildIndex(AZ::EntityId childId) const override;
+        AZStd::string GetName() const override;
+        AZStd::string GetSliceAssetName() const override;
+        bool IsSliceEntity() const override;
+        bool IsSubsliceEntity() const override;
+        bool IsSliceRoot() const override;
+        bool IsSubsliceRoot() const override;
+        //Does this entity have any children added or deleted. Ignore any other kind of change.
+        bool HasSliceEntityAnyChildrenAddedOrDeleted() const override;
+        // Does the entity have any property changes in its top level. Ignore any changes in children.
+        bool HasSliceEntityPropertyOverridesInTopLevel() const override;
+        bool HasSliceEntityOverrides() const override;
+        bool HasSliceChildrenOverrides() const override;
+        bool HasSliceAnyOverrides() const override;
+        bool HasCyclicDependency() const override;
+        AZ::u64 GetIndexForSorting() const override;
+        bool IsSelected() const override;
+        bool IsVisible() const override;
+        bool IsHidden() const override;
+        bool IsLocked() const override;
+        // Lock status can be overwritten if an entity is in a locked layer.
+        // However, in some cases (like the outliner), this entity's specific state needs to be known.
+        EditorEntityStartStatus GetStartStatus() const override;
+        bool IsJustThisEntityLocked() const override;
+        bool IsConnected() const;
+        void AddToCyclicDependencyList(const AZ::EntityId& entityId) override;
+        void RemoveFromCyclicDependencyList(const AZ::EntityId& entityId) override;
+        AzToolsFramework::EntityIdList GetCyclicDependencyList() const override;
 
-            bool IsComponentExpanded(AZ::ComponentId id) const override;
-            void SetComponentExpanded(AZ::ComponentId id, bool expanded) override;
+        bool IsComponentExpanded(AZ::ComponentId id) const override;
+        void SetComponentExpanded(AZ::ComponentId id, bool expanded) override;
 
-            ////////////////////////////////////////////////////////////////////////
-            // EditorLockComponentNotificationBus::Handler
-            ////////////////////////////////////////////////////////////////////////
-            void OnEntityLockFlagChanged(bool locked) override;
+        ////////////////////////////////////////////////////////////////////////
+        // EditorLockComponentNotificationBus::Handler
+        ////////////////////////////////////////////////////////////////////////
+        void OnEntityLockFlagChanged(bool locked) override;
 
-            ////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////
             // EditorVisibilityNotificationBus::Handler
-            ////////////////////////////////////////////////////////////////////////
-            void OnEntityVisibilityFlagChanged(bool visibility) override;
+        ////////////////////////////////////////////////////////////////////////
+        void OnEntityVisibilityFlagChanged(bool visibility) override;
 
-            //////////////////////////////////////////////////////////////////////////
-            // AzToolsFramework::EntitySelectionEvents::Handler
-            // Used to handle selection changes on a per-entity basis.
-            //////////////////////////////////////////////////////////////////////////
-            void OnSelected() override;
-            void OnDeselected() override;
+        //////////////////////////////////////////////////////////////////////////
+        // AzToolsFramework::EntitySelectionEvents::Handler
+        // Used to handle selection changes on a per-entity basis.
+        //////////////////////////////////////////////////////////////////////////
+        void OnSelected() override;
+        void OnDeselected() override;
 
-            ////////////////////////////////////////////////////////////////////////
-            // AZ::EntityBus
-            ////////////////////////////////////////////////////////////////////////
-            void OnEntityNameChanged(const AZStd::string& name) override;
+        ////////////////////////////////////////////////////////////////////////
+        // AZ::EntityBus
+        ////////////////////////////////////////////////////////////////////////
+        void OnEntityNameChanged(const AZStd::string& name) override;
 
-            ////////////////////////////////////////////////////////////////////////
-            // EditorInspectorComponentNotificationBus
-            ////////////////////////////////////////////////////////////////////////
-            void OnComponentOrderChanged() override;
+        ////////////////////////////////////////////////////////////////////////
+        // EditorInspectorComponentNotificationBus
+        ////////////////////////////////////////////////////////////////////////
+        void OnComponentOrderChanged() override;
 
-            ////////////////////////////////////////////////////////////////////////
-            // PropertyEditorEntityChangeNotificationBus
-            ////////////////////////////////////////////////////////////////////////
-            void OnEntityComponentPropertyChanged(AZ::ComponentId componentId) override;
+        ////////////////////////////////////////////////////////////////////////
+        // PropertyEditorEntityChangeNotificationBus
+        ////////////////////////////////////////////////////////////////////////
+        void OnEntityComponentPropertyChanged(AZ::ComponentId componentId) override;
 
-        private:
-            friend class EditorEntityModel;
+    private:
+        friend class EditorEntityModel;
 
-            enum SliceFlags
-            {
-                SliceFlag_None = 0,
-                SliceFlag_Entity = 1 << 0,
-                SliceFlag_Root = 1 << 1,
-                SliceFlag_Subslice = 1 << 2,
+        enum SliceFlags
+        {
+            SliceFlag_None = 0,
+            SliceFlag_Entity = 1 << 0,
+            SliceFlag_Root = 1 << 1,
+            SliceFlag_Subslice = 1 << 2,
 
-                SliceFlag_EntityNameOverridden = 1 << 3, // special case since it's not saved in a component
-                SliceFlag_EntityActivationOverridden = 1 << 4, // special case since it's not saved in a component
-                SliceFlag_EntityComponentsOverridden = 1 << 5,
-                SliceFlag_EntityHasAdditionsDeletions = 1 << 6,
+            SliceFlag_EntityNameOverridden = 1 << 3, // special case since it's not saved in a component
+            SliceFlag_EntityActivationOverridden = 1 << 4, // special case since it's not saved in a component
+            SliceFlag_EntityComponentsOverridden = 1 << 5,
+            SliceFlag_EntityHasAdditionsDeletions = 1 << 6,
 
-                SliceFlag_EntityHasNonChildOverrides = (SliceFlag_EntityNameOverridden | SliceFlag_EntityActivationOverridden | SliceFlag_EntityComponentsOverridden),
-                SliceFlag_EntityHasOverrides    = (SliceFlag_EntityNameOverridden | SliceFlag_EntityActivationOverridden | SliceFlag_EntityComponentsOverridden | SliceFlag_EntityHasAdditionsDeletions),
+            SliceFlag_EntityHasNonChildOverrides = (SliceFlag_EntityNameOverridden | SliceFlag_EntityActivationOverridden | SliceFlag_EntityComponentsOverridden),
+            SliceFlag_EntityHasOverrides    = (SliceFlag_EntityNameOverridden | SliceFlag_EntityActivationOverridden | SliceFlag_EntityComponentsOverridden | SliceFlag_EntityHasAdditionsDeletions),
 
-                SliceFlag_SliceRoot       = (SliceFlag_Entity | SliceFlag_Root),
-                SliceFlag_SubsliceRoot    = (SliceFlag_Entity | SliceFlag_Root | SliceFlag_Subslice),
-                SliceFlag_SubsliceEntity  = (SliceFlag_Entity | SliceFlag_Subslice),
+            SliceFlag_SliceRoot       = (SliceFlag_Entity | SliceFlag_Root),
+            SliceFlag_SubsliceRoot    = (SliceFlag_Entity | SliceFlag_Root | SliceFlag_Subslice),
+            SliceFlag_SubsliceEntity  = (SliceFlag_Entity | SliceFlag_Subslice),
 
-                SliceFlag_OverridesMask = (SliceFlag_EntityHasOverrides),
-            };
-
-            void OnEditorOnlyChanged(bool isEditorOnly);
-            void OnEntityRuntimeActivationChanged(bool activeOnStart);
-            void OnTransformChanged();
-            void OnComponentCompositionChanged(const AZ::ComponentId& componentId, ComponentCompositionAction action);
-            void OnChildSortOrderChanged();
-
-            bool CanProcessOverrides() const;
-
-            void AddChildAddedDeleted(AZ::ComponentId componentId);
-            void RemoveChildAddedDeleted(AZ::ComponentId componentId);
-            void AddOverriddenComponent(AZ::ComponentId componentId);
-            void RemoveOverriddenComponent(AZ::ComponentId componentId);
-
-            void DetectInitialOverrides();
-            void ModifyParentsOverriddenChildren(AZ::EntityId entityId, AZ::u8 lastFlags, bool hasOverrides);
-            void UpdateCyclicDependencyInfo();
-
-            void SetStartActiveStatus(bool isActive);
-
-            AZ::EntityId m_entityId;
-            AZ::EntityId m_parentId;
-            EntityIdList m_children;
-            AZStd::unordered_set<AZ::EntityId> m_overriddenChildren;
-            AZ::u64 m_indexForSorting = 0;
-            AZ::u8 m_sliceFlags = SliceFlag_None;
-            bool m_selected = false;
-            bool m_visible = true;
-            bool m_locked = false;
-            bool m_connected = false;
-            AZStd::string m_name;
-            AZStd::string m_sliceAssetName;
-            AZStd::unordered_map<AZ::EntityId, AZ::u64> m_childIndexCache;
-            AZStd::vector<AZ::EntityId> m_cyclicDependencyList;
-
-            // slice entity override state cache
-            AZ::Entity* m_entity = nullptr;
-            AZ::EntityId m_baseAncestorId;
-            AZStd::shared_ptr<AZ::Entity> m_sourceClone;
-            AZ::SerializeContext* m_serializeContext = nullptr;
-
-            AZStd::set<AZ::ComponentId> m_overriddenComponents;
-
-            AZStd::unordered_map<AZ::ComponentId, bool> m_componentExpansionStateMap;
-
-            AZStd::set<AZ::ComponentId> m_addedRemovedComponents;
+            SliceFlag_OverridesMask = (SliceFlag_EntityHasOverrides),
         };
+
+        void OnEditorOnlyChanged(bool isEditorOnly);
+        void OnEntityRuntimeActivationChanged(bool activeOnStart);
+        void OnTransformChanged();
+        void OnComponentCompositionChanged(const AZ::ComponentId& componentId, ComponentCompositionAction action);
+        void OnChildSortOrderChanged();
+
+        bool CanProcessOverrides() const;
+
+        void AddChildAddedDeleted(AZ::ComponentId componentId);
+        void RemoveChildAddedDeleted(AZ::ComponentId componentId);
+        void AddOverriddenComponent(AZ::ComponentId componentId);
+        void RemoveOverriddenComponent(AZ::ComponentId componentId);
+
+        void DetectInitialOverrides();
+        void ModifyParentsOverriddenChildren(AZ::EntityId entityId, AZ::u8 lastFlags, bool hasOverrides);
+        void UpdateCyclicDependencyInfo();
+
+        void SetStartActiveStatus(bool isActive);
+
+        AZ::EntityId m_entityId;
+        AZ::EntityId m_parentId;
+        EntityIdList m_children;
+        AZStd::unordered_set<AZ::EntityId> m_overriddenChildren;
+        AZ::u64 m_indexForSorting = 0;
+        AZ::u8 m_sliceFlags = SliceFlag_None;
+        bool m_selected = false;
+        bool m_visible = true;
+        bool m_locked = false;
+        bool m_connected = false;
+        AZStd::string m_name;
+        AZStd::string m_sliceAssetName;
+        AZStd::unordered_map<AZ::EntityId, AZ::u64> m_childIndexCache;
+        AZStd::vector<AZ::EntityId> m_cyclicDependencyList;
+
+        // slice entity override state cache
+        AZ::Entity* m_entity = nullptr;
+        AZ::EntityId m_baseAncestorId;
+        AZStd::shared_ptr<AZ::Entity> m_sourceClone;
+        AZ::SerializeContext* m_serializeContext = nullptr;
+
+        AZStd::set<AZ::ComponentId> m_overriddenComponents;
+
+        AZStd::unordered_map<AZ::ComponentId, bool> m_componentExpansionStateMap;
+
+        AZStd::set<AZ::ComponentId> m_addedRemovedComponents;
+    };
 
         EditorEntityModelEntry& GetInfo(const AZ::EntityId& entityId);
         AZStd::unordered_map<AZ::EntityId, EditorEntityModelEntry> m_entityInfoTable;

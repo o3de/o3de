@@ -54,6 +54,9 @@ ly_add_target(
         PUBLIC
             .
             AzToolsFramework
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AZTF_EBUS_EXPORTS
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore

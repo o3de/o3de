@@ -56,7 +56,7 @@ namespace AzToolsFramework
     } // namespace VertexContainerDisplay
 
     // explicit template instantiations
-    template void VertexContainerDisplay::DisplayVertexContainerIndices(
+    template AZ_DLL_EXPORT void VertexContainerDisplay::DisplayVertexContainerIndices(
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZ::FixedVertices<AZ::Vector2>& vertices,
         const AZ::Transform& transform,
@@ -65,7 +65,7 @@ namespace AzToolsFramework
         float textSize,
         const AZ::Color& textColor,
         const AZ::Vector3& textOffset);
-    template void VertexContainerDisplay::DisplayVertexContainerIndices(
+    template AZ_DLL_EXPORT void VertexContainerDisplay::DisplayVertexContainerIndices(
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZ::FixedVertices<AZ::Vector3>& vertices,
         const AZ::Transform& transform,

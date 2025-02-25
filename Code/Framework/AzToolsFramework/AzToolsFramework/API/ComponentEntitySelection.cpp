@@ -8,8 +8,6 @@
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorComponentSelectionRequests);
-
 namespace AzToolsFramework
 {
     //! Returns the union of all editor selection bounds on a given Entity.

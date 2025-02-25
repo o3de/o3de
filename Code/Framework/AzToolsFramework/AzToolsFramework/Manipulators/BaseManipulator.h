@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -44,7 +46,7 @@ namespace AzToolsFramework
     struct ManipulatorManagerState;
 
     //! The base class for manipulators, providing interfaces for users of manipulators to talk to.
-    class BaseManipulator : public AZStd::enable_shared_from_this<BaseManipulator>
+    class AZTF_API BaseManipulator : public AZStd::enable_shared_from_this<BaseManipulator>
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -274,7 +276,7 @@ namespace AzToolsFramework
 
     //! Base class to be used when composing aggregate manipulator types - wraps some
     //! common functionality all manipulators need.
-    class Manipulators
+    class AZTF_API Manipulators
     {
     public:
         virtual ~Manipulators() = default;
@@ -354,7 +356,7 @@ namespace AzToolsFramework
         //! @param[out] resultIntersectingPoint  This stores the result intersecting point. It will be left unchanged
         //!                                      if there is no intersection between the ray and the plane.
         //! @return                              Was there an intersection
-        bool CalculateRayPlaneIntersectingPoint(
+        AZTF_API bool CalculateRayPlaneIntersectingPoint(
             const AZ::Vector3& rayOrigin,
             const AZ::Vector3& rayDirection,
             const AZ::Vector3& pointOnPlane,
@@ -362,7 +364,7 @@ namespace AzToolsFramework
             AZ::Vector3& resultIntersectingPoint);
 
         //! Returns startLocalHitPosition if currentLocalHitPosition is further away than the camera's far clip plane.
-        AZ::Vector3 TryConstrainHitPositionToView(
+        AZTF_API AZ::Vector3 TryConstrainHitPositionToView(
             const AZ::Vector3& currentLocalHitPosition,
             const AZ::Vector3& startLocalHitPosition,
             const AZ::Transform& localFromWorld,

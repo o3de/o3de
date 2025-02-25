@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/EBus/EBus.h>
 
@@ -23,3 +24,5 @@ namespace AzToolsFramework
 
     using EditorLevelNotificationBus = AZ::EBus<EditorLevelNotifications>;
 }
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorLevelNotifications);

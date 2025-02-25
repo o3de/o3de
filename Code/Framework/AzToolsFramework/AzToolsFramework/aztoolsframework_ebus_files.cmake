@@ -7,12 +7,31 @@
 #
 
 set(FILES
-ComponentMode/EditorComponentModeBus.h
-Entity/EditorEntityContextBus.h
+    API/AssetDatabaseBus.h
+    API/EditorCameraBus.cpp
+    API/EditorCameraBus.h
+    API/ComponentEntityObjectBus.h
+    API/ComponentEntitySelectionBus.h 
+    API/EditorAnimationSystemRequestBus.h
+    API/EditorLevelNotificationBus.h
+    API/EditorPythonConsoleBus.h
+    API/EditorPythonRunnerRequestsBus.h
+    API/EditorPythonScriptNotificationsBus.h
+    API/EditorWindowRequestBus.h
+    API/EntityCompositionNotificationBus.h
+    API/EntityCompositionRequestBus.h
+    API/EntityPropertyEditorNotificationBus.h
+    API/EntityPropertyEditorRequestsBus.h
+    API/ToolsApplicationBus.h
+    API/ViewportEditorModeTrackerNotificationBus.cpp
+    API/ViewportEditorModeTrackerNotificationBus.h
+    ComponentMode/ComponentModeDelegateBus.h
+    ComponentMode/EditorComponentModeBus.h
+    Entity/EditorEntityContextBus.h
     Entity/EditorEntityInfoBus.h
     Prefab/PrefabPublicNotificationBus.h
     ToolsComponents/EditorComponentBus.h
-    ToolsComponents/EditorVisibilityBus.h
+#    ToolsComponents/EditorVisibilityBus.h
     ToolsComponents/EditorLockComponentBus.h
     Viewport/ViewportMessagesBus.h
     AzToolsFrameworkEBus.cpp    

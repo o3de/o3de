@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+ //AZTF-EBUS
 
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -47,3 +48,5 @@ namespace AzToolsFramework
     using EntityCompositionNotificationBus = AZ::EBus<EntityCompositionNotifications>;
 
 }
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionNotifications);

@@ -1645,21 +1645,21 @@ namespace AzToolsFramework
     }
 
     // explicit instantiations
-    template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector2&);
-    template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector3&);
-    template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
-    template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
+    template AZ_DLL_EXPORT void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector2&);
+    template AZ_DLL_EXPORT void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector3&);
+    template AZ_DLL_EXPORT void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
+    template AZ_DLL_EXPORT void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector2>, AZ::SystemAllocator)
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector3>, AZ::SystemAllocator)
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector2>, AZ::SystemAllocator)
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector3>, AZ::SystemAllocator)
 
-    template class EditorVertexSelectionBase<AZ::Vector2>;
-    template class EditorVertexSelectionBase<AZ::Vector3>;
-    template class EditorVertexSelectionFixed<AZ::Vector2>;
-    template class EditorVertexSelectionFixed<AZ::Vector3>;
-    template class EditorVertexSelectionVariable<AZ::Vector2>;
-    template class EditorVertexSelectionVariable<AZ::Vector3>;
+    template class AZ_DLL_EXPORT EditorVertexSelectionBase<AZ::Vector2>;
+    template class AZ_DLL_EXPORT EditorVertexSelectionBase<AZ::Vector3>;
+    template class AZ_DLL_EXPORT EditorVertexSelectionFixed<AZ::Vector2>;
+    template class AZ_DLL_EXPORT EditorVertexSelectionFixed<AZ::Vector3>;
+    template class AZ_DLL_EXPORT EditorVertexSelectionVariable<AZ::Vector2>;
+    template class AZ_DLL_EXPORT EditorVertexSelectionVariable<AZ::Vector3>;
 
 } // namespace AzToolsFramework

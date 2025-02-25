@@ -5,14 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef AZTOOLSFRAMEWORK_EDITORWINDOWREQUESTBUS_H
-#define AZTOOLSFRAMEWORK_EDITORWINDOWREQUESTBUS_H
+ #pragma once
+ //AZTF-EBUS
 
 #include <AzCore/base.h>
-
-#pragma once
-
 #include <AzCore/EBus/EBus.h>
 
 class QWidget;
@@ -80,4 +76,5 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_EDITORWINDOWREQUESTBUS_H
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorWindowRequests);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorWindowUIRequests);

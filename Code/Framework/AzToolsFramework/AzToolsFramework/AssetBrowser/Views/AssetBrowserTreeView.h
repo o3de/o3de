@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
@@ -37,7 +39,7 @@ namespace AzToolsFramework
         class AssetBrowserThumbnailView;
         class EntryDelegate;
 
-        class AssetBrowserTreeView
+        class AZTF_API AssetBrowserTreeView
             : public QTreeViewWithStateSaving
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler

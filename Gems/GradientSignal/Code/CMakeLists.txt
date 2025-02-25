@@ -84,17 +84,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 3rdParty::OpenImageIO
-                Gem::LmbrCentral.Editor
+                #Gem::LmbrCentral.Editor
                 Gem::Atom_RPI.Edit
             PUBLIC
                 3rdParty::Qt::Widgets
                 AZ::AzCore
                 AZ::AzFramework
+                AZ::AzToolsFramework.Static
+                AZ::AzToolsFramework.EBus
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
                 Gem::${gem_name}.Static
                 Gem::SurfaceData
-                Gem::LmbrCentral.Editor.Static
+                #Gem::LmbrCentral.Editor.Static
     )
 
     ly_add_target(

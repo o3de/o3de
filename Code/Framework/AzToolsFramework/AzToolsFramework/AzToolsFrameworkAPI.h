@@ -11,13 +11,16 @@
 
 #if defined(AZ_MONOLITHIC_BUILD)
     #define AZTF_API
-    #define AZTF_API_EXTERN
+    #define AZTF_EBUS_API
 #else
     #if defined(AZTF_EXPORTS)
         #define AZTF_API        AZ_DLL_EXPORT
-        #define AZTF_API_EXTERN AZ_DLL_EXPORT_EXTERN
     #else
         #define AZTF_API        AZ_DLL_IMPORT
-        #define AZTF_API_EXTERN AZ_DLL_IMPORT_EXTERN
+    #endif
+    #if defined(AZTF_EBUS_EXPORTS)
+        #define AZTF_EBUS_API   AZ_DLL_EXPORT
+    #else
+        #define AZTF_EBUS_API   AZ_DLL_IMPORT
     #endif
 #endif

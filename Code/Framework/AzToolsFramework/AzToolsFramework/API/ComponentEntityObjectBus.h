@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
@@ -41,7 +41,7 @@ namespace AzToolsFramework
         virtual void RefreshVisibilityAndLock() = 0;
     };
 
-    using ComponentEntityEditorRequestBus = AZ::EBus < ComponentEntityEditorRequests >;
+    using ComponentEntityEditorRequestBus = AZ::EBus<ComponentEntityEditorRequests>;
 
     class ComponentEntityObjectRequests
         : public AZ::EBusTraits
@@ -61,6 +61,8 @@ namespace AzToolsFramework
         virtual AZ::EntityId GetAssociatedEntityId() = 0;
     };
 
-    using ComponentEntityObjectRequestBus = AZ::EBus < ComponentEntityObjectRequests >;
+    using ComponentEntityObjectRequestBus = AZ::EBus<ComponentEntityObjectRequests>;
 } // namespace AzToolsFramework
 
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::ComponentEntityEditorRequests);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::ComponentEntityObjectRequests);

@@ -7,6 +7,8 @@
  */
 
 #pragma once
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Math/VertexContainer.h>
 #include <AzCore/Math/VertexContainerInterface.h>
@@ -23,7 +25,7 @@ namespace AzToolsFramework
 {
     //! Registers the Actions provided by the EditorVertexSelection while it is active to the Action Manager.
     //! e.g. Vertex deletion, duplication etc.
-    struct EditorVertexSelectionActionManagement
+    struct AZTF_API EditorVertexSelectionActionManagement
     {
         static void RegisterEditorVertexSelectionActions();
         static void BindEditorVertexSelectionActionsToMenus();
@@ -374,4 +376,18 @@ namespace AzToolsFramework
     template<typename Vertex>
     void SafeRemoveVertex(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
+
+    extern template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector2&);
+    extern template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector3&);
+    extern template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
+    extern template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
+
+    extern template class AZCORE_API_EXTERN EditorVertexSelectionBase<AZ::Vector2>;
+    extern template class AZCORE_API_EXTERN EditorVertexSelectionBase<AZ::Vector3>;
+    extern template class AZCORE_API_EXTERN EditorVertexSelectionFixed<AZ::Vector2>;
+    extern template class AZCORE_API_EXTERN EditorVertexSelectionFixed<AZ::Vector3>;
+    extern template class AZCORE_API_EXTERN EditorVertexSelectionVariable<AZ::Vector2>;
+    extern template class AZCORE_API_EXTERN EditorVertexSelectionVariable<AZ::Vector3>;
+
 } // namespace AzToolsFramework
+
