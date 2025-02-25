@@ -6,7 +6,7 @@
  *
  */
 
-#include <RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI.Reflect/SmallVector.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversions.h>
@@ -14,54 +14,58 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
+#include <RHI/ShaderResourceGroupPool.h>
 
 namespace AZ
 {
     namespace DX12
     {
         template<typename T, typename U>
-        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetSRVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& imageViews, D3D12_SRV_DIMENSION dimension)
+        void ShaderResourceGroupPool::GetSRVsFromImageViews(
+            const AZStd::span<const RHI::ConstPtr<T>>& imageViews,
+            D3D12_SRV_DIMENSION dimension,
+            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result)
         {
-            AZStd::vector<DescriptorHandle> cpuSourceDescriptors(imageViews.size(), m_descriptorContext->GetNullHandleSRV(dimension));
+            result.resize(imageViews.size(), m_descriptorContext->GetNullHandleSRV(dimension));
 
-            for (size_t i = 0; i < cpuSourceDescriptors.size(); ++i)
+            for (size_t i = 0; i < result.size(); ++i)
             {
                 if (imageViews[i])
                 {
-                    cpuSourceDescriptors[i] = AZStd::static_pointer_cast<const U>(imageViews[i])->GetReadDescriptor();
+                    result.span()[i] = AZStd::static_pointer_cast<const U>(imageViews[i])->GetReadDescriptor();
                 }
             }
-
-            return cpuSourceDescriptors;
         }
 
         template<typename T, typename U>
-        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetUAVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& imageViews, D3D12_UAV_DIMENSION dimension)
+        void ShaderResourceGroupPool::GetUAVsFromImageViews(
+            const AZStd::span<const RHI::ConstPtr<T>>& imageViews,
+            D3D12_UAV_DIMENSION dimension,
+            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result)
         {
-            AZStd::vector<DescriptorHandle> cpuSourceDescriptors(imageViews.size(), m_descriptorContext->GetNullHandleUAV(dimension));
-            for (size_t i = 0; i < cpuSourceDescriptors.size(); ++i)
+            result.resize(imageViews.size(), m_descriptorContext->GetNullHandleUAV(dimension));
+            for (size_t i = 0; i < result.size(); ++i)
             {
                 if (imageViews[i])
                 {
-                    cpuSourceDescriptors[i] = AZStd::static_pointer_cast<const U>(imageViews[i])->GetReadWriteDescriptor();
+                    result.span()[i] = AZStd::static_pointer_cast<const U>(imageViews[i])->GetReadWriteDescriptor();
                 }
             }
-
-            return cpuSourceDescriptors;
         }
 
-        AZStd::vector<DescriptorHandle> ShaderResourceGroupPool::GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews)
+        void ShaderResourceGroupPool::GetCBVsFromBufferViews(
+            const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews,
+            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result)
         {
-            AZStd::vector<DescriptorHandle> cpuSourceDescriptors(bufferViews.size(), m_descriptorContext->GetNullHandleCBV());
+            result.resize(bufferViews.size(), m_descriptorContext->GetNullHandleCBV());
 
             for (size_t i = 0; i < bufferViews.size(); ++i)
             {
                 if (bufferViews[i])
                 {
-                    cpuSourceDescriptors[i] = AZStd::static_pointer_cast<const BufferView>(bufferViews[i])->GetConstantDescriptor();
+                    result.span()[i] = AZStd::static_pointer_cast<const BufferView>(bufferViews[i])->GetConstantDescriptor();
                 }
             }
-            return cpuSourceDescriptors;
         }
 
         RHI::Ptr<ShaderResourceGroupPool> ShaderResourceGroupPool::Create()
@@ -282,22 +286,24 @@ namespace AZ
 
                     AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
                     D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputBufferAccess(shaderInputBuffer.m_access);
-                    AZStd::vector<DescriptorHandle> descriptorHandles;
+                    RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
                     switch (descriptorRangeType)
                     {
                         case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
                         {
-                            descriptorHandles = GetSRVsFromImageViews< RHI::DeviceBufferView, BufferView> (bufferViews, D3D12_SRV_DIMENSION_BUFFER);
+                            GetSRVsFromImageViews<RHI::DeviceBufferView, BufferView>(
+                                bufferViews, D3D12_SRV_DIMENSION_BUFFER, descriptorHandles);
                             break;
                         }
                         case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
                         {
-                            descriptorHandles = GetUAVsFromImageViews<RHI::DeviceBufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER);
+                            GetUAVsFromImageViews<RHI::DeviceBufferView, BufferView>(
+                                bufferViews, D3D12_UAV_DIMENSION_BUFFER, descriptorHandles);
                             break;
                         }
                         case D3D12_DESCRIPTOR_RANGE_TYPE_CBV:
                         {
-                            descriptorHandles = GetCBVsFromBufferViews(bufferViews);
+                            GetCBVsFromBufferViews(bufferViews, descriptorHandles);
                             break;
                         }
                         default:
@@ -305,7 +311,7 @@ namespace AZ
                             break;
                     }
 
-                    UpdateDescriptorTableRange(descriptorTable, descriptorHandles, bufferInputIndex);
+                    UpdateDescriptorTableRange(descriptorTable, descriptorHandles.span(), bufferInputIndex);
                     ++shaderInputIndex;
                 }
             }
@@ -320,19 +326,19 @@ namespace AZ
                     AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
                     D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputImageAccess(shaderInputImage.m_access);
 
-                    AZStd::vector<DescriptorHandle> descriptorHandles;
+                    RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
                     switch (descriptorRangeType)
                     {
                         case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
                         {
-                            descriptorHandles =
-                                GetSRVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertSRVDimension(shaderInputImage.m_type));
+                            GetSRVsFromImageViews<RHI::DeviceImageView, ImageView>(
+                                imageViews, ConvertSRVDimension(shaderInputImage.m_type), descriptorHandles);
                             break;
                         }
                         case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
                         {
-                            descriptorHandles =
-                                GetUAVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertUAVDimension(shaderInputImage.m_type));
+                            GetUAVsFromImageViews<RHI::DeviceImageView, ImageView>(
+                                imageViews, ConvertUAVDimension(shaderInputImage.m_type), descriptorHandles);
                             break;
                         }
                         default:
@@ -340,7 +346,7 @@ namespace AZ
                         break;
                     }
 
-                    UpdateDescriptorTableRange(descriptorTable, descriptorHandles, imageInputIndex);
+                    UpdateDescriptorTableRange(descriptorTable, descriptorHandles.span(), imageInputIndex);
                     ++shaderInputIndex;
                 }
             }
@@ -489,17 +495,17 @@ namespace AZ
 
             D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputBufferAccess(bufferAccess);
 
-            AZStd::vector<DescriptorHandle> descriptorHandles;
+            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
             switch (descriptorRangeType)
             {
             case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
                 {
-                    descriptorHandles = GetSRVsFromImageViews<RHI::DeviceBufferView, BufferView>(bufferViews, D3D12_SRV_DIMENSION_BUFFER);
+                    GetSRVsFromImageViews<RHI::DeviceBufferView, BufferView>(bufferViews, D3D12_SRV_DIMENSION_BUFFER, descriptorHandles);
                     break;
                 }
             case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
                 {
-                    descriptorHandles = GetUAVsFromImageViews<RHI::DeviceBufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER);
+                    GetUAVsFromImageViews<RHI::DeviceBufferView, BufferView>(bufferViews, D3D12_UAV_DIMENSION_BUFFER, descriptorHandles);
                     break;
                 }
             default:
@@ -508,7 +514,7 @@ namespace AZ
             }
 
             m_descriptorContext->UpdateDescriptorTableRange(
-                descriptorTable, descriptorHandles.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+                descriptorTable, descriptorHandles.span().data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         }
 
         void ShaderResourceGroupPool::UpdateUnboundedImagesDescTable(
@@ -530,17 +536,17 @@ namespace AZ
 
             D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputImageAccess(imageAccess);
 
-            AZStd::vector<DescriptorHandle> descriptorHandles;
+            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
             switch (descriptorRangeType)
             {
             case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
                 {
-                    descriptorHandles = GetSRVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertSRVDimension(imageType));
+                    GetSRVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertSRVDimension(imageType), descriptorHandles);
                     break;
                 }
             case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
                 {
-                    descriptorHandles = GetUAVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertUAVDimension(imageType));
+                    GetUAVsFromImageViews<RHI::DeviceImageView, ImageView>(imageViews, ConvertUAVDimension(imageType), descriptorHandles);
                     break;
                 }
             default:
@@ -549,7 +555,7 @@ namespace AZ
             }
 
             m_descriptorContext->UpdateDescriptorTableRange(
-                descriptorTable, descriptorHandles.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+                descriptorTable, descriptorHandles.span().data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         }
 
         void ShaderResourceGroupPool::OnFrameEnd()
@@ -580,18 +586,14 @@ namespace AZ
         }
 
         void ShaderResourceGroupPool::UpdateDescriptorTableRange(
-            DescriptorTable descriptorTable,
-            const AZStd::vector<DescriptorHandle>& handles,
-            RHI::ShaderInputBufferIndex bufferInputIndex)
+            DescriptorTable descriptorTable, const AZStd::span<DescriptorHandle>& handles, RHI::ShaderInputBufferIndex bufferInputIndex)
         {
             const DescriptorTable gpuDestinationTable = GetBufferTable(descriptorTable, bufferInputIndex);
             m_descriptorContext->UpdateDescriptorTableRange(gpuDestinationTable, handles.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         }
 
         void ShaderResourceGroupPool::UpdateDescriptorTableRange(
-            DescriptorTable descriptorTable,
-            const AZStd::vector<DescriptorHandle>& handles,
-            RHI::ShaderInputImageIndex imageInputIndex)
+            DescriptorTable descriptorTable, const AZStd::span<DescriptorHandle>& handles, RHI::ShaderInputImageIndex imageInputIndex)
         {
             const DescriptorTable gpuDestinationTable = GetImageTable(descriptorTable, imageInputIndex);
             m_descriptorContext->UpdateDescriptorTableRange(gpuDestinationTable, handles.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -603,17 +605,18 @@ namespace AZ
             AZStd::span<const RHI::SamplerState> samplerStates)
         {
             const DescriptorHandle nullHandle = m_descriptorContext->GetNullHandleSampler();
-            AZStd::vector<DescriptorHandle> cpuSourceDescriptors(aznumeric_caster(samplerStates.size()), nullHandle);
+            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> cpuSourceDescriptors(aznumeric_caster(samplerStates.size()), nullHandle);
             auto& device = static_cast<Device&>(GetDevice());
-            AZStd::vector<RHI::ConstPtr<Sampler>> samplers(samplerStates.size(), nullptr);
+            RHI::SmallVector<RHI::ConstPtr<Sampler>, SRGViewsFixedSize> samplers(samplerStates.size(), nullptr);
             for (size_t i = 0; i < samplerStates.size(); ++i)
             {
-                samplers[i] = device.AcquireSampler(samplerStates[i]);
-                cpuSourceDescriptors[i] = samplers[i]->GetDescriptorHandle();
+                samplers.span()[i] = device.AcquireSampler(samplerStates[i]);
+                cpuSourceDescriptors.span()[i] = samplers.span()[i]->GetDescriptorHandle();
             }
 
             const DescriptorTable gpuDestinationTable = GetSamplerTable(descriptorTable, samplerInputIndex);
-            m_descriptorContext->UpdateDescriptorTableRange(gpuDestinationTable, cpuSourceDescriptors.data(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+            m_descriptorContext->UpdateDescriptorTableRange(
+                gpuDestinationTable, cpuSourceDescriptors.span().data(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
         }
     }
 }

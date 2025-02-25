@@ -7,14 +7,15 @@
  */
 #pragma once
 
-#include <Atom/RHI/DeviceObject.h>
+#include <Atom/RHI.Reflect/SamplerState.h>
+#include <Atom/RHI.Reflect/SmallVector.h>
 #include <Atom/RHI/DeviceBuffer.h>
 #include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/DeviceImage.h>
 #include <Atom/RHI/DeviceImageView.h>
-#include <Atom/RHI.Reflect/SamplerState.h>
-#include <AzCore/std/containers/span.h>
+#include <Atom/RHI/DeviceObject.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/containers/span.h>
 #include <RHI/Buffer.h>
 
 namespace AZ
@@ -38,6 +39,8 @@ namespace AZ
             using Base = RHI::DeviceObject;
             friend class DescriptorPool;
 
+            static constexpr size_t ViewsFixedsize = 16;
+
         public:
             
             //Using SystemAllocator here instead of ThreadPoolAllocator as it gets slower when
@@ -60,6 +63,8 @@ namespace AZ
 
             void CommitUpdates();
 
+            void ReserveUpdateData(size_t numUpdates);
+
             void UpdateBufferViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufViews);
             void UpdateImageViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews, RHI::ShaderInputImageType imageType);
             void UpdateSamplers(uint32_t index, const AZStd::span<const RHI::SamplerState>& samplers);
@@ -71,10 +76,10 @@ namespace AZ
             struct WriteDescriptorData
             {
                 uint32_t m_layoutIndex = 0;
-                AZStd::vector<VkDescriptorBufferInfo> m_bufferViewsInfo;
-                AZStd::vector<VkDescriptorImageInfo> m_imageViewsInfo;
-                AZStd::vector<VkBufferView> m_texelBufferViews;
-                AZStd::vector<VkAccelerationStructureKHR> m_accelerationStructures;
+                RHI::SmallVector<VkDescriptorBufferInfo, ViewsFixedsize> m_bufferViewsInfo;
+                RHI::SmallVector<VkDescriptorImageInfo, ViewsFixedsize> m_imageViewsInfo;
+                RHI::SmallVector<VkBufferView, ViewsFixedsize> m_texelBufferViews;
+                RHI::SmallVector<VkAccelerationStructureKHR, ViewsFixedsize> m_accelerationStructures;
             };
 
             DescriptorSet() = default;
@@ -93,7 +98,7 @@ namespace AZ
             void AllocateDescriptorSetWithUnboundedArray();
 
             template<typename T>
-            AZStd::vector<RHI::Interval> GetValidDescriptorsIntervals(const AZStd::vector<T>& descriptorsInfo) const;
+            RHI::SmallVector<RHI::Interval, ViewsFixedsize> GetValidDescriptorsIntervals(const AZStd::span<T>& descriptorsInfo) const;
 
             static bool IsNullDescriptorInfo(const VkDescriptorBufferInfo& descriptorInfo);
             static bool IsNullDescriptorInfo(const VkDescriptorImageInfo& descriptorInfo);
@@ -102,7 +107,7 @@ namespace AZ
             Descriptor m_descriptor;
 
             VkDescriptorSet m_nativeDescriptorSet = VK_NULL_HANDLE;
-            AZStd::vector<WriteDescriptorData> m_updateData;
+            RHI::SmallVector<WriteDescriptorData, ViewsFixedsize> m_updateData;
             RHI::Ptr<Buffer> m_constantDataBuffer;
             RHI::Ptr<BufferView> m_constantDataBufferView;
             bool m_nullDescriptorSupported = false;
@@ -110,15 +115,17 @@ namespace AZ
         };
 
         template<typename T>
-        AZStd::vector<RHI::Interval> DescriptorSet::GetValidDescriptorsIntervals(const AZStd::vector<T>& descriptorsInfo) const
+        RHI::SmallVector<RHI::Interval, DescriptorSet::ViewsFixedsize> DescriptorSet::GetValidDescriptorsIntervals(
+            const AZStd::span<T>& descriptorsInfo) const
         {
+            RHI::SmallVector<RHI::Interval, DescriptorSet::ViewsFixedsize> intervals;
             // if Null descriptors are supported, then we just return one interval that covers the whole range.
             if (m_nullDescriptorSupported)
             {
-                return { RHI::Interval(0, aznumeric_caster(descriptorsInfo.size())) };
+                intervals.push_back(RHI::Interval(0, aznumeric_caster(descriptorsInfo.size())));
+                return intervals;
             }
 
-            AZStd::vector<RHI::Interval> intervals;
             auto beginInterval = descriptorsInfo.begin();
             auto endInterval = beginInterval;
             bool (*IsNullFuntion)(const T&) = &DescriptorSet::IsNullDescriptorInfo;
@@ -129,8 +136,8 @@ namespace AZ
                 {
                     endInterval = AZStd::find_if(beginInterval, descriptorsInfo.end(), IsNullFuntion);
 
-                    intervals.emplace_back();
-                    RHI::Interval& interval = intervals.back();
+                    intervals.push_back({});
+                    RHI::Interval& interval = intervals.span().back();
                     interval.m_min = aznumeric_caster(AZStd::distance(descriptorsInfo.begin(), beginInterval));
                     interval.m_max = endInterval == descriptorsInfo.end() ? static_cast<uint32_t>(descriptorsInfo.size()) : static_cast<uint32_t>(AZStd::distance(descriptorsInfo.begin(), endInterval));
                 }
