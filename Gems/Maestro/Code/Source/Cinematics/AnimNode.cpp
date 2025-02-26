@@ -30,6 +30,7 @@
 #include "CommentTrack.h"
 #include "ScreenFaderTrack.h"
 #include "TimeRangesTrack.h"
+#include "StringTrack.h"
 
 #include <AzCore/std/sort.h>
 #include <AzCore/Math/MathUtils.h>
@@ -421,6 +422,9 @@ namespace Maestro
                 break;
             case AnimValueType::AssetBlend:
                 pTrack = aznew CAssetBlendTrack;
+                break;
+            case AnimValueType::String:
+                pTrack = aznew CStringTrack;
                 break;
             }
         }

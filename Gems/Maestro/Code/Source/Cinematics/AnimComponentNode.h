@@ -154,6 +154,7 @@ namespace Maestro
             bool applyTrackMultiplier = true,
             float isChangedTolerance = AZ::Constants::Tolerance);
         int SetKeysForChangedQuaternionTrackValue(IAnimTrack* track, int keyIdx, float time);
+        int SetKeysForChangedStringTrackValue(IAnimTrack* track, int keyIdx, float time);
 
         // Helper function to set individual properties on Simple Motion Component from an AssetBlend Track.
         void AnimateAssetBlendSubProperties(const AssetBlends<AZ::Data::AssetData>& assetBlendValue);
