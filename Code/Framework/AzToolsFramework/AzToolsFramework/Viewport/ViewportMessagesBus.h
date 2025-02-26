@@ -80,7 +80,21 @@ namespace AzToolsFramework
 
             //! Helper to call both viewport and manipulator handle mouse events
             //! @note Manipulators always attempt to intercept the event first.
-            MouseInteractionResult InternalHandleAllMouseInteractions(const MouseInteractionEvent& mouseInteraction);
+            MouseInteractionResult InternalHandleAllMouseInteractions(const MouseInteractionEvent& mouseInteraction)
+            {
+                if (InternalHandleMouseManipulatorInteraction(mouseInteraction))
+                {
+                    return MouseInteractionResult::Manipulator;
+                }
+                else if (InternalHandleMouseViewportInteraction(mouseInteraction))
+                {
+                    return MouseInteractionResult::Viewport;
+                }
+                else
+                {
+                    return MouseInteractionResult::None;
+                }
+            }
         };
 
         //! Interface for viewport selection behaviors.

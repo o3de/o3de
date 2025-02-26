@@ -141,23 +141,6 @@ namespace AzToolsFramework
 
     namespace ViewportInteraction
     {
-        MouseInteractionResult InternalMouseViewportRequests::InternalHandleAllMouseInteractions(
-            const MouseInteractionEvent& mouseInteraction)
-        {
-            if (InternalHandleMouseManipulatorInteraction(mouseInteraction))
-            {
-                return MouseInteractionResult::Manipulator;
-            }
-            else if (InternalHandleMouseViewportInteraction(mouseInteraction))
-            {
-                return MouseInteractionResult::Viewport;
-            }
-            else
-            {
-                return MouseInteractionResult::None;
-            }
-        }
-
         KeyboardModifiers QueryKeyboardModifiers()
         {
             KeyboardModifiers keyboardModifiers;

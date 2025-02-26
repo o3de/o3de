@@ -55,7 +55,7 @@ namespace AzToolsFramework
 
     //! Viewport interaction that will handle assigning an entity in the viewport to
     //! an entity field in the entity inspector.
-    class EditorPickEntitySelection : public ViewportInteraction::InternalViewportSelectionRequests
+    class AZTF_API EditorPickEntitySelection : public ViewportInteraction::InternalViewportSelectionRequests
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL

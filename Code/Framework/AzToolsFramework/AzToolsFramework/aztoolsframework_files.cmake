@@ -818,6 +818,7 @@ set(FILES
 #    Prefab/PrefabInstanceUtils.cpp
 #    Prefab/PrefabLoader.h
 #    Prefab/PrefabLoader.cpp
+    Prefab/PrefabLoaderInterface.cpp    
     Prefab/PrefabLoaderInterface.h
     Prefab/PrefabLoaderScriptingBus.h
 #    Prefab/ScriptingPrefabLoader.h

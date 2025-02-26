@@ -221,11 +221,11 @@ namespace AzToolsFramework
     * Some Helpers for dealing with filenames in the AssetBundler tools
     */
     // Split the file name to get base name and platform identifier
-    void SplitFilename(const AZStd::string& filePath, AZStd::string& baseFileName, AZStd::string& platformIdentifier);
+    AZTF_API  void SplitFilename(const AZStd::string& filePath, AZStd::string& baseFileName, AZStd::string& platformIdentifier);
 
     //! Removes the platform identifier from the filename if present
-    void RemovePlatformIdentifier(AZStd::string& filePath);
+    AZTF_API  void RemovePlatformIdentifier(AZStd::string& filePath);
 
     //! Returns the platform identifier from the filename, will return an empty string if none found
-    AZStd::string GetPlatformIdentifier(const AZStd::string& filePath);
+    AZTF_API  AZStd::string GetPlatformIdentifier(const AZStd::string& filePath);
 } // namespace AzToolsFramework

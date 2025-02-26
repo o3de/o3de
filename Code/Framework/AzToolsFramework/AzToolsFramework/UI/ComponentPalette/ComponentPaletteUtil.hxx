@@ -30,7 +30,7 @@ namespace AzToolsFramework
         using ComponentIconTable = AZStd::map<const AZ::SerializeContext::ClassData*, QString>;
 
         // Returns true if the given component is addable by the user
-        bool IsAddableByUser(const AZ::SerializeContext::ClassData* componentClass);
+        AZTF_API bool IsAddableByUser(const AZ::SerializeContext::ClassData* componentClass);
 
         AZTF_API void BuildComponentTables(
             AZ::SerializeContext* serializeContext,

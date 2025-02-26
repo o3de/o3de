@@ -382,12 +382,12 @@ namespace AzToolsFramework
     extern template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
     extern template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
-    extern template class AZCORE_API_EXTERN EditorVertexSelectionBase<AZ::Vector2>;
-    extern template class AZCORE_API_EXTERN EditorVertexSelectionBase<AZ::Vector3>;
-    extern template class AZCORE_API_EXTERN EditorVertexSelectionFixed<AZ::Vector2>;
-    extern template class AZCORE_API_EXTERN EditorVertexSelectionFixed<AZ::Vector3>;
-    extern template class AZCORE_API_EXTERN EditorVertexSelectionVariable<AZ::Vector2>;
-    extern template class AZCORE_API_EXTERN EditorVertexSelectionVariable<AZ::Vector3>;
+    //extern template class AZCORE_API_EXTERN EditorVertexSelectionBase<AZ::Vector2>;
+    //extern template class AZCORE_API_EXTERN EditorVertexSelectionBase<AZ::Vector3>;
+    //extern template class AZCORE_API_EXTERN EditorVertexSelectionFixed<AZ::Vector2>;
+    //extern template class AZCORE_API_EXTERN EditorVertexSelectionFixed<AZ::Vector3>;
+    //extern template class AZCORE_API_EXTERN EditorVertexSelectionVariable<AZ::Vector2>;
+    //extern template class AZCORE_API_EXTERN EditorVertexSelectionVariable<AZ::Vector3>;
 
 } // namespace AzToolsFramework
 

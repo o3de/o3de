@@ -743,7 +743,7 @@ set(FILES
     UI/PropertyEditor/PropertyDoubleSliderCtrl.hxx 
     UI/PropertyEditor/PropertyDoubleSpinCtrl.cpp
     UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx
-    UI/PropertyEditor/PropertyEditorAPI.cpp
+    UI/PropertyEditor/PropertyEditorApi.cpp
     UI/PropertyEditor/PropertyEditorAPI.h
     UI/PropertyEditor/PropertyEditorAPI_Internals.h
     UI/PropertyEditor/PropertyEditorAPI_Internals_Impl.h

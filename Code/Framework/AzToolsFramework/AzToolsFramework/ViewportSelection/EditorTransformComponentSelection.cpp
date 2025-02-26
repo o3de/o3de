@@ -4678,8 +4678,8 @@ namespace AzToolsFramework
     } // namespace Etcs
 
     // explicit instantiations
-    template Etcs::PivotOrientationResult Etcs::CalculatePivotOrientationForEntityIds<EntityIdManipulatorLookups>(
+    template AZ_DLL_EXPORT Etcs::PivotOrientationResult Etcs::CalculatePivotOrientationForEntityIds<EntityIdManipulatorLookups>(
         const EntityIdManipulatorLookups&, ReferenceFrame);
-    template Etcs::PivotOrientationResult Etcs::CalculateSelectionPivotOrientation<EntityIdManipulatorLookups>(
+    template AZ_DLL_EXPORT Etcs::PivotOrientationResult Etcs::CalculateSelectionPivotOrientation<EntityIdManipulatorLookups>(
         const EntityIdManipulatorLookups&, const OptionalFrame&, const ReferenceFrame referenceFrame);
 } // namespace AzToolsFramework
