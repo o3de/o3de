@@ -17,6 +17,21 @@
 
 @implementation InAppPurchasesDelegate
 
+#if defined(CARBONATED)  // PR375
+-(const char*) getStateName: (SKPaymentTransactionState) state
+{
+    switch (state)
+    {
+        case SKPaymentTransactionStatePurchasing: return "purchasing";
+        case SKPaymentTransactionStatePurchased: return "purchased";
+        case SKPaymentTransactionStateFailed: return "failed";
+        case SKPaymentTransactionStateRestored: return "restored";
+        case SKPaymentTransactionStateDeferred: return "deferred";
+    }
+    return "unknown";
+}
+#endif
+
 -(NSString*) convertPriceToString:(NSDecimalNumber*) price forLocale:(NSLocale*) locale
 {
     NSNumberFormatter* numberFormatter = [[NSNumberFormatter alloc] init];
@@ -35,12 +50,31 @@
     purchasedProductDetails->SetProductId([payment.productIdentifier UTF8String]);
     if ([payment.applicationUsername length] > 0)
     {
+#if defined(CARBONATED)  // PR375
+        AZ_Info("O3DEInAppPurchases", "SetDeveloperPayload %s", [payment.applicationUsername UTF8String]);
+#endif
         purchasedProductDetails->SetDeveloperPayload([payment.applicationUsername UTF8String]);
     }
     else
     {
         purchasedProductDetails->SetDeveloperPayload("");
     }
+    
+#if defined(CARBONATED)  // PR375
+    const auto& cachedProductDetails = InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->GetCachedProductDetails();
+    for(const auto& productDetails : cachedProductDetails)
+    {
+        if(productDetails && productDetails->GetProductId() == purchasedProductDetails->GetProductId())
+        {
+            AZ_Info("O3DEInAppPurchases", "Set price %s", productDetails->GetProductPrice().c_str());
+            
+            purchasedProductDetails->SetProductPrice(productDetails->GetProductPrice());
+            purchasedProductDetails->SetProductPriceMicro(productDetails->GetProductPriceMicro());
+            purchasedProductDetails->SetProductCurrencyCode(productDetails->GetProductCurrencyCode());
+            break;
+        }
+    }
+#endif
     
     if (restored)
     {
@@ -51,7 +85,20 @@
     }
     else
     {
+#if defined(CARBONATED)  // PR375
+        // there is no order ID for a cancelled transaction
+        if (transaction.transactionIdentifier != nil)
+        {
+            purchasedProductDetails->SetOrderId([transaction.transactionIdentifier cStringUsingEncoding:NSASCIIStringEncoding]);
+        }
+        else
+        {
+            AZ_Info("O3DEInAppPurchases", "No transaction id");
+            purchasedProductDetails->SetOrderId("");
+        }
+#else
         purchasedProductDetails->SetOrderId([transaction.transactionIdentifier cStringUsingEncoding:NSASCIIStringEncoding]);
+#endif
         purchasedProductDetails->SetPurchaseTime([transaction.transactionDate timeIntervalSince1970]);
         purchasedProductDetails->SetRestoredOrderId("");
         purchasedProductDetails->SetRestoredPurchaseTime(0);
@@ -142,10 +189,16 @@
     for (SKProduct* product in response.products)
     {
         InAppPurchases::ProductDetailsApple* productDetails = new InAppPurchases::ProductDetailsApple;
-        
+      
         productDetails->SetProductId([product.productIdentifier UTF8String]);
         productDetails->SetProductTitle([product.localizedTitle UTF8String]);
+        
+#if defined(CARBONATED)  // PR375
+        const AZStd::string description = product.localizedDescription ? [product.localizedDescription UTF8String] : "(no desc)";
+        productDetails->SetProductDescription(description);
+#else
         productDetails->SetProductDescription([product.localizedDescription UTF8String]);
+#endif
         productDetails->SetProductPrice([[self convertPriceToString:product.price forLocale:product.priceLocale] UTF8String]);
         productDetails->SetProductCurrencyCode([[product.priceLocale objectForKey:NSLocaleCurrencyCode] UTF8String]);
         AZStd::string priceMicro = [[NSString stringWithFormat:@"%@", product.price] UTF8String];
@@ -183,7 +236,6 @@
             NSString* userNameHash = [self hashUserName:userName];
             payment.applicationUsername = userNameHash;
         }
-        
         [[SKPaymentQueue defaultQueue] addPayment:payment];
     }
     else
@@ -214,20 +266,56 @@
                 
             case SKPaymentTransactionStateFailed:
             {
+#if defined(CARBONATED)  // PR375
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction failed");
+#endif
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "Transaction failed! Error: %s", [[transaction.error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
                     InAppPurchases::PurchasedProductDetailsApple* productDetails = [self parseTransactionDetails:transaction isRestored:false];
+#if defined(CARBONATED)  // PR375
+                    if(transaction.error.code == SKErrorPaymentCancelled)
+                    {
+                        AZ_TracePrintf("O3DEInAppPurchases", "Transaction payment cancelled");
+                        productDetails->SetPurchaseState(InAppPurchases::PurchaseState::CANCELLED);
+                        EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, PurchaseCancelled, productDetails);
+                    }
+                    else
+                    {
+                        productDetails->SetPurchaseState(InAppPurchases::PurchaseState::FAILED);
+                        [self.m_unfinishedTransactions addObject:transaction];
+                        AZ_TracePrintf("O3DEInAppPurchases", "SKError = %d", transaction.error.code);
+                        EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, PurchaseFailed, productDetails);
+                    }
+#else
                     productDetails->SetPurchaseState(InAppPurchases::PurchaseState::FAILED);
-                    [self.m_unfinishedTransactions addObject:transaction];
-                    EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, PurchaseFailed, productDetails);
+#endif
+                    
+#if defined(CARBONATED)  // PR375
+                    InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->AddPurchasedProductDetailsToCache(productDetails);
+#endif
+                    
+#if defined(CARBONATED)  // PR375
+                    // ..
+#else
                     delete productDetails;
+#endif
                 }
+#if defined(CARBONATED)  // PR375
+                else
+                {
+                    AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
+                                   [transaction.transactionIdentifier UTF8String], [self getStateName:transaction.transactionState]);
+                }
+#endif
             }
                 break;
                 
             case SKPaymentTransactionStatePurchased:
             {
+#if defined(CARBONATED)  // PR375
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction purchased");
+#endif
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "Transaction succeeded");
@@ -244,11 +332,21 @@
                     }
                     EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, NewProductPurchased, productDetails);
                 }
+#if defined(CARBONATED)  // PR375
+                else
+                {
+                    AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
+                                   [transaction.transactionIdentifier UTF8String], [self getStateName:transaction.transactionState]);
+                }
+#endif
             }
                 break;
                 
             case SKPaymentTransactionStateRestored:
             {
+#if defined(CARBONATED)  // PR375
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction restored");
+#endif
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "Transaction restored");
@@ -265,6 +363,18 @@
                     }
                     isRestoredTransaction = true;
                 }
+#if defined(CARBONATED)  // PR375
+                else
+                {
+                    AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
+                                   [transaction.transactionIdentifier UTF8String], [self getStateName:transaction.transactionState]);
+                }
+#endif
+            }
+                break;
+            default:
+            {
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction unknown");
             }
                 break;
         }
@@ -284,11 +394,21 @@
         {
             [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
             [self.m_unfinishedTransactions removeObject:transaction];
+            
+#if defined(CARBONATED)  // PR375
+            AZStd::string orderId = [transactionId UTF8String];
+            InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->RemovePurchasedProductDetails(orderId);
+#endif
+            
             return;
         }
     }
-    
+
+#if defined(CARBONATED)  // PR375
+    AZ_Error("O3DEInAppPurchases", false, "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
+#else
     AZ_TracePrintf("O3DEInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
+#endif
 }
 
 -(void) downloadAppleHostedContentAndFinishTransaction:(NSString*) transactionId
@@ -316,7 +436,11 @@
     }
     else
     {
+#if defined(CARBONATED)  // PR375
+        AZ_Error("O3DEInAppPurchases", false, "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
+#else
         AZ_TracePrintf("O3DEInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
+#endif
     }
 }
 
