@@ -181,7 +181,7 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::PurchaseProduct(const AZStd::string& productId, const AZStd::string& developerPayload) const
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZ_Info("O3DEInAppPurchases", "PurchaseProduct %s", productId.c_str());
 #endif
         NSString* productIdString = [NSString stringWithCString:productId.c_str() encoding:NSUTF8StringEncoding];
@@ -203,7 +203,7 @@ namespace InAppPurchases
 
     void InAppPurchasesApple::RestorePurchasedProducts() const
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZ_Info("O3DEInAppPurchases", "RestorePurchasedProducts");
 #endif
         InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedPurchasedProductDetails();
@@ -212,7 +212,7 @@ namespace InAppPurchases
     
     void InAppPurchasesApple::QueryPurchasedProducts() const
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZ_Info("O3DEInAppPurchases", "QueryPurchasedProducts");
 #endif
         [m_delegate refreshAppReceipt];
@@ -243,7 +243,7 @@ namespace InAppPurchases
         }
     }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
     AZStd::string InAppPurchasesApple::GetTransactionReceipt() const
     {
         // iOS8 and later Receipt retrieval
@@ -267,14 +267,14 @@ namespace InAppPurchases
     
     void InAppPurchasesApple::ConsumePurchase(const AZStd::string& purchaseToken) const
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZ_Info("O3DEInAppPurchases", "ConsumePurchase");
 #endif
     }
     
     void InAppPurchasesApple::FinishTransaction(const AZStd::string& transactionId, bool downloadHostedContent) const
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZ_Info("O3DEInAppPurchases", "FinishTransaction");
 #endif
         NSString* transactionIdString = [NSString stringWithCString:transactionId.c_str() encoding:NSASCIIStringEncoding];

@@ -54,7 +54,7 @@ namespace InAppPurchases
         m_cachedPurchasedProducts.push_back(AZStd::unique_ptr<PurchasedProductDetails const>(purchasedProductDetails));
     }
             
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
     void InAppPurchasesCache::RemovePurchasedProductDetails(const AZStd::string& orderId)
     {
         auto it = m_cachedPurchasedProducts.begin();

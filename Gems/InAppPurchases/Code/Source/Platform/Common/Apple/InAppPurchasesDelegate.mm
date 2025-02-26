@@ -17,7 +17,7 @@
 
 @implementation InAppPurchasesDelegate
 
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
 -(const char*) getStateName: (SKPaymentTransactionState) state
 {
     switch (state)
@@ -50,7 +50,7 @@
     purchasedProductDetails->SetProductId([payment.productIdentifier UTF8String]);
     if ([payment.applicationUsername length] > 0)
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZ_Info("O3DEInAppPurchases", "SetDeveloperPayload %s", [payment.applicationUsername UTF8String]);
 #endif
         purchasedProductDetails->SetDeveloperPayload([payment.applicationUsername UTF8String]);
@@ -60,7 +60,7 @@
         purchasedProductDetails->SetDeveloperPayload("");
     }
     
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
     const auto& cachedProductDetails = InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->GetCachedProductDetails();
     for(const auto& productDetails : cachedProductDetails)
     {
@@ -85,7 +85,7 @@
     }
     else
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         // there is no order ID for a cancelled transaction
         if (transaction.transactionIdentifier != nil)
         {
@@ -193,7 +193,7 @@
         productDetails->SetProductId([product.productIdentifier UTF8String]);
         productDetails->SetProductTitle([product.localizedTitle UTF8String]);
         
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         const AZStd::string description = product.localizedDescription ? [product.localizedDescription UTF8String] : "(no desc)";
         productDetails->SetProductDescription(description);
 #else
@@ -266,14 +266,14 @@
                 
             case SKPaymentTransactionStateFailed:
             {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                 AZ_TracePrintf("O3DEInAppPurchases", "Transaction failed");
 #endif
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "Transaction failed! Error: %s", [[transaction.error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
                     InAppPurchases::PurchasedProductDetailsApple* productDetails = [self parseTransactionDetails:transaction isRestored:false];
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                     if(transaction.error.code == SKErrorPaymentCancelled)
                     {
                         AZ_TracePrintf("O3DEInAppPurchases", "Transaction payment cancelled");
@@ -291,17 +291,17 @@
                     productDetails->SetPurchaseState(InAppPurchases::PurchaseState::FAILED);
 #endif
                     
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                     InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->AddPurchasedProductDetailsToCache(productDetails);
 #endif
                     
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                     // ..
 #else
                     delete productDetails;
 #endif
                 }
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                 else
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
@@ -313,7 +313,7 @@
                 
             case SKPaymentTransactionStatePurchased:
             {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                 AZ_TracePrintf("O3DEInAppPurchases", "Transaction purchased");
 #endif
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
@@ -332,7 +332,7 @@
                     }
                     EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, NewProductPurchased, productDetails);
                 }
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                 else
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
@@ -344,7 +344,7 @@
                 
             case SKPaymentTransactionStateRestored:
             {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                 AZ_TracePrintf("O3DEInAppPurchases", "Transaction restored");
 #endif
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
@@ -363,7 +363,7 @@
                     }
                     isRestoredTransaction = true;
                 }
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
                 else
                 {
                     AZ_TracePrintf("O3DEInAppPurchases", "There is an unfinished transaction with %s, state %s, so do nothing",
@@ -395,7 +395,7 @@
             [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
             [self.m_unfinishedTransactions removeObject:transaction];
             
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
             AZStd::string orderId = [transactionId UTF8String];
             InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->RemovePurchasedProductDetails(orderId);
 #endif
@@ -404,7 +404,7 @@
         }
     }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
     AZ_Error("O3DEInAppPurchases", false, "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
 #else
     AZ_TracePrintf("O3DEInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
@@ -436,7 +436,7 @@
     }
     else
     {
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZ_Error("O3DEInAppPurchases", false, "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
 #else
         AZ_TracePrintf("O3DEInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);

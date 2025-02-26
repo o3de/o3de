@@ -50,7 +50,7 @@ namespace InAppPurchases
         
         void RestorePurchasedProducts() const override;
         
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZStd::string GetTransactionReceipt() const override;
 #endif
         

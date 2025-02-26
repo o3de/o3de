@@ -44,7 +44,7 @@ namespace InAppPurchases
         
         virtual void RestorePurchasedProducts() const = 0;
         
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         virtual AZStd::string GetTransactionReceipt() const { return ""; }
 #endif
         

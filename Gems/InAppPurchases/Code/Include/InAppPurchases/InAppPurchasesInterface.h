@@ -75,7 +75,7 @@ namespace InAppPurchases
         virtual AZ::u64 GetPurchaseTime() const { return m_purchaseTime; }
         PurchaseState GetPurchaseState() const { return m_purchaseState; }
 		
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         const AZStd::string& GetProductPrice() const { return m_productPrice; }
         const AZStd::string& GetProductCurrencyCode() const { return m_productPriceCurrencyCode; }
         AZ::u64 GetProductPriceMicro() const { return m_productPriceMicro; }
@@ -87,7 +87,7 @@ namespace InAppPurchases
         void SetPurchaseTime(AZ::u64 purchaseTime) { m_purchaseTime = purchaseTime; }
         void SetPurchaseState(PurchaseState purchaseState) { m_purchaseState = purchaseState; }
         
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         void SetProductPrice(const AZStd::string& productPrice) { m_productPrice = productPrice; }
         void SetProductCurrencyCode(const AZStd::string& productCurrencyCode) { m_productPriceCurrencyCode = productCurrencyCode; }
         void SetProductPriceMicro(const AZ::u64& productPriceMicro) { m_productPriceMicro = productPriceMicro; }
@@ -104,7 +104,7 @@ namespace InAppPurchases
         AZ::u64 m_purchaseTime = 0;
         PurchaseState m_purchaseState;
         
-#if defined(CARBONATED)
+#if defined(CARBONATED)  // PR375
         AZStd::string m_productPrice;
         AZStd::string m_productPriceCurrencyCode;
         AZ::u64 m_productPriceMicro = 0;
@@ -124,7 +124,7 @@ namespace InAppPurchases
         void AddProductDetailsToCache(const ProductDetails* productDetails);
         void AddPurchasedProductDetailsToCache(const PurchasedProductDetails* purchasedProductDetails);
         
-#if defined(CARBONATED)
+#if defined(CARBONATED) // PR375
         void RemovePurchasedProductDetails(const AZStd::string& orderId);
 #endif
 
@@ -162,7 +162,7 @@ namespace InAppPurchases
         
         virtual void RestorePurchasedProducts() const = 0;
         
-#if defined(CARBONATED)
+#if defined(CARBONATED) // PR375
         virtual AZStd::string GetTransactionReceipt() const { return ""; }
 #endif
         
