@@ -14,7 +14,6 @@
 
 #include <CryCommon/Maestro/Types/AnimValueType.h>              // for AnimValueType
 
-#pragma optimize("", off)
 bool CStringKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
@@ -80,4 +79,3 @@ void CStringKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
         }
     }
 }
-#pragma optimize("", on)
