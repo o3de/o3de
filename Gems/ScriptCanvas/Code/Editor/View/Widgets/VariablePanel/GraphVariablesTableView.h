@@ -88,7 +88,7 @@ namespace ScriptCanvasEditor
         ////
 
         // VariableNotificationBus
-        void OnVariableRenamed(AZStd::string_view /*newVariableName*/) override;
+        void OnVariableRenamed(AZStd::string_view newVariableName) override;
         ///
 
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
