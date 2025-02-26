@@ -8,6 +8,22 @@
 
 get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
 
+# Exceptions are disabled by default.  Use this to turn them on just for a specific target.
+set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC /EHsc)
+
+# O3DE Sets visibility to hidden by default, requiring explicit export on non-windows platforms
+# But on MSVC or MS-Clang, these compilers use MSVC compiler options and behavior, which means
+# it is not necessary to set visibility to hidden as on MSVC, things behave similar to if
+# hidden by default.  As such, there is no need to change compile options for 3rd Party Libraries
+# to cause them to export symbols.  This is thus blank
+set(O3DE_COMPILE_OPTION_EXPORT_SYMBOLS "")
+
+# By default, O3DE sets warning level 4 and sets warnings as errors.  If you're pulling in
+# external code (from 3rd Party libraries) you can't really control whether they generate
+# warnings or not, and its usually out of scope to fix them.  Add this compile option to 
+# those 3rd Party targets ONLY.
+set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
+
 if (NOT O3DE_SCRIPT_ONLY)
     set(minimum_supported_toolset 142)
     if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
