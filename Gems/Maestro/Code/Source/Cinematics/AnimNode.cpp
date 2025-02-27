@@ -444,10 +444,11 @@ namespace Maestro
         return pTrack;
     }
 
-    IAnimTrack* CAnimNode::CreateTrack(const CAnimParamType& paramType)
+    IAnimTrack* CAnimNode::CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType)
     {
-        IAnimTrack* pTrack = CreateTrackInternal(paramType, DEFAULT_TRACK_TYPE, AnimValueType::Unknown);
-        InitializeTrackDefaultValue(pTrack, paramType);
+        IAnimTrack* pTrack = CreateTrackInternal(paramType, DEFAULT_TRACK_TYPE, remapValueType);
+        SetTrackMultiplier(pTrack, remapValueType);
+        InitializeTrackDefaultValue(pTrack, paramType, remapValueType);
         return pTrack;
     }
 
@@ -963,9 +964,8 @@ namespace Maestro
             pTrack->SetSubTrackName(2, "BlurAmount");
             return pTrack;
         }
-        else if (animValue == AnimValueType::RGB || paramType == AnimParamType::LightDiffuse ||
-                 paramType == AnimParamType::MaterialDiffuse || paramType == AnimParamType::MaterialSpecular
-                 || paramType == AnimParamType::MaterialEmissive)
+        else if (animValue == AnimValueType::RGB || paramType == AnimParamType::LightDiffuse
+                 || paramType == AnimParamType::MaterialDiffuse || paramType == AnimParamType::MaterialSpecular || paramType == AnimParamType::MaterialEmissive)
         {
             subTrackParamTypes[0] = AnimParamType::ColorR;
             subTrackParamTypes[1] = AnimParamType::ColorG;

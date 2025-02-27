@@ -19,6 +19,7 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
+#include <CryCommon/Maestro/Types/AnimValueType.h>
 
 #define DEFAULT_NEAR 0.2f
 #define DEFAULT_FOV (75.0f * gf_PI / 180.0f)
@@ -627,11 +628,11 @@ public:
     // Get the index of a given track among tracks with the same parameter type in this node.
     virtual uint32 GetTrackParamIndex(const IAnimTrack* pTrack) const = 0;
 
-    // Creates a new track for given parameter.
-    virtual IAnimTrack* CreateTrack(const CAnimParamType& paramType) = 0;
+    // Creates a new track for given parameter, with possible remapping.
+    virtual IAnimTrack* CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) = 0;
 
     // Initializes track default values after de-serialization / user creation. Only called in editor.
-    virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType) = 0;
+    virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) = 0;
 
     // Assign animation track to parameter.
     // if track parameter is NULL track with parameter id param will be removed.

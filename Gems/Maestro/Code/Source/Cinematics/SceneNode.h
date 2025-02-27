@@ -110,7 +110,7 @@ namespace Maestro
 
         void ApplyGotoKey(CGotoTrack* poGotoTrack, SAnimContext& ec);
 
-        void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType) override;
+        void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) override;
 
         // Cached parameters of node at given time.
         float m_time = 0.0f;

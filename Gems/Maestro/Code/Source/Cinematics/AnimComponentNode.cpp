@@ -10,6 +10,7 @@
 #include "AnimComponentNode.h"
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
 
@@ -26,6 +27,9 @@
 
 namespace Maestro
 {
+
+    // The standard value of multiplier for tracks having AnimValueType::RGB
+    /*static*/ const float CAnimComponentNode::s_rgbMultiplier = 255.0f;
 
     CAnimComponentNode::CAnimComponentNode(int id)
         : CAnimNode(id, AnimNodeType::Component)
@@ -101,7 +105,7 @@ namespace Maestro
         return false;
     }
 
-    bool CAnimComponentNode::SetTrackMultiplier(IAnimTrack* track) const
+    bool CAnimComponentNode::SetTrackMultiplier(IAnimTrack* track, AnimValueType remapValueType) const
     {
         bool trackMultiplierWasSet = false;
 
@@ -117,9 +121,9 @@ namespace Maestro
             SequenceComponentRequestBus::EventResult(propertyTypeId, m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedAddressTypeId,
                 GetParentAzEntityId(), propertyAddress);
 
-            if (propertyTypeId == AZ::Color::TYPEINFO_Uuid())
+            if (propertyTypeId == AZ::Color::TYPEINFO_Uuid() || remapValueType == AnimValueType::RGB)
             {
-                track->SetMultiplier(255.0f);
+                track->SetMultiplier(s_rgbMultiplier);
                 trackMultiplierWasSet = true;
             }
         }
@@ -243,7 +247,7 @@ namespace Maestro
                     retNumKeysSet += SetKeysForChangedFloatTrackValue(track, keyIdx, time);
                     break;
                 case AnimValueType::RGB:
-                    retNumKeysSet += SetKeysForChangedVector3TrackValue(track, keyIdx, time, true, (1.0f) / 255.0f);
+                    retNumKeysSet += SetKeysForChangedVector3TrackValue(track, keyIdx, time, true, (1.0f) / s_rgbMultiplier);
                     break;
                 case AnimValueType::Vector:
                     retNumKeysSet += SetKeysForChangedVector3TrackValue(track, keyIdx, time, true);
@@ -546,17 +550,69 @@ namespace Maestro
         }
     }
 
-    IAnimTrack* CAnimComponentNode::CreateTrack(const CAnimParamType& paramType)
+    IAnimTrack* CAnimComponentNode::CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType)
     {
-        IAnimTrack* retTrack = CAnimNode::CreateTrack(paramType);
 
-        if (retTrack)
+        AnimValueType remappedValueType = remapValueType;
+        if ((remappedValueType == AnimValueType::Unknown) && (paramType.GetType() == AnimParamType::ByString))
         {
-            SetTrackMultiplier(retTrack);
-            if (paramType.GetType() == AnimParamType::Animation && !m_characterTrackAnimator)
+            SParamInfo info;
+            // Try to get info from paramType, else we can't determine the track data type
+            if (!GetParamInfoFromType(paramType, info))
             {
-                m_characterTrackAnimator = new CCharacterTrackAnimator();
+                return nullptr;
             }
+
+            // Check if a Vector3 type value is to be remapped to a Color type value,
+            // for those reflected variables which have AZ::Edit::UIHandlers::Color attribute.
+            if (info.valueType == AnimValueType::Vector)
+            {
+                AZ::SerializeContext* serializeContext = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+                if (serializeContext && serializeContext->GetEditContext())
+                {
+                    const auto& editContext = serializeContext->GetEditContext();
+                    const auto& paramName = info.name; // info.name == string(paramType.GetName()): the reflected variable name to search for.
+
+                    // Callback object used to enumerate reflected classes
+                    AZ::Edit::TypeVisitor fieldVisitor;
+                    fieldVisitor.m_classDataVisitor = [&remappedValueType, paramName](const AZ::Edit::ClassData& classData) -> bool
+                    {
+                        // Iterate over each reflected Edit::ElementData in each class, searching for the needed reflected variable class
+                        for (const AZ::Edit::ElementData& elementData : classData.m_elements)
+                        {
+                            if (!elementData.m_serializeClassElement)
+                            {
+                                continue;
+                            }
+
+                            const auto& className = elementData.m_serializeClassElement->m_name; // const char*, used in XML output
+                            const auto& classTypeId = elementData.m_serializeClassElement->m_typeId; // Uuid
+
+                            if ((paramName == className) && (classTypeId == AZ::Vector3::TYPEINFO_Uuid()))
+                            {
+                                // Does AZ::Edit::AttributeId request that reflected variable is Edited as AZ::Color with color picker?
+                                if (elementData.m_elementId == AZ::Edit::UIHandlers::Color)
+                                {
+                                    remappedValueType = AnimValueType::RGB;
+                                }
+                                return false; // found reflected variable
+                            }
+                        }
+                        return true; // continue search
+                    };
+
+                    // Iterate over each reflected Edit::ClassData, searching for the reflected variable
+                    editContext->EnumerateAll(fieldVisitor, AZ::Edit::VisitFlags::Classes);
+                }
+            }
+        }
+
+        IAnimTrack* retTrack = CAnimNode::CreateTrack(paramType, remappedValueType);
+
+        if (retTrack && (paramType.GetType() == AnimParamType::Animation && !m_characterTrackAnimator))
+        {
+            m_characterTrackAnimator = new CCharacterTrackAnimator();
         }
 
         return retTrack;
@@ -571,6 +627,21 @@ namespace Maestro
         }
 
         return CAnimNode::RemoveTrack(pTrack);
+    }
+
+    void CAnimComponentNode::InitPostLoad(IAnimSequence* sequence)
+    {
+        CAnimNode::InitPostLoad(sequence);
+
+        // Check if multiplier, which is not serialized, is to be set again after loading a prefab.
+        for (size_t i = 0; i < m_tracks.size(); ++i)
+        {
+            IAnimTrack* pTrack = m_tracks[i].get();
+            if (pTrack && (pTrack->GetValueType() == AnimValueType::RGB))
+            {
+                pTrack->SetMultiplier(s_rgbMultiplier);
+            }
+        }
     }
 
     /// @deprecated Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence Component
@@ -713,7 +784,7 @@ namespace Maestro
         }
     }
 
-    void CAnimComponentNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType)
+    void CAnimComponentNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, AnimValueType remapValueType)
     {
         // Initialize new track to property value
         if (paramType.GetType() == AnimParamType::ByString && pTrack)
@@ -725,7 +796,8 @@ namespace Maestro
 
                 SequenceComponentRequests::AnimatablePropertyAddress address(m_componentId, propertyInfo.m_animNodeParamInfo.name);
 
-                switch (pTrack->GetValueType())
+                const auto actualValueType = remapValueType != AnimValueType::Unknown ? remapValueType : pTrack->GetValueType();
+                switch (actualValueType)
                 {
                     case AnimValueType::Float:
                     {
@@ -886,7 +958,7 @@ namespace Maestro
                                 {
                                     vec = vec.GetClamp(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
                                     // set tolerance to just under 1 unit in normalized RGB space
-                                    tolerance = (1.0f - AZ::Constants::FloatEpsilon) / 255.0f;
+                                    tolerance = (1.0f - AZ::Constants::FloatEpsilon) / s_rgbMultiplier;
                                 }
 
                                 SequenceComponentRequests::AnimatedVector3Value value(vec);
