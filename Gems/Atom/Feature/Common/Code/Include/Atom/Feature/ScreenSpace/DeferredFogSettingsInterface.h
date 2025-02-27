@@ -34,14 +34,6 @@ namespace AZ
             virtual void SetInitialized(bool isInitialized) = 0;
             virtual bool IsInitialized() = 0;
 
-            virtual void SetEnabled(bool value) = 0;
-            virtual bool GetEnabled() const = 0;
-
-            virtual void SetUseNoiseTextureShaderOption(bool value)= 0;
-            virtual bool GetUseNoiseTextureShaderOption()= 0;
-            virtual void SetEnableFogLayerShaderOption(bool value)= 0;
-            virtual bool GetEnableFogLayerShaderOption()= 0;
-
             // Auto-gen virtual getter and setter functions...
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                  \
         virtual ValueType Get##Name() const = 0;                                                        \
