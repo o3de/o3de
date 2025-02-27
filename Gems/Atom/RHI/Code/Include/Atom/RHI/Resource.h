@@ -15,9 +15,9 @@ namespace AZ::RHI
     class ResourcePool;
     class FrameAttachment;
     class MemoryStatisticsBuilder;
-    class DeviceResourceView;
-    class DeviceImageView;
-    class DeviceBufferView;
+    class ResourceView;
+    class ImageView;
+    class BufferView;
     struct ImageViewDescriptor;
     struct BufferViewDescriptor;
 
@@ -62,8 +62,19 @@ namespace AZ::RHI
         //! shutdown / re-initialization will need to call this method explicitly.
         void InvalidateViews();
 
+        //! Returns true if the ResourceView is in the cache
+        bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
+        bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
+
+        //! Removes the provided ResourceView from the cache
+        void EraseResourceView(ResourceView* resourceView) const;
+
     protected:
         Resource() = default;
+
+        //! Returns view based on the descriptor
+        Ptr<ImageView> GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const;
+        Ptr<BufferView> GetResourceView(const BufferViewDescriptor& bufferViewDescriptor) const;
 
     private:
         //! Returns whether this resource has been initialized before.
@@ -75,6 +86,12 @@ namespace AZ::RHI
         //! Called by the frame attachment at frame building time.
         void SetFrameAttachment(FrameAttachment* frameAttachment, int deviceIndex = MultiDevice::InvalidDeviceIndex);
 
+        //! Called by GetResourceView to insert a new image view
+        Ptr<ImageView> InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const;
+
+        //! Called by GetResourceView to insert a new buffer view
+        Ptr<BufferView> InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const;
+
         //! The parent pool this resource is registered with.
         ResourcePool* m_pool = nullptr;
 
@@ -83,6 +100,13 @@ namespace AZ::RHI
 
         //! The version is monotonically incremented any time the backing resource is changed.
         uint32_t m_version = 0;
+
+        //! Cache the resourceViews in order to avoid re-creation
+        //! Since ResourceView has a dependency to Resource this cache holds raw pointers here in order to ensure there
+        //! is no circular dependency between the resource and it's resourceview.
+        mutable AZStd::unordered_map<size_t, ResourceView*> m_resourceViewCache;
+        //! This should help provide thread safe access to resourceView cache
+        mutable AZStd::mutex m_cacheMutex;
     };
 
     class Buffer;
@@ -94,6 +118,10 @@ namespace AZ::RHI
     class ResourceView : public Object
     {
     public:
+        // The resource owns a cache of resource views, and it needs access to the refcount
+        // of the resource views to prevent threading issues.
+        friend class Resource;
+
         virtual ~ResourceView() = default;
 
         //! Returns the resource associated with this view.
@@ -101,5 +129,8 @@ namespace AZ::RHI
         virtual const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const = 0;
 
         AZ_RTTI(ResourceView, "{D7442960-531D-4DCC-B60D-FD26FF75BE51}", Object);
+
+    protected:
+        void Shutdown() override{};
     };
 } // namespace AZ::RHI
