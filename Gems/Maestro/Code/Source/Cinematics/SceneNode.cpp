@@ -1074,7 +1074,7 @@ namespace Maestro
         }
     }
 
-    void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType)
+    void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, [[maybe_unused]] AnimValueType remapValueType)
     {
         if (paramType.GetType() == AnimParamType::TimeWarp)
         {

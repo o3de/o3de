@@ -493,7 +493,10 @@ namespace Maestro
 
         void SetMultiplier(float trackMultiplier) override
         {
-            m_trackMultiplier = trackMultiplier;
+            if (AZStd::abs(trackMultiplier) > AZ::Constants::Tolerance)
+            {
+                m_trackMultiplier = trackMultiplier;
+            }
         }
 
         void SetExpanded([[maybe_unused]] bool expanded) override
@@ -556,7 +559,7 @@ namespace Maestro
 
         IAnimNode* m_node;
 
-        float m_trackMultiplier;
+        float m_trackMultiplier = 1.0f;
 
         unsigned int m_id = 0;
 
