@@ -73,7 +73,6 @@
         {
             m_buffer->EraseResourceView(static_cast<ResourceView*>(this));
             m_buffer = nullptr;
-            ResourceView::Shutdown();
         }
     }
  }

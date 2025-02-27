@@ -57,7 +57,6 @@
             {
                 m_image->EraseResourceView(static_cast<ResourceView*>(this));
                 m_image = nullptr;
-                ResourceView::Shutdown();
             }
         }
 }
