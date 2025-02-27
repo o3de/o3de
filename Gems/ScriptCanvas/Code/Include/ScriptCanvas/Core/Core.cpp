@@ -238,6 +238,16 @@ namespace ScriptCanvas
         return m_absolutePath;
     }
 
+    void SourceHandle::SetSuggestedFileName(const AZStd::string_view suggestedFileName)
+    {
+        m_suggestedFileName = suggestedFileName;
+    }
+
+    AZStd::string SourceHandle::GetSuggestedFileName() const
+    {
+        return m_suggestedFileName;
+    }
+
     bool SourceHandle::AnyEquals(const SourceHandle& other) const
     {
         return m_data && m_data == other.m_data

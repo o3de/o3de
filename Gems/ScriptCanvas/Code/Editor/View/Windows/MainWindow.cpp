@@ -1557,6 +1557,7 @@ namespace ScriptCanvasEditor
         AZ::Uuid assetId = AZ::Uuid::CreateRandom();
         auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(SourceHandle(graph, assetId), assetPath);
         SourceHandle handle = relativeOption ? *relativeOption : SourceHandle(graph, assetId);
+        handle.SetSuggestedFileName(assetPath);
 
         outTabIndex = InsertTabForAsset(assetPath, handle, tabIndex);
 
@@ -1652,7 +1653,7 @@ namespace ScriptCanvasEditor
         bool isValidFileName = false;
 
         AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
-        projectSourcePath /= "ScriptCanvas//";
+        projectSourcePath /= "Assets/ScriptCanvas";
         QString selectedFile;
 
         if (save == Save::InPlace)
@@ -1690,7 +1691,28 @@ namespace ScriptCanvasEditor
 
         while (!isValidFileName)
         {
-            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), suggestedDirectoryPath.data(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"));
+            AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
+
+            QDir dir(suggestedDirectoryPath.c_str());
+            if (!dir.exists())
+            {
+                auto result = AZ::IO::SystemFile::CreateDir(suggestedDirectoryPath.c_str());
+                if (!result)
+                {
+                    AZ_Error("Script Canvas", false, "Failed to make new folder: %s", suggestedDirectoryPath.c_str());
+                    return false;
+                }
+            }
+
+            AZ::IO::FixedMaxPath fullPath = suggestedDirectoryPath.c_str();
+            AZStd::string suggestedFileName = sourceHandle.GetSuggestedFileName() + SourceDescription::GetFileExtension();
+            fullPath /= suggestedFileName;
+
+            QString localSelectedFilter;
+            QFileDialog::Options options;
+            QString filePath1 = QFileDialog::getSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
+
+            selectedFile = filePath1.toUtf8().toStdString().c_str();
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.
