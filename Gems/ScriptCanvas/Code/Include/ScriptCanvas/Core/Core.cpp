@@ -197,7 +197,6 @@ namespace ScriptCanvas
         , m_id(source.Id())
         , m_relativePath(source.m_relativePath)
         , m_absolutePath(source.m_absolutePath)
-        , m_suggestedFileName(source.m_suggestedFileName)
     {
         SanitizePath();
     }
@@ -232,11 +231,6 @@ namespace ScriptCanvas
         , m_relativePath(path)
     {
         SanitizePath();
-    }
-
-    void SourceHandle::SetSuggestedFileName(const AZStd::string_view suggestedFileName)
-    {
-        m_suggestedFileName = suggestedFileName;
     }
 
     const AZ::IO::Path& SourceHandle::AbsolutePath() const
@@ -417,11 +411,6 @@ namespace ScriptCanvas
             , m_id.IsNull() ? "<null id>" : m_id.ToString<AZStd::string>().c_str()
             , !m_relativePath.empty() ? m_relativePath.c_str() : "<no name>"
             );
-    }
-
-    AZStd::string SourceHandle::GetSuggestedFileName() const
-    {
-        return m_suggestedFileName;
     }
 
     const Graph* ScriptCanvasData::GetGraph() const
