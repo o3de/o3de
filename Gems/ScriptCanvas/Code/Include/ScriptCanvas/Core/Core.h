@@ -392,6 +392,8 @@ namespace ScriptCanvas
         bool PathEquals(const SourceHandle& other) const;
 
         AZStd::string ToString() const;
+        AZStd::string GetSuggestedFileName() const;
+        void SetSuggestedFileName(const AZStd::string_view suggestedFileName);
 
     private:
         SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
@@ -406,6 +408,7 @@ namespace ScriptCanvas
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
         AZ::IO::Path m_relativePath;
         AZ::IO::Path m_absolutePath;
+        AZStd::string m_suggestedFileName;
 
         void SanitizePath();
     };
