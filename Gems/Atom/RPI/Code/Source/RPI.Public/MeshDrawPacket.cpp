@@ -504,7 +504,17 @@ namespace AZ
                             AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::DrawPacketBuilder::DrawItemCountMax);
                             return false;
                         }
-
+#if defined(CARBONATED) && defined(CARBONATED_MOBILE_PIPELINE_ON_MOBILE)
+#if defined(AZ_PLATFORM_IOS) || defined(AZ_PLATFORM_ANDROID)
+                        {
+                            const char* pipelineName = materialPipelineName.GetCStr();
+                            if (pipelineName[0] != 0 && strcmp(pipelineName, "MobilePipeline") != 0)  // allow empty name and MobilePipeline
+                            {
+                                return true;
+                            }
+                        }
+#endif
+#endif
                         appendShader(shaderItem, materialPipelineName);
                     }
 
