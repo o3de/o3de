@@ -499,7 +499,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "sphere",
-            AZVerticesToLYVertices(TransformVertices(SphereVertices, transform)),
+            TransformVertices(SphereVertices, transform),
             0.0,
             PrimitiveShapeTarget::Sphere
         );
@@ -529,7 +529,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "box",
-            AZVerticesToLYVertices(TransformVertices(BoxVertices, transform)),
+            TransformVertices(BoxVertices, transform),
             0.0,
             PrimitiveShapeTarget::Box
         );
@@ -567,7 +567,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "capsule",
-            AZVerticesToLYVertices(TransformVertices(CapsuleVertices, transform)),
+            TransformVertices(CapsuleVertices, transform),
             0.0,
             PrimitiveShapeTarget::Capsule
         );
