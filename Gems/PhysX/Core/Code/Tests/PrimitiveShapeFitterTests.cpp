@@ -78,22 +78,6 @@ namespace PhysX::Pipeline
         ExpectNear(zAxis, xAxis.Cross(yAxis), defaultTolerance);
     }
 
-    static AZStd::vector<Vec3> AZVerticesToLYVertices(const AZStd::vector<AZ::Vector3>& vertices)
-    {
-        AZStd::vector<Vec3> converted(vertices.size(), Vec3(ZERO));
-
-        AZStd::transform(
-            vertices.begin(),
-            vertices.end(),
-            converted.begin(),
-            [] (const AZ::Vector3& vertex) {
-                return AZVec3ToLYVec3(vertex);
-            }
-        );
-
-        return converted;
-    }
-
     template<size_t N>
     static AZStd::vector<AZ::Vector3> TransformVertices(
         const AZStd::array<AZ::Vector3, N>& vertices,
@@ -499,7 +483,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "sphere",
-            AZVerticesToLYVertices(TransformVertices(SphereVertices, transform)),
+            TransformVertices(SphereVertices, transform),
             0.0,
             PrimitiveShapeTarget::Sphere
         );
@@ -529,7 +513,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "box",
-            AZVerticesToLYVertices(TransformVertices(BoxVertices, transform)),
+            TransformVertices(BoxVertices, transform),
             0.0,
             PrimitiveShapeTarget::Box
         );
@@ -567,7 +551,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "capsule",
-            AZVerticesToLYVertices(TransformVertices(CapsuleVertices, transform)),
+            TransformVertices(CapsuleVertices, transform),
             0.0,
             PrimitiveShapeTarget::Capsule
         );
@@ -608,7 +592,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "minimal",
-            AZVerticesToLYVertices(expectedVertices),
+            expectedVertices,
             5.0e-4,
             PrimitiveShapeTarget::BestFit
         );
