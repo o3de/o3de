@@ -806,9 +806,7 @@ namespace AZ
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();
-#if defined(CARBONATED)
             m_swapChaiSemaphoreAllocator.Collect();
-#endif
             m_bindlessDescriptorPool.GarbageCollect();
         }
 
