@@ -73,8 +73,13 @@ namespace Maestro
 
     void CStringTrack::SetKeyAtTime(float time, IKey* key)
     {
-        AZ_Assert(key != 0, "key is null");
+        if (!key)
+        {
+            AZ_Assert(false, "SetKeyAtTime given a null pointer to key.");
+            return;
+        }
 
+        AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
         key->time = time;
 
         // Find key with given time.
