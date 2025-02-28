@@ -644,11 +644,14 @@ namespace AZ::Data
 
     void AssetManager::WaitForActiveJobsAndStreamerRequestsToFinish()
     {
-        while (HasActiveJobsOrStreamerRequests())
+        do
         {
+            // this must happen at least once in case events are in the queue and the
+            // previous streamer requests or jobs just went to 0 after putting the last event in the queue.
+
             DispatchEvents();
             AZStd::this_thread::yield();
-        }
+        } while (HasActiveJobsOrStreamerRequests());
     }
 
     //=========================================================================

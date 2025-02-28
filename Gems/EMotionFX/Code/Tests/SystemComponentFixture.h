@@ -155,10 +155,8 @@ namespace EMotionFX
 
         ~ComponentFixture() override
         {
-            if (GetSystemEntity()->GetState() == AZ::Entity::State::Active)
-            {
-                GetSystemEntity()->Deactivate();
-            }
+            // note to future maintainers, 
+            // The System Entity is destroyed in m_app.Stop(), no need to manually destroy it here.
         }
 
         AZ::SerializeContext* GetSerializeContext()

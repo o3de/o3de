@@ -154,7 +154,7 @@ namespace Multiplayer
             m_netRigidBodyDescriptor->Reflect(m_serializeContext.get());
 
             m_rigidBody = AZStd::make_unique<PhysX::RigidBody>();
-            m_mockSceneInterface = AZStd::make_unique<Multiplayer::MockSceneInterface>();
+            m_mockSceneInterface = AZStd::make_unique<testing::NiceMock<Multiplayer::MockSceneInterface>>();
             ON_CALL(*m_mockSceneInterface, GetSimulatedBodyFromHandle(_, _))
                 .WillByDefault(Invoke(
                     [this](AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle)

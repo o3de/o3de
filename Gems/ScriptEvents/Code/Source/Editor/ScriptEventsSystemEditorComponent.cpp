@@ -243,6 +243,7 @@ namespace ScriptEventsEditor
         if (moduleConfiguration)
         {
             moduleConfiguration->UnregisterAssetHandler();
+            moduleConfiguration->CleanUp();
         }
     }
 }
