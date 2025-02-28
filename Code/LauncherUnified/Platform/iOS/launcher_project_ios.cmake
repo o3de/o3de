@@ -29,7 +29,6 @@ endif()
 
 # CARBONATED add Launch.png and LaunchStoryboard.storyboard
 set (resource_files
-    ${ly_game_resource_folder}/Launch.png
     ${ly_game_resource_folder}/LaunchStoryboard.storyboard
     ${ly_game_resource_folder}/Images.xcassets
 )
