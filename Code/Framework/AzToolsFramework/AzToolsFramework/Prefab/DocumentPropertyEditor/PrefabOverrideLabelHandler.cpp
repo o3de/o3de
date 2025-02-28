@@ -70,6 +70,7 @@ namespace AzToolsFramework::Prefab
     {
         m_overridden = false;
         m_textLabel->setText(QString());
+        m_textLabel->setToolTip(QString());
         m_textLabel->setProperty(OverriddenPropertyName, false);
         m_iconButton->setIcon(*m_emptyIcon);
         m_iconButton->setIconSize(kIconSize);
