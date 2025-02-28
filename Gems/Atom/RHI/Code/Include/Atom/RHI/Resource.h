@@ -72,7 +72,7 @@ namespace AZ::RHI
     protected:
         Resource() = default;
 
-        //! Returns view based on the descriptor
+        //! Returns view based on the descriptor and keeps a raw pointer in a local cache
         Ptr<ImageView> GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const;
         Ptr<BufferView> GetResourceView(const BufferViewDescriptor& bufferViewDescriptor) const;
 
