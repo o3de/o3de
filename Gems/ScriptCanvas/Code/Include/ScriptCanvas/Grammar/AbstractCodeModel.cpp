@@ -5410,7 +5410,7 @@ namespace ScriptCanvas
                     const auto report = AZStd::string::format
                     ("null nodeling in immediate out list");
 
-                    AddError(nullptr, aznew Internal::ParseError(nodeling->GetEntityId(), report));
+                    AddError(nullptr, aznew Internal::ParseError(AZ::EntityId{}, report));
                 }
             }
 
