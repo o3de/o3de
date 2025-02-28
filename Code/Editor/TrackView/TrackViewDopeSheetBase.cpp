@@ -2124,7 +2124,7 @@ bool CTrackViewDopeSheetBase::CreateStringKey(CTrackViewTrack* pTrack, float key
         CTrackViewKeyHandle newKey = pTrack->CreateKey(keyTime);
         IStringKey strKey;
         newKey.GetKey(&strKey);
-        strKey.m_strValue = newStr.toStdString().c_str(); // set the new value
+        strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
         newKey.SetKey(&strKey);
 
         undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
@@ -2160,7 +2160,7 @@ void CTrackViewDopeSheetBase::EditSelectedStringKey(CTrackViewTrack* pTrack)
 
         IStringKey strKey;
         selectedKeyHandle.GetKey(&strKey);
-        strKey.m_strValue = newStr.toStdString().c_str(); // set the new value
+        strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
         selectedKeyHandle.SetKey(&strKey);
 
         undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
