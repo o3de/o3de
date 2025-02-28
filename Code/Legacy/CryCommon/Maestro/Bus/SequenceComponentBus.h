@@ -630,12 +630,8 @@ namespace Maestro
                 {
                     return i > 0;
                 }
-                char buffer[6] = { 0 };
-                if (azsscanf(stringValue.c_str(), "%s", buffer, static_cast<uint32_t>(sizeof(buffer) - 1)) == 1) // "true" or "false" representation ?
-                {
-                    return azstricmp(buffer, "true") == 0;
-                }
-                return false;
+                // "true" or "false" representation ?
+                return azstricmp(stringValue.c_str(), "true") == 0;
             }
 
             bool IsClose(const AnimatedFloatValue& rhs, float tolerance = AZ::Constants::FloatEpsilon) const override
@@ -851,12 +847,8 @@ namespace Maestro
                 {
                     return i > 0;
                 }
-                char buffer[6] = { 0 };
-                if (azsscanf(m_value.c_str(), "%s", buffer, static_cast<uint32_t>(sizeof(buffer) - 1)) == 1) // "true" or "false" representation ?
-                {
-                    return azstricmp(buffer, "true") == 0;
-                }
-                return false;
+                // "true" or "false" representation ?
+                return azstricmp(m_value.c_str(), "true") == 0;
             }
             AZ::s32 GetS32Value() const override
             {
