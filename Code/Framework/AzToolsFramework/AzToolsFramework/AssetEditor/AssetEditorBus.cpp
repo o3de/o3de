@@ -6,19 +6,10 @@
  *
  */
 
-#include "AssetEditorBus.h"
-#include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
-namespace AzToolsFramework::AssetEditor
-{
-    void AssetEditorWindowSettings::Reflect(AZ::ReflectContext* context)
-    {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<AssetEditorWindowSettings>()
-                ->Field("m_openAssets", &AssetEditorWindowSettings::m_openAssets)
-                ;
-        }
-    }
-} // namespace AzToolsFramework::AssetEditor
+#include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
+
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorNotifications);

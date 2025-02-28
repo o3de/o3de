@@ -77,12 +77,11 @@ ly_append_configurations_options(
         /GS             # Enable Buffer security check
         /MDd            # defines _DEBUG, _MT, and _DLL and causes the application to use the debug multithread-specific and DLL-specific version of the run-time library.
                         # It also causes the compiler to place the library name MSVCRTD.lib into the .obj file.
-        /Ob2            # Inline any suitable function
+        /Ob0            # Inline any suitable function
         /Od             # Disables optimization
     COMPILATION_PROFILE
         /GF             # Enable string pooling
         /Gy             # Function level linking
-        /Ob3            # Inline any suitable function
         /MD             # Causes the application to use the multithread-specific and DLL-specific version of the run-time library. Defines _MT and _DLL and causes the compiler
                         # to place the library name MSVCRT.lib into the .obj file.
         /O2             # Maximinize speed, equivalent to /Og /Oi /Ot /Oy /Ob2 /GF /Gy
@@ -99,6 +98,7 @@ ly_append_configurations_options(
         /NOLOGO             # Suppress Copyright and version number message
         /IGNORE:4099        # 3rdParty linking produces noise with LNK4099
     LINK_NON_STATIC_PROFILE
+        /FORCE:MULTIPLE     
         /OPT:REF            # Eliminates functions and data that are never referenced
         /OPT:ICF            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
         /INCREMENTAL:NO

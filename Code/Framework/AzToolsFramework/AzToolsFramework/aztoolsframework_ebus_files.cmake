@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    ActionManager/ActionManagerRegistrationNotificationBus.h
+    ActionManager/Action/ActionManagerNotificationBus.h
     API/AssetDatabaseBus.h
     API/EditorCameraBus.cpp
     API/EditorCameraBus.h
@@ -22,14 +24,23 @@ set(FILES
     API/EntityCompositionRequestBus.h
     API/EntityPropertyEditorNotificationBus.h
     API/EntityPropertyEditorRequestsBus.h
+    API/ToolsApplicationBus.cpp
     API/ToolsApplicationBus.h
     API/ViewportEditorModeTrackerNotificationBus.cpp
     API/ViewportEditorModeTrackerNotificationBus.h
+    AssetBrowser/AssetBrowserBus.cpp
+    AssetBrowser/AssetBrowserBus.h
+    AssetEditor/AssetEditorBus.cpp
+    AssetEditor/AssetEditorBus.h
+    AssetCatalog/PlatformAddressedAssetCatalogBus.cpp
+    AssetCatalog/PlatformAddressedAssetCatalogBus.h
     ComponentMode/ComponentModeDelegateBus.h
     ComponentMode/EditorComponentModeBus.h
     Entity/EditorEntityContextBus.h
     Entity/EditorEntityInfoBus.h
     Prefab/PrefabPublicNotificationBus.h
+    Thumbnails/SourceControlThumbnailBus.cpp
+    Thumbnails/SourceControlThumbnailBus.h
     ToolsComponents/EditorComponentBus.h
 #    ToolsComponents/EditorVisibilityBus.h
     ToolsComponents/EditorLockComponentBus.h

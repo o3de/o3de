@@ -1,0 +1,22 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserComponentNotifications)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserModelRequests)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserModelNotifications)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserViewRequests)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequest)
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotifications)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFavoriteRequests)
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFavoritesNotifications)

@@ -7,10 +7,13 @@
  */
 
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
 AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option")
 #include <QIcon>
@@ -464,3 +467,16 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserComponentNotifications)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserModelRequests)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserModelNotifications)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserViewRequests)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequest)
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotifications)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFavoriteRequests)
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFavoritesNotifications)

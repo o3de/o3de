@@ -7,14 +7,14 @@
 #
 
 set(FILES
-    ActionManager/ActionManagerRegistrationNotificationBus.h
+#    ActionManager/ActionManagerRegistrationNotificationBus.h
 #    ActionManager/ActionManagerSystemComponent.cpp
 #    ActionManager/ActionManagerSystemComponent.h
 #    ActionManager/Action/ActionManager.cpp
 #    ActionManager/Action/ActionManager.h
     ActionManager/Action/ActionManagerInterface.h
     ActionManager/Action/ActionManagerInternalInterface.h
-    ActionManager/Action/ActionManagerNotificationBus.h
+#    ActionManager/Action/ActionManagerNotificationBus.h
 #    ActionManager/Action/EditorAction.cpp
 #    ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionUtils.h
@@ -45,8 +45,8 @@ set(FILES
 #    ActionManager/ToolBar/ToolBarManager.h
     ActionManager/ToolBar/ToolBarManagerInterface.h
     ActionManager/ToolBar/ToolBarManagerInternalInterface.h
-    AssetEditor/AssetEditorBus.cpp
-    AssetEditor/AssetEditorBus.h
+    AssetEditor/AssetEditorWindowSettings.cpp
+    AssetEditor/AssetEditorWindowSettings.h
 #    AssetEditor/AssetEditorToolbar.ui
 #    AssetEditor/AssetEditorStatusBar.ui
 #    AssetEditor/AssetEditorWidget.cpp
@@ -114,7 +114,7 @@ set(FILES
 #    Asset/AssetBundler.cpp
 #    Asset/AssetUtils.h
 #    Asset/AssetUtils.cpp
-    AssetCatalog/PlatformAddressedAssetCatalogBus.h
+#    AssetCatalog/PlatformAddressedAssetCatalogBus.h
 #    AssetCatalog/PlatformAddressedAssetCatalog.h
 #    AssetCatalog/PlatformAddressedAssetCatalog.cpp
 #    AssetCatalog/PlatformAddressedAssetCatalogManager.h
@@ -129,11 +129,11 @@ set(FILES
 #    Thumbnails/MissingThumbnail.h
 #    Thumbnails/SourceControlThumbnail.cpp
 #    Thumbnails/SourceControlThumbnail.h
-    Thumbnails/SourceControlThumbnailBus.h
+#    Thumbnails/SourceControlThumbnailBus.h
 #    Thumbnails/Thumbnail.cpp
 #    Thumbnails/Thumbnail.h
 #    Thumbnails/Thumbnail.inl
-    Thumbnails/ThumbnailerBus.h
+#    Thumbnails/ThumbnailerBus.h
  #   Thumbnails/ThumbnailWidget.cpp
  #   Thumbnails/ThumbnailWidget.h
     AssetBundle/AssetBundleAPI.h
@@ -683,7 +683,7 @@ set(FILES
 #    ViewportSelection/ViewportEditorModeTracker.cpp
 #    ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
-    AssetBrowser/AssetBrowserBus.h
+#    AssetBrowser/AssetBrowserBus.h
 #    AssetBrowser/AssetBrowserComponent.cpp
 #    AssetBrowser/AssetBrowserComponent.h
      AssetBrowser/AssetBrowserEntry.h

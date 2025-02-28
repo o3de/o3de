@@ -6,28 +6,13 @@
  *
  */
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/unordered_set.h>
-
-namespace AZ::Data
-{
-    class AssetData;
-}
-
-namespace AZStd
-{
-    template<>
-    struct hash<AZ::Data::Asset<AZ::Data::AssetData>>
-    {
-        size_t operator()(const AZ::Data::Asset<AZ::Data::AssetData>& asset) const
-        {
-            return asset.GetId().m_guid.GetHash();
-        }
-    };
-}
+#include <AzToolsFramework/AssetEditor/AssetEditorWindowSettings.h>
 
 namespace AzToolsFramework
 {
@@ -35,21 +20,6 @@ namespace AzToolsFramework
 
     namespace AssetEditor
     {
-        // This class is used to track all of the asset editors that were open.  When the editor launches
-        // these settings will be used to preemptively register all windows and then open them.
-        struct AssetEditorWindowSettings : AZ::UserSettings
-        {
-            AZ_CLASS_ALLOCATOR(AssetEditorWindowSettings, AZ::SystemAllocator);
-            AZ_RTTI(AssetEditorWindowSettings, "{981FE4FF-0B56-4115-9F75-79609E3D6337}", AZ::UserSettings);
-
-            //! The list of opened assets is used to restore their window state
-            AZStd::unordered_set<AZ::Data::Asset<AZ::Data::AssetData>> m_openAssets;
-
-            static constexpr const char* s_name = "AssetEditorWindowSettings";
-
-            static void Reflect(AZ::ReflectContext* context);
-        };
-
         // External interaction with Asset Editor
         class AssetEditorRequests
             : public AZ::EBusTraits
@@ -120,3 +90,8 @@ namespace AzToolsFramework
         using AssetEditorNotificationsBus = AZ::EBus<AssetEditorNotifications>;
     } // namespace AssetEditor
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorRequests);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorNotifications);

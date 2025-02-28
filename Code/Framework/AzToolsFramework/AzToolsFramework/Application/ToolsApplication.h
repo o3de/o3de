@@ -27,7 +27,7 @@ namespace AzToolsFramework
 
     class AZTF_API ToolsApplication
         : public AzFramework::Application
-        , public ToolsApplicationRequests::Bus::Handler
+        , private ToolsApplicationRequests::Bus::Handler
         , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
     {
     public:

@@ -6,6 +6,12 @@
  *
  */
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::ActionManagerRegistrationNotifications)
+
+#include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
+DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::ActionManagerNotifications)
+
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
 DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);
@@ -58,16 +64,6 @@ DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEd
 
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorRequests);
-
-#include <AzToolsFramework/API/ToolsApplicationBus.h>
-// DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationEvents);
-DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationRequests);
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EntitySelectionEvents);
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorPickModeRequests);
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::EditorPickModeNotifications);
-DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorRequests);
-DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorEvents);
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::ViewPaneCallbacks);
 
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::ViewportEditorModeNotifications);

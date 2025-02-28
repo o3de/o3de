@@ -9,7 +9,6 @@
 set(FILES
     Application/ToolsApplication.cpp
     Application/ToolsApplication.h
-
     API/ComponentEntitySelection.h
     API/ComponentEntitySelection.cpp
 	API/ToolsApplicationAPI.h

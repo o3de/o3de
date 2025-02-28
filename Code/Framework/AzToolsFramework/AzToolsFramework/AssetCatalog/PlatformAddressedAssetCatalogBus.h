@@ -7,6 +7,7 @@
  */
 
 #pragma once
+//AZTF-EBUS
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -35,3 +36,4 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS_WITH_TRAITS(AZ::Data::AssetCatalogRequests, AzToolsFramework::AssetCatalog::PlatformAddressedAssetCatalogBusTraits);

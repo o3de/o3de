@@ -6,7 +6,9 @@
  *
  */
 #pragma once
+//AZTF-EBUS
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
@@ -970,7 +972,7 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-// DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationEvents);
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationEvents);
 DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationRequests);
 DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EntitySelectionEvents);
 DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EditorPickModeRequests);
