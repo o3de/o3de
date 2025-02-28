@@ -132,38 +132,46 @@ namespace PhysX
         friend MeshGroup;
 
         public:
+            enum class FillMode
+                : AZ::u8
+            {
+                FloodFill, // This is the default behavior, after the voxelization step it uses a flood fill to determine 'inside'
+                            // from 'outside'. However, meshes with holes can fail and create hollow results.
+                SurfaceOnly, // Only consider the 'surface', will create 'skins' with hollow centers.
+                RaycastFill, // Uses raycasting to determine inside from outside.
+            };
+
             AZ_TYPE_INFO(ConvexDecompositionParams, "{E076A8BC-5409-4125-B2B7-35500AF33BC2}");
 
             ConvexDecompositionParams() = default;
 
             static void Reflect(AZ::ReflectContext* context);
 
-            float GetConcavity() const;
-            float GetAlpha() const;
-            float GetBeta() const;
-            float GetMinVolumePerConvexHull() const;
-            AZ::u32 GetResolution() const;
-            AZ::u32 GetMaxNumVerticesPerConvexHull() const;
-            AZ::u32 GetPlaneDownsampling() const;
-            AZ::u32 GetConvexHullDownsampling() const;
             AZ::u32 GetMaxConvexHulls() const;
-            bool GetPca() const;
-            AZ::u32 GetMode() const;
-            bool GetProjectHullVertices() const;
+
+            AZ::u32 GetResolution() const;
+
+            float GetMinVolumePercentError() const;
+
+            AZ::u32 GetMaxRecursionDepth() const;
+
+            bool GetShrinkWrap() const;
+
+            FillMode GetFillMode() const;
+
+            AZ::u32 GetMaxNumVerticesPerConvexHull() const;
+
+            AZ::u32 GetMinEdgeLength() const;
 
         private:
             AZ::u32 m_maxConvexHulls = 1024;
-            AZ::u32 m_maxNumVerticesPerConvexHull = 64;
-            float m_concavity = 0.001f;
             AZ::u32 m_resolution = 100000;
-            AZ::u32 m_mode = 0;
-            float m_alpha = 0.05f;
-            float m_beta = 0.05f;
-            float m_minVolumePerConvexHull = 0.0001f;
-            AZ::u32 m_planeDownsampling = 4;
-            AZ::u32 m_convexHullDownsampling = 4;
-            bool m_pca = 0;
-            bool m_projectHullVertices = true;
+            float m_minVolumePercentError = 1.0f;
+            AZ::u32 m_maxRecursionDepth = 10;
+            bool m_shrinkWrap = true;
+            FillMode m_fillMode = FillMode::FloodFill;
+            AZ::u32 m_maxNumVerticesPerConvexHull = 64;
+            AZ::u32 m_minEdgeLength = 2;
         };
 
         class MeshGroup
