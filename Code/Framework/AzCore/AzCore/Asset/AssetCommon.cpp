@@ -115,6 +115,13 @@ namespace AZ::Data
             return AssetManager::Instance().GetAsset(id, type, assetReferenceLoadBehavior, loadParams);
         }
 
+        Asset<AssetData> GetAsset(
+            const AssetId& id, const AssetType& type, const AZStd::string& hint,
+            AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams)
+        {
+            return AssetManager::Instance().GetAsset(id, type, hint, assetReferenceLoadBehavior, loadParams);
+        }
+
         AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset)
         {
             return AssetManager::Instance().BlockUntilLoadComplete(asset);
@@ -143,10 +150,9 @@ namespace AZ::Data
             }
         }
 
-        bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior)
+        Asset<AssetData> ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior)
         {
-            AssetManager::Instance().ReloadAsset(assetData->GetId(), assetReferenceLoadBehavior);
-            return true;
+            return AssetManager::Instance().ReloadAsset(assetData->GetId(), assetReferenceLoadBehavior);
         }
 
         bool SaveAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior)
@@ -160,6 +166,12 @@ namespace AZ::Data
             if (AssetManager::IsReady())
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> assetLock(AssetManager::Instance().m_assetMutex);
+                auto reloadItr = AssetManager::Instance().m_reloads.find(id);
+                if (reloadItr != AssetManager::Instance().m_reloads.end())
+                {
+                    return { reloadItr->second.GetData(), assetReferenceLoadBehavior };
+                }
+
                 auto it = AssetManager::Instance().m_assets.find(id);
                 if (it != AssetManager::Instance().m_assets.end())
                 {
