@@ -1710,43 +1710,19 @@ namespace ScriptCanvasEditor
 
             QString localSelectedFilter;
             QFileDialog::Options options;
-            QString filePath1 = QFileDialog::getSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
+            QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
 
-            selectedFile = filePath1.toUtf8().toStdString().c_str();
+            selectedFile = filePath.toUtf8().toStdString().c_str();
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.
-            if (!selectedFile.isEmpty())
+            if (selectedFile.isEmpty())
             {
-                AZStd::string filePath = selectedFile.toUtf8().data();
-
-                if (!AZ::StringFunc::EndsWith(filePath, SourceDescription::GetFileExtension(), false))
-                {
-                    filePath += SourceDescription::GetFileExtension();
-                }
-
-                AZStd::string fileName;
-
-                if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
-                {
-                    isValidFileName = !(fileName.empty());
-                    if (isValidFileName)
-                    {
-                        if (AzFramework::StringFunc::FirstCharacter(fileName.c_str()) >= '0' &&
-                            AzFramework::StringFunc::FirstCharacter(fileName.c_str()) <= '9')
-                        {
-                            QMessageBox::warning(this, QObject::tr("Unable to Save"), QObject::tr("File name cannot start with a number"));
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
-                }
+                QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
             }
             else
             {
+                isValidFileName = true;
                 break;
             }
         }
@@ -1754,7 +1730,6 @@ namespace ScriptCanvasEditor
         if (isValidFileName)
         {
             AZStd::string internalStringFile = selectedFile.toUtf8().data();
-
 
             if (!AZ::StringFunc::EndsWith(internalStringFile, SourceDescription::GetFileExtension(), false))
             {

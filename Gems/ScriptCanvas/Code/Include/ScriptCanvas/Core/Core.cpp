@@ -197,6 +197,7 @@ namespace ScriptCanvas
         , m_id(source.Id())
         , m_relativePath(source.m_relativePath)
         , m_absolutePath(source.m_absolutePath)
+        , m_suggestedFileName(source.m_suggestedFileName)
     {
         SanitizePath();
     }
