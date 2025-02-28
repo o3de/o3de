@@ -8,6 +8,12 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/PackedVector3.h>
+#include <AzCore/Math/Ray.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/RayIntersection.h>
+#include <AzCore/base.h>
+#include <AzCore/std/limits.h>
 #include "EMotionFXConfig.h"
 #include "Mesh.h"
 #include "SubMesh.h"
@@ -1278,8 +1284,6 @@ namespace EMotionFX
         }
     }
 
-
-
     // intersection test between the mesh and a ray
     bool Mesh::Intersects(const Transform& transform, const MCore::Ray& ray)
     {
@@ -1325,7 +1329,45 @@ namespace EMotionFX
         return false;
     }
 
+    bool Mesh::Intersects(const AZ::Transform& transform, const AZ::Ray& ray)
+    {
+        const AZ::Vector3* positions = static_cast<AZ::Vector3*>(FindVertexData(Mesh::ATTRIB_POSITIONS));
+        const AZ::Transform invTransform = transform.GetInverse();
+        const AZ::Ray testRay(
+            invTransform.TransformPoint(ray.GetOrigin()), invTransform.TransformVector(ray.GetDirection()));
 
+        // iterate over all polygons, triangulate internally
+        const AZ::u32* indices = GetIndices();
+        const AZ::u8* vertCounts = GetPolygonVertexCounts();
+        AZ::u32 polyStartIndex = 0;
+        const AZ::u32 numPolygons = GetNumPolygons();
+        for (AZ::u32 p = 0; p < numPolygons; p++)
+        {
+            const AZ::u32 numPolyVerts = vertCounts[p];
+
+            // iterate over all triangles inside this polygon
+            // explanation: numPolyVerts-2 == number of triangles
+            // 3 verts=1 triangle, 4 verts=2 triangles, etc
+            for (AZ::u32 i = 2; i < numPolyVerts; i++)
+            {
+                AZ::u32 indexA = indices[polyStartIndex];
+                AZ::u32 indexB = indices[polyStartIndex + i];
+                AZ::u32 indexC = indices[polyStartIndex + i - 1];
+
+                [[maybe_unused]] AZ::Vector3 hitPoint;
+                [[maybe_unused]] AZ::Vector2 barycentricUV;
+                if (AZ::RayIntersection::RayTriangle(testRay, positions[indexA], positions[indexB], positions[indexC], hitPoint, barycentricUV))
+                {
+                    return true;
+                }
+            }
+
+            polyStartIndex += numPolyVerts;
+        }
+
+        // there is no intersection
+        return false;
+    }
 
     // intersection test between the mesh and a ray, includes calculation of intersection point
     bool Mesh::Intersects(const Transform& transform, const MCore::Ray& ray, AZ::Vector3* outIntersect, float* outBaryU, float* outBaryV, uint32* outIndices)
@@ -1420,6 +1462,77 @@ namespace EMotionFX
         return hasIntersected;
     }
 
+    bool Mesh::Intersects(
+        const AZ::Transform& transform,
+        const AZ::Ray& ray,
+        AZ::Vector3& outHitPoint,
+        AZ::Vector2& outBarycentricUV,
+        AZStd::array<AZ::u32, 3>& hitIndecies)
+    {
+        AZ::Vector3* positions = static_cast<AZ::Vector3*>(FindVertexData(Mesh::ATTRIB_POSITIONS));
+        AZ::Transform invTransform = transform.GetInverse();
+
+        // the test ray, in space of the node (object space)
+        // on this way we do not have to convert the vertices into world space
+        const AZ::Ray testRay(
+            invTransform.TransformPoint(ray.GetOrigin()), 
+            invTransform.TransformVector(ray.GetDirection()));
+
+        float closestDist = AZStd::numeric_limits<float>::max();
+        AZ::Vector3 closestIntersect;
+        bool hasIntersected = false;
+
+        // iterate over all polygons, triangulate internally
+        const AZ::u32* indices = GetIndices();
+        const AZ::u8* vertCounts = GetPolygonVertexCounts();
+        AZ::u32 polyStartIndex = 0;
+        const AZ::u32 numPolygons = GetNumPolygons();
+        for (AZ::u32 p = 0; p < numPolygons; p++)
+        {
+            const AZ::u32 numPolyVerts = vertCounts[p];
+
+            // iterate over all triangles inside this polygon
+            // explanation: numPolyVerts-2 == number of triangles
+            // 3 verts=1 triangle, 4 verts=2 triangles, etc
+            for (AZ::u32 i = 2; i < numPolyVerts; i++)
+            {
+                AZ::u32 indexA = indices[polyStartIndex];
+                AZ::u32 indexB = indices[polyStartIndex + i];
+                AZ::u32 indexC = indices[polyStartIndex + i - 1];
+
+                AZ::Vector3 hitPoint;
+                AZ::Vector2 barycentricUV;
+                // test the ray with the triangle (in object space)
+                if (AZ::RayIntersection::RayTriangle(
+                        testRay, positions[indexA], positions[indexB], positions[indexC], hitPoint, barycentricUV))
+                {
+                    // calculate the squared distance between the intersection point and the ray origin
+                    float dist = (hitPoint - testRay.GetOrigin()).GetLengthSq();
+
+                    // if it is the closest intersection point until now, record it as closest intersection
+                    if (dist < closestDist)
+                    {
+                        outBarycentricUV = barycentricUV;
+                        closestDist = dist;
+                        closestIntersect = hitPoint;
+                        hitIndecies[0] = indexA;
+                        hitIndecies[1] = indexB;
+                        hitIndecies[2] = indexC;
+                        hasIntersected = true;
+                    }
+                }
+            }
+
+            polyStartIndex += numPolyVerts;
+        }
+
+        if (hasIntersected)
+        {
+            outHitPoint = transform.TransformPoint(closestIntersect);
+        }
+
+        return hasIntersected;
+    }
 
     // log debugging information
     void Mesh::Log()
