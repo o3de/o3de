@@ -8,10 +8,13 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
+#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/Buffer.h>
+
 
 //! Struct used as a key for m_imageReverseLookupHash map below. The reason for using a struct instead of a hash directly is
 //! so that the map can handle hash collision correctly by using the == operator. This struct contains

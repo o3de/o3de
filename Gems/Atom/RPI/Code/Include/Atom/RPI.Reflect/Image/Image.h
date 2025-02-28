@@ -12,7 +12,8 @@
 
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/ImageView.h>
+
 
 #include <Atom/RPI.Reflect/Configuration.h>
 

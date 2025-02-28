@@ -7,11 +7,12 @@
  */
 #pragma once
 
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RPI.Public/Configuration.h>
-#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
+
 
 namespace AZ::RPI
 {

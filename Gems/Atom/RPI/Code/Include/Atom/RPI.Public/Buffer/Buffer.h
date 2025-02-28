@@ -12,7 +12,9 @@
 
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/Fence.h>
+
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/Base.h>

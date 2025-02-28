@@ -18,6 +18,7 @@ set(FILES
     Include/Atom/RHI/DeviceBuffer.h
     Include/Atom/RHI/Buffer.h
     Include/Atom/RHI/DeviceBufferView.h
+    Include/Atom/RHI/BufferView.h
     Include/Atom/RHI/DeviceIndexBufferView.h
     Include/Atom/RHI/IndexBufferView.h
     Include/Atom/RHI/DeviceStreamBufferView.h
@@ -25,6 +26,7 @@ set(FILES
     Source/RHI/DeviceBuffer.cpp
     Source/RHI/Buffer.cpp
     Source/RHI/DeviceBufferView.cpp
+    Source/RHI/BufferView.cpp
     Source/RHI/DeviceIndexBufferView.cpp
     Source/RHI/IndexBufferView.cpp
     Source/RHI/DeviceStreamBufferView.cpp
@@ -124,9 +126,11 @@ set(FILES
     Include/Atom/RHI/DeviceImage.h
     Include/Atom/RHI/Image.h
     Include/Atom/RHI/DeviceImageView.h
+    Include/Atom/RHI/ImageView.h
     Source/RHI/DeviceImage.cpp
     Source/RHI/Image.cpp
     Source/RHI/DeviceImageView.cpp
+    Source/RHI/ImageView.cpp
     Include/Atom/RHI/DeviceImagePool.h
     Include/Atom/RHI/ImagePool.h
     Include/Atom/RHI/DeviceImagePoolBase.h
