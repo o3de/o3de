@@ -128,6 +128,12 @@ namespace ScriptCanvas
         const Node* GetNode() const { return m_node; }
         Node* GetNode() { return m_node; }
 
+        const bool GetHasRootConnection() const
+        {
+            return m_hasRootConnection;
+        }
+        void SetHasRootConnection(bool hasRootConnection);
+
         Endpoint GetEndpoint() const;
         AZ::EntityId GetNodeId() const;
 
@@ -267,6 +273,8 @@ namespace ScriptCanvas
 
         SlotId m_id;
         Node*  m_node;
+
+        bool m_hasRootConnection = false;
 
         AZStd::vector<AZStd::unique_ptr<Contract>> m_contracts;
 
