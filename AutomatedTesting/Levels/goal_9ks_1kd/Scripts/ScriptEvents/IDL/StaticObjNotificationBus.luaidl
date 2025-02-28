@@ -1,0 +1,13 @@
+-- How the ScriptEvent lua file is generated
+-- E:\GIT\ScriptEvent_Transpiler> python main.py -e StaticObjNotificationBus -t D:\GIT\o3de\AutomatedTesting\Levels\goal_9ks_1kd\Scripts\ScriptEvents\IDL\StaticObjNotificationBus.luaidl D:\GIT\o3de\AutomatedTesting\Levels\goal_9ks_1kd\Scripts\ScriptEvents
+--   
+-- The StaticObjNotificationBus broadcasts notifications whenever a static object is spawned.
+--     
+--  An entity was created
+function OnStaticEntitySpawned(entityId=EntityId())
+end
+
+-- Completed the creation of all static entities.
+function OnAllStaticEntitiesCreated(totalCount=1.0)
+end
+
