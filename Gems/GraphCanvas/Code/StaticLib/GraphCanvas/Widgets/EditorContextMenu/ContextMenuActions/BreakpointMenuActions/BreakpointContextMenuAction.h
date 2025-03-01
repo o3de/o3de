@@ -22,12 +22,17 @@ namespace GraphCanvas
         }
 
         using ContextMenuAction::RefreshAction;
-        void RefreshAction(const GraphId& graphId, [[maybe_unused]] const AZ::EntityId& targetId) override
+        void RefreshAction([[maybe_unused]] const GraphId& graphId, [[maybe_unused]] const AZ::EntityId& targetId) override
         {
+            /*
             bool hasSelectedItems = false;
             SceneRequestBus::EventResult(hasSelectedItems, graphId, &SceneRequests::HasSelectedItems);
 
             setEnabled(hasSelectedItems);
+            */
+
+            setEnabled(false);
+            setToolTip("Feature in development. Adding breakpoint works but will freeze the editor when breakpoint is hit.");
         }
 
     public:
