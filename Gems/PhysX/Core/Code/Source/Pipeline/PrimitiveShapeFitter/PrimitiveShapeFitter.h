@@ -9,7 +9,6 @@
 #pragma once
 
 #include <PhysX/MeshAsset.h>
-#include <Cry_Math.h>
 
 namespace PhysX::Pipeline
 {
@@ -36,7 +35,7 @@ namespace PhysX::Pipeline
     //!   no shape could be fitted or if an error occurred.
     MeshAssetData::ShapeConfigurationPair FitPrimitiveShape(
         const AZStd::string& meshName,
-        const AZStd::vector<Vec3>& vertices,
+        const AZStd::vector<AZ::Vector3>& vertices,
         const double volumeTermWeight,
         const PrimitiveShapeTarget targetShape = PrimitiveShapeTarget::BestFit
     );

@@ -28,10 +28,10 @@
 #include <Source/Utils.h>
 
 #include <PxPhysicsAPI.h>
+
+#define ENABLE_VHACD_IMPLEMENTATION 1
 #include <VHACD.h>
 
-#include <Cry_Math.h>
-#include <MathConversion.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/XML/rapidxml.h>
@@ -66,8 +66,8 @@ namespace PhysX
         // A struct to store the geometry data per scene node
         struct NodeCollisionGeomExportData
         {
-            AZStd::vector<Vec3> m_vertices;
-            AZStd::vector<vtx_idx> m_indices;
+            AZStd::vector<AZ::Vector3> m_vertices;
+            AZStd::vector<AZ::u32> m_indices;
             AZStd::vector<AZ::u16> m_perFaceMaterialIndices;
             AZStd::string m_nodeName;
         };
@@ -429,7 +429,7 @@ namespace PhysX
 
         // Cooks the geometry provided into a memory buffer based on the rules set in MeshGroup
         bool CookPhysXMesh(
-            const AZStd::vector<Vec3>& vertices,
+            const AZStd::vector<AZ::Vector3>& vertices,
             const AZStd::vector<AZ::u32>& indices,
             const AZStd::vector<AZ::u16>& faceMaterials,
             AZStd::vector<AZ::u8>* output,
@@ -485,7 +485,7 @@ namespace PhysX
 
             physx::PxBoundedData strideData;
             strideData.count = static_cast<physx::PxU32>(vertices.size());
-            strideData.stride = sizeof(Vec3);
+            strideData.stride = sizeof(AZ::Vector3);
             strideData.data = vertices.data();
 
             physx::PxDefaultMemoryOutputStream cookedMeshData;
@@ -710,11 +710,11 @@ namespace PhysX
             // Convert the vertices to a float array suitable for passing to V-HACD.
             AZStd::vector<float> vhacdVertices;
             vhacdVertices.reserve(nodeExportData.m_vertices.size() * 3);
-            for (const Vec3& vertex : nodeExportData.m_vertices)
+            for (const AZ::Vector3& vertex : nodeExportData.m_vertices)
             {
-                vhacdVertices.emplace_back(vertex[0]);
-                vhacdVertices.emplace_back(vertex[1]);
-                vhacdVertices.emplace_back(vertex[2]);
+                vhacdVertices.emplace_back(vertex.GetX());
+                vhacdVertices.emplace_back(vertex.GetY());
+                vhacdVertices.emplace_back(vertex.GetZ());
             }
 
             if constexpr (AZStd::is_same<decltype(nodeExportData.m_indices)::value_type, uint32_t>::value)
@@ -759,11 +759,11 @@ namespace PhysX
                 NodeCollisionGeomExportData nodeExportDataConvexPart;
 
                 // Copy vertices.
-                nodeExportDataConvexPart.m_vertices.reserve(convexHull.m_nPoints);
-                for (AZ::u32 vertexCounter = 0; vertexCounter < convexHull.m_nPoints; ++vertexCounter)
+                nodeExportDataConvexPart.m_vertices.reserve(convexHull.m_points.size());
+                for (AZ::u32 vertexCounter = 0; vertexCounter < convexHull.m_points.size(); ++vertexCounter)
                 {
-                    double* vertex = convexHull.m_points + 3 * vertexCounter;
-                    nodeExportDataConvexPart.m_vertices.emplace_back(Vec3(
+                    VHACD::Vertex& vertex = convexHull.m_points[vertexCounter];
+                    nodeExportDataConvexPart.m_vertices.emplace_back(AZ::Vector3(
                         static_cast<float>(vertex[0]),
                         static_cast<float>(vertex[1]),
                         static_cast<float>(vertex[2])
@@ -771,15 +771,17 @@ namespace PhysX
                 }
 
                 // Copy indices.
-                nodeExportDataConvexPart.m_indices.reserve(convexHull.m_nTriangles * 3);
-                for (AZ::u32 indexCounter = 0; indexCounter < convexHull.m_nTriangles * 3; ++indexCounter)
+                nodeExportDataConvexPart.m_indices.reserve(convexHull.m_triangles.size() * 3);
+                for (AZ::u32 indexCounter = 0; indexCounter < convexHull.m_triangles.size(); ++indexCounter)
                 {
-                    nodeExportDataConvexPart.m_indices.emplace_back(convexHull.m_triangles[indexCounter]);
+                    nodeExportDataConvexPart.m_indices.emplace_back(convexHull.m_triangles[indexCounter].mI0);
+                    nodeExportDataConvexPart.m_indices.emplace_back(convexHull.m_triangles[indexCounter].mI1);
+                    nodeExportDataConvexPart.m_indices.emplace_back(convexHull.m_triangles[indexCounter].mI2);
                 }
 
                 // Set up single per-face material.
                 nodeExportDataConvexPart.m_perFaceMaterialIndices = AZStd::vector<AZ::u16>(
-                    convexHull.m_nTriangles, nodeExportData.m_perFaceMaterialIndices[0]
+                    convexHull.m_triangles.size(), nodeExportData.m_perFaceMaterialIndices[0]
                 );
 
                 nodeExportDataConvexPart.m_nodeName = nodeExportData.m_nodeName + "_" + AZStd::to_string(hullCounter);
@@ -831,18 +833,17 @@ namespace PhysX
 
                     vhacdParams.m_callback = nullptr;
                     vhacdParams.m_logger = &vhacdDefaultLogCallback;
-                    vhacdParams.m_concavity = convexDecompositionParams.GetConcavity();
-                    vhacdParams.m_alpha = convexDecompositionParams.GetAlpha();
-                    vhacdParams.m_beta = convexDecompositionParams.GetBeta();
-                    vhacdParams.m_minVolumePerCH = convexDecompositionParams.GetMinVolumePerConvexHull();
-                    vhacdParams.m_resolution = convexDecompositionParams.GetResolution();
-                    vhacdParams.m_maxNumVerticesPerCH = convexDecompositionParams.GetMaxNumVerticesPerConvexHull();
-                    vhacdParams.m_planeDownsampling = convexDecompositionParams.GetPlaneDownsampling();
-                    vhacdParams.m_convexhullDownsampling = convexDecompositionParams.GetConvexHullDownsampling();
+                    vhacdParams.m_taskRunner = nullptr;
                     vhacdParams.m_maxConvexHulls = convexDecompositionParams.GetMaxConvexHulls();
-                    vhacdParams.m_pca = convexDecompositionParams.GetPca();
-                    vhacdParams.m_mode = convexDecompositionParams.GetMode();
-                    vhacdParams.m_projectHullVertices = convexDecompositionParams.GetProjectHullVertices();
+                    vhacdParams.m_resolution = convexDecompositionParams.GetResolution();
+                    vhacdParams.m_minimumVolumePercentErrorAllowed = convexDecompositionParams.GetMinVolumePercentError();
+                    vhacdParams.m_maxRecursionDepth = convexDecompositionParams.GetMaxRecursionDepth();
+                    vhacdParams.m_shrinkWrap = convexDecompositionParams.GetShrinkWrap();
+                    vhacdParams.m_fillMode = VHACD::FillMode(convexDecompositionParams.GetFillMode());
+                    vhacdParams.m_maxNumVerticesPerCH = convexDecompositionParams.GetMaxNumVerticesPerConvexHull();
+                    vhacdParams.m_asyncACD = false;
+                    vhacdParams.m_minEdgeLength = convexDecompositionParams.GetMinEdgeLength();
+                    vhacdParams.m_findBestPlane = false; // Not exported since it's experimental.
                 }
                 else
                 {
@@ -891,7 +892,7 @@ namespace PhysX
                         {
                             AZ::Vector3 pos = nodeMesh->GetPosition(vertexIndex);
                             pos = worldTransform * pos;
-                            nodeExportData.m_vertices[vertexIndex] = AZVec3ToLYVec3(pos);
+                            nodeExportData.m_vertices[vertexIndex] = pos;
                         }
 
                         nodeExportData.m_indices.resize(faceCount * 3);
@@ -941,8 +942,8 @@ namespace PhysX
                     NodeCollisionGeomExportData mergedData;
                     mergedData.m_nodeName = groupName;
 
-                    AZStd::vector<Vec3>& mergedVertices = mergedData.m_vertices;
-                    AZStd::vector<vtx_idx>& mergedIndices = mergedData.m_indices;
+                    AZStd::vector<AZ::Vector3>& mergedVertices = mergedData.m_vertices;
+                    AZStd::vector<AZ::u32>& mergedIndices = mergedData.m_indices;
                     AZStd::vector<AZ::u16>& mergedPerFaceMaterials = mergedData.m_perFaceMaterialIndices;
 
                     // Here we add the geometry data for each node into a single merged one
@@ -950,7 +951,7 @@ namespace PhysX
                     // by the amount of vertices already added in the last iteration
                     for (const NodeCollisionGeomExportData& exportData : totalExportData)
                     {
-                        vtx_idx startingIndex = static_cast<vtx_idx>(mergedVertices.size());
+                        AZ::u32 startingIndex = static_cast<AZ::u32>(mergedVertices.size());
 
                         mergedVertices.insert(mergedVertices.end(), exportData.m_vertices.begin(), exportData.m_vertices.end());
 
@@ -960,7 +961,7 @@ namespace PhysX
                         mergedIndices.reserve(mergedIndices.size() + exportData.m_indices.size());
 
                         AZStd::transform(exportData.m_indices.begin(), exportData.m_indices.end(),
-                            AZStd::back_inserter(mergedIndices), [startingIndex](vtx_idx index)
+                            AZStd::back_inserter(mergedIndices), [startingIndex](AZ::u32 index)
                         {
                             return index + startingIndex;
                         });
