@@ -11,8 +11,8 @@
 #include "Core.h"
 #include "Core/Datum.h"
 #include "Core/Endpoint.h"
-#include "Variable/GraphVariable.h"
 #include "Core/NamedId.h"
+#include "Variable/GraphVariable.h"
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/time.h>
@@ -60,11 +60,12 @@ namespace ScriptCanvas
         VariableIdentifier(VariableId variableId, const GraphIdentifier& graphId)
             : m_variableId(variableId)
             , m_graphId(graphId)
-        {}
+        {
+        }
 
         AZStd::string ToString() const;
     };
-}
+} // namespace ScriptCanvas
 
 namespace AZStd
 {
@@ -97,7 +98,7 @@ namespace AZStd
             return graphInfoHash;
         }
     };
-}
+} // namespace AZStd
 
 namespace ScriptCanvas
 {
@@ -106,92 +107,146 @@ namespace ScriptCanvas
     struct BreakTag
     {
         AZ_TYPE_INFO(BreakTag, "{B1B0976D-E300-470B-B01C-8EED7571414A}");
-        static const char* ToString() { return "Break"; }
+        static const char* ToString()
+        {
+            return "Break";
+        }
     };
     struct BreakpointTag
     {
         AZ_TYPE_INFO(BreakpointTag, "{4915585E-9AF7-4414-87D4-F1EE31E04E4D}");
-        static const char* ToString() { return "Breakpoint"; }
+        static const char* ToString()
+        {
+            return "Breakpoint";
+        }
     };
     struct ContinueTag
     {
         AZ_TYPE_INFO(ContinueTag, "{611DF6CA-24CC-4F6B-89BF-4EDE56661040}");
-        static const char* ToString() { return "Continue"; }
+        static const char* ToString()
+        {
+            return "Continue";
+        }
     };
     struct ExecutionThreadBeginTag
     {
         AZ_TYPE_INFO(ExecutionThreadBeginTag, "{43C2F51D-17E9-4B4A-A1EF-3D5FD39857A4}");
-        static const char* ToString() { return "ExecutionThreadBegin"; }
+        static const char* ToString()
+        {
+            return "ExecutionThreadBegin";
+        }
     };
     struct ExecutionThreadEndTag
     {
         AZ_TYPE_INFO(ExecutionThreadEndTag, "{1BD155E9-ED07-4900-A6C9-04704A79424B}");
-        static const char* ToString() { return "ExecutionThreadEnd"; }
+        static const char* ToString()
+        {
+            return "ExecutionThreadEnd";
+        }
     };
     struct GetAvailableScriptTargetsTag
     {
         AZ_TYPE_INFO(GetAvailableScriptTargetsTag, "{D6B4D3FE-5975-4974-8DF4-CF823CCEEDB9}");
-        static const char* ToString() { return "GetAvailableScriptTargets"; }
+        static const char* ToString()
+        {
+            return "GetAvailableScriptTargets";
+        }
     };
     struct GetActiveEntitiesTag
     {
         AZ_TYPE_INFO(GetActiveEntitiesTag, "{F28305CE-7CC4-4481-BCAA-5347361496B1}");
-        static const char* ToString() { return "GetActiveEntities"; }
+        static const char* ToString()
+        {
+            return "GetActiveEntities";
+        }
     };
     struct GetActiveGraphsTag
     {
         AZ_TYPE_INFO(GetActiveGraphsTag, "{4AF50B18-87A7-45F0-925C-76D89DFC6DB6}");
-        static const char* ToString() { return "GetActiveGraphs"; }
+        static const char* ToString()
+        {
+            return "GetActiveGraphs";
+        }
     };
     struct GetVariableValueTag
     {
         AZ_TYPE_INFO(GetVariableValueTag, "{DBD77ADA-B8A5-423F-8524-5F2C765A1E46}");
-        static const char* ToString() { return "GetVariableValueTag"; }
+        static const char* ToString()
+        {
+            return "GetVariableValueTag";
+        }
     };
     struct GetVariableValuesTag
     {
         AZ_TYPE_INFO(GetVariableValuesTag, "{AEBE5DB8-DD6D-4B3F-AFDA-5A89010C21DF}");
-        static const char* ToString() { return "GetVariableValuesTag"; }
+        static const char* ToString()
+        {
+            return "GetVariableValuesTag";
+        }
     };
     struct GraphActivationTag
     {
         AZ_TYPE_INFO(GraphActivationTag, "{9DC4188F-52A1-4F95-A20C-FEFECDF48FEE}");
-        static const char* ToString() { return "GraphActivation"; }
+        static const char* ToString()
+        {
+            return "GraphActivation";
+        }
     };
     struct GraphDeactivationTag
     {
         AZ_TYPE_INFO(GraphDeactivationTag, "{FE4B8C6B-B8EE-4CA1-A4D4-DB559D977E22}");
-        static const char* ToString() { return "GraphDeactivation"; }
+        static const char* ToString()
+        {
+            return "GraphDeactivation";
+        }
     };
     struct InputSignalTag
     {
         AZ_TYPE_INFO(InputSignalTag, "{AFAE431F-4E4F-4AC6-8EBB-5D6A209280A4}");
-        static const char* ToString() { return "InputSignal"; }
+        static const char* ToString()
+        {
+            return "InputSignal";
+        }
     };
     struct OutputSignalTag
     {
         AZ_TYPE_INFO(OutputSignalTag, "{6E8D6FA8-92C5-4EEB-82DE-8CF4293F83E6}");
-        static const char* ToString() { return "OutputSignal"; }
+        static const char* ToString()
+        {
+            return "OutputSignal";
+        }
     };
     struct ReturnSignalTag
     {
         AZ_TYPE_INFO(ReturnSignalTag, "{CFA657CE-6073-4D3C-B5EF-B7BA624A4C19}");
-        static const char* ToString() { return "ReturnSignal"; }
+        static const char* ToString()
+        {
+            return "ReturnSignal";
+        }
     };
     struct AnnotateNodeSignalTag
     {
         AZ_TYPE_INFO(AnnotateNodeSignalTag, "{6F61974F-B1BB-4377-8903-B360C50A28EC}");
-        static const char* ToString() { return "AnnotateNodeSignal"; }
+        static const char* ToString()
+        {
+            return "AnnotateNodeSignal";
+        }
     };
     struct StepOverTag
     {
         AZ_TYPE_INFO(StepOverTag, "{44980605-0FF2-4A5C-870E-324B4184ADD6}");
-        static const char* ToString() { return "StepOver"; }
+        static const char* ToString()
+        {
+            return "StepOver";
+        }
     };
     struct VariableChangeTag
     {
         AZ_TYPE_INFO(VariableChangeTag, "{2936D848-1EA1-4B07-A462-F52F8A0ED395}");
-        static const char* ToString() { return "VariableChange"; }
+        static const char* ToString()
+        {
+            return "VariableChange";
+        }
     };
 
     class LoggableEventVisitor;
@@ -224,10 +279,7 @@ namespace ScriptCanvas
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<ThisType, t_Parent, LoggableEvent>()
-                    ->Version(0)
-                    ->Field("timestamp", &ThisType::m_timestamp)
-                    ;
+                serializeContext->Class<ThisType, t_Parent, LoggableEvent>()->Version(0)->Field("timestamp", &ThisType::m_timestamp);
             }
         }
 
@@ -235,12 +287,14 @@ namespace ScriptCanvas
 
         TaggedParent()
             : m_timestamp(AZStd::GetTimeUTCMilliSecond())
-        {}
+        {
+        }
 
         TaggedParent(const t_Parent& parent)
             : t_Parent(parent)
             , m_timestamp(AZStd::GetTimeUTCMilliSecond())
-        {}
+        {
+        }
 
         LoggableEvent* Duplicate() const override
         {
@@ -270,12 +324,12 @@ namespace ScriptCanvas
         AZ_CLASS_ALLOCATOR(ActiveGraphStatus, AZ::SystemAllocator);
         AZ_TYPE_INFO(ActiveGraphStatus, "{6E251A99-EE03-4C12-9122-35A90CBB5891}");
 
-        int               m_instanceCounter = 0;
-        bool              m_isObserved = false;
+        int m_instanceCounter = 0;
+        bool m_isObserved = false;
     };
 
-    using ActiveGraphStatusMap = AZStd::unordered_map< AZ::Data::AssetId, ActiveGraphStatus >;
-    using EntityActiveGraphStatusMap = AZStd::unordered_map< GraphIdentifier, ActiveGraphStatus >;
+    using ActiveGraphStatusMap = AZStd::unordered_map<AZ::Data::AssetId, ActiveGraphStatus>;
+    using EntityActiveGraphStatusMap = AZStd::unordered_map<GraphIdentifier, ActiveGraphStatus>;
 
     struct ActiveEntityStatus final
     {
@@ -287,7 +341,7 @@ namespace ScriptCanvas
         EntityActiveGraphStatusMap m_activeGraphs;
     };
 
-    using ActiveEntityStatusMap = AZStd::unordered_map< AZ::EntityId, ActiveEntityStatus >;
+    using ActiveEntityStatusMap = AZStd::unordered_map<AZ::EntityId, ActiveEntityStatus>;
     using ActiveEntitiesAndGraphs = AZStd::pair<ActiveEntityStatusMap, ActiveGraphStatusMap>;
 
     struct DatumValue
@@ -311,12 +365,14 @@ namespace ScriptCanvas
         DatumValue(AZ::TypeId behaviorContextObjectType, const AZStd::string& toStringResult)
             : m_behaviorContextObjectType(behaviorContextObjectType)
             , m_datum(Datum(toStringResult))
-        {}
+        {
+        }
 
         DatumValue(const Datum& datum)
             : m_behaviorContextObjectType{}
             , m_datum(datum)
-        {}
+        {
+        }
 
         AZStd::string ToString() const;
     };
@@ -324,8 +380,7 @@ namespace ScriptCanvas
     using SlotDataMap = AZStd::unordered_map<NamedSlotId, DatumValue>;
     using VariableValues = AZStd::unordered_map<VariableId, AZStd::pair<AZStd::string, DatumValue>>;
 
-    struct ActivationInfo
-        : public GraphInfo
+    struct ActivationInfo : public GraphInfo
     {
         AZ_CLASS_ALLOCATOR(ActivationInfo, AZ::SystemAllocator);
         AZ_RTTI(ActivationInfo, "{9EBCB557-80D1-43CA-840E-BB8945BF13F4}", GraphInfo);
@@ -347,8 +402,7 @@ namespace ScriptCanvas
         AZStd::string ToString() const;
     };
 
-    struct Signal
-        : public GraphInfo
+    struct Signal : public GraphInfo
     {
         AZ_CLASS_ALLOCATOR(Signal, AZ::SystemAllocator);
         AZ_RTTI(Signal, "{F65B92D1-10D8-4065-90FA-8FD46A9B122A}", GraphInfo);
@@ -363,20 +417,23 @@ namespace ScriptCanvas
 
         Signal(const GraphInfo& graphInfo)
             : GraphInfo(graphInfo)
-        {}
+        {
+        }
 
         Signal(const GraphInfo& graphInfo, const NodeTypeIdentifier& nodeType, const NamedEndpoint& endpoint)
             : GraphInfo(graphInfo)
             , m_nodeType(nodeType)
             , m_endpoint(endpoint)
-        {}
+        {
+        }
 
         Signal(const GraphInfo& graphInfo, const NodeTypeIdentifier& nodeType, const NamedEndpoint& endpoint, const SlotDataMap& data)
             : GraphInfo(graphInfo)
             , m_nodeType(nodeType)
             , m_endpoint(endpoint)
             , m_data(data)
-        {}
+        {
+        }
 
         virtual ~Signal() = default;
 
@@ -401,10 +458,8 @@ namespace ScriptCanvas
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<ThisType, DatumValue, GraphInfo, LoggableEvent>()
-                    ->Version(0)
-                    ->Field("timestamp", &ThisType::m_timestamp)
-                    ;
+                serializeContext->Class<ThisType, DatumValue, GraphInfo, LoggableEvent>()->Version(0)->Field(
+                    "timestamp", &ThisType::m_timestamp);
             }
         }
 
@@ -412,7 +467,8 @@ namespace ScriptCanvas
 
         TaggedDataValue()
             : m_timestamp(AZStd::GetTimeUTCMilliSecond())
-        {}
+        {
+        }
 
         TaggedDataValue(const TaggedDataValue&) = default;
 
@@ -420,11 +476,12 @@ namespace ScriptCanvas
             : DatumValue(dataValue)
             , GraphInfo(graphInfo)
             , m_timestamp(AZStd::GetTimeUTCMilliSecond())
-        {}
+        {
+        }
 
-        //TaggedDataValue(const Signal& signal)
-        //    : Signal(signal)
-        //    , m_timestamp(AZStd::GetTimeUTCMilliSecond())
+        // TaggedDataValue(const Signal& signal)
+        //     : Signal(signal)
+        //     , m_timestamp(AZStd::GetTimeUTCMilliSecond())
         //{}
 
         LoggableEvent* Duplicate() const override
@@ -450,7 +507,7 @@ namespace ScriptCanvas
         void Visit(LoggableEventVisitor& visitor) override;
     };
 
-    using Breakpoint = TaggedParent<BreakpointTag, Signal>;
+    using Breakpoint = TaggedParent<BreakpointTag, AZ::EntityId>; // NodeId
 
     struct ExecutionThreadBeginning
         : public GraphInfo
@@ -469,7 +526,8 @@ namespace ScriptCanvas
         ExecutionThreadBeginning(const GraphInfo& graphInfo, AZ::EntityId nodeId)
             : GraphInfo(graphInfo)
             , m_nodeId(nodeId)
-        {}
+        {
+        }
 
         virtual ~ExecutionThreadBeginning() = default;
 
@@ -509,8 +567,7 @@ namespace ScriptCanvas
         Timestamp m_timestamp;
     };
 
-    struct NodeStateChange
-        : public GraphInfoEventBase
+    struct NodeStateChange : public GraphInfoEventBase
     {
         AZ_CLASS_ALLOCATOR(NodeStateChange, AZ::SystemAllocator);
         AZ_RTTI(NodeStateChange, "{6D3B9C70-E6E9-4780-87C0-D74E7BFBE53D}", GraphInfoEventBase);
@@ -526,8 +583,7 @@ namespace ScriptCanvas
 
     using VariableChange = TaggedDataValue<VariableChangeTag>;
 
-    struct AnnotateNodeSignal
-        : public GraphInfoEventBase
+    struct AnnotateNodeSignal : public GraphInfoEventBase
     {
     public:
         AZ_CLASS_ALLOCATOR(AnnotateNodeSignal, AZ::SystemAllocator);
@@ -542,7 +598,8 @@ namespace ScriptCanvas
 
         AnnotateNodeSignal();
         AnnotateNodeSignal(const AnnotateNodeSignal&) = default;
-        AnnotateNodeSignal(const GraphInfo& graphInfo, AnnotationLevel annotationLevel, AZStd::string_view annotation, const AZ::NamedEntityId& assetId);
+        AnnotateNodeSignal(
+            const GraphInfo& graphInfo, AnnotationLevel annotationLevel, AZStd::string_view annotation, const AZ::NamedEntityId& assetId);
 
         LoggableEvent* Duplicate() const override;
 
@@ -551,13 +608,12 @@ namespace ScriptCanvas
         void Visit(LoggableEventVisitor& visitor) override;
 
         AnnotationLevel m_annotationLevel;
-        AZStd::string   m_annotation;
+        AZStd::string m_annotation;
 
         AZ::NamedEntityId m_assetNodeId;
     };
 
-    class ExecutionNotifications
-        : public AZ::EBusTraits
+    class ExecutionNotifications : public AZ::EBusTraits
     {
     public:
         virtual void AnnotateNode(const AnnotateNodeSignal&) = 0;
@@ -610,22 +666,4 @@ namespace ScriptCanvas
     {
         visitor.Visit(*this);
     }
-}
-
-namespace AZStd
-{
-    template<>
-    struct hash<ScriptCanvas::Breakpoint>
-    {
-        using argument_type = ScriptCanvas::Breakpoint;
-        using result_type = AZStd::size_t;
-
-        AZ_FORCE_INLINE size_t operator()(const argument_type& argument) const
-        {
-            result_type result = AZStd::hash<const AZ::u64>()(static_cast<AZ::u64>(argument.m_runtimeEntity));
-            AZStd::hash_combine(result, argument.m_graphIdentifier);
-            AZStd::hash_combine(result, argument.m_endpoint);
-            return result;
-        }
-    };
-}
+} // namespace ScriptCanvas
