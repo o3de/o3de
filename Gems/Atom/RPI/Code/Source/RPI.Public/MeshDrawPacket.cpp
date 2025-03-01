@@ -422,6 +422,13 @@ namespace AZ
                         drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
 
+                    AZ::Name shaderModelLodMeshIndex = AZ::Name(DrawSrgModelLodMeshIndex);
+                    index = drawSrg->FindShaderInputConstantIndex(shaderModelLodMeshIndex);
+                    if (index.IsValid())
+                    {
+                        drawSrg->SetConstant(index, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                    }
+
                     drawSrg->Compile();
                 };
 

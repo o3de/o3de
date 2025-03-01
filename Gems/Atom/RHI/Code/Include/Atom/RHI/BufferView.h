@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- #pragma once
+#pragma once
 
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/Buffer.h>
@@ -53,6 +53,12 @@ namespace AZ::RHI
         {
             return GetDeviceBufferView(deviceIndex).get();
         }
+
+        // Convenient helper function to get both of the indices (Read and ReadWrite) in the BindlessSrg for a given device:
+        //     - If @outReadWriteIndex != nullptr, it will get the shader index (ReadWrite) in Bindless::m_RWByteAddressBuffer[].
+        //     See "/o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/Atom/Features\Bindless.azsli" for details.
+        // Returns the shader index (READ) in Bindless::m_ByteAddressBuffer[].
+        uint32_t GetBindlessIndices(int deviceIndex, uint32_t* outReadWriteIndex = nullptr) const;
 
     private:
         //! The corresponding BufferViewDescriptor for this view.

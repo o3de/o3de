@@ -6,21 +6,21 @@
  *
  */
 
- #include <Atom/RHI/BufferView.h>
- #include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/Buffer.h>
 
- namespace AZ::RHI
- {
+namespace AZ::RHI
+{
     //! Given a device index, return the corresponding DeviceBufferView for the selected device
     const RHI::Ptr<RHI::DeviceBufferView> BufferView::GetDeviceBufferView(int deviceIndex) const
     {
         return ResourceView::GetDeviceResourceView<DeviceBufferView>(deviceIndex, m_descriptor);
     }
-
+    
     AZStd::unordered_map<int, uint32_t> BufferView::GetBindlessReadIndex() const
     {
         AZStd::unordered_map<int, uint32_t> result;
-
+    
         MultiDeviceObject::IterateDevices(
             GetResource()->GetDeviceMask(),
             [this, &result](int deviceIndex)
@@ -28,7 +28,21 @@
                 result[deviceIndex] = GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex();
                 return true;
             });
-
+    
         return result;
     }
- }
+    
+    uint32_t BufferView::GetBindlessIndices(int deviceIndex, uint32_t* outReadWriteIndex) const
+    {
+        const auto& deviceBufferView = GetDeviceBufferView(deviceIndex);
+        if (!deviceBufferView)
+        {
+            return DeviceBufferView::InvalidBindlessIndex;
+        }
+        if (outReadWriteIndex != nullptr)
+        {
+            *outReadWriteIndex = deviceBufferView->GetBindlessReadWriteIndex();
+        }
+        return deviceBufferView->GetBindlessReadIndex();
+    }
+}

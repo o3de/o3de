@@ -89,6 +89,13 @@ namespace AZ
             bool DoUpdate(const Scene& parentScene);
             void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
 
+            // To enable this shader constant in DrawSrg, a shader must:
+            // #define USE_DRAWSRG_MESHLOD_MESHINDEX 1
+            // By default it is NOT defined.
+            // When defined, the value of @m_modelLodMeshIndex (aka subMesh index) is written
+            // to the shader constant.
+            static constexpr AZStd::string_view DrawSrgModelLodMeshIndex = "m_modelLodMeshIndex";
+
             Ptr<RHI::DrawPacket> m_drawPacket;
 
             // Note, many of the following items are held locally in the MeshDrawPacket solely to keep them resident in memory as long as they are needed
