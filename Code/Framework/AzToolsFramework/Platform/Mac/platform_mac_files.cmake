@@ -7,5 +7,7 @@
 #
 
 set(FILES
-    AzToolsFramework/API/EditorAssetSystemAPI_Mac.cpp
+    ../Common/LinuxLike/AzToolsFramework/ToolsFileUtils/ToolsFileUtils.cpp
+    AzToolsFramework/AzToolsFramework_Traits_Platform.h
+    AzToolsFramework/AzToolsFramework_Traits_Mac.h
 )

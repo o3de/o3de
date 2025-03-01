@@ -11,14 +11,6 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector3.h>
 
-namespace AzToolsFramework
-{
-    //! Utility functions for rendering vertex container indices.
-    namespace VertexContainerDisplay
-    {
-        extern const float DefaultVertexTextSize;
-        extern const AZ::Color DefaultVertexTextColor;
-        extern const AZ::Vector3 DefaultVertexTextOffset;
-    } // namespace VertexContainerDisplay
-
-} // namespace AzToolsFramework
+#define AZ_DEFAULT_VERTEX_TEXT_SIZE       1.5f
+#define AZ_DEFAULT_VERTEX_TEXT_COLOR      AZ::Color(1.0f, 1.0f, 1.0f, 1.0f)
+#define AZ_DEFAULT_VERTEX_TEXT_OFFSET     AZ::Vector3(0.0f, 0.0f, -0.1f)

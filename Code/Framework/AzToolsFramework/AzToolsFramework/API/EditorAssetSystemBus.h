@@ -202,9 +202,6 @@ namespace AzToolsFramework
             virtual AZ::Outcome<AZStd::string> GetJobLog(AZ::u64 jobrunkey) = 0;
         };
 
-        //! Returns "mac", "pc", or "linux" statically.
-        const char* GetHostAssetPlatform();
-
     } // namespace AssetSystem
     using AssetSystemBus = AZ::EBus<AssetSystem::AssetSystemNotifications>;
     using AssetSystemRequestBus = AZ::EBus<AssetSystem::AssetSystemRequest>;

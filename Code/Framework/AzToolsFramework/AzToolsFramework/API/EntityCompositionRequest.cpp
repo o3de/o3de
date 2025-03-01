@@ -7,6 +7,8 @@
  */
 
 #include <AzToolsFramework/API/EntityCompositionRequest.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AzToolsFramework
 {

@@ -6,7 +6,9 @@
  *
  */
 #pragma once
+
 //AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -32,7 +34,7 @@ namespace AzToolsFramework
     {
         using ShownColumnsSet = AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)>;
 
-        class AssetBrowserFilterModel
+        class AZTF_API AssetBrowserFilterModel
             : public QSortFilterProxyModel
             , public AssetBrowserComponentNotificationBus::Handler
         {

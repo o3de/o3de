@@ -7,7 +7,7 @@
  */
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-
+#include <AzToolsFramework/AzToolsFramework_Traits_Platform.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZStd
@@ -32,6 +32,11 @@ namespace AzToolsFramework
                 case JobStatus::Missing: return "Missing";
             }
             return "";
+        }
+
+        const char* GetHostAssetPlatform()
+        {
+            return "mac";
         }
 
         JobInfo::JobInfo()

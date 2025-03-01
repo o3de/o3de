@@ -8,6 +8,9 @@
 
 #pragma once
 
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Math/Crc.h>
@@ -40,10 +43,10 @@ namespace AzToolsFramework
             Missing //indicate that the job is not present for example if the source file is not there, or if job key is not there
         };
 
-        extern const char* JobStatusString(JobStatus status);
+        AZTF_API const char* JobStatusString(JobStatus status);
 
         //! This struct is used for responses and requests about Asset Processor Jobs
-        struct JobInfo
+        struct AZTF_API JobInfo
         {
             AZ_TYPE_INFO(JobInfo, "{276C9DE3-0C81-4721-91FE-F7C961D28DA8}")
             JobInfo();
@@ -92,7 +95,7 @@ namespace AzToolsFramework
         using JobInfoContainer = ::AZStd::vector<JobInfo>;
 
         //! Returns "mac", "pc", or "linux" statically.
-        const char* GetHostAssetPlatform();
+        AZTF_API const char* GetHostAssetPlatform();
 
     } // namespace AssetSystem
 } // namespace AzToolsFramework

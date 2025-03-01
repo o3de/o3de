@@ -7,6 +7,9 @@
  */
 #pragma once
 
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
@@ -37,7 +40,7 @@ namespace AzToolsFramework
     {
         // This class is used to track all of the asset editors that were open.  When the editor launches
         // these settings will be used to preemptively register all windows and then open them.
-        struct AssetEditorWindowSettings : AZ::UserSettings
+        struct AZTF_API AssetEditorWindowSettings : AZ::UserSettings
         {
             AZ_CLASS_ALLOCATOR(AssetEditorWindowSettings, AZ::SystemAllocator);
             AZ_RTTI(AssetEditorWindowSettings, "{981FE4FF-0B56-4115-9F75-79609E3D6337}", AZ::UserSettings);

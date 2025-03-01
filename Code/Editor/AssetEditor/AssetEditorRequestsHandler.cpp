@@ -13,6 +13,8 @@
 // AzCore
 #include <AzCore/Asset/AssetManager.h>
 
+#include <AzToolsFramework/AssetEditor/AssetEditorWindowSettings.h>
+
 // Editor
 #include "AssetEditorWindow.h"
 #include "QtViewPaneManager.h"

@@ -80,3 +80,5 @@ namespace AzToolsFramework
         }
     }
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzToolsFramework::EditorTransformComponentSelectionRequests);

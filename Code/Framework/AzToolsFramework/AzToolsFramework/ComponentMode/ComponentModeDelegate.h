@@ -8,6 +8,9 @@
 
 #pragma once
 
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -35,7 +38,7 @@ namespace AzToolsFramework
 
         /// Helper to provide ComponentMode button in the Entity Inspector and double click
         /// handling in the viewport for entering/exiting ComponentMode.
-        class ComponentModeDelegate
+        class AZTF_API ComponentModeDelegate
             : private ComponentModeDelegateRequestBus::Handler
             , private EntitySelectionEvents::Bus::Handler
             , private EditorEntityVisibilityNotificationBus::Handler

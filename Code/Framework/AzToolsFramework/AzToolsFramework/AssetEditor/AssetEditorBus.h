@@ -13,7 +13,6 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzToolsFramework/AssetEditor/AssetEditorWindowSettings.h>
 
 namespace AzToolsFramework
 {

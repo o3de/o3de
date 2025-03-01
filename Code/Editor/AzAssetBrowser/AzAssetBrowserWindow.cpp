@@ -25,7 +25,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
-
+#include <AzToolsFramework/AzToolsFrameworkStatic.h>
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
@@ -38,8 +38,6 @@
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AzAssetBrowser/ui_AzAssetBrowserWindow.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
-AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserListView);
 
 AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the in-progress new Asset Browser design");
 

@@ -166,7 +166,9 @@ set(FILES
 	Viewport/ActionBus.h
 	Viewport/ViewportMessagesBus.cpp
     Viewport/ViewportMessagesBus.h
-	
+	ViewportSelection/EditorTransformComponentSelectionRequestBus.h
+    ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
+
     AzToolsFrameworkEBus.cpp    
 )
 

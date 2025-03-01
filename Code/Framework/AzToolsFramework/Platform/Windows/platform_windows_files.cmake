@@ -7,5 +7,7 @@
 #
 
 set(FILES
-    AzToolsFramework/API/EditorAssetSystemAPI_Windows.cpp
+    AzToolsFramework/ToolsFileUtils/ToolsFileUtils.cpp
+    AzToolsFramework/AzToolsFramework_Traits_Platform.h
+    AzToolsFramework/AzToolsFramework_Traits_Windows.h
 )

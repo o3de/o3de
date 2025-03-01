@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 
@@ -44,7 +45,7 @@ namespace AzToolsFramework
     }
 
     //! Provide interface for EditorTransformComponentSelection requests.
-    class EditorTransformComponentSelectionRequests : public AZ::EBusTraits
+    class AZTF_EBUS_API EditorTransformComponentSelectionRequests : public AZ::EBusTraits
     {
     public:
         using BusIdType = AzFramework::EntityContextId;
@@ -146,3 +147,5 @@ namespace AzToolsFramework
     using EditorTransformComponentSelectionRequestBus = AZ::EBus<EditorTransformComponentSelectionRequests>;
 
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorTransformComponentSelectionRequests);

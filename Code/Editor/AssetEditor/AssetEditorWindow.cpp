@@ -21,6 +21,7 @@
 // AzToolsFramework
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorWindowSettings.h>
 
 // Editor
 #include "LyViewPaneNames.h"

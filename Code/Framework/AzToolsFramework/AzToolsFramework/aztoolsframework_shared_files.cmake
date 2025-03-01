@@ -9,8 +9,14 @@
 set(FILES
     Application/ToolsApplication.cpp
     Application/ToolsApplication.h
+    API/AssetSystemJobInfo.cpp
+    API/AssetSystemJobInfo.h
     API/ComponentEntitySelection.h
     API/ComponentEntitySelection.cpp
+    API/EntityCompositionRequest.cpp
+    API/EntityCompositionRequest.h    
+    API/PythonLoader.cpp
+    API/PythonLoader.h
 	API/ToolsApplicationAPI.h
     API/ToolsApplicationAPI.cpp
     ActionManager/Action/ActionManager.cpp
@@ -171,6 +177,8 @@ set(FILES
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorWidget.cpp
     AssetEditor/AssetEditorWidget.h
+    AssetEditor/AssetEditorWindowSettings.cpp
+    AssetEditor/AssetEditorWindowSettings.h
     Commands/ComponentModeCommand.cpp
     Commands/ComponentModeCommand.h
     Commands/EntityManipulatorCommand.cpp
@@ -185,8 +193,8 @@ set(FILES
     ComponentMode/ComponentModeActionHandler.h
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeCollection.h
-#	ComponentMode/ComponentModeDelegate.cpp
-#	ComponentMode/ComponentModeDelegate.h
+	ComponentMode/ComponentModeDelegate.cpp
+	ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeSwitcher.h
     ComponentMode/ComponentModeViewportUi.cpp
@@ -427,6 +435,8 @@ set(FILES
     Prefab/PrefabInstanceUtils.h
     Prefab/PrefabLoader.cpp
     Prefab/PrefabLoader.h
+    Prefab/PrefabLoaderInterface.cpp    
+    Prefab/PrefabLoaderInterface.h
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicHandler.h
     Prefab/PrefabPublicNotificationHandler.cpp
@@ -459,6 +469,8 @@ set(FILES
     Render/EditorIntersectorComponent.h
     Script/LuaEditorSystemComponent.cpp
     Script/LuaEditorSystemComponent.h
+    Script/LuaSymbolsReporter.cpp
+    Script/LuaSymbolsReporter.h
     Script/LuaSymbolsReporterSystemComponent.cpp
     Script/LuaSymbolsReporterSystemComponent.h
     Slice/SliceCompilation.cpp
@@ -475,7 +487,6 @@ set(FILES
     Slice/SliceTransaction.h
     Slice/SliceUtilities.cpp
     Slice/SliceUtilities.h
-
     PropertyTreeEditor/PropertyTreeEditor.cpp
     PropertyTreeEditor/PropertyTreeEditor.h
     PropertyTreeEditor/PropertyTreeEditorComponent.cpp
@@ -626,17 +637,19 @@ set(FILES
     UI/EditorEntityUi/EditorEntityUiHandlerBase.h
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
     UI/EditorEntityUi/EditorEntityUiSystemComponent.h
-    #UI/LegacyFramework/Core/EditorFrameworkAPI.cpp
-    #UI/LegacyFramework/Core/EditorFrameworkAPI.h
-    #UI/LegacyFramework/Core/EditorFrameworkApplication.cpp
-    #UI/LegacyFramework/Core/EditorFrameworkApplication.h
-    #UI/LegacyFramework/Core/IPCComponent.cpp
-    #UI/LegacyFramework/Core/IPCComponent.h
-    #UI/LegacyFramework/MainWindowSavedState.cpp
-    #UI/LegacyFramework/MainWindowSavedState.h
-    #UI/LegacyFramework/UIFramework.cpp
-    #UI/LegacyFramework/UIFramework.hxx
-    #UI/LegacyFramework/UIFrameworkPreferences.cpp
+    UI/LegacyFramework/MainWindowSavedState.cpp
+    UI/LegacyFramework/MainWindowSavedState.h
+    UI/LegacyFramework/UIFramework.cpp
+    UI/LegacyFramework/UIFramework.hxx
+    UI/LegacyFramework/UIFrameworkAPI.h
+    UI/LegacyFramework/UIFrameworkPreferences.cpp
+    UI/LegacyFramework/Core/EditorContextBus.h
+    UI/LegacyFramework/Core/EditorFrameworkAPI.cpp
+    UI/LegacyFramework/Core/EditorFrameworkAPI.h
+    UI/LegacyFramework/Core/EditorFrameworkApplication.cpp
+    UI/LegacyFramework/Core/EditorFrameworkApplication.h
+    UI/LegacyFramework/Core/IPCComponent.h
+    UI/LegacyFramework/Core/IPCComponent.cpp
     UI/Logging/GenericLogPanel.h
     UI/Logging/GenericLogPanel.cpp
     UI/Logging/LogControl.cpp
@@ -801,6 +814,14 @@ set(FILES
     UI/UICore/TargetSelectorButton.cpp
     UI/UICore/TargetSelectorButton.hxx
     UI/UICore/WidgetHelpers.h
+
+    UI/UICore/OverwritePromptDialog.hxx
+    UI/UICore/OverwritePromptDialog.cpp
+    UI/UICore/OverwritePromptDialog.ui
+    UI/UICore/SaveChangesDialog.hxx
+    UI/UICore/SaveChangesDialog.cpp
+    UI/UICore/SaveChangesDialog.ui
+
     Undo/UndoCacheInterface.h
     Undo/UndoSystem.cpp
     Undo/UndoSystem.h
@@ -814,6 +835,7 @@ set(FILES
     Viewport/SharedViewBookmarkComponent.h
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
+    Viewport/VertexContainerDisplayDefaults.h
     Viewport/ViewBookmarkSystemComponent.cpp
     Viewport/ViewBookmarkSystemComponent.h
     Viewport/ViewportInteractionHelpers.cpp
@@ -838,8 +860,8 @@ set(FILES
     ViewportSelection/EditorSelectionUtil.h
     ViewportSelection/EditorTransformComponentSelection.cpp
     ViewportSelection/EditorTransformComponentSelection.h
-#    ViewportSelection/EditorVisibleEntityDataCache.cpp
-#    ViewportSelection/EditorVisibleEntityDataCache.h
+    ViewportSelection/EditorVisibleEntityDataCache.cpp
+    ViewportSelection/EditorVisibleEntityDataCache.h
     ViewportSelection/InvalidClicks.cpp
     ViewportSelection/InvalidClicks.h
     ViewportSelection/ViewportEditorModeTracker.cpp
@@ -864,9 +886,6 @@ set(FILES
     ViewportUi/ViewportUiTextField.h
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiWidgetCallbacks.h
-
-
-    
     
     AzToolsFrameworkModule.cpp
     AzToolsFrameworkModule.h

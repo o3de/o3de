@@ -14,10 +14,6 @@ namespace AzToolsFramework
 {
     namespace VertexContainerDisplay
     {
-        const float DefaultVertexTextSize = 1.5f;
-        const AZ::Color DefaultVertexTextColor = AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
-        const AZ::Vector3 DefaultVertexTextOffset = AZ::Vector3(0.0f, 0.0f, -0.1f);
-
         void DisplayVertexContainerIndex(
             AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& position, const size_t index, const float textSize)
         {

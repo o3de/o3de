@@ -32,9 +32,9 @@ namespace AzToolsFramework
             const AZ::Transform& transform,
             const AZ::Vector3& nonUniformScale,
             bool selected,
-            float textSize = DefaultVertexTextSize,
-            const AZ::Color& textColor = DefaultVertexTextColor,
-            const AZ::Vector3& textOffset = DefaultVertexTextOffset);
+            float textSize = AZ_DEFAULT_VERTEX_TEXT_SIZE,
+            const AZ::Color& textColor = AZ_DEFAULT_VERTEX_TEXT_COLOR,
+            const AZ::Vector3& textOffset = AZ_DEFAULT_VERTEX_TEXT_OFFSET);
     } // namespace VertexContainerDisplay
 
 

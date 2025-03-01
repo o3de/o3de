@@ -17,23 +17,15 @@ set(FILES
     ActionManager/Menu/MenuManagerInternalInterface.h
     ActionManager/ToolBar/ToolBarManagerInterface.h
     ActionManager/ToolBar/ToolBarManagerInternalInterface.h
-    AssetEditor/AssetEditorWindowSettings.cpp
-    AssetEditor/AssetEditorWindowSettings.h
     AssetEditor/AssetEditorUtils.h
     AssetEditor/Resources/AssetEditorResources.qrc
     UI/LegacyFramework/Resources/sharedResources.qrc
     UI/PropertyEditor/Resources/Icons.qrc
-    API/AssetSystemJobInfo.cpp
-    API/AssetSystemJobInfo.h
     API/EditorAssetSystemAPI.h
     API/ComponentModeCollectionInterface.h
-    API/EntityCompositionRequest.cpp
-    API/EntityCompositionRequest.h    
     API/EditorEntityAPI.h
     API/EditorPythonInterface.h
     API/EditorViewportIconDisplayInterface.h
-    API/PythonLoader.h
-    API/PythonLoader.cpp
     API/SettingsRegistryUtils.h
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
@@ -88,24 +80,14 @@ set(FILES
     UI/LegacyFramework/CustomMenus/CustomMenusAPI.h
     UI/LegacyFramework/CustomMenus/CustomMenusComponent.cpp
     Viewport/ActionBus.h
-    Viewport/VertexContainerDisplayDefaults.cpp
-    Viewport/VertexContainerDisplayDefaults.h
     Viewport/ViewBookmarkLoaderInterface.h
     ViewportUi/ViewportUiRequestBus.h
-    ComponentMode/ComponentModeDelegate.h
-    ComponentMode/ComponentModeDelegate.cpp
     ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentModes/ShapeComponentModeBus.h
     ComponentModes/ViewportEditUtilities.h
     ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h
-    ViewportSelection/EditorTransformComponentSelectionRequestBus.h
-    ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
-    ViewportSelection/EditorVisibleEntityDataCache.h
-    ViewportSelection/EditorVisibleEntityDataCache.cpp
     ToolsFileUtils/ToolsFileUtils.h
-     AssetBrowser/AssetBrowserEntry.h
-    AssetBrowser/AssetBrowserFilterModel.cpp
-    AssetBrowser/AssetBrowserFilterModel.h
+    AssetBrowser/AssetBrowserEntry.h
     AssetBrowser/AssetEntryChange.h
     AssetBrowser/EBusFindAssetTypeByName.h
     AssetBrowser/Search/search.qrc
@@ -118,8 +100,6 @@ set(FILES
     Prefab/PrefabFocusNotificationBus.h
     Prefab/PrefabFocusPublicInterface.h
     Prefab/PrefabIdTypes.h
-    Prefab/PrefabLoaderInterface.cpp    
-    Prefab/PrefabLoaderInterface.h
     Prefab/PrefabLoaderScriptingBus.h
     Prefab/PrefabSystemComponentInterface.h
     Prefab/ProceduralPrefabSystemComponentInterface.h
@@ -137,14 +117,23 @@ set(FILES
     Prefab/Spawnable/EntityIdPathMapperInterface.h
     Prefab/Spawnable/PrefabConverterStackProfileNames.h
     Prefab/Spawnable/PrefabProcessor.h
+
+    # Leave the following flie in the static lib due to a compilation error when attempting to move this into a shared l
+    # library:
+    # 1>D:\github\o3de\Code\Framework\AzCore\AzCore\std\utility\pair.h(184,9): error C2280:  AzCore\DOM\DomPrefixTree.h(87,9):
+    #    'AZ::Dom::DomPrefixTree<AzToolsFramework::Prefab::Link::PrefabOverrideMetadata>::DomPrefixTree(const AZ::Dom::DomPrefixTree<AzToolsFramework::Prefab::Link::PrefabOverrideMetadata> &)': function was implicitly deleted because a data member invokes a deleted or inaccessible function 'AZ::Dom::DomPrefixTree<AzToolsFramework::Prefab::Link::PrefabOverrideMetadata>::Node::Node(const AZ::Dom::DomPrefixTree<AzToolsFramework::Prefab::Link::PrefabOverrideMetadata>::Node &)'
+    #1>            DomPrefixTree(const DomPrefixTree&) = default;
     Prefab/Undo/PrefabUndoEntityOverrides.h
     Prefab/Undo/PrefabUndoEntityOverrides.cpp
+
     UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/resources.qrc
     UI/EditorEntityUi/EditorEntityUiInterface.h
     UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
     UI/Prefab/PrefabIntegrationInterface.h
     UI/Prefab/Constants.h
-    Script/LuaSymbolsReporter.cpp
-    Script/LuaSymbolsReporter.h
+    AzToolsFrameworkStatic.cpp
+    AzToolsFrameworkStatic.h
+#    Script/LuaSymbolsReporter.cpp
+#    Script/LuaSymbolsReporter.h
 )

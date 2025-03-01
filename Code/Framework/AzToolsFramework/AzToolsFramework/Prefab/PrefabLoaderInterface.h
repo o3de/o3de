@@ -8,6 +8,8 @@
 
 #pragma once
 
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
@@ -29,7 +31,7 @@ namespace AzToolsFramework
          * PrefabLoaderInterface
          * Interface for saving/loading Prefab files.
          */
-        class PrefabLoaderInterface
+        class AZTF_API PrefabLoaderInterface
         {
         public:
             AZ_RTTI(PrefabLoaderInterface, "{C7B26070-B1BE-470C-BE5A-45B0CF112E68}");

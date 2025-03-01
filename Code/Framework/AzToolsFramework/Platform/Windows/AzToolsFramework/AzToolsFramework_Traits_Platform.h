@@ -5,13 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-namespace AzToolsFramework
-{
-    namespace AssetSystem
-    {
-        const char* GetHostAssetPlatform()
-        {
-            return "linux";
-        }
-    }
-}
+#pragma once
+
+#include <AzToolsFramework/AzToolsFramework_Traits_Windows.h>

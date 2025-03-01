@@ -20,7 +20,6 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         AzToolsFramework/aztoolsframework_files.cmake
-        Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -75,7 +74,7 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         AzToolsFramework/aztoolsframework_shared_files.cmake
-        AzToolsFramework/aztoolsframework_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .

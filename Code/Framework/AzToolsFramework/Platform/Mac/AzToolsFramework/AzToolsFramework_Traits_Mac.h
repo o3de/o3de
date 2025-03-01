@@ -5,13 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-namespace AzToolsFramework
-{
-    namespace AssetSystem
-    {
-        const char* GetHostAssetPlatform()
-        {
-            return "pc";
-        }
-    }
-}
+#pragma once
+
+#define AZ_TRAIT_HOST_ASSET_PLATFORM    "mac"

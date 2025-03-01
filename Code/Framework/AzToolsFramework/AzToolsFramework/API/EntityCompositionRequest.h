@@ -7,25 +7,18 @@
  */
 #pragma once
 
-#include <AzCore/base.h>
-#include <AzCore/EBus/EBus.h>
+//AZTF-SHARED
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/Entity.h>
-#include <AzCore/Outcome/Outcome.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-
-#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 
 namespace AzToolsFramework
 {
     //! Return whether component should appear in an entity's "Add Component" menu.
     //! \param entityType The type of entity (ex: "Game", "System")
-    bool AppearsInAddComponentMenu(const AZ::SerializeContext::ClassData& classData, const AZ::Crc32& entityType);
+    AZTF_API bool AppearsInAddComponentMenu(const AZ::SerializeContext::ClassData& classData, const AZ::Crc32& entityType);
 
     //! ComponentFilter for components that users can add to game entities.
-    bool AppearsInGameComponentMenu(const AZ::SerializeContext::ClassData&);
+    AZTF_API bool AppearsInGameComponentMenu(const AZ::SerializeContext::ClassData&);
 
     inline bool AppearsInLayerComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
