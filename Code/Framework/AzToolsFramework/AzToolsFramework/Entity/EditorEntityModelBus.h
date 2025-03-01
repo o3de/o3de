@@ -7,9 +7,11 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/Component/Entity.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 
+#include <AzCore/Component/Entity.h>
 namespace AzToolsFramework
 {
     class EditorEntityModelRequests : public AZ::EBusTraits
@@ -22,3 +24,5 @@ namespace AzToolsFramework
     };
     using EditorEntityModelRequestBus = AZ::EBus<EditorEntityModelRequests>;
 }
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorEntityModelRequests);

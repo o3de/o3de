@@ -25,3 +25,6 @@ namespace AzToolsFramework
         }
     }
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AzToolsFramework::ViewportEditorModeNotifications);
+

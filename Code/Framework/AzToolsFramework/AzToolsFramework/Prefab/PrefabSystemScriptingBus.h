@@ -8,13 +8,15 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/EBus/EBus.h>
 
 namespace AzToolsFramework
 {
@@ -42,3 +44,4 @@ namespace AzToolsFramework
     } // namespace Prefab
 } // namespace AzToolsFramework
 
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabSystemScriptingEbusTraits);

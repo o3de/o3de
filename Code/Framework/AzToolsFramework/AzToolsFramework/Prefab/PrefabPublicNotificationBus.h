@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
@@ -61,4 +63,5 @@ namespace AzToolsFramework
     } // namespace Prefab
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabPublicNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabPublicNotifications);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::Prefab::PrefabTemplateNotifications);

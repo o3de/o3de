@@ -8,6 +8,8 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Component/ComponentBus.h>
 
 namespace AzFramework
@@ -30,4 +32,4 @@ namespace AzFramework
     using ComponentModeDelegateNotificationBus = AZ::EBus<ComponentModeDelegateNotifications>;
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzFramework::ComponentModeDelegateNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::ComponentModeDelegateNotifications);

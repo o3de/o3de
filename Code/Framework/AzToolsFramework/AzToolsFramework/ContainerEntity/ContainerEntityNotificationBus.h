@@ -8,8 +8,9 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/EBus/EBus.h>
 
 #include <AzFramework/Entity/EntityContext.h>
 
@@ -39,3 +40,5 @@ namespace AzToolsFramework
     using ContainerEntityNotificationBus = AZ::EBus<ContainerEntityNotifications>;
 
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ContainerEntityNotifications);

@@ -8,8 +8,10 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -377,4 +379,13 @@ namespace AzToolsFramework
     } // namespace ViewportInteraction
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::MouseViewportRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionNotifications, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportSettingNotifications, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::ViewportInteraction::EditorModifierKeyRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequests, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);

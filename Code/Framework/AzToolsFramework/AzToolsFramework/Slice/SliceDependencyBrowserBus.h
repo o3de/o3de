@@ -7,7 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include "SliceRelationshipNode.h"
 
 namespace AZ
@@ -66,4 +68,7 @@ namespace AzToolsFramework
     };
 
     using SliceDependencyBrowserNotificationsBus = AZ::EBus<SliceDependencyBrowserNotifications>;
-}
+} // AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::SliceDependencyBrowserRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::SliceDependencyBrowserNotifications);

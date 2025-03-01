@@ -8,6 +8,9 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <QString>
@@ -42,3 +45,5 @@ namespace AzToolsFramework
         using ComponentModeViewportUiRequestBus = AZ::EBus<ComponentModeViewportUiRequests>;
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ComponentModeFramework::ComponentModeViewportUiRequests);

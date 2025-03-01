@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 
 #include <QKeySequence>
@@ -212,3 +213,8 @@ namespace AzToolsFramework
     /// Type to inherit to implement EditorMenuNotifications.
     using EditorMenuNotificationBus = AZ::EBus<EditorMenuNotifications>;
 }
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ActionOverrideRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorActionRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorMenuRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorMenuNotifications);

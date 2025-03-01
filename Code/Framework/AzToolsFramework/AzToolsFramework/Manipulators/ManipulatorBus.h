@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzToolsFramework/Picking/BoundInterface.h>
 
 namespace AzToolsFramework
@@ -74,3 +76,5 @@ namespace AzToolsFramework
     using ManipulatorManagerRequestBus = AZ::EBus<ManipulatorManagerRequests>;
 
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ManipulatorManagerRequests);

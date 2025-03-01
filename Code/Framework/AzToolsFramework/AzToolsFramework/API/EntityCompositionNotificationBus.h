@@ -6,13 +6,12 @@
  *
  */
 #pragma once
- //AZTF-EBUS
 
-#include <AzCore/base.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/EBus/EBus.h>
-
 #include <AzToolsFramework/Entity/EntityTypes.h>
 
 namespace AzToolsFramework
@@ -49,4 +48,4 @@ namespace AzToolsFramework
 
 }
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionNotifications);

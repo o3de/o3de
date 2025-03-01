@@ -7,9 +7,9 @@
  */
 
 #pragma once
-//AZTF-EBUS
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/std/string/string.h>
 
 namespace AzToolsFramework
@@ -34,4 +34,4 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::ActionManagerNotifications)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::ActionManagerNotifications)

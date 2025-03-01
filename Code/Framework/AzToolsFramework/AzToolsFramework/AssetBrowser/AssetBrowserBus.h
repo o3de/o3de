@@ -7,9 +7,10 @@
  */
 
 #pragma once
-//AZTF-EBUS
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
@@ -468,15 +469,15 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserComponentNotifications)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserModelRequests)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserModelNotifications)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserViewRequests)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequest)
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotifications)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFavoriteRequests)
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFavoritesNotifications)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserComponentNotifications)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserModelRequests)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserModelNotifications)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserViewRequests)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequest)
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotifications)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFavoriteRequests)
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::AssetBrowserFavoritesNotifications)

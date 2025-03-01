@@ -6,12 +6,12 @@
  *
  */
 #pragma once
-//AZTF-SHARED
 
+//AZTF-SHARED
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Script/ScriptContext.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-
 #include <AzToolsFramework/Script/LuaSymbolsReporterBus.h>
 
 namespace AzToolsFramework

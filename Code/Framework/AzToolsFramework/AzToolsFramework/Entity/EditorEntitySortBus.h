@@ -7,7 +7,8 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -57,3 +58,6 @@ namespace AzToolsFramework
     using EditorEntitySortNotificationBus = AZ::EBus<EditorEntitySortNotifications>;
 
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorEntitySortRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorEntitySortNotifications);

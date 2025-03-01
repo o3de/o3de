@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Entity/BehaviorEntity.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
@@ -47,5 +49,6 @@ namespace AzToolsFramework
 
     };
     using EditorLevelComponentAPIBus = AZ::EBus<EditorLevelComponentAPIRequests>;
+} // namespace AzToolsFramework
 
-}
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorLevelComponentAPIRequests)

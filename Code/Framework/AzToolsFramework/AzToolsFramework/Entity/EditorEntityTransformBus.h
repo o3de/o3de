@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 
@@ -30,3 +31,5 @@ namespace AzToolsFramework
 
     using EditorTransformChangeNotificationBus = AZ::EBus<EditorTransformChangeNotifications>;
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorTransformChangeNotifications);

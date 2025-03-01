@@ -6,10 +6,9 @@
  *
  */
 #pragma once
-//AZTF-EBUS
 
-#include <AzCore/base.h>
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 namespace AzToolsFramework
@@ -63,5 +62,5 @@ namespace AzToolsFramework
     } // namespace AssetDatabase
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetDatabase::AssetDatabaseNotifications);

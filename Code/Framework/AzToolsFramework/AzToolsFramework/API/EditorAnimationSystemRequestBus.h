@@ -7,7 +7,9 @@
  */
 
 #pragma once
+
 //AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
 namespace AzToolsFramework
 {
@@ -35,4 +37,4 @@ namespace AzToolsFramework
     using EditorAnimationSystemRequestsBus = AZ::EBus<EditorAnimationSystemRequests>;
 } // EditorAnimationSystemRequests
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorAnimationSystemRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorAnimationSystemRequests);

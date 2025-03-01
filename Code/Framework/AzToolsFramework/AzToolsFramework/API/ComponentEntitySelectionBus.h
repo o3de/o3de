@@ -7,10 +7,11 @@
  */
 
 #pragma once
+
 //AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzToolsFramework/API/ComponentEntitySelection.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
@@ -104,4 +105,4 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EditorComponentSelectionRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorComponentSelectionRequests);

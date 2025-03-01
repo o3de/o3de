@@ -6,14 +6,13 @@
  *
  */
 #pragma once
-//AZTF-EBUS
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
-#include <AzCore/base.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Debug/Budget.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -972,11 +971,11 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationEvents);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationRequests);
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EntitySelectionEvents);
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EditorPickModeRequests);
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EditorPickModeNotifications);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorRequests);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EditorEvents);
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::ViewPaneCallbacks);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationEvents);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::ToolsApplicationRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EntitySelectionEvents);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorPickModeRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorPickModeNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorEvents);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ViewPaneCallbacks);

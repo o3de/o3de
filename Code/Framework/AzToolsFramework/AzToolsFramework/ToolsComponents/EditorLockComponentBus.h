@@ -8,6 +8,9 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 
@@ -61,4 +64,5 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::EditorEntityLockComponentNotifications);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorLockComponentRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorEntityLockComponentNotifications);

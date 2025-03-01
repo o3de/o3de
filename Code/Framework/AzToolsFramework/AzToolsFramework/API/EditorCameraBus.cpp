@@ -7,7 +7,8 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include "EditorCameraBus.h"
+
+#include <AzToolsFramework/API/EditorCameraBus.h>
 
 namespace Camera
 {
@@ -26,3 +27,8 @@ namespace Camera
         }
     }
 }
+
+AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(Camera::EditorCameraRequests);
+AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(Camera::EditorCameraSystemRequests);
+AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(Camera::EditorCameraNotifications);
+AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(Camera::EditorCameraViewRequests);

@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -76,3 +78,7 @@ namespace AzToolsFramework
         using ThumbnailerRendererNotificationBus = AZ::EBus<ThumbnailerRendererNotifications>;
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications);

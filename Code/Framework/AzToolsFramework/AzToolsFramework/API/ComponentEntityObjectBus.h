@@ -6,9 +6,10 @@
  *
  */
 #pragma once
-//AZTF-EBUS
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
@@ -64,5 +65,5 @@ namespace AzToolsFramework
     using ComponentEntityObjectRequestBus = AZ::EBus<ComponentEntityObjectRequests>;
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::ComponentEntityEditorRequests);
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::ComponentEntityObjectRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ComponentEntityEditorRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ComponentEntityObjectRequests);

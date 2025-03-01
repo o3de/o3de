@@ -7,7 +7,10 @@
  */
 
 #pragma once
-#include <AzCore/EBus/EBus.h>
+
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+#include <AzCore/std/string/string.h>
 
 namespace AzToolsFramework
 {
@@ -27,3 +30,5 @@ namespace AzToolsFramework
 
     } // namespace SQLite
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::SQLite::SQLiteQueryLogEvents);

@@ -8,8 +8,9 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Component/ComponentBus.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 
 namespace AzToolsFramework
@@ -41,3 +42,5 @@ namespace AzToolsFramework
     using GlobalPaintBrushSettingsNotificationBus = AZ::EBus<GlobalPaintBrushSettingsNotifications>;
 
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::GlobalPaintBrushSettingsNotifications);

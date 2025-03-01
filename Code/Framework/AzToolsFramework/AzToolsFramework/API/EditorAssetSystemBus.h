@@ -7,9 +7,10 @@
  */
 
 #pragma once
-// AZTF-EBUS
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Math/Crc.h>
@@ -215,6 +216,6 @@ namespace AZStd
     extern template class vector<AzToolsFramework::AssetSystem::JobInfo>;
 }
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemNotifications);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemRequest);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemJobRequest);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemRequest);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetSystem::AssetSystemJobRequest);

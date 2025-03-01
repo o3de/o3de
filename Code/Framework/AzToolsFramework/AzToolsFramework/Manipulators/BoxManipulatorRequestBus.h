@@ -8,7 +8,10 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Transform.h>
 
 namespace AZ
 {
@@ -36,3 +39,5 @@ namespace AzToolsFramework
     //! Type to inherit to implement BoxManipulatorRequests
     using BoxManipulatorRequestBus = AZ::EBus<BoxManipulatorRequests>;
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::BoxManipulatorRequests);

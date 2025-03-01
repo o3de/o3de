@@ -7,10 +7,11 @@
  */
 
 #pragma once
+
 //AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
 #include <AzCore/Component/ComponentBus.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AzToolsFramework
@@ -36,4 +37,4 @@ namespace AzToolsFramework
     using EntityPropertyEditorNotificationBus = AZ::EBus<EntityPropertyEditorNotifications>;
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EntityPropertyEditorNotifications);

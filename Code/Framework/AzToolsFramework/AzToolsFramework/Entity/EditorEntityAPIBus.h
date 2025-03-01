@@ -7,7 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Component/Entity.h>
 #include <AzToolsFramework/Entity/EditorEntityStartStatus.h>
 
@@ -31,4 +33,6 @@ namespace AzToolsFramework
     };
 
     using EditorEntityAPIBus = AZ::EBus<EditorEntityAPIRequests>;
-}
+} // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorEntityAPIRequests);

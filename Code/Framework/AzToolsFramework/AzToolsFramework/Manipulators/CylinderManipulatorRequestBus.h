@@ -8,6 +8,8 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Component/ComponentBus.h>
 
 namespace AzToolsFramework
@@ -30,3 +32,4 @@ namespace AzToolsFramework
     using CylinderManipulatorRequestBus = AZ::EBus<CylinderManipulatorRequests>;
 } // namespace AzToolsFramework
 
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::CylinderManipulatorRequests);

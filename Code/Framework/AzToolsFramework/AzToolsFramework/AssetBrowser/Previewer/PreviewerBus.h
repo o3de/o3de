@@ -7,7 +7,8 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
 namespace AzToolsFramework
 {
@@ -41,3 +42,5 @@ namespace AzToolsFramework
         using PreviewerRequestBus = AZ::EBus<PreviewerRequests>;
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetBrowser::PreviewerRequests);

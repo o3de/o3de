@@ -7,10 +7,11 @@
  */
 #pragma once
 
-#include <QModelIndex>
-
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Slice/SliceComponent.h>
-#include <AzCore/EBus/EBus.h>
+
+#include <QModelIndex>
 
 namespace AzToolsFramework
 {
@@ -70,4 +71,8 @@ namespace AzToolsFramework
     /// \ref EditorVisibilityNotifications
     using EntityOutlinerModelNotificationBus = AZ::EBus<EntityOutlinerModelNotifications>;
 
-}
+} // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EntityOutlinerCacheRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EntityOutlinerCacheNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EntityOutlinerModelNotifications);

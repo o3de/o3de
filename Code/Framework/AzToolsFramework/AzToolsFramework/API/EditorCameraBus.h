@@ -7,7 +7,9 @@
  */
 
 #pragma once
+
 //AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>
@@ -150,7 +152,7 @@ namespace Camera
 
 } // namespace Camera
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Camera::EditorCameraRequests);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Camera::EditorCameraSystemRequests);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Camera::EditorCameraNotifications);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Camera::EditorCameraViewRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(Camera::EditorCameraRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(Camera::EditorCameraSystemRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(Camera::EditorCameraNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(Camera::EditorCameraViewRequests);

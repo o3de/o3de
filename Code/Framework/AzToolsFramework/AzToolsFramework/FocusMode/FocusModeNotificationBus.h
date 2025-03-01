@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
+#include <AzCore/Component/EntityId.h>
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace AzToolsFramework
@@ -40,3 +41,5 @@ namespace AzToolsFramework
     using FocusModeNotificationBus = AZ::EBus<FocusModeNotifications>;
 
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::FocusModeNotifications);

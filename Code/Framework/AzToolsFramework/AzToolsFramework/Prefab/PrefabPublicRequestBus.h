@@ -8,8 +8,10 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -139,3 +141,5 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabPublicRequests);

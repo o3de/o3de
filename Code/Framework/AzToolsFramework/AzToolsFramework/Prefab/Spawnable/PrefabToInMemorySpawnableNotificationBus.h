@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -37,3 +39,5 @@ namespace AzToolsFramework::Prefab
     using PrefabToInMemorySpawnableNotificationBus = AZ::EBus<PrefabToInMemorySpawnableNotifications>;
 
 } // namespace AzToolsFramework::Prefab
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotifications);

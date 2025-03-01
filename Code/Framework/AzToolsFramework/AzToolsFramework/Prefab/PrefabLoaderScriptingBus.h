@@ -8,6 +8,9 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
@@ -44,3 +47,4 @@ namespace AzToolsFramework
     } // namespace Prefab
 } // namespace AzToolsFramework
 
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabLoaderScriptingTraits);

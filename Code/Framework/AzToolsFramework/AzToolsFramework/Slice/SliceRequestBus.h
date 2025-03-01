@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Component/Component.h>
@@ -35,3 +37,5 @@ namespace AzToolsFramework
 
     using SliceRequestBus = AZ::EBus<SliceRequests>;
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::SliceRequests);

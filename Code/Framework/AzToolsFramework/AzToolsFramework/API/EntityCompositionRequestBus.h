@@ -6,10 +6,10 @@
  *
  */
 #pragma once
-//AZTF-EBUS
 
-#include <AzCore/base.h>
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
@@ -203,5 +203,4 @@ namespace AzToolsFramework
     using EntityCompositionRequestBus = AZ::EBus<EntityCompositionRequests>;
 }
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionRequests);
-
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EntityCompositionRequests);

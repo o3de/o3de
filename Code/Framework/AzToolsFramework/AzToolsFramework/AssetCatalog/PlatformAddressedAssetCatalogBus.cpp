@@ -9,4 +9,4 @@
 
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogBus.h>
 
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS_WITH_TRAITS(AZ::Data::AssetCatalogRequests, AzToolsFramework::AssetCatalog::PlatformAddressedAssetCatalogBusTraits)
+AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(AZ::Data::AssetCatalogRequests, AzToolsFramework::AssetCatalog::PlatformAddressedAssetCatalogBusTraits)

@@ -7,7 +7,8 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
 namespace AzToolsFramework
 {
@@ -39,4 +40,4 @@ namespace AzToolsFramework
     } // namespace Components
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN(AzToolsFramework::Components::EditorSelectionAccentingRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Components::EditorSelectionAccentingRequests);

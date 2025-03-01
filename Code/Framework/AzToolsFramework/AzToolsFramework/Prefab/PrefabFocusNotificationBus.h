@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace AzToolsFramework::Prefab
@@ -44,3 +45,5 @@ namespace AzToolsFramework::Prefab
     using PrefabFocusNotificationBus = AZ::EBus<PrefabFocusNotifications>;
 
 } // namespace AzToolsFramework::Prefab
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::Prefab::PrefabFocusNotifications);

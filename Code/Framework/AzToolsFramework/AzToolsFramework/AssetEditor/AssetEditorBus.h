@@ -6,8 +6,9 @@
  *
  */
 #pragma once
-//AZTF-EBUS
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
@@ -91,7 +92,7 @@ namespace AzToolsFramework
     } // namespace AssetEditor
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorRequests);
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorNotifications);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::AssetEditor::AssetEditorNotifications);

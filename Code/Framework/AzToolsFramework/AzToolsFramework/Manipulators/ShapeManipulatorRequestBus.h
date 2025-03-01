@@ -8,7 +8,12 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace AZ
 {
@@ -37,3 +42,5 @@ namespace AzToolsFramework
     //! Type to inherit to implement ShapeOffsetManipulatorRequests
     using ShapeManipulatorRequestBus = AZ::EBus<ShapeManipulatorRequests>;
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ShapeManipulatorRequests);

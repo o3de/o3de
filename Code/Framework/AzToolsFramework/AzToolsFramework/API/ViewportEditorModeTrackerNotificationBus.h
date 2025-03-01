@@ -7,7 +7,9 @@
  */
 
 #pragma once
+
 //AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 
 #include <AzCore/EBus/Event.h>
 #include <AzFramework/Entity/EntityContextBus.h>
@@ -76,4 +78,4 @@ namespace AzToolsFramework
     using ViewportEditorModeNotificationsBus = AZ::EBus<ViewportEditorModeNotifications>;
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AzToolsFramework::ViewportEditorModeNotifications);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::ViewportEditorModeNotifications);

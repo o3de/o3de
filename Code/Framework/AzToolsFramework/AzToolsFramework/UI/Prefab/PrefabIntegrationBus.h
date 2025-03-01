@@ -8,6 +8,8 @@
 
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Component/Entity.h>
 
 namespace AzToolsFramework
@@ -29,3 +31,5 @@ namespace AzToolsFramework
         using PrefabInstanceContainerNotificationBus = AZ::EBus<PrefabInstanceContainerNotifications>;
     }
 }
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::Prefab::PrefabInstanceContainerNotifications);

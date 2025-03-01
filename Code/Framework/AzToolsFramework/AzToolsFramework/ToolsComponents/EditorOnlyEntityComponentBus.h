@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/EBus/EBus.h>
-
 #pragma once
+
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+#include <AzCore/Component/ComponentBus.h>
 
 namespace AzToolsFramework
 {
@@ -37,3 +39,5 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorOnlyEntityComponentRequests);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzToolsFramework::EditorOnlyEntityComponentNotifications);

@@ -7,6 +7,9 @@
  */
 #pragma once
 
+//AZTF-EBUS
+#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Component.h>
 
@@ -47,3 +50,6 @@ namespace AzToolsFramework
 
     using EditorInspectorComponentNotificationBus = AZ::EBus<EditorInspectorComponentNotifications>;
 } // namespace AzToolsFramework
+
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorInspectorComponentRequests);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzToolsFramework::EditorInspectorComponentNotifications);
