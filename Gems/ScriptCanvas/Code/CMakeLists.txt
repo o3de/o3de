@@ -157,6 +157,7 @@ ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name}
 ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
+
     ly_add_target(
         NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
@@ -231,6 +232,50 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::ExpressionEvaluation
     )
 
+    o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Application/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+
+    ly_add_target(
+        NAME ${gem_name}Application APPLICATION
+        NAMESPACE Gem
+        AUTORCC
+        FILES_CMAKE
+            scriptcanvasgem_application_files.cmake
+            ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        COMPILE_DEFINITIONS
+            PUBLIC
+                SCRIPTCANVAS_ERRORS_ENABLED
+            PRIVATE
+                SCRIPTCANVAS_EDITOR
+                ${SCRIPT_CANVAS_COMMON_DEFINES}
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Application
+                Editor
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                AZ::AzToolsFramework
+                AZ::AzQtComponents
+                Legacy::EditorCore
+                Gem::${gem_name}.Editor
+                Gem::${gem_name}.Editor.Static
+                Gem::AtomToolsFramework.Static
+        RUNTIME_DEPENDENCIES
+            Gem::${gem_name}.Editor
+    )
+
+    # Inject target name for dependency resolution
+    ly_add_source_properties(
+        SOURCES
+            Application/ScriptCanvasApplication.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                LY_CMAKE_TARGET="${gem_name}Application")
+
+    if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+        ly_target_link_libraries(${gem_name}Application PRIVATE AZ::ToolsCrashHandler)
+    endif()
+
     # Inject the gem name into the Module source file
     ly_add_source_properties(
         SOURCES
@@ -244,6 +289,17 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
+    ly_set_gem_variant_to_load(TARGETS ${gem_name}Application VARIANTS Tools)
+    
+    # Add build dependency to Editor for the ScriptCanvas application since
+    # Editor opens up the ScriptCanvas
+    ly_add_dependencies(Editor Gem::${gem_name}Application)
+
+    # Inject the project path into the ScriptCanvas VS debugger command arguments if the build system being invoked
+    # in a project centric view
+    if(NOT PROJECT_NAME STREQUAL "O3DE")
+        set_property(TARGET ${gem_name}Application APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${CMAKE_SOURCE_DIR}\"")
+    endif()
 
 endif()
 
