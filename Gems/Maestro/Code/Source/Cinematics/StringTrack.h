@@ -29,6 +29,7 @@ namespace Maestro
         void SetValue(float time, const AZStd::string& value, bool bDefault = false) override;
         void SerializeKey([[maybe_unused]] IStringKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) override {}
         void GetKeyInfo(int key, const char*& description, float& duration) override;
+        // ~ IAnimTrack overrides
 
         void SetDefaultValue(const AZStd::string& defaultValue) { m_defaultValue = defaultValue; }
         const AZStd::string& GetDefaultValue() const { return m_defaultValue; }

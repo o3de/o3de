@@ -2103,7 +2103,8 @@ void CTrackViewDopeSheetBase::EditSelectedColorKey(CTrackViewTrack* pTrack)
 bool CTrackViewDopeSheetBase::CreateStringKey(CTrackViewTrack* pTrack, float keyTime)
 {
     const auto sequence = pTrack->GetSequence();
-    if (!(sequence && IsOkToAddKeyHere(pTrack, keyTime)))
+    const bool canCreateKey = IsOkToAddKeyHere(pTrack, keyTime);
+    if (!(sequence && canCreateKey))
     {
         return false;
     }
@@ -2116,22 +2117,23 @@ bool CTrackViewDopeSheetBase::CreateStringKey(CTrackViewTrack* pTrack, float key
     const QString label(tr("Value :\t\t\t\t\t\t\t\t")); // trick to widen widget
     const QString prevStr(str.c_str());
     const QString newStr = QInputDialog::getText(this, title, label, QLineEdit::EchoMode::Normal, prevStr, &isOk);
-    if (isOk)
+    if (!isOk)
     {
-        CTrackViewSequenceNotificationContext context(sequence);
-        AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-
-        CTrackViewKeyHandle newKey = pTrack->CreateKey(keyTime);
-        IStringKey strKey;
-        newKey.GetKey(&strKey);
-        strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
-        newKey.SetKey(&strKey);
-
-        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-
-        return true;
+        return false;
     }
-    return false;
+
+    CTrackViewSequenceNotificationContext context(sequence);
+    AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
+
+    CTrackViewKeyHandle newKey = pTrack->CreateKey(keyTime);
+    IStringKey strKey;
+    newKey.GetKey(&strKey);
+    strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
+    newKey.SetKey(&strKey);
+
+    undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+    return true;
 }
 
 void CTrackViewDopeSheetBase::EditSelectedStringKey(CTrackViewTrack* pTrack)
@@ -2153,18 +2155,19 @@ void CTrackViewDopeSheetBase::EditSelectedStringKey(CTrackViewTrack* pTrack)
     const QString label(tr("Value :\t\t\t\t\t\t\t\t")); // trick to widen widget
     const QString prevStr(str.c_str());
     const QString newStr = QInputDialog::getText(this, title, label, QLineEdit::EchoMode::Normal, prevStr, &isOk);
-    if (isOk)
+    if (!isOk)
     {
-        CTrackViewSequenceNotificationContext context(sequence);
-        AzToolsFramework::ScopedUndoBatch undoBatch("Set Key");
-
-        IStringKey strKey;
-        selectedKeyHandle.GetKey(&strKey);
-        strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
-        selectedKeyHandle.SetKey(&strKey);
-
-        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+        return;
     }
+    CTrackViewSequenceNotificationContext context(sequence);
+    AzToolsFramework::ScopedUndoBatch undoBatch("Set Key");
+
+    IStringKey strKey;
+    selectedKeyHandle.GetKey(&strKey);
+    strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
+    selectedKeyHandle.SetKey(&strKey);
+
+    undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
 }
 
 

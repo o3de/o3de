@@ -6,10 +6,10 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
-
 #include "StringTrack.h"
-#include "Maestro/Types/AnimValueType.h"
+
+#include <AzCore/Serialization/SerializeContext.h>
+#include <CryCommon/Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {
@@ -89,7 +89,7 @@ namespace Maestro
         for (size_t i = 0; i < m_keys.size(); i++)
         {
             float keyt = m_keys[i].time;
-            if (AZStd::abs(keyt - time) < MinTimePrecision) // Found a close key? 
+            if (AZStd::abs(keyt - time) < MinTimePrecision) // Found a close key?
             {
                 key->flags = m_keys[i].flags; // Reserve the flag value.
                 SetKey(static_cast<int>(i), key);

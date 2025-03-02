@@ -7,12 +7,13 @@
  */
 
 
-#include "EditorDefs.h"
-
 #include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"                          // for CTrackViewKeyUIControls
 
-#include <CryCommon/Maestro/Types/AnimValueType.h>              // for AnimValueType
+#include "EditorDefs.h"
+#include "TrackViewKeyPropertiesDlg.h"
+
+#include <CryCommon/Maestro/Types/AnimValueType.h>
+
 
 bool CStringKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
@@ -37,7 +38,6 @@ bool CStringKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
     return false;
 }
 
-// Called when UI variable changes.
 void CStringKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -50,32 +50,31 @@ void CStringKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
     for (unsigned int keyIndex = 0; keyIndex < selectedKeys.GetKeyCount(); ++keyIndex)
     {
         CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(keyIndex);
-
-        AnimValueType valueType = keyHandle.GetTrack()->GetValueType();
-        if (valueType == AnimValueType::String)
+        if (keyHandle.GetTrack()->GetValueType() != AnimValueType::String)
         {
-            IStringKey stringKey;
-            keyHandle.GetKey(&stringKey);
+            continue;
+        }
 
-            if (pVar == mv_value.GetVar())
-            {
-                QString qString = mv_value;
-                stringKey.m_strValue = qString.toUtf8().data();
-            }
+        IStringKey stringKey;
+        keyHandle.GetKey(&stringKey);
 
-            bool isDuringUndo = false;
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
+        if (pVar == mv_value.GetVar())
+        {
+            stringKey.m_strValue = qUtf8Printable(mv_value);
+        }
 
-            if (isDuringUndo)
-            {
-                keyHandle.SetKey(&stringKey);
-            }
-            else
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Set Key Value");
-                keyHandle.SetKey(&stringKey);
-                undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-            }
+        bool isDuringUndo = false;
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
+
+        if (isDuringUndo)
+        {
+            keyHandle.SetKey(&stringKey);
+        }
+        else
+        {
+            AzToolsFramework::ScopedUndoBatch undoBatch("Set Key Value");
+            keyHandle.SetKey(&stringKey);
+            undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
         }
     }
 }

@@ -29,8 +29,8 @@
 #include "CaptureTrack.h"
 #include "CommentTrack.h"
 #include "ScreenFaderTrack.h"
-#include "TimeRangesTrack.h"
 #include "StringTrack.h"
+#include "TimeRangesTrack.h"
 
 #include <AzCore/std/sort.h>
 #include <AzCore/Math/MathUtils.h>
