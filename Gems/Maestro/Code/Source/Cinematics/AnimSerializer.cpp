@@ -109,6 +109,9 @@ void AnimSerializer::ReflectAnimTypes(AZ::ReflectContext* context)
             ->Field("Duration", &ISoundKey::fDuration)
             ->Field("Color", &ISoundKey::customColor);
 
+        serializeContext->Class<IStringKey, IKey>()
+            ->Field("Value", &IStringKey::m_strValue);
+
         serializeContext->Class<ITimeRangeKey, IKey>()
             ->Field("Duration", &ITimeRangeKey::m_duration)
             ->Field("Start", &ITimeRangeKey::m_startTime)

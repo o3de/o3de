@@ -264,7 +264,7 @@ struct IAnimTrack
 
     //////////////////////////////////////////////////////////////////////////
     virtual EAnimCurveType GetCurveType() = 0;
-    virtual AnimValueType     GetValueType() = 0;
+    virtual AnimValueType  GetValueType() = 0;
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
     // This color is used for the editor.
@@ -288,7 +288,7 @@ struct IAnimTrack
     // Animation track can contain sub-tracks (Position XYZ anim track have sub-tracks for x,y,z)
     // Get count of sub tracks.
     virtual int GetSubTrackCount() const = 0;
-    // Retrieve pointer the specfied sub track.
+    // Retrieve pointer the specified sub track.
     virtual IAnimTrack* GetSubTrack(int nIndex) const = 0;
     virtual AZStd::string GetSubTrackName(int nIndex) const = 0;
     virtual void SetSubTrackName(int nIndex, const char* name) = 0;
@@ -378,6 +378,7 @@ struct IAnimTrack
     virtual void GetValue(float time, AZ::Quaternion& value) = 0;
     virtual void GetValue(float time, bool& value) = 0;
     virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) = 0;
+    virtual void GetValue(float time, AZStd::string& value) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Set track value at specified time.
@@ -389,6 +390,7 @@ struct IAnimTrack
     virtual void SetValue(float time, const AZ::Quaternion& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) = 0;
+    virtual void SetValue(float time, const AZStd::string& value, bool bDefault = false) = 0;
 
     // Only for position tracks, offset all track keys by this amount.
     virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
@@ -419,7 +421,7 @@ struct IAnimTrack
     virtual bool IsSortMarkerKey([[maybe_unused]] unsigned int keyIndex) const { return false; }
 
     //! Return the index of the key which lies right after the given key in time.
-    //! @param key Index of of key.
+    //! @param key Index of key.
     //! @return Index of the next key in time. If the last key given, this returns -1.
     // In case of keys sorted, it's just 'key+1', but if not sorted, it can be another value.
     virtual int NextKeyByTime(int key) const;
@@ -429,9 +431,9 @@ struct IAnimTrack
     //! Set the animation layer index. (only for character/look-at tracks ATM)
     virtual void SetAnimationLayerIndex([[maybe_unused]] int index) { }
 
-    //! Returns whether the track responds to muting (false by default), which only affects the Edtior.
+    //! Returns whether the track responds to muting (false by default), which only affects the Editor.
     //! Tracks that use mute should override this, such as CSoundTrack
-    //! @return Boolean of whether the track respnnds to muting or not
+    //! @return Boolean of whether the track responds to muting or not
     virtual bool UsesMute() const { return false; }
 
     //! Set a multiplier which will be multiplied to track values in SetValue and divided out in GetValue if requested
@@ -492,8 +494,8 @@ public:
 
         AZStd::string name;           // parameter name.
         CAnimParamType paramType;     // parameter id.
-        AnimValueType valueType;       // value type, defines type of track to use for animating this parameter.
-        ESupportedParamFlags flags; // combination of flags from ESupportedParamFlags.
+        AnimValueType valueType;      // value type, defines type of track to use for animating this parameter.
+        ESupportedParamFlags flags;   // combination of flags from ESupportedParamFlags.
     };
 
     using AnimParamInfos = AZStd::vector<SParamInfo>;
