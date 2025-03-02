@@ -155,7 +155,8 @@ namespace ScriptCanvasEditor
 
     void Configuration::OpenEditor([[maybe_unused]] const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
     {
-        AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
+        // #GH_TODO replace
+        // AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
 
         if (m_sourceHandle.IsDescriptionValid())
         {

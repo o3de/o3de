@@ -104,8 +104,7 @@ namespace ScriptCanvasBuilder
         AZ::ApplicationTypeQuery appType;
         AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
         ScriptCanvas::MakeInternalGraphEntitiesUnique makeUnique = ScriptCanvas::MakeInternalGraphEntitiesUnique::Yes;
-        const bool isAssetProcessor = appType.IsValid() && (appType.IsTool() && !appType.IsEditor());
-        if (isAssetProcessor)
+        if (appType.IsAssetProcessor())
         {
             // Allow to keep the same entity UIDs between the editable scriptCanvas and the compiled scriptCanvas files,
             // This is needed to support debug features such as breakpoints.

@@ -7,18 +7,23 @@
  */
 
 #include <AzCore/EBus/Results.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/string/wildcard.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/IO/FileOperations.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Framework/ScriptCanvasGraphUtilities.h>
@@ -29,10 +34,11 @@
 #include <Editor/View/Windows/MainWindow.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <LyViewPaneNames.h>
-#include <QFileInfo>
 #include <QDir>
+#include <QFileInfo>
 #include <QMenu>
-#include <ScriptCanvasContextIdentifiers.h>
+#include <QProcess>
+#include <QString>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -42,9 +48,12 @@
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 #include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
+#include <ScriptCanvasContextIdentifiers.h>
 
 namespace ScriptCanvasEditor
 {
+    constexpr AZStd::string_view ScriptCanvasApplicationActionIdentifier = "o3de.action.tools.script_canvas";
+
     static const size_t cs_jobThreads = 1;
 
     SystemComponent::SystemComponent()
@@ -56,8 +65,6 @@ namespace ScriptCanvasEditor
 
     SystemComponent::~SystemComponent()
     {
-        AzToolsFramework::UnregisterViewPane(LyViewPane::ScriptCanvas);
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusDisconnect();
         AZ::SystemTickBus::Handler::BusDisconnect();
     }
@@ -107,8 +114,6 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Init()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-
         m_viewportDragDropHandler = AZStd::make_unique<ScriptCanvasAssetDragDropHandler>();
     }
 
@@ -140,7 +145,6 @@ namespace ScriptCanvasEditor
 
         SystemRequestBus::Handler::BusConnect();
         ScriptCanvasExecutionBus::Handler::BusConnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
@@ -160,24 +164,11 @@ namespace ScriptCanvasEditor
         m_nodeReplacementSystem.LoadReplacementMetadata();
     }
 
-    void SystemComponent::NotifyRegisterViews()
-    {
-        QtViewOptions options;
-        options.canHaveMultipleInstances = false;
-        options.isPreview = true;
-        options.showInMenu = true;
-        options.showOnToolsToolbar = true;
-        options.toolbarIcon = ":/Menu/script_canvas_editor.svg";
-
-        AzToolsFramework::RegisterViewPane<ScriptCanvasEditor::MainWindow>(LyViewPane::ScriptCanvas, LyViewPane::CategoryTools, options);
-    }
-
     void SystemComponent::Deactivate()
     {
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         m_nodeReplacementSystem.UnloadReplacementMetadata();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ScriptCanvasExecutionBus::Handler::BusDisconnect();
         SystemRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -193,6 +184,27 @@ namespace ScriptCanvasEditor
             auto graph = entity->CreateComponent<EditorGraph>();
             entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
         }
+    }
+
+    void SystemComponent::OpenScriptCanvasEditor(const AZStd::string& sourcePath)
+    {
+        QStringList arguments;
+        arguments.append(sourcePath.c_str());
+
+        AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
+        if (!projectPath.empty())
+        {
+            arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+        }
+
+        AZ_TracePrintf("ScriptCanvasApplication", "Launching Script Canvas Editor");
+        AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+        AZ_Assert(!engineRoot.empty(), "Cannot query Engine Path");
+
+        AZ::IO::FixedMaxPath launchPath =
+            AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / (QString("ScriptCanvasApplication") + AZ_TRAIT_OS_EXECUTABLE_EXTENSION).toUtf8().constData();
+
+        QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }
 
     void SystemComponent::GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes)
@@ -400,14 +412,66 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::OnActionContextRegistrationHook()
     {
-        if (auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
-        {
-            AzToolsFramework::ActionContextProperties contextProperties;
-            contextProperties.m_name = "O3DE Script Canvas";
+        auto* actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "ScriptCanvas System Component - could not get ActionManagerInterface");
+        if (!actionManagerInterface)
+            return;
+        
+        AzToolsFramework::ActionContextProperties contextProperties;
+        contextProperties.m_name = "O3DE Script Canvas";
 
-            // Register custom action contexts to allow duplicated shortcut hotkeys to work
-            actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, contextProperties);
-            actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, contextProperties);
+        // Register custom action contexts to allow duplicated shortcut hotkeys to work
+        actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, contextProperties);
+        actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, contextProperties);
+        
+    }
+
+    void SystemComponent::OnActionRegistrationHook()
+    {
+        auto* actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "ScriptCanvas System Component - could not get ActionManagerInterface");
+        if (!actionManagerInterface)
+            return;
+
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Script Canvas";
+            actionProperties.m_iconPath = ":/Menu/script_canvas_editor.svg";
+
+            auto outcome = actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                ScriptCanvasApplicationActionIdentifier,
+                actionProperties,
+                [this]()
+                {
+                    OpenScriptCanvasEditor("");
+                });
+            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", ScriptCanvasApplicationActionIdentifier.data());
+        }
+    }
+
+    void SystemComponent::OnMenuBindingHook()
+    {
+        auto* actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "ScriptCanvas System Component - could not get ActionManagerInterface");
+
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "ScriptCanvas System Component - could not get MenuManagerInterface");
+
+        if (!actionManagerInterface || !menuManagerInterface)
+            return;
+
+        {
+            auto outcome = menuManagerInterface->AddActionToMenu(
+                EditorIdentifiers::ToolsMenuIdentifier,
+                ScriptCanvasApplicationActionIdentifier,
+                actionManagerInterface->GenerateActionAlphabeticalSortKey(ScriptCanvasApplicationActionIdentifier));
+
+            AZ_Assert(
+                outcome.IsSuccess(),
+                "Failed to AddAction %s to Menu %s",
+                ScriptCanvasApplicationActionIdentifier.data(),
+                EditorIdentifiers::ToolsMenuIdentifier.data());
         }
     }
 
