@@ -486,6 +486,13 @@ namespace
             return AZStd::make_any<AZ::Color>(value.GetX(), value.GetY(), value.GetZ(), 0.0f);
         }
         break;
+        case AnimValueType::String:
+            {
+                AZStd::string value;
+                pTrack->GetValue(time, value);
+                return AZStd::make_any<AZStd::string>(value);
+            }
+            break;
         default:
             throw std::runtime_error("Unsupported key type");
         }

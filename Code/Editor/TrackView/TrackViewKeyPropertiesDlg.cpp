@@ -72,6 +72,7 @@ CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     m_keyControls.push_back(new CSelectKeyUIControls());
     m_keyControls.push_back(new CSequenceKeyUIControls());
     m_keyControls.push_back(new CSoundKeyUIControls());
+    m_keyControls.push_back(new CStringKeyUIControls());
     m_keyControls.push_back(new CTimeRangeKeyUIControls());
     m_keyControls.push_back(new CTrackEventKeyUIControls());
 

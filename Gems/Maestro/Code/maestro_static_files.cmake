@@ -37,6 +37,7 @@ set(FILES
     Source/Cinematics/SelectTrack.cpp
     Source/Cinematics/SequenceTrack.cpp
     Source/Cinematics/SoundTrack.cpp
+    Source/Cinematics/StringTrack.cpp
     Source/Cinematics/TrackEventTrack.cpp
     Source/Cinematics/AnimSplineTrack.h
     Source/Cinematics/AnimSplineTrack_Vec2Specialization.cpp
@@ -55,6 +56,7 @@ set(FILES
     Source/Cinematics/SelectTrack.h
     Source/Cinematics/SequenceTrack.h
     Source/Cinematics/SoundTrack.h
+    Source/Cinematics/StringTrack.h
     Source/Cinematics/TrackEventTrack.h
     Source/Cinematics/AnimAZEntityNode.cpp
     Source/Cinematics/AnimNode.cpp
