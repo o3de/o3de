@@ -87,6 +87,10 @@
             "isTemplated": true
         },
         {
+            "file": "Registry/assimp_settings.setreg",
+            "isTemplated": false
+        },
+        {
             "file": "Resources/GameSDK.ico",
             "isTemplated": false
         },
