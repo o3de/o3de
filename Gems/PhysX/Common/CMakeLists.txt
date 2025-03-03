@@ -13,3 +13,6 @@ o3de_gem_setup("PhysXCommon")
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem)
 endif()
+
+add_subdirectory(3rdParty)
+ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
