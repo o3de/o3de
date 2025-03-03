@@ -135,7 +135,7 @@ namespace LmbrCentral
 
     bool EditorBaseShapeComponent::CanDraw() const
     {
-        return IsSelected() || m_visibleInEditor;
+        return m_visibleInEditor;
     }
 
     void EditorBaseShapeComponent::SetShapeComponentConfig(ShapeComponentConfig* shapeConfig)
