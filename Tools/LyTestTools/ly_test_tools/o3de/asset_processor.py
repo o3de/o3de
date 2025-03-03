@@ -95,8 +95,8 @@ class AssetProcessor(object):
 
     # Starts AP but does not by default run until idle.
     def start(self, connection_timeout=30, quitonidle=False, add_gem_scan_folders=None, add_config_scan_folders=None,
-              accept_input=True, run_until_idle=False, scan_folder_pattern=None, connect_to_ap=False):
-        self.gui_process(quitonidle=quitonidle, add_gem_scan_folders=add_gem_scan_folders,
+              accept_input=True, run_until_idle=False, scan_folder_pattern=None, connect_to_ap=False, extra_params=None):
+        self.gui_process(extra_params=extra_params, quitonidle=quitonidle, add_gem_scan_folders=add_gem_scan_folders,
                          add_config_scan_folders=add_config_scan_folders, timeout=connection_timeout,
                          connect_to_ap=connect_to_ap, accept_input=accept_input, run_until_idle=run_until_idle,
                          scan_folder_pattern=scan_folder_pattern)
