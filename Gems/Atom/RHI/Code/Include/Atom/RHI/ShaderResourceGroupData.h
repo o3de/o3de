@@ -9,11 +9,14 @@
 
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/DeviceShaderResourceGroupData.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
 #include <AzCore/std/containers/variant.h>
+
 
 namespace AZ::RHI
 {
