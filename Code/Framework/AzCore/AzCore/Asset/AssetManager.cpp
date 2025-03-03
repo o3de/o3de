@@ -912,7 +912,18 @@ namespace AZ::Data
     // GetAsset
     // [6/19/2012]
     //=========================================================================
-    Asset<AssetData> AssetManager::GetAsset(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams)
+    Asset<AssetData> AssetManager::GetAsset(
+        const AssetId& assetId,
+        const AssetType& assetType,
+        AssetLoadBehavior assetReferenceLoadBehavior,
+        const AssetLoadParameters& loadParams)
+    {
+        return GetAsset(assetId, assetType, "", assetReferenceLoadBehavior, loadParams);
+    }
+
+
+    Asset<AssetData> AssetManager::GetAsset(const AssetId& assetId, const AssetType& assetType, const AZStd::string& assetHint,
+        AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams)
     {
         // If parallel dependent loads are disabled, just try to load the requested asset directly, and let it trigger
         // dependent loads as they're encountered.
@@ -920,12 +931,16 @@ namespace AZ::Data
         // will be available and complete until after all assets are finished building.
         if(!GetParallelDependentLoadingEnabled())
         {
-            return GetAssetInternal(assetId, assetType, assetReferenceLoadBehavior, loadParams);
+            return GetAssetInternal(assetId, assetType, assetHint, assetReferenceLoadBehavior, loadParams);
         }
 
         // Otherwise, use Asset Containers to load all dependent assets in parallel.
 
         Asset<AssetData> asset = FindOrCreateAsset(assetId, assetType, assetReferenceLoadBehavior);
+        if (asset && asset.GetHint().empty())
+        {
+            asset.SetHint(assetHint);
+        }
 
         // NOTE: Do not use assetId past this point, asset may have been assigned an "upgraded" id if assetId is actually a legacy id
 
@@ -964,7 +979,19 @@ namespace AZ::Data
         return asset;
     }
 
-    Asset<AssetData> AssetManager::GetAssetInternal(const AssetId& assetId, [[maybe_unused]] const AssetType& assetType,
+    Asset<AssetData> AssetManager::GetAssetInternal(
+        const AssetId& assetId,
+        [[maybe_unused]] const AssetType& assetType,
+        AssetLoadBehavior assetReferenceLoadBehavior,
+        const AssetLoadParameters& loadParams,
+        AssetInfo assetInfo /*= () */,
+        bool signalLoaded /*= false */)
+    {
+        return GetAssetInternal(assetId, assetType, "", assetReferenceLoadBehavior, loadParams, assetInfo, signalLoaded);
+    }
+
+    Asset<AssetData> AssetManager::GetAssetInternal(
+        const AssetId& assetId, [[maybe_unused]] const AssetType& assetType, [[maybe_unused]] const AZStd::string& assetHint,
         AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams, AssetInfo assetInfo /*= () */, bool signalLoaded /*= false */)
     {
         AZ_PROFILE_FUNCTION(AzCore);
@@ -993,8 +1020,11 @@ namespace AZ::Data
             }
             else
             {
-                AZ_Warning("AssetManager", false, "GetAsset called for asset which does not exist in asset catalog and cannot be loaded. Asset may be missing, not processed or moved. AssetId: %s",
-                    assetId.ToString<AZStd::string>().c_str());
+                AZ_Warning("AssetManager", false,
+                    "GetAsset called for asset which does not exist in asset catalog and cannot be loaded. Asset may be missing, not processed or moved. AssetId: %s, AssetType: %s, AssetHint: %s",
+                    assetId.ToString<AZStd::string>().c_str(),
+                    assetType.ToString<AZStd::string>().c_str(),
+                    assetHint.c_str());
 
                 // If asset not found, use the id and type given.  We will create a valid asset, but it will likely get an error
                 // status below if the asset handler doesn't reroute it to a default asset.
@@ -1142,7 +1172,8 @@ namespace AZ::Data
         return asset;
     }
 
-    void AssetManager::QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> newAsset, bool signalLoaded)
+    void AssetManager::QueueAssetReload(
+        AZ::Data::Asset<AZ::Data::AssetData> newAsset, bool signalLoaded, const AssetLoadParameters& loadParams)
     {
         AssetHandler* handler = nullptr;
 
@@ -1173,7 +1204,7 @@ namespace AZ::Data
             if (dataStream)
             {
                 // Currently there isn't a clear use case for needing to adjust priority for reloads so the default load priority is used
-                QueueAsyncStreamLoad(newAsset, dataStream, loadInfo, isReload, handler, {}, signalLoaded);
+                QueueAsyncStreamLoad(newAsset, dataStream, loadInfo, isReload, handler, loadParams, signalLoaded);
             }
             else
             {
@@ -1455,7 +1486,7 @@ namespace AZ::Data
     //=========================================================================
     // ReloadAsset
     //=========================================================================
-    void AssetManager::ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload)
+    Asset<AssetData> AssetManager::ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload)
     {
         ASSET_DEBUG_OUTPUT(AZStd::string::format("Reload asset - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
 
@@ -1471,7 +1502,7 @@ namespace AZ::Data
                 // Only existing assets can be reloaded.
                 ASSET_DEBUG_OUTPUT(AZStd::string::format("Asset does not exist or is already loading - reload abort - " AZ_STRING_FORMAT,
                     AZ_STRING_ARG(assetId.ToFixedString())));
-                return;
+                return newAsset;
             }
 
             auto reloadIter = m_reloads.find(assetId);
@@ -1484,7 +1515,7 @@ namespace AZ::Data
                 if (curStatus == AssetData::AssetStatus::Queued)
                 {
                     ASSET_DEBUG_OUTPUT(AZStd::string::format("Already reloading - queued - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
-                    return;
+                    return reloadIter->second;
                 }
                 else if (curStatus == AssetData::AssetStatus::Loading || curStatus == AssetData::AssetStatus::StreamReady || curStatus == AssetData::AssetStatus::LoadedPreReady)
                 {
@@ -1493,7 +1524,7 @@ namespace AZ::Data
                         AZ_STRING_ARG(assetId.ToFixedString())));
                     // Don't flood the tick bus - this value will be checked when the asset load completes
                     reloadIter->second->SetRequeue(true);
-                    return;
+                    return reloadIter->second;
                 }
 
                 ASSET_DEBUG_OUTPUT(AZStd::string::format(
@@ -1522,7 +1553,7 @@ namespace AZ::Data
                 // Reloading an "instance asset" is basically a no-op.
                 // We'll simply notify users to reload the asset.
                 AssetBus::QueueFunction(&AssetManager::NotifyAssetReloaded, this, currentAsset);
-                return;
+                return currentAsset;
             }
             else
             {
@@ -1532,7 +1563,7 @@ namespace AZ::Data
             // Current AssetData has requested not to be auto reloaded
             if (preventAutoReload)
             {
-                return;
+                return currentAsset;
             }
 
             // Resolve the asset handler and allocate new data for the reload.
@@ -1612,6 +1643,8 @@ namespace AZ::Data
                 m_ownedAssetContainerLookup.insert({ assetId, container.get() });
             }
         }
+
+        return newAsset;
     }
 
     //=========================================================================
