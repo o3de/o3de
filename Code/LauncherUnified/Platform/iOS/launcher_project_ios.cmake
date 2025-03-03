@@ -27,9 +27,8 @@ if(NOT EXISTS ${ly_game_resource_folder})
     message(FATAL_ERROR "Missing 'Resources' folder. Candidate paths tried were: ${formatted_error}")
 endif()
 
-# CARBONATED add Launch.png and LaunchStoryboard.storyboard
+# CARBONATED add LaunchStoryboard.storyboard
 set (resource_files
-    ${ly_game_resource_folder}/Launch.png
     ${ly_game_resource_folder}/LaunchStoryboard.storyboard
     ${ly_game_resource_folder}/Images.xcassets
 )
