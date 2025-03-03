@@ -191,6 +191,10 @@
             "isTemplated": true
         },
         {
+            "file": "Registry/assimp_settings.setreg",
+            "isTemplated": false
+        },
+        {
             "file": "Registry/load_level.setreg",
             "isTemplated": false
         },
