@@ -173,6 +173,8 @@ namespace Multiplayer
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
 
+            m_eventScheduler->Deactivate();
+
             m_eventScheduler.reset();
             m_mockTime.reset();
 

@@ -101,6 +101,7 @@ namespace ScriptEvents
         if (moduleConfiguration)
         {
             moduleConfiguration->UnregisterAssetHandler();
+            moduleConfiguration->CleanUp();
         }
 
     }
