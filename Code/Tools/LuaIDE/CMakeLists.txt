@@ -40,5 +40,9 @@ ly_add_target(
             STANDALONETOOLS_ENABLE_LUA_IDE
 )
 
+if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+    ly_target_link_libraries(LuaIDE PRIVATE AZ::ToolsCrashHandler)
+endif()
+
 ly_set_gem_variant_to_load(TARGETS LuaIDE VARIANTS LuaTools)
 ly_add_dependencies(Editor LuaIDE)

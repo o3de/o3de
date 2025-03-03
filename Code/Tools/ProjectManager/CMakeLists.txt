@@ -47,6 +47,10 @@ ly_add_target(
             AZ::AzToolsFramework
 )
 
+if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+    ly_target_link_libraries(ProjectManager.Static PRIVATE AZ::ToolsCrashHandler)
+endif()
+
 ly_add_target(
     NAME ProjectManager APPLICATION
     OUTPUT_NAME o3de
