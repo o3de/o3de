@@ -70,7 +70,7 @@ public:
     MOCK_METHOD1(RemoveConsoleVarSink, void (IConsoleVarSink * pSink));
     MOCK_METHOD1(GetHistoryElement, const char*(bool bUpOrDown));
     MOCK_METHOD1(AddCommandToHistory, void (const char* szCommand));
-    MOCK_METHOD2(LoadConfigVar, void (const char* sVariable, const char* sValue));
+    MOCK_METHOD3(LoadConfigVar, void (const char* sVariable, const char* sValue, const Cry::LoadConfigVarOptions&));
     MOCK_METHOD1(EnableActivationKey, void (bool bEnable));
     MOCK_METHOD2(SetClientDataProbeString, void (const char* pName, const char* pValue));
 
