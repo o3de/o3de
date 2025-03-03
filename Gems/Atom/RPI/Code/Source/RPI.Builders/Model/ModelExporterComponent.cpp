@@ -9,9 +9,11 @@
 #include <Model/ModelExporterComponent.h>
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
+
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -91,16 +93,27 @@ namespace AZ
                 const AZStd::string& sceneName = exportEventContext.GetScene().GetName();
 
                 // escape the material name acceptable for a filename
-                AZStd::string materialName = materialPair.second.m_name;
-                for (char& item : materialName)
+                auto sanitizeName = [](AZStd::string& nameToSanitize)
                 {
-                    if (!isalpha(item) && !isdigit(item))
+                    for (char& item : nameToSanitize)
                     {
-                        item = '_';
+                        if (!isalpha(item) && !isdigit(item))
+                        {
+                            item = '_';
+                        }
                     }
-                }
+                };
+                AZStd::string materialName = materialPair.second.m_name;
+                sanitizeName(materialName);
 
-                const AZStd::string relativeMaterialFileName = AZStd::string::format("%s_%s_%" PRIu64, sceneName.c_str(), materialName.data(), materialUid);
+                // Results in myfile_mymaterial_(some uid which is the hash of the material properties from the scene).
+                // However, this can collide if for example, myfile.dae and myfile.fbx are in the same folder and have the same material in them,
+                // so, in addition, mix the source extension in, to make it so that different files don't end up with the same material export file colliding.
+                AZStd::string sceneExtension;
+                AZ::StringFunc::Path::GetExtension(exportEventContext.GetScene().GetSourceFilename().c_str(), sceneExtension, false);
+                sanitizeName(sceneExtension);
+                
+                const AZStd::string relativeMaterialFileName = AZStd::string::format("%s_%s_%s_%" PRIu64, sceneName.c_str(), sceneExtension.c_str(), materialName.data(), materialUid);
 
                 AssetExportContext materialExportContext =
                 {
