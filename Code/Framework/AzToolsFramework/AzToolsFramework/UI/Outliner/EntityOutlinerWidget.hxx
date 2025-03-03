@@ -42,7 +42,7 @@ namespace Ui
 namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
-    class EntityOutlinerListModel;
+    class EntityOutlinerListModelFromPrefab;
     class EntityOutlinerContainerProxyModel;
     class EntityOutlinerSortFilterProxyModel;
     class FocusModeInterface;
@@ -132,7 +132,7 @@ namespace AzToolsFramework
         QItemSelection BuildSelectionFromEntities(const EntityIdCollection& entityIds);
 
         Ui::EntityOutlinerWidgetUI* m_gui;
-        EntityOutlinerListModel* m_listModel;
+        EntityOutlinerListModelFromPrefab* m_listModel;
         EntityOutlinerSortFilterProxyModel* m_proxyModel;
         AZStd::vector<AZ::EntityId> m_selectedEntityIds;
 
