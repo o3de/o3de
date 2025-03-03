@@ -24,6 +24,10 @@
 
 #include <QMenu>
 
+#if defined(EXTERNAL_CRASH_REPORTING)
+#include <ToolsCrashHandler.h>
+#endif
+
 void InitShaderManagementConsoleResources()
 {
     // Must register qt resources from other modules
@@ -45,6 +49,9 @@ namespace ShaderManagementConsole
     ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
         : Base(GetBuildTargetName(), argc, argv)
     {
+#if defined(EXTERNAL_CRASH_REPORTING)
+        CrashHandler::ToolsCrashHandler::InitCrashHandler("ShaderManagementConsole", {});
+#endif
         InitShaderManagementConsoleResources();
 
         QApplication::setOrganizationName("O3DE");
