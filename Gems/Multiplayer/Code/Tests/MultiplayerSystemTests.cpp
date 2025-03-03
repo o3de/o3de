@@ -47,7 +47,7 @@ namespace Multiplayer
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_ComponentApplicationRequests.get());
 
             m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
-            m_mockLevelSystem = AZStd::make_unique<MockLevelSystemLifecycle>();
+            m_mockLevelSystem = AZStd::make_unique<::testing::NiceMock<MockLevelSystemLifecycle>>();
 
             m_console.reset(aznew AZ::Console());
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
@@ -184,11 +184,17 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestShutdownEvent)
     {
+        // Use a Nice mock.  A regular mock spews to the console everytime something calls any function on the mock
+        // that you haven't explicitly set an expectation for, wheras a Nice mock only spews for calls you have specifically
+        // told it NOT to expect, or when an expected call is NOT called.
+        //
+        // Additionally a non-nice mock, even if it does spew, still doesn't fail the test or spew to stderr or anything that would
+        // actively bring it to attention duringr unattended testing, so it really isn't useful unless we want to see the spew.
+
+        using NiceConnMock = ::testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::DedicatedServer);
-        IMultiplayerConnectionMock connMock1 =
-            IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        IMultiplayerConnectionMock connMock2 =
-            IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
+        NiceConnMock connMock1(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceConnMock connMock2(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
 
@@ -198,10 +204,10 @@ namespace Multiplayer
     TEST_F(MultiplayerSystemTests, TestConnectionDatum)
     {
         using namespace testing;
-        NiceMock<IMultiplayerConnectionMock> connMock1(
-            aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
-        NiceMock<IMultiplayerConnectionMock> connMock2(
-            aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+
+        using NiceConnMock = NiceMock<IMultiplayerConnectionMock>;
+        NiceConnMock connMock1(aznumeric_cast<AzNetworking::ConnectionId>(10), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceConnMock connMock2(aznumeric_cast<AzNetworking::ConnectionId>(15), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         m_mpComponent->OnConnect(&connMock1);
         m_mpComponent->OnConnect(&connMock2);
 
@@ -216,14 +222,14 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestSpawnerEvents)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         AZ::Interface<Multiplayer::IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
         m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::ClientServer);
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         // Setup mock connection and dummy connection data, this should raise two errors around entity validity
         Multiplayer::NetworkEntityHandle controlledEntity;
-        IMultiplayerConnectionMock connMock =
-            IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        NiceConnMock connMock = NiceConnMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         Multiplayer::ServerToClientConnectionData* connectionData =
             new Multiplayer::ServerToClientConnectionData(&connMock, *m_mpComponent);
         connectionData->GetReplicationManager().SetReplicationWindow(
@@ -259,6 +265,7 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestClientServerConnectingWithPlayerEntity)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         AZ::Interface<IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
 
         // Setup a net player entity
@@ -275,7 +282,7 @@ namespace Multiplayer
         // Send a connection request. This should cause another player to be spawned.
         MultiplayerPackets::Connect connectPacket(
             0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
@@ -295,10 +302,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestMultiplayerTick)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
@@ -308,10 +316,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestHandleAccept)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
@@ -329,10 +338,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestHandleReadyForEntityUpdate)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
 
         MultiplayerPackets::ReadyForEntityUpdates readyForEntityUpdates;
@@ -344,10 +354,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestHandleClientMigrationFailOnServer)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         MultiplayerPackets::ClientMigration clientMigration;
         EXPECT_FALSE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), clientMigration));
@@ -355,10 +366,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestHandleSyncConsole)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         MultiplayerPackets::SyncConsole syncConsole;
         EXPECT_FALSE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), syncConsole));
@@ -370,10 +382,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestHandleConsoleCommand)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         MultiplayerPackets::ConsoleCommand consoleCommand;
         EXPECT_TRUE(m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), consoleCommand));
@@ -385,10 +398,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestHandleEntityUpdates)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
 
         MultiplayerPackets::EntityUpdates entityUpdates;
@@ -409,10 +423,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestHandleEntityRpcs)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
 
         MultiplayerPackets::EntityRpcs entityRpcs;
@@ -426,10 +441,11 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestHandleRequestReplicatorReset)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
         EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
 
         MultiplayerPackets::RequestReplicatorReset replicatorReset;
@@ -477,11 +493,12 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestConnectingWithoutLevelLoaded)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
         MultiplayerPackets::Connect connectPacket(
             0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Acceptor);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
@@ -496,11 +513,12 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestConnectingWithMatchingComponentHash)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
         MultiplayerPackets::Connect connectPacket(
             0, 1, "connect_ticket", GetMultiplayerComponentRegistry()->GetSystemVersionHash());
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Acceptor);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
@@ -515,6 +533,7 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestConnectingWithMismatchComponentHash)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         // cvars affecting mismatch behavior:
         //   1. sv_versionMismatch_autoDisconnect
         //   2. sv_versionMismatch_sendManifestToClient
@@ -525,7 +544,7 @@ namespace Multiplayer
         // Send a connection request with a different component hash to trigger a mismatch
         const AZ::HashValue64 differentMultiplayerComponentHash = AZ::HashValue64{ 42 };
         MultiplayerPackets::Connect connectPacket(0, 1, "connect_ticket", differentMultiplayerComponentHash);
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Acceptor);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
@@ -559,6 +578,7 @@ namespace Multiplayer
 
     TEST_F(MultiplayerSystemTests, TestMiscellaneous)
     {
+        using NiceConnMock = testing::NiceMock<IMultiplayerConnectionMock>;
         m_mpComponent->DumpStats({});
         m_mpComponent->SetShouldSpawnNetworkEntities(true);
         EXPECT_TRUE(m_mpComponent->GetShouldSpawnNetworkEntities());
@@ -573,7 +593,7 @@ namespace Multiplayer
         m_mpComponent->OnUpdateSessionEnd();
         EXPECT_EQ(m_mpComponent->GetCurrentBlendFactor(), 0.0f);
 
-        IMultiplayerConnectionMock connection(
+        NiceConnMock connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
