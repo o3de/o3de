@@ -189,10 +189,12 @@ set(FILES
     Source/RHI/QueryPoolSubAllocator.cpp
     Include/Atom/RHI/DeviceResource.h
     Include/Atom/RHI/Resource.h
+    Include/Atom/RHI/ResourceView.h
     Include/Atom/RHI/ResourceInvalidateBus.h
     Include/Atom/RHI/DeviceResourceView.h
     Source/RHI/DeviceResource.cpp
     Source/RHI/Resource.cpp
+    Source/RHI/ResourceView.cpp
     Source/RHI/DeviceResourceView.cpp
     Include/Atom/RHI/DeviceResourcePool.h
     Include/Atom/RHI/ResourcePool.h
