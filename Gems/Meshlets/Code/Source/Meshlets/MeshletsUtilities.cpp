@@ -173,7 +173,7 @@ namespace AZ
             viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
             RHI::Buffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
-            return rhiBuffer->BuildBufferView(viewDescriptor);
+            return rhiBuffer->GetBufferView(viewDescriptor);
         }
 
         bool UtilityClass::BindBufferViewToSrg(
