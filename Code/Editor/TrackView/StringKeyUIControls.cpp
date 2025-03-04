@@ -6,14 +6,12 @@
  *
  */
 
+#include "EditorDefs.h"
 
 #include "KeyUIControls.h"
 
-#include "EditorDefs.h"
 #include "TrackViewKeyPropertiesDlg.h"
-
 #include <CryCommon/Maestro/Types/AnimValueType.h>
-
 
 bool CStringKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {

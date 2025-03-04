@@ -12,6 +12,7 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
+#include "EditorDefs.h"
 #include "TrackViewKeyPropertiesDlg.h"
 #endif
 
