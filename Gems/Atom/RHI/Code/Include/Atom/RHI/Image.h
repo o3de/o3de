@@ -51,7 +51,7 @@ namespace AZ::RHI
         const ImageDescriptor& GetDescriptor() const;
 
         //! Returns the multi-device DeviceImageView
-        Ptr<ImageView> BuildImageView(const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<ImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
 
         //! Computes the subresource layouts and total size of the image contents, if represented linearly. Effectively,
         //! this data represents how to store the image in a buffer resource. Naturally, if the image contents

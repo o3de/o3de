@@ -891,7 +891,7 @@ namespace AZ::RHI
             const ImageResourceViewData imageResourceViewData = ImageResourceViewData{ image->GetName(), imageViewDescriptor };
             RemoveFromCache(imageResourceViewData, m_imageReverseLookupHash, m_imageViewCache);
             // Create a new image view instance and insert it into the cache.
-            Ptr<ImageView> imageViewPtr = image->BuildImageView(imageViewDescriptor);
+            Ptr<ImageView> imageViewPtr = image->GetImageView(imageViewDescriptor);
             imageView = imageViewPtr.get();
             m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
             if (!image->GetName().IsEmpty())
@@ -919,7 +919,7 @@ namespace AZ::RHI
             RemoveFromCache(bufferResourceViewData, m_bufferReverseLookupHash, m_bufferViewCache);
                 
             // Create a new buffer view instance and insert it into the cache.
-            Ptr<BufferView> bufferViewPtr = buffer->BuildBufferView(bufferViewDescriptor);
+            Ptr<BufferView> bufferViewPtr = buffer->GetBufferView(bufferViewDescriptor);
             bufferView = bufferViewPtr.get();
             m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
             if (!buffer->GetName().IsEmpty())
@@ -955,7 +955,7 @@ namespace AZ::RHI
                     // Check image's cache first as that contains views provided by higher level code.
                     if (image->IsInResourceCache(imageViewDescriptor))
                     {
-                        imageView = image->BuildImageView(imageViewDescriptor).get();
+                        imageView = image->GetImageView(imageViewDescriptor).get();
                     }
                     else
                     {
@@ -993,7 +993,7 @@ namespace AZ::RHI
                     // Check buffer's cache first as that contains views provided by higher level code.
                     if (buffer->IsInResourceCache(bufferViewDescriptor))
                     {
-                        bufferView = buffer->BuildBufferView(bufferViewDescriptor).get();
+                        bufferView = buffer->GetBufferView(bufferViewDescriptor).get();
                     }
                     else
                     {
