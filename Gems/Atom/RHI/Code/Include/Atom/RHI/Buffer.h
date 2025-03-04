@@ -42,7 +42,7 @@ namespace AZ::RHI
         //! Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
-        Ptr<BufferView> BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
 
         //! Get the hash associated with the Buffer
         const HashValue64 GetHash() const;

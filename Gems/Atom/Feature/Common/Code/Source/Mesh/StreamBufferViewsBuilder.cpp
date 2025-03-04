@@ -159,7 +159,7 @@ namespace AZ
                 AZ::RHI::Buffer* rhiBuffer = const_cast<AZ::RHI::Buffer*>(streamIter[streamIdx].GetBuffer());
                 uint32_t streamByteCount = static_cast<uint32_t>(rhiBuffer->GetDescriptor().m_byteCount);
                 auto bufferViewDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, streamByteCount);
-                auto ptrBufferView = rhiBuffer->BuildBufferView(bufferViewDescriptor);
+                auto ptrBufferView = rhiBuffer->GetBufferView(bufferViewDescriptor);
                 shaderStreamBufferViews->m_streamViewsBySemantic.emplace(AZStd::move(shaderSemantic), ptrBufferView);
             }
 
@@ -203,7 +203,7 @@ namespace AZ
                 indexBufferView.GetIndexFormat() == AZ::RHI::IndexFormat::Uint16 ? AZ::RHI::Format::R16_UINT : AZ::RHI::Format::R32_UINT;
             auto* rhiBuffer = const_cast<AZ::RHI::Buffer*>(indexBufferView.GetBuffer());
 
-            return rhiBuffer->BuildBufferView(indexBufferDescriptor);
+            return rhiBuffer->GetBufferView(indexBufferDescriptor);
         }
 
     } // namespace Render

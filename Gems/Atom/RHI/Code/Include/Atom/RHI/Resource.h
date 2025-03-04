@@ -7,8 +7,10 @@
  */
 #pragma once
 
+#include <Atom/RHI/DeviceResource.h>
 #include <Atom/RHI/MultiDeviceObject.h>
 #include <AzCore/std/containers/unordered_map.h>
+
 
 namespace AZ::RHI
 {
@@ -33,6 +35,7 @@ namespace AZ::RHI
     public:
         AZ_RTTI(Resource, "{613AED98-48FD-4453-98F8-6956D2133489}", MultiDeviceObject);
         virtual ~Resource();
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Resource);
 
         //! Returns whether the resource is currently an attachment on a frame graph.
         bool IsAttachment() const;
@@ -113,24 +116,4 @@ namespace AZ::RHI
     class Image;
     class DeviceResourceView;
 
-    //! ResourceView is a base class for multi-device buffer and image views for
-    //! polymorphic usage of views in a generic way.
-    class ResourceView : public Object
-    {
-    public:
-        // The resource owns a cache of resource views, and it needs access to the refcount
-        // of the resource views to prevent threading issues.
-        friend class Resource;
-
-        virtual ~ResourceView() = default;
-
-        //! Returns the resource associated with this view.
-        virtual const Resource* GetResource() const = 0;
-        virtual const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const = 0;
-
-        AZ_RTTI(ResourceView, "{D7442960-531D-4DCC-B60D-FD26FF75BE51}", Object);
-
-    protected:
-        void Shutdown() override{};
-    };
 } // namespace AZ::RHI

@@ -31,6 +31,7 @@ namespace AZ::RHI
         : public DeviceObject
     {
         friend class Resource;
+        friend class ResourceView;
         friend class DeviceResourcePool;
     public:
         AZ_RTTI(DeviceResource, "{9D02CDAC-80EB-4B77-8E62-849AC6E69206}", DeviceObject);
