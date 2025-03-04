@@ -528,6 +528,21 @@ struct IScreenFaderKey
     EFadeChangeType m_fadeChangeType;
 };
 
+/** IStringKey used in string tracks.
+ */
+struct IStringKey
+    : public IKey
+{
+    AZStd::string m_strValue;
+
+    IStringKey() = default;
+
+    IStringKey(const AZStd::string value)
+        : m_strValue(value) 
+    {
+    }
+};
+
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(IKey, "{680BD51E-C106-4BBF-9A6F-CD551E00519F}");
@@ -544,5 +559,6 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(ISequenceKey, "{B55294AD-F14E-43AC-B6B5-AC27B377FE00}");
     AZ_TYPE_INFO_SPECIALIZE(ISoundKey, "{452E50CF-B7D0-42D5-A86A-B295682674BB}");
     AZ_TYPE_INFO_SPECIALIZE(ITimeRangeKey, "{17807C95-C7A1-481B-AD94-C54D83928D0B}");
+    AZ_TYPE_INFO_SPECIALIZE(IStringKey, "{A35D94C2-776B-4BA7-BBBC-1A1FD4402023}");
 }
 #endif // CRYINCLUDE_CRYCOMMON_ANIMKEY_H
