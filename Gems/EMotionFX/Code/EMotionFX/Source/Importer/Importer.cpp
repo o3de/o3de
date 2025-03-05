@@ -363,9 +363,8 @@ namespace EMotionFX
     {
         AZ_Info("ccc", "Importer::LoadMotion %s", filename.c_str());
 
-        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
-
-        AZ_Info("ccc", "Importer::LoadMotion normalized %s", filename.c_str());
+        //AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
+        //AZ_Info("ccc", "Importer::LoadMotion normalized %s", filename.c_str());
 
         // check if we want to load the motion even if a motion with the given filename is already inside the motion manager
         if (settings == nullptr || (settings && settings->m_forceLoading == false))
@@ -391,7 +390,7 @@ namespace EMotionFX
             MCore::LogInfo("- Trying to load motion from file '%s'...", filename.c_str());
         }
         AZ_Info("ccc", "Importer::LoadMotion load from file");
-
+        /*
         // try to open the file from disk
         MCore::DiskFile f;
         if (f.Open(filename.c_str(), MCore::DiskFile::READ) == false)
@@ -415,6 +414,17 @@ namespace EMotionFX
 
         // close the file again
         f.Close();
+        */
+        AZ::IO::FileIOStream fileStream;
+        if (!fileStream.Open(filename.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
+        {
+            AZ_Info("ccc", "Importer::LoadMotion cannot open file");
+            return nullptr;
+        }
+        const size_t fileSize = fileStream.GetLength();
+        uint8* fileBuffer = (uint8*)MCore::Allocate(fileSize, EMFX_MEMCATEGORY_IMPORTER);
+        fileStream.Read(fileSize, fileBuffer);
+        fileStream.Close();
 
         // create the motion reading from memory
         Motion* result = LoadMotion(fileBuffer, fileSize, settings);
@@ -517,6 +527,11 @@ namespace EMotionFX
         // get rid of shared data
         ResetSharedData(sharedData);
         sharedData.clear();
+
+        if (motion->GetReferenceCount() != 1)
+        {
+            AZ_Info("ccc", "motion->GetReferenceCount() is %d", motion->GetReferenceCount());
+        }
 
         return motion;
     }

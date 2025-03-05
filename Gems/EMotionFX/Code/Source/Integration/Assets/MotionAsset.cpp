@@ -33,6 +33,7 @@ namespace EMotionFX
         bool MotionAssetHandler::OnInitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
             MotionAsset* assetData = asset.GetAs<MotionAsset>();
+            AZ_Info("ddd", "MotionAssetHandler::OnInitAsset with %p %u", assetData->m_emfxNativeData.data(), assetData->m_emfxNativeData.size());
             assetData->m_emfxMotion = EMotionFXPtr<EMotionFX::Motion>::MakeFromNew(EMotionFX::GetImporter().LoadMotion(
                 assetData->m_emfxNativeData.data(),
                 assetData->m_emfxNativeData.size(),

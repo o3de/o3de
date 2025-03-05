@@ -69,6 +69,7 @@ namespace EMotionFX
                 if (object->GetReferenceCount() != 1)
                 {
                     AZ_Info("ccc", "New EmotionFX object ref count is %d (should be 1)", object->GetReferenceCount());
+                    AZ_Assert(object && object->GetReferenceCount() == 1, "Newly constructed EMotion FX objects are expected to have a referene count initialized to 1.");
                 }
 #else
                 AZ_Assert(object && object->GetReferenceCount() == 1, "Newly constructed EMotion FX objects are expected to have a referene count initialized to 1.");

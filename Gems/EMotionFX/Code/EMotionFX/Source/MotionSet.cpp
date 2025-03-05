@@ -60,9 +60,9 @@ namespace EMotionFX
         AZ_Info("ccc", "Default LoadMotion callback for %s", entry->GetFilename());
 
         // Get the full file name and file extension.
-        const AZStd::string filename = m_motionSet->ConstructMotionFilename(entry);
-
-        AZ_Info("ccc", "Generated file name %s", filename.c_str());
+        //const AZStd::string filename = m_motionSet->ConstructMotionFilename(entry);
+        //AZ_Info("ccc", "Generated file name %s", filename.c_str());
+        const AZStd::string filename = entry->GetFilename();
 
         // Check what type of file to load.
         Motion* motion = GetImporter().LoadMotion(filename.c_str(), nullptr);
