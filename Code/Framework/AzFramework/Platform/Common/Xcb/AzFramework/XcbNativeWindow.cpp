@@ -148,10 +148,10 @@ namespace AzFramework
         if ((m_styleMask & WindowStyleMasks::WINDOW_STYLE_RESIZEABLE) == 0)
         {
             hints.flags      |= XcbSizeHintsFlags::PMaxSize | XcbSizeHintsFlags::PMinSize,
-            hints.minWidth   = (int32_t) m_width;
-            hints.minHeight  = (int32_t) m_height;
-            hints.maxWidth   = (int32_t) m_width;
-            hints.maxHeight  = (int32_t) m_height;
+            hints.minWidth   = static_cast<int32_t>(m_width);
+            hints.minHeight  = static_cast<int32_t>(m_height);
+            hints.maxWidth   = static_cast<int32_t>(m_width);
+            hints.maxHeight  = static_cast<int32_t>(m_height);
         }
 
         xcb_void_cookie_t xcbCheckResult;
