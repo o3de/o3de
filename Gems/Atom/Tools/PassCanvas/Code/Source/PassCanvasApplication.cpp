@@ -27,6 +27,10 @@
 
 #include <QLabel>
 
+#if defined(EXTERNAL_CRASH_REPORTING)
+#include <ToolsCrashHandler.h>
+#endif
+
 void InitPassCanvasResources()
 {
     // Must register qt resources from other modules
@@ -49,6 +53,9 @@ namespace PassCanvas
     PassCanvasApplication::PassCanvasApplication(int* argc, char*** argv)
         : Base(GetBuildTargetName(), argc, argv)
     {
+#if defined(EXTERNAL_CRASH_REPORTING)
+        CrashHandler::ToolsCrashHandler::InitCrashHandler("PassCanvas", {});
+#endif
         InitPassCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
