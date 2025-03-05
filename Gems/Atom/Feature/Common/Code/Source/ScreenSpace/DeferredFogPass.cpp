@@ -138,9 +138,12 @@ namespace AZ
 #include <Atom/Feature/ParamMacros/MapParamEmpty.inl>
 
 #undef  AZ_GFX_TEXTURE2D_PARAM
-#define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)                  \
-                fogSettings->MemberName##Image =                                \
-                    fogSettings->LoadStreamingImage( fogSettings->MemberName.c_str(), "DeferredFogSettings" );  \
+#define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)                                                                                 \
+                if (fogSettings->MemberName##CurrentlyLoaded != fogSettings->MemberName)                                                       \
+                {                                                                                                                              \
+                    fogSettings->MemberName##Image = fogSettings->LoadStreamingImage(fogSettings->MemberName.c_str(), "DeferredFogSettings");  \
+                    fogSettings->MemberName##CurrentlyLoaded  = fogSettings->MemberName;                                                       \
+                }
 
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
