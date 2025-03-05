@@ -39,12 +39,17 @@ namespace AZ
             }            
         }
 
+        void DescriptorSet::ReserveUpdateData(size_t numUpdates)
+        {
+            m_updateData.reserve(numUpdates);
+        }
+
         void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufViews)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
             VkDescriptorType type = layout.GetDescriptorType(layoutIndex);
-            
-            WriteDescriptorData data;
+
+            auto& data = m_updateData.emplace_back();
             data.m_layoutIndex = layoutIndex;
 
             if (type == VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER ||
@@ -117,15 +122,13 @@ namespace AZ
                     }
                 }
             }
-
-            m_updateData.push_back(AZStd::move(data));
         }
 
         void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews, RHI::ShaderInputImageType imageType)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
 
-            WriteDescriptorData data;
+            auto& data = m_updateData.emplace_back();
             data.m_layoutIndex = layoutIndex;
 
             data.m_imageViewsInfo.resize(imageViews.size());
@@ -165,15 +168,13 @@ namespace AZ
                 
                 data.m_imageViewsInfo[i]  = imageInfo;
             }
-
-            m_updateData.push_back(AZStd::move(data));
         }
 
         void DescriptorSet::UpdateSamplers(uint32_t layoutIndex, const AZStd::span<const RHI::SamplerState>& samplers)
         {
             auto& device = static_cast<Device&>(GetDevice());
 
-            WriteDescriptorData data;
+            auto& data = m_updateData.emplace_back();
             data.m_layoutIndex = layoutIndex;
 
             VkDescriptorImageInfo imageInfo = {};
@@ -185,8 +186,6 @@ namespace AZ
                 imageInfo.sampler = device.AcquireSampler(samplerDesc)->GetNativeSampler();
                 data.m_imageViewsInfo.push_back(imageInfo);
             }
-
-            m_updateData.push_back(AZStd::move(data));
         }
 
         void DescriptorSet::UpdateConstantData(AZStd::span<const uint8_t> rawData)
@@ -199,7 +198,7 @@ namespace AZ
             memcpy(mappedData, rawData.data(), rawData.size());
             memoryView->Unmap(RHI::HostMemoryAccess::Write);
 
-            WriteDescriptorData data;
+            WriteDescriptorData& data = m_updateData.emplace_back();
             data.m_layoutIndex = layout.GetLayoutIndexFromGroupIndex(0, DescriptorSetLayout::ResourceType::ConstantData);
 
             VkDescriptorBufferInfo bufferInfo;
@@ -207,7 +206,6 @@ namespace AZ
             bufferInfo.offset = memoryView->GetOffset();
             bufferInfo.range = rawData.size();
             data.m_bufferViewsInfo.push_back(bufferInfo);
-            m_updateData.push_back(AZStd::move(data));
         }
 
         RHI::Ptr<DescriptorSet> DescriptorSet::Create()
@@ -312,10 +310,27 @@ namespace AZ
                 AllocateDescriptorSetWithUnboundedArray();
             }
 
-            AZStd::vector<VkWriteDescriptorSet> writeDescSetDescs;
-            AZStd::vector<VkWriteDescriptorSetAccelerationStructureKHR> writeAccelerationStructureDescs;
+            RHI::SmallVector<VkWriteDescriptorSet, ViewsFixedsize> writeDescSetDescs;
+            writeDescSetDescs.reserve(m_updateData.size());
+            RHI::SmallVector<VkWriteDescriptorSetAccelerationStructureKHR, ViewsFixedsize> writeAccelerationStructureDescs;
+
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
-            for (const WriteDescriptorData& updateData : m_updateData)
+            {
+                // Reserve memory for the acceleration structures descriptors
+                // We need t a pointer to the entries which may be invalidated in push_back without reserving memory
+                size_t numAccelerationStructureEntries = 0;
+                for (const WriteDescriptorData& updateData : m_updateData.span())
+                {
+                    const VkDescriptorType descType = layout.GetDescriptorType(updateData.m_layoutIndex);
+                    if (descType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR)
+                    {
+                        numAccelerationStructureEntries++;
+                    }
+                }
+                writeAccelerationStructureDescs.reserve(numAccelerationStructureEntries);
+            }
+
+            for (const WriteDescriptorData& updateData : m_updateData.span())
             {
                 const VkDescriptorType descType = layout.GetDescriptorType(updateData.m_layoutIndex);
 
@@ -330,13 +345,16 @@ namespace AZ
                 {
                 case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
                 case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
-                    AZ_Assert(!updateData.m_bufferViewsInfo.empty(), "BufferInfo is empty.");
-                    for (const RHI::Interval& interval : GetValidDescriptorsIntervals(updateData.m_bufferViewsInfo))
                     {
-                        writeDescSet.pBufferInfo = updateData.m_bufferViewsInfo.data() + interval.m_min;
-                        writeDescSet.dstArrayElement = interval.m_min;
-                        writeDescSet.descriptorCount = interval.m_max - interval.m_min;
-                        writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                        AZ_Assert(!updateData.m_bufferViewsInfo.empty(), "BufferInfo is empty.");
+                        auto intervals = GetValidDescriptorsIntervals(updateData.m_bufferViewsInfo.span());
+                        for (const RHI::Interval& interval : intervals.span())
+                        {
+                            writeDescSet.pBufferInfo = updateData.m_bufferViewsInfo.span().data() + interval.m_min;
+                            writeDescSet.dstArrayElement = interval.m_min;
+                            writeDescSet.descriptorCount = interval.m_max - interval.m_min;
+                            writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                        }
                     }
                     break;
                 case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
@@ -344,42 +362,52 @@ namespace AZ
                 case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
                 case VK_DESCRIPTOR_TYPE_SAMPLER:
                 case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-                    AZ_Assert(!updateData.m_imageViewsInfo.empty(), "ImageInfo is empty.");
-                    for (const RHI::Interval& interval : GetValidDescriptorsIntervals(updateData.m_imageViewsInfo))
                     {
-                        writeDescSet.pImageInfo = updateData.m_imageViewsInfo.data() + interval.m_min;
-                        writeDescSet.dstArrayElement = interval.m_min;
-                        writeDescSet.descriptorCount = interval.m_max - interval.m_min;
-                        writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                        AZ_Assert(!updateData.m_imageViewsInfo.empty(), "ImageInfo is empty.");
+                        auto intervals = GetValidDescriptorsIntervals(updateData.m_imageViewsInfo.span());
+                        for (const RHI::Interval& interval : intervals.span())
+                        {
+                            writeDescSet.pImageInfo = updateData.m_imageViewsInfo.span().data() + interval.m_min;
+                            writeDescSet.dstArrayElement = interval.m_min;
+                            writeDescSet.descriptorCount = interval.m_max - interval.m_min;
+                            writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                        }
                     }
                     break;
                 case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
                 case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
-                    AZ_Assert(!updateData.m_texelBufferViews.empty(), "TexelInfo list is empty.");
-                    for (const RHI::Interval& interval : GetValidDescriptorsIntervals(updateData.m_texelBufferViews))
                     {
-                        writeDescSet.pTexelBufferView = updateData.m_texelBufferViews.data() + interval.m_min;
-                        writeDescSet.dstArrayElement = interval.m_min;
-                        writeDescSet.descriptorCount = interval.m_max - interval.m_min;
-                        writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                        AZ_Assert(!updateData.m_texelBufferViews.empty(), "TexelInfo list is empty.");
+                        auto intervals = GetValidDescriptorsIntervals(updateData.m_texelBufferViews.span());
+                        for (const RHI::Interval& interval : intervals.span())
+                        {
+                            writeDescSet.pTexelBufferView = updateData.m_texelBufferViews.span().data() + interval.m_min;
+                            writeDescSet.dstArrayElement = interval.m_min;
+                            writeDescSet.descriptorCount = interval.m_max - interval.m_min;
+                            writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                        }
                     }
                     break;
                 case VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:
-                    AZ_Assert(!updateData.m_bufferViewsInfo.empty(), "BufferInfo is empty.");
-                    AZ_Assert(!updateData.m_accelerationStructures.empty(), "AccelerationStructures is empty.");
-                    for (const RHI::Interval& interval : GetValidDescriptorsIntervals(updateData.m_bufferViewsInfo))
                     {
-                        // acceleration structure descriptor is added as the pNext in the VkWriteDescriptorSet
-                        VkWriteDescriptorSetAccelerationStructureKHR writeAccelerationStructure = {};
-                        writeAccelerationStructure.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
-                        writeAccelerationStructure.accelerationStructureCount = interval.m_max - interval.m_min;
-                        writeAccelerationStructure.pAccelerationStructures = updateData.m_accelerationStructures.data() + interval.m_min;
-                        writeAccelerationStructureDescs.push_back(AZStd::move(writeAccelerationStructure));
+                        AZ_Assert(!updateData.m_bufferViewsInfo.empty(), "BufferInfo is empty.");
+                        AZ_Assert(!updateData.m_accelerationStructures.empty(), "AccelerationStructures is empty.");
+                        auto intervals = GetValidDescriptorsIntervals(updateData.m_bufferViewsInfo.span());
+                        for (const RHI::Interval& interval : intervals.span())
+                        {
+                            // acceleration structure descriptor is added as the pNext in the VkWriteDescriptorSet
+                            VkWriteDescriptorSetAccelerationStructureKHR writeAccelerationStructure = {};
+                            writeAccelerationStructure.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+                            writeAccelerationStructure.accelerationStructureCount = interval.m_max - interval.m_min;
+                            writeAccelerationStructure.pAccelerationStructures =
+                                updateData.m_accelerationStructures.span().data() + interval.m_min;
+                            writeAccelerationStructureDescs.push_back(AZStd::move(writeAccelerationStructure));
 
-                        writeDescSet.dstArrayElement = interval.m_min;
-                        writeDescSet.descriptorCount = interval.m_max - interval.m_min;
-                        writeDescSet.pNext = &writeAccelerationStructureDescs.back();
-                        writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                            writeDescSet.dstArrayElement = interval.m_min;
+                            writeDescSet.descriptorCount = interval.m_max - interval.m_min;
+                            writeDescSet.pNext = &writeAccelerationStructureDescs.span().back();
+                            writeDescSetDescs.push_back(AZStd::move(writeDescSet));
+                        }
                     }
                     break;
                 default:
@@ -392,7 +420,7 @@ namespace AZ
             {
                 auto& device = static_cast<Device&>(GetDevice());
                 device.GetContext().UpdateDescriptorSets(
-                    device.GetNativeDevice(), static_cast<uint32_t>(writeDescSetDescs.size()), writeDescSetDescs.data(), 0, nullptr);
+                    device.GetNativeDevice(), static_cast<uint32_t>(writeDescSetDescs.size()), writeDescSetDescs.span().data(), 0, nullptr);
             }
 
             m_updateData.clear();
@@ -404,7 +432,7 @@ namespace AZ
             uint32_t unboundedArraySize = 0;
 
             // find the unbounded array in the update data
-            for (const WriteDescriptorData& updateData : m_updateData)
+            for (const WriteDescriptorData& updateData : m_updateData.span())
             {
                 if ((layout.GetNativeBindingFlags()[updateData.m_layoutIndex] & VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT) != 0)
                 {
