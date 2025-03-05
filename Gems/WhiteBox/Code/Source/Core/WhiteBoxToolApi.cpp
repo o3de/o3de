@@ -71,6 +71,7 @@ namespace OpenMesh
 
 // OpenMesh includes
 AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils\Property.hh has unreachable code
+AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // Conditional expression is constant.
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/IO/SR_binary.hh>
 #include <OpenMesh/Core/IO/importer/ImporterT.hh>
@@ -78,6 +79,7 @@ AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Utils/GenProg.hh>
 #include <OpenMesh/Core/Utils/vector_traits.hh>
+AZ_POP_DISABLE_WARNING
 AZ_POP_DISABLE_WARNING
 
 AZ_DECLARE_BUDGET(AzToolsFramework);
@@ -325,6 +327,8 @@ namespace OpenMesh::IO
     {
         using value_type = WhiteBox::FaceHandlePolygonMapping;
         static const bool is_streamable = true;
+
+        static std::string type_identifier(void) { return "WhiteBox::FaceHandlePolygonMapping"; }
 
         // return generic binary size of self, if known
         static size_t size_of()

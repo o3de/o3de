@@ -36,7 +36,6 @@ ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev4-windows   
 ly_associate_package(PACKAGE_NAME qt-5.15.2-rev7-windows                                TARGETS Qt                          PACKAGE_HASH 4343a04130657e740795e50a25ab5fe6e41100fa3c58a212c86bed612dde7775)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-windows                               TARGETS PNG                         PACKAGE_HASH e16539a0fff26ac9ef80dd11ef0103eca91745519eacd41d41d96911c173589f)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-windows                      TARGETS libsamplerate               PACKAGE_HASH dcf3c11a96f212a52e2c9241abde5c364ee90b0f32fe6eeb6dcdca01d491829f)
-ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-windows                             TARGETS OpenMesh                    PACKAGE_HASH 7a6309323ad03bfc646bd04ecc79c3711de6790e4ff5a72f83a8f5a8f496d684)
 ly_associate_package(PACKAGE_NAME civetweb-1.8-rev1-windows                             TARGETS civetweb                    PACKAGE_HASH 36d0e58a59bcdb4dd70493fb1b177aa0354c945b06c30416348fd326cf323dd4)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1o-rev1-windows                           TARGETS OpenSSL                     PACKAGE_HASH 52b9d2bc5f3e0c6e405a0f290d1904bf545acc0c73d6a52351247d917c4a06d2)
 ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-rev1-windows                           TARGETS Crashpad                    PACKAGE_HASH d162aa3070147bc0130a44caab02c5fe58606910252caf7f90472bd48d4e31e2)
