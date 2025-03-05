@@ -408,6 +408,7 @@ namespace EMotionFX
             if (!motion)
             {
                 blendSpaceMotion.SetFlag(BlendSpaceMotion::TypeFlags::InvalidMotion);
+                AZ_Info("EMotionFXdebug", "Motion is nullptr, set invalid");
                 continue;
             }
             blendSpaceMotion.UnsetFlag(BlendSpaceMotion::TypeFlags::InvalidMotion);

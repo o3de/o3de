@@ -149,6 +149,7 @@ namespace CommandSystem
         AZStd::to_string(outResult, m_previouslyUsedId);
 
         // Set the motion set callback for custom motion loading.
+        AZ_Info("EMotionFXdebug", "Set callback from CommandCreateMotionSet::Execute for motion set '%s'", motionSet->GetName());
         motionSet->SetCallback(aznew CommandSystemMotionSetCallback(motionSet), true);
 
         // Set the dirty flag.
@@ -918,6 +919,7 @@ namespace CommandSystem
         m_oldMotionSetId = motionSet->GetID();
 
         // Set the custom loading callback and preload all motions.
+        AZ_Info("EMotionFXdebug", "Set callback from CommandLoadMotionSet::Execute for motion set '%s'", motionSet->GetName());
         motionSet->SetCallback(aznew CommandSystemMotionSetCallback(motionSet), true);
         motionSet->Preload();
 

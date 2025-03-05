@@ -361,7 +361,11 @@ namespace EMotionFX
     // try to load a motion from disk
     Motion* Importer::LoadMotion(AZStd::string filename, MotionSettings* settings)
     {
+        AZ_Info("ccc", "Importer::LoadMotion %s", filename.c_str());
+
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
+
+        AZ_Info("ccc", "Importer::LoadMotion normalized %s", filename.c_str());
 
         // check if we want to load the motion even if a motion with the given filename is already inside the motion manager
         if (settings == nullptr || (settings && settings->m_forceLoading == false))
@@ -370,9 +374,15 @@ namespace EMotionFX
             Motion* motion = GetMotionManager().FindMotionByFileName(filename.c_str());
             if (motion)
             {
+                AZ_Info("ccc", "Importer::LoadMotion found existing motion");
+
                 motion->IncreaseReferenceCount();
                 MCore::LogInfo("  + Motion '%s' already loaded, returning already loaded motion from the MotionManager.", filename.c_str());
                 return motion;
+            }
+            else
+            {
+                AZ_Info("ccc", "Importer::LoadMotion NO existing motion");
             }
         }
 
@@ -380,6 +390,7 @@ namespace EMotionFX
         {
             MCore::LogInfo("- Trying to load motion from file '%s'...", filename.c_str());
         }
+        AZ_Info("ccc", "Importer::LoadMotion load from file");
 
         // try to open the file from disk
         MCore::DiskFile f;
@@ -389,6 +400,7 @@ namespace EMotionFX
             {
                 MCore::LogError("  + Failed to open the file for motion '%s'!", filename.c_str());
             }
+            AZ_Info("ccc", "Importer::LoadMotion cannot open file");
             return nullptr;
         }
 
@@ -408,6 +420,7 @@ namespace EMotionFX
         Motion* result = LoadMotion(fileBuffer, fileSize, settings);
         if (result)
         {
+            AZ_Info("ccc", "Importer::LoadMotion load from file %s success", filename.c_str());
             result->SetFileName(filename.c_str());
         }
 
@@ -421,6 +434,7 @@ namespace EMotionFX
             {
                 MCore::LogError("  + Failed to load motion from file '%s'", filename.c_str());
             }
+            AZ_Error("ccc", false, "Importer::LoadMotion filed to load motion from %s", filename.c_str());
         }
         else
         {
