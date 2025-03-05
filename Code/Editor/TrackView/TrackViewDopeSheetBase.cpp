@@ -13,6 +13,7 @@
 
 // Qt
 #include <QColor>
+#include <QInputDialog>
 #include <QMenu>
 #include <QPainter>
 #include <QScrollBar>
@@ -607,6 +608,11 @@ void CTrackViewDopeSheetBase::OnLButtonDblClk(Qt::KeyboardModifiers modifiers, c
             {
                 // bring up color picker
                 EditSelectedColorKey(pTrack);
+            }
+            else if (pTrack->GetValueType() == AnimValueType::String)
+            {
+                // bring up line editor
+                EditSelectedStringKey(pTrack);
             }
             else if (pTrack->GetValueType() != AnimValueType::Bool)
             {
@@ -2094,6 +2100,77 @@ void CTrackViewDopeSheetBase::EditSelectedColorKey(CTrackViewTrack* pTrack)
     }
 }
 
+bool CTrackViewDopeSheetBase::CreateStringKey(CTrackViewTrack* pTrack, float keyTime)
+{
+    const auto sequence = pTrack->GetSequence();
+    const bool canCreateKey = IsOkToAddKeyHere(pTrack, keyTime);
+    if (!(sequence && canCreateKey))
+    {
+        return false;
+    }
+
+    AZStd::string str;
+    pTrack->GetValue(keyTime, str); // get previous key value or default value for the track
+
+    bool isOk;
+    const QString title(pTrack->GetParameterType().GetName());
+    const QString label(tr("Value :\t\t\t\t\t\t\t\t")); // trick to widen widget
+    const QString prevStr(str.c_str());
+    const QString newStr = QInputDialog::getText(this, title, label, QLineEdit::EchoMode::Normal, prevStr, &isOk);
+    if (!isOk)
+    {
+        return false;
+    }
+
+    CTrackViewSequenceNotificationContext context(sequence);
+    AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
+
+    CTrackViewKeyHandle newKey = pTrack->CreateKey(keyTime);
+    IStringKey strKey;
+    newKey.GetKey(&strKey);
+    strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
+    newKey.SetKey(&strKey);
+
+    undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+    return true;
+}
+
+void CTrackViewDopeSheetBase::EditSelectedStringKey(CTrackViewTrack* pTrack)
+{
+    const auto sequence = pTrack->GetSequence();
+    CTrackViewKeyBundle selectedKeyBundle = pTrack->GetSelectedKeys();
+    if (!sequence || (selectedKeyBundle.GetKeyCount() < 1))
+    {
+        return;
+    }
+
+    auto selectedKeyHandle = selectedKeyBundle.GetKey(0);
+
+    AZStd::string str;
+    pTrack->GetValue(selectedKeyHandle.GetTime(), str); // get selected key value
+
+    bool isOk;
+    const QString title(pTrack->GetParameterType().GetName());
+    const QString label(tr("Value :\t\t\t\t\t\t\t\t")); // trick to widen widget
+    const QString prevStr(str.c_str());
+    const QString newStr = QInputDialog::getText(this, title, label, QLineEdit::EchoMode::Normal, prevStr, &isOk);
+    if (!isOk)
+    {
+        return;
+    }
+    CTrackViewSequenceNotificationContext context(sequence);
+    AzToolsFramework::ScopedUndoBatch undoBatch("Set Key");
+
+    IStringKey strKey;
+    selectedKeyHandle.GetKey(&strKey);
+    strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
+    selectedKeyHandle.SetKey(&strKey);
+
+    undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+}
+
+
 void CTrackViewDopeSheetBase::AcceptUndo()
 {
     if (CUndo::IsRecording())
@@ -2213,6 +2290,12 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
         }
         else if (pTrack->GetChildCount() == 0)          // A simple track
         {
+            if (pTrack->GetValueType() == AnimValueType::String)
+            {
+                CreateStringKey(pTrack, keyTime);
+                return;
+            }
+
             if (IsOkToAddKeyHere(pTrack, keyTime))
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");

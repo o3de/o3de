@@ -202,6 +202,13 @@ namespace Maestro
                 findIter->second->m_setter->m_event->Invoke(entityId, assetIdValue);
                 changed = true;
             }
+            else if (propertyTypeId == AZ::AzTypeInfo<AZStd::string>::Uuid())
+            {
+                AZStd::string stringValue;
+                value.GetValue(stringValue);
+                findIter->second->m_setter->m_event->Invoke(entityId, stringValue);
+                changed = true;
+            }
             else
             {
                 // fall-through default is to cast to float
@@ -264,6 +271,12 @@ namespace Maestro
                 AZ::Data::AssetId assetIdValue;
                 findIter->second->m_getter->m_event->InvokeResult(assetIdValue, entityId);
                 returnValue.SetValue(assetIdValue);
+            }
+            else if (propertyTypeId == AZ::AzTypeInfo<AZStd::string>::Uuid())
+            {
+                AZStd::string stringValue;
+                findIter->second->m_getter->m_event->InvokeResult(stringValue, entityId);
+                returnValue.SetValue(stringValue);
             }
             else
             {
