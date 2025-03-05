@@ -12,6 +12,7 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
+#include "EditorDefs.h"
 #include "TrackViewKeyPropertiesDlg.h"
 #endif
 
@@ -638,5 +639,35 @@ private:
         static const char* addEventString = "Add a new event...";
 
         return addEventString;
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////
+class CStringKeyUIControls
+    : public CTrackViewKeyUIControls
+{
+public:
+    CSmartVariableArray mv_table;
+    CSmartVariableEnum<QString> mv_value;
+
+    void OnCreateVars() override
+    {
+        AddVariable(mv_table, "Key Properties");
+        AddVariable(mv_table, mv_value, "Value");
+    }
+    bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
+    {
+        return valueType == AnimValueType::String;
+    }
+    bool OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
+
+    unsigned int GetPriority() const override { return 1; }
+
+    static const GUID& GetClassID()
+    {
+        // {E056F001-A2DF-4E87-8DBB-980A651940DC}
+        static const GUID guid = { 0xe056f001, 0xa2df, 0x4e87, { 0x8d, 0xbb, 0x98, 0x0a, 0x65, 0x19, 0x40, 0xdc } };
+        return guid;
     }
 };

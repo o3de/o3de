@@ -264,6 +264,11 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZStd::string& value) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
         //////////////////////////////////////////////////////////////////////////
         // Set track value at specified time.
         // Adds new keys if required.
@@ -310,6 +315,11 @@ namespace Maestro
             [[maybe_unused]] float time,
             [[maybe_unused]] const AssetBlends<AZ::Data::AssetData>& value,
             [[maybe_unused]] bool bDefault = false) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZStd::string& value, [[maybe_unused]] bool bDefault = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }

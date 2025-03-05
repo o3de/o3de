@@ -157,6 +157,7 @@ namespace Maestro
             bool applyTrackMultiplier = true,
             float isChangedTolerance = AZ::Constants::Tolerance);
         int SetKeysForChangedQuaternionTrackValue(IAnimTrack* track, int keyIdx, float time);
+        int SetKeysForChangedStringTrackValue(IAnimTrack* track, int keyIdx, float time);
 
         static const float s_rgbMultiplier; // standard value for tracks' multiplier with AnimValueType::RGB 
 

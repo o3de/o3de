@@ -270,6 +270,11 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZStd::string& value) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
         void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) override
         {
             AZ_Assert(false, "Not expected to be used");
@@ -308,6 +313,11 @@ namespace Maestro
             [[maybe_unused]] float time,
             [[maybe_unused]] const AssetBlends<AZ::Data::AssetData>& value,
             [[maybe_unused]] bool bDefault = false) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZStd::string& value, [[maybe_unused]] bool bDefault = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
