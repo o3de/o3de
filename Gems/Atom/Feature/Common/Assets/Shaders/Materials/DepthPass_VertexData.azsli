@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/Features/VertexDefines.azsli>
+
 #ifndef VsInput
 #define VsInput         VsInput_DepthCommon
 #endif
@@ -50,7 +52,7 @@ struct VsSystemValues_DepthCommon
 struct VsOutput_DepthCommon
 {
     // "centroid" is needed for SV_Depth to compile
-    precise linear centroid 
+    AZ_PRECISION_POSITION_CENTROID 
     float4 m_position : SV_Position;
     
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION

@@ -58,7 +58,6 @@ namespace AZ::WebGPU
         void UpdateBufferViews(uint32_t binding, const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufViews);
         //! Updates the iamge views of the bind group
         void UpdateImageViews(
-            uint32_t index,
             uint32_t binding,
             const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews,
             RHI::ShaderInputImageType imageType);

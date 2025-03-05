@@ -24,6 +24,7 @@
 #endif
 
 #include "../BasePBR/BasePBR_VertexData.azsli"
+#include <Atom/Features/VertexDefines.azsli>
 
 struct VsInput_Skin
 {
@@ -51,7 +52,7 @@ struct VsSystemValues_Skin
 struct VsOutput_Skin
 {
     // Base fields (required by the template azsli file)...
-    precise linear centroid
+    AZ_PRECISION_POSITION_CENTROID
     float4 position : SV_Position;
     float3 normal: NORMAL;
     float4 tangent : TANGENT;

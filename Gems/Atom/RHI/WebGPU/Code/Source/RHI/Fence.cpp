@@ -6,7 +6,9 @@
  *
  */
 #include <RHI/WebGPU.h>
+#include <RHI/Device.h>
 #include <RHI/Fence.h>
+#include <RHI/Instance.h>
 
 namespace AZ::WebGPU
 {
@@ -39,34 +41,50 @@ namespace AZ::WebGPU
 
     void Fence::ResetInternal()
     {
-        SignalEvent();
+        AZ_Assert(!m_signalFuture.has_value(), "Cannot reset fence when it has a signal future pending");
         m_state = RHI::FenceState::Reset;
     }
 
     RHI::FenceState Fence::GetFenceStateInternal() const
     {
-        AZStd::unique_lock<AZStd::mutex> lock(m_eventMutex);
         return m_state;
     }
 
     void Fence::SignalEvent()
     {
-        AZStd::unique_lock<AZStd::mutex> lock(m_eventMutex);
+        AZStd::unique_lock<AZStd::recursive_mutex> lock(m_eventMutex);
         m_state = RHI::FenceState::Signaled;
+        m_signalFuture = {};
         m_eventSignal.notify_all();
     }
 
     void Fence::WaitEvent() const
     {
-        AZStd::unique_lock<AZStd::mutex> lock(m_eventMutex);
+        AZStd::unique_lock<AZStd::recursive_mutex> lock(m_eventMutex);
         if (m_state != RHI::FenceState::Signaled)
         {
-            m_eventSignal.wait(
-                lock,
-                [&]()
-                {
-                    return m_state != RHI::FenceState::Signaled;
-                });
-        }       
+            if (AZStd::this_thread::get_id() == static_cast<Device&>(GetDevice()).GetRenderThread())
+            {
+                AZ_Assert(m_signalFuture.has_value(), "Trying to wait on event before signal future has been set");
+                wgpu::Instance& instance = Instance::GetInstance().GetNativeInstance();
+                wgpu::WaitStatus status = instance.WaitAny(m_signalFuture.value(), UINT64_MAX);
+                AZ_Error("WebGPU", status == wgpu::WaitStatus::Success, "WaitAny error %d when doing Fence::WaitEvent", status);
+            }
+            else
+            {
+                m_eventSignal.wait(
+                    lock,
+                    [&]()
+                    {
+                        return m_state == RHI::FenceState::Signaled;
+                    });
+            }
+        }
+    }
+
+    void Fence::SetSignalFuture(const wgpu::Future& future)
+    {
+        Reset();
+        m_signalFuture = future;
     }
 }

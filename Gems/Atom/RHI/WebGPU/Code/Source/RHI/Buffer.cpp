@@ -27,14 +27,14 @@ namespace AZ::WebGPU
         return m_wgpuBufferUsage & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite);
     }
 
-    void Buffer::SetUploadHandle(const RHI::AsyncWorkHandle& handle)
+    void Buffer::SetUploadFence(RHI::Ptr<Fence> uploadFence)
     {
-        m_uploadHandle = handle;
+        m_uploadFence = uploadFence;
     }
 
-    const RHI::AsyncWorkHandle& Buffer::GetUploadHandle() const
+    RHI::Ptr<Fence> Buffer::GetUploadFence() const
     {
-        return m_uploadHandle;
+        return m_uploadFence;
     }
 
     RHI::ResultCode Buffer::Init(Device& device, const RHI::BufferDescriptor& bufferDescriptorBase, InitFlags initFlags)

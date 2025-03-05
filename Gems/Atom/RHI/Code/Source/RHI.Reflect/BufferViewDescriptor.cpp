@@ -95,6 +95,11 @@ namespace AZ::RHI
             m_ignoreFrameAttachmentValidation == other.m_ignoreFrameAttachmentValidation;
     }
 
+    bool BufferViewDescriptor::operator!=(const BufferViewDescriptor& other) const
+    {
+        return !operator==(other);
+    }
+
     bool BufferViewDescriptor::OverlapsSubResource(const BufferViewDescriptor& other) const
     {
         uint32_t begin = m_elementOffset * m_elementSize;

@@ -66,14 +66,14 @@ namespace AZ::WebGPU
         return m_wgpuTexture;
     }
 
-    void Image::SetUploadHandle(const RHI::AsyncWorkHandle& handle)
+    void Image::SetUploadFence(RHI::Ptr<Fence> uploadFence)
     {
-        m_uploadHandle = handle;
+        m_uploadFence = uploadFence;
     }
 
-    const RHI::AsyncWorkHandle& Image::GetUploadHandle() const
+    RHI::Ptr<Fence> Image::GetUploadFence() const
     {
-        return m_uploadHandle;
+        return m_uploadFence;
     }
 
     uint16_t Image::GetStreamedMipLevel() const

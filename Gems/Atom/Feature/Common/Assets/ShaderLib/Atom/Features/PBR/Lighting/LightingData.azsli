@@ -82,7 +82,7 @@ void LightingData::Init(real3 positionWS, real3 normal, real roughnessLinear, fl
     // sample BRDF map (indexed by smoothness values rather than roughness)
     NdotV = saturate(dot(normal, dirToCamera));
     real2 brdfUV = real2(NdotV, (1.0 - roughnessLinear));
-    brdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg);
+    brdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::BrdfSampler, brdfUV).rg);
 }
 
 void LightingData::CalculateMultiscatterCompensation(real3 specularF0, bool enabled)

@@ -9,11 +9,13 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/PBR/LightingDefines.azsli>
 
 #if ENABLE_SHADOWS
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
 #endif
 
+#if ENABLE_SIMPLE_SPOTLIGHTS
 void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
     real3 posToLight = real3(light.m_position - surface.position);
@@ -59,6 +61,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
         }
 #endif
 
+#if ENABLE_GOBO
         // apply gobo texture
         if (light.m_goboTexIndex < ViewSrg::MaxGoboTextureCount)
         {
@@ -67,6 +70,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
             float2 goboUv = float2((positionInView.x + 1.0)/2.0, (positionInView.y + 1.0)/2.0);
             lightIntensity *= ViewSrg::SampleGoboTexture(light.m_goboTexIndex, PassSrg::LinearSampler, goboUv);
         }
+#endif
 
         if (dotWithDirection < cosInnerConeAngle) // in penumbra
         {   
@@ -128,3 +132,9 @@ void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
+
+#else
+void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
+{    
+}
+#endif

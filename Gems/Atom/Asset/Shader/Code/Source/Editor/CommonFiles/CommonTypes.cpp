@@ -24,7 +24,9 @@ namespace AZ
             {
                 return AZ::RHI::Format::R16G16B16A16_FLOAT;
             }
-            else if (AzFramework::StringFunc::Equal(format, "R32"))     // can be Float32, Uint32 or Sint32
+            else if (
+                AzFramework::StringFunc::Equal(format, "R32") || // can be Float32, Uint32 or Sint32
+                AzFramework::StringFunc::Equal(format, "R32_FLOAT"))
             {
                 return AZ::RHI::Format::R32_FLOAT;
             }
@@ -52,7 +54,61 @@ namespace AZ
             {
                 return AZ::RHI::Format::R16G16B16A16_SINT;
             }
-            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32"))    // can be Float32, Uint32 or Sint32
+            else if (
+                AzFramework::StringFunc::Equal(format, "R32G32B32A32") || // can be Float32, Uint32 or Sint32
+                AzFramework::StringFunc::Equal(format, "R32G32B32A32_FLOAT")) 
+            {
+                return AZ::RHI::Format::R32G32B32A32_FLOAT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_UNORM"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_UNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_SNORM"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_SNORM;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_UINT"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R8G8B8A8_SINT"))
+            {
+                return AZ::RHI::Format::R8G8B8A8_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_UINT"))
+            {
+                return AZ::RHI::Format::R32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_SINT"))
+            {
+                return AZ::RHI::Format::R32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32_FLOAT"))
+            {
+                return AZ::RHI::Format::R32_FLOAT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_UINT"))
+            {
+                return AZ::RHI::Format::R32G32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_SINT"))
+            {
+                return AZ::RHI::Format::R32G32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32_FLOAT"))
+            {
+                return AZ::RHI::Format::R32G32_FLOAT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_UINT"))
+            {
+                return AZ::RHI::Format::R32G32B32A32_UINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_SINT"))
+            {
+                return AZ::RHI::Format::R32G32B32A32_SINT;
+            }
+            else if (AzFramework::StringFunc::Equal(format, "R32G32B32A32_FLOAT"))
             {
                 return AZ::RHI::Format::R32G32B32A32_FLOAT;
             }
@@ -128,6 +184,10 @@ namespace AZ
             {
                 return AZ::RHI::Format::R16G16_SINT;
             }
+            else if (AzFramework::StringFunc::Equal(format, "R16G16_FLOAT"))
+            {
+                return AZ::RHI::Format::R16G16_FLOAT;
+            }
             else if (AzFramework::StringFunc::Equal(format, "R8G8_SINT"))
             {
                 return AZ::RHI::Format::R8G8_SINT;
@@ -189,6 +249,24 @@ namespace AZ
             }
 
             return AZ::RHI::ShaderInputImageSampleType::Float;
+        }
+
+        AZ::RHI::ShaderInputImageAccess StringToAccess(const char* access)
+        {
+            if (AzFramework::StringFunc::Equal(access, "Read"))
+            {
+                return AZ::RHI::ShaderInputImageAccess::Read;
+            }
+            else if (AzFramework::StringFunc::Equal(access, "Write"))
+            {
+                return AZ::RHI::ShaderInputImageAccess::Write;
+            }
+            else if (AzFramework::StringFunc::Equal(access, "ReadWrite"))
+            {
+                return AZ::RHI::ShaderInputImageAccess::ReadWrite;
+            }
+
+            return AZ::RHI::ShaderInputImageAccess::Read;
         }
 
         MemberType StringToBaseType(const char* baseType)

@@ -57,6 +57,8 @@ namespace AZ::WebGPU
         //! Returns the manager for root constants
         RootConstantManager& GetRootConstantManager();
 
+        AZStd::thread::id GetRenderThread() const;
+
     protected:
         // RHI::RHISystemNotificationBus::Handler overrides...
         void OnRHISystemInitialized() override;
@@ -117,6 +119,8 @@ namespace AZ::WebGPU
         RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
         RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
         RHI::Ptr<RootConstantManager> m_rootConstantManager;
+
+        AZStd::thread::id m_renderThreadId;
     };
 
     template<typename ObjectType, typename... Args>

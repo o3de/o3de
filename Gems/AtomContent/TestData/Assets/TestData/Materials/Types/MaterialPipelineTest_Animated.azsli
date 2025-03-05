@@ -44,7 +44,7 @@ void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out 
 
     struct VsOutput
     {
-        precise linear centroid float4 position : SV_Position;
+        AZ_PRECISION_POSITION_CENTROID float4 position : SV_Position;
         float3 normal: NORMAL;
         float4 tangent : TANGENT; 
         float3 worldPosition : UV0;
@@ -123,7 +123,7 @@ void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out 
 
     struct VsOutput
     {
-        precise linear centroid float4 m_position : SV_Position;
+        AZ_PRECISION_POSITION_CENTROID float4 m_position : SV_Position;
 
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
         float3 m_worldPos : TEXCOORD0;

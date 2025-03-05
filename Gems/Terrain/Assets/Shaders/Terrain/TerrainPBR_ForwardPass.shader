@@ -39,5 +39,5 @@
     },
 
     "DrawList" : "forward",
-    "DisabledRHIBackends": ["metal"]
+    "DisabledRHIBackends": ["metal", "webgpu"]
 }

@@ -42,5 +42,5 @@
         }
       ]
     },
-    "DisabledRHIBackends": ["metal"]
+    "DisabledRHIBackends": ["metal", "webgpu"]
 }

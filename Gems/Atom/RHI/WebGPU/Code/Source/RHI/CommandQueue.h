@@ -44,7 +44,7 @@ namespace AZ::WebGPU
         //! Writes into a buffer directly using the queue
         void WriteBuffer(const Buffer& buffer, uint64_t bufferOffset, AZStd::span<const uint8_t> data);
         //! Signals a fence from GPU
-        void Signal(Fence& fence);
+        void Signal(Fence& fence, RHI::DeviceFence::SignalCallback callback = nullptr);
 
     private:
         CommandQueue() = default;

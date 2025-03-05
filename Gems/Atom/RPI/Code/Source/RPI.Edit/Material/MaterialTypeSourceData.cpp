@@ -126,7 +126,7 @@ namespace AZ
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()
-                    ->Version(4) // Material Version Update
+                    ->Version(5) // Material Version Update
                     ->Field("description", &MaterialTypeSourceData::m_description)
                     ->Field("version", &MaterialTypeSourceData::m_version)
                     ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
@@ -137,6 +137,7 @@ namespace AZ
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
                     ->Field("materialPipelines", &MaterialTypeSourceData::m_pipelineData)
                     ->Field("uvNameMap", &MaterialTypeSourceData::m_uvNameMap)
+                    ->Field("disabledRhiBackends", &MaterialTypeSourceData::m_disabledRhiBackends)
                     ;
             }
         }
@@ -692,7 +693,8 @@ namespace AZ
             const Name& propertyId,
             const MaterialPropertySourceData& propertySourceData) const
         {
-            materialTypeAssetCreator.BeginMaterialProperty(propertyId, propertySourceData.m_dataType, materialPipelineName);
+            materialTypeAssetCreator.BeginMaterialProperty(
+                propertyId, propertySourceData.m_dataType, materialPipelineName, propertySourceData.m_optional);
 
             if (propertySourceData.m_dataType == MaterialPropertyDataType::Enum)
             {

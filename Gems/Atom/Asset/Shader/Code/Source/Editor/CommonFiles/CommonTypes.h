@@ -147,7 +147,7 @@ namespace AZ
             AZStd::string m_dependsOn;
             uint32_t      m_count = 1;
             TextureType   m_type = TextureType::Unknown;
-            bool          m_isReadOnlyType = false;
+            RHI::ShaderInputImageAccess m_access = RHI::ShaderInputImageAccess::Unknown;
             uint32_t      m_registerId = RHI::UndefinedRegisterSlot;
             uint32_t      m_spaceId = RHI::UndefinedRegisterSlot;
             RHI::Format m_format = RHI::Format::Unknown;
@@ -238,6 +238,7 @@ namespace AZ
         AZ::RHI::ShaderInputSamplerType StringToSamplerType(const char* samplerType);
         AZ::RHI::Format StringToFormat(const char* format);
         AZ::RHI::ShaderInputImageSampleType StringToSampleType(const char* sampleType);
+        AZ::RHI::ShaderInputImageAccess StringToAccess(const char* access);
 
         /// Reflection data about external resource usage
         /// This is fundamentally the reproduction of the JSON algebraic format output by AZSLc --bindingdep command

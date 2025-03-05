@@ -33,7 +33,7 @@ namespace AZ::WebGPU
         struct Descriptor
         {
             RHI::ConstPtr<RHI::ShaderResourceGroupLayout> m_shaderResouceGroupLayout;
-            bool m_useDynamicBuffer = false; // Buffer bindings will use a dynamic offset
+            AZStd::vector<RHI::ShaderInputBufferIndex> m_dynamicOffsetBuffers; // Buffers bindings that will use a dynamic offset
             HashValue64 GetHash() const;
         };
 
@@ -44,7 +44,7 @@ namespace AZ::WebGPU
         const wgpu::BindGroupLayout& GetNativeBindGroupLayout() const;
         uint32_t GetConstantDataSize() const;
         const RHI::ShaderResourceGroupLayout* GetShaderResourceGroupLayout() const;
-        const wgpu::BindGroupLayoutEntry& GetEntry(const uint32_t index) const;
+        const wgpu::BindGroupLayoutEntry& GetEntryByBinding(const uint32_t binding) const;
 
     private:
         BindGroupLayout() = default;
@@ -59,13 +59,12 @@ namespace AZ::WebGPU
         void Shutdown() override;
         //////////////////////////////////////////////////////////////////////////
 
-        RHI::ResultCode BuildNativeDescriptorSetLayout();
-        RHI::ResultCode BuildDescriptorSetLayoutBindings();
+        RHI::ResultCode BuildNativeDescriptorSetLayout(const Descriptor& descriptor);
+        RHI::ResultCode BuildBindGroupLayoutBindings(const Descriptor& descriptor);
 
         wgpu::BindGroupLayout m_wgpuBindGroupLayout = nullptr;
         AZStd::vector<wgpu::BindGroupLayoutEntry> m_wgpuEntries;
         RHI::ConstPtr<RHI::ShaderResourceGroupLayout> m_shaderResourceGroupLayout;
         uint32_t m_constantDataSize = 0;
-        bool m_useDynamicOffset = false;
     };
 }

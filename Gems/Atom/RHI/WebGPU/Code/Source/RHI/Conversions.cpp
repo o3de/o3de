@@ -137,24 +137,7 @@ namespace AZ::WebGPU
         }
 #undef RHIWGPU_RHI_TO_WGPU
     }
-
-    RHI::Format ConvertVertexFormat(wgpu::VertexFormat format)
-    {
-#define RHIWGPU_WGPU_TO_RHI(_FormatID, _WGPUFormat)                                                              \
-    case wgpu::VertexFormat::_WGPUFormat:                                                                        \
-        return RHI::Format::_FormatID;
-
-        switch (format)
-        {
-            RHIWGPU_EXPAND_FOR_FORMATS(RHIWGPU_WGPU_TO_RHI)
-
-        default:
-            AZ_Assert(false, "unhandled conversion in ConvertVertexFormat");
-            return RHI::Format::Unknown;
-        }
-
-#undef RHIWGPU_WGPU_TO_RHI
-    }
+   
 #undef RHIWGPU_EXPAND_FOR_FORMATS
 
     wgpu::TextureDimension ConvertImageDimension(RHI::ImageDimension dimension)

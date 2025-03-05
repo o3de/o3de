@@ -41,20 +41,10 @@ namespace AZ::WebGPU
         RHI::ResultCode Init(Device& device);
         void Shutdown();
 
-        RHI::AsyncWorkHandle QueueUpload(const RHI::DeviceBufferStreamRequest& request);
-        RHI::AsyncWorkHandle QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip);
-
-        void WaitForUpload(const RHI::AsyncWorkHandle& workHandle);
+        RHI::Ptr<Fence> QueueUpload(const RHI::DeviceBufferStreamRequest& request);
+        RHI::Ptr<Fence> QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip);
 
     private:
         RHI::Ptr<CommandQueue> m_queue;
-        RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::DeviceFence::SignalCallback callback = nullptr);
-        void ProcessCallback(const RHI::AsyncWorkHandle& handle);
-
-        // Async queue used for waiting for an upload event to complete.
-        RHI::AsyncWorkQueue m_asyncWaitQueue;
-
-        AZStd::mutex m_callbackListMutex;
-        AZStd::unordered_map<RHI::AsyncWorkHandle, RHI::CompleteCallback> m_callbackList;
     };    
 }

@@ -50,5 +50,7 @@
                 "azslc": ["--no-ms"]
             }
         }
-    ]  
+    ],
+
+     "DisabledRHIBackends": ["webgpu"]  
 }
