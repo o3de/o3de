@@ -235,7 +235,7 @@ namespace AZ
                 return;
             }
 
-            m_bufferView = m_rhiBuffer->BuildBufferView(m_bufferViewDescriptor);
+            m_bufferView = m_rhiBuffer->GetBufferView(m_bufferViewDescriptor);
 
             if(!m_bufferView.get())
             {
