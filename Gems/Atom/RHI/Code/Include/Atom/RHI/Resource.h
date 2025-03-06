@@ -9,7 +9,7 @@
 
 #include <Atom/RHI/DeviceResource.h>
 #include <Atom/RHI/MultiDeviceObject.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <Atom/RHI/ResourceViewCache.h>
 
 
 namespace AZ::RHI
@@ -69,7 +69,6 @@ namespace AZ::RHI
         bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
         bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
 
-        //! Removes the provided ResourceView from the cache
         void EraseResourceView(ResourceView* resourceView) const;
 
     protected:
@@ -89,12 +88,6 @@ namespace AZ::RHI
         //! Called by the frame attachment at frame building time.
         void SetFrameAttachment(FrameAttachment* frameAttachment, int deviceIndex = MultiDevice::InvalidDeviceIndex);
 
-        //! Called by GetResourceView to insert a new image view
-        Ptr<ImageView> InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const;
-
-        //! Called by GetResourceView to insert a new buffer view
-        Ptr<BufferView> InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const;
-
         //! The parent pool this resource is registered with.
         ResourcePool* m_pool = nullptr;
 
@@ -107,9 +100,7 @@ namespace AZ::RHI
         //! Cache the resourceViews in order to avoid re-creation
         //! Since ResourceView has a dependency to Resource this cache holds raw pointers here in order to ensure there
         //! is no circular dependency between the resource and it's resourceview.
-        mutable AZStd::unordered_map<size_t, ResourceView*> m_resourceViewCache;
-        //! This should help provide thread safe access to resourceView cache
-        mutable AZStd::mutex m_cacheMutex;
+        mutable ResourceViewCache<Resource> m_resourceViewCache;
     };
 
     class Buffer;
