@@ -523,6 +523,7 @@ set(FILES
     TrackView/TrackViewEventNode.h
     TrackView/TrackViewMessageBox.cpp
     TrackView/TrackViewMessageBox.h
+    TrackView/VectorKeyUIControls.cpp
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
