@@ -975,9 +975,6 @@ namespace Maestro
             subTrackParamTypes[1] = AnimParamType::ColorG;
             subTrackParamTypes[2] = AnimParamType::ColorB;
             IAnimTrack* pTrack = aznew CCompoundSplineTrack(3, AnimValueType::RGB, subTrackParamTypes, false);
-            pTrack->SetSubTrackName(0, "Red");
-            pTrack->SetSubTrackName(1, "Green");
-            pTrack->SetSubTrackName(2, "Blue");
             return pTrack;
         }
 

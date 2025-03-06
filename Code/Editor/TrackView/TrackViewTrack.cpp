@@ -266,6 +266,16 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const flo
 
 CTrackViewKeyHandle CTrackViewTrack::CreateKey(const float time)
 {
+    CTrackViewKeyHandle keyHandle;
+
+    const auto sequence = GetSequence();
+    if (!(m_pAnimTrack && sequence))
+    {
+        AZ_Assert(m_pAnimTrack, "CreateKey(%f): no animation track");
+        AZ_Assert(sequence, "CreateKey(%f): no sequence", time);
+        return keyHandle;
+    }
+
     AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
     if (!AzToolsFramework::UndoRedoOperationInProgress())
     {
@@ -274,14 +284,21 @@ CTrackViewKeyHandle CTrackViewTrack::CreateKey(const float time)
 
     const int keyIndex = m_pAnimTrack->CreateKey(time);
 
-    if (undoBatch.get())
+    if (keyIndex < 0)
     {
-        undoBatch->MarkEntityDirty(GetSequence()->GetSequenceComponentEntityId());
+        AZ_Error("CTrackViewTrack", false, "CreateKey(%f): no keys added to %s", time, GetName().c_str());
+        undoBatch.reset();
+        return keyHandle;
     }
 
-    GetSequence()->OnKeysChanged();
+    if (undoBatch.get())
+    {
+        undoBatch->MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+    }
+
+    sequence->OnKeysChanged();
     CTrackViewKeyHandle createdKeyHandle(this, keyIndex);
-    GetSequence()->OnKeyAdded(createdKeyHandle);
+    sequence->OnKeyAdded(createdKeyHandle);
 
     return createdKeyHandle;
 }

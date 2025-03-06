@@ -87,8 +87,8 @@ namespace Maestro
 
         bool IsKeySelected(int key) const override
         {
-            bool valid = (key >= 0 && key < (int)m_keys.size());
-            AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(key), static_cast<int>(m_keys.size()));
+            bool valid = (key >= 0 && key < static_cast<int>(m_keys.size()));
+            AZ_Assert(valid, "Key index (%i) is out of range (%i)", key, static_cast<int>(m_keys.size()));
             if (!valid)
             {
                 return false;
@@ -103,8 +103,8 @@ namespace Maestro
 
         void SelectKey(int key, bool select) override
         {
-            bool valid = (key >= 0 && key < (int)m_keys.size());
-            AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(key), static_cast<int>(m_keys.size()));
+            bool valid = (key >= 0 && key < static_cast<int>(m_keys.size()));
+            AZ_Assert(valid, "Key index (%i) is out of range (%i)", key, static_cast<int>(m_keys.size()));
             if (!valid)
             {
                 return;
@@ -355,6 +355,12 @@ namespace Maestro
         */
         virtual void SerializeKey(KeyType& key, XmlNodeRef& keyNode, bool bLoading) = 0;
 
+
+        void InitPostLoad([[maybe_unused]] IAnimSequence* sequence) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
         //////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////
         /** Get last key before specified time.
@@ -550,8 +556,8 @@ namespace Maestro
     template<class KeyType>
     inline float TAnimTrack<KeyType>::GetKeyTime(int index) const
     {
-        bool valid = (index >= 0 && index < (int)m_keys.size());
-        AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(index), static_cast<int>(m_keys.size()));
+        bool valid = (index >= 0 && index < static_cast<int> (m_keys.size()));
+        AZ_Assert(valid, "Key index (%i) is out of range (%i)", index, static_cast<int>(m_keys.size()));
         if (!valid)
         {
             return 0.0f;

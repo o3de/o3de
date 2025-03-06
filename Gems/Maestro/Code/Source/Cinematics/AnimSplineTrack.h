@@ -203,26 +203,46 @@ namespace Maestro
 
         float GetKeyTime(int index) const override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+            if (index < 0 || index >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index %i is out of range (0-%d)", index, GetNumKeys());
+                return 0.0f;
+            }
+
             return m_spline->time(index);
         }
 
         void SetKeyTime(int index, float time) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+            if (index < 0 || index >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index %i is out of range (0-%d)", index, GetNumKeys());
+                return;
+            }
+
             m_spline->SetKeyTime(index, time);
             Invalidate();
         }
 
         int GetKeyFlags(int index) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+            if (index < 0 || index >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index %i is out of range (0-%d)", index, GetNumKeys());
+                return 0;
+            }
+
             return m_spline->key(index).flags;
         }
 
         void SetKeyFlags(int index, int flags) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+            if (index < 0 || index >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index %i is out of range (0-%d)", index, GetNumKeys());
+                return;
+            }
+
             m_spline->key(index).flags = flags;
         }
 

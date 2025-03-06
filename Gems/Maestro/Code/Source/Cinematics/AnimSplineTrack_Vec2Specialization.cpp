@@ -105,11 +105,11 @@ namespace Maestro
         {
             if (applyMultiplier && m_trackMultiplier != 1.0f)
             {
-                m_defaultValue = Vec2(time, value * m_trackMultiplier);
+                m_defaultValue.set(time, value * m_trackMultiplier);
             }
             else
             {
-                m_defaultValue = Vec2(time, value);
+                m_defaultValue.set(time, value);
             }
         }
     }
@@ -147,18 +147,42 @@ namespace Maestro
     {
         float value;
 
-        int nkey = GetNumKeys();
+        const int numKeys = GetNumKeys();
 
-        if (nkey > 0)
+        bool bUseDefault = true;
+        if (numKeys > 0)
         {
-            GetValue(time, value);
+            SortKeys();
+            // Check that no keys exist at the same time
+            auto prevKeyIdx = numKeys - 1;
+            while ((prevKeyIdx > 0) && (GetKeyTime(prevKeyIdx) > time))
+            {
+                --prevKeyIdx;
+            }
+            float dt = AZStd::abs(time - GetKeyTime(prevKeyIdx)); // delta time to previous key
+            if (prevKeyIdx < numKeys - 1) // Is there next key?
+            {
+                dt = AZStd::min(dt, AZStd::abs(time - GetKeyTime(prevKeyIdx + 1))); // delta time to closest key
+            }
+            if (dt < MinTimePrecision)
+            {
+                return -1; // a key is too close in time, reject adding a key
+            }
+            // Check if Default Value was recently updated, and is closer in time than existing keys
+            bUseDefault = AZStd::abs(time - m_defaultValue.x) < dt;
         }
-        else
+
+        if (bUseDefault)
         {
             value = m_defaultValue.y;
         }
+        else
+        {
+            GetValue(time, value);
+        }
 
         UpdateTrackValueRange(value);
+        Invalidate();
 
         Spline::ValueType tmp;
         tmp[0] = value;
@@ -367,9 +391,10 @@ namespace Maestro
 
         static char str[64];
         description = str;
-        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+        const int numKeys = GetNumKeys();
+        AZ_Assert(index >= 0 && index < numKeys, "Key index %i is out of range", index);
         Spline::key_type& k = m_spline->key(index);
-        sprintf_s(str, "%.2f", k.value.y);
+        azsprintf(str, "%.2f", k.value.y);
     }
 
 } // namespace Maestro

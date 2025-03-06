@@ -78,11 +78,7 @@ namespace Maestro
         void RemoveKey(int num) override;
 
         void GetKeyInfo(int key, const char*& description, float& duration) override;
-        int CreateKey([[maybe_unused]] float time) override
-        {
-            AZ_Assert(false, "Not expected to be used");
-            return 0;
-        }
+        int CreateKey(float time) override;
 
         int CloneKey([[maybe_unused]] int fromKey) override
         {
@@ -207,6 +203,8 @@ namespace Maestro
 
         bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected = false, float fTimeOffset = 0) override;
 
+        void InitPostLoad([[maybe_unused]] IAnimSequence* sequence) override;
+
         int NextKeyByTime(int key) const override;
 
         void SetSubTrackName(const int i, const AZStd::string& name)
@@ -271,6 +269,10 @@ namespace Maestro
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
+        void RenameSubTracksIfNeeded(); // Called in ctor, and then sub-track names are serialized.
+        void SetKeyValueRanges(); // Key Value Range in a sub-track is not serialized, set it depending on the m_valueType and sub-track's m_nParamType.
+
+
         int m_refCount;
         AnimValueType m_valueType;
         int m_nDimensions;
