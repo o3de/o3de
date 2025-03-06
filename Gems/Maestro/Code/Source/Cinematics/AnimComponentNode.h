@@ -90,6 +90,8 @@ namespace Maestro
         IAnimTrack* CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) override;
         bool RemoveTrack(IAnimTrack* pTrack) override;
 
+        void UpdateTrackDefaultValue(float time, IAnimTrack* pTrack) override;
+
         //////////////////////////////////////////////////////////////////////////
         // EditorSequenceAgentComponentNotificationBus::Handler Interface
         void OnSequenceAgentConnected() override;

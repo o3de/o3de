@@ -642,6 +642,11 @@ void CTrackViewAnimNode::RemoveTrack(CTrackViewTrack* track)
     }
 }
 
+void CTrackViewAnimNode::UpdateTrackDefaultValue(float time, IAnimTrack* pTrack)
+{
+    GetAnimNode()->UpdateTrackDefaultValue(time, pTrack);
+}
+
 bool CTrackViewAnimNode::SnapTimeToPrevKey(float& time) const
 {
     const float startTime = time;
