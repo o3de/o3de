@@ -61,6 +61,8 @@ namespace EMotionFX
 
     Motion::~Motion()
     {
+        AZ_Info("mmm", "Motion::~Motion %s", GetName());
+
         // trigger the OnDeleteMotion event
         GetEventManager().OnDeleteMotion(this);
 

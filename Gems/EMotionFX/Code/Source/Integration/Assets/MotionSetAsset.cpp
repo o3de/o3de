@@ -92,6 +92,8 @@ namespace EMotionFX
 
         MotionSetAsset::~MotionSetAsset()
         {
+            AZ_Info("mmm", "MotionSetAsset::~MotionSetAsset %s", m_emfxMotionSet ? m_emfxMotionSet->GetName() : "none");
+
             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         }
 

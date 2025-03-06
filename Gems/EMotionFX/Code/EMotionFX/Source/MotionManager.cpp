@@ -340,6 +340,8 @@ namespace EMotionFX
             return false;
         }
 
+        AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock %d, del=%d", index, delFromMemory);
+
         Motion* motion = m_motions[index];
 
         // stop all motion instances of the motion to delete
@@ -372,10 +374,14 @@ namespace EMotionFX
         // Reset all motion entries in the motion sets of the current motion.
         for (const MotionSet* motionSet : m_motionSets)
         {
+            AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock motion set %s", motionSet->GetName());
+
             const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
             for (const auto& item : motionEntries)
             {
                 EMotionFX::MotionSet::MotionEntry* motionEntry = item.second;
+
+                AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock motion entry %s", item.first.c_str());
 
                 if (motionEntry->GetMotion() == motion)
                 {
