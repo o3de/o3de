@@ -391,8 +391,7 @@ namespace Maestro
 
         static char str[64];
         description = str;
-        const int numKeys = GetNumKeys();
-        AZ_Assert(index >= 0 && index < numKeys, "Key index %i is out of range", index);
+        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
         Spline::key_type& k = m_spline->key(index);
         azsprintf(str, "%.2f", k.value.y);
     }
