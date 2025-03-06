@@ -30,7 +30,7 @@ namespace AZ::RHI
         SmallVector& operator=(const SmallVector<T, FixedSize>&) = default;
         SmallVector& operator=(SmallVector<T, FixedSize>&&) = default;
 
-        SmallVector(int newSize, const T& value)
+        SmallVector(size_t newSize, const T& value)
         {
             resize(newSize, value);
         }
@@ -103,7 +103,7 @@ namespace AZ::RHI
             }
         }
 
-        void resize(int newSize, const T& value)
+        void resize(size_t newSize, const T& value)
         {
             if (AZStd::holds_alternative<FixedVectorT>(m_data))
             {
@@ -127,7 +127,7 @@ namespace AZ::RHI
             }
         }
 
-        void resize(int newSize)
+        void resize(size_t newSize)
         {
             resize(newSize, {});
         }
