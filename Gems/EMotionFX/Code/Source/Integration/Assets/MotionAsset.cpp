@@ -22,6 +22,12 @@ namespace EMotionFX
             : EMotionFXAsset(id)
         {}
 
+        MotionAsset::~MotionAsset()
+        {
+            AZ_Info("mmm", "MotionAsset::~MotionAsset motion %s %s, refs %d", m_emfxMotion->GetName(), m_emfxMotion->GetFileName(), m_emfxMotion->GetReferenceCount());
+        }
+
+
         //////////////////////////////////////////////////////////////////////////
         void MotionAsset::SetData(EMotionFX::Motion* motion)
         {

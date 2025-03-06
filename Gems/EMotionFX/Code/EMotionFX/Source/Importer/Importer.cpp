@@ -402,6 +402,13 @@ namespace EMotionFX
         {
             AZ_Info("EMotionFXdebug", "Importer::LoadMotion load from file %s success", filename.c_str());
             result->SetFileName(filename.c_str());
+            AZStd::string motionName;
+            AzFramework::StringFunc::Path::GetFileName(filename.c_str(), motionName);
+            result->SetName(motionName.c_str());  // set the name to make it similar to motions loaded by another callback
+        }
+        else
+        {
+            AZ_Error("EMotionFXdebug", false, "Importer::LoadMotion error loading  from file %s", filename.c_str());
         }
 #else
         // try to open the file from disk
@@ -426,7 +433,14 @@ namespace EMotionFX
 
         // close the file again
         f.Close();
-#endif        
+        
+        // create the motion reading from memory
+        Motion* result = LoadMotion(fileBuffer, fileSize, settings);
+        if (result)
+        {
+            result->SetFileName(filename.c_str());
+        }
+#endif
         // delete the filebuffer again
         MCore::Free(fileBuffer);
 

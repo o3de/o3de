@@ -340,9 +340,9 @@ namespace EMotionFX
             return false;
         }
 
-        AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock %d, del=%d", index, delFromMemory);
-
         Motion* motion = m_motions[index];
+
+        AZ_Info("mmm", "RemoveMotionWithoutLock %d %s %s, del=%d", index, motion->GetName(), motion->GetFileName(), delFromMemory);
 
         // stop all motion instances of the motion to delete
         const size_t numActorInstances = GetActorManager().GetNumActorInstances();
@@ -374,7 +374,7 @@ namespace EMotionFX
         // Reset all motion entries in the motion sets of the current motion.
         for (const MotionSet* motionSet : m_motionSets)
         {
-            AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock motion set %s", motionSet->GetName());
+            AZ_Info("mmm", "  motion set %s", motionSet->GetName());
 
             const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
             for (const auto& item : motionEntries)
@@ -383,13 +383,13 @@ namespace EMotionFX
                 
                 if (motionEntry == nullptr)
                 {
-                    AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock motion entry %s but nullptr", item.first.c_str());
+                    AZ_Info("mmm", "    motion entry %s but nullptr", item.first.c_str());
                     continue;
                 }
 
                 if (motionEntry->GetMotion() == motion)
                 {
-                    AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock motion entry %s", item.first.c_str());
+                    AZ_Info("mmm", "    found motion entry %s", item.first.c_str());
 
                     motionEntry->Reset();
                 }
