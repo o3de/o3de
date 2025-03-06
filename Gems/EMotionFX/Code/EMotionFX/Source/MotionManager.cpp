@@ -380,11 +380,17 @@ namespace EMotionFX
             for (const auto& item : motionEntries)
             {
                 EMotionFX::MotionSet::MotionEntry* motionEntry = item.second;
-
-                AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock motion entry %s", item.first.c_str());
+                
+                if (motionEntry == nullptr)
+                {
+                    AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock motion entry %s but nullptr", item.first.c_str());
+                    continue;
+                }
 
                 if (motionEntry->GetMotion() == motion)
                 {
+                    AZ_Info("mmm", "MotionManager::RemoveMotionWithoutLock motion entry %s", item.first.c_str());
+
                     motionEntry->Reset();
                 }
             }
