@@ -57,13 +57,12 @@ namespace EMotionFX
     {
         AZ_Assert(m_motionSet, "Motion set is nullptr.");
 
-        AZ_Info("ccc", "Default LoadMotion callback for %s", entry->GetFilename());
-
         // Get the full file name and file extension.
-        //const AZStd::string filename = m_motionSet->ConstructMotionFilename(entry);
-        //AZ_Info("ccc", "Generated file name %s", filename.c_str());
+#if defined(CARBONATED)
         const AZStd::string filename = entry->GetFilename();
-
+#else
+        const AZStd::string filename = m_motionSet->ConstructMotionFilename(entry);
+#endif
         // Check what type of file to load.
         Motion* motion = GetImporter().LoadMotion(filename.c_str(), nullptr);
 
@@ -73,56 +72,14 @@ namespace EMotionFX
             AZStd::string motionName;
             AzFramework::StringFunc::Path::GetFileName(filename.c_str(), motionName);
             motion->SetName(motionName.c_str());
-            AZ_Info("ccc", "Loaded motion for %s", entry->GetFilename());
         }
         else
         {
-            AZ_Error("ccc", false, "Error loading motion for %s", entry->GetFilename());
+            AZ_Error("EMotionFXdebug", false, "Default callback loading error for %s", entry->GetFilename());
         }
 
         return motion;
     }
-
-    EMotionFX::Motion* LoadMotionAlt(EMotionFX::MotionSet::MotionEntry* entry)
-    {
-        // When EMotionFX requests a motion to be loaded, retrieve it from the asset database.
-        // It should already be loaded through a motion set.
-        const char* motionFile = entry->GetFilename();
-        AZ::Data::AssetId motionAssetId;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            motionAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, motionFile, azrtti_typeid<EMotionFX::Integration::MotionAsset>(), false);
-
-        // if it failed to find it, it might be still compiling - try forcing an immediate compile:
-        if (!motionAssetId.IsValid())
-        {
-            AZ_TracePrintf("ccc", "Motion \"%s\" is missing, requesting the asset system to compile it now.\n", motionFile);
-            AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::CompileAssetSync, motionFile);
-            // and then try again:
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(motionAssetId,
-                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, motionFile, azrtti_typeid<EMotionFX::Integration::MotionAsset>(), false);
-            if (motionAssetId.IsValid())
-            {
-                AZ_Info("ccc", "Motion \"%s\" successfully compiled.\n", motionFile);
-            }
-        }
-        /*
-        if (motionAssetId.IsValid())
-        {
-            for (const auto& motionAsset : m_assetData->m_motionAssets)
-            {
-                if (motionAsset.GetId() == motionAssetId)
-                {
-                    AZ_Assert(motionAsset, "Motion \"%s\" was found in the asset database, but is not initialized.", entry->GetFilename());
-                    AZ_Error("ccc", motionAsset.Get()->m_emfxMotion.get(), "Motion \"%s\" was found in the asset database, but is not valid.", entry->GetFilename());
-                    return motionAsset.Get()->m_emfxMotion.get();
-                }
-            }
-        }
-        */
-        AZ_Error("ccc", false, "Failed to locate motion \"%s\" in the asset database.", entry->GetFilename());
-        return nullptr;
-    }
-
 
     //--------------------------------------------------------------------------------------------------------
 
@@ -583,24 +540,6 @@ namespace EMotionFX
 
         // If loading on demand is enabled and the motion hasn't loaded yet.
 #if defined (CARBONATED)
-        /*
-        // this is stuck forever, callback is never assigned
-        while (m_callback == nullptr)
-        {
-            // we should wait for motion set asset load completes
-            if (AZ::Data::AssetManager::Instance().IsMainThread(AZStd::this_thread::get_id()))
-            {
-                // if we are here then it is the main thread, let deliver the log messages
-                AZ::LogNotification::LogNotificationBus::Broadcast(&AZ::LogNotification::LogNotificationBus::Events::Update);
-                // allow asset manager to continue loading
-                AZ::Data::AssetManager::Instance().DispatchEvents();
-            }
-            else
-            {
-                Sleep(1);
-            }
-        }
-        */
         if (!motion && !entry->GetFilenameString().empty() && !entry->GetLoadingFailed() && m_callback) // ... and desired loader callback has been assigned
 #else
         if (!motion && !entry->GetFilenameString().empty() && !entry->GetLoadingFailed())
@@ -616,12 +555,6 @@ namespace EMotionFX
                 AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
 #endif
             }
-#if defined(CARBONATED)
-            else
-            {
-                AZ_Info("EMotionFXdebug", "Loaded motion '%s' for motion set '%s'", entry->GetFilename(), GetName());
-            }
-#endif
 
             entry->SetMotion(motion);
         }
@@ -635,8 +568,7 @@ namespace EMotionFX
             }
             if (m_callback == nullptr)
             {
-                const long long t = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
-                AZ_Info("EMotionFXdebug", "Motion loading callback is unassigned '%s' for motion set '%s' at %llu", entry->GetFilename(), GetName(), t);
+                AZ_Info("EMotionFXdebug", "Motion loading callback is unassigned '%s' for motion set '%s'", entry->GetFilename(), GetName());
             }
         }
 #endif

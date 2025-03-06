@@ -361,11 +361,9 @@ namespace EMotionFX
     // try to load a motion from disk
     Motion* Importer::LoadMotion(AZStd::string filename, MotionSettings* settings)
     {
-        AZ_Info("ccc", "Importer::LoadMotion %s", filename.c_str());
-
-        //AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
-        //AZ_Info("ccc", "Importer::LoadMotion normalized %s", filename.c_str());
-
+#if !defined(CARBONATED)
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
+#endif
         // check if we want to load the motion even if a motion with the given filename is already inside the motion manager
         if (settings == nullptr || (settings && settings->m_forceLoading == false))
         {
@@ -373,15 +371,9 @@ namespace EMotionFX
             Motion* motion = GetMotionManager().FindMotionByFileName(filename.c_str());
             if (motion)
             {
-                AZ_Info("ccc", "Importer::LoadMotion found existing motion");
-
                 motion->IncreaseReferenceCount();
                 MCore::LogInfo("  + Motion '%s' already loaded, returning already loaded motion from the MotionManager.", filename.c_str());
                 return motion;
-            }
-            else
-            {
-                AZ_Info("ccc", "Importer::LoadMotion NO existing motion");
             }
         }
 
@@ -389,8 +381,29 @@ namespace EMotionFX
         {
             MCore::LogInfo("- Trying to load motion from file '%s'...", filename.c_str());
         }
-        AZ_Info("ccc", "Importer::LoadMotion load from file");
-        /*
+#if defined(CARBONATED)
+        AZ::IO::FileIOStream fileStream;
+        if (!fileStream.Open(filename.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
+        {
+            if (GetLogging())
+            {
+                MCore::LogError("  + Failed to open the file for motion '%s'!", filename.c_str());
+            }
+            return nullptr;
+        }
+        const size_t fileSize = fileStream.GetLength();
+        uint8* fileBuffer = (uint8*)MCore::Allocate(fileSize, EMFX_MEMCATEGORY_IMPORTER);
+        fileStream.Read(fileSize, fileBuffer);
+        fileStream.Close();
+
+        // create the motion reading from memory
+        Motion* result = LoadMotion(fileBuffer, fileSize, settings);
+        if (result)
+        {
+            AZ_Info("EMotionFXdebug", "Importer::LoadMotion load from file %s success", filename.c_str());
+            result->SetFileName(filename.c_str());
+        }
+#else
         // try to open the file from disk
         MCore::DiskFile f;
         if (f.Open(filename.c_str(), MCore::DiskFile::READ) == false)
@@ -399,7 +412,6 @@ namespace EMotionFX
             {
                 MCore::LogError("  + Failed to open the file for motion '%s'!", filename.c_str());
             }
-            AZ_Info("ccc", "Importer::LoadMotion cannot open file");
             return nullptr;
         }
 
@@ -414,26 +426,7 @@ namespace EMotionFX
 
         // close the file again
         f.Close();
-        */
-        AZ::IO::FileIOStream fileStream;
-        if (!fileStream.Open(filename.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
-        {
-            AZ_Info("ccc", "Importer::LoadMotion cannot open file");
-            return nullptr;
-        }
-        const size_t fileSize = fileStream.GetLength();
-        uint8* fileBuffer = (uint8*)MCore::Allocate(fileSize, EMFX_MEMCATEGORY_IMPORTER);
-        fileStream.Read(fileSize, fileBuffer);
-        fileStream.Close();
-
-        // create the motion reading from memory
-        Motion* result = LoadMotion(fileBuffer, fileSize, settings);
-        if (result)
-        {
-            AZ_Info("ccc", "Importer::LoadMotion load from file %s success", filename.c_str());
-            result->SetFileName(filename.c_str());
-        }
-
+#endif        
         // delete the filebuffer again
         MCore::Free(fileBuffer);
 
@@ -444,7 +437,6 @@ namespace EMotionFX
             {
                 MCore::LogError("  + Failed to load motion from file '%s'", filename.c_str());
             }
-            AZ_Error("ccc", false, "Importer::LoadMotion filed to load motion from %s", filename.c_str());
         }
         else
         {
@@ -488,8 +480,11 @@ namespace EMotionFX
         }
 
         // create our motion
+#if defined(CARBONATED)
+        Motion* motion = aznew Motion("<Unknown>", /* registerWithMotionManager = */ false);  // register after loading, see the call before return
+#else
         Motion* motion = aznew Motion("<Unknown>");
-
+#endif
         // copy over the actor settings, or use defaults
         MotionSettings motionSettings;
         if (settings)
@@ -530,9 +525,11 @@ namespace EMotionFX
 
         if (motion->GetReferenceCount() != 1)
         {
-            AZ_Info("ccc", "motion->GetReferenceCount() is %d", motion->GetReferenceCount());
+            AZ_Info("EMotionFXdebug", "motion->GetReferenceCount() is %d", motion->GetReferenceCount());
         }
-
+#if defined(CARBONATED)
+        GetMotionManager().AddMotion(motion);  // register the motion, it can be used by other threads from this moment
+#endif
         return motion;
     }
 

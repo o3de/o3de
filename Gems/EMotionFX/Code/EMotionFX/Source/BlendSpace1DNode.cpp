@@ -407,8 +407,10 @@ namespace EMotionFX
             Motion* motion = motionSet->RecursiveFindMotionById(motionId);
             if (!motion)
             {
-                blendSpaceMotion.SetFlag(BlendSpaceMotion::TypeFlags::InvalidMotion);
+#if defined(CARBONATED)
                 AZ_Info("EMotionFXdebug", "Motion is nullptr, set invalid");
+#endif
+                blendSpaceMotion.SetFlag(BlendSpaceMotion::TypeFlags::InvalidMotion);
                 continue;
             }
             blendSpaceMotion.UnsetFlag(BlendSpaceMotion::TypeFlags::InvalidMotion);
