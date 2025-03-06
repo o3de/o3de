@@ -355,11 +355,7 @@ namespace Maestro
         */
         virtual void SerializeKey(KeyType& key, XmlNodeRef& keyNode, bool bLoading) = 0;
 
-
-        void InitPostLoad([[maybe_unused]] IAnimSequence* sequence) override
-        {
-            AZ_Assert(false, "Not expected to be used");
-        }
+        void InitPostLoad([[maybe_unused]] IAnimSequence* sequence) override { }
 
         //////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////
