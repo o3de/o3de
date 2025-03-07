@@ -49,11 +49,11 @@ namespace ScriptCanvasEditor
 
         PivotTreeWidget* GetActivePivotWidget() const;
 
-        AZStd::unique_ptr<Ui::LoggingWindow> m_ui;
+        QScopedPointer<Ui::LoggingWindow> m_ui;
 
         QButtonGroup m_pivotGroup;
 
-        LoggingDataId m_activeDataId;        
+        LoggingDataId m_activeDataId;
 
         int m_entityPageIndex;
         int m_graphPageIndex;
