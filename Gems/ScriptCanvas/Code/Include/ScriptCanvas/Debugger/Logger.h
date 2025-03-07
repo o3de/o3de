@@ -34,7 +34,7 @@ namespace ScriptCanvas
             AZ_RTTI(Logger, "{BBA556C4-973B-4B2F-B2B9-357188086F78}");
             
             Logger();
-            virtual ~Logger();
+            ~Logger() override;
                 
             //////////////////////////////////////////////////////////////////////////
             // ServiceNotificationsBus::Handler
@@ -80,7 +80,7 @@ namespace ScriptCanvas
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)
             ExecutionLogData m_logData;
-
+#endif
             ScriptCanvas::Debugger::Target* m_target;
         };
     }
