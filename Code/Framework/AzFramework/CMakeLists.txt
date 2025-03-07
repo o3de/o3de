@@ -16,13 +16,13 @@ if(LY_PIX_ENABLED)
 endif()
 
 ly_add_target(
-    NAME AzFramework STATIC
+    NAME AzFramework.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
-        AzFramework/azframework_files.cmake
-        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        AzFramework/azframework_static_files.cmake
+        ${pal_dir}/platform_static_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
-        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+        ${pal_dir}/platform_static_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -39,13 +39,43 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AzFramework.NativeUI STATIC
+    NAME AzFramework ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzFramework/azframework_files.cmake
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AZF_EXPORTS
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            .
+            ${pal_dir}
+        PRIVATE
+            ${common_dir}
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+        PUBLIC
+            AzFramework.Static
+            AZ::AzNetworking
+            3rdParty::zstd
+            3rdParty::lz4
+)
+
+ly_add_target(
+    NAME AzFramework.NativeUI ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE AZ
     FILES_CMAKE
         AzFramework/azframework_nativeui_files.cmake
         ${pal_dir}/platform_nativeui_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_nativeui_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AZF_EXPORTS
     INCLUDE_DIRECTORIES
         PUBLIC
             .

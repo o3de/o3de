@@ -14,6 +14,7 @@
 #include <AzCore/Slice/SliceComponent.h>
 
 #include <AzFramework/Slice/SliceInstantiationTicket.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -77,3 +78,6 @@ namespace AzFramework
 
     using SliceGameEntityOwnershipServiceNotificationBus = AZ::EBus<SliceGameEntityOwnershipServiceNotifications>;
 }
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::SliceGameEntityOwnershipServiceRequests);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::SliceGameEntityOwnershipServiceNotifications);

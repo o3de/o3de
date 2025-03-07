@@ -12,6 +12,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Color.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -62,3 +63,5 @@ namespace AzFramework
     };
     using InputLightBarRequestBus = AZ::EBus<InputLightBarRequests>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::InputLightBarRequests);

@@ -13,6 +13,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -83,3 +84,5 @@ namespace AzFramework
     };
     using InputTextEntryRequestBus = AZ::EBus<InputTextEntryRequests>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::InputTextEntryRequests);

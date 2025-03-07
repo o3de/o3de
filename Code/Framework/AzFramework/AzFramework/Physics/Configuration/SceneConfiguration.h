@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
 namespace AzPhysics
 {
     //! Configuration object that contains data to setup a Scene.
-    struct SceneConfiguration
+    struct AZF_API SceneConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_TYPE_INFO(SceneConfiguration, "{4ABF9993-8E52-4E41-B38D-28FD569B4EAF}");

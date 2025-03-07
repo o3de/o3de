@@ -12,12 +12,13 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     class Spawnable;
 
-    class InMemorySpawnableAssetContainer
+    class AZF_API InMemorySpawnableAssetContainer
     {
     public:
         AZ_CLASS_ALLOCATOR(InMemorySpawnableAssetContainer, AZ::SystemAllocator);

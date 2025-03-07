@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AzPhysics
     //! This class represents the layers a collider should collide with.
     //! For two colliders to collide, each layer must be present
     //! in the other colliders group.
-    class CollisionGroup
+    class AZF_API CollisionGroup
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -76,7 +77,7 @@ namespace AzPhysics
     //! The idea is that collision groups are authored there, and then assigned to components via the
     //! edit context by reflecting Physics::CollisionGroups::Id, or alternatively can be retrieved by
     //! name from the CollisionConfiguration.
-    class CollisionGroups
+    class AZF_API CollisionGroups
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -177,5 +178,5 @@ namespace AzPhysics
     //! Retrieves a Group with the given Id of a collision group.
     //! This will lookup the group Id to retrieve the group mask. If not found, CollisionGroup::All is returned.
     //! @param id The Id of the group to look up the group mask.
-    CollisionGroup GetCollisionGroupById(const CollisionGroups::Id& id);
+    AZF_API CollisionGroup GetCollisionGroupById(const CollisionGroups::Id& id);
 }

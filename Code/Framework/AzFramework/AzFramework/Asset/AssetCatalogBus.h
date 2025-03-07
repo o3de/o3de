@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZFRAMEWORK_ASSETCATALOGBUS_H
-#define AZFRAMEWORK_ASSETCATALOGBUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::Data
 {
@@ -69,6 +69,5 @@ namespace AzFramework
     using LegacyAssetEventBus = AZ::EBus<LegacyAssetEvents>;
 } // namespace AzFramework
 
-#pragma once
-
-#endif // AZFRAMEWORK_ASSETCATALOGBUS_H
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::AssetCatalogEvents);
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::LegacyAssetEvents);

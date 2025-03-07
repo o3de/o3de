@@ -12,6 +12,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -19,7 +20,7 @@ namespace AzFramework
     //! The defaults here reflect the defaults when creating a new
     //! WindowGeometry object. Different window implementations may 
     //! have their own separate default window sizes.
-    struct WindowGeometry
+    struct AZF_API WindowGeometry
     {
         WindowGeometry() = default;
 
@@ -37,7 +38,7 @@ namespace AzFramework
     };
 
     //! A simple structure to encapsulate different native window style masks.
-    struct WindowStyleMasks
+    struct AZF_API WindowStyleMasks
     {
         //! Platform agnostic window style bitmasks.
         static constexpr uint32_t WINDOW_STYLE_BORDERED     = 0x0001; //!< Should the window have a border?
@@ -92,7 +93,7 @@ namespace AzFramework
     //! - Calling Activate (when not active) will result in the OnWindowResized notification
     //! - Calling Deactivate (when active) will result in the OnWindowClosed notification
     //! - destroying the NativeWindow when active will result in Deactivate being called
-    class NativeWindow final
+    class AZF_API NativeWindow final
         : public WindowRequestBus::Handler
     {
     public:
@@ -160,7 +161,7 @@ namespace AzFramework
         //! The NativeWindow implementation.
         //! Extend this to provide windowing capabilities per platform.
         //! It's expected that only one Implementation::Create method will be available per-platform.
-        class Implementation
+        class AZF_API Implementation
         {
         public:
             static Implementation* Create();
@@ -199,7 +200,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The factory class to create a custom implementation for this native window
-        class ImplementationFactory
+        class AZF_API ImplementationFactory
         {
         public:
             AZ_TYPE_INFO(ImplementationFactory, "{6C2B94E1-388E-4E17-A125-94E5BAE9655C}");

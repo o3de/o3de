@@ -11,11 +11,12 @@
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     //! Provides debug drawing for character physics configurations, such as colliders and joint limits.
-    class CharacterPhysicsDebugDraw
+    class AZF_API CharacterPhysicsDebugDraw
     {
     public:
         static constexpr float s_scale = 0.1f;

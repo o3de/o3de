@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include<AzFramework/Slice/SliceInstantiationTicket.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -82,4 +83,6 @@ namespace AzFramework
      * The events are defined in the AzFramework::SliceInstantiationResults class.
      */
     using SliceInstantiationResultBus = AZ::EBus<SliceInstantiationResults>;
-}
+} // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::SliceInstantiationResults);

@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzFramework/PaintBrush/PaintBrushSettings.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -68,3 +69,5 @@ namespace AzFramework
     using PaintBrushSessionBus = AZ::EBus<PaintBrushSession>;
 
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::PaintBrushSession);

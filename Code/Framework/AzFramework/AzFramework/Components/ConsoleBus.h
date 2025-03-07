@@ -1,4 +1,3 @@
-#pragma once
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -6,12 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZFRAMEWORK_CONSOLE_BUS_H
-#define AZFRAMEWORK_CONSOLE_BUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -21,7 +20,7 @@ namespace AzFramework
     * Only one console can exist at a time, which is why this bus
     * supports only one listener.
     */
-    class ConsoleRequests
+    class AZF_API ConsoleRequests
         : public AZ::EBusTraits
     {
     public:
@@ -49,7 +48,7 @@ namespace AzFramework
     * Only one console can exist at a time, which is why this bus
     * supports only one listener.
     */
-    class ConsoleNotifications
+    class AZF_API ConsoleNotifications
         : public AZ::EBusTraits
     {
     public:
@@ -65,4 +64,5 @@ namespace AzFramework
 
 } // namespace AzFramework
 
-#endif // AZFRAMEWORK_CONSOLE_BUS_H
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::ConsoleRequests);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::ConsoleNotifications);

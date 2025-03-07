@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Channels/InputChannel.h>
 
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -18,7 +19,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit three dimensional axis input values.
     //! Example: motion sensor data (acceleration, rotation, or magnetic field)
-    class InputChannelAxis3D : public InputChannel
+    class AZF_API InputChannelAxis3D : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

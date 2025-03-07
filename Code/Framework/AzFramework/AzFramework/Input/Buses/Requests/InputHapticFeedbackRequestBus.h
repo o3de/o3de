@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Devices/InputDeviceId.h>
 
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -55,3 +56,5 @@ namespace AzFramework
     };
     using InputHapticFeedbackRequestBus = AZ::EBus<InputHapticFeedbackRequests>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::InputHapticFeedbackRequests);

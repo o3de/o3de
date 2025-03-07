@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -23,3 +24,5 @@ namespace AzFramework
 
     using MissingAssetNotificationBus = AZ::EBus<MissingAssetNotifications>;
 }
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::MissingAssetNotifications);

@@ -12,6 +12,7 @@
 #include <AzFramework/Input/Devices/InputDeviceId.h>
 
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -68,3 +69,5 @@ namespace AzFramework
     };
     using InputMotionSensorRequestBus = AZ::EBus<InputMotionSensorRequests>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::InputMotionSensorRequests);

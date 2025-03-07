@@ -16,12 +16,13 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     //! This is a variant data type that represents the value of a physics material property.
     //! Used by Physics material assets.
-    class MaterialPropertyValue final
+    class AZF_API MaterialPropertyValue final
     {
     public:
         AZ_TYPE_INFO(Physics::MaterialPropertyValue, "{2D9822B6-B4AD-4635-87FD-08F857EEB152}");

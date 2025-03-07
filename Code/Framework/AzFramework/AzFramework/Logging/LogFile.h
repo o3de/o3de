@@ -6,23 +6,20 @@
  *
  */
 
-#ifndef AZFRAMEWORK_LOGFILE_H
-#define AZFRAMEWORK_LOGFILE_H
-
-#include <AzCore/base.h>
-
 #pragma once
-
+ 
+#include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! LogFile
     //! This class stores information related to the log file and is responsible for writing logs 
-    class LogFile
+    class AZF_API LogFile
     {
     public:
         AZ_CLASS_ALLOCATOR(LogFile, AZ::SystemAllocator)
@@ -76,4 +73,3 @@ namespace AzFramework
     };
 }
 
-#endif //AZFRAMEWORK_LOGFILE_H

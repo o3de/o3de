@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -19,7 +20,7 @@ namespace AZ
 namespace AzFramework
 {
     //! Represents the camera state populated by the viewport camera.
-    struct CameraState
+    struct AZF_API CameraState
     {
         //! @cond
         AZ_TYPE_INFO(CameraState, "{D309D934-044C-4BA8-91F1-EA3A45177A52}")
@@ -45,34 +46,34 @@ namespace AzFramework
     };
 
     //! Create a camera at the given transform, specifying the near and far clip planes as well as the fov with a specific viewport size.
-    CameraState CreateCamera(
+    AZF_API CameraState CreateCamera(
         const AZ::Transform& transform, float nearPlane, float farPlane, float verticalFovRad, const ScreenSize& viewportSize);
 
     //! Create a camera at the given transform with a specific viewport size.
     //! @note The near/far clip planes and fov are sensible default values - please
     //! use SetCameraClippingVolume to override them.
-    CameraState CreateDefaultCamera(const AZ::Transform& transform, const ScreenSize& viewportSize);
+    AZF_API CameraState CreateDefaultCamera(const AZ::Transform& transform, const ScreenSize& viewportSize);
 
     //! Create a camera at the given position (no orientation) with a specific viewport size.
     //! @note The near/far clip planes and fov are sensible default values - please
     //! use SetCameraClippingVolume to override them.
-    CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const ScreenSize& viewportSize);
+    AZF_API CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const ScreenSize& viewportSize);
 
     //! Create a camera transformed by the given view to world matrix with a specific viewport size.
     //! @note The near/far clip planes and fov are sensible default values - please
     //! use SetCameraClippingVolume to override them.
-    CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const ScreenSize& viewportSize);
+    AZF_API CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const ScreenSize& viewportSize);
 
     //! Override the default near/far clipping planes and fov of the camera.
-    void SetCameraClippingVolume(CameraState& cameraState, float nearPlane, float farPlane, float verticalFovRad);
+    AZF_API void SetCameraClippingVolume(CameraState& cameraState, float nearPlane, float farPlane, float verticalFovRad);
 
     //! Override the default near/far clipping planes and fov of the camera by inferring them the specified right handed transform into clip space.
-    void SetCameraClippingVolumeFromPerspectiveFovMatrixRH(CameraState& cameraState, const AZ::Matrix4x4& clipFromView);
+    AZF_API void SetCameraClippingVolumeFromPerspectiveFovMatrixRH(CameraState& cameraState, const AZ::Matrix4x4& clipFromView);
 
     //! Retrieve the field of view (Fov) from the perspective projection matrix (view space to clip space).
-    float RetrieveFov(const AZ::Matrix4x4& clipFromView);
+    AZF_API float RetrieveFov(const AZ::Matrix4x4& clipFromView);
 
     //! Set the transform for an existing camera.
-    void SetCameraTransform(CameraState& cameraState, const AZ::Transform& transform);
+    AZF_API void SetCameraTransform(CameraState& cameraState, const AZ::Transform& transform);
 
 } // namespace AzFramework

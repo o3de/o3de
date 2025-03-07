@@ -13,6 +13,7 @@
 #include <AzCore/Slice/SliceComponent.h>
 
 #include <AzFramework/Slice/SliceInstantiationBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -107,3 +108,5 @@ namespace AzFramework
 
     using SliceEntityOwnershipServiceRequestBus = AZ::EBus<SliceEntityOwnershipServiceRequests>;
 }
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::SliceEntityOwnershipServiceRequests);

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Channels/InputChannelId.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 #include <AzCore/EBus/EBus.h>
 
@@ -216,4 +217,4 @@ namespace AzFramework
 
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::InputChannelRequests);
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::InputChannelRequests);

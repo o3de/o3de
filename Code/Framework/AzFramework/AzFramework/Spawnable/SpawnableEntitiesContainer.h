@@ -18,11 +18,12 @@
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Spawnable/SpawnableMonitor.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
     class Entity;
-}
+} // namespace AZ
 
 namespace AzFramework
 {
@@ -31,7 +32,7 @@ namespace AzFramework
     //! Calls to this container should be done from the same thread, but multiple threads can create their own container for
     //! the same Spawnable. This container is for simple use cases. Complex situations can directly call the
     //! SpawnablesEntitesInterface and use the SpawnableMonitor if needed.
-    class SpawnableEntitiesContainer
+    class AZF_API SpawnableEntitiesContainer
     {
     public:
         using AlertCallback = AZStd::function<void(uint32_t generation)>;

@@ -28,3 +28,6 @@ namespace Physics
         }
     }
 }
+
+AZF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(Physics::CollisionRequests, Physics::CollisionRequestsTraits);
+AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(Physics::CollisionFilteringRequests);

@@ -38,19 +38,7 @@
 #include <AzFramework/Archive/ZipDirCacheFactory.h>
 
 #include <cinttypes>
-
-namespace AZ::IO
-{
-    AZ_CVAR(int, sys_PakPriority, aznumeric_cast<int>(ArchiveVars{}.m_fileSearchPriority), nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "If set to 0, tells Archive to try to open the file on the file system first otherwise check mounted paks.\n"
-        "If set to 1, tells Archive to try to open the file in pak first, then go to file system.\n"
-        "If set to 2, tells the Archive to only open files from the pak");
-    AZ_CVAR(int, sys_report_files_not_found_in_paks, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
-    AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "Sets the verbosity level for logging Archive operations\n"
-        ">=1 - Turns on verbose logging of all operations");
-}
+#include <AzFramework/AzFrameworkStatic.h>
 
 namespace AZ::IO::ArchiveInternal
 {

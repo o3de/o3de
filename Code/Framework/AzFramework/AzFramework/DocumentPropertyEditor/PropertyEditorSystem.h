@@ -9,10 +9,11 @@
 #pragma once
 
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
-    class PropertyEditorSystem : public PropertyEditorSystemInterface
+    class AZF_API PropertyEditorSystem : public PropertyEditorSystemInterface
     {
     public:
         AZ_RTTI(PropertyEditorSystem, "{5DD4E43F-B17C-463E-8D4C-5A1E22DD452D}", PropertyEditorSystemInterface);

@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/StreamingInstall/StreamingInstallNotifications.h>
+#include <AzFramework/StreamingInstall/StreamingInstallRequests.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include "StreamingInstall.h"
 
@@ -243,3 +244,7 @@ namespace AzFramework
         }
     }
 }
+
+AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzFramework::StreamingInstall::StreamingInstallChunkNotifications);
+AZF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzFramework::StreamingInstall::StreamingInstallPackageNotifications);
+AZF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzFramework::StreamingInstall::StreamingInstallRequests);

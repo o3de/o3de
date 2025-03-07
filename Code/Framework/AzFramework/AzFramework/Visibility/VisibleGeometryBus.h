@@ -14,6 +14,7 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
 namespace AzFramework
 {
     //! VisibleGeometry describes visible geometry surfaces stored as generic indexed triangle lists
-    struct VisibleGeometry
+    struct AZF_API VisibleGeometry
     {
         AZ_TYPE_INFO(VisibleGeometry, "{4B011208-B105-4BC1-A4F3-FD5C44785D71}");
         AZ_CLASS_ALLOCATOR(VisibleGeometry, AZ::SystemAllocator);
@@ -46,7 +47,7 @@ namespace AzFramework
     using VisibleGeometryContainer = AZStd::vector<VisibleGeometry>;
 
     //! Interface for components to provide generic geometric data, potentially for occlusion culling and other systems
-    class VisibleGeometryRequests : public AZ::ComponentBus
+    class AZF_API VisibleGeometryRequests : public AZ::ComponentBus
     {
     public:
         static void Reflect(AZ::ReflectContext* context);
@@ -72,4 +73,4 @@ namespace AzFramework
     using VisibleGeometryRequestBus = AZ::EBus<VisibleGeometryRequests>;
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::VisibleGeometryRequests);
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::VisibleGeometryRequests);

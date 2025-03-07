@@ -13,6 +13,7 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/Event.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -30,7 +31,7 @@ namespace AzFramework
     using TransformComponentConfiguration = AZ::TransformConfig;
 
     //! Fundamental component that describes the entity in 3D space.
-    class TransformComponent
+    class AZF_API TransformComponent
         : public AZ::Component
         , public AZ::EntityBus::Handler
         , public AZ::TransformBus::Handler

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/AzFrameworkAPI.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
@@ -40,4 +41,6 @@ namespace AzPhysics
         virtual AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) = 0;
     };
     using SimulatedBodyComponentRequestsBus = AZ::EBus<SimulatedBodyComponentRequests>;
-}
+} // AzPhysics
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzPhysics::SimulatedBodyComponentRequests);

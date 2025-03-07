@@ -10,6 +10,7 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework::ProjectManager
 {
@@ -24,11 +25,11 @@ namespace AzFramework::ProjectManager
     //! @param argc the number of arguments in argv
     //! @param argv arguments provided to this executable
     //! @return a ProjectPathCheckResult
-    ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[]);
+    AZF_API ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[]);
 
     //! Attempt to Launch the project manager, assuming the o3de executable exists in same folder as
     //! current executable. Requires the o3de cli and python.
     //! @param commandLineArgs additional command line arguments to provide to the project manager
     //! @return true on success, false if failed to find or launch the executable
-    bool LaunchProjectManager(const AZStd::vector<AZStd::string>& commandLineArgs = {});
+    AZF_API bool LaunchProjectManager(const AZStd::vector<AZStd::string>& commandLineArgs = {});
 } // AzFramework::ProjectManager

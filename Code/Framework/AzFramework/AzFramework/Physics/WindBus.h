@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
@@ -68,3 +69,6 @@ namespace Physics
 
     using WindNotificationsBus = AZ::EBus<WindNotifications>;
 } // namespace Physics
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(Physics::WindRequests, Physics::WindRequestsTraits)
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(Physics::WindNotifications)

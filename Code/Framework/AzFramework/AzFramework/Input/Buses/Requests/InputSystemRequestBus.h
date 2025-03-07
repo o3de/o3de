@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -41,3 +42,5 @@ namespace AzFramework
     };
     using InputSystemRequestBus = AZ::EBus<InputSystemRequests>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::InputSystemRequests);

@@ -11,6 +11,7 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/osstring.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -21,7 +22,7 @@ namespace AZ
         * It is meant to capture messages before logging, file system, or other typical means of providing information to the user may not be available during startup sequences.
         * The implementation of how the collected messages are displayed must be determined by the deriving class.
         */
-        class StartupLogSink :
+        class AZF_API StartupLogSink :
             public TraceMessageBus::Handler
         {
             /*

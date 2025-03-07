@@ -9,6 +9,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Component.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Bus interface for other systems in game to access to the in-game UI system
@@ -44,3 +45,4 @@ public:
 
 using UiFrameworkBus = AZ::EBus<UiFrameworkInterface>;
 
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(UiFrameworkInterface);

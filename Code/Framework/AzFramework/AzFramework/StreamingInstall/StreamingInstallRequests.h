@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -50,4 +51,6 @@ namespace AzFramework
 
         using StreamingInstallRequestBus = AZ::EBus<StreamingInstallRequests>;
     } // namespace StreamingInstall
-}
+} // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::StreamingInstall::StreamingInstallRequests);

@@ -10,6 +10,7 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -36,3 +37,5 @@ namespace AzFramework
         using DeprecatedComponentsRequestBus = AZ::EBus<DeprecatedComponents>;
     } // namespace Components
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::Components::DeprecatedComponents);

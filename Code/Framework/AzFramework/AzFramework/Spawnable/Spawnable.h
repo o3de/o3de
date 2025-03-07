@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    class Spawnable final
+    class AZF_API Spawnable final
         : public AZ::Data::AssetData
     {
     public:
@@ -49,7 +50,7 @@ namespace AzFramework
         };
 
         //! An entity alias redirects the spawning of an entity to another entity, possibly in another spawnable.
-        struct EntityAlias
+        struct AZF_API EntityAlias
         {
             AZ_CLASS_ALLOCATOR(EntityAlias, AZ::SystemAllocator);
             AZ_TYPE_INFO(AzFramework::Spawnable::EntityAlias, "{C8D0C5BC-1F0B-4572-98C1-73B2CA8C9356}");
@@ -69,7 +70,7 @@ namespace AzFramework
         using EntityList = AZStd::vector<AZStd::unique_ptr<AZ::Entity>>;
         using EntityAliasList = AZStd::vector<EntityAlias>;
 
-        class EntityAliasConstVisitor
+        class AZF_API EntityAliasConstVisitor
         {
         protected:
             using ListTargetSpawanblesCallback = AZStd::function<void(const AZ::Data::Asset<Spawnable>& targetSpawnable)>;
@@ -105,7 +106,7 @@ namespace AzFramework
             const EntityAliasList* m_entityAliasList{};
         };
 
-        class EntityAliasVisitor final : public EntityAliasConstVisitor
+        class AZF_API EntityAliasVisitor final : public EntityAliasConstVisitor
         {
         public:
             EntityAliasVisitor(Spawnable& owner, EntityAliasList* m_entityAliasList);

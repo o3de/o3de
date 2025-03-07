@@ -13,14 +13,13 @@
  * The game entity context holds gameplay entities, as opposed 
  * to system entities, editor entities, and so on.
  */
-
-#ifndef AZFRAMEWORK_GAMEENTITYCONTEXTBUS_H
-#define AZFRAMEWORK_GAMEENTITYCONTEXTBUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Entity/BehaviorEntity.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -187,4 +186,5 @@ namespace AzFramework
 
 } // namespace AzFramework
 
-#endif // AZFRAMEWORK_GAMEENTITYCONTEXTBUS_H
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::GameEntityContextRequests);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::GameEntityContextEvents);

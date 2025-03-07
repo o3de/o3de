@@ -5,12 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef SCRIPT_DEBUG_AGENT_BUS_H
-#define SCRIPT_DEBUG_AGENT_BUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Script/ScriptContextDebug.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -27,7 +26,6 @@ namespace AzFramework
         virtual void UnregisterContext(AZ::ScriptContext* sc) = 0;  // Remove a script context from the agent's list.
     };
     typedef AZ::EBus<ScriptDebugAgentEvents> ScriptDebugAgentBus;
-}   // namespace HExFramework
+}   // namespace AzFramework
 
-#endif
-#pragma once
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::ScriptDebugAgentEvents)

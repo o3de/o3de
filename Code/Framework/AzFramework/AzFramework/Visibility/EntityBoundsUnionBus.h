@@ -9,11 +9,12 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
     class Aabb;
-}
+} // namespace AZ
 
 namespace AzFramework
 {
@@ -57,3 +58,5 @@ namespace AzFramework
     };
     using IEntityBoundsUnionRequestBus = AZ::EBus<IEntityBoundsUnion, IEntityBoundsUnionTraits>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AzFramework::IEntityBoundsUnion, AzFramework::IEntityBoundsUnionTraits);

@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -135,3 +136,5 @@ namespace AzFramework
 
     using PaintBrushNotificationBus = AZ::EBus<PaintBrushNotifications>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::PaintBrushNotifications);

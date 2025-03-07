@@ -17,6 +17,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 //! Namespace for file functions.
 /*!
@@ -36,7 +37,7 @@ namespace AzFramework
         * \param[out] fileList             List of files found from the search
         * \return true if the files where found, false if an error occurred.
         */
-        AZ::Outcome<AZStd::list<AZStd::string>, AZStd::string> FindFilesInPath(const AZStd::string& folder, const AZStd::string& filter, bool recurseSubFolders);
+        AZF_API AZ::Outcome<AZStd::list<AZStd::string>, AZStd::string> FindFilesInPath(const AZStd::string& folder, const AZStd::string& filter, bool recurseSubFolders);
 
 
         /**
@@ -46,7 +47,7 @@ namespace AzFramework
         * \param[in] perLineCallback   Function ptr to a function that takes in a const char* as input, and returns false to stop processing or true to continue to the next line
         * \return true if the file was open and read successfully, false if not
         */
-        AZ::Outcome<void, AZStd::string> ReadTextFileByLine(const AZStd::string& filePath, AZStd::function<bool(const char* line)> perLineCallback);
+        AZF_API AZ::Outcome<void, AZStd::string> ReadTextFileByLine(const AZStd::string& filePath, AZStd::function<bool(const char* line)> perLineCallback);
 
         /**
         * Gets the value(s) for a key in an INI style config file.
@@ -56,7 +57,7 @@ namespace AzFramework
         *
         * \returns Value(s) on success, error message on failure.
         */
-        AZ::Outcome<AZStd::string, AZStd::string> GetValueForKeyInCfgFile(const AZStd::string& filePath, const char* key);
+        AZF_API AZ::Outcome<AZStd::string, AZStd::string> GetValueForKeyInCfgFile(const AZStd::string& filePath, const char* key);
 
         /**
         * Gets the value(s) for a key in an INI style config file with the given contents.
@@ -66,7 +67,7 @@ namespace AzFramework
         *
         * \returns Value(s) on success, error message on failure.
         */
-        AZ::Outcome<AZStd::string, AZStd::string> GetValueForKeyInCfgFileContents(const AZStd::string& configFileContents, const char* key);
+        AZF_API AZ::Outcome<AZStd::string, AZStd::string> GetValueForKeyInCfgFileContents(const AZStd::string& configFileContents, const char* key);
 
         /**
         * Gets the contents of an INI style config file as a string.
@@ -75,7 +76,7 @@ namespace AzFramework
         *
         * \returns Contents of filePath on success, error message on failure.
         */
-        AZ::Outcome<AZStd::string, AZStd::string> GetCfgFileContents(const AZStd::string& filePath);
+        AZF_API AZ::Outcome<AZStd::string, AZStd::string> GetCfgFileContents(const AZStd::string& filePath);
 
         /**
         * Find a list of files using FileIO GetInstance
@@ -85,7 +86,7 @@ namespace AzFramework
         * \param[in] recurse - whether to search directories underneath pathToStart recursively
         * \returns AZ::Success and a list of files of matches found, an error string on an empty list
         */
-        AZ::Outcome<AZStd::list<AZStd::string>, AZStd::string> FindFileList(const AZStd::string& pathToStart, const char* pattern, bool recurse);
+        AZF_API AZ::Outcome<AZStd::list<AZStd::string>, AZStd::string> FindFileList(const AZStd::string& pathToStart, const char* pattern, bool recurse);
     } // namespace FileFunc
 } // namespace AzFramework
 

@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/Asset/FileTagAsset.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -87,6 +88,8 @@ namespace AzFramework
         };
 
         using QueryFileTagsEventBus = AZ::EBus<QueryFileTagsEvent>;
-    }
+    } // namespace FileTag
+} // namespace AzFramework
 
-} // AzFramework
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::FileTag::FileTagsEvent);
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::FileTag::QueryFileTagsEvent);

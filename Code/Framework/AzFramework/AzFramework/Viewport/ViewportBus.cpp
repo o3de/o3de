@@ -12,6 +12,10 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Matrix4x4.h>
 
+AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzFramework::ViewportRequests);
+AZF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AzFramework::ViewportBorderRequests);
+AZF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzFramework::ViewportImGuiNotifications);
+
 namespace AzFramework
 {
     void ViewportRequests::Reflect(AZ::ReflectContext* context)

@@ -18,6 +18,7 @@
 #include <AzCore/PlatformIncl.h>
 
 #include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -250,4 +251,7 @@ namespace AzFramework
     using LevelSystemLifecycleNotificationBus = AZ::EBus<LevelSystemLifecycleNotifications>;
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::ApplicationRequests);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::ApplicationRequests);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::ApplicationLifecycleEvents);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::LevelLoadBlockerRequests);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::LevelSystemLifecycleNotifications);

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
@@ -21,3 +22,5 @@ namespace Physics
     };
     using ColliderComponentEventBus = AZ::EBus<ColliderComponentEvents>;
 } // namespace Physics
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(Physics::ColliderComponentEvents);

@@ -13,6 +13,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -198,3 +199,9 @@ namespace Physics
     typedef AZ::EBus<SystemDebugRequests> SystemDebugRequestBus;
 
 } // namespace Physics
+
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(Physics::DefaultWorldRequests)
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(Physics::EditorWorldRequests)
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(Physics::SystemRequests, Physics::SystemRequestsTraits);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(Physics::SystemDebugRequests);

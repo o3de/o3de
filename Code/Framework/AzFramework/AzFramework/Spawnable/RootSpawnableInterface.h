@@ -13,6 +13,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -82,3 +83,5 @@ namespace AzFramework
 
     using RootSpawnableInterface = AZ::Interface<RootSpawnableDefinition>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::RootSpawnableNotifications);

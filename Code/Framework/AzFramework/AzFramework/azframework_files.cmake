@@ -7,149 +7,115 @@
 #
 
 set(FILES
-    Asset/AssetSystemComponentHelper.cpp
-    AzFrameworkModule.h
-    AzFrameworkModule.cpp
-    API/ApplicationAPI.h
     API/ApplicationAPI.cpp
+    API/ApplicationAPI.h
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
     Archive/Archive.h
+	Archive/ArchiveBus.cpp
     Archive/ArchiveBus.h
     Archive/ArchiveFileIO.cpp
     Archive/ArchiveFileIO.h
     Archive/ArchiveFindData.cpp
     Archive/ArchiveFindData.h
-    Archive/ArchiveVars.h
     Archive/ArchiveVars.cpp
+    Archive/ArchiveVars.h
     Archive/Codec.h
     Archive/IArchive.h
     Archive/INestedArchive.h
-    Archive/MissingFileReport.h
     Archive/MissingFileReport.cpp
+    Archive/MissingFileReport.h
     Archive/NestedArchive.cpp
     Archive/NestedArchive.h
     Archive/ZipDirCache.cpp
-    Archive/ZipDirCacheFactory.cpp
-    Archive/ZipDirFind.cpp
-    Archive/ZipDirList.cpp
-    Archive/ZipDirStructures.cpp
-    Archive/ZipDirTree.cpp
     Archive/ZipDirCache.h
+    Archive/ZipDirCacheFactory.cpp
     Archive/ZipDirCacheFactory.h
+    Archive/ZipDirFind.cpp
     Archive/ZipDirFind.h
-    Archive/ZipDirList.h
+    Archive/ZipDirStructures.cpp
     Archive/ZipDirStructures.h
+    Archive/ZipDirTree.cpp
     Archive/ZipDirTree.h
     Archive/ZipFileFormat.h
-    Asset/SimpleAsset.cpp
-    Asset/SimpleAsset.h
-    Asset/AssetCatalogBus.h
-    Asset/AssetSystemBus.h
-    Asset/AssetSystemTypes.h
-    Asset/AssetCatalog.h
-    Asset/AssetCatalog.cpp
-    Asset/AssetCatalogComponent.h
-    Asset/AssetCatalogComponent.cpp
-    Asset/AssetProcessorMessages.cpp
-    Asset/AssetProcessorMessages.h
-    Asset/AssetRegistry.h
-    Asset/AssetRegistry.cpp
-    Asset/AssetSeedList.cpp
-    Asset/AssetSeedList.h
-    Asset/AssetSystemComponent.cpp
-    Asset/AssetSystemComponent.h
-    Asset/GenericAssetHandler.h
-    Asset/AssetBundleManifest.cpp
-    Asset/AssetBundleManifest.h
-    Asset/CustomAssetTypeComponent.cpp
-    Asset/CustomAssetTypeComponent.h
-    Asset/FileTagAsset.cpp
-    Asset/FileTagAsset.h
-    Asset/NetworkAssetNotification_private.h
-    Asset/XmlSchemaAsset.cpp
-    Asset/XmlSchemaAsset.h
     Asset/Benchmark/BenchmarkAsset.cpp
     Asset/Benchmark/BenchmarkAsset.h
     Asset/Benchmark/BenchmarkCommands.cpp
     Asset/Benchmark/BenchmarkCommands.h
     Asset/Benchmark/BenchmarkSettingsAsset.cpp
     Asset/Benchmark/BenchmarkSettingsAsset.h
+    Asset/AssetBundleManifest.cpp
+    Asset/AssetBundleManifest.h
+    Asset/AssetCatalog.cpp
+    Asset/AssetCatalog.h
+	Asset/AssetCatalogBus.cpp
+    Asset/AssetCatalogBus.h
+    Asset/AssetCatalogComponent.cpp
+    Asset/AssetCatalogComponent.h
+    Asset/AssetProcessorMessages.cpp
+    Asset/AssetProcessorMessages.h
+    Asset/AssetRegistry.cpp
+    Asset/AssetRegistry.h
+    Asset/AssetSeedList.cpp
+    Asset/AssetSeedList.h
+	Asset/AssetSystemBus.cpp
+    Asset/AssetSystemBus.h
+    Asset/AssetSystemComponent.cpp
+    Asset/AssetSystemComponent.h
+    Asset/AssetSystemComponentHelper.cpp
+    Asset/AssetSystemTypes.h
+    Asset/CustomAssetTypeComponent.cpp
+    Asset/CustomAssetTypeComponent.h
+    Asset/FileTagAsset.cpp
+    Asset/FileTagAsset.h
+    Asset/GenericAssetHandler.h
+    Asset/NetworkAssetNotification_private.h
+    Asset/SimpleAsset.cpp
+    Asset/SimpleAsset.h
+    Asset/XmlSchemaAsset.cpp
+    Asset/XmlSchemaAsset.h
     CommandLine/CommandLine.h
+	CommandLine/CommandRegistrationBus.cpp
     CommandLine/CommandRegistrationBus.h
-    Device/DeviceAttributeDeviceModel.cpp
-    Device/DeviceAttributeDeviceModel.h
-    Device/DeviceAttributeInterface.h
-    Device/DeviceAttributeRAM.cpp
-    Device/DeviceAttributeRAM.h
-    Device/DeviceAttributeGPUModel.cpp
-    Device/DeviceAttributeGPUModel.h
-    Device/DeviceAttributesSystemComponent.cpp
-    Device/DeviceAttributesSystemComponent.h
-    Viewport/ViewportBus.h
-    Viewport/ViewportBus.cpp
-    Viewport/ViewportColors.h
-    Viewport/ViewportColors.cpp
-    Viewport/ViewportConstants.h
-    Viewport/ViewportConstants.cpp
-    Viewport/MultiViewportController.h
-    Viewport/MultiViewportController.inl
-    Viewport/SingleViewportController.cpp
-    Viewport/SingleViewportController.h
-    Viewport/ViewportControllerInterface.h
-    Viewport/ViewportControllerList.cpp
-    Viewport/ViewportControllerList.h
-    Viewport/ViewportId.h
-    Viewport/ViewportScreen.h
-    Viewport/ViewportScreen.cpp
-    Viewport/ScreenGeometry.h
-    Viewport/ScreenGeometry.cpp
-    Viewport/CameraState.h
-    Viewport/CameraState.cpp
-    Viewport/CameraInput.h
-    Viewport/CameraInput.cpp
-    Viewport/ClickDetector.h
-    Viewport/ClickDetector.cpp
-    Viewport/CursorState.h
-    Entity/BehaviorEntity.cpp
-    Entity/BehaviorEntity.h
-    Entity/GameEntityContextComponent.cpp
-    Entity/GameEntityContextComponent.h
-    Entity/GameEntityContextBus.h
-    Entity/EntityContext.cpp
-    Entity/EntityContext.h
-    Entity/EntityContextBus.h
-    Entity/EntityDebugDisplayBus.h
-    Entity/EntityOwnershipService.h
-    Entity/EntityOwnershipServiceBus.h
-    Entity/SliceEntityOwnershipServiceBus.h
-    Entity/SliceEntityOwnershipService.h
-    Entity/SliceEntityOwnershipService.cpp
-    Entity/SliceGameEntityOwnershipService.h
-    Entity/SliceGameEntityOwnershipService.cpp
-    Entity/SliceGameEntityOwnershipServiceBus.h
-    Entity/PrefabEntityOwnershipService.h
+    Components/AzFrameworkConfigurationSystemComponent.cpp
+    Components/AzFrameworkConfigurationSystemComponent.h
+	Components/CameraBus.cpp
+    Components/CameraBus.h
     Components/ComponentAdapter.h
     Components/ComponentAdapter.inl
     Components/ComponentAdapterHelpers.h
+    Components/ConsoleBus.cpp
+    Components/ConsoleBus.h
+	Components/DeprecatedComponentsBus.cpp
+    Components/DeprecatedComponentsBus.h
     Components/EditorEntityEvents.h
+    Components/NonUniformScaleComponent.cpp
+    Components/NonUniformScaleComponent.h
     Components/TransformComponent.cpp
     Components/TransformComponent.h
-    Components/CameraBus.h
-    Components/ConsoleBus.h
-    Components/ConsoleBus.cpp
-    Components/DeprecatedComponentsBus.h
-    Components/AzFrameworkConfigurationSystemComponent.h
-    Components/AzFrameworkConfigurationSystemComponent.cpp
-    Components/NonUniformScaleComponent.h
-    Components/NonUniformScaleComponent.cpp
+    Device/DeviceAttributeDeviceModel.cpp
+    Device/DeviceAttributeDeviceModel.h
+    Device/DeviceAttributeGPUModel.cpp
+    Device/DeviceAttributeGPUModel.h
+    Device/DeviceAttributeInterface.h
+    Device/DeviceAttributeRAM.cpp
+    Device/DeviceAttributeRAM.h
+    Device/DeviceAttributesSystemComponent.cpp
+    Device/DeviceAttributesSystemComponent.h
+    DocumentPropertyEditor/Reflection/Attribute.h
+    DocumentPropertyEditor/Reflection/LegacyReflectionBridge.cpp
+    DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h
+    DocumentPropertyEditor/Reflection/Visitor.cpp
+    DocumentPropertyEditor/Reflection/Visitor.h
     DocumentPropertyEditor/AdapterBuilder.cpp
     DocumentPropertyEditor/AdapterBuilder.h
     DocumentPropertyEditor/AggregateAdapter.cpp
     DocumentPropertyEditor/AggregateAdapter.h
     DocumentPropertyEditor/BasicAdapter.cpp
     DocumentPropertyEditor/BasicAdapter.h
+    DocumentPropertyEditor/CvarAdapter.cpp
+    DocumentPropertyEditor/CvarAdapter.h
     DocumentPropertyEditor/DocumentAdapter.cpp
     DocumentPropertyEditor/DocumentAdapter.h
     DocumentPropertyEditor/DocumentSchema.cpp
@@ -158,247 +124,85 @@ set(FILES
     DocumentPropertyEditor/ExpanderSettings.h
     DocumentPropertyEditor/FilterAdapter.cpp
     DocumentPropertyEditor/FilterAdapter.h
+    DocumentPropertyEditor/MetaAdapter.cpp
+    DocumentPropertyEditor/MetaAdapter.h
     DocumentPropertyEditor/PropertyEditorNodes.cpp
     DocumentPropertyEditor/PropertyEditorNodes.h
     DocumentPropertyEditor/PropertyEditorSystem.cpp
     DocumentPropertyEditor/PropertyEditorSystem.h
     DocumentPropertyEditor/PropertyEditorSystemInterface.h
-    DocumentPropertyEditor/CvarAdapter.cpp
-    DocumentPropertyEditor/CvarAdapter.h
-    DocumentPropertyEditor/MetaAdapter.cpp
-    DocumentPropertyEditor/MetaAdapter.h
+    DocumentPropertyEditor/ReflectionAdapter.cpp
+    DocumentPropertyEditor/ReflectionAdapter.h
     DocumentPropertyEditor/RoutingAdapter.cpp
     DocumentPropertyEditor/RoutingAdapter.h
+    DocumentPropertyEditor/SettingsRegistrar.cpp
+    DocumentPropertyEditor/SettingsRegistrar.h
     DocumentPropertyEditor/SettingsRegistryAdapter.cpp
     DocumentPropertyEditor/SettingsRegistryAdapter.h
     DocumentPropertyEditor/SortAdapter.cpp
     DocumentPropertyEditor/SortAdapter.h
     DocumentPropertyEditor/ValueStringSort.cpp
     DocumentPropertyEditor/ValueStringSort.h
-    DocumentPropertyEditor/ReflectionAdapter.cpp
-    DocumentPropertyEditor/ReflectionAdapter.h
-    DocumentPropertyEditor/Reflection/Attribute.h
-    DocumentPropertyEditor/Reflection/LegacyReflectionBridge.cpp
-    DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h
-    DocumentPropertyEditor/Reflection/Visitor.cpp
-    DocumentPropertyEditor/Reflection/Visitor.h
-    DocumentPropertyEditor/SettingsRegistrar.cpp
-    DocumentPropertyEditor/SettingsRegistrar.h
-    FileFunc/FileFunc.h
+    Entity/BehaviorEntity.cpp
+    Entity/BehaviorEntity.h
+    Entity/EntityContext.cpp
+    Entity/EntityContext.h
+    Entity/EntityContextBus.cpp
+    Entity/EntityContextBus.h
+    Entity/EntityDebugDisplayBus.cpp
+    Entity/EntityDebugDisplayBus.h
+    Entity/EntityOwnershipService.h
+    Entity/EntityOwnershipServiceBus.cpp
+	Entity/EntityOwnershipServiceBus.h
+	Entity/GameEntityContextBus.cpp
+    Entity/GameEntityContextBus.h
+    Entity/GameEntityContextComponent.cpp
+    Entity/GameEntityContextComponent.h
+    Entity/PrefabEntityOwnershipService.h
+    Entity/SliceEntityOwnershipService.cpp
+    Entity/SliceEntityOwnershipService.h
+    Entity/SliceEntityOwnershipServiceBus.cpp
+	Entity/SliceEntityOwnershipServiceBus.h
+    Entity/SliceGameEntityOwnershipService.cpp
+    Entity/SliceGameEntityOwnershipService.h
+    Entity/SliceGameEntityOwnershipServiceBus.cpp
+	Entity/SliceGameEntityOwnershipServiceBus.h
     FileFunc/FileFunc.cpp
-    Font/FontInterface.h
+    FileFunc/FileFunc.h
+    FileTag/FileTag.cpp
+    FileTag/FileTag.h
+    FileTag/FileTagBus.cpp
+    FileTag/FileTagBus.h
+    FileTag/FileTagComponent.cpp
+    FileTag/FileTagComponent.h
+#    Font/FontInterface.h
     Gem/GemInfo.cpp
     Gem/GemInfo.h
-    StringFunc/StringFunc.h
+	InGameUI/UiFrameworkBus.cpp
     InGameUI/UiFrameworkBus.h
-    IO/LocalFileIO.cpp
-    IO/LocalFileIO.h
-    IO/FileOperations.h
-    IO/FileOperations.cpp
-    IO/RemoteFileIO.cpp
-    IO/RemoteFileIO.h
-    IO/RemoteStorageDrive.h
-    IO/RemoteStorageDrive.cpp
-    Math/InterpolationSample.h
-    Metrics/MetricsPlainTextNameRegistration.h
-    Network/AssetProcessorConnection.cpp
-    Network/AssetProcessorConnection.h
-    Network/IRemoteTools.h
-    Network/IRemoteTools.inl
-    Network/SocketConnection.cpp
-    Network/SocketConnection.h
-    Logging/LogFile.cpp
-    Logging/LogFile.h
-    Logging/LoggingComponent.cpp
-    Logging/LoggingComponent.h
-    Logging/StartupLogSinkReporter.cpp
-    Logging/StartupLogSinkReporter.h
-    Logging/MissingAssetLogger.cpp
-    Logging/MissingAssetLogger.h
-    Logging/MissingAssetNotificationBus.h
-    Scene/Scene.h
-    Scene/Scene.inl
-    Scene/Scene.cpp
-    Scene/SceneSystemComponent.h
-    Scene/SceneSystemComponent.cpp
-    Scene/SceneSystemInterface.h
-    Script/ScriptComponent.h
-    Script/ScriptComponent.cpp
-    Script/ScriptDebugAgentBus.h
-    Script/ScriptDebugMsgReflection.cpp
-    Script/ScriptDebugMsgReflection.h
-    Script/ScriptRemoteDebugging.cpp
-    Script/ScriptRemoteDebugging.h
-    Script/ScriptRemoteDebuggingConstants.h
-    StreamingInstall/StreamingInstall.h
-    StreamingInstall/StreamingInstall.cpp
-    StreamingInstall/StreamingInstallRequests.h
-    StreamingInstall/StreamingInstallNotifications.h
-    PaintBrush/PaintBrush.cpp
-    PaintBrush/PaintBrush.h
-    PaintBrush/PaintBrushNotificationBus.h
-    PaintBrush/PaintBrushSessionBus.h
-    PaintBrush/PaintBrushSystemComponent.cpp
-    PaintBrush/PaintBrushSystemComponent.h
-    PaintBrush/PaintBrushSettings.cpp
-    PaintBrush/PaintBrushSettings.h
-    Physics/Collision/CollisionEvents.h
-    Physics/Collision/CollisionEvents.cpp
-    Physics/Collision/CollisionLayers.h
-    Physics/Collision/CollisionLayers.cpp
-    Physics/Collision/CollisionGroups.h
-    Physics/Collision/CollisionGroups.cpp
-    Physics/Common/PhysicsJoint.h
-    Physics/Common/PhysicsJoint.cpp
-    Physics/Common/PhysicsSceneQueries.h
-    Physics/Common/PhysicsSceneQueries.cpp
-    Physics/Common/PhysicsEvents.h
-    Physics/Common/PhysicsSimulatedBody.h
-    Physics/Common/PhysicsSimulatedBody.cpp
-    Physics/Common/PhysicsSimulatedBodyAutomation.h
-    Physics/Common/PhysicsSimulatedBodyAutomation.cpp
-    Physics/Common/PhysicsSimulatedBodyEvents.h
-    Physics/Common/PhysicsSimulatedBodyEvents.cpp
-    Physics/Common/PhysicsTypes.h
-    Physics/Components/SimulatedBodyComponentBus.h
-    Physics/Configuration/JointConfiguration.h
-    Physics/Configuration/JointConfiguration.cpp
-    Physics/Configuration/CollisionConfiguration.h
-    Physics/Configuration/CollisionConfiguration.cpp
-    Physics/Configuration/RigidBodyConfiguration.h
-    Physics/Configuration/RigidBodyConfiguration.cpp
-    Physics/Configuration/StaticRigidBodyConfiguration.h
-    Physics/Configuration/StaticRigidBodyConfiguration.cpp
-    Physics/Configuration/SceneConfiguration.h
-    Physics/Configuration/SceneConfiguration.cpp
-    Physics/Configuration/SimulatedBodyConfiguration.h
-    Physics/Configuration/SimulatedBodyConfiguration.cpp
-    Physics/Configuration/SystemConfiguration.h
-    Physics/Configuration/SystemConfiguration.cpp
-    Physics/DebugDraw/CharacterPhysicsDebugDraw.h
-    Physics/DebugDraw/CharacterPhysicsDebugDraw.cpp
-    Physics/Material/PhysicsMaterial.h
-    Physics/Material/PhysicsMaterial.cpp
-    Physics/Material/PhysicsMaterialId.h
-    Physics/Material/PhysicsMaterialId.cpp
-    Physics/Material/PhysicsMaterialAsset.h
-    Physics/Material/PhysicsMaterialAsset.cpp
-    Physics/Material/PhysicsMaterialPropertyValue.h
-    Physics/Material/PhysicsMaterialPropertyValue.cpp
-    Physics/Material/PhysicsMaterialSlots.h
-    Physics/Material/PhysicsMaterialSlots.cpp
-    Physics/Material/PhysicsMaterialManager.h
-    Physics/Material/PhysicsMaterialManager.cpp
-    Physics/Material/PhysicsMaterialSystemComponent.h
-    Physics/Material/PhysicsMaterialSystemComponent.cpp
-    Physics/HeightfieldProviderBus.h
-    Physics/HeightfieldProviderBus.cpp
-    Physics/SimulatedBodies/RigidBody.h
-    Physics/SimulatedBodies/RigidBody.cpp
-    Physics/SimulatedBodies/StaticRigidBody.h
-    Physics/SimulatedBodies/StaticRigidBody.cpp
-    Physics/PhysicsSystem.h
-    Physics/PhysicsSystem.cpp
-    Physics/PhysicsScene.cpp
-    Physics/PhysicsScene.h
-    Physics/AnimationConfiguration.cpp
-    Physics/AnimationConfiguration.h
-    Physics/Character.cpp
-    Physics/Character.h
-    Physics/CollisionBus.h
-    Physics/CollisionBus.cpp
-    Physics/NameConstants.cpp
-    Physics/NameConstants.h
-    Physics/RigidBodyBus.h
-    Physics/Shape.cpp
-    Physics/Shape.h
-    Physics/ShapeConfiguration.h
-    Physics/ShapeConfiguration.cpp
-    Physics/SystemBus.h
-    Physics/ColliderComponentBus.h
-    Physics/RagdollPhysicsBus.h
-    Physics/CharacterPhysicsDataBus.h
-    Physics/CharacterBus.h
-    Physics/Ragdoll.cpp
-    Physics/Ragdoll.h
-    Physics/Utils.h
-    Physics/Utils.cpp
-    Physics/ClassConverters.cpp
-    Physics/ClassConverters.h
-    Physics/WindBus.h
-    Process/ProcessCommunicator.cpp
-    Process/ProcessCommunicator.h
-    Process/ProcessCommon_fwd.h
-    Process/ProcessWatcher.cpp
-    Process/ProcessWatcher.h
-    Process/ProcessCommunicatorTracePrinter.cpp
-    Process/ProcessCommunicatorTracePrinter.h
-    Process/ProcessUtils.h
-    ProjectManager/ProjectManager.h
-    ProjectManager/ProjectManager.cpp
-    Quality/QualityCVarGroup.cpp
-    Quality/QualityCVarGroup.h
-    Quality/QualitySystemComponent.cpp
-    Quality/QualitySystemComponent.h
-    Quality/QualitySystemBus.h
-    Render/GameIntersectorComponent.h
-    Render/GameIntersectorComponent.cpp
-    Render/GeometryIntersectionBus.h
-    Render/GeometryIntersectionStructures.h
-    Render/Intersector.cpp
-    Render/Intersector.h
-    Render/IntersectorInterface.h
-    Spawnable/RootSpawnableInterface.h
-    Spawnable/Script/SpawnableScriptAssetRef.cpp
-    Spawnable/Script/SpawnableScriptAssetRef.h
-    Spawnable/Script/SpawnableScriptBus.h
-    Spawnable/Script/SpawnableScriptMediator.cpp
-    Spawnable/Script/SpawnableScriptMediator.h
-    Spawnable/Script/SpawnableScriptNotificationsHandler.h
-    Spawnable/InMemorySpawnableAssetContainer.cpp
-    Spawnable/InMemorySpawnableAssetContainer.h
-    Spawnable/Spawnable.cpp
-    Spawnable/Spawnable.h
-    Spawnable/SpawnableAssetBus.h
-    Spawnable/SpawnableAssetHandler.h
-    Spawnable/SpawnableAssetHandler.cpp
-    Spawnable/SpawnableAssetUtils.h
-    Spawnable/SpawnableAssetUtils.cpp
-    Spawnable/SpawnableEntitiesContainer.h
-    Spawnable/SpawnableEntitiesContainer.cpp
-    Spawnable/SpawnableEntitiesInterface.h
-    Spawnable/SpawnableEntitiesInterface.cpp
-    Spawnable/SpawnableEntitiesManager.h
-    Spawnable/SpawnableEntitiesManager.cpp
-    Spawnable/SpawnableMetaData.cpp
-    Spawnable/SpawnableMetaData.h
-    Spawnable/SpawnableMonitor.h
-    Spawnable/SpawnableMonitor.cpp
-    Spawnable/SpawnableMonitor.cpp
-    Spawnable/SpawnableSystemComponent.h
-    Spawnable/SpawnableSystemComponent.cpp
-    SurfaceData/SurfaceData.h
-    SurfaceData/SurfaceData.cpp
-    Terrain/TerrainDataRequestBus.h
-    Terrain/TerrainDataRequestBus.cpp
-    Thermal/ThermalInfo.h
-    Platform/PlatformDefaults.h
-    Windowing/WindowBus.h
-    Windowing/NativeWindow.cpp
-    Windowing/NativeWindow.h
-    Input/Buses/Notifications/InputChannelNotificationBus.h
-    Input/Buses/Notifications/InputDeviceNotificationBus.h
+    Input/Buses/Notifications/InputChannelNotificationBus.cpp
+	Input/Buses/Notifications/InputChannelNotificationBus.h
+    Input/Buses/Notifications/InputDeviceNotificationBus.cpp
+	Input/Buses/Notifications/InputDeviceNotificationBus.h
+	Input/Buses/Notifications/InputSystemNotificationBus.cpp
     Input/Buses/Notifications/InputSystemNotificationBus.h
+	Input/Buses/Notifications/InputTextNotificationBus.cpp
     Input/Buses/Notifications/InputTextNotificationBus.h
-    Input/Buses/Requests/InputChannelRequestBus.h
     Input/Buses/Requests/InputChannelRequestBus.cpp
-    Input/Buses/Requests/InputDeviceRequestBus.h
+    Input/Buses/Requests/InputChannelRequestBus.h
     Input/Buses/Requests/InputDeviceRequestBus.cpp
-    Input/Buses/Requests/InputHapticFeedbackRequestBus.h
+    Input/Buses/Requests/InputDeviceRequestBus.h
+    Input/Buses/Requests/InputHapticFeedbackRequestBus.cpp
+	Input/Buses/Requests/InputHapticFeedbackRequestBus.h
+	Input/Buses/Requests/InputLightBarRequestBus.cpp
     Input/Buses/Requests/InputLightBarRequestBus.h
+	Input/Buses/Requests/InputMotionSensorRequestBus.cpp
     Input/Buses/Requests/InputMotionSensorRequestBus.h
-    Input/Buses/Requests/InputSystemRequestBus.h
+	Input/Buses/Requests/InputSystemCursorRequestBus.cpp
     Input/Buses/Requests/InputSystemCursorRequestBus.h
+	Input/Buses/Requests/InputSystemRequestBus.cpp
+    Input/Buses/Requests/InputSystemRequestBus.h
+	Input/Buses/Requests/InputTextEntryRequestBus.cpp
     Input/Buses/Requests/InputTextEntryRequestBus.h
     Input/Channels/InputChannel.cpp
     Input/Channels/InputChannel.h
@@ -432,10 +236,6 @@ set(FILES
     Input/Contexts/InputContext.h
     Input/Contexts/InputContextComponent.cpp
     Input/Contexts/InputContextComponent.h
-    Input/Devices/InputDevice.cpp
-    Input/Devices/InputDevice.h
-    Input/Devices/InputDeviceId.cpp
-    Input/Devices/InputDeviceId.h
     Input/Devices/Gamepad/InputDeviceGamepad.cpp
     Input/Devices/Gamepad/InputDeviceGamepad.h
     Input/Devices/Keyboard/InputDeviceKeyboard.cpp
@@ -445,10 +245,14 @@ set(FILES
     Input/Devices/Motion/InputDeviceMotion.h
     Input/Devices/Mouse/InputDeviceMouse.cpp
     Input/Devices/Mouse/InputDeviceMouse.h
-    Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.cpp
-    Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h
     Input/Devices/Touch/InputDeviceTouch.cpp
     Input/Devices/Touch/InputDeviceTouch.h
+    Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.cpp
+    Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h
+    Input/Devices/InputDevice.cpp
+    Input/Devices/InputDevice.h
+    Input/Devices/InputDeviceId.cpp
+    Input/Devices/InputDeviceId.h
     Input/Events/InputChannelEventFilter.cpp
     Input/Events/InputChannelEventFilter.h
     Input/Events/InputChannelEventListener.cpp
@@ -469,20 +273,254 @@ set(FILES
     Input/Utils/AdjustAnalogInputForDeadZone.h
     Input/Utils/IsAnyKeyOrButton.h
     Input/Utils/ProcessRawInputEventQueues.h
-    FileTag/FileTag.h
-    FileTag/FileTag.cpp
-    FileTag/FileTagBus.h
-    FileTag/FileTagComponent.h
-    FileTag/FileTagComponent.cpp
-    UnitTest/FrameworkTestTypes.h
-    UnitTest/TestDebugDisplayRequests.h
-    UnitTest/TestDebugDisplayRequests.cpp
-    Slice/SliceEntityBus.h
-    Slice/SliceInstantiationBus.h
-    Slice/SliceInstantiationTicket.h
+    IO/FileOperations.cpp
+    IO/FileOperations.h
+    IO/LocalFileIO.cpp
+    IO/LocalFileIO.h
+    IO/RemoteFileIO.cpp
+    IO/RemoteFileIO.h
+    IO/RemoteStorageDrive.cpp
+    IO/RemoteStorageDrive.h
+    Logging/LogFile.cpp
+    Logging/LogFile.h
+    Logging/LoggingComponent.cpp
+    Logging/LoggingComponent.h
+    Logging/MissingAssetLogger.cpp
+    Logging/MissingAssetLogger.h
+	Logging/MissingAssetNotificationBus.cpp
+    Logging/MissingAssetNotificationBus.h
+    Logging/StartupLogSinkReporter.cpp
+    Logging/StartupLogSinkReporter.h
+    Math/InterpolationSample.h
+    Metrics/MetricsPlainTextNameRegistration.h
+    Network/AssetProcessorConnection.cpp
+    Network/AssetProcessorConnection.h
+    Network/IRemoteTools.h
+    Network/IRemoteTools.inl
+    Network/SocketConnection.cpp
+    Network/SocketConnection.h
+    PaintBrush/PaintBrush.cpp
+    PaintBrush/PaintBrush.h
+	PaintBrush/PaintBrushNotificationBus.cpp
+    PaintBrush/PaintBrushNotificationBus.h
+	PaintBrush/PaintBrushSessionBus.cpp
+    PaintBrush/PaintBrushSessionBus.h
+    PaintBrush/PaintBrushSettings.cpp
+    PaintBrush/PaintBrushSettings.h
+    PaintBrush/PaintBrushSystemComponent.cpp
+    PaintBrush/PaintBrushSystemComponent.h
+    Physics/Collision/CollisionEvents.cpp
+    Physics/Collision/CollisionEvents.h
+    Physics/Collision/CollisionGroups.cpp
+    Physics/Collision/CollisionGroups.h
+    Physics/Collision/CollisionLayers.cpp
+    Physics/Collision/CollisionLayers.h
+    Physics/Common/PhysicsEvents.h
+    Physics/Common/PhysicsJoint.cpp
+    Physics/Common/PhysicsJoint.h
+    Physics/Common/PhysicsSceneQueries.cpp
+    Physics/Common/PhysicsSceneQueries.h
+    Physics/Common/PhysicsSimulatedBody.cpp
+    Physics/Common/PhysicsSimulatedBody.h
+    Physics/Common/PhysicsSimulatedBodyAutomation.cpp
+    Physics/Common/PhysicsSimulatedBodyAutomation.h
+    Physics/Common/PhysicsSimulatedBodyEvents.cpp
+    Physics/Common/PhysicsSimulatedBodyEvents.h
+    Physics/Common/PhysicsTypes.h
+	Physics/Components/SimulatedBodyComponentBus.cpp
+    Physics/Components/SimulatedBodyComponentBus.h
+    Physics/Configuration/CollisionConfiguration.cpp
+    Physics/Configuration/CollisionConfiguration.h
+    Physics/Configuration/JointConfiguration.cpp
+    Physics/Configuration/JointConfiguration.h
+    Physics/Configuration/RigidBodyConfiguration.cpp
+    Physics/Configuration/RigidBodyConfiguration.h
+    Physics/Configuration/SceneConfiguration.cpp
+    Physics/Configuration/SceneConfiguration.h
+    Physics/Configuration/SimulatedBodyConfiguration.cpp
+    Physics/Configuration/SimulatedBodyConfiguration.h
+    Physics/Configuration/StaticRigidBodyConfiguration.cpp
+    Physics/Configuration/StaticRigidBodyConfiguration.h
+    Physics/Configuration/SystemConfiguration.cpp
+    Physics/Configuration/SystemConfiguration.h
+    Physics/DebugDraw/CharacterPhysicsDebugDraw.cpp
+    Physics/DebugDraw/CharacterPhysicsDebugDraw.h
+    Physics/Material/PhysicsMaterial.cpp
+    Physics/Material/PhysicsMaterial.h
+    Physics/Material/PhysicsMaterialAsset.cpp
+    Physics/Material/PhysicsMaterialAsset.h
+    Physics/Material/PhysicsMaterialId.cpp
+    Physics/Material/PhysicsMaterialId.h
+    Physics/Material/PhysicsMaterialManager.cpp
+    Physics/Material/PhysicsMaterialManager.h
+    Physics/Material/PhysicsMaterialPropertyValue.cpp
+    Physics/Material/PhysicsMaterialPropertyValue.h
+    Physics/Material/PhysicsMaterialSlots.cpp
+    Physics/Material/PhysicsMaterialSlots.h
+    Physics/Material/PhysicsMaterialSystemComponent.cpp
+    Physics/Material/PhysicsMaterialSystemComponent.h
+    Physics/SimulatedBodies/RigidBody.cpp
+    Physics/SimulatedBodies/RigidBody.h
+    Physics/SimulatedBodies/StaticRigidBody.cpp
+    Physics/SimulatedBodies/StaticRigidBody.h
+    Physics/AnimationConfiguration.cpp
+    Physics/AnimationConfiguration.h
+    Physics/Character.cpp
+    Physics/Character.h
+	Physics/CharacterBus.cpp
+    Physics/CharacterBus.h
+	Physics/CharacterPhysicsDataBus.cpp
+    Physics/CharacterPhysicsDataBus.h
+    Physics/ClassConverters.cpp
+    Physics/ClassConverters.h
+	Physics/ColliderComponentBus.cpp
+    Physics/ColliderComponentBus.h
+    Physics/CollisionBus.cpp
+    Physics/CollisionBus.h
+    Physics/HeightfieldProviderBus.cpp
+    Physics/HeightfieldProviderBus.h
+    Physics/NameConstants.cpp
+    Physics/NameConstants.h
+    Physics/PhysicsScene.cpp
+    Physics/PhysicsScene.h
+    Physics/PhysicsSystem.h
+    Physics/PhysicsSystem.cpp
+	Physics/PropertyTypes.h
+    Physics/Ragdoll.cpp
+    Physics/Ragdoll.h
+	Physics/RagdollPhysicsBus.cpp
+    Physics/RagdollPhysicsBus.h
+	Physics/RigidBodyBus.cpp
+    Physics/RigidBodyBus.h
+    Physics/Shape.cpp
+    Physics/Shape.h
+    Physics/ShapeConfiguration.cpp
+    Physics/ShapeConfiguration.h
+	Physics/SystemBus.cpp
+    Physics/SystemBus.h
+    Physics/Utils.cpp
+    Physics/Utils.h
+	Physics/WindBus.cpp
+    Physics/WindBus.h
+    Platform/PlatformDefaults.h
+    Process/ProcessCommon_fwd.h
+    Process/ProcessCommunicator.cpp
+    Process/ProcessCommunicator.h
+    Process/ProcessCommunicatorTracePrinter.cpp
+    Process/ProcessCommunicatorTracePrinter.h
+    Process/ProcessUtils.h
+    Process/ProcessWatcher.cpp
+    Process/ProcessWatcher.h
+    ProjectManager/ProjectManager.cpp
+    ProjectManager/ProjectManager.h
+    Quality/QualityCVarGroup.cpp
+    Quality/QualityCVarGroup.h
+	Quality/QualitySystemBus.cpp
+    Quality/QualitySystemBus.h
+    Quality/QualitySystemComponent.cpp
+    Quality/QualitySystemComponent.h
+    Render/GameIntersectorComponent.cpp
+    Render/GameIntersectorComponent.h
+	Render/GeometryIntersectionBus.cpp
+    Render/GeometryIntersectionBus.h
+    Render/GeometryIntersectionStructures.h
+    Render/Intersector.cpp
+    Render/Intersector.h
+    Render/IntersectorInterface.h
+	Render/RenderSystemBus.cpp
+	Render/RenderSystemBus.h
+    Scene/Scene.cpp
+    Scene/Scene.h
+    Scene/Scene.inl
+    Scene/SceneSystemComponent.cpp
+    Scene/SceneSystemComponent.h
+    Scene/SceneSystemInterface.h
+    Script/ScriptComponent.cpp
+    Script/ScriptComponent.h
+	Script/ScriptDebugAgentBus.cpp
+    Script/ScriptDebugAgentBus.h
+    Script/ScriptDebugMsgReflection.cpp
+    Script/ScriptDebugMsgReflection.h
+    Script/ScriptRemoteDebugging.cpp
+    Script/ScriptRemoteDebugging.h
+    Script/ScriptRemoteDebuggingConstants.h
+    Slice/SliceEntityBus.cpp
+	Slice/SliceEntityBus.h
+    Slice/SliceInstantiationBus.cpp
+	Slice/SliceInstantiationBus.h
     Slice/SliceInstantiationTicket.cpp
+    Slice/SliceInstantiationTicket.h
+    Spawnable/Script/SpawnableScriptAssetRef.cpp
+    Spawnable/Script/SpawnableScriptAssetRef.h
+	Spawnable/Script/SpawnableScriptBus.cpp
+    Spawnable/Script/SpawnableScriptBus.h
+    Spawnable/Script/SpawnableScriptMediator.cpp
+    Spawnable/Script/SpawnableScriptMediator.h
+    Spawnable/Script/SpawnableScriptNotificationsHandler.h
+    Spawnable/InMemorySpawnableAssetContainer.cpp
+    Spawnable/InMemorySpawnableAssetContainer.h
+	Spawnable/RootSpawnableInterface.cpp
+    Spawnable/RootSpawnableInterface.h
+    Spawnable/Spawnable.cpp
+    Spawnable/Spawnable.h
+	Spawnable/SpawnableAssetBus.cpp
+    Spawnable/SpawnableAssetBus.h
+    Spawnable/SpawnableAssetHandler.cpp
+    Spawnable/SpawnableAssetHandler.h
+    Spawnable/SpawnableAssetUtils.cpp
+    Spawnable/SpawnableAssetUtils.h
+    Spawnable/SpawnableEntitiesContainer.cpp
+    Spawnable/SpawnableEntitiesContainer.h
+    Spawnable/SpawnableEntitiesInterface.cpp
+    Spawnable/SpawnableEntitiesInterface.h
+    Spawnable/SpawnableEntitiesManager.cpp
+    Spawnable/SpawnableEntitiesManager.h
+    Spawnable/SpawnableMetaData.cpp
+    Spawnable/SpawnableMetaData.h
+    Spawnable/SpawnableMonitor.cpp
+    Spawnable/SpawnableMonitor.h
+    Spawnable/SpawnableSystemComponent.cpp
+    Spawnable/SpawnableSystemComponent.h
+    StreamingInstall/StreamingInstall.cpp
+    StreamingInstall/StreamingInstall.h
+    StreamingInstall/StreamingInstallNotifications.h
+    StreamingInstall/StreamingInstallRequests.h
+    StringFunc/StringFunc.h
+    SurfaceData/SurfaceData.cpp
+    SurfaceData/SurfaceData.h
+    Terrain/TerrainDataRequestBus.cpp
+    Terrain/TerrainDataRequestBus.h
+	Thermal/ThermalInfo.cpp
+    Thermal/ThermalInfo.h
+    UnitTest/FrameworkTestTypes.h
+    UnitTest/TestDebugDisplayRequests.cpp
+    UnitTest/TestDebugDisplayRequests.h
+    Viewport/CameraInput.cpp
+    Viewport/CameraInput.h
+    Viewport/CameraState.cpp
+    Viewport/CameraState.h
+    Viewport/ClickDetector.cpp
+    Viewport/ClickDetector.h
+    Viewport/CursorState.h
+    Viewport/MultiViewportController.h
+    Viewport/MultiViewportController.inl
+    Viewport/ScreenGeometry.cpp
+    Viewport/ScreenGeometry.h
+    Viewport/SingleViewportController.cpp
+    Viewport/SingleViewportController.h
+    Viewport/ViewportBus.cpp
+    Viewport/ViewportBus.h
+    Viewport/ViewportConstants.cpp
+    Viewport/ViewportConstants.h
+    Viewport/ViewportControllerInterface.h
+    Viewport/ViewportControllerList.cpp
+    Viewport/ViewportControllerList.h
+    Viewport/ViewportId.h
+    Viewport/ViewportScreen.cpp
+	Viewport/ViewportScreen.h
     Visibility/BoundsBus.cpp
     Visibility/BoundsBus.h
+	Visibility/EntityBoundsUnionBus.cpp
     Visibility/EntityBoundsUnionBus.h
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
     Visibility/EntityVisibilityBoundsUnionSystem.h
@@ -497,4 +535,10 @@ set(FILES
     Visibility/VisibilityDebug.h
     Visibility/VisibleGeometryBus.cpp
     Visibility/VisibleGeometryBus.h
+    Windowing/NativeWindow.cpp
+    Windowing/NativeWindow.h
+	Windowing/WindowBus.cpp
+    Windowing/WindowBus.h
+    AzFrameworkModule.cpp
+    AzFrameworkModule.h
 )

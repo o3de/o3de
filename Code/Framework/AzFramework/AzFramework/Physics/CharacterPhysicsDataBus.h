@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Physics/Ragdoll.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -63,3 +64,6 @@ namespace AzFramework
 
     using CharacterPhysicsDataNotificationBus = AZ::EBus<CharacterPhysicsDataNotifications>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::CharacterPhysicsDataRequests);
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::CharacterPhysicsDataNotifications);

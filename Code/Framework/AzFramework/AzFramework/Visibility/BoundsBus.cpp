@@ -10,7 +10,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
-DECLARE_EBUS_INSTANTIATION(AzFramework::BoundsRequests);
+AZF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AzFramework::BoundsRequests);
 
 namespace AzFramework
 {

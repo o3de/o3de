@@ -13,13 +13,14 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     /**
     * SocketConnection - an interface for creating a socket connection using AzSocket
     */
-    class SocketConnection
+    class AZF_API SocketConnection
     {
     public:
         AZ_RTTI(SocketConnection, "{CF95282C-B514-4AB8-8C72-6063AD03725B}");
@@ -103,3 +104,5 @@ namespace AzFramework
         virtual void Disconnected(SocketConnection*) {}
     };
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::EngineConnectionEvents);

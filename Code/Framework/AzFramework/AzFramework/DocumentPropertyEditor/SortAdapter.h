@@ -10,11 +10,12 @@
 
 #include <AzCore/std/containers/set.h>
 #include <AzFramework/DocumentPropertyEditor/MetaAdapter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
 
-    class RowSortAdapter : public MetaAdapter
+    class AZF_API RowSortAdapter : public MetaAdapter
     {
     public:
         virtual ~RowSortAdapter();

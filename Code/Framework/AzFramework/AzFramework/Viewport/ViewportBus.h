@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Viewport/ViewportId.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AzFramework
     //! Provides an interface to query and set various view/camera properties.
     //! These include a camera's view matrix, projection matrix and transform (inverse of view matrix).
     //! @note The bus is addressed by ViewportId and should be preferred over existing global camera buses.
-    class ViewportRequests : public AZ::EBusTraits
+    class AZF_API ViewportRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
@@ -65,7 +66,7 @@ namespace AzFramework
     };
 
     //! For performing queries about the state of the viewport border.
-    class ViewportBorderRequests : public AZ::EBusTraits
+    class AZF_API ViewportBorderRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
@@ -82,7 +83,7 @@ namespace AzFramework
     using ViewportBorderRequestBus = AZ::EBus<ViewportBorderRequests>;
 
     //! Provides an interface to notify about different states of the ImGui.
-    class ViewportImGuiNotifications : public AZ::EBusTraits
+    class AZF_API ViewportImGuiNotifications : public AZ::EBusTraits
     {
     public:
         //! Notification that the ImGui menu bar has been activated.
@@ -108,3 +109,7 @@ namespace AzFramework
 
     using ViewportImGuiNotificationBus = AZ::EBus<ViewportImGuiNotifications>;
 } // namespace AzFramework
+
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::ViewportRequests);
+AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AzFramework::ViewportBorderRequests);
+AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AzFramework::ViewportImGuiNotifications);
