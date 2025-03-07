@@ -27,6 +27,7 @@ namespace ScriptCanvasEditor
         m_ui->setupUi(this);
 
         // Hack to hide the close button on the first tab. Since we always want it open.
+        
         m_ui->tabWidget->setTabsClosable(true);
         m_ui->tabWidget->tabBar()->setTabButton(0, QTabBar::ButtonPosition::RightSide, nullptr);
         m_ui->tabWidget->tabBar()->setTabButton(0, QTabBar::ButtonPosition::LeftSide, nullptr);
@@ -51,7 +52,8 @@ namespace ScriptCanvasEditor
 
     LoggingWindow::~LoggingWindow()
     {
-
+        // The tabWidget destruction is handled by its parent, if we don't clear the parent, this results in a double deletion
+        m_ui->tabWidget->setParent(nullptr);
     }
 
     void LoggingWindow::OnActiveTabChanged([[maybe_unused]] int index)
