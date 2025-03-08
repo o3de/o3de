@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QButtonGroup>
+#include <QScopedPointer>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>

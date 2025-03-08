@@ -24,7 +24,6 @@ namespace ScriptCanvas
 
     void ExecutionLogData::Clear()
     {
-        m_events.resize(0);
         m_events.clear();
     }
 
