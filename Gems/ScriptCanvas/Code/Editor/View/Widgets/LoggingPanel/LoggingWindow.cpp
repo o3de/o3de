@@ -54,8 +54,6 @@ namespace ScriptCanvasEditor
 
     LoggingWindow::~LoggingWindow()
     {
-        // The tabWidget destruction is handled by its parent, if we don't clear the parent, this results in a double deletion
-        m_ui->tabWidget->setParent(nullptr);
     }
 
     void LoggingWindow::OnActiveTabChanged([[maybe_unused]] int index)
