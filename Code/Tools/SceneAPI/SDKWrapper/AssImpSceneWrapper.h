@@ -57,6 +57,7 @@ namespace AZ
             AZStd::string m_sceneFileName;
             aiAABB m_aabb;
             uint32_t m_vertices;
+            bool m_extractEmbeddedTextures;
         };
 
     } // namespace AssImpSDKWrapper
