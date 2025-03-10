@@ -24,46 +24,50 @@
     class ResourceView;
     class ImageView;
     class BufferView;
-    
-    //! ResourceViewCache is used by both Resource and DeviceResource to cache raw pointers to ResourceView and DeviceResourceView respectively.
-    //! As ResourceViewType has a strong dependency (by holding a ConstrPtr) to ResourceType, this cache holds raw pointers to 
-    //! ensure no circular dependency arises.
-    //! As it can be accessed in parallel, access to the cache is protected by a mutex.
-    template <typename ResourceType>
-    struct ResourceViewCache
+
+    namespace ResourceViewCacheHelper
     {
-        //! Helper struct to provide correct Type and creatio method for (Device)Image/Bufferview
-        template <typename Type, typename DescriptorType>
+        Ptr<DeviceImageView> CreateView(const DeviceResource* resource, const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<DeviceBufferView> CreateView(const DeviceResource* resource, const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<ImageView> CreateView(const Resource* resource, const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<BufferView> CreateView(const Resource* resource, const BufferViewDescriptor& bufferViewDescriptor);
+
+        //! Helper struct to provide correct Type and creation method for (Device)Image/Bufferview
+        template<typename Type, typename DescriptorType>
         struct ResourceViewTypeHelper;
 
         template<>
         struct ResourceViewTypeHelper<DeviceResource, ImageViewDescriptor>
         {
             using ViewType = DeviceImageView;
-            static Ptr<DeviceImageView> CreateView(const DeviceResource* resource, const ImageViewDescriptor& imageViewDescriptor);
         };
 
         template<>
         struct ResourceViewTypeHelper<DeviceResource, BufferViewDescriptor>
         {
             using ViewType = DeviceBufferView;
-            static Ptr<DeviceBufferView> CreateView(const DeviceResource* resource, const BufferViewDescriptor& bufferViewDescriptor);
         };
 
         template<>
         struct ResourceViewTypeHelper<Resource, ImageViewDescriptor>
         {
             using ViewType = ImageView;
-            static Ptr<ImageView> CreateView(const Resource* resource, const ImageViewDescriptor& imageViewDescriptor);
         };
 
         template<>
         struct ResourceViewTypeHelper<Resource, BufferViewDescriptor>
         {
             using ViewType = BufferView;
-            static Ptr<BufferView> CreateView(const Resource* resource, const BufferViewDescriptor& bufferViewDescriptor);
         };
+    } // namespace ResourceViewCacheHelper
 
+    //! ResourceViewCache is used by both Resource and DeviceResource to cache raw pointers to ResourceView and DeviceResourceView
+    //! respectively. As ResourceViewType has a strong dependency (by holding a ConstrPtr) to ResourceType, this cache holds raw pointers to
+    //! ensure no circular dependency arises.
+    //! As it can be accessed in parallel, access to the cache is protected by a mutex.
+    template<typename ResourceType>
+    struct ResourceViewCache
+    {
         //! Helper struct to select (Device)ResourceView based on (Device)Resource and the corresponding views for Buffers and Images
         template <typename Type>
         struct ResourceTypeHelper;
@@ -72,16 +76,16 @@
         struct ResourceTypeHelper<DeviceResource>
         {
             using ResourceViewType = DeviceResourceView;
-            template <typename DescriptorType>
-            using ViewType = typename ResourceViewTypeHelper<DeviceResource, DescriptorType>::ViewType;
+            template<typename DescriptorType>
+            using ViewType = typename ResourceViewCacheHelper::ResourceViewTypeHelper<DeviceResource, DescriptorType>::ViewType;
         };
 
         template <>
         struct ResourceTypeHelper<Resource>
         {
             using ResourceViewType = ResourceView;
-            template <typename DescriptorType>
-            using ViewType = typename ResourceViewTypeHelper<Resource, DescriptorType>::ViewType;
+            template<typename DescriptorType>
+            using ViewType = typename ResourceViewCacheHelper::ResourceViewTypeHelper<Resource, DescriptorType>::ViewType;
         };
 
         //! Returns true if the ResourceViewType is in the cache

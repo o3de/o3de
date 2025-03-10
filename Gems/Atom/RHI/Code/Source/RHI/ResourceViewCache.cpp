@@ -15,27 +15,34 @@
 
  namespace AZ::RHI
  {
-    Ptr<DeviceImageView> ResourceViewCache<DeviceResource>::ResourceViewTypeHelper<DeviceResource, ImageViewDescriptor>::CreateView(const DeviceResource* resource, const ImageViewDescriptor& imageViewDescriptor)
-    {
-        Ptr<DeviceImageView> imageViewPtr = RHI::Factory::Get().CreateImageView();
-        return (imageViewPtr->Init(static_cast<const DeviceImage&>(*resource), imageViewDescriptor) == RHI::ResultCode::Success) ? imageViewPtr : nullptr;
-    }
+     namespace ResourceViewCacheHelper
+     {
+         Ptr<DeviceImageView> CreateView(const DeviceResource* resource, const ImageViewDescriptor& imageViewDescriptor)
+         {
+             Ptr<DeviceImageView> imageViewPtr = RHI::Factory::Get().CreateImageView();
+             return (imageViewPtr->Init(static_cast<const DeviceImage&>(*resource), imageViewDescriptor) == RHI::ResultCode::Success)
+                 ? imageViewPtr
+                 : nullptr;
+         }
 
-    Ptr<DeviceBufferView> ResourceViewCache<DeviceResource>::ResourceViewTypeHelper<DeviceResource, BufferViewDescriptor>::CreateView(const DeviceResource* resource, const BufferViewDescriptor& bufferViewDescriptor)
-    {
-        Ptr<DeviceBufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
-        return (bufferViewPtr->Init(static_cast<const DeviceBuffer&>(*resource), bufferViewDescriptor) == RHI::ResultCode::Success) ? bufferViewPtr : nullptr;
-    }
+         Ptr<DeviceBufferView> CreateView(const DeviceResource* resource, const BufferViewDescriptor& bufferViewDescriptor)
+         {
+             Ptr<DeviceBufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
+             return (bufferViewPtr->Init(static_cast<const DeviceBuffer&>(*resource), bufferViewDescriptor) == RHI::ResultCode::Success)
+                 ? bufferViewPtr
+                 : nullptr;
+         }
 
-    Ptr<ImageView> ResourceViewCache<Resource>::ResourceViewTypeHelper<Resource, ImageViewDescriptor>::CreateView(const Resource* resource, const ImageViewDescriptor& imageViewDescriptor)
-    {
-        return aznew ImageView{static_cast<const Image*>(resource), imageViewDescriptor, resource->GetDeviceMask()};
-    }
+         Ptr<ImageView> CreateView(const Resource* resource, const ImageViewDescriptor& imageViewDescriptor)
+         {
+             return aznew ImageView{ static_cast<const Image*>(resource), imageViewDescriptor, resource->GetDeviceMask() };
+         }
 
-    Ptr<BufferView> ResourceViewCache<Resource>::ResourceViewTypeHelper<Resource, BufferViewDescriptor>::CreateView(const Resource* resource, const BufferViewDescriptor& bufferViewDescriptor)
-    {
-        return aznew BufferView{static_cast<const Buffer*>(resource), bufferViewDescriptor, resource->GetDeviceMask()};
-    }
+         Ptr<BufferView> CreateView(const Resource* resource, const BufferViewDescriptor& bufferViewDescriptor)
+         {
+             return aznew BufferView{ static_cast<const Buffer*>(resource), bufferViewDescriptor, resource->GetDeviceMask() };
+         }
+     } // namespace ResourceViewCacheHelper
 
     template <typename ResourceType>
     template <typename DescriptorType>
@@ -89,7 +96,7 @@
     template <typename DescriptorType>
     auto ResourceViewCache<ResourceType>::InsertNewView(const ResourceType* resource,  HashValue64 hash, const DescriptorType& viewDescriptor) const -> Ptr<typename ResourceViewCache<ResourceType>::ResourceTypeHelper<ResourceType>::template ViewType<DescriptorType>>
     {
-        auto viewPtr{ResourceViewTypeHelper<ResourceType, DescriptorType>::CreateView(resource, viewDescriptor)};
+        auto viewPtr{ ResourceViewCacheHelper::CreateView(resource, viewDescriptor) };
         if (viewPtr)
         {
             m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<typename ResourceTypeHelper<ResourceType>::ResourceViewType*>(viewPtr.get());
