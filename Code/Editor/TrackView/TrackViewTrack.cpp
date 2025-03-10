@@ -269,7 +269,7 @@ CTrackViewKeyHandle CTrackViewTrack::CreateKey(const float time)
     CTrackViewKeyHandle keyHandle;
 
     const auto sequence = GetSequence();
-    if (!(m_pAnimTrack && sequence))
+    if (!m_pAnimTrack || !sequence)
     {
         AZ_Assert(m_pAnimTrack, "CreateKey(%f): no animation track");
         AZ_Assert(sequence, "CreateKey(%f): no sequence", time);

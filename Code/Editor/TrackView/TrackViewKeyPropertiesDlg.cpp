@@ -146,7 +146,8 @@ void CTrackViewKeyPropertiesDlg::OnKeysChanged(CTrackViewSequence* pSequence)
             return;
         }
 
-        if ((numSelectedKeys > 1) && pTrack->IsSubTrack()) // A Compound track selected with keys selected in sub-tracks?
+        const bool areSubTrackKeysSelected = (numSelectedKeys > 1) && pTrack->IsSubTrack();
+        if (areSubTrackKeysSelected)
         {
             if (const auto pParentNode = pTrack->GetParentNode())
             {
@@ -336,7 +337,7 @@ bool CTrackViewTrackPropsDlg::OnKeySelectionChange(const CTrackViewKeyBundle& se
     m_keyHandle = CTrackViewKeyHandle();
 
     const auto keysCount = selectedKeys.GetKeyCount();
-    if ((keysCount == 1) || ((keysCount > 1) && selectedKeys.AreAllKeysOfSameType()))
+    if (keysCount == 1 || ((keysCount > 1) && selectedKeys.AreAllKeysOfSameType()))
     {
         m_keyHandle = selectedKeys.GetKey(0);
     }

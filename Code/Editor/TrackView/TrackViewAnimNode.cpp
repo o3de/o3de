@@ -644,6 +644,12 @@ void CTrackViewAnimNode::RemoveTrack(CTrackViewTrack* track)
 
 void CTrackViewAnimNode::UpdateTrackDefaultValue(float time, IAnimTrack* pTrack)
 {
+    if (!pTrack)
+    {
+        AZ_Assert(pTrack, "Invalid Track");
+        return;
+    }
+
     GetAnimNode()->UpdateTrackDefaultValue(time, pTrack);
 }
 

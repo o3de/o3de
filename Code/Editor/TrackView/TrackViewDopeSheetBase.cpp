@@ -1851,7 +1851,7 @@ void CTrackViewDopeSheetBase::LButtonDownOnKey([[maybe_unused]] const QPoint& po
         return;
     }
 
-    auto isSelected = keyHandle.IsSelected();
+    bool isSelected = keyHandle.IsSelected();
 
     if (isSelected && pTrack->IsSubTrack())
     {
@@ -2285,10 +2285,10 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
     CTrackViewSequenceNotificationContext context(sequence);
 
     CTrackViewAnimNode* pNode = pTrack->GetAnimNode();
-    float keyTime = TimeFromPoint(point);
-    bool inRange = m_timeRange.IsInside(keyTime);
+    const float keyTime = TimeFromPoint(point);
+    const bool inRange = m_timeRange.IsInside(keyTime);
 
-    if (!(pNode && pTrack && inRange))
+    if (!(pNode && inRange))
     {
         return;
     }

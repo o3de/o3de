@@ -696,7 +696,7 @@ public:
     IAnimTrack* GetCompoundTrackFromKeys(const CTrackViewKeyBundle& selectedKeys);
 
     AnimValueType m_valueType;
-    V m_Vector;
+    V m_vector;
 };
 
 /**

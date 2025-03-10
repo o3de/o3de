@@ -350,7 +350,7 @@ void CTrackViewCurveEditor::OnKeyAdded(CTrackViewKeyHandle& addedKeyHandle)
     };
 
     const auto numSubTracks = pTrack->GetChildCount();
-    if (!numSubTracks || pTrack->IsSubTrack()) // Simple track owning Bezier Keys
+    if (numSubTracks <= 0 || pTrack->IsSubTrack()) // Simple track owning Bezier Keys
     {
         updateKeyFlags(addedKeyHandle);
         return;

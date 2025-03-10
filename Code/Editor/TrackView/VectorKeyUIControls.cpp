@@ -62,8 +62,8 @@ bool CVectorKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
     }
 
     const auto keyTime = selectedKeys.GetKey(0).GetTime();
-    m_Vector = AZ::Vector3::CreateZero();
-    pAnimTrack->GetValue(keyTime, m_Vector, false);
+    m_vector = AZ::Vector3::CreateZero();
+    pAnimTrack->GetValue(keyTime, m_vector, false);
 
     float fMin = -1.0f;
     float fMax = 1.0f;
@@ -72,17 +72,17 @@ bool CVectorKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
     // updating the start/end ui elements, not the user setting new values.
     m_skipOnUIChange = true;
 
-    mv_x = m_Vector.GetX();
+    mv_x = m_vector.GetX();
     pAnimTrack->GetSubTrack(0)->GetKeyValueRange(fMin, fMax);
     float step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_x->SetLimits(fMin, fMax, step, false, false);
 
-    mv_y = m_Vector.GetY();
+    mv_y = m_vector.GetY();
     pAnimTrack->GetSubTrack(1)->GetKeyValueRange(fMin, fMax);
     step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_y->SetLimits(fMin, fMax, step, false, false);
 
-    mv_z = m_Vector.GetZ();
+    mv_z = m_vector.GetZ();
     pAnimTrack->GetSubTrack(2)->GetKeyValueRange(fMin, fMax);
     step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_z->SetLimits(fMin, fMax, step, false, false);
@@ -93,8 +93,8 @@ bool CVectorKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
 
 void CVectorKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-    if (m_skipOnUIChange || !sequence || !selectedKeys.AreAllKeysOfSameType())
+    auto pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    if (m_skipOnUIChange || !pSequence || !selectedKeys.AreAllKeysOfSameType())
     {
         return;
     }
@@ -106,10 +106,10 @@ void CVectorKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
     }
 
     const auto keyTime = selectedKeys.GetKey(0).GetTime();
-    m_Vector = AZ::Vector3::CreateZero();
-    pAnimTrack->GetValue(keyTime, m_Vector, false);
+    m_vector = AZ::Vector3::CreateZero();
+    pAnimTrack->GetValue(keyTime, m_vector, false);
 
-    AZ::Vector3 newVector(m_Vector);
+    AZ::Vector3 newVector(m_vector);
     if (pVar == mv_x.GetVar())
     {
         newVector.SetX(mv_x);
@@ -123,7 +123,7 @@ void CVectorKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
         newVector.SetZ(mv_z);
     }
 
-    if (newVector.IsClose(m_Vector, AZ::Constants::Tolerance))
+    if (newVector.IsClose(m_vector, AZ::Constants::Tolerance))
     {
         return;
     }
@@ -139,7 +139,7 @@ void CVectorKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
     {
         AzToolsFramework::ScopedUndoBatch undoBatch("Set Key Value");
         pAnimTrack->SetValue(keyTime, newVector, false);
-        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+        undoBatch.MarkEntityDirty(pSequence->GetSequenceComponentEntityId());
     }
 }
 
@@ -153,8 +153,8 @@ bool CRgbKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selected
     }
 
     const auto keyTime = selectedKeys.GetKey(0).GetTime();
-    m_Vector = AZ::Vector3::CreateZero();
-    pAnimTrack->GetValue(keyTime, m_Vector, false);
+    m_vector = AZ::Vector3::CreateZero();
+    pAnimTrack->GetValue(keyTime, m_vector, false);
 
     float fMin = -1.0f;
     float fMax = 1.0f;
@@ -165,13 +165,13 @@ bool CRgbKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selected
     // updating the start/end ui elements, not the user setting new values.
     m_skipOnUIChange = true;
 
-    mv_x = m_Vector.GetX();
+    mv_x = m_vector.GetX();
     mv_x.GetVar()->SetLimits(fMin, fMax, step, true, true);
 
-    mv_y = m_Vector.GetY();
+    mv_y = m_vector.GetY();
     mv_y.GetVar()->SetLimits(fMin, fMax, step, true, true);
 
-    mv_z = m_Vector.GetZ();
+    mv_z = m_vector.GetZ();
     mv_z.GetVar()->SetLimits(fMin, fMax, step, true, true);
 
     m_skipOnUIChange = false;
@@ -189,8 +189,8 @@ bool CQuatKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selecte
     }
 
     const auto keyTime = selectedKeys.GetKey(0).GetTime();
-    m_Vector = AZ::Vector3::CreateZero();
-    pAnimTrack->GetValue(keyTime, m_Vector, false);
+    m_vector = AZ::Vector3::CreateZero();
+    pAnimTrack->GetValue(keyTime, m_vector, false);
 
     float fMin = -1.0f;
     float fMax = 1.0f;
@@ -199,17 +199,17 @@ bool CQuatKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selecte
     // updating the start/end ui elements, not the user setting new values.
     m_skipOnUIChange = true;
 
-    mv_x = m_Vector.GetX();
+    mv_x = m_vector.GetX();
     pAnimTrack->GetSubTrack(0)->GetKeyValueRange(fMin, fMax);
     float step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_x->SetLimits(fMin, fMax, step, true, true);
 
-    mv_y = m_Vector.GetY();
+    mv_y = m_vector.GetY();
     pAnimTrack->GetSubTrack(1)->GetKeyValueRange(fMin, fMax);
     step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_y->SetLimits(fMin, fMax, step, true, true);
 
-    mv_z = m_Vector.GetZ();
+    mv_z = m_vector.GetZ();
     pAnimTrack->GetSubTrack(2)->GetKeyValueRange(fMin, fMax);
     step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_y->SetLimits(fMin, fMax, step, true, true);
@@ -230,8 +230,8 @@ bool CVector4KeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sele
     }
 
     const auto keyTime = selectedKeys.GetKey(0).GetTime();
-    m_Vector = AZ::Vector4::CreateZero();
-    pAnimTrack->GetValue(keyTime, m_Vector, false);
+    m_vector = AZ::Vector4::CreateZero();
+    pAnimTrack->GetValue(keyTime, m_vector, false);
 
     float fMin = -1.0f;
     float fMax = 1.0f;
@@ -240,22 +240,22 @@ bool CVector4KeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sele
     // updating the start/end ui elements, not the user setting new values.
     m_skipOnUIChange = true;
 
-    mv_x = m_Vector.GetX();
+    mv_x = m_vector.GetX();
     pAnimTrack->GetSubTrack(0)->GetKeyValueRange(fMin, fMax);
     float step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_x->SetLimits(fMin, fMax, step, false, false);
 
-    mv_y = m_Vector.GetY();
+    mv_y = m_vector.GetY();
     pAnimTrack->GetSubTrack(1)->GetKeyValueRange(fMin, fMax);
     step = AZStd::max((fMax - fMin) / 100.f, 0.01f);
     mv_y->SetLimits(fMin, fMax, step, false, false);
 
-    mv_z = m_Vector.GetZ();
+    mv_z = m_vector.GetZ();
     pAnimTrack->GetSubTrack(2)->GetKeyValueRange(fMin, fMax);
     step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_z->SetLimits(fMin, fMax, step, false, false);
 
-    mv_w = m_Vector.GetW();
+    mv_w = m_vector.GetW();
     pAnimTrack->GetSubTrack(3)->GetKeyValueRange(fMin, fMax);
     step = ReflectedPropertyItem::ComputeSliderStep(fMin, fMax);
     mv_w->SetLimits(fMin, fMax, step, false, false);
@@ -267,8 +267,8 @@ bool CVector4KeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sele
 
 void CVector4KeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-    if (m_skipOnUIChange || !sequence || !selectedKeys.AreAllKeysOfSameType())
+    auto pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    if (m_skipOnUIChange || !pSequence || !selectedKeys.AreAllKeysOfSameType())
     {
         return;
     }
@@ -280,10 +280,10 @@ void CVector4KeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
     }
 
     const auto keyTime = selectedKeys.GetKey(0).GetTime();
-    m_Vector = AZ::Vector4::CreateZero();
-    pAnimTrack->GetValue(keyTime, m_Vector, false);
+    m_vector = AZ::Vector4::CreateZero();
+    pAnimTrack->GetValue(keyTime, m_vector, false);
 
-    AZ::Vector4 newVector(m_Vector);
+    AZ::Vector4 newVector(m_vector);
     if (pVar == mv_x.GetVar())
     {
         newVector.SetX(mv_x);
@@ -300,7 +300,7 @@ void CVector4KeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
     {
         newVector.SetW(mv_w);
     }
-    if (newVector.IsClose(m_Vector, AZ::Constants::Tolerance))
+    if (newVector.IsClose(m_vector, AZ::Constants::Tolerance))
     {
         return;
     }
@@ -317,6 +317,6 @@ void CVector4KeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
     {
         AzToolsFramework::ScopedUndoBatch undoBatch("Set Key Value");
         pAnimTrack->SetValue(keyTime, newVector, false);
-        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+        undoBatch.MarkEntityDirty(pSequence->GetSequenceComponentEntityId());
     }
 }
