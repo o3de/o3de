@@ -126,8 +126,9 @@ namespace AZ
 
             // Macro to replace only the image macro for defining only image resources
 #undef  AZ_GFX_TEXTURE2D_PARAM
-#define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)                \
-            Data::Instance<AZ::RPI::Image> MemberName##Image;                 \
+#define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)            \
+            Data::Instance<AZ::RPI::Image> MemberName##Image;             \
+            AZStd::string MemberName##CurrentlyLoaded;
 
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
