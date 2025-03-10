@@ -27,5 +27,9 @@ message(STATUS "    - patched with ${CMAKE_CURRENT_LIST_DIR}/openmesh-o3de-11.0.
 add_library(OpenMesh IMPORTED INTERFACE GLOBAL)
 add_library(3rdParty::OpenMesh ALIAS OpenMesh)
 
+# Same thing to future-proof 3rdParty::OpenMeshTools
+add_library(OpenMeshTools IMPORTED INTERFACE GLOBAL)
+add_library(3rdParty::OpenMeshTools ALIAS OpenMeshTools)
+
 # notify O3DE That we have satisfied the OpenMesh find_package requirements.
 set(OpenMesh_FOUND TRUE)
