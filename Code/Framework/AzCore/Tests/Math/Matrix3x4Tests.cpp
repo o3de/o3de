@@ -1010,7 +1010,7 @@ namespace UnitTest
         EXPECT_NEAR(matrix2.GetTranspose3x3().GetDeterminant3x3(), expected2, 1e-3f);
     }
 
-    // Use of INFINITY in newer Windows SDKs trigger a math overflow warning becuase it redefines INFINITY
+    // Use of INFINITY in newer Windows SDKs trigger a math overflow warning because it redefines INFINITY
     // as (huge number * huge number) instead of the previous definition of just (huge number).  The multiplication
     // operation triggers the overflow warning.
 
