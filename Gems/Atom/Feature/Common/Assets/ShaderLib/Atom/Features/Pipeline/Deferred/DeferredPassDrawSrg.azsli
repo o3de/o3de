@@ -1,0 +1,25 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+// the Draw-Srg stores the non-static shader options
+ShaderResourceGroup DrawSrg : SRG_PerDraw
+{
+    // Material-Type ID of the current draw-item. 
+    // This should be used to make sure the current shader understands the layout of the referenced MaterialParameters buffer.
+    int m_materialTypeId;
+    // Id of the current draw-packet. This is a unique id from the combination of the Material-Type Id and the actual Shader Variant
+    int m_shaderDrawPacketId;
+
+    StructuredBuffer<int> m_drawPacketIds;
+};
+
+

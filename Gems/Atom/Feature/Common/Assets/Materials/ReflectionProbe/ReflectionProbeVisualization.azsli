@@ -20,7 +20,7 @@
         output.worldPosition = mul(objectToWorld, float4(IN.position, 1.0)).xyz;
         
         float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
-        output.position = mul(viewProjectionMatrix, output.worldPosition);
+        output.position = mul(viewProjectionMatrix, float4(output.worldPosition, 1.0));
 
         output.normal = IN.normal;
 

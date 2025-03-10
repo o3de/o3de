@@ -65,10 +65,12 @@ function Process(context)
     enableDepthPass = not isTransparent and not isTintedTransparent
     enableMainPass = not isTransparent and not isTintedTransparent
     enableShadowPass = not isTransparent and not isTintedTransparent and castShadows
+    enableVisibilityPass = not isTransparent and not isTintedTransparent
 
     if hasPerPixelDepth or hasPerPixelClip then
         TrySetShaderEnabledWithFallback(context, "depth_customZ", "depth", enableDepthPass)
         TrySetShaderEnabledWithFallback(context, "shadow_customZ", "shadow", enableShadowPass)
+        TrySetShaderEnabledWithFallback(context, "visibility_customZ", "visibility", enableVisibilityPass)
         
         -- The main pass could have different names in different pipelines
         TrySetShaderEnabledWithFallback(context, "forward_customZ", "forward", enableMainPass)
@@ -76,8 +78,10 @@ function Process(context)
     else
         TrySetShaderEnabled(context, "depth", enableDepthPass)
         TrySetShaderEnabled(context, "shadow", enableShadowPass)
+        TrySetShaderEnabled(context, "visibility", enableVisibilityPass);
         TrySetShaderEnabled(context, "depth_customZ", false)
         TrySetShaderEnabled(context, "shadow_customZ", false)
+        TrySetShaderEnabled(context, "visibility_customZ", false);
         
         -- The main pass could have different names in different pipelines
         TrySetShaderEnabled(context, "forward", enableMainPass)

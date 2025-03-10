@@ -11,7 +11,6 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
-#include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/RPI.Public/Configuration.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/string/string.h>

@@ -32,6 +32,11 @@ namespace AZ::RHI
             return GetCurrentElement();
         }
 
+        const unsigned GetCurrentElementIndex() const
+        {
+            return m_currentElementIndex;
+        }
+
         //! Returns the current element
         const T& GetCurrentElement() const
         {

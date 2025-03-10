@@ -1,0 +1,265 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <Atom/Features/Bindless.azsli>
+#include <Atom/Features/MeshInfo/MeshInfo.azsli>
+
+#ifndef DEFENSIVE_BINDLESS_ACCESS
+#define DEFENSIVE_BINDLESS_ACCESS 1
+#endif
+
+float2 LoadFromByteAddressBuffer_float2(const int bufferIndex, const uint bufferOffset, const uint index)
+{
+    static const uint sizeof_float2 = 4 * 2;
+    if (bufferIndex < 0)
+    {
+        return (float2)0;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    const uint loadIndex = index * sizeof_float2 + bufferOffset;
+#if DEFENSIVE_BINDLESS_ACCESS 
+    uint dim;
+    buffer.GetDimensions(dim);
+    if (dim < loadIndex + sizeof_float2)
+    {
+        return (float2)0;
+    }
+#endif
+    return asfloat(buffer.Load2(loadIndex));
+}
+
+float3 LoadFromByteAddressBuffer_float3(const int bufferIndex, const uint bufferOffset, const uint index)
+{
+    static const uint sizeof_float3 = 4 * 3;
+    if (bufferIndex < 0)
+    {
+        return (float3)0;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    const uint loadIndex = index * sizeof_float3 + bufferOffset;
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint dim;
+    buffer.GetDimensions(dim);
+    if (dim < loadIndex + sizeof_float3)
+    {
+        return (float3)0;
+    }
+#endif
+    return asfloat(buffer.Load3(loadIndex));
+}
+
+float4 LoadFromByteAddressBuffer_float4(const int bufferIndex, const uint bufferOffset, const uint index)
+{
+    static const uint sizeof_float4 = 4 * 4;
+    if (bufferIndex < 0)
+    {
+        return (float4)0;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    const uint loadIndex = index * sizeof_float4 + bufferOffset;
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint dim;
+    buffer.GetDimensions(dim);
+    if (dim < loadIndex + sizeof_float4)
+    {
+        return (float4)0;
+    }
+#endif
+    return asfloat(buffer.Load4(loadIndex));
+}
+
+uint3 LoadFromByteAddressBuffer_uint3(const int bufferIndex, const uint bufferOffset, const uint index)
+{
+    static const uint sizeof_uint3 = 4 * 3;
+    if (bufferIndex < 0)
+    {
+        return (uint3)0;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    const uint loadIndex = index * sizeof_uint3 + bufferOffset;
+#if DEFENSIVE_BINDLESS_ACCESS 
+    uint dim;
+    buffer.GetDimensions(dim);
+    if (dim < loadIndex + sizeof_uint3)
+    {
+        return (uint3)0;
+    }
+#endif
+    return buffer.Load3(loadIndex);
+}
+
+uint upper_16_bit(const uint32_t value)
+{
+    return value >> 16;
+}
+uint lower_16_bit(const uint32_t value)
+{
+    return value & 0xFFFF;
+}
+
+uint3 LoadFromByteAddressBuffer_uint3_16bit(const int bufferIndex, const uint bufferOffset, const uint elementIndex)
+{
+    uint3 result = (uint3)0;
+    static const uint sizeof_uint3_16bit = 2 * 3;
+    if (bufferIndex < 0)
+    {
+        return result;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    uint loadIndex = elementIndex * sizeof_uint3_16bit + bufferOffset;
+    // align load-index to 16-bit border
+    bool shifted_loadIndex = (loadIndex & 3) != 0;
+    loadIndex &= ~3;
+#if DEFENSIVE_BINDLESS_ACCESS 
+    uint dim;
+    buffer.GetDimensions(dim);
+    if (dim < loadIndex + sizeof_uint3_16bit)
+    {
+        return result;
+    }
+#endif
+    uint2 bufferData = buffer.Load2(loadIndex);
+    // split the two 32-bit values we get here into three 16-bit values
+    if (!shifted_loadIndex)
+    {
+        result[0] = upper_16_bit(bufferData.x);
+        result[1] = lower_16_bit(bufferData.x);
+        result[2] = upper_16_bit(bufferData.y);
+    }
+    else 
+    {
+        result[0] = lower_16_bit(bufferData.x);
+        result[1] = upper_16_bit(bufferData.y);
+        result[2] = lower_16_bit(bufferData.y);
+    }
+    return result;
+}
+
+
+bool GetMeshInfoEntry(int index, inout MeshInfo meshInfo)
+{
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint numStructs;
+    uint stride;
+    SceneSrg::m_meshInfo.GetDimensions(numStructs, stride);
+    if (index < 0 || index >= numStructs)
+    {
+        return false;
+    }
+#else
+    if (index < 0) 
+    {
+        return false;
+    }
+#endif
+    meshInfo = SceneSrg::m_meshInfo[index];
+    return true;
+}
+
+uint3 LoadIndex(const MeshInfo meshInfo, uint index)
+{
+    if (meshInfo.m_flags & MeshInfoFlags::IndexBufferFlag_16Bit)
+    {
+        return LoadFromByteAddressBuffer_uint3_16bit(meshInfo.m_indexBufferIndex, meshInfo.m_indexBufferByteOffset, index);
+    }
+    else {
+        return LoadFromByteAddressBuffer_uint3(meshInfo.m_indexBufferIndex, meshInfo.m_indexBufferByteOffset, index);
+    }
+}
+
+float3 LoadPosition(const MeshInfo meshInfo, uint index)
+{
+    return LoadFromByteAddressBuffer_float3(meshInfo.m_positionBufferIndex, meshInfo.m_positionBufferByteOffset, index);
+}
+
+float3 LoadNormal(const MeshInfo meshInfo, uint index)
+{
+    return LoadFromByteAddressBuffer_float3(meshInfo.m_normalBufferIndex, meshInfo.m_normalBufferByteOffset, index);
+}
+
+float2 LoadUv0(const MeshInfo meshInfo, uint index)
+{
+    return LoadFromByteAddressBuffer_float2(meshInfo.m_uv0BufferIndex, meshInfo.m_uv0BufferByteOffset, index);
+}
+
+float2 LoadUv1(const MeshInfo meshInfo, uint index)
+{
+    return LoadFromByteAddressBuffer_float2(meshInfo.m_uv1BufferIndex, meshInfo.m_uv1BufferByteOffset, index);
+}
+
+float4 LoadTangent(const MeshInfo meshInfo, uint index)
+{
+    return LoadFromByteAddressBuffer_float4(meshInfo.m_tangentBufferIndex, meshInfo.m_tangentBufferByteOffset, index);
+}
+
+float3 LoadBitangent(const MeshInfo meshInfo, uint index)
+{
+    return LoadFromByteAddressBuffer_float3(meshInfo.m_bitangentBufferIndex, meshInfo.m_bitangentBufferByteOffset, index);
+}
+
+void LoadInterpolatedVertexData(const MeshInfo meshInfo, const uint triangleId, const float3 barycentrics, inout VsInput vertex)
+{
+    uint3 triangleIndices = LoadIndex(meshInfo, triangleId);
+    float3 position = float3(0, 0, 0);
+    float3 normal = float3(0, 0, 0);
+    float4 tangent = float4(0, 0, 0, 0);
+    float3 bitangent = float3(0, 0, 0);
+    float2 uv0 = float2(0, 0);
+    float2 uv1 = float2(0, 0);
+    // TODO: add color and blend-mask
+    [unroll]
+    for (int index = 0; index < 3; ++index)
+    {
+        position += LoadPosition(meshInfo, triangleIndices[index]) * barycentrics[index];
+        normal += LoadNormal(meshInfo, triangleIndices[index]) * barycentrics[index];
+        tangent += LoadTangent(meshInfo, triangleIndices[index]) * barycentrics[index];
+        uv0 += LoadUv0(meshInfo, triangleIndices[index]) * barycentrics[index];
+        uv1 += LoadUv1(meshInfo, triangleIndices[index]) * barycentrics[index];
+        bitangent += LoadBitangent(meshInfo, triangleIndices[index]) * barycentrics[index];
+    }
+    tangent.xyz = normalize(tangent.xyz);
+    tangent.w = sign(tangent.w);
+    normal = normalize(normal);
+    bitangent = normalize(bitangent);
+
+#if PIPELINE_VERTEX_POSITION
+    vertex.position = position;
+#endif
+#if PIPELINE_VERTEX_NORMAL
+    vertex.normal = normal;
+#endif
+#if PIPELINE_VERTEX_TANGENT
+    vertex.tangent = tangent;
+#endif
+
+#if PIPELINE_VERTEX_BITANGENT
+    vertex.bitangent = bitangent;
+#endif
+#if PIPELINE_VERTEX_UV
+    vertex.uv0 = uv0;
+    vertex.uv1 = uv1;
+#endif
+#if PIPELINE_VERTEX_COLOR
+    vertex.m_optional_color0 = float4(0, 0, 0, 0);
+#endif
+#if PIPELINE_VERTEX_BLENDMASK
+    vertex.m_optional_blendMask = float4(0, 0, 0, 0);
+#endif
+}
+
+void LoadTriangleVertices(const MeshInfo meshInfo, const uint triangleId, inout float3 p0, inout float3 p1, inout float3 p2)
+{
+    uint3 triangleIndices = LoadIndex(meshInfo, triangleId);
+    p0 = LoadPosition(meshInfo, triangleIndices[0]);
+    p1 = LoadPosition(meshInfo, triangleIndices[1]);
+    p2 = LoadPosition(meshInfo, triangleIndices[2]);
+}
+
+
+

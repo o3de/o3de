@@ -16,5 +16,9 @@ static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 
 // Different constant buffer alignment on platforms
 #define AZ_TRAIT_CONSTANT_BUFFER_ALIGNMENT      128
 
+// the DirectXShaderCompiler as of version 1.7.0.4010 does not properly support SV_Barycentrics on all devices
+// see e.g. https://github.com/microsoft/DirectXShaderCompiler/pull/5649
+#define SV_BARYCENTRICS_NOT_SUPPORTED
+
 #include <Atom/RPI/Platform/Windows/AzslcPlatformHeader.azsli>
 

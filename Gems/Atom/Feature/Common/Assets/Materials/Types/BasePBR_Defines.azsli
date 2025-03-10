@@ -17,6 +17,10 @@
 #define PIPELINE_HAS_DRAW_SRG 1
 #endif
 
+#ifndef MATERIALPIPELINE_SHADER_HAS_LIGHTING_STAGE
+#define MATERIALPIPELINE_SHADER_HAS_LIGHTING_STAGE 1
+#endif
+
 #if PIPELINE_HAS_OBJECT_SRG
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #endif
@@ -34,8 +38,10 @@
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingData.azsli>
-#else 
+    #if MATERIALPIPELINE_SHADER_HAS_LIGHTING_STAGE
+        #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingData.azsli>
+    #endif /* MATERIALPIPELINE_SHADER_HAS_LIGHTING_STAGE */
+#else /* MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE */
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
 #endif
 

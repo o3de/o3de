@@ -86,6 +86,7 @@
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 #include <SplashScreen/SplashScreenFeatureProcessor.h>
 #include <SplashScreen/SplashScreenPass.h>
+#include <Atom/Feature/DeferredMaterial/DeferredMaterialFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
@@ -155,6 +156,7 @@ namespace AZ
             LightingPreset::Reflect(context);
             ModelPreset::Reflect(context);
             RayTracingFeatureProcessor::Reflect(context);
+            DeferredMaterialFeatureProcessor::Reflect(context);
             OcclusionCullingPlaneFeatureProcessor::Reflect(context);
             LightingChannelConfiguration::Reflect(context);
 
@@ -217,6 +219,7 @@ namespace AZ
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<CubeMapCaptureFeatureProcessor, CubeMapCaptureFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<SMAAFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<RayTracingFeatureProcessor, RayTracingFeatureProcessorInterface>();
+                AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<DeferredMaterialFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<OcclusionCullingPlaneFeatureProcessor, OcclusionCullingPlaneFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<SplashScreenFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<SilhouetteFeatureProcessor>();

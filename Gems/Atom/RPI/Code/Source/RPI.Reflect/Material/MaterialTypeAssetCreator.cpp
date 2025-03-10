@@ -117,6 +117,7 @@ namespace AZ
             const AZ::Data::Asset<ShaderAsset>& shaderAsset,
             const ShaderVariantId& shaderVariantId,
             const AZ::Name& shaderTag,
+            const DrawItemType drawItemType,
             const AZ::Name& materialPipelineName)
         {
             if (ValidateIsReady() && ValidateNotNull(shaderAsset, "ShaderAsset"))
@@ -133,7 +134,8 @@ namespace AZ
 
                 AZ::Name finalShaderTag = !shaderTag.IsEmpty() ? shaderTag : AZ::Name{AZ::Uuid::CreateRandom().ToFixedString()};
 
-                shaderCollection->m_shaderItems.push_back(ShaderCollection::Item{shaderAsset, finalShaderTag, shaderVariantId});
+                shaderCollection->m_shaderItems.push_back(
+                    ShaderCollection::Item{ shaderAsset, finalShaderTag, drawItemType, shaderVariantId });
                 if (!shaderCollection->m_shaderTagIndexMap.Insert(finalShaderTag, RHI::Handle<uint32_t>(shaderCollection->m_shaderItems.size() - 1)))
                 {
                     ReportError("Failed to insert shader tag '%s' for pipeline '%s'. Shader tag must be unique.", finalShaderTag.GetCStr(), materialPipelineName.GetCStr());
@@ -570,7 +572,10 @@ namespace AZ
 
             if (!foundShaderOptions)
             {
-                ReportError("Material property '%s': Material contains no shaders with option '%s'.", m_wipMaterialProperty.GetName().GetCStr(), shaderOptionName.GetCStr());
+                ReportWarning(
+                    "Material property '%s': Material contains no shaders with option '%s'.",
+                    m_wipMaterialProperty.GetName().GetCStr(),
+                    shaderOptionName.GetCStr());
                 return;
             }
         }

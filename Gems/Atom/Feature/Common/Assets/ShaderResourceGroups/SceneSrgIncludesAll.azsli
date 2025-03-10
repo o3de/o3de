@@ -13,4 +13,5 @@
 #ifdef AZ_COLLECTING_PARTIAL_SRG_INCLUDES
 #include <Atom/Features/Decals/DecalStructures.azsli>
 #include <Atom/Features/PBR/Lights/LightStructures.azsli>
+#include <Atom/Features/MeshInfo/MeshInfo.azsli>
 #endif

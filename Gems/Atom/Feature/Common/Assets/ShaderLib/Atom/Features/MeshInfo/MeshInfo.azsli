@@ -1,0 +1,44 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+enum MeshInfoFlags
+{
+    IndexBufferFlag_16Bit = 1,  // true if the index-buffer uses 16 bit indices
+    SkinnedMesh = 2             // true if the mesh is animated
+};
+
+
+struct MeshInfo
+{
+    int m_indexBufferIndex;
+    int m_positionBufferIndex;
+    int m_normalBufferIndex;
+    int m_uv0BufferIndex;
+
+    int m_uv1BufferIndex;
+    int m_tangentBufferIndex;
+    int m_bitangentBufferIndex;
+    uint m_indexBufferByteOffset;
+
+    uint m_positionBufferByteOffset;
+    uint m_normalBufferByteOffset;
+    uint m_uv0BufferByteOffset;
+    uint m_uv1BufferByteOffset;
+
+    uint m_tangentBufferByteOffset;
+    uint m_bitangentBufferByteOffset;
+    uint m_objectIdForTransform;
+    uint m_lightingChannels;
+
+    uint m_materialTypeId;
+    uint m_materialInstanceId;
+    uint m_uvStreamTangentBitmask;
+    uint m_flags;
+};
+

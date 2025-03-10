@@ -781,6 +781,7 @@ namespace AZ
                     MaterialTypeSourceData::ShaderVariantReferenceData shaderVariantReferenceData;
                     shaderVariantReferenceData.m_shaderFilePath = AZ::IO::Path{ outputShaderFilePath.Filename() }.c_str();
                     shaderVariantReferenceData.m_shaderTag = shaderTemplate.m_shaderTag;
+                    shaderVariantReferenceData.m_drawItemType = shaderTemplate.m_drawItemType;
 
                     // Files in the cache, including intermediate files, end up using lower case for all files and folders. We have to match
                     // this in the output .materialtype file, because the asset system's source dependencies are case-sensitive on some

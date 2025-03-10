@@ -6,11 +6,10 @@
  *
  */
 
-#include <Mesh/MeshFeatureProcessor.h>
-#include <Mesh/StreamBufferViewsBuilder.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
+#include <Atom/Feature/Mesh/MeshInfoBus.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
@@ -23,6 +22,8 @@
 #include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Mesh/MeshFeatureProcessor.h>
+#include <Mesh/StreamBufferViewsBuilder.h>
 
 #include <Atom/Utils/StableDynamicArray.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
@@ -133,6 +134,7 @@ namespace AZ
             AZ_Assert(m_transformService, "MeshFeatureProcessor requires a TransformServiceFeatureProcessor on its parent scene.");
 
             m_rayTracingFeatureProcessor = GetParentScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            m_deferredMaterialFeatureProcessor = GetParentScene()->GetFeatureProcessor<DeferredMaterialFeatureProcessor>();
             m_reflectionProbeFeatureProcessor = GetParentScene()->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
             m_handleGlobalShaderOptionUpdate = RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
             {
@@ -140,6 +142,8 @@ namespace AZ
             };
             RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
             EnableSceneNotification();
+
+            m_meshInfoManager.Activate(GetParentScene());
 
             // Must read cvar from AZ::Console due to static variable in multiple libraries, see ghi-5537
             bool enablePerMeshShaderOptionFlagsCvar = false;
@@ -189,12 +193,15 @@ namespace AZ
 
             m_handleGlobalShaderOptionUpdate.Disconnect();
 
+            m_meshInfoManager.Deactivate();
+
             DisableSceneNotification();
             AZ_Warning("MeshFeatureProcessor", m_modelData.size() == 0,
                 "Deactivating the MeshFeatureProcessor, but there are still outstanding mesh handles.\n"
             );
             m_transformService = nullptr;
             m_rayTracingFeatureProcessor = nullptr;
+            m_deferredMaterialFeatureProcessor = nullptr;
             m_reflectionProbeFeatureProcessor = nullptr;
             m_forceRebuildDrawPackets = false;
 
@@ -320,6 +327,10 @@ namespace AZ
                         if (modelDataIter->m_flags.m_needsInit)
                         {
                             modelDataIter->Init(this);
+                            if (r_deferredMaterialRenderingEnabled)
+                            {
+                                modelDataIter->SetDeferredMaterialData(this);
+                            }
                         }
 
                         if (modelDataIter->m_flags.m_objectSrgNeedsUpdate)
@@ -631,7 +642,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                ToModelDataInstance(meshHandle).SetLightingChannelMask(lightingChannelMask);
+                ToModelDataInstance(meshHandle).SetLightingChannelMask(this, lightingChannelMask);
             }
         }
 
@@ -993,6 +1004,8 @@ namespace AZ
                 model.m_cullable.m_prevShaderOptionFlags = model.m_cullable.m_shaderOptionFlags.exchange(0);
                 model.m_cullable.m_flags = model.m_flags.m_isAlwaysDynamic ? m_meshMovedFlag.GetIndex() : 0;
             }
+            // we need to do this before the SceneSrg-Update
+            m_meshInfoManager.UpdateMeshInfoBuffer();
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(const MeshHandleDescriptor& descriptor)
@@ -1391,9 +1404,47 @@ namespace AZ
             }
         }
 
-        void ModelDataInstance::SetLightingChannelMask(uint32_t lightingChannelMask)
+        void ModelDataInstance::SetLightingChannelMask(MeshFeatureProcessor* meshFeatureProcessor, uint32_t lightingChannelMask)
         {
             m_lightingChannelMask = lightingChannelMask;
+            if (m_model == nullptr)
+            {
+                // model isn't initialized yet, no need to update the MeshInfo - Entry
+                return;
+            }
+
+            if (!m_model)
+            {
+                return;
+            }
+
+            for (size_t modelLodIndex = 0; modelLodIndex < m_model->GetLodCount(); modelLodIndex++)
+            {
+                RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
+                const size_t meshCount = modelLod.GetMeshes().size();
+                MeshInfoManager& meshInfoManager = meshFeatureProcessor->GetMeshInfoManager();
+                auto& meshInfoIndices = m_meshInfoIndicesByLod[modelLodIndex];
+                for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
+                {
+                    if (!meshInfoIndices[meshIndex].IsValid())
+                    {
+                        continue;
+                    }
+
+                    meshInfoManager.UpdateMeshInfoEntry(
+                        meshInfoIndices[meshIndex],
+                        [&](MeshInfoEntry* entry)
+                        {
+                            bool modified = false;
+                            if (entry->m_lightingChannels != m_lightingChannelMask)
+                            {
+                                modified = true;
+                                entry->m_lightingChannels = m_lightingChannelMask;
+                            }
+                            return modified;
+                        });
+                }
+            }
         }
 
         void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig)
@@ -1604,9 +1655,24 @@ namespace AZ
             m_reportShaderOptionFlags = true;
         }
 
+        DeferredMaterialFeatureProcessor* MeshFeatureProcessor::GetDeferredMaterialFeatureProcessor() const
+        {
+            return m_deferredMaterialFeatureProcessor;
+        }
+
         RayTracingFeatureProcessor* MeshFeatureProcessor::GetRayTracingFeatureProcessor() const
         {
             return m_rayTracingFeatureProcessor;
+        }
+
+        MeshInfoManager& MeshFeatureProcessor::GetMeshInfoManager()
+        {
+            return m_meshInfoManager;
+        }
+
+        const RPI::RingBuffer& MeshFeatureProcessor::GetMeshInfoRingBuffer() const
+        {
+            return m_meshInfoManager.GetMeshInfoRingBuffer();
         }
 
         ReflectionProbeFeatureProcessor* MeshFeatureProcessor::GetReflectionProbeFeatureProcessor() const
@@ -1713,6 +1779,26 @@ namespace AZ
                 return RPI::MeshDrawPacket::InvalidSrg;
             }
             return meshDrawPacket.GetDrawSrg(drawItemIndex);
+        }
+
+        const RHI::Ptr<MeshInfoEntry>& MeshFeatureProcessor::GetMeshInfoEntry(const MeshInfoHandle handle) const
+        {
+            return m_meshInfoManager.GetMeshInfoEntry(handle);
+        }
+
+        MeshInfoHandle MeshFeatureProcessor::AcquireMeshInfoEntry()
+        {
+            return m_meshInfoManager.AcquireMeshInfoEntry();
+        }
+
+        void MeshFeatureProcessor::ReleaseMeshInfoEntry(const MeshInfoHandle handle)
+        {
+            m_meshInfoManager.ReleaseMeshInfoEntry(handle);
+        }
+
+        void MeshFeatureProcessor::UpdateMeshInfoEntry(const MeshInfoHandle handle, AZStd::function<bool(MeshInfoEntry*)> updateFunction)
+        {
+            m_meshInfoManager.UpdateMeshInfoEntry(handle, updateFunction);
         }
 
         // ModelDataInstance::MeshLoader...
@@ -1909,6 +1995,17 @@ namespace AZ
 
             RemoveRayTracingData(rayTracingFeatureProcessor);
 
+            const size_t modelLodCount = m_model->GetLodCount();
+            for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
+            {
+                RemoveMeshInfo(meshFeatureProcessor, modelLodIndex);
+            }
+
+            if (r_deferredMaterialRenderingEnabled)
+            {
+                RemoveDeferredMaterialData(meshFeatureProcessor);
+            }
+
             // We're intentionally using the MeshFeatureProcessor's value instead of using the cvar directly here,
             // because DeInit might be called after the cvar changes, but we want to do the de-initialization based
             // on what the setting was before (when the resources were initialized). The MeshFeatureProcessor will still have the cached
@@ -1975,6 +2072,7 @@ namespace AZ
 
             for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
             {
+                UpdateMeshInfo(meshFeatureProcessor, modelLodIndex);
                 BuildDrawPacketList(meshFeatureProcessor, modelLodIndex);
             }
 
@@ -2069,6 +2167,111 @@ namespace AZ
             return result;
         }
 
+        MeshInfoHandle ModelDataInstance::GetMeshInfoHandle(size_t modelLodIndex, size_t meshIndex) const
+        {
+            const auto& meshInfoIndices = m_meshInfoIndicesByLod[modelLodIndex];
+            return meshInfoIndices[meshIndex];
+        }
+
+        int32_t ModelDataInstance::GetMeshInfoIndex(size_t modelLodIndex, size_t meshIndex) const
+        {
+            return GetMeshInfoHandle(modelLodIndex, meshIndex).GetIndex();
+        }
+
+        void ModelDataInstance::UpdateMeshInfo(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex)
+        {
+            RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
+            const size_t meshCount = modelLod.GetMeshes().size();
+            MeshInfoManager& meshInfoManager = meshFeatureProcessor->GetMeshInfoManager();
+            if (m_meshInfoIndicesByLod.size() <= modelLodIndex)
+            {
+                m_meshInfoIndicesByLod.resize(modelLodIndex + 1);
+            }
+            auto& meshInfoIndices = m_meshInfoIndicesByLod[modelLodIndex];
+            for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
+            {
+                meshInfoIndices.resize(meshCount);
+                const auto meshes = modelLod.GetMeshes();
+                const RPI::ModelLod::Mesh& mesh = meshes[meshIndex];
+                if (meshInfoIndices[meshIndex].IsValid() == false)
+                {
+                    meshInfoIndices[meshIndex] = meshInfoManager.AcquireMeshInfoEntry();
+                }
+
+                meshInfoManager.UpdateMeshInfoEntry(
+                    meshInfoIndices[meshIndex],
+                    [&](MeshInfoEntry* entry)
+                    {
+                        // Determine if there is a custom material specified for this submission
+                        const CustomMaterialId customMaterialId(aznumeric_cast<AZ::u64>(modelLodIndex), mesh.m_materialSlotStableId);
+                        const auto& customMaterialInfo = GetCustomMaterialWithFallback(customMaterialId);
+                        const auto& material = customMaterialInfo.m_material ? customMaterialInfo.m_material : mesh.m_material;
+
+                        if (!material)
+                        {
+                            AZ_Warning("ModelDataInstance", false, "No material provided for mesh.");
+                            return false;
+                        }
+
+                        // prepare the buffer read indices and byte offsets
+                        MeshInfoManager::InitMeshInfoGeometryBuffers(
+                            m_model.get(), modelLodIndex, meshIndex, material.get(), customMaterialInfo.m_uvMapping, entry);
+
+                        // prepare the remaining data
+                        entry->m_lightingChannels = m_lightingChannelMask;
+
+                        // TODO: handle instancing here somehow
+                        entry->m_objectIdForTransform = GetObjectId().GetIndex();
+
+                        if (material)
+                        {
+                            entry->m_materialTypeId = material->GetMaterialTypeId();
+                            entry->m_materialInstanceId = material->GetMaterialInstanceId();
+                        }
+                        return true;
+                    });
+
+                // Notify other components that we created a new entry for a MeshInfoIndex
+                MeshInfoNotificationBus::Broadcast(
+                    &MeshInfoNotificationBus::Events::CreateMeshInfoEntry,
+                    meshInfoIndices[meshIndex],
+                    static_cast<ModelDataInstanceInterface*>(this),
+                    modelLodIndex,
+                    meshIndex);
+            }
+        }
+
+        void ModelDataInstance::RemoveMeshInfo(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex)
+        {
+            if (m_meshInfoIndicesByLod.size() <= modelLodIndex)
+            {
+                // we don't have any meshInfo-entries yet
+                return;
+            }
+            auto& meshInfoIndices = m_meshInfoIndicesByLod[modelLodIndex];
+
+            // clear all meshInfo-entries
+            MeshInfoManager& meshInfoManager = meshFeatureProcessor->GetMeshInfoManager();
+            for (size_t meshIndex = 0; meshIndex < meshInfoIndices.size(); ++meshIndex)
+            {
+                if (meshInfoIndices[meshIndex].IsValid())
+                {
+                    meshInfoManager.ReleaseMeshInfoEntry(meshInfoIndices[meshIndex]);
+                    // Notify other components that we deleted an entry for the MeshInfoIndex
+                    MeshInfoNotificationBus::Broadcast(&MeshInfoNotificationBus::Events::DeleteMeshInfoEntry, meshInfoIndices[meshIndex]);
+                    meshInfoIndices[meshIndex] = MeshInfoHandle{};
+                }
+            }
+
+            // Remove meshInfo - entries in case the model has fewer meshes now
+            RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
+            const auto meshCount = modelLod.GetMeshes().size();
+            if (meshInfoIndices.size() > meshCount)
+            {
+                meshInfoIndices.resize(meshCount, MeshInfoHandle{});
+            }
+        }
+
         void ModelDataInstance::BuildDrawPacketList(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex)
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
@@ -2082,7 +2285,10 @@ namespace AZ
                 drawPacketListOut.reserve(meshCount);
             }
 
-            auto meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(MeshCommon::MotionDrawListTagName);
+            auto meshMotionDrawListTag =
+                AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(MeshCommon::MotionDrawListTagName);
+
+            const auto& meshInfoIndices = m_meshInfoIndicesByLod[modelLodIndex];
 
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
@@ -2211,15 +2417,19 @@ namespace AZ
                     instanceGroupInsertResult.m_handle->AddAssociatedInstance(this);
                 }
 
+                const auto meshInfoIndex = meshInfoIndices[meshIndex];
+
                 // If this condition is true, we're dealing with a new, uninitialized draw packet, either because instancing is disabled
                 // or because this was the first object in the instance group. So we need to initialize it
                 if (!r_meshInstancingEnabled || instanceGroupInsertResult.m_instanceCount == 1)
                 {
                     // setup the mesh draw packet
-                    RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, customMaterialInfo.m_uvMapping);
+                    RPI::MeshDrawPacket drawPacket(
+                        modelLod, meshIndex, meshInfoIndex.GetIndex(), material, meshObjectSrg, customMaterialInfo.m_uvMapping);
 
                     // set the shader option to select forward pass IBL specular if necessary
-                    if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
+                    if (!drawPacket.SetShaderOption(
+                            s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
                     {
                         AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                     }
@@ -2275,6 +2485,29 @@ namespace AZ
                     }
                 }
             }
+        }
+
+        void ModelDataInstance::SetDeferredMaterialData(MeshFeatureProcessor* meshFeatureProcessor)
+        {
+            DeferredMaterialFeatureProcessor* deferredMaterialFeatureProcessor =
+                meshFeatureProcessor->GetDeferredMaterialFeatureProcessor();
+            if (!m_model)
+            {
+                return;
+            }
+
+            if (!deferredMaterialFeatureProcessor)
+            {
+                return;
+            }
+
+            const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = m_model->GetLods();
+            if (modelLods.empty())
+            {
+                return;
+            }
+            // use the raytracing UuId, since it's as good as any we could generate here
+            deferredMaterialFeatureProcessor->AddModel(m_rayTracingUuid, this, m_model);
         }
 
         void ModelDataInstance::SetRayTracingData(MeshFeatureProcessor* meshFeatureProcessor)
@@ -2797,6 +3030,19 @@ namespace AZ
             {
                 rayTracingFeatureProcessor->RemoveMesh(m_rayTracingUuid);
             }
+        }
+
+        void ModelDataInstance::RemoveDeferredMaterialData(MeshFeatureProcessor* meshFeatureProcessor)
+        {
+            DeferredMaterialFeatureProcessor* deferredMaterialFeatureProcessor =
+                meshFeatureProcessor->GetDeferredMaterialFeatureProcessor();
+
+            if (!deferredMaterialFeatureProcessor)
+            {
+                return;
+            }
+            // use the raytracing UuId, since it's as good as any we could generate here
+            deferredMaterialFeatureProcessor->RemoveModel(m_rayTracingUuid);
         }
 
         void ModelDataInstance::SetSortKey(MeshFeatureProcessor* meshFeatureProcessor, RHI::DrawItemSortKey sortKey)

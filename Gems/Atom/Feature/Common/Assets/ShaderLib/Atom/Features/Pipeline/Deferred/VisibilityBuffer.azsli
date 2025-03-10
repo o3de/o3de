@@ -1,0 +1,108 @@
+#pragma once
+
+struct VisibilityBuffer
+{
+    // object-id of the mesh
+    // TODO: with the 'm_isFrontFace' - flag, this can't be -1
+    int m_meshInfoIndex;     
+    uint m_triangleId;        // rasterized triangle ID
+    bool m_isFrontFace;       // stored in the first bit of the meshInfoIndex
+
+    float3 m_barycentrics;    // barycentrics for the triangle
+    // dx / dy of the barycentrics, needed to calculate the mip-level for the various UV channels 
+    float3 m_barycentricsDx;   
+    float3 m_barycentricsDy;
+};
+
+// packing and unpacking is mostly for convenience
+void packVisibilityBuffer(VisibilityBuffer vbuffer, inout float4 first, inout float4 second)
+{
+    uint flagsAndMeshInfoIndex;
+
+    // mask out the two highest bits, they will be used for flags
+    flagsAndMeshInfoIndex = (((1 << 30) -1) & vbuffer.m_meshInfoIndex);
+
+    // highest bit: m_meshInfoIndex is invalid
+    // note: this would have been set already if the meshInfoIndex is negative, but
+    // we make it explicit for clarity
+    flagsAndMeshInfoIndex |= (vbuffer.m_meshInfoIndex < 0) << 31;
+    
+    // second highest bit: triangle is frontfacing
+    flagsAndMeshInfoIndex |= vbuffer.m_isFrontFace << 30;
+
+    first.x = asfloat(flagsAndMeshInfoIndex);
+    first.y = asfloat(vbuffer.m_triangleId);
+
+    // we can reconstruct the third barycentric coordinate
+    first.zw = vbuffer.m_barycentrics.xy;
+    second.xy = vbuffer.m_barycentricsDx.xy;
+    second.zw = vbuffer.m_barycentricsDy.xy;
+}
+
+bool unpackVisibilityBuffer(float4 first, float4 second, inout VisibilityBuffer vbuffer)
+{
+    // inf: all bits of the exponent (bits 22 - 30) are set, but other bits are zero. (-inf: msb is set)
+    // nan: all bits of the exponent are set, and 
+    if (!isfinite(first.x))
+    {
+        return false;
+    }
+
+    uint flagsAndMeshInfoIndex = asuint(first.x);
+    // first bit
+    bool meshInfoIndexInvalid = (1 << 31 & flagsAndMeshInfoIndex) >> 31;
+    // second bit
+    vbuffer.m_isFrontFace = (1 << 30 & flagsAndMeshInfoIndex) >> 30;
+
+    if (meshInfoIndexInvalid)
+    {
+        vbuffer.m_meshInfoIndex = -1;
+    }
+    else {
+        // mask out the first two bits
+        vbuffer.m_meshInfoIndex = (((1 << 30) - 1) & flagsAndMeshInfoIndex);
+    }
+  
+    vbuffer.m_triangleId = asuint(first.y);
+
+    vbuffer.m_barycentrics.xy = first.zw;
+    // reconstruct the third barycentric coordinate
+    vbuffer.m_barycentrics.z = 1.0f - (vbuffer.m_barycentrics.x + vbuffer.m_barycentrics.y);
+
+    vbuffer.m_barycentricsDx.xy = second.xy;
+    // create the neighboring barycentrics in x
+    float3 barycentricsX = float3(vbuffer.m_barycentrics.x + vbuffer.m_barycentricsDx.x, vbuffer.m_barycentrics.y + vbuffer.m_barycentricsDx.y, 1.0f);
+    // reconstruct the third barycentric coord of the neighbor
+    barycentricsX.z -= (barycentricsX.x + barycentricsX.y);
+    // calc the dx value for the third coord
+    vbuffer.m_barycentricsDx.z = barycentricsX.z - vbuffer.m_barycentrics.z; 
+
+    vbuffer.m_barycentricsDy.xy = second.zw;
+    // create the neighboring barycentrics in y
+    float3 barycentricsY = float3(vbuffer.m_barycentrics.x + vbuffer.m_barycentricsDy.x, vbuffer.m_barycentrics.y + vbuffer.m_barycentricsDy.y, 1.0f);
+    // reconstruct the third barycentric coord of the neighbor
+    barycentricsY.z -= (barycentricsY.x + barycentricsY.y);
+    // calc the dy value for the third coord
+    vbuffer.m_barycentricsDy.z = barycentricsY.z - vbuffer.m_barycentrics.z;
+ 
+    return true;
+}
+
+float SignedDoubleTriangleArea3D(float3 a, float3 b, float3 c, float3 normal) {
+    float3 area = cross(b - a, c - a);
+    return length(area) * sign(dot(area, normal));
+}
+
+float3 CalculateBarycentrics(const float3 p0, const float3 p1, const float3 p2, const float3 position)
+{
+    float3 normal = cross(p1 - p0, p2 - p0);
+    float area_total = length(normal);
+    normal /= area_total;
+    float3 barycentrics;
+    barycentrics.x = SignedDoubleTriangleArea3D(p1, p2, position, normal) / area_total;
+    barycentrics.y = SignedDoubleTriangleArea3D(p2, p0, position, normal) / area_total;
+    barycentrics.z = SignedDoubleTriangleArea3D(p0, p1, position, normal) / area_total;
+    return barycentrics;
+}
+
+

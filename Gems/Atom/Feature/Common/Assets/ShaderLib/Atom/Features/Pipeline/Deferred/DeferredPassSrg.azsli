@@ -1,0 +1,56 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+// this PassSrg of the DeferredPass looks almost the same as the PassSrg of the ForwardPass.
+// The only difference is that it requires the Visibility-Buffer textures as input
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D m_brdfMap;
+    Texture2D<float> m_fullscreenShadow;
+
+    // [GFX TODO][ATOM-2012] adapt to multiple shadowmaps
+    Texture2DArray<float> m_directionalLightShadowmap;
+    Texture2DArray<float> m_directionalLightExponentialShadowmap;
+    Texture2DArray<float> m_projectedShadowmaps;
+    Texture2DArray<float> m_projectedExponentialShadowmap;
+
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    Texture2D<uint4> m_tileLightData;
+    StructuredBuffer<uint> m_lightListRemapped;
+
+    Texture2D<float4> m_visibilityBuffer_0;
+    Texture2D<float4> m_visibilityBuffer_1;
+}
+
+
+
+

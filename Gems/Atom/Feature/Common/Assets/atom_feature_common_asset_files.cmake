@@ -348,6 +348,11 @@ set(FILES
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/Readme.md
+    ShaderLib/Atom/Features/Pipeline/Deferred/DeferredPassEvaluateLighting.azsli
+    ShaderLib/Atom/Features/Pipeline/Deferred/DeferredPassIbl.azsli
+    ShaderLib/Atom/Features/Pipeline/Deferred/DeferredPassPipelineCallbacks.azsli
+    ShaderLib/Atom/Features/Pipeline/Deferred/DeferredPassVertexData.azsli
+    ShaderLib/Atom/Features/Pipeline/Deferred/Readme.md
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
     ShaderLib/Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli
     ShaderLib/Atom/Features/PostProcessing/FullscreenPixelInfo.azsli

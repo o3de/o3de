@@ -798,6 +798,8 @@ namespace AZ::Render
     {
         if (m_meshHandle)
         {
+            // TODO: for a deferred pipeline, we need to place the wrinkle mask somewhere other than the ObjectSrg
+
             const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& wrinkleMaskObjectSrgs = m_meshFeatureProcessor->GetObjectSrgs(*m_meshHandle);
 
             for (auto& wrinkleMaskObjectSrg : wrinkleMaskObjectSrgs)

@@ -12,6 +12,11 @@
 #error "VsSystemValues needs to be declared"
 #endif
 
+#ifndef PIPELINE_HAS_PASS_SRG
+// assume we have a pass-srg by default
+#define PIPELINE_HAS_PASS_SRG 1
+#endif 
+
 // ViewSrg and SceneSrg need to be defined fully before this file. We don't really have an ObjectSrg nor a DrawSrg
 
 #if PIPELINE_HAS_OBJECT_SRG

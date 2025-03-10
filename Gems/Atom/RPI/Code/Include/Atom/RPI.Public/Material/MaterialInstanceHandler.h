@@ -31,6 +31,8 @@ namespace AZ::RPI
 
         virtual ~IMaterialInstanceHandler(){};
 
+        virtual Data::Instance<ShaderResourceGroup> GetSceneMaterialSrg() const = 0;
+
         virtual MaterialInstanceData RegisterMaterialInstance([[maybe_unused]] const Data::Instance<Material> material) = 0;
         virtual void ReleaseMaterialInstance([[maybe_unused]] const MaterialInstanceData& materialInstance) = 0;
         virtual int32_t RegisterMaterialTexture(

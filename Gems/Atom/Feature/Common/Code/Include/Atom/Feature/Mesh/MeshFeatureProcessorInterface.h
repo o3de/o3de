@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <Atom/Feature/Mesh/MeshInfo.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 #include <Atom/RHI/DispatchItem.h>
+#include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
@@ -68,6 +70,14 @@ namespace AZ
             "Enable instanced draw calls in the MeshFeatureProcessor, but force one object per draw call. "
             "This is helpful for simulating the worst case scenario for instancing for profiling performance.");
 
+        AZ_CVAR(
+            bool,
+            r_deferredMaterialRenderingEnabled,
+            true, // TODO: set this to false by default
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Enable deferred material draw calls in the MeshFeatureProcessor and the DeferredMaterialFeatureProcessor.");
+
         struct MeshInstanceGroupData;
         class StreamBufferViewsBuilderInterface;
 
@@ -97,10 +107,13 @@ namespace AZ
             AZ_RTTI(AZ::Render::ModelDataInstanceInterface, "{0B990760-AB5C-4357-A983-AD066EC9AC2E}");
             virtual ~ModelDataInstanceInterface() = default;
 
+            virtual const TransformServiceFeatureProcessorInterface::ObjectId GetObjectId() const = 0;
             virtual const Data::Instance<RPI::Model>& GetModel() = 0;
             virtual const RPI::Cullable& GetCullable() = 0;
 
             virtual const uint32_t GetLightingChannelMask() = 0;
+            virtual MeshInfoHandle GetMeshInfoHandle(size_t modelLodIndex, size_t meshIndex) const = 0;
+            virtual int32_t GetMeshInfoIndex(size_t modelLodIndex, size_t meshIndex) const = 0;
 
             using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
 
@@ -210,6 +223,7 @@ namespace AZ
             AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", AZ::RPI::FeatureProcessor);
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstanceInterface>;
+            using WeakMeshHandle = StableDynamicArrayWeakHandle<ModelDataInstanceInterface>;
 
             //! Returns the object id for a mesh handle.
             virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
@@ -325,6 +339,11 @@ namespace AZ
             virtual const Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(const MeshHandle& meshHandle, uint32_t lodIndex, uint32_t subMeshIndex,
                 RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) const = 0;
 
+            virtual const RPI::RingBuffer& GetMeshInfoRingBuffer() const = 0;
+            virtual const RHI::Ptr<MeshInfoEntry>& GetMeshInfoEntry(const MeshInfoHandle handle) const = 0;
+            virtual MeshInfoHandle AcquireMeshInfoEntry() = 0;
+            virtual void ReleaseMeshInfoEntry(const MeshInfoHandle handle) = 0;
+            virtual void UpdateMeshInfoEntry(const MeshInfoHandle handle, AZStd::function<bool(MeshInfoEntry*)> updateFunction) = 0;
         };
     } // namespace Render
 } // namespace AZ

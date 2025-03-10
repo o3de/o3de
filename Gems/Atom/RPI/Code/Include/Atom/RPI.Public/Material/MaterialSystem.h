@@ -41,6 +41,11 @@ namespace AZ::RPI
         MaterialSystem& operator=(const MaterialSystem& other) = delete;
 
         // MaterialInstanceHandlerInterface
+        Data::Instance<ShaderResourceGroup> GetSceneMaterialSrg() const override
+        {
+            return m_sceneMaterialSrg;
+        };
+
         MaterialInstanceData RegisterMaterialInstance(const Data::Instance<Material> material) override;
         void ReleaseMaterialInstance(const MaterialInstanceData& materialInstance) override;
         int32_t RegisterMaterialTexture(const int materialTypeIndex, const int materialInstanceIndex, Data::Instance<Image> image) override;
