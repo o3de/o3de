@@ -535,22 +535,20 @@ namespace Maestro
         // The key at m_subTracks[firstIdx][key] maybe active or inactive.
         // A "logical key" for a compound track is regarded as selected when all keys at the same timeline are selected
         const auto firtsKeyTime = m_subTracks[firstIdx]->GetKeyTime(key);
-        bool areAllKeysActive = true;
-        for (int subTrackIdx = 0; areAllKeysActive && subTrackIdx < GetSubTrackCount(); ++subTrackIdx)
+        for (int subTrackIdx = 0; subTrackIdx < GetSubTrackCount(); ++subTrackIdx)
         {
             const auto pSubTrack = m_subTracks[subTrackIdx];
-            for (int keyIdx = 0; areAllKeysActive && keyIdx < pSubTrack->GetNumKeys(); ++keyIdx)
+            for (int keyIdx = 0; keyIdx < pSubTrack->GetNumKeys(); ++keyIdx)
             {
                 const auto subKeyTime = pSubTrack->GetKeyTime(keyIdx);
-                if (AZStd::abs(firtsKeyTime - subKeyTime) < AZ::Constants::Tolerance)
+                if ((AZStd::abs(firtsKeyTime - subKeyTime) < AZ::Constants::Tolerance) && !pSubTrack->IsKeySelected(keyIdx))
                 {
-                    areAllKeysActive = pSubTrack->IsKeySelected(keyIdx);
-                    break;
+                    return false;
                 }
             }
         }
 
-        return areAllKeysActive;
+        return true;
     }
 
     void CCompoundSplineTrack::SelectKey(int key, bool select)

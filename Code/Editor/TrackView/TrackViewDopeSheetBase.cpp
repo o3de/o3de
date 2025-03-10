@@ -1853,29 +1853,27 @@ void CTrackViewDopeSheetBase::LButtonDownOnKey([[maybe_unused]] const QPoint& po
 
     bool isSelected = keyHandle.IsSelected();
 
-    if (isSelected && pTrack->IsSubTrack())
+    const auto parentNode = pTrack->GetParentNode();
+    const bool allowSubTrackSelection = isSelected && pTrack->IsSubTrack() && parentNode;
+    if (allowSubTrackSelection) // Check if a "logical key" in a parent Compound track was selected.
     {
-        // Allow selecting keys in Sub-tracks when "a logical key" in a parent Compound track was selected.
-        if (const auto parentNode = pTrack->GetParentNode())
+        if (parentNode->IsSelected())
         {
-            if (parentNode->IsSelected())
+            isSelected = false; // Allow to select a key in sub-track...
+            parentNode->SetSelected(false); // ... and deselect the parent node.
+        }
+        else
+        {
+            for (unsigned int subTrackIdx = 0; isSelected && subTrackIdx < parentNode->GetChildCount(); ++subTrackIdx)
             {
-                isSelected = false; // Allow to select a key in sub-track...
-                parentNode->SetSelected(false); // ... and deselect the parent node.
-            }
-            else
-            {
-                for (unsigned int subTrackIdx = 0; isSelected && subTrackIdx < parentNode->GetChildCount(); ++subTrackIdx)
+                const auto pSubTrack = parentNode->GetChild(subTrackIdx);
+                const auto selectedKeysBundle = pSubTrack->GetSelectedKeys();
+                for (unsigned int keyIdx = 0; isSelected && keyIdx < selectedKeysBundle.GetKeyCount(); ++keyIdx)
                 {
-                    const auto pSubTrack = parentNode->GetChild(subTrackIdx);
-                    const auto selectedKeysBundle = pSubTrack->GetSelectedKeys();
-                    for (unsigned int keyIdx = 0; isSelected && keyIdx < selectedKeysBundle.GetKeyCount(); ++keyIdx)
+                    const auto key = selectedKeysBundle.GetKey(keyIdx);
+                    if (key != keyHandle) // If there is another key selected in the parent Compound track ? ...
                     {
-                        const auto key = selectedKeysBundle.GetKey(keyIdx);
-                        if (key != keyHandle) // If there is another key selected in the parent Compound track ? ...
-                        {
-                            isSelected = false; // ... regard this key unselected, and thus allow selecting it.
-                        }
+                        isSelected = false; // ... regard this key unselected, and thus allow selecting it.
                     }
                 }
             }
@@ -2304,9 +2302,10 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
                 continue;
             }
 
-            if (pCurrTrack->GetChildCount() == 0)   // A simple track
+            const bool isSimpleTrack = pTrack->GetChildCount() == 0;
+            if (isSimpleTrack)
             {
-                if (pTrack->GetValueType() == AnimValueType::String)
+                if (pCurrTrack->GetValueType() == AnimValueType::String)
                 {
                     CreateStringKey(pTrack, keyTime);
                     continue;
@@ -2316,23 +2315,23 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
                 pCurrTrack->CreateKey(keyTime);
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
             }
-            else                                    // A compound track
+            else // A compound track
             {
-                if (pTrack->GetValueType() == AnimValueType::RGB)
+                if (pCurrTrack->GetValueType() == AnimValueType::RGB)
                 {
-                    CreateColorKey(pTrack, keyTime);
+                    CreateColorKey(pCurrTrack, keyTime);
                     continue;
                 }
 
                 // Update track default values before adding a new key at time, so that animated entity properties are not affected by adding a key
                 {
                     AzToolsFramework::ScopedUndoBatch undoBatchUpdate("Update Track Defaults");
-                    pNode->UpdateTrackDefaultValue(keyTime, pTrack->GetAnimTrack());
+                    pNode->UpdateTrackDefaultValue(keyTime, pCurrTrack->GetAnimTrack());
                     undoBatchUpdate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
                 }
 
                 AzToolsFramework::ScopedUndoBatch undoBatchCreate("Create Key");
-                pTrack->CreateKey(keyTime);
+                pCurrTrack->CreateKey(keyTime);
                 undoBatchCreate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
             }
         }
@@ -2344,7 +2343,8 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
         return;
     }
 
-    if (pTrack->GetChildCount() == 0)   // A simple track
+    const bool isSimpleTrack = pTrack->GetChildCount() == 0;
+    if (isSimpleTrack)
     {
         if (pTrack->GetValueType() == AnimValueType::String)
         {
@@ -2356,7 +2356,7 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
         pTrack->CreateKey(keyTime);
         undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
     }
-    else                                // A compound track
+    else // A compound track
     {
         if (pTrack->GetValueType() == AnimValueType::RGB)
         {
