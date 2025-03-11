@@ -904,6 +904,94 @@ namespace Maestro
         }
     }
 
+    void CAnimComponentNode::UpdateTrackDefaultValue(float time, IAnimTrack* pTrack)
+    {
+        const auto sequence = GetSequence();
+        if (!(pTrack && m_pSequence))
+        {
+            AZ_Assert(pTrack, "Invalid Track");
+            AZ_Assert(m_pSequence, "Invalid Sequence");
+            return;
+        }
+        const auto timeRange = sequence->GetTimeRange();
+        if (time < timeRange.start || time > timeRange.end)
+        {
+            AZ_Error("AnimComponentNode", false, "UpdateTrackDefaultValue(%f): time not in range (%f,%f)", time, timeRange.start, time > timeRange.end);
+            return;
+        }
+
+        const auto paramType = pTrack->GetParameterType();
+        auto findIter = m_paramTypeToBehaviorPropertyInfoMap.find(paramType);
+        if (findIter == m_paramTypeToBehaviorPropertyInfoMap.end())
+        {
+            AZ_Error("AnimComponentNode", false, "UpdateTrackDefaultValue(): Parameter type %s not reflected", paramType.GetName());
+            return;
+        }
+
+        BehaviorPropertyInfo& propertyInfo = findIter->second;
+        SequenceComponentRequests::AnimatablePropertyAddress address(m_componentId, propertyInfo.m_animNodeParamInfo.name);
+
+        constexpr const bool setDefault = true;
+        switch (pTrack->GetValueType())
+        {
+        case AnimValueType::Float:
+            {
+                SequenceComponentRequests::AnimatedFloatValue defaultValue(0.0f);
+                SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(),&SequenceComponentRequestBus::Events::GetAnimatedPropertyValue,
+                    defaultValue, GetParentAzEntityId(), address);
+                pTrack->SetValue(time, defaultValue.GetFloatValue(), setDefault);
+                break;
+            }
+        case AnimValueType::Vector:
+            {
+                SequenceComponentRequests::AnimatedVector3Value defaultValue(AZ::Vector3::CreateZero());
+                AZ::Vector3 vector3Value = AZ::Vector3::CreateZero();
+                SequenceComponentRequestBus::Event( m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue,
+                    defaultValue, GetParentAzEntityId(), address);
+                defaultValue.GetValue(vector3Value);
+                pTrack->SetValue(time, vector3Value, setDefault);
+                break;
+            }
+        case AnimValueType::Quat:
+            {
+                SequenceComponentRequests::AnimatedQuaternionValue defaultValue(AZ::Quaternion::CreateIdentity());
+                SequenceComponentRequestBus::Event( m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue,
+                    defaultValue, GetParentAzEntityId(), address);
+                pTrack->SetValue(time, defaultValue.GetQuaternionValue(), setDefault);
+                break;
+            }
+        case AnimValueType::RGB:
+            {
+                SequenceComponentRequests::AnimatedVector3Value defaultValue(AZ::Vector3::CreateOne());
+                AZ::Vector3 vector3Value = AZ::Vector3::CreateOne();
+                SequenceComponentRequestBus::Event( m_pSequence->GetSequenceEntityId(), &SequenceComponentRequestBus::Events::GetAnimatedPropertyValue,
+                    defaultValue, GetParentAzEntityId(), address);
+                defaultValue.GetValue(vector3Value);
+                vector3Value = vector3Value.GetClamp(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+                constexpr const bool applyMultiplier = true;
+                pTrack->SetValue(0, vector3Value, setDefault, applyMultiplier);
+                break;
+            }
+        case AnimValueType::Bool:
+            {
+                break; // Change nothing
+            }
+        case AnimValueType::AssetBlend:
+            {
+                break; // Change nothing
+            }
+        case AnimValueType::String:
+            {
+                break; // Change nothing
+            }
+        default:
+            {
+                AZ_Warning( "AnimComponentNode", false, "UpdateTrackDefaultValue(): Unsupported value type %s, skipping...", paramType.GetName());
+                break;
+            }
+        }
+    }
+
     void CAnimComponentNode::Animate(SAnimContext& ac)
     {
         if (m_skipComponentAnimationUpdates)

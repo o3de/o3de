@@ -31,8 +31,9 @@
 #include <AzQtComponents/Utilities/Conversions.h>
 
 // CryCommon
-#include <CryCommon/Maestro/Types/AnimValueType.h>
+#include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
+#include <CryCommon/Maestro/Types/AnimValueType.h>
 #include <CryCommon/Maestro/Types/AssetBlendKey.h>
 
 // Editor
@@ -1842,14 +1843,44 @@ void CTrackViewDopeSheetBase::LButtonDownOnTimeAdjustBar([[maybe_unused]] const 
 void CTrackViewDopeSheetBase::LButtonDownOnKey([[maybe_unused]] const QPoint& point, CTrackViewKeyHandle& keyHandle, Qt::KeyboardModifiers modifiers)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    const auto pTrack = keyHandle.GetTrack();
     AZ_Assert(sequence, "Expected a valid sequence.");
-
-    if (!sequence)
+    AZ_Assert(pTrack, "Expected a valid track.");
+    if (!sequence || !pTrack)
     {
         return;
     }
 
-    if (!keyHandle.IsSelected() && !(modifiers & Qt::ControlModifier))
+    bool isSelected = keyHandle.IsSelected();
+
+    const auto parentNode = pTrack->GetParentNode();
+    const bool allowSubTrackSelection = isSelected && pTrack->IsSubTrack() && parentNode;
+    if (allowSubTrackSelection) // Check if a "logical key" in a parent Compound track was selected.
+    {
+        if (parentNode->IsSelected())
+        {
+            isSelected = false; // Allow to select a key in sub-track...
+            parentNode->SetSelected(false); // ... and deselect the parent node.
+        }
+        else
+        {
+            for (unsigned int subTrackIdx = 0; isSelected && subTrackIdx < parentNode->GetChildCount(); ++subTrackIdx)
+            {
+                const auto pSubTrack = parentNode->GetChild(subTrackIdx);
+                const auto selectedKeysBundle = pSubTrack->GetSelectedKeys();
+                for (unsigned int keyIdx = 0; isSelected && keyIdx < selectedKeysBundle.GetKeyCount(); ++keyIdx)
+                {
+                    const auto key = selectedKeysBundle.GetKey(keyIdx);
+                    if (key != keyHandle) // If there is another key selected in the parent Compound track ? ...
+                    {
+                        isSelected = false; // ... regard this key unselected, and thus allow selecting it.
+                    }
+                }
+            }
+        }
+    }
+
+    if (!isSelected && !(modifiers & Qt::ControlModifier))
     {
         CTrackViewSequenceNotificationContext context(sequence);
         AzToolsFramework::ScopedUndoBatch undoBatch("Select keys");
@@ -2252,77 +2283,97 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
     CTrackViewSequenceNotificationContext context(sequence);
 
     CTrackViewAnimNode* pNode = pTrack->GetAnimNode();
-    float keyTime = TimeFromPoint(point);
-    bool inRange = m_timeRange.IsInside(keyTime);
+    const float keyTime = TimeFromPoint(point);
+    const bool inRange = m_timeRange.IsInside(keyTime);
 
-    if (pTrack && inRange)
+    if (!(pNode && inRange))
     {
-        if (bTryAddKeysInGroup && pNode->GetParentNode())       // Add keys in group
-        {
-            CTrackViewTrackBundle tracksInGroup = pNode->GetTracksByParam(pTrack->GetParameterType());
-            for (int i = 0; i < (int)tracksInGroup.GetCount(); ++i)
-            {
-                CTrackViewTrack* pCurrTrack = tracksInGroup.GetTrack(i);
+        return;
+    }
 
-                if (pCurrTrack->GetChildCount() == 0)   // A simple track
-                {
-                    if (IsOkToAddKeyHere(pCurrTrack, keyTime))
-                    {
-                        AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                        pCurrTrack->CreateKey(keyTime);
-                        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-                    }
-                }
-                else                                                                            // A compound track
-                {
-                    for (unsigned int k = 0; k < pCurrTrack->GetChildCount(); ++k)
-                    {
-                        CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pCurrTrack->GetChild(k));
-                        if (IsOkToAddKeyHere(pSubTrack, keyTime))
-                        {
-                            AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                            pSubTrack->CreateKey(keyTime);
-                            undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-                        }
-                    }
-                }
-            }
-        }
-        else if (pTrack->GetChildCount() == 0)          // A simple track
+    if (bTryAddKeysInGroup && pNode->GetParentNode())       // Add keys in group
+    {
+        CTrackViewTrackBundle tracksInGroup = pNode->GetTracksByParam(pTrack->GetParameterType());
+        for (int i = 0; i < (int)tracksInGroup.GetCount(); ++i)
         {
-            if (pTrack->GetValueType() == AnimValueType::String)
+            CTrackViewTrack* pCurrTrack = tracksInGroup.GetTrack(i);
+            if (!IsOkToAddKeyHere(pCurrTrack, keyTime))
             {
-                CreateStringKey(pTrack, keyTime);
-                return;
+                continue;
             }
 
-            if (IsOkToAddKeyHere(pTrack, keyTime))
+            const bool isSimpleTrack = pTrack->GetChildCount() == 0;
+            if (isSimpleTrack)
             {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                pTrack->CreateKey(keyTime);
-                undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-            }
-        }
-        else                                                                                // A compound track
-        {
-            if (pTrack->GetValueType() == AnimValueType::RGB)
-            {
-                CreateColorKey(pTrack, keyTime);
-            }
-            else
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                for (unsigned int i = 0; i < pTrack->GetChildCount(); ++i)
+                if (pCurrTrack->GetValueType() == AnimValueType::String)
                 {
-                    CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pTrack->GetChild(i));
-                    if (IsOkToAddKeyHere(pSubTrack, keyTime))
-                    {
-                        pSubTrack->CreateKey(keyTime);
-                    }
+                    CreateStringKey(pTrack, keyTime);
+                    continue;
                 }
+
+                AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
+                pCurrTrack->CreateKey(keyTime);
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
             }
+            else // A compound track
+            {
+                if (pCurrTrack->GetValueType() == AnimValueType::RGB)
+                {
+                    CreateColorKey(pCurrTrack, keyTime);
+                    continue;
+                }
+
+                // Update track default values before adding a new key at time, so that animated entity properties are not affected by adding a key
+                {
+                    AzToolsFramework::ScopedUndoBatch undoBatchUpdate("Update Track Defaults");
+                    pNode->UpdateTrackDefaultValue(keyTime, pCurrTrack->GetAnimTrack());
+                    undoBatchUpdate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+                }
+
+                AzToolsFramework::ScopedUndoBatch undoBatchCreate("Create Key");
+                pCurrTrack->CreateKey(keyTime);
+                undoBatchCreate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+            }
         }
+        return;
+    }
+
+    if (!IsOkToAddKeyHere(pTrack, keyTime))
+    {
+        return;
+    }
+
+    const bool isSimpleTrack = pTrack->GetChildCount() == 0;
+    if (isSimpleTrack)
+    {
+        if (pTrack->GetValueType() == AnimValueType::String)
+        {
+            CreateStringKey(pTrack, keyTime);
+            return;
+        }
+
+        AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
+        pTrack->CreateKey(keyTime);
+        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+    }
+    else // A compound track
+    {
+        if (pTrack->GetValueType() == AnimValueType::RGB)
+        {
+            CreateColorKey(pTrack, keyTime);
+            return;
+        }
+
+        // Update track default values before adding a new key at time, so that animated entity properties are not affected by adding a key
+        {
+            AzToolsFramework::ScopedUndoBatch undoBatchUpdate("Update Track Defaults");
+            pNode->UpdateTrackDefaultValue(keyTime, pTrack->GetAnimTrack());
+            undoBatchUpdate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+        }
+
+        AzToolsFramework::ScopedUndoBatch undoBatchCreate("Create Key");
+        pTrack->CreateKey(keyTime);
+        undoBatchCreate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
     }
 }
 
@@ -2455,7 +2506,7 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
     bool bLightAnimationSetActive = pSequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet;
     if (bLightAnimationSetActive && pTrack->GetKeyCount() > 0)
     {
-        // In the case of the light animation set, the time of of the last key
+        // In the case of the light animation set, the time of the last key
         // determines the end of the track.
         float lastKeyTime = pTrack->GetKey(pTrack->GetKeyCount() - 1).GetTime();
         rcInner.setRight(min(rcInner.right(), TimeToClient(lastKeyTime)));
@@ -2846,11 +2897,32 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
             continue;
         }
 
-        if (pTrack->GetChildCount() == 0 // At compound tracks, keys are all green.
-            && abs(x - prevKeyPixel) < 2)
+        if (pTrack->GetChildCount() == 0 && abs(x - prevKeyPixel) < 2)
         {
-            // If multiple keys on the same time.
+            // If multiple keys on the same time at a simple track, keys are red
             painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_02.png")); // red
+        }
+        else if (pTrack->IsCompoundTrack()) // A key at a compound track is regarded as selected if all keys at the same time are selected
+        {
+            bool areAllSubKeysSelected = true;
+            for (int n = 0; n < numKeys; ++n)
+            {
+                CTrackViewKeyHandle aKeyHandle = sortedKeys[n];
+                const auto aKeyTime = aKeyHandle.GetTime();
+                if ((AZStd::abs(aKeyTime - time) < AZ::Constants::Tolerance) && !aKeyHandle.IsSelected())
+                {
+                    areAllSubKeysSelected = false;
+                    break;
+                }
+            }
+            if (areAllSubKeysSelected)
+            {
+                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_01.png")); // white
+            }
+            else
+            {
+                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_00.png")); // green
+            }
         }
         else
         {

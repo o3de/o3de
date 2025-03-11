@@ -222,6 +222,8 @@ namespace Maestro
             [[maybe_unused]] AnimValueType remapValueType = AnimValueType::Unknown) override
         {
         }
+        void UpdateTrackDefaultValue([[maybe_unused]] float time, [[maybe_unused]] IAnimTrack* pTrack) override {};
+
         void SetTimeRange(Range timeRange) override;
         void AddTrack(IAnimTrack* pTrack) override;
         bool RemoveTrack(IAnimTrack* pTrack) override;

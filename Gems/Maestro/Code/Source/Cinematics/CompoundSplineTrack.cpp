@@ -35,11 +35,6 @@ namespace Maestro
         {
             m_subTracks[i].reset(aznew C2DSplineTrack());
             m_subTracks[i]->SetParameterType(subTrackParamTypes[i]);
-
-            if (inValueType == AnimValueType::RGB)
-            {
-                m_subTracks[i]->SetKeyValueRange(0.0f, 255.f);
-            }
         }
 
         m_subTrackNames.resize(MaxSubtracks);
@@ -47,6 +42,9 @@ namespace Maestro
         m_subTrackNames[1] = "Y";
         m_subTrackNames[2] = "Z";
         m_subTrackNames[3] = "W";
+
+        SetKeyValueRanges();
+        RenameSubTracksIfNeeded();
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
         m_bCustomColorSet = false;
@@ -146,6 +144,11 @@ namespace Maestro
             m_subTracks[i]->SerializeSelection(subTrackNode, bLoading, bCopySelected, fTimeOffset);
         }
         return true;
+    }
+
+    void CCompoundSplineTrack::InitPostLoad([[maybe_unused]] IAnimSequence* sequence)
+    {
+        SetKeyValueRanges();
     }
 
     void CCompoundSplineTrack::GetValue(float time, float& value, bool applyMultiplier)
@@ -401,7 +404,11 @@ namespace Maestro
 
     int CCompoundSplineTrack::GetSubTrackIndex(int& key) const
     {
-        AZ_Assert(key >= 0 && key < GetNumKeys(), "Key index %i is invalid", key);
+        if (key < 0 || key >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index %i is invalid (0-%d))", key, GetNumKeys());
+            return -1;
+        }
         int count = 0;
         for (int i = 0; i < m_nDimensions; i++)
         {
@@ -425,6 +432,17 @@ namespace Maestro
             return;
         }
         m_subTracks[i]->RemoveKey(num);
+    }
+
+    int CCompoundSplineTrack::CreateKey(float time)
+    {
+        int keyIdx = -1;
+        for (int i = 0; i < m_nDimensions; ++i)
+        {
+            const int keyIdxInSubTrack = m_subTracks[i]->CreateKey(time);
+            keyIdx = AZStd::max(keyIdx, keyIdxInSubTrack);
+        }
+        return keyIdx;
     }
 
     void CCompoundSplineTrack::GetKeyInfo(int key, const char*& description, float& duration)
@@ -500,14 +518,37 @@ namespace Maestro
 
     bool CCompoundSplineTrack::IsKeySelected(int key) const
     {
-        AZ_Assert(key >= 0 && key < GetNumKeys(), "Key index %i is invalid", key);
-        int i = GetSubTrackIndex(key);
-        AZ_Assert(i >= 0, "No subtrack for index %i is found", key);
-        if (i < 0)
+        if (key < 0 || key >= GetNumKeys())
         {
+            AZ_Assert(false, "Key index %i is invalid, total keys=%d", key, GetNumKeys());
             return false;
         }
-        return m_subTracks[i]->IsKeySelected(key);
+
+        // Initial key index is belonging to the set of all keys in all sub-tracks
+        int firstIdx = GetSubTrackIndex(key);
+        if (firstIdx < 0)
+        {
+            AZ_Assert(false, "No subtrack for key index %i is found", key);
+            return false;
+        }
+
+        // The key at m_subTracks[firstIdx][key] maybe active or inactive.
+        // A "logical key" for a compound track is regarded as selected when all keys at the same timeline are selected
+        const auto firtsKeyTime = m_subTracks[firstIdx]->GetKeyTime(key);
+        for (int subTrackIdx = 0; subTrackIdx < GetSubTrackCount(); ++subTrackIdx)
+        {
+            const auto pSubTrack = m_subTracks[subTrackIdx];
+            for (int keyIdx = 0; keyIdx < pSubTrack->GetNumKeys(); ++keyIdx)
+            {
+                const auto subKeyTime = pSubTrack->GetKeyTime(keyIdx);
+                if ((AZStd::abs(firtsKeyTime - subKeyTime) < AZ::Constants::Tolerance) && !pSubTrack->IsKeySelected(keyIdx))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     void CCompoundSplineTrack::SelectKey(int key, bool select)
@@ -522,12 +563,11 @@ namespace Maestro
         float keyTime = m_subTracks[i]->GetKeyTime(key);
         // In the case of compound tracks, animators want to
         // select all keys of the same time in the sub-tracks together.
-        const float timeEpsilon = 0.001f;
         for (int k = 0; k < m_nDimensions; ++k)
         {
             for (int m = 0; m < m_subTracks[k]->GetNumKeys(); ++m)
             {
-                if (fabs(m_subTracks[k]->GetKeyTime(m) - keyTime) < timeEpsilon)
+                if (fabs(m_subTracks[k]->GetKeyTime(m) - keyTime) < AZ::Constants::Tolerance)
                 {
                     m_subTracks[k]->SelectKey(m, select);
                     break;
@@ -560,6 +600,115 @@ namespace Maestro
             count += m_subTracks[i]->GetNumKeys();
         }
         return result;
+    }
+
+    void CCompoundSplineTrack::RenameSubTracksIfNeeded()
+    {
+        switch (m_valueType)
+        {
+        case AnimValueType::RGB:
+            {
+                if (m_nDimensions != 3)
+                {
+                    AZ_Assert(false, "Invalid dimensions %d for RGB track", m_nDimensions);
+                    return;
+                }
+                m_subTrackNames[0] = "Red";
+                m_subTrackNames[1] = "Green";
+                m_subTrackNames[2] = "Blue";
+            }
+            return;
+        case AnimValueType::Quat:
+            {
+                if (m_nDimensions != 3)
+                {
+                    AZ_Assert(false, "Invalid dimensions %d for Quaternion track", m_nDimensions);
+                    return;
+                }
+                m_subTrackNames[0] = "Pitch";
+                m_subTrackNames[1] = "Roll";
+                m_subTrackNames[2] = "Yaw";
+            }
+            return;
+        default:
+            // Do nothing, a specific factory method should handle this.
+            return;
+        }
+    }
+
+    void CCompoundSplineTrack::SetKeyValueRanges()
+    {
+        switch (m_valueType)
+        {
+        case AnimValueType::RGB:
+            {
+                SetKeyValueRange(0.0f, 255.f);
+                return;
+            }
+        case AnimValueType::Quat:
+            {
+                if (m_nDimensions != 3)
+                {
+                    AZ_Assert(false, "Invalid dimensions %d for Quaternion track", m_nDimensions);
+                    return;
+                }
+                m_subTracks[0]->SetKeyValueRange(-90.0f, 90.0f);
+                m_subTracks[1]->SetKeyValueRange(-180.0f, 180.0f);
+                m_subTracks[2]->SetKeyValueRange(-180.0f, 180.0f);
+                return;
+            }
+        case AnimValueType::Vector:
+            {
+                for (int i = 0; i < m_nDimensions; ++i)
+                {
+                    switch (m_subTracks[i]->GetParameterType().GetType())
+                    {
+                    case AnimParamType::PositionX:
+                    case AnimParamType::PositionY:
+                    case AnimParamType::PositionZ:
+                        {
+                            m_subTracks[i]->SetKeyValueRange(-100.0f, 100.0f);
+                            break;
+                        }
+                    case AnimParamType::ScaleX:
+                    case AnimParamType::ScaleY:
+                    case AnimParamType::ScaleZ:
+                        {
+                            m_subTracks[i]->SetKeyValueRange(0.01f, 100.0f);
+                            break;
+                        }
+                    case AnimParamType::DepthOfField: // Do nothing, DepthOfField handled in factory methods.
+                    default: // Do nothing, rotations were handled above, others should be handled in factory methods or added here.
+                        break;
+                    }
+                }
+                return;
+            }
+        case AnimValueType::Float:
+        case AnimValueType::DiscreteFloat:
+            {
+                for (int i = 0; i < GetSubTrackCount(); i++)
+                {
+                    float fMinKeyValue = 0;
+                    float fMaxKeyValue = 0;
+                    m_subTracks[i]->GetKeyValueRange(fMinKeyValue, fMaxKeyValue);
+                    if (fMaxKeyValue - fMinKeyValue < AZ::Constants::Tolerance)
+                    {
+                        m_subTracks[i]->SetKeyValueRange(-1.0f, 1.0f);
+                    }
+                }
+                return;
+            }
+        case AnimValueType::Vector4:
+            {
+                return; // Do nothing, a specific factory method should handle this.
+            }
+        default:
+            {
+                AZ_Error("CompoundSplineTrack", false, "ResetKeyValueRanges(): Unexpected ValueType %d.", static_cast<int>(m_valueType));
+                return;
+            }
+        }
     }
 
     void CCompoundSplineTrack::SetExpanded(bool expanded)
