@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ {
     struct Uuid;
@@ -26,12 +27,12 @@ namespace AZ {
     /*
      * Returns the serialization UUID for Asset class
      */
-    const Uuid& GetAssetClassId();
+    AZCORE_API const Uuid& GetAssetClassId();
 
     /// Generic IDataSerializer specialization for Asset<T>
     /// This is used internally by the object stream because assets need
     /// special handling during serialization
-    class AssetSerializer
+    class AZCORE_API AssetSerializer
         : public SerializeContext::IDataSerializer
     {
     public:

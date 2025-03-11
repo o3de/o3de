@@ -9,13 +9,14 @@
 #pragma once
 
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/AzCoreAPI.h>
 
 
 namespace AZ::SettingsRegistryVisitorUtils
 {
     //! Interface for visiting the fields of an array or object
     //! To access the values, use the SettingsRegistryInterface Get/GetObject methods
-    struct FieldVisitor
+    struct AZCORE_API FieldVisitor
         : public AZ::SettingsRegistryInterface::Visitor
     {
         using VisitResponse = AZ::SettingsRegistryInterface::VisitResponse;
@@ -48,7 +49,7 @@ namespace AZ::SettingsRegistryVisitorUtils
 
     //! Interface for visiting the fields of an array
     //! To access the values, use the SettingsRegistryInterface Get/GetObject methods
-    struct ArrayVisitor
+    struct AZCORE_API ArrayVisitor
         : public FieldVisitor
     {
         ArrayVisitor();
@@ -56,7 +57,7 @@ namespace AZ::SettingsRegistryVisitorUtils
 
     //! Interface for visiting the fields of an object
     //! To access the values, use the SettingsRegistryInterface Get/GetObject methods
-    struct ObjectVisitor
+    struct AZCORE_API ObjectVisitor
         : public FieldVisitor
     {
         ObjectVisitor();
@@ -72,17 +73,17 @@ namespace AZ::SettingsRegistryVisitorUtils
     //! This function will not recurse into children of elements
     //! @visitCallback functor that is invoked for each array or object element found
     //! @return Whether or not entries could be visited.
-    bool VisitField(AZ::SettingsRegistryInterface& settingsRegistry, const VisitorCallback& visitCallback, AZStd::string_view path);
+    AZCORE_API bool VisitField(AZ::SettingsRegistryInterface& settingsRegistry, const VisitorCallback& visitCallback, AZStd::string_view path);
     //! Invokes the visitor callback for each element of the array at @path
     //! If @path is not an array, then no elements are visited
     //! This function will not recurse into children of elements
     //! @visitCallback functor that is invoked for each array element found
     //! @return Whether or not entries could be visited.
-    bool VisitArray(AZ::SettingsRegistryInterface& settingsRegistry, const VisitorCallback& visitCallback, AZStd::string_view path);
+    AZCORE_API bool VisitArray(AZ::SettingsRegistryInterface& settingsRegistry, const VisitorCallback& visitCallback, AZStd::string_view path);
     //! Invokes the visitor callback for each element of the object at @path
     //! If @path is not an object, then no elements are visited
     //! This function will not recurse into children of elements
     //! @visitCallback functor that is invoked for each object element found
     //! @return Whether or not entries could be visited.
-    bool VisitObject(AZ::SettingsRegistryInterface& settingsRegistry, const VisitorCallback& visitCallback, AZStd::string_view path);
+    AZCORE_API bool VisitObject(AZ::SettingsRegistryInterface& settingsRegistry, const VisitorCallback& visitCallback, AZStd::string_view path);
 }

@@ -20,35 +20,37 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     struct JsonApplyPatchSettings;
+
+    struct SettingsRegistryConstants
+    {
+        static constexpr char Extension[] = "setreg";
+        static constexpr char PatchExtension[] = "setregpatch";
+        static constexpr char RegistryFolder[] = "Registry";
+        static constexpr char DevUserRegistryFolder[] = "user" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "Registry";
+        static constexpr char PlatformFolder[] = "Platform";
+    };
+
     //! The Settings Registry is the central storage for global settings. Having application-wide settings
     //! stored in a central location allows different tools such as command lines, consoles, configuration
     //! files, etc. to work in a universal way.
     //! Paths in the functions for the Settings Registry follow the the JSON Pointer pattern (see
     //! https://tools.ietf.org/html/rfc6901) such as "/My/Object/Settings" or "/My/Array/0".
-    class SettingsRegistryInterface
+    class AZCORE_API SettingsRegistryInterface
     {
     public:
         AZ_RTTI(AZ::SettingsRegistryInterface, "{D62619D8-0C0B-4D9F-9FE8-F8EBC330DC55}");
-
-        static constexpr char Extension[] = "setreg";
-        static constexpr char PatchExtension[] = "setregpatch";
-        static constexpr char RegistryFolder[] = "Registry";
-
-        static constexpr char DevUserRegistryFolder[] = "user" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "Registry";
-
-
-        static constexpr char PlatformFolder[] = "Platform";
 
         //! Represents a fixed size non-allocating string type that can be used to query the settings registry using Get()
         //! If the value is longer than FixedValueString::max_size(), then either the heap allocating
         //! AZStd::string overload must be used or the Visit method must be used
         using FixedValueString = AZ::StringFunc::Path::FixedString;
 
-        class Specializations
+        class AZCORE_API Specializations
         {
         public:
             static constexpr size_t MaxTagNameSize = 64;
@@ -349,7 +351,7 @@ namespace AZ
 
         //! Structure which contains configuration settings for how to parse a single command line argument
         //! It supports supplying a functor for splitting a line into JSON path and JSON value
-        struct CommandLineArgumentSettings
+        struct AZCORE_API CommandLineArgumentSettings
         {
             struct JsonPathValue
             {
@@ -392,7 +394,7 @@ namespace AZ
 
         //! Encapsulates the result of a JSON Patch or JSON Merge Patch opreations
         //! into the Settings Registry
-        struct MergeSettingsResult
+        struct AZCORE_API MergeSettingsResult
         {
             //! Any values that is >= MergeSettingsReturnCode::Unset
             //! is treated as a successful operation

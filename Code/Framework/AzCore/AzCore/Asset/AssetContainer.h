@@ -15,6 +15,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -28,7 +29,7 @@ namespace AZ
         // no guaranteed order.  However, the OnAssetContainerReady signals will not emit until all PreLoad and QueueLoad assets
         // are ready.  NoLoad dependencies are not loaded by default but can be loaded along with their dependencies using the
         // same rules as above by using the LoadAll dependency rule.
-        class AssetContainer :
+        class AZCORE_API AssetContainer :
             AZ::Data::AssetLoadBus::MultiHandler
         {
         public:

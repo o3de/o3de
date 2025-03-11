@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -72,4 +73,4 @@ namespace AZ
     using AssetTypeInfoBus = AZ::EBus<AssetTypeInfo>;
 } // namespace AZ
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(AssetTypeInfo);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::AssetTypeInfo);

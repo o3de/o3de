@@ -42,15 +42,15 @@ namespace AZ::Internal
 #endif // AZ_SIZE_ALIGN
 
 #if defined(AZ_MONOLITHIC_BUILD)
-    #define AZCORE_API
-    #define AZCORE_API_EXTERN
+    #define AZCORE_STATIC_API
+    #define AZCORE_STATIC_API_EXTERN
 #else
-    #if defined(AZCORE_EXPORTS)
-        #define AZCORE_API        AZ_DLL_EXPORT
-        #define AZCORE_API_EXTERN AZ_DLL_EXPORT_EXTERN
+    #if defined(AZCORE_STATIC_EXPORTS)
+        #define AZCORE_STATIC_API        AZ_DLL_EXPORT
+        #define AZCORE_STATIC_API_EXTERN AZ_DLL_EXPORT_EXTERN
     #else
-        #define AZCORE_API        AZ_DLL_IMPORT
-        #define AZCORE_API_EXTERN AZ_DLL_IMPORT_EXTERN
+        #define AZCORE_STATIC_API        AZ_DLL_IMPORT
+        #define AZCORE_STATIC_API_EXTERN AZ_DLL_IMPORT_EXTERN
     #endif
 #endif
 

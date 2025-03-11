@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_ASSET_DATABASE_BUS_H
-#define AZCORE_ASSET_DATABASE_BUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -17,6 +16,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AzFramework
 {
@@ -298,9 +298,6 @@ namespace AZ
     }   // namespace Data
 }   // namespace AZ
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Data::AssetManagerNotifications);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Data::AssetCatalogRequests);
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Data::AssetManagerEvents);
-
-#endif  // AZCORE_ASSET_DATABASE_BUS_H
-#pragma once
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetManagerNotifications);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetCatalogRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetManagerEvents);

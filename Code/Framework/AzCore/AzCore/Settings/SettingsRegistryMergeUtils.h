@@ -12,6 +12,7 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/CommandLine.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -106,7 +107,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //! to find the engine.json file which will be used as the engine root
     //! If it's still not found, attempt to find the project (by similar means) then reconcile the
     //! engine root by inspecting project.json and the engine manifest file.
-    AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry);
+    AZCORE_API AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry);
 
     //! The algorithm that is used to find the project root is as follows
     //! 1. The first time this function runs it performs an upward scan for a "project.json" file from
@@ -120,24 +121,24 @@ namespace AZ::SettingsRegistryMergeUtils
     //! 2. project_path found by scanning upwards from the executable directory to the project.json path
     //! 3. project_path set on the Command line via either --regset="{BootstrapSettingsRootKey}/project_path=<path>"
     //!    or --project_path=<path>
-    AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry);
+    AZCORE_API AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry);
 
     //! Query the specializations that will be used when loading the Settings Registry.
     //! The SpecializationsRootKey is visited to retrieve any specializations stored within that section of that registry
-    void QuerySpecializationsFromRegistry(SettingsRegistryInterface& registry, SettingsRegistryInterface::Specializations& specializations);
+    AZCORE_API void QuerySpecializationsFromRegistry(SettingsRegistryInterface& registry, SettingsRegistryInterface::Specializations& specializations);
 
     //! Adds value as a string under the Settings Registry `SpecializationsRootKey`
     //! The specializations can be queried using the QuerySpecializationsFromRegistry function above
-    void MergeSettingsToRegistry_AddSpecialization(SettingsRegistryInterface& registry, AZStd::string_view value);
+    AZCORE_API void MergeSettingsToRegistry_AddSpecialization(SettingsRegistryInterface& registry, AZStd::string_view value);
 
     //! Adds name of current build system target to the Settings Registry specialization section
     //! A build system target is the name used by the build system to build a particular executable or library
-    void MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(SettingsRegistryInterface& registry, AZStd::string_view targetName);
+    AZCORE_API void MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(SettingsRegistryInterface& registry, AZStd::string_view targetName);
 
     //! Settings structure which is used to determine how to parse Windows INI style config file(.cfg, .ini, etc...)
     //! It supports being able to supply a custom comment filter and section header filter
     //! The names of section headers are appended to the root Json pointer path member to form new root paths
-    struct ConfigParserSettings
+    struct AZCORE_API ConfigParserSettings
     {
         // Filters out line which start with a prefix of ';' or '#'
         // If a line matches the comment filter and empty view is returned
@@ -200,7 +201,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //! @param structure for determining how the configuration file should be parsed and into which json pointer path
     //! any found keys should be rooted under
     //! @return true if the configuration file was able to be merged into the Settings Registry
-    bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
+    AZCORE_API bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
         const ConfigParserSettings& configParserSettings);
 
     //! Gathers the paths of every gem registered in the ~/.o3de/o3de_manifest.json, <project-root>/project.json
@@ -211,37 +212,37 @@ namespace AZ::SettingsRegistryMergeUtils
     //! @prereq - To merge gem paths under the <project-root>, the `FilePathKey_ProjectPath` key must be set in the registry
     //!
     //! @param registry Settings registry where registered paths gem paths are merge to
-    void MergeSettingsToRegistry_ManifestGemsPaths(SettingsRegistryInterface& registry);
+    AZCORE_API void MergeSettingsToRegistry_ManifestGemsPaths(SettingsRegistryInterface& registry);
 
     //! Extracts file path information from the environment and bootstrap to calculate the various file paths and adds those
     //! to the Settings Registry under the FilePathsRootKey.
-    void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry);
+    AZCORE_API void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry);
 
     //! Merges the registry folder which contains the build targets that the active project depends on for loading
     //! In most cases these build targets are the gem modules and are generated automatically by the build system(CMake in this case)
     //! The files are normally generated in a Registry next to the executable
-    auto MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    AZCORE_API auto MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
         -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Adds the engine settings to the Settings Registry.
-    auto MergeSettingsToRegistry_EngineRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    AZCORE_API auto MergeSettingsToRegistry_EngineRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
         -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Merges all the registry folders found in the listed gems.
-    auto MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    AZCORE_API auto MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
         -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Merges all the registry folders found in the listed gems.
-    auto MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    AZCORE_API auto MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
         -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Adds the development settings added by individual users of the project to the Settings Registry.
     //! Note that this function is only called in development builds and is compiled out in release builds.
-    auto MergeSettingsToRegistry_ProjectUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    AZCORE_API auto MergeSettingsToRegistry_ProjectUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
         -> SettingsRegistryInterface::MergeSettingsResult;
 
@@ -249,7 +250,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //! '~' corresponds to %USERPROFILE% on Windows and $HOME on Unix-like platforms(Linux, Mac)
     //! Note that this function is only called in development builds and is compiled out in release builds.
     //! It is merged before the command line settings are merged so that the command line always takes precedence
-    auto MergeSettingsToRegistry_O3deUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    AZCORE_API auto MergeSettingsToRegistry_O3deUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
         -> SettingsRegistryInterface::MergeSettingsResult;
 
@@ -285,19 +286,19 @@ namespace AZ::SettingsRegistryMergeUtils
     //! `CommandsToParse::m_parseRegsetFileCommands=true` allows the --regset-file command to be processed
     //!
     //! Note that this function is only called in development builds and is compiled out in release builds.
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine,
+    AZCORE_API void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine,
         const CommandsToParse& commandsToParse = {});
 
     //! Stores the command line settings into the Setting Registry
     //! The arguments can be used later anywhere the command line is needed
-    void StoreCommandLineToRegistry(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine);
+    AZCORE_API void StoreCommandLineToRegistry(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine);
 
     //! Query the command line settings from the Setting Registry and stores them
     //! into the AZ::CommandLine instance
-    bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine);
+    AZCORE_API bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine);
 
     //! Parse a CommandLine and transform certain options into formal "regset" options
-    void ParseCommandLine(AZ::CommandLine& commandLine);
+    AZCORE_API void ParseCommandLine(AZ::CommandLine& commandLine);
 
     //! Structure for configuring how values should be dumped from the Settings Registry
     struct DumperSettings
@@ -326,7 +327,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //! @param key is a JSON pointer to recursively dump settings from
     //! @param stream is an AZ::IO::GenericStream that supports writing
     //! @param dumperSettings are used to determine how to format the dumped output
-    bool DumpSettingsRegistryToStream(SettingsRegistryInterface& registry, AZStd::string_view key,
+    AZCORE_API bool DumpSettingsRegistryToStream(SettingsRegistryInterface& registry, AZStd::string_view key,
         AZ::IO::GenericStream& stream, const DumperSettings& dumperSettings);
 
     //! Do not use this function for anything other than bootstrap settings. It is only here to provide compatibility
@@ -370,13 +371,13 @@ namespace AZ::SettingsRegistryMergeUtils
     //! IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/Project/Settings/project_name") = false
     //! Example: The path "" is the root JSON pointer therefore that is the ancestor of all paths
     //! IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "") = true
-    bool IsPathAncestorDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath);
+    AZCORE_API bool IsPathAncestorDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath);
 
     //! Check if the supplied input path is a descendant or exactly equal to the candidate path
     //! @param candidatePath Path which is being checked for the descendant relationship
     //! @param inputPath Path which is checked to determine if it is equal or a descendant of the candidate path
     //! @return true if the input path is an descendant or equal to the candidate path
-    bool IsPathDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath);
+    AZCORE_API bool IsPathDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath);
 
     //! Callback signature which VisitActiveGems invokes for each Gem found underneath the ActiveGems root key
     //! @param gem_name value of "gem_name" field
@@ -388,7 +389,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //! i.e They can be relative paths if they are relative with the registry
     //! @param registry SettingsRegistry instance to search for the ActiveGemsRootKey entries
     //! @param activeGemCallback Callback to invoke when a gem is visited that contains a non-empty path entry
-    void VisitActiveGems(SettingsRegistryInterface& registry, const GemCallback& activeGemCallback);
+    AZCORE_API void VisitActiveGems(SettingsRegistryInterface& registry, const GemCallback& activeGemCallback);
 
     //! Callback signature which is invoked for each manifest json with the specified manifest object key
     //! @param manifestObjectKey "<object>_name" (i.e gem_name, project_name, engine_name, o3de_manifest_name)
@@ -403,7 +404,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //! @param manifestPath absolute path to the manifest json file to open
     //! @param manifestNameKey the key within the manifest json file that uniquely identifies the manifest
     //! @return true if manifest is a valid json file with the specified manifestNameKey field
-    bool VisitManifestJson(const ManifestCallback& gemManifestCallback, AZStd::string_view manifestPath,
+    AZCORE_API bool VisitManifestJson(const ManifestCallback& gemManifestCallback, AZStd::string_view manifestPath,
         AZStd::string_view manifestNameKey = GemNameKey);
 
     //! Looks up all "external_subdirectories" fields registered in the "~/.o3de/o3de_manifest.json"
@@ -411,21 +412,21 @@ namespace AZ::SettingsRegistryMergeUtils
     //! @param registry SettingsRegistry instance to locate the o3de manifest folder via the FilePathKey_O3deManifestRootFolder
     //! @param callback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
     //! @return true if all visited paths contained a valid manifest
-    bool VisitO3deManifestGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
+    AZCORE_API bool VisitO3deManifestGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
 
     //! Looks up all "external_subdirectories" fields registered in the "<engine-root>/engine.json"
     //! This will recurse through "gem.json" files as well
     //! @param registry SettingsRegistry instance to locate the engine root via the FilePathKey_EngineRootFolder
     //! @param gemManifestCallback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
     //! @return true if all visited paths contained a valid manifest
-    bool VisitEngineGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
+    AZCORE_API bool VisitEngineGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
 
     //! Looks up all "external_subdirectories" fields registered in the "<project-root>/project.json"
     //! This will recurse through "gem.json" files as well
     //! @param registry SettingsRegistry instance which will be used to locate the project root via the FilePathKey_ProjectPath
     //! @param gemManifestCallback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
     //! @return true if all visited paths contained a valid manifest
-    bool VisitProjectGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
+    AZCORE_API bool VisitProjectGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
 
     //! Looks up all "external_subdirectories" fields registered in the "~/.o3de/o3de_manifest.json"
     //! "<engine-root>/engine.json", "<project-root>/project.json" files
@@ -433,5 +434,5 @@ namespace AZ::SettingsRegistryMergeUtils
     //! @param registry SettingsRegistry instance which will be used to locate the o3de_manifest, project and engine roots
     //! @param gemManifestCallback Invoked for each gem.json file by visiting each through the "external_subdirectories" path
     //! @return true if all visited paths contained a valid manifest
-    bool VisitAllManifestGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
+    AZCORE_API bool VisitAllManifestGems(AZ::SettingsRegistryInterface& registry, const ManifestCallback& gemManifestCallback);
 }

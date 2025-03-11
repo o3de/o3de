@@ -767,7 +767,7 @@ namespace AZ
         size_t additionalSpaceRequired = 3; // 3 is for the '/', '*' and 0
         if (!platform.empty())
         {
-            additionalSpaceRequired += AZ_ARRAY_SIZE(PlatformFolder) + platform.length() + 2; // +2 for the two slashes.
+            additionalSpaceRequired += AZ_ARRAY_SIZE(SettingsRegistryConstants::PlatformFolder) + platform.length() + 2; // +2 for the two slashes.
         }
 
         if (path.length() + additionalSpaceRequired > AZ::IO::MaxPathLength)
@@ -831,7 +831,7 @@ namespace AZ
         AZStd::fixed_vector<FindFilesPayload, 2> findFilesPayloads{ {false} };
         if (!platform.empty())
         {
-            findFilesPayloads.push_back(FindFilesPayload{ true, { PlatformFolder, platform } });
+            findFilesPayloads.push_back(FindFilesPayload{ true, { SettingsRegistryConstants::PlatformFolder, platform } });
         }
 
         for (const FindFilesPayload& findFilesPayload : findFilesPayloads)
@@ -881,7 +881,7 @@ namespace AZ
                 folderPath.Native().erase(platformKeyOffset); // Erase all characters after the platformKeyOffset
                 if (registryFile.m_isPlatformFile)
                 {
-                    folderPath /= PlatformFolder;
+                    folderPath /= SettingsRegistryConstants::PlatformFolder;
                     folderPath /= platform;
                 }
 
@@ -1112,8 +1112,8 @@ namespace AZ
 
     bool SettingsRegistryImpl::ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations)
     {
-        static constexpr auto PatchExtensionWithDot = AZStd::fixed_string<32>(".") + PatchExtension;
-        static constexpr auto ExtensionWithDot = AZStd::fixed_string<32>(".") + Extension;
+        static constexpr auto PatchExtensionWithDot = AZStd::fixed_string<32>(".") + SettingsRegistryConstants::PatchExtension;
+        static constexpr auto ExtensionWithDot = AZStd::fixed_string<32>(".") + SettingsRegistryConstants::Extension;
         static constexpr AZ::IO::PathView PatchExtensionView(PatchExtensionWithDot);
         static constexpr AZ::IO::PathView ExtensionView(ExtensionWithDot);
 

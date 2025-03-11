@@ -12,6 +12,7 @@
 #include <AzCore/Console/ConsoleFunctor.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryOriginTracker.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::SettingsRegistryConsoleUtils
 {
@@ -62,7 +63,7 @@ namespace AZ::SettingsRegistryConsoleUtils
     //! "sr_regset_file" accepts 1 or 2 arguments - <file-path> [<anchor json path>]
     //!  Merges the json formatted file <file path> into the settings registry underneath the root anchor ""
     //!  or <anchor json path> if supplied
-    [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryInterface& registry, AZ::IConsole& azConsole);
+    [[nodiscard]] AZCORE_API ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryInterface& registry, AZ::IConsole& azConsole);
 
     //! Registers the following console commands for the SettingsRegistryOriginTracker
     //! "sr_dump_origin" accepts 0 or more arguments <settings-key path>*
@@ -70,6 +71,6 @@ namespace AZ::SettingsRegistryConsoleUtils
     //!  The settings keys are recursed to find children settings. Each of those have their file origins output as well
     //!  If no arguments settings key arguments are supplied, all settings file origins are output
     //!  NOTE: this might result in a large amount of output to the console
-    [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(AZ::SettingsRegistryOriginTracker& settingsRegistryOriginTracker, AZ::IConsole& azConsole);
+    [[nodiscard]] AZCORE_API ConsoleFunctorHandle RegisterAzConsoleCommands(AZ::SettingsRegistryOriginTracker& settingsRegistryOriginTracker, AZ::IConsole& azConsole);
     
 }

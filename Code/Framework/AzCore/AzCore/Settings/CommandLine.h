@@ -15,6 +15,7 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -45,7 +46,7 @@ namespace AZ
     *     separated by whitespace is a new argument
     * `app.exe --verbose 1 <PositionalArg>`  or `app.exe --verbose=1 <PositionalArg>`
     */
-    class CommandLine
+    class AZCORE_API CommandLine
     {
     public:
         AZ_CLASS_ALLOCATOR(CommandLine, AZ::SystemAllocator);

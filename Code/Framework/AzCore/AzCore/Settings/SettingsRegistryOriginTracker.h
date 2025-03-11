@@ -18,10 +18,11 @@
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
-    class SettingsRegistryOriginTracker
+    class AZCORE_API SettingsRegistryOriginTracker
     {
     public:
         AZ_TYPE_INFO(SettingsRegistryOriginTracker, "{F6E3B4E5-F8CF-43D8-8609-BC322D9D08C5}");

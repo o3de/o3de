@@ -83,7 +83,7 @@ void CEditorPreferencesPage_AWS::SaveSettingsRegistryFile()
 
             // Resolve path to editor_aws_preferences.setreg
             AZStd::string editorPreferencesFilePath =
-                AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+                AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryConstants::RegistryFolder, EditorAWSPreferencesFileName);
             AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
             fileIO->ResolvePath(editorPreferencesFilePath.c_str(), resolvedPath.data(), resolvedPath.size());
 
@@ -125,7 +125,7 @@ void CEditorPreferencesPage_AWS::InitializeSettings()
 
     // Resolve path to editor_aws_preferences.setreg
     AZStd::string editorAWSPreferencesFilePath =
-        AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+        AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryConstants::RegistryFolder, EditorAWSPreferencesFileName);
     AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
     if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
     {

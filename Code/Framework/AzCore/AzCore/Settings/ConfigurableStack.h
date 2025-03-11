@@ -15,6 +15,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/utils.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -73,7 +74,7 @@ namespace AZ
 
     class ReflectContext;
 
-    class ConfigurableStackInterface
+    class AZCORE_API ConfigurableStackInterface
     {
     public:
         friend class JsonConfigurableStackSerializer;
@@ -154,7 +155,7 @@ namespace AZ
         static AZ::TypeId GetClassTypeId();
     };
 
-    class JsonConfigurableStackSerializer : public BaseJsonSerializer
+    class AZCORE_API JsonConfigurableStackSerializer : public BaseJsonSerializer
     {
     public:
         AZ_RTTI(JsonConfigurableStackSerializer, "{45A31805-9058-41A9-B1A3-71E2CB4D9237}", BaseJsonSerializer);

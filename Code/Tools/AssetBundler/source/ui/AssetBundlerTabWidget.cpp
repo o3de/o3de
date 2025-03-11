@@ -342,7 +342,7 @@ namespace AssetBundler
     AZStd::string AssetBundlerTabWidget::GetAssetBundlerUserSettingsFile(const char* currentProjectFolderPath)
     {
         AZ::IO::Path absoluteFilePath = AZ::IO::Path(currentProjectFolderPath)
-            / AZ::SettingsRegistryInterface::DevUserRegistryFolder
+            / AZ::SettingsRegistryConstants::DevUserRegistryFolder
             / AssetBundlerUserSettingsFile;
         return absoluteFilePath.Native();
     }
@@ -350,7 +350,7 @@ namespace AssetBundler
     AZStd::string AssetBundlerTabWidget::GetAssetBundlerCommonSettingsFile(const char* currentProjectFolderPath)
     {
         AZ::IO::Path absoluteFilePath = AZ::IO::Path(currentProjectFolderPath)
-            / AZ::SettingsRegistryInterface::RegistryFolder
+            / AZ::SettingsRegistryConstants::RegistryFolder
             / AssetBundlerCommonSettingsFile;
         return absoluteFilePath.Native();
     }

@@ -18,12 +18,6 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-// Asset buses
-DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(Data::AssetManagerNotifications);
-DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(Data::AssetCatalogRequests);
-DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(Data::AssetManagerEvents);
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(AssetTypeInfo);
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(Data::AssetEvents);
 
 // Component buses
 DECLARE_EBUS_INSTANTIATION_DLL_SINGLE_ADDRESS(TickEvents);

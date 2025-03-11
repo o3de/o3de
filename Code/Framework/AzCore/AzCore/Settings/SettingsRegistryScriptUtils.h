@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -21,14 +22,14 @@ namespace AZ::SettingsRegistryScriptUtils
     //! Reflects the SettingsRegistryInterface class to the BehaviorContext.
     //! Furthermore reflects a global property that wraps the AZ::SettingsRegistry Interface<T> instance to provide access
     //! to the global settings registry
-    void ReflectSettingsRegistryToBehaviorContext(AZ::BehaviorContext& behaviorContext);
-    void ReflectSettingsRegistry(AZ::ReflectContext* reflectContext);
+    AZCORE_API void ReflectSettingsRegistryToBehaviorContext(AZ::BehaviorContext& behaviorContext);
+    AZCORE_API void ReflectSettingsRegistry(AZ::ReflectContext* reflectContext);
 }
 
 namespace AZ::SettingsRegistryScriptUtils::Internal
 {
     // SettingsRegistryImplScriptProxy is used to encapsulate a SettingsRegistry instance
-    struct SettingsRegistryScriptProxy
+    struct AZCORE_API SettingsRegistryScriptProxy
     {
         AZ_CLASS_ALLOCATOR(SettingsRegistryScriptProxy, AZ::SystemAllocator);
         AZ_TYPE_INFO(SettingsRegistryScriptProxy, "{795C80A0-D243-473B-972A-C32CA487BAA5}");

@@ -11,6 +11,7 @@
 #include <AzCore/IO/IStreamerTypes.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZStd
 {
@@ -25,7 +26,7 @@ namespace AZ::Data
         struct AssetDataStreamPrivate;
     }
 
-    class AssetDataStream : public AZ::IO::GenericStream
+    class AZCORE_API AssetDataStream : public AZ::IO::GenericStream
     {
     public:
         using VectorDataSource = AZStd::vector<AZ::u8, AZStd::allocator>;

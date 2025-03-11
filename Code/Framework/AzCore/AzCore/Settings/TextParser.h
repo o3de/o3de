@@ -11,6 +11,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/utility/expected.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZStd
 {
@@ -32,7 +33,7 @@ namespace AZ::Settings
     //! The TokenDelimiterFunc can be modified to change the token used to determine a text entry
     //! For example if the TokenDelimiterFunc returns true of '\0', then every time a NUL delimited blob is found
     //! the ParseTextEntryFunc will be invoked
-    struct TextParserSettings
+    struct AZCORE_API TextParserSettings
     {
         //! Function which is invoked for each "text entry" of the text file
         //! A text entry is determined as a block of text delimited by the result of the TokenDelimiterFunc
@@ -73,5 +74,5 @@ namespace AZ::Settings
     //!        as well as the callback function to invoke on each split "line"
     //! @return success outcome if the text file was parsed without error,
     //! otherwise a failure string is provided with the parse error
-    TextParseOutcome ParseTextFile(AZ::IO::GenericStream& stream, const TextParserSettings& textParserSettings);
+    AZCORE_API TextParseOutcome ParseTextFile(AZ::IO::GenericStream& stream, const TextParserSettings& textParserSettings);
 } // namespace AZ::Settings

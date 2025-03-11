@@ -21,6 +21,7 @@
 #include <AzCore/std/containers/intrusive_list.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Data
 {
@@ -108,7 +109,7 @@ namespace AZ
         /*
          * This is the base class for Async AssetDatabase jobs
          */
-        class AssetDatabaseJob
+        class AZCORE_API AssetDatabaseJob
             : public AZStd::intrusive_list_node<AssetDatabaseJob>
         {
             friend class AssetManager;
@@ -133,7 +134,7 @@ namespace AZ
          * If an asset is ready at the time you connect to AssetBus or GetAsset() is called,
          * your handler will be notified immediately, otherwise all events are dispatched asynchronously.
          */
-        class AssetManager
+        class AZCORE_API AssetManager
             : private AssetManagerBus::Handler
         {
             friend class AssetData;
@@ -514,7 +515,7 @@ namespace AZ
          }
 
          */
-        class AssetHandler
+        class AZCORE_API AssetHandler
         {
             friend class AssetManager;
             friend class AssetData;
@@ -604,7 +605,7 @@ namespace AZ
          *
          * Asset catalogs functions may be called from multiple threads, so make sure your code is thread safe.
          */
-        class AssetCatalog
+        class AZCORE_API AssetCatalog
         {
         public:
             virtual ~AssetCatalog() {}

@@ -81,7 +81,7 @@ ly_add_target(
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     COMPILE_DEFINITIONS
         PRIVATE
-            AZCORE_EXPORTS
+            AZCORE_STATIC_EXPORTS
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -107,6 +107,9 @@ ly_add_target(
     NAMESPACE AZ
     FILES_CMAKE
         AzCore/azcoreshared_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AZCORE_EXPORTS
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore.Static

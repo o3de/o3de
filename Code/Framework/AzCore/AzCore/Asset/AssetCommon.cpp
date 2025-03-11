@@ -14,6 +14,8 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(Data::AssetEvents);
+
 namespace AZ::Data
 {
     AssetFilterInfo::AssetFilterInfo(const AssetId& id, const AssetType& assetType, AssetLoadBehavior loadBehavior)
