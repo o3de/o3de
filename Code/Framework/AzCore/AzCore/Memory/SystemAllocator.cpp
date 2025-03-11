@@ -168,6 +168,13 @@ namespace AZ
     //=========================================================================
     auto SystemAllocator::deallocate(pointer ptr, size_type byteSize, [[maybe_unused]] size_type alignment) -> size_type
     {
+        // It is valid to call "free" on a nullptr and it should produce no action.
+        // Early out here to avoid calling something like AZ_OS_MSIZE, which may not be valid on nullptr.
+        if (!ptr)
+        {
+            return 0;
+        }
+
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
             byteSize = byteSize == 0 ? AZ_OS_MSIZE(ptr, alignment) : byteSize;
