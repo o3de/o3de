@@ -218,20 +218,13 @@ namespace EMotionFX
          */
         typedef AZStd::unordered_map<AZStd::string, MotionSet::MotionEntry*> MotionEntries;
         const MotionEntries& GetMotionEntries() const;
-#if defined(CARBONATED)
-        // motion entries can be edited while the motion set is being loaded, so use lock/unlock if you call the above function
-        MCORE_INLINE AZStd::shared_mutex& GetMotionEntriesMutex() { return m_motionEntriesMutex; }
-#endif
+        
         /**
          * Gets child motions recursively.
          * Every Motion* returned in childMotions will have directly or indirectly this MotionSet as a parent
          * @param[out] childMotions set where the child motions are returned.
          */
-#if defined(CARBONATED)
-        void RecursiveGetMotions(AZStd::unordered_set<Motion*>& childMotions);
-#else
         void RecursiveGetMotions(AZStd::unordered_set<Motion*>& childMotions) const;
-#endif
         
         /**
          * Preallocate the array of motion entries.
@@ -256,21 +249,11 @@ namespace EMotionFX
          * @param[in] motion A pointer to the motion.
          * @result A pointer to the motion entry for the given motion. nullptr in case no motion entry has been found.
          */
-#if defined(CARBONATED)
-        MotionEntry* FindMotionEntry(const Motion* motion);
-#else
         MotionEntry* FindMotionEntry(const Motion* motion) const;
-#endif
 
-#if defined(CARBONATED)
-        MotionEntry* FindMotionEntryById(const AZStd::string& motionId);
-        MotionEntry* RecursiveFindMotionEntryById(const AZStd::string& motionId);
-        Motion* RecursiveFindMotionById(const AZStd::string& motionId, bool loadOnDemand = true);
-#else
         MotionEntry* FindMotionEntryById(const AZStd::string& motionId) const;
         MotionEntry* RecursiveFindMotionEntryById(const AZStd::string& motionId) const;
         Motion* RecursiveFindMotionById(const AZStd::string& motionId, bool loadOnDemand = true) const;
-#endif
         MotionSet* RecursiveFindMotionSetByName(const AZStd::string& motionSetName, bool isOwnedByRuntime = false) const;
 
         /**
@@ -341,11 +324,7 @@ namespace EMotionFX
          * Generate a list of motion identifications strings. This will walk over all motions and get their id strings.
          * @param[out] idStrings A list of motion identification strings from the motions inside the motion set. Make sure the array is empty before calling this function.
          */
-#if defined(CARBONATED)
-        void BuildIdStringList(AZStd::vector<AZStd::string>& idStrings);
-#else
         void BuildIdStringList(AZStd::vector<AZStd::string>& idStrings) const;
-#endif
         
         /**
          * Recursively find the root motion set.
@@ -410,11 +389,7 @@ namespace EMotionFX
         * Get the number of motion entries that contain morph data.
         * @result The number of motion entries that contain morph data.
         */
-#if defined(CARBONATED)
-        size_t GetNumMorphMotions();
-#else
         size_t GetNumMorphMotions() const;
-#endif
 
     private:
         void RecursiveRewireParentSets(MotionSet* motionSet);
@@ -431,10 +406,6 @@ namespace EMotionFX
         bool                                        m_dirtyFlag;            /**< The dirty flag which indicates whether the user has made changes to the motion set since the last file save operation. */
         bool                                        m_autoUnregister;       /**< Specifies whether we will automatically unregister this motion set from the motion manager or not, when deleting this object. */
         
-#if defined(CARBONATED)
-        AZStd::shared_mutex m_motionEntriesMutex;
-#endif
-
 #if defined(EMFX_DEVELOPMENT_BUILD)
         bool                                        m_isOwnedByRuntime; /**< Set if this motion set belongs to the engine runtime, as opposed to the tool suite. */
         bool                                        m_isOwnedByAsset;        /**< Set if the anim graph is used/owned by an asset. */

@@ -975,9 +975,6 @@ namespace CommandSystem
     void ClearMotionSetMotions(EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
     {
         const EMotionFX::Motion* selectedMotion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
-#if defined(CARBONATED)
-        AZStd::shared_lock<AZStd::shared_mutex> readLock(motionSet->GetMotionEntriesMutex());
-#endif
         const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
         if (motionEntries.empty())
         {
