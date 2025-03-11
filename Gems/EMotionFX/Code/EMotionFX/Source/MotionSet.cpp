@@ -87,7 +87,6 @@ namespace EMotionFX
         : m_motion(nullptr)
         , m_loadFailed(false)
     {
-        //AZ_Info("mmm", "MotionEntry::MotionEntry");
     }
 
 
@@ -97,14 +96,11 @@ namespace EMotionFX
         , m_motion(motion)
         , m_loadFailed(false)
     {
-        //AZ_Info("mmm", "MotionEntry::MotionEntry %s %s", m_motion->GetName(), m_filename.c_str());
     }
 
 
     MotionSet::MotionEntry::~MotionEntry()
     {
-        //AZ_Info("mmm", "MotionEntry::~MotionEntry %s", m_motion ? m_motion->GetName() : (!m_filename.empty() ? m_filename.c_str() : "unknown"));
-        
         // if the motion is owned by the runtime, is going to be deleted by the asset system
         if (m_motion && !m_motion->GetIsOwnedByRuntime())
         {
@@ -181,8 +177,6 @@ namespace EMotionFX
         m_isOwnedByAsset     = false;
 #endif // EMFX_DEVELOPMENT_BUILD
 
-        AZ_Info("mmm", "MotionSet %p, num entries %d", this, int(m_motionEntries.size()));
-
 #if defined(CARBONATED)
         // moved to InitAfterLoading()
 #else
@@ -198,14 +192,11 @@ namespace EMotionFX
     {
         m_parentSet = parent;
         SetName(name);
-        AZ_Info("mmm", "MotionSet with parent %p %s", this, name);
     }
 
 
     MotionSet::~MotionSet()
     {
-        AZ_Info("mmm", "~MotionSet %p %s, unregister=%d", this, GetName(), m_autoUnregister);
-        
         GetEventManager().OnDeleteMotionSet(this);
 
         // Automatically unregister the motion set.
@@ -279,7 +270,6 @@ namespace EMotionFX
     // Remove all motion entries from the set.
     void MotionSet::Clear()
     {
-        AZ_Info("mmm", "Clear motion set %p", this);
 #if defined(CARBONATED)
         AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
 #else
@@ -296,7 +286,6 @@ namespace EMotionFX
 
     void MotionSet::AddMotionEntry(MotionEntry* motionEntry)
     {
-        AZ_Info("mmm", "motion set %p, add motion entry with motion %p %s", this, motionEntry->GetMotion(), motionEntry->GetMotion()->GetName());
 #if defined(CARBONATED)
         AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
 #else
@@ -393,8 +382,6 @@ namespace EMotionFX
 
     void MotionSet::ReserveMotionEntries(size_t numMotionEntries)
     {
-        AZ_Info("mmm", "ReserveMotionEntries %p %d", this, int(numMotionEntries));
-
 #if defined(CARBONATED)
         AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
 #else
@@ -431,7 +418,6 @@ namespace EMotionFX
     void MotionSet::RemoveMotionEntry(MotionEntry* motionEntry)
     {
 #if defined(CARBONATED)
-        AZ_Info("mmm", "Remove motion entry from %p with motion %p %s", this, motionEntry->GetMotion(), motionEntry->GetMotion()->GetName());
         {
             AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
             m_motionEntries.erase(motionEntry->GetId());
@@ -612,7 +598,6 @@ namespace EMotionFX
 
     void MotionSet::SetMotionEntryId(MotionEntry* motionEntry, const AZStd::string& newMotionId)
     {
-        AZ_Info("mmm", "SetMotionEntryId %p %s to %s", this, motionEntry->GetMotion()->GetName(), newMotionId.c_str());
 #if defined(CARBONATED)
         AZStd::unique_lock<AZStd::shared_mutex> writeLock(m_motionEntriesMutex);
 #endif
@@ -664,12 +649,13 @@ namespace EMotionFX
             if (entry->GetLoadingFailed())
             {
                 AZ_Info("EMotionFXdebug", "Motion loading previously failed '%s' for motion set '%s'", entry->GetFilename(), GetName());
-
             }
+            /* uncomment this on if set the callback to nullptr in the constructor again
             if (m_callback == nullptr)
             {
                 AZ_Info("EMotionFXdebug", "Motion loading callback is unassigned '%s' for motion set '%s'", entry->GetFilename(), GetName());
             }
+            */
         }
 #endif
         return motion;
@@ -1064,8 +1050,6 @@ namespace EMotionFX
     void MotionSet::InitAfterLoading()
     {
 #if defined(CARBONATED)
-        AZ_Info("mmm", "MotionSet::InitAfterLoading %p, num entries %d", this, int(m_motionEntries.size()));
-        
         // Automatically register the motion set.
         GetMotionManager().AddMotionSet(this);
 

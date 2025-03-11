@@ -63,8 +63,6 @@ namespace EMotionFX
     // clear the motion manager
     void MotionManager::Clear(bool delFromMemory)
     {
-        AZ_Info("mmm", "MotionManager::Clear del=%d", delFromMemory);
-        
         if (delFromMemory)
         {
             // destroy all motion sets, they will internally call RemoveMotionSetWithoutLock(this) in their destructor
@@ -344,8 +342,6 @@ namespace EMotionFX
 
         Motion* motion = m_motions[index];
 
-        AZ_Info("mmm", "RemoveMotionWithoutLock %d %s %s, del=%d", index, motion->GetName(), motion->GetFileName(), delFromMemory);
-
         // stop all motion instances of the motion to delete
         const size_t numActorInstances = GetActorManager().GetNumActorInstances();
         for (size_t i = 0; i < numActorInstances; ++i)
@@ -374,38 +370,28 @@ namespace EMotionFX
         }
 
         // Reset all motion entries in the motion sets of the current motion.
-        int msi = 0;
         for (MotionSet* motionSet : m_motionSets)
         {
 #if defined(CARBONATED)
             AZStd::shared_lock<AZStd::shared_mutex> readLock(motionSet->GetMotionEntriesMutex());
 #endif
             const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
-            AZ_Info("mmm", "  motion set N %d, %p %s, num entries %d", msi, motionSet, motionSet->GetName(), motionEntries.size());
-            int mei = 0;
             for (const auto& item : motionEntries)
             {
                 EMotionFX::MotionSet::MotionEntry* motionEntry = item.second;
-                
+#if defined(CARBONATED)
                 if (motionEntry == nullptr)
                 {
-                    AZ_Info("mmm", "    motion entry N %d, but nullptr, motion set %p", mei, motionSet);
-                    AZ_Info("mmm", "    num entries %d", motionEntries.size());
-                    mei++;
-                    break;  // the motionEntry cotainer is broken, run awat from it
+                    AZ_Error("EMotionFXdebug", false, "motion entry nullptr, motion set %p, num entries %d", motionSet, motionEntries.size());
+                    AZ_Assert(false, "Motion entry container concurrency error");
+                    break;  // if the motionEntry cotainer is changed by a concurrent thread, then run awat from it
                 }
-
+#endif
                 if (motionEntry->GetMotion() == motion)
                 {
-                    AZ_Info("mmm", "    found motion entry N %d, %s, msi=%d", mei, item.first.c_str(), msi);
-
                     motionEntry->Reset();
                 }
-                
-                mei++;
             }
-
-            msi++;
         }
 
         // stop all motion instances of the motion to delete inside the motion nodes and reset their unique data
@@ -436,24 +422,7 @@ namespace EMotionFX
     // add a new motion set
     void MotionManager::AddMotionSet(MotionSet* motionSet)
     {
-        AZ_Info("mmm", "Add motion set %p", motionSet);
-        
         MCore::LockGuard lock(m_lock);
-        /*
-        int msi = 0;
-        for (const MotionSet* m : m_motionSets)
-        {
-            //AZ_Info("mmm", "  motion set N %d, %p", msi, m;
-
-            if (m == motionSet)
-            {
-                AZ_Error("EMotionFXdebug", false, "Double motion set %p %s", motionSet, motionSet->GetName());
-                return;
-            }
-            
-            msi++;
-        }
-        */
         m_motionSets.emplace_back(motionSet);
     }
 
@@ -463,13 +432,10 @@ namespace EMotionFX
     {
         if (index == InvalidIndex)
         {
-            AZ_Error("mmm", false, "RemoveMotionSetWithoutLock invalid index");
             return false;
         }
 
         MotionSet* motionSet = m_motionSets[index];
-
-        AZ_Info("mmm", "RemoveMotionSetWithoutLock %d %p %s del=%d", index, motionSet, motionSet->GetName(), delFromMemory);
 
         // remove from the parent
         MotionSet* parentSet = motionSet->GetParentSet();
@@ -497,13 +463,6 @@ namespace EMotionFX
 
         m_motionSets.erase(AZStd::next(begin(m_motionSets), index));
         
-        int msi = 0;
-        for (const MotionSet* m : m_motionSets)
-        {
-            AZ_Info("mmm", "  motion set N %d, %p %s", msi, m, m->GetName());
-            msi++;
-        }
-
         return true;
     }
 

@@ -400,7 +400,6 @@ namespace EMotionFX
         Motion* result = LoadMotion(fileBuffer, fileSize, settings);
         if (result)
         {
-            AZ_Info("EMotionFXdebug", "Importer::LoadMotion load from file %s success", filename.c_str());
             result->SetFileName(filename.c_str());
             AZStd::string motionName;
             AzFramework::StringFunc::Path::GetFileName(filename.c_str(), motionName);
@@ -537,10 +536,6 @@ namespace EMotionFX
         ResetSharedData(sharedData);
         sharedData.clear();
 
-        if (motion->GetReferenceCount() != 1)
-        {
-            AZ_Info("EMotionFXdebug", "motion->GetReferenceCount() is %d", motion->GetReferenceCount());
-        }
 #if defined(CARBONATED)
         GetMotionManager().AddMotion(motion);  // register the motion, it can be used by other threads from this moment
 #endif
