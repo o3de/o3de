@@ -16,11 +16,11 @@ namespace AZ::RHI
     {
         return ResourceView::GetDeviceResourceView<DeviceBufferView>(deviceIndex, m_descriptor);
     }
-    
+
     AZStd::unordered_map<int, uint32_t> BufferView::GetBindlessReadIndex() const
     {
         AZStd::unordered_map<int, uint32_t> result;
-    
+
         MultiDeviceObject::IterateDevices(
             GetResource()->GetDeviceMask(),
             [this, &result](int deviceIndex)
@@ -28,21 +28,25 @@ namespace AZ::RHI
                 result[deviceIndex] = GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex();
                 return true;
             });
-    
+
         return result;
     }
     
-    uint32_t BufferView::GetBindlessIndices(int deviceIndex, uint32_t* outReadWriteIndex) const
+    bool BufferView::GetBindlessIndices(int deviceIndex, uint32_t* outReadIndex, uint32_t* outReadWriteIndex) const
     {
         const auto& deviceBufferView = GetDeviceBufferView(deviceIndex);
         if (!deviceBufferView)
         {
-            return DeviceBufferView::InvalidBindlessIndex;
+            return false;
+        }
+        if (outReadIndex != nullptr)
+        {
+            *outReadIndex = deviceBufferView->GetBindlessReadIndex();
         }
         if (outReadWriteIndex != nullptr)
         {
             *outReadWriteIndex = deviceBufferView->GetBindlessReadWriteIndex();
         }
-        return deviceBufferView->GetBindlessReadIndex();
+        return true;
     }
 }

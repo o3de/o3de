@@ -46,7 +46,19 @@ namespace AZ
                 {
                     return AZ::RHI::DeviceBufferView::InvalidBindlessIndex;
                 }
-                return m_vertexIndicesBufferView->GetBindlessIndices(deviceIndex);
+                uint32_t readIndex = AZ::RHI::DeviceBufferView::InvalidBindlessIndex;
+                m_vertexIndicesBufferView->GetBindlessIndices(deviceIndex, &readIndex);
+                return readIndex;
+            }
+
+            AZStd::unordered_map<int, uint32_t> GetVertexIndicesBindlessReadIndex() const override
+            {
+                if (!m_vertexIndicesBufferView)
+                {
+                    AZStd::unordered_map<int, uint32_t> empty;
+                    return empty;
+                }
+                return m_vertexIndicesBufferView->GetBindlessReadIndex();
             }
 
             const AZ::RHI::Ptr<AZ::RHI::BufferView>& GetBufferView(const AZ::RHI::ShaderSemantic& shaderSemantic) const override
@@ -84,12 +96,30 @@ namespace AZ
                 {
                     return AZ::RHI::DeviceBufferView::InvalidBindlessIndex;
                 }
-                return m_bufferViewsBySemantic.at(shaderSemantic)->GetBindlessIndices(deviceIndex);
+                uint32_t readIndex = AZ::RHI::DeviceBufferView::InvalidBindlessIndex;
+                m_bufferViewsBySemantic.at(shaderSemantic)->GetBindlessIndices(deviceIndex, &readIndex);
+                return readIndex;
             }
 
             uint32_t GetStreamBufferViewBindlessReadIndex(int deviceIndex, const char* semanticName) const override
             {
                 return GetStreamBufferViewBindlessReadIndex(deviceIndex, AZ::RHI::ShaderSemantic::Parse(semanticName));
+            }
+
+            AZStd::unordered_map<int, uint32_t> GetStreamBufferViewBindlessReadIndex(
+                const AZ::RHI::ShaderSemantic& shaderSemantic) const override
+            {
+                if (!m_bufferViewsBySemantic.contains(shaderSemantic))
+                {
+                    AZStd::unordered_map<int, uint32_t> empty;
+                    return empty;
+                }
+                return m_bufferViewsBySemantic.at(shaderSemantic)->GetBindlessReadIndex();
+            }
+
+            AZStd::unordered_map<int, uint32_t> GetStreamBufferViewBindlessReadIndex(const char* semanticName) const override
+            {
+                return GetStreamBufferViewBindlessReadIndex(AZ::RHI::ShaderSemantic::Parse(semanticName));
             }
 
             uint32_t GetLodIndex() const override
@@ -109,25 +139,26 @@ namespace AZ
             uint32_t m_lodIndex; //Kept for informational purposes.
             uint32_t m_meshIndex; //Kept for informational purposes.
 
-            // This represents a View to the buffer that contains all the vertex indices
-            // loaded in GPU memory. If the BindlessSrg is enabled, which typically is the case,
+            // This represents a View to the buffer that contains all the vertex indices of a single mesh
+            // in GPU memory. If the BindlessSrg is enabled, which typically is the case,
             // you can query its BindlessSrg Read index.
             // REMARK: Typically this BufferView will be the same for all subMeshes because
             // we always map the whole range as defined in its AZ::RHI::Buffer, and this is done
-            // because most RHI require the Offset of a bufferView to be aligned to 16 bytes, which
+            // because most RHI backends require the Offset of a bufferView to be aligned to 16 bytes, which
             // is not often the case for a SubMesh. The workaround is to map the whole buffer with offset 0,
             // and the developer must feed the offset as a shader constant. The actual offset can be queried
-            // from @m_indexStreamBufferView.
+            // from @m_vertexIndicesIndexBufferView.
             AZ::RHI::Ptr<AZ::RHI::BufferView> m_vertexIndicesBufferView;
             // This works as a descriptor of Offset, number of bytes, etc, which is necessary
-            // when (@m_meshIndex > 0) because the Offset within @m_indexBufferView is different than zero.
-            // Typically the offset returned by @m_indexStreamBufferView.GetOffset() must be loaded as a shader constant
+            // when (@m_meshIndex > 0) because the Offset within @m_vertexIndicesBufferView is different than zero.
+            // Typically the offset returned by @m_vertexIndicesIndexBufferView.GetOffset() must be loaded as a shader constant
             // so the shader code knows how to read the indices at the correct offset from a ByteAddressBuffer.
             AZ::RHI::IndexBufferView m_vertexIndicesIndexBufferView;
 
             // This is the main dictionary of BufferViews which typically will be the same across all sub meshes.
-            // The reason it is the same across all sub meshes is because most RHI require the Offset of a bufferView to be aligned to 16 bytes, which
-            // is not often the case for a SubMesh. The workaround is to map the whole buffer with offset 0,
+            // The reason it is the same across all sub meshes is because most RHI backends require the Offset
+            // of a bufferView to be aligned to 16 bytes, which is not often the case for a SubMesh.
+            // The workaround is to map the whole buffer with offset 0,
             // and the developer must feed the offset as a shader constant. The actual offset can be queried
             // from @m_streamBufferViewsBySemantic.
             using BufferViewsBySemantic = AZStd::unordered_map<AZ::RHI::ShaderSemantic, AZ::RHI::Ptr<AZ::RHI::BufferView>>;

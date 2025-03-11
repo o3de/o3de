@@ -94,7 +94,7 @@ namespace AZ
             // By default it is NOT defined.
             // When defined, the value of @m_modelLodMeshIndex (aka subMesh index) is written
             // to the shader constant.
-            static constexpr AZStd::string_view DrawSrgModelLodMeshIndex = "m_modelLodMeshIndex";
+            RHI::ShaderInputNameIndex m_drawSrgModelLodMeshIndex = "m_modelLodMeshIndex";
 
             Ptr<RHI::DrawPacket> m_drawPacket;
 

@@ -29,13 +29,16 @@ namespace AZ
             //! REMARK: If the BindlessSrg is enabled, which typically is, this buffer view is already bound
             //! as a ByteAddressBuffer
             virtual const AZ::RHI::Ptr<AZ::RHI::BufferView>& GetVertexIndicesBufferView() const = 0;
-            //! Returns the StreamBufferView from the Vertex Indices, which is useful to know the actual
+            //! Returns the IndexBufferView from the Vertex Indices, which is useful to know the actual
             //! byte offset, byte count, etc related to the sub mesh(Mesh Index). 
             virtual const AZ::RHI::IndexBufferView& GetVertexIndicesIndexBufferView() const = 0;
             //! A shortcut to get the Read Index from the BindlessSrg for the IndexBufferView.
             //! Alternatively, you could get the same index by getting it directly from the AZ::RHI::BufferView
             //! returned by GetIndexBufferView()
             virtual uint32_t GetVertexIndicesBindlessReadIndex(int deviceIndex) const = 0;
+            //! Same as above, but conveniently returns all the indices across all available devices
+            //! in an unordered_map.
+            virtual AZStd::unordered_map<int, uint32_t> GetVertexIndicesBindlessReadIndex() const = 0;
 
             //! Returns the Shader-bindable RHI::BufferView for a Vertex Stream, identifiable by @shaderSemantic, from a particular mesh.
             virtual const AZ::RHI::Ptr<AZ::RHI::BufferView>& GetBufferView(const AZ::RHI::ShaderSemantic& shaderSemantic) const = 0;
@@ -54,6 +57,12 @@ namespace AZ
             //! returned by GetBufferView().
             virtual uint32_t GetStreamBufferViewBindlessReadIndex(int deviceIndex, const AZ::RHI::ShaderSemantic& shaderSemantic) const = 0;
             virtual uint32_t GetStreamBufferViewBindlessReadIndex(int deviceIndex, const char* semanticName) const = 0;
+            //! Same as above, but conveniently returns all the indices across all available devices
+            //! in an unordered_map.
+            virtual AZStd::unordered_map<int, uint32_t> GetStreamBufferViewBindlessReadIndex(
+                const AZ::RHI::ShaderSemantic& shaderSemantic) const = 0;
+            virtual AZStd::unordered_map<int, uint32_t> GetStreamBufferViewBindlessReadIndex(
+                const char* semanticName) const = 0;
 
             //! For informational purposes. Returns the LOD Index of the Mesh.
             virtual uint32_t GetLodIndex() const = 0;
