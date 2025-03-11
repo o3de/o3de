@@ -3384,10 +3384,10 @@ namespace WhiteBox
             AZStd::lock_guard lg(g_omSerializationLock);
 
             std::stringstream whiteBoxStream;
+            // OpenMesh 11.x + requires you to specify "Custom" options to write custom properties such as our polygons or those will be skipped
             if (OpenMesh::IO::write_mesh(
                     whiteBox.mesh, whiteBoxStream, ".om",
-                    OpenMesh::IO::Options::Binary | OpenMesh::IO::Options::FaceTexCoord |
-                        OpenMesh::IO::Options::FaceNormal))
+                    OpenMesh::IO::Options::Binary | OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal | OpenMesh::IO::Options::Custom))
             {
                 const std::string outputStr = whiteBoxStream.str();
                 output.clear();
@@ -3431,8 +3431,9 @@ namespace WhiteBox
                 return ReadResult::Error;
             }
 
+            // OpenMesh 11.x + requires you to specify "Custom" options to read custom properties such as our polygons or those will be skipped
             AZStd::lock_guard lg(g_omSerializationLock);
-            OpenMesh::IO::Options options{OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal};
+            OpenMesh::IO::Options options{OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal | OpenMesh::IO::Options::Custom};
             return OpenMesh::IO::read_mesh(whiteBox.mesh, input, ".om", options) ? ReadResult::Full : ReadResult::Error;
         }
 
