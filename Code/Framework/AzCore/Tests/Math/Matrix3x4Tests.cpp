@@ -1010,6 +1010,14 @@ namespace UnitTest
         EXPECT_NEAR(matrix2.GetTranspose3x3().GetDeterminant3x3(), expected2, 1e-3f);
     }
 
+    // Use of INFINITY in newer Windows SDKs trigger a math overflow warning because it redefines INFINITY
+    // as (huge number * huge number) instead of the previous definition of just (huge number).  The multiplication
+    // operation triggers the overflow warning.
+
+    // We still want that warning globally in the code but we don't want it in this test, specifically, which uses it
+    // to validate that we can detect infinite matrices that come about from runtime operations.
+    AZ_PUSH_DISABLE_WARNING(4756, "-Wunknown-warning-option")  //warning C4756: overflow in constant arithmetic
+
     TEST(MATH_Matrix3x4, IsFinite)
     {
         AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromQuaternionAndTranslation(
@@ -1040,4 +1048,5 @@ namespace UnitTest
             }
         }
     }
+    AZ_POP_DISABLE_WARNING
 } // namespace UnitTest
