@@ -15,7 +15,7 @@
 
 ///////////////////////////////////////////////////////
 template<class V>
-IAnimTrack* CVectorKeyUIControlsBase<typename V>::GetCompoundTrackFromKeys(const CTrackViewKeyBundle& selectedKeys)
+IAnimTrack* CVectorKeyUIControlsBase<V>::GetCompoundTrackFromKeys(const CTrackViewKeyBundle& selectedKeys)
 {
     if ((selectedKeys.GetKeyCount() < 1) || !selectedKeys.AreAllKeysOfSameType())
     {
