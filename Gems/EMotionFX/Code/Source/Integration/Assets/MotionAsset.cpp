@@ -10,6 +10,9 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Importer/Importer.h>
 #include <EMotionFX/Source/Motion.h>
+#if defined(CARBONATED)
+#include <EMotionFX/Source/MotionManager.h>
+#endif
 
 namespace EMotionFX
 {
@@ -36,14 +39,19 @@ namespace EMotionFX
             assetData->m_emfxMotion = EMotionFXPtr<EMotionFX::Motion>::MakeFromNew(EMotionFX::GetImporter().LoadMotion(
                 assetData->m_emfxNativeData.data(),
                 assetData->m_emfxNativeData.size(),
+#if defined(CARBONATED)
+                nullptr, false));  // do not register the motion, let register it after MakeFromNew call to avoid ref count == 1 assertion
+#else
                 nullptr));
-
+#endif
             if (assetData->m_emfxMotion)
             {
                 assetData->m_emfxMotion->SetIsOwnedByRuntime(true);
 #if defined(CARBONATED)
                 assetData->m_emfxMotion->SetName("<FromAsset>");
                 assetData->m_emfxMotion->SetFileName(asset.GetHint().c_str());
+                
+                GetMotionManager().AddMotion(assetData->m_emfxMotion.get());  // register the motion, it can be used by other threads from this moment
 #endif
             }
 

@@ -463,7 +463,15 @@ namespace EMotionFX
         return result;
     }
 
-
+#if defined(CARBONATED)
+    Motion* Importer::LoadMotion(uint8* memoryStart, size_t lengthInBytes, MotionSettings* settings, bool doRegisterMotion)
+    {
+        MCore::MemoryFile memFile;
+        memFile.Open(memoryStart, lengthInBytes);
+        Motion* result = LoadMotion(&memFile, settings, doRegisterMotion);
+        return result;
+    }
+#else
     Motion* Importer::LoadMotion(uint8* memoryStart, size_t lengthInBytes, MotionSettings* settings)
     {
         MCore::MemoryFile memFile;
@@ -471,10 +479,14 @@ namespace EMotionFX
         Motion* result = LoadMotion(&memFile, settings);
         return result;
     }
-
+#endif
 
     // try to load a motion from an MCore file
+#if defined(CARBONATED)
+    Motion* Importer::LoadMotion(MCore::File* f, MotionSettings* settings, bool doRegisterMotion)
+#else
     Motion* Importer::LoadMotion(MCore::File* f, MotionSettings* settings)
+#endif
     {
         MCORE_ASSERT(f);
         MCORE_ASSERT(f->GetIsOpen());
@@ -537,7 +549,10 @@ namespace EMotionFX
         sharedData.clear();
 
 #if defined(CARBONATED)
-        GetMotionManager().AddMotion(motion);  // register the motion, it can be used by other threads from this moment
+        if (doRegisterMotion)
+        {
+            GetMotionManager().AddMotion(motion);  // register the motion, it can be used by other threads from this moment
+        }
 #endif
         return motion;
     }
