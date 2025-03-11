@@ -281,7 +281,6 @@ namespace EMotionFX
     void MotionSet::AddMotionEntry(MotionEntry* motionEntry)
     {
         MCore::LockGuardRecursive lock(m_mutex);
-
         m_motionEntries.insert(AZStd::make_pair(motionEntry->GetId(), motionEntry));
     }
 
@@ -298,7 +297,7 @@ namespace EMotionFX
     void MotionSet::BuildIdStringList(AZStd::vector<AZStd::string>& idStrings) const
     {
         MCore::LockGuardRecursive lock(m_mutex);
-        
+
         // Iterate through all entries and add their unique id strings to the given list.
         const size_t numMotionEntries = m_motionEntries.size();
         idStrings.reserve(numMotionEntries);
@@ -339,7 +338,6 @@ namespace EMotionFX
             childMotionSet->RecursiveGetMotions(childMotions);
         }
     }
-       
 
     void MotionSet::ReserveMotionEntries(size_t numMotionEntries)
     {
@@ -423,6 +421,7 @@ namespace EMotionFX
 
         return iterator->second;
     }
+
 
     // Find the motion entry by string ID.
     MotionSet::MotionEntry* MotionSet::RecursiveFindMotionEntryById(const AZStd::string& motionId) const

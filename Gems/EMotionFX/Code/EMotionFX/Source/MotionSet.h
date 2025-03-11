@@ -218,14 +218,14 @@ namespace EMotionFX
          */
         typedef AZStd::unordered_map<AZStd::string, MotionSet::MotionEntry*> MotionEntries;
         const MotionEntries& GetMotionEntries() const;
-        
+
         /**
          * Gets child motions recursively.
          * Every Motion* returned in childMotions will have directly or indirectly this MotionSet as a parent
          * @param[out] childMotions set where the child motions are returned.
          */
         void RecursiveGetMotions(AZStd::unordered_set<Motion*>& childMotions) const;
-        
+
         /**
          * Preallocate the array of motion entries.
          * This will NOT grow the motion entries array as reported by GetNumMotionEntries(). However, it internally pre-allocates memory to make the AddMotionEntry() calls faster.
@@ -250,6 +250,7 @@ namespace EMotionFX
          * @result A pointer to the motion entry for the given motion. nullptr in case no motion entry has been found.
          */
         MotionEntry* FindMotionEntry(const Motion* motion) const;
+
 
         MotionEntry* FindMotionEntryById(const AZStd::string& motionId) const;
         MotionEntry* RecursiveFindMotionEntryById(const AZStd::string& motionId) const;
@@ -325,7 +326,7 @@ namespace EMotionFX
          * @param[out] idStrings A list of motion identification strings from the motions inside the motion set. Make sure the array is empty before calling this function.
          */
         void BuildIdStringList(AZStd::vector<AZStd::string>& idStrings) const;
-        
+
         /**
          * Recursively find the root motion set.
          * This will return a pointer to itself when this is a root motion set already.
@@ -391,6 +392,7 @@ namespace EMotionFX
         */
         size_t GetNumMorphMotions() const;
 
+
     private:
         void RecursiveRewireParentSets(MotionSet* motionSet);
         void InitAfterLoading();
@@ -405,7 +407,7 @@ namespace EMotionFX
         uint32                                      m_id;                   /**< The unique identification number for the motion set. */
         bool                                        m_dirtyFlag;            /**< The dirty flag which indicates whether the user has made changes to the motion set since the last file save operation. */
         bool                                        m_autoUnregister;       /**< Specifies whether we will automatically unregister this motion set from the motion manager or not, when deleting this object. */
-        
+
 #if defined(EMFX_DEVELOPMENT_BUILD)
         bool                                        m_isOwnedByRuntime; /**< Set if this motion set belongs to the engine runtime, as opposed to the tool suite. */
         bool                                        m_isOwnedByAsset;        /**< Set if the anim graph is used/owned by an asset. */

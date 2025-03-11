@@ -975,6 +975,7 @@ namespace CommandSystem
     void ClearMotionSetMotions(EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
     {
         const EMotionFX::Motion* selectedMotion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
+
         const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
         if (motionEntries.empty())
         {

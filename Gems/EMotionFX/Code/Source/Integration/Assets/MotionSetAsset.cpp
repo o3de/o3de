@@ -172,6 +172,7 @@ namespace EMotionFX
                 }
                 assetData->m_emfxMotionSet->SetFilename(assetFilename.c_str());
             }
+
             // now load them in:
             const EMotionFX::MotionSet::MotionEntries& motionEntries = assetData->m_emfxMotionSet->GetMotionEntries();
             // Get the motions in the motion set.  Escalate them to the top of the build queue first so that they can be done in parallel.
@@ -233,6 +234,7 @@ namespace EMotionFX
                     AZ_Warning("EMotionFX", false, "Motion \"%s\" in motion set \"%s\" could not be found in the asset catalog.", motionFilename, assetFilename.c_str());
                 }
             }
+
             // Set motion set's motion load callback, so if EMotion FX queries back for a motion,
             // we can pull the one managed through an AZ::Asset.
             assetData->m_emfxMotionSet->SetCallback(aznew CustomMotionSetCallback(asset));
