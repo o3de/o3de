@@ -143,12 +143,6 @@ namespace AZ::Data
             , m_loadParams(loadParams)
             , m_signalLoaded(signalLoaded)
         {
-            //AZ_Info("www", "LoadAssetJob for %s", asset.GetHint().c_str());
-            if (strstr(asset.GetHint().c_str(), "assassin_m.motionset") != nullptr)
-            {
-                AZ_Info("www", "Load target asset data %s", asset.GetHint().c_str());
-            }
-
             AZ_Assert(m_dataStream, "Data stream pointer received through the callback from AZ::IO::Streamer is invalid.");
 
             AZ_Assert((m_requestState == AZ::IO::IStreamerTypes::RequestStatus::Completed)
@@ -1030,11 +1024,6 @@ namespace AZ::Data
         AZ_PROFILE_SCOPE(AzCore, "GetAsset: %s", assetInfo.m_relativePath.c_str());
 #if defined(CARBONATED)
         ASSET_TAG(assetInfo.m_relativePath.c_str());
-
-        if (strstr(assetInfo.m_relativePath.c_str(), "assassin_m.motionset") != nullptr)
-        {
-            AZ_Info("www", "Get target asset %s", assetInfo.m_relativePath.c_str());
-        }
 #endif
         AZStd::shared_ptr<AssetDataStream> dataStream;
         AssetStreamInfo loadInfo;

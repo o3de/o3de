@@ -92,7 +92,7 @@ namespace EMotionFX
 
         MotionSetAsset::~MotionSetAsset()
         {
-            AZ_Info("mmm", "MotionSetAsset::~MotionSetAsset %s", m_emfxMotionSet ? m_emfxMotionSet->GetName() : "none");
+            AZ_Info("mmm", "~MotionSetAsset, motion set %p %s", m_emfxMotionSet.get(), m_emfxMotionSet ? m_emfxMotionSet->GetName() : "none");
 
             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         }
@@ -152,10 +152,6 @@ namespace EMotionFX
                 AZ_Error("EMotionFX", false, "Failed to initialize motion set asset %s", asset.GetHint().c_str());
                 return false;
             }
-            {
-                const long long t = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
-                AZ_Info("EMotionFXdebug", "OnInitAsset for motion set '%s' at %llu", assetData->m_emfxMotionSet->GetName(), t);
-            }
             // The following code is required to be set so the FileManager detects changes to the files loaded
             // through this method. Once EMotionFX is integrated to the asset system this can go away.
             AZStd::string assetFilename;
@@ -177,7 +173,10 @@ namespace EMotionFX
                 }
                 assetData->m_emfxMotionSet->SetFilename(assetFilename.c_str());
             }
-
+#if defined(CARBONATED)
+            {
+            AZStd::shared_lock<AZStd::shared_mutex> readLock(assetData->m_emfxMotionSet->GetMotionEntriesMutex());
+#endif
             // now load them in:
             const EMotionFX::MotionSet::MotionEntries& motionEntries = assetData->m_emfxMotionSet->GetMotionEntries();
             // Get the motions in the motion set.  Escalate them to the top of the build queue first so that they can be done in parallel.
@@ -239,13 +238,11 @@ namespace EMotionFX
                     AZ_Warning("EMotionFX", false, "Motion \"%s\" in motion set \"%s\" could not be found in the asset catalog.", motionFilename, assetFilename.c_str());
                 }
             }
-
+#if defined(CARBONATED)
+            }
+#endif
             // Set motion set's motion load callback, so if EMotion FX queries back for a motion,
             // we can pull the one managed through an AZ::Asset.
-            {
-                const long long t = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
-                AZ_Info("EMotionFXdebug", "Set callback from OnInitAsset for motion set '%s' at %llu", assetData->m_emfxMotionSet->GetName(), t);
-            }
             assetData->m_emfxMotionSet->SetCallback(aznew CustomMotionSetCallback(asset));
             assetData->ReleaseEMotionFXData();
 

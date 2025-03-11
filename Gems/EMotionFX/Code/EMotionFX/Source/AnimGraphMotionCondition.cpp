@@ -103,7 +103,11 @@ namespace EMotionFX
         // Early condition function check pass for the 'Is motion assigned?'. We can do this before retrieving the unique data.
         if (m_testFunction == FUNCTION_ISMOTIONASSIGNED || m_testFunction == FUNCTION_ISMOTIONNOTASSIGNED)
         {
+#if defined(CARBONATED)
+            EMotionFX::MotionSet* motionSet = animGraphInstance->GetMotionSet();
+#else
             const EMotionFX::MotionSet* motionSet = animGraphInstance->GetMotionSet();
+#endif
             if (!motionSet)
             {
                 return false;

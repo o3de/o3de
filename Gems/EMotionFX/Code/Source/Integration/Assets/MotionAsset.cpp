@@ -21,12 +21,13 @@ namespace EMotionFX
         MotionAsset::MotionAsset(AZ::Data::AssetId id)
             : EMotionFXAsset(id)
         {}
-
+        /*
         MotionAsset::~MotionAsset()
         {
             AZ_Info("mmm", "MotionAsset::~MotionAsset motion %s %s, refs %d", m_emfxMotion->GetName(), m_emfxMotion->GetFileName(), m_emfxMotion->GetReferenceCount());
         }
-
+        
+         */
 
         //////////////////////////////////////////////////////////////////////////
         void MotionAsset::SetData(EMotionFX::Motion* motion)
@@ -47,6 +48,10 @@ namespace EMotionFX
             if (assetData->m_emfxMotion)
             {
                 assetData->m_emfxMotion->SetIsOwnedByRuntime(true);
+#if defined(CARBONATED)
+                assetData->m_emfxMotion->SetName("<FromAsset>");
+                assetData->m_emfxMotion->SetFileName(asset.GetHint().c_str());
+#endif
             }
 
             assetData->ReleaseEMotionFXData();

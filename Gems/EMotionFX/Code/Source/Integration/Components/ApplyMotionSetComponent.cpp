@@ -60,20 +60,12 @@ namespace EMotionFX
             if (cfg.m_motionSetAssetMap.find(preferredGender) != cfg.m_motionSetAssetMap.end())
             {
                 fetchedGender = preferredGender;
-                AZ_Info("www", "found gender %d", fetchedGender);
-            }
-            else
-            {
-                AZ_Info("www", "gender not found use %d", fetchedGender);
             }
 
             AZ_Assert(cfg.m_motionSetAssetMap.find(fetchedGender) != cfg.m_motionSetAssetMap.end(), "Failed to find motion set for gender: %d", (int)fetchedGender);
             m_motionSetAsset = cfg.m_motionSetAssetMap[fetchedGender];
 
             AZ_Assert(m_motionSetAsset.GetId().IsValid(), "Motion Set Asset for gender (%d) is invalid!", (int)fetchedGender);
-
-            AZ_Info("www", "set motion set asset %s", m_motionSetAsset.GetHint().c_str());
-
 #endif
 
 #if defined(CARBONATED)
@@ -83,7 +75,6 @@ namespace EMotionFX
 #endif
             {
 #if defined(CARBONATED)
-                AZ_Info("www", "motion set is valid");
                 AnimGraphInstance* pInstance = nullptr;
 #else
                 AnimGraphInstance* pInstance;
@@ -98,13 +89,8 @@ namespace EMotionFX
                     auto& cfg = m_configuration;
                     MotionSet* motionSet = cfg.m_motionSetAsset.Get()->m_emfxMotionSet.get();
 #endif
-                    AZ_Info("www", "Do set %p", motionSet);
                     pInstance->SetMotionSet(motionSet);
                 }
-            }
-            else
-            {
-                AZ_Info("www", "motion set is INVALID");
             }
         }
 
