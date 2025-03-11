@@ -26,7 +26,6 @@ namespace EMotionFX
             AZ_CLASS_ALLOCATOR_DECL
 
             MotionAsset(AZ::Data::AssetId id = AZ::Data::AssetId());
-            //~MotionAsset();
 
             void SetData(EMotionFX::Motion* motion);  // Only Used for testing
             EMotionFXPtr<EMotionFX::Motion> m_emfxMotion;

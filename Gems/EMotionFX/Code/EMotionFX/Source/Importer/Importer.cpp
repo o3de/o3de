@@ -432,7 +432,7 @@ namespace EMotionFX
 
         // close the file again
         f.Close();
-        
+
         // create the motion reading from memory
         Motion* result = LoadMotion(fileBuffer, fileSize, settings);
         if (result)

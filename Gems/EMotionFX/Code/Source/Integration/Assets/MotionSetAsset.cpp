@@ -150,6 +150,7 @@ namespace EMotionFX
                 AZ_Error("EMotionFX", false, "Failed to initialize motion set asset %s", asset.GetHint().c_str());
                 return false;
             }
+            
             // The following code is required to be set so the FileManager detects changes to the files loaded
             // through this method. Once EMotionFX is integrated to the asset system this can go away.
             AZStd::string assetFilename;

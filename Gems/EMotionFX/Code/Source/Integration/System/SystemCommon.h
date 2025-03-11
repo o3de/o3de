@@ -66,6 +66,7 @@ namespace EMotionFX
             {
                 AZ_Assert(object, "CreateFromNew called with invalid object.");
                 AZ_Assert(object && object->GetReferenceCount() == 1, "Newly constructed EMotion FX objects are expected to have a referene count initialized to 1.");
+                
                 // EMotionFX initializes objects with a ref count already at 1. So for newly-constructed objects that we're
                 // managing through smart pointers, it's not necessary to increment ref count during initial acquisition.
                 EMotionFXPtr<ObjectType> ptr;
