@@ -24,6 +24,7 @@
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/LogManager.h>
 
+
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(MotionSet, MotionAllocator)
@@ -421,7 +422,7 @@ namespace EMotionFX
         }
 #else
         MCore::LockGuardRecursive lock(m_mutex);
-        
+
         m_motionEntries.erase(motionEntry->GetId());
         delete motionEntry;
 #endif
@@ -478,7 +479,7 @@ namespace EMotionFX
     MotionSet::MotionEntry* MotionSet::FindMotionEntryById(const AZStd::string& motionId) const
     {
         MCore::LockGuardRecursive lock(m_mutex);
-        
+
         const auto iterator = m_motionEntries.find(motionId);
         if (iterator == m_motionEntries.end())
         {
@@ -701,7 +702,7 @@ namespace EMotionFX
         }
 #else
         MCore::LockGuardRecursive lock(m_mutex);
-        
+
         for (const auto& item : m_motionEntries)
         {
             MotionEntry* motionEntry = item.second;
