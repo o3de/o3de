@@ -87,7 +87,13 @@ namespace Maestro
 
         bool IsKeySelected(int key) const override
         {
-            AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index is out of range");
+            bool valid = (key >= 0 && key < static_cast<int>(m_keys.size()));
+            AZ_Assert(valid, "Key index (%i) is out of range (%i)", key, static_cast<int>(m_keys.size()));
+            if (!valid)
+            {
+                return false;
+            }
+
             if (m_keys[key].flags & AKEY_SELECTED)
             {
                 return true;
@@ -97,7 +103,13 @@ namespace Maestro
 
         void SelectKey(int key, bool select) override
         {
-            AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index is out of range");
+            bool valid = (key >= 0 && key < static_cast<int>(m_keys.size()));
+            AZ_Assert(valid, "Key index (%i) is out of range (%i)", key, static_cast<int>(m_keys.size()));
+            if (!valid)
+            {
+                return;
+            }
+
             if (select)
             {
                 m_keys[key].flags |= AKEY_SELECTED;
@@ -331,6 +343,8 @@ namespace Maestro
         */
         virtual void SerializeKey(KeyType& key, XmlNodeRef& keyNode, bool bLoading) = 0;
 
+        void InitPostLoad([[maybe_unused]] IAnimSequence* sequence) override { }
+
         //////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////
         /** Get last key before specified time.
@@ -511,7 +525,12 @@ namespace Maestro
     template<class KeyType>
     inline float TAnimTrack<KeyType>::GetKeyTime(int index) const
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
+        bool valid = (index >= 0 && index < static_cast<int> (m_keys.size()));
+        AZ_Assert(valid, "Key index (%i) is out of range (%i)", index, static_cast<int>(m_keys.size()));
+        if (!valid)
+        {
+            return 0.0f;
+        }
         return m_keys[index].time;
     }
 

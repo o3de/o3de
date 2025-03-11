@@ -636,6 +636,9 @@ public:
     // Initializes track default values after de-serialization / user creation. Only called in editor.
     virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) = 0;
 
+    // Updates track default values before adding a new key at time, so that animated entity is not affected by adding a key
+    virtual void UpdateTrackDefaultValue(float time, IAnimTrack* pTrack) = 0;
+
     // Assign animation track to parameter.
     // if track parameter is NULL track with parameter id param will be removed.
     virtual void SetTrack(const CAnimParamType& paramType, IAnimTrack* track) = 0;
