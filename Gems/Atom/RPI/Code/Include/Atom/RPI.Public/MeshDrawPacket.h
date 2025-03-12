@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/Model/ModelLod.h>
 #include <Atom/RHI/DrawPacket.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 
 #include <AzCore/Math/Obb.h>
 #include <AzCore/std/containers/fixed_vector.h>
