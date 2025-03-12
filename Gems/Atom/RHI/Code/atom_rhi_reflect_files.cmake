@@ -132,5 +132,4 @@ set(FILES
     Source/RHI.Reflect/ShaderInputNameIndex.cpp
     Include/Atom/RHI.Reflect/VariableRateShadingEnums.h
     Include/Atom/RHI.Reflect/Allocators.h
-    Include/Atom/RHI.Reflect/SmallVector.h
 )

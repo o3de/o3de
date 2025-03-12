@@ -310,9 +310,9 @@ namespace AZ
                 AllocateDescriptorSetWithUnboundedArray();
             }
 
-            RHI::SmallVector<VkWriteDescriptorSet, ViewsFixedsize> writeDescSetDescs;
+            AZStd::small_vector<VkWriteDescriptorSet, ViewsFixedsize> writeDescSetDescs;
             writeDescSetDescs.reserve(m_updateData.size());
-            RHI::SmallVector<VkWriteDescriptorSetAccelerationStructureKHR, ViewsFixedsize> writeAccelerationStructureDescs;
+            AZStd::small_vector<VkWriteDescriptorSetAccelerationStructureKHR, ViewsFixedsize> writeAccelerationStructureDescs;
 
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
             {

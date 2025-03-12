@@ -6,8 +6,8 @@
  *
  */
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <Atom/RHI.Reflect/SmallVector.h>
 #include <Atom/RHI/DeviceShaderResourceGroupPool.h>
+#include <AtomCore/std/containers/small_vector.h>
 #include <RHI/Buffer.h>
 #include <RHI/Conversions.h>
 #include <RHI/DescriptorContext.h>
@@ -481,7 +481,7 @@ namespace AZ
 
             // Resolve source descriptors to platform handles.
             constexpr size_t FixedSize = 16;
-            RHI::SmallVector<D3D12_CPU_DESCRIPTOR_HANDLE, FixedSize> cpuSourceHandles;
+            AZStd::small_vector<D3D12_CPU_DESCRIPTOR_HANDLE, FixedSize> cpuSourceHandles;
             cpuSourceHandles.reserve(DescriptorCount);
             for (uint32_t i = 0; i < DescriptorCount; ++i)
             {
@@ -492,7 +492,7 @@ namespace AZ
             D3D12_CPU_DESCRIPTOR_HANDLE gpuDestinationHandle = GetCpuPlatformHandleForTable(gpuDestinationTable);
 
             // An array of descriptor sizes for each range. We just want N ranges with 1 descriptor each.
-            RHI::SmallVector<uint32_t, FixedSize> rangeCountsFixed;
+            AZStd::small_vector<uint32_t, FixedSize> rangeCountsFixed;
             rangeCountsFixed.resize(DescriptorCount, 1);
 
             //We are gathering N source descriptors into a contiguous destination table.

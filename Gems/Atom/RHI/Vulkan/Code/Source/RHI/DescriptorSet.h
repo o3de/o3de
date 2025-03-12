@@ -8,12 +8,12 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/SamplerState.h>
-#include <Atom/RHI.Reflect/SmallVector.h>
 #include <Atom/RHI/DeviceBuffer.h>
 #include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/DeviceImage.h>
 #include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RHI/DeviceObject.h>
+#include <AtomCore/std/containers/small_vector.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/span.h>
 #include <RHI/Buffer.h>
@@ -76,10 +76,10 @@ namespace AZ
             struct WriteDescriptorData
             {
                 uint32_t m_layoutIndex = 0;
-                RHI::SmallVector<VkDescriptorBufferInfo, ViewsFixedsize> m_bufferViewsInfo;
-                RHI::SmallVector<VkDescriptorImageInfo, ViewsFixedsize> m_imageViewsInfo;
-                RHI::SmallVector<VkBufferView, ViewsFixedsize> m_texelBufferViews;
-                RHI::SmallVector<VkAccelerationStructureKHR, ViewsFixedsize> m_accelerationStructures;
+                AZStd::small_vector<VkDescriptorBufferInfo, ViewsFixedsize> m_bufferViewsInfo;
+                AZStd::small_vector<VkDescriptorImageInfo, ViewsFixedsize> m_imageViewsInfo;
+                AZStd::small_vector<VkBufferView, ViewsFixedsize> m_texelBufferViews;
+                AZStd::small_vector<VkAccelerationStructureKHR, ViewsFixedsize> m_accelerationStructures;
             };
 
             DescriptorSet() = default;
@@ -98,7 +98,7 @@ namespace AZ
             void AllocateDescriptorSetWithUnboundedArray();
 
             template<typename T>
-            RHI::SmallVector<RHI::Interval, ViewsFixedsize> GetValidDescriptorsIntervals(const AZStd::span<T>& descriptorsInfo) const;
+            AZStd::small_vector<RHI::Interval, ViewsFixedsize> GetValidDescriptorsIntervals(const AZStd::span<T>& descriptorsInfo) const;
 
             static bool IsNullDescriptorInfo(const VkDescriptorBufferInfo& descriptorInfo);
             static bool IsNullDescriptorInfo(const VkDescriptorImageInfo& descriptorInfo);
@@ -107,7 +107,7 @@ namespace AZ
             Descriptor m_descriptor;
 
             VkDescriptorSet m_nativeDescriptorSet = VK_NULL_HANDLE;
-            RHI::SmallVector<WriteDescriptorData, ViewsFixedsize> m_updateData;
+            AZStd::small_vector<WriteDescriptorData, ViewsFixedsize> m_updateData;
             RHI::Ptr<Buffer> m_constantDataBuffer;
             RHI::Ptr<BufferView> m_constantDataBufferView;
             bool m_nullDescriptorSupported = false;
@@ -115,10 +115,10 @@ namespace AZ
         };
 
         template<typename T>
-        RHI::SmallVector<RHI::Interval, DescriptorSet::ViewsFixedsize> DescriptorSet::GetValidDescriptorsIntervals(
+        AZStd::small_vector<RHI::Interval, DescriptorSet::ViewsFixedsize> DescriptorSet::GetValidDescriptorsIntervals(
             const AZStd::span<T>& descriptorsInfo) const
         {
-            RHI::SmallVector<RHI::Interval, DescriptorSet::ViewsFixedsize> intervals;
+            AZStd::small_vector<RHI::Interval, DescriptorSet::ViewsFixedsize> intervals;
             // if Null descriptors are supported, then we just return one interval that covers the whole range.
             if (m_nullDescriptorSupported)
             {

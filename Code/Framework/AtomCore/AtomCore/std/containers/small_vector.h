@@ -11,7 +11,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 
-namespace AZ::RHI
+namespace AZStd
 {
     // Class that servers a similar purpose as boosts small_vector
     //  https://www.boost.org/doc/libs/1_86_0/doc/html/container/non_standard_containers.html#container.non_standard_containers.small_vector
@@ -21,16 +21,16 @@ namespace AZ::RHI
     // This is a pretty simple implementation that does not expose all vector functions.
     //  E.g. iterators are only accessible through the span() function
     template<class T, size_t FixedSize>
-    class SmallVector
+    class small_vector
     {
     public:
-        SmallVector() = default;
-        SmallVector(const SmallVector<T, FixedSize>&) = default;
-        SmallVector(SmallVector<T, FixedSize>&&) = default;
-        SmallVector& operator=(const SmallVector<T, FixedSize>&) = default;
-        SmallVector& operator=(SmallVector<T, FixedSize>&&) = default;
+        small_vector() = default;
+        small_vector(const small_vector<T, FixedSize>&) = default;
+        small_vector(small_vector<T, FixedSize>&&) = default;
+        small_vector& operator=(const small_vector<T, FixedSize>&) = default;
+        small_vector& operator=(small_vector<T, FixedSize>&&) = default;
 
-        SmallVector(size_t newSize, const T& value)
+        small_vector(size_t newSize, const T& value)
         {
             resize(newSize, value);
         }
@@ -55,7 +55,7 @@ namespace AZ::RHI
             }
             else
             {
-                AZ_Assert(false, "SmallVector::span: Empty variant");
+                AZ_Assert(false, "small_vector::push_back: Empty variant");
             }
         }
 
@@ -80,7 +80,7 @@ namespace AZ::RHI
             }
             else
             {
-                AZ_Assert(false, "SmallVector::span: Empty variant");
+                AZ_Assert(false, "small_vector::emplace_back: Empty variant");
                 return span().front();
             }
         }
@@ -99,7 +99,7 @@ namespace AZ::RHI
             }
             else
             {
-                AZ_Assert(false, "SmallVector::span: Empty variant");
+                AZ_Assert(false, "small_vector::erase: Empty variant");
             }
         }
 
@@ -123,7 +123,7 @@ namespace AZ::RHI
             }
             else
             {
-                AZ_Assert(false, "SmallVector::span: Empty variant");
+                AZ_Assert(false, "small_vector::resize: Empty variant");
             }
         }
 
@@ -152,7 +152,7 @@ namespace AZ::RHI
             }
             else
             {
-                AZ_Assert(false, "SmallVector::span: Empty variant");
+                AZ_Assert(false, "small_vector::reserve: Empty variant");
             }
         }
 
@@ -242,4 +242,4 @@ namespace AZ::RHI
 
         AZStd::variant<FixedVectorT, HeapVectorT> m_data;
     };
-} // namespace AZ::RHI
+} // namespace AZStd

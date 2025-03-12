@@ -97,17 +97,17 @@ namespace AZ
             void GetSRVsFromImageViews(
                 const AZStd::span<const RHI::ConstPtr<T>>& imageViews,
                 D3D12_SRV_DIMENSION dimension,
-                RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result);
+                AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result);
 
             template<typename T, typename U>
             void GetUAVsFromImageViews(
                 const AZStd::span<const RHI::ConstPtr<T>>& bufferViews,
                 D3D12_UAV_DIMENSION dimension,
-                RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result);
+                AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result);
 
             void GetCBVsFromBufferViews(
                 const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews,
-                RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result);
+                AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result);
 
             MemoryPoolSubAllocator m_constantAllocator;
             DescriptorContext* m_descriptorContext = nullptr;

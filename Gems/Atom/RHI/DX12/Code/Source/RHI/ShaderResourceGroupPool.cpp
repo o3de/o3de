@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/RHI.Reflect/SmallVector.h>
+#include <AtomCore/std/containers/small_vector.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversions.h>
@@ -24,7 +24,7 @@ namespace AZ
         void ShaderResourceGroupPool::GetSRVsFromImageViews(
             const AZStd::span<const RHI::ConstPtr<T>>& imageViews,
             D3D12_SRV_DIMENSION dimension,
-            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result)
+            AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result)
         {
             result.resize(imageViews.size(), m_descriptorContext->GetNullHandleSRV(dimension));
 
@@ -41,7 +41,7 @@ namespace AZ
         void ShaderResourceGroupPool::GetUAVsFromImageViews(
             const AZStd::span<const RHI::ConstPtr<T>>& imageViews,
             D3D12_UAV_DIMENSION dimension,
-            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result)
+            AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result)
         {
             result.resize(imageViews.size(), m_descriptorContext->GetNullHandleUAV(dimension));
             for (size_t i = 0; i < result.size(); ++i)
@@ -55,7 +55,7 @@ namespace AZ
 
         void ShaderResourceGroupPool::GetCBVsFromBufferViews(
             const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews,
-            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize>& result)
+            AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result)
         {
             result.resize(bufferViews.size(), m_descriptorContext->GetNullHandleCBV());
 
@@ -286,7 +286,7 @@ namespace AZ
 
                     AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
                     D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputBufferAccess(shaderInputBuffer.m_access);
-                    RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
+                    AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
                     switch (descriptorRangeType)
                     {
                         case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
@@ -326,7 +326,7 @@ namespace AZ
                     AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
                     D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputImageAccess(shaderInputImage.m_access);
 
-                    RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
+                    AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
                     switch (descriptorRangeType)
                     {
                         case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
@@ -495,7 +495,7 @@ namespace AZ
 
             D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputBufferAccess(bufferAccess);
 
-            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
+            AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
             switch (descriptorRangeType)
             {
             case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
@@ -536,7 +536,7 @@ namespace AZ
 
             D3D12_DESCRIPTOR_RANGE_TYPE descriptorRangeType = ConvertShaderInputImageAccess(imageAccess);
 
-            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
+            AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize> descriptorHandles;
             switch (descriptorRangeType)
             {
             case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
@@ -605,9 +605,10 @@ namespace AZ
             AZStd::span<const RHI::SamplerState> samplerStates)
         {
             const DescriptorHandle nullHandle = m_descriptorContext->GetNullHandleSampler();
-            RHI::SmallVector<DescriptorHandle, SRGViewsFixedSize> cpuSourceDescriptors(aznumeric_caster(samplerStates.size()), nullHandle);
+            AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize> cpuSourceDescriptors(
+                aznumeric_caster(samplerStates.size()), nullHandle);
             auto& device = static_cast<Device&>(GetDevice());
-            RHI::SmallVector<RHI::ConstPtr<Sampler>, SRGViewsFixedSize> samplers(samplerStates.size(), nullptr);
+            AZStd::small_vector<RHI::ConstPtr<Sampler>, SRGViewsFixedSize> samplers(samplerStates.size(), nullptr);
             for (size_t i = 0; i < samplerStates.size(); ++i)
             {
                 samplers.span()[i] = device.AcquireSampler(samplerStates[i]);
