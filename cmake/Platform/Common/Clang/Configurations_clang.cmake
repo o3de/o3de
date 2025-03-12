@@ -8,6 +8,21 @@
 
 include(cmake/Platform/Common/Configurations_common.cmake)
 
+# Exceptions are disabled by default.  Use this to turn them on just for a specific target.
+set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC -fexceptions)
+
+# O3DE Sets visibility to hidden by default, requiring explicit export.
+# However, some 3rd Party libraries will not export any symbols with this setting
+# as they expect to be built with visibility set to default.  Use this compile option
+# to turn visibility back to default for those 3rd Party targets ONLY.
+set(O3DE_COMPILE_OPTION_EXPORT_SYMBOLS PRIVATE -fvisibility=default)
+
+# By default, O3DE sets warning level 4 and sets warnings as errors.  If you're pulling in
+# external code (from 3rd Party libraries) you can't really control whether they generate
+# warnings or not, and its usually out of scope to fix them.  Add this compile option to 
+# those 3rd Party targets ONLY.
+set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE -w)
+
 ly_append_configurations_options(
     DEFINES_PROFILE
         _FORTIFY_SOURCE=2
