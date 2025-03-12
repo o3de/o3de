@@ -44,7 +44,7 @@ namespace AZ::RHI
         return static_cast<const ImageFrameAttachment*>(Resource::GetFrameAttachment());
     }
 
-    Ptr<ImageView> Image::BuildImageView(const ImageViewDescriptor& imageViewDescriptor)
+    Ptr<ImageView> Image::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
     {
         return Base::GetResourceView(imageViewDescriptor);
     }

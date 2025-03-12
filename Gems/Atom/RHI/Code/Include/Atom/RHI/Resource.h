@@ -7,8 +7,10 @@
  */
 #pragma once
 
+#include <Atom/RHI/DeviceResource.h>
 #include <Atom/RHI/MultiDeviceObject.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <Atom/RHI/ResourceViewCache.h>
+
 
 namespace AZ::RHI
 {
@@ -33,6 +35,7 @@ namespace AZ::RHI
     public:
         AZ_RTTI(Resource, "{613AED98-48FD-4453-98F8-6956D2133489}", MultiDeviceObject);
         virtual ~Resource();
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Resource);
 
         //! Returns whether the resource is currently an attachment on a frame graph.
         bool IsAttachment() const;
@@ -66,7 +69,6 @@ namespace AZ::RHI
         bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
         bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
 
-        //! Removes the provided ResourceView from the cache
         void EraseResourceView(ResourceView* resourceView) const;
 
     protected:
@@ -86,12 +88,6 @@ namespace AZ::RHI
         //! Called by the frame attachment at frame building time.
         void SetFrameAttachment(FrameAttachment* frameAttachment, int deviceIndex = MultiDevice::InvalidDeviceIndex);
 
-        //! Called by GetResourceView to insert a new image view
-        Ptr<ImageView> InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const;
-
-        //! Called by GetResourceView to insert a new buffer view
-        Ptr<BufferView> InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const;
-
         //! The parent pool this resource is registered with.
         ResourcePool* m_pool = nullptr;
 
@@ -104,33 +100,11 @@ namespace AZ::RHI
         //! Cache the resourceViews in order to avoid re-creation
         //! Since ResourceView has a dependency to Resource this cache holds raw pointers here in order to ensure there
         //! is no circular dependency between the resource and it's resourceview.
-        mutable AZStd::unordered_map<size_t, ResourceView*> m_resourceViewCache;
-        //! This should help provide thread safe access to resourceView cache
-        mutable AZStd::mutex m_cacheMutex;
+        mutable ResourceViewCache<Resource> m_resourceViewCache;
     };
 
     class Buffer;
     class Image;
     class DeviceResourceView;
 
-    //! ResourceView is a base class for multi-device buffer and image views for
-    //! polymorphic usage of views in a generic way.
-    class ResourceView : public Object
-    {
-    public:
-        // The resource owns a cache of resource views, and it needs access to the refcount
-        // of the resource views to prevent threading issues.
-        friend class Resource;
-
-        virtual ~ResourceView() = default;
-
-        //! Returns the resource associated with this view.
-        virtual const Resource* GetResource() const = 0;
-        virtual const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const = 0;
-
-        AZ_RTTI(ResourceView, "{D7442960-531D-4DCC-B60D-FD26FF75BE51}", Object);
-
-    protected:
-        void Shutdown() override{};
-    };
 } // namespace AZ::RHI

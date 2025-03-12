@@ -66,14 +66,14 @@ namespace UnitTest
             m_threeImages = { m_whiteImage, m_blackImage, m_greyImage };
 
             RHI::ImageViewDescriptor imageViewDescA = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 1, 1);
-            m_imageViewA = m_whiteImage->GetRHIImage()->BuildImageView(imageViewDescA);
+            m_imageViewA = m_whiteImage->GetRHIImage()->GetImageView(imageViewDescA);
 
             RHI::ImageViewDescriptor imageViewDescB = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 2, 2);
-            m_imageViewB = m_whiteImage->GetRHIImage()->BuildImageView(imageViewDescB);
+            m_imageViewB = m_whiteImage->GetRHIImage()->GetImageView(imageViewDescB);
 
             RHI::ImageViewDescriptor imageViewDescC = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 3, 3);
-            m_imageViewC = m_whiteImage->GetRHIImage()->BuildImageView(imageViewDescC);
-            
+            m_imageViewC = m_whiteImage->GetRHIImage()->GetImageView(imageViewDescC);
+
             m_threeImageViews = { m_imageViewA.get(), m_imageViewB.get(), m_imageViewC.get() };
         }
 

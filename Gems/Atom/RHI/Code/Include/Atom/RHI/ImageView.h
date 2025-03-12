@@ -7,11 +7,12 @@
  */
  #pragma once
 
- #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
- #include <Atom/RHI/Resource.h>
- #include <Atom/RHI/Image.h>
+#include <Atom/RHI.Reflect/ImageViewDescriptor.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/ResourceView.h>
 
- namespace AZ::RHI
+namespace AZ::RHI
 {
     class DeviceImage;
 
@@ -25,9 +26,8 @@
         virtual ~ImageView() = default;
 
         ImageView(const RHI::Image* image, ImageViewDescriptor descriptor, MultiDevice::DeviceMask deviceMask)
-            : m_image{ image }
+            : ResourceView{ image, deviceMask }
             , m_descriptor{ descriptor }
-            , m_deviceMask{ deviceMask }
         {
         }
 
@@ -37,7 +37,7 @@
         //! Return the contained multi-device image
         const RHI::Image* GetImage() const
         {
-            return m_image.get();
+            return static_cast<const RHI::Image*>(GetResource());
         }
 
         //! Return the contained ImageViewDescriptor
@@ -46,31 +46,13 @@
             return m_descriptor;
         }
 
-        const Resource* GetResource() const override
-        {
-            return m_image.get();
-        }
-
         const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
         {
             return GetDeviceImageView(deviceIndex).get();
         }
 
-        void Shutdown() final;
-
     private:
-        //! Safe-guard access to DeviceImageView cache during parallel access
-        mutable AZStd::mutex m_imageViewMutex;
-        //! A raw pointer to a multi-device image
-        ConstPtr<RHI::Image> m_image;
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
-        //! The device mask of the image stored for comparison to figure out when cache entries need to be freed.
-        mutable MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
-        //! DeviceImageView cache
-        //! This cache is necessary as the caller receives raw pointers from the ResourceCache,
-        //! which now, with multi-device objects in use, need to be held in memory as long as
-        //! the multi-device view is held.
-        mutable AZStd::unordered_map<int, Ptr<RHI::DeviceImageView>> m_cache;
     };
 }
