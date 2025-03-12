@@ -10,6 +10,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Settings/CommandLine.h>
+#include <AzCore/Settings/CommandLineParser_Platform.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ
@@ -96,6 +97,9 @@ namespace AZ
             ParseArgument(argument.m_option, argument.m_value);
             return true;
         };
+
+        // Make sure utf-8 commandline parameters can be used on all platforms
+        Settings::Platform::CommandLineConverter converter(argc, argv);
 
         // For legacy reasons, the executable name argument(arg0) has not been parsed by this overload
         // of the command line class
