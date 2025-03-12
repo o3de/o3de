@@ -376,12 +376,12 @@ namespace EMotionFX
             for (const auto& item : motionEntries)
             {
                 EMotionFX::MotionSet::MotionEntry* motionEntry = item.second;
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
                 if (motionEntry == nullptr)
                 {
                     AZ_Error("EMotionFXdebug", false, "motion entry nullptr, motion set %p, num entries %d", motionSet, motionEntries.size());
                     AZ_Assert(false, "Motion entry container concurrency error");
-                    break;  // if the motionEntry cotainer is changed by a concurrent thread, then run awat from it
+                    break;  // if the motionEntry container is changed by a concurrent thread, then run awat from it
                 }
 #endif
                 if (motionEntry->GetMotion() == motion)

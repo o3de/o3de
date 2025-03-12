@@ -26,7 +26,7 @@
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(Motion, MotionAllocator)
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
     Motion::Motion(const char* name, bool registerWithMotionManager)
 #else
     Motion::Motion(const char* name)
@@ -48,7 +48,7 @@ namespace EMotionFX
         m_isOwnedByRuntime       = false;
 #endif // EMFX_DEVELOPMENT_BUILD
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         if (registerWithMotionManager)
         {
             GetMotionManager().AddMotion(this);

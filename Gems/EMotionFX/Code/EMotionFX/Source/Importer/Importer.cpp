@@ -361,7 +361,7 @@ namespace EMotionFX
     // try to load a motion from disk
     Motion* Importer::LoadMotion(AZStd::string filename, MotionSettings* settings)
     {
-#if !defined(CARBONATED)
+#if !defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 #endif
         // check if we want to load the motion even if a motion with the given filename is already inside the motion manager
@@ -381,7 +381,7 @@ namespace EMotionFX
         {
             MCore::LogInfo("- Trying to load motion from file '%s'...", filename.c_str());
         }
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         AZ::IO::FileIOStream fileStream;
         if (!fileStream.Open(filename.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
         {
@@ -463,7 +463,7 @@ namespace EMotionFX
         return result;
     }
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
     Motion* Importer::LoadMotion(uint8* memoryStart, size_t lengthInBytes, MotionSettings* settings, bool doRegisterMotion)
     {
         MCore::MemoryFile memFile;
@@ -482,7 +482,7 @@ namespace EMotionFX
 #endif
 
     // try to load a motion from an MCore file
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
     Motion* Importer::LoadMotion(MCore::File* f, MotionSettings* settings, bool doRegisterMotion)
 #else
     Motion* Importer::LoadMotion(MCore::File* f, MotionSettings* settings)
@@ -505,7 +505,7 @@ namespace EMotionFX
         }
 
         // create our motion
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         Motion* motion = aznew Motion("<Unknown>", /* registerWithMotionManager = */ false);  // register after loading, see the call before return
 #else
         Motion* motion = aznew Motion("<Unknown>");
@@ -548,7 +548,7 @@ namespace EMotionFX
         ResetSharedData(sharedData);
         sharedData.clear();
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         if (doRegisterMotion)
         {
             GetMotionManager().AddMotion(motion);  // register the motion, it can be used by other threads from this moment

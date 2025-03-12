@@ -45,7 +45,7 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_DECL
         AZ_RTTI(Motion, "{CCC21150-37F5-477A-9EBF-B5E71C0B5D71}")
 
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         Motion(const char* name, bool registerWithMotionManager = true);
 #else
         Motion(const char* name);
