@@ -13,11 +13,12 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/bitset.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     //! Implementation of the ILogger system interface.
-    class LoggerSystemComponent
+    class AZCORE_API LoggerSystemComponent
         : public AZ::Component
         , public ILoggerRequestBus::Handler
     {

@@ -12,6 +12,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -68,6 +69,8 @@ namespace AZ
 
         //! helper function for getting the profiler capture location from the settings registry that
         //! includes fallback handing in the event the registry value can't be determined
-        AZ::IO::FixedMaxPathString GetProfilerCaptureLocation();
+        AZCORE_API AZ::IO::FixedMaxPathString GetProfilerCaptureLocation();
     } // namespace Debug
 } // namespace AZ
+
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Debug::ProfilerNotifications);

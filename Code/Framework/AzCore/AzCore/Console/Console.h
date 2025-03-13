@@ -13,12 +13,13 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     //! @class Console
     //! A simple console class for providing text based variable and process interaction.
-    class Console final
+    class AZCORE_API Console final
         : public IConsole
     {
     public:

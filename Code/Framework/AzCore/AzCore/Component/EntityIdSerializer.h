@@ -10,12 +10,13 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     class EntityId;
 
-    class JsonEntityIdSerializer
+    class AZCORE_API JsonEntityIdSerializer
         : public BaseJsonSerializer
     {
     public:

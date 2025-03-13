@@ -9,6 +9,7 @@
 #define AZCORE_COMPRESSOR_H
 
 #include <AzCore/base.h>
+#include <AzCore/AzCoreAPI.h>
 
 struct z_stream_s;
 
@@ -21,7 +22,7 @@ namespace AZ
      * the speed and memory usage can be an issue. If you want detailed control over the compressed stream, include
      * "AzCore/compression/zlib/zlib.h" and do it yourself!
      */
-    class ZLib
+    class AZCORE_API ZLib
     {
     public:
         ZLib(IAllocator* workMemAllocator = 0);

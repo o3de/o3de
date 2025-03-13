@@ -14,6 +14,8 @@
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/Math/Crc.h>
 
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(AZ::ComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+
 namespace AZ
 {
     // Add definition for type info and runtime type information to component

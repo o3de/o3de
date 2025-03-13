@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/Event.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
     using NonUniformScaleChangedEvent = AZ::Event<const AZ::Vector3&>;
 
     //! Requests for working with non-uniform scale.
-    class NonUniformScaleRequests
+    class AZCORE_API NonUniformScaleRequests
         : public AZ::ComponentBus
     {
     public:
@@ -38,4 +39,4 @@ namespace AZ
     using NonUniformScaleRequestBus = AZ::EBus<NonUniformScaleRequests>;
 } // namespace AZ
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(NonUniformScaleRequests);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::NonUniformScaleRequests);

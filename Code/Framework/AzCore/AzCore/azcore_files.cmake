@@ -15,69 +15,9 @@ set(FILES
     Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
-    Component/ComponentApplication.cpp
-    Component/ComponentApplication.h
-    Component/ComponentApplicationBus.h
-    Component/ComponentApplicationLifecycle.cpp
-    Component/ComponentApplicationLifecycle.h
-    Component/ComponentBus.cpp
-    Component/ComponentBus.h
-    Component/ComponentExport.h
-    Component/Entity.cpp
-    Component/Entity.h
-    Component/EntityBus.h
-    Component/EntityId.h
-    Component/EntityIdSerializer.cpp
-    Component/EntityIdSerializer.h
-    Component/EntitySerializer.cpp
-    Component/EntitySerializer.h
-    Component/EntityUtils.cpp
-    Component/EntityUtils.h
-    Component/NamedEntityId.cpp
-    Component/NamedEntityId.h
-    Component/NonUniformScaleBus.cpp
-    Component/NonUniformScaleBus.h
-    Component/TickBus.h
-    Component/TransformBus.h
-    Compression/compression.cpp
-    Compression/Compression.h
-    Compression/zstd_compression.cpp
-    Compression/zstd_compression.h
-    Console/Console.cpp
-    Console/Console.h
-    Console/ConsoleDataWrapper.h
-    Console/ConsoleDataWrapper.inl
-    Console/ConsoleFunctor.cpp
-    Console/ConsoleFunctor.h
-    Console/ConsoleFunctor.inl
-    Console/ConsoleTypeHelpers.h
-    Console/ConsoleTypeHelpers.inl
-    Console/IConsole.h
-    Console/IConsoleTypes.h
-    Console/ILogger.h
-    Console/LoggerSystemComponent.cpp
-    Console/LoggerSystemComponent.h
-    Date/DateFormat.cpp
-    Date/DateFormat.h
-    Debug/Budget.h
-    Debug/Budget.cpp
-    Debug/BudgetTracker.h
-    Debug/BudgetTracker.cpp
-    Debug/MemoryProfiler.h
-    Debug/PerformanceCollector.h
-    Debug/PerformanceCollector.cpp
-    Debug/Profiler.cpp
-    Debug/Profiler.h
-    Debug/ProfilerBus.h
-    Debug/ProfilerReflection.cpp
-    Debug/ProfilerReflection.h
     Debug/StackTracer.h
-    Debug/Timer.h
     Debug/Trace.cpp
     Debug/Trace.h
-    Debug/TraceMessageBus.h
-    Debug/TraceReflection.cpp
-    Debug/TraceReflection.h
     Dependency/Dependency.h
     Dependency/Dependency.inl
     Dependency/Version.h

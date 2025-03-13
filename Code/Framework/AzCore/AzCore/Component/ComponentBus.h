@@ -11,14 +11,13 @@
  * class for their buses. Buses enable components to communicate with each other and 
  * with external systems.
  */
-
-#ifndef AZCORE_COMPONENT_BUS_H
-#define AZCORE_COMPONENT_BUS_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -96,7 +95,7 @@ namespace AZ
      * A pair of entity and component IDs that are used to access an address 
      * of an AZ::EntityComponentBus.
      */
-    class EntityComponentIdPair 
+    class AZCORE_API EntityComponentIdPair 
     {
     public:
 
@@ -237,5 +236,3 @@ namespace AZStd
         }
     };
 }
-#endif // AZCORE_COMPONENT_BUS_H
-#pragma once

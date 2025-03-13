@@ -11,12 +11,13 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Debug
 {
     class Budget;
 
-    class BudgetTracker
+    class AZCORE_API BudgetTracker
     {
     public:
         AZ_TYPE_INFO(BudgetTracker, "{E14A746D-BFFE-4C02-90FB-4699B79864A5}");

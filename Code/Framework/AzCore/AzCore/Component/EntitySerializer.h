@@ -11,10 +11,11 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
-    class JsonEntitySerializer
+    class AZCORE_API JsonEntitySerializer
         : public BaseJsonSerializer
     {
     public:
@@ -32,7 +33,7 @@ namespace AZ
     //! When this class is added to the metadata of a Json deserializer setting,
     //! custom component serializers can add themselves to the list so users
     //! can be informed of component deprecation upon load completion
-    class DeprecatedComponentMetadata
+    class AZCORE_API DeprecatedComponentMetadata
     {
     public:
         AZ_TYPE_INFO(DeprecatedComponentMetadata, "{3D5F5EAE-BDA9-43AA-958E-E87158BAFB9F}");

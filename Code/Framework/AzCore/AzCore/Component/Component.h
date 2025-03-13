@@ -647,7 +647,7 @@ namespace AZ
     };
 
     using ComponentDescriptorBus = AZ::EBus<ComponentDescriptor, ComponentDescriptorBusTraits>;
-
+    
     /**
      * Helps you create a custom implementation of a descriptor.
      * For most cases we recommend using AZ_COMPONENT and ComponentDescriptorDefault instead.
@@ -826,4 +826,4 @@ namespace AZ
     };
 }
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS_WITH_TRAITS(ComponentDescriptor, ComponentDescriptorBusTraits);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AZ::ComponentDescriptor, AZ::ComponentDescriptorBusTraits);

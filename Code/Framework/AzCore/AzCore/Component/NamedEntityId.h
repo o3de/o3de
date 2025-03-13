@@ -12,12 +12,13 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     class ReflectContext;
 
-    class NamedEntityId
+    class AZCORE_API NamedEntityId
         : public EntityId
     {
     public: 

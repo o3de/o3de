@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/AzCoreAPI.h>
 
 #define ZSTD_STATIC_LINKING_ONLY
 
@@ -18,7 +19,7 @@ namespace AZ
 {
     class IAllocator;
 
-    class ZStd
+    class AZCORE_API ZStd
     {
     public:
         ZStd(IAllocator* workMemAllocator = 0);

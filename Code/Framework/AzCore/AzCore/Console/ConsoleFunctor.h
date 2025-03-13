@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/variant.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -27,11 +28,11 @@ namespace AZ
         TypeNotConvertible,
         ConsoleVarNotFound,
     };
-    const char* GetEnumString(GetValueResult value);
+    AZCORE_API const char* GetEnumString(GetValueResult value);
 
     //! @class ConsoleFunctorBase
     //! Base class for console functors.
-    class ConsoleFunctorBase
+    class AZCORE_API ConsoleFunctorBase
     {
     public:
 

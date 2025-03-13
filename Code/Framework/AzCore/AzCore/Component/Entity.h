@@ -20,6 +20,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -29,7 +30,7 @@ namespace AZ
     //! An addressable container for a group of components. 
     //! An entity creates, initializes, activates, and deactivates its components.  
     //! An entity has an ID and, optionally, a name.  
-    class Entity
+    class AZCORE_API Entity
     {
         friend class JsonEntitySerializer;
 

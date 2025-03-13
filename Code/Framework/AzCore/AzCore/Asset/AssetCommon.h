@@ -1266,4 +1266,4 @@ namespace AZStd
     };
 }
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(Data::AssetEvents);
+// AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::Data::AssetEvents);

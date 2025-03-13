@@ -11,14 +11,13 @@
  * Buses enable entities and components to communicate with each other and with external 
  * systems.
  */
-
-#ifndef AZCORE_ENTITY_BUS_H
-#define AZCORE_ENTITY_BUS_H
-
+#pragma once
+ 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -187,7 +186,4 @@ namespace AZ
     typedef AZ::EBus<EntityEvents>  EntityBus;
 }
 
-#endif // AZCORE_ENTITY_BUS_H
-#pragma once
-
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(EntityEvents);
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::EntityEvents);
