@@ -54,8 +54,11 @@ namespace EMotionFX
         AZ_Assert(m_motionSet, "Motion set is nullptr.");
 
         // Get the full file name and file extension.
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        const AZStd::string filename = entry->GetFilename();
+#else
         const AZStd::string filename = m_motionSet->ConstructMotionFilename(entry);
-
+#endif
         // Check what type of file to load.
         Motion* motion = GetImporter().LoadMotion(filename.c_str(), nullptr);
 
@@ -66,7 +69,12 @@ namespace EMotionFX
             AzFramework::StringFunc::Path::GetFileName(filename.c_str(), motionName);
             motion->SetName(motionName.c_str());
         }
-
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        else
+        {
+            AZ_Error("EMotionFXdebug", false, "Default callback loading error for %s", entry->GetFilename());
+        }
+#endif
         return motion;
     }
 
@@ -154,21 +162,21 @@ namespace EMotionFX
         , m_dirtyFlag(false)
     {
         m_id                 = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
-#if defined (CARBONATED)
-        m_callback           = nullptr; // do not use MotionSetCallback as default loader callback class due to it does not work with platforms (e.g. with iOS)
-#else
         m_callback           = aznew MotionSetCallback(this);
-#endif
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
         m_isOwnedByRuntime   = false;
         m_isOwnedByAsset     = false;
 #endif // EMFX_DEVELOPMENT_BUILD
 
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        // moved to InitAfterLoading()
+#else
         // Automatically register the motion set.
         GetMotionManager().AddMotionSet(this);
 
         GetEventManager().OnCreateMotionSet(this);
+#endif
     }
 
     MotionSet::MotionSet(const char* name, MotionSet* parent)
@@ -527,7 +535,7 @@ namespace EMotionFX
         Motion* motion = entry->GetMotion();
 
         // If loading on demand is enabled and the motion hasn't loaded yet.
-#if defined (CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         if (!motion && !entry->GetFilenameString().empty() && !entry->GetLoadingFailed() && m_callback) // ... and desired loader callback has been assigned
 #else
         if (!motion && !entry->GetFilenameString().empty() && !entry->GetLoadingFailed())
@@ -539,14 +547,28 @@ namespace EMotionFX
             if (!motion)
             {
                 entry->SetLoadingFailed(true);
-#if defined (CARBONATED)
-                AZ_Printf("EMotionFX", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
+#if defined (CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+                AZ_Printf("EMotionFXdebug", "Failed to load motion '%s' for motion set '%s'.", entry->GetFilename(), GetName());
 #endif
             }
 
             entry->SetMotion(motion);
         }
-
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        else if (!motion && !entry->GetFilenameString().empty())
+        {
+            if (entry->GetLoadingFailed())
+            {
+                AZ_Info("EMotionFXdebug", "Motion loading previously failed '%s' for motion set '%s'", entry->GetFilename(), GetName());
+            }
+            /* uncomment this on if set the callback to nullptr in the constructor again
+            if (m_callback == nullptr)
+            {
+                AZ_Info("EMotionFXdebug", "Motion loading callback is unassigned '%s' for motion set '%s'", entry->GetFilename(), GetName());
+            }
+            */
+        }
+#endif
         return motion;
     }
 
@@ -869,16 +891,16 @@ namespace EMotionFX
             result->InitAfterLoading();
 
             const float loadTimeInMs = loadTimer.GetDeltaTimeInSeconds() * 1000.0f;
-#if defined (CARBONATED)
+#if defined(CARBONATED)
             AZ_Printf("EMotionFX", "Loaded motion set '%s' from buffer in %.1f ms.", result->GetName(), loadTimeInMs);
 #else
             AZ_Printf("EMotionFX", "Loaded motion set from buffer in %.1f ms.", loadTimeInMs);
 #endif
         }
-#if defined (CARBONATED)
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         else
         {
-            AZ_Error("EMotionFX", false, "Motion set was not loaded from buffer!");
+            AZ_Error("EMotionFXdebug", false, "Motion set was not loaded from buffer!");
         }
 #endif
 
@@ -916,6 +938,12 @@ namespace EMotionFX
 
     void MotionSet::InitAfterLoading()
     {
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        // Automatically register the motion set.
+        GetMotionManager().AddMotionSet(this);
+
+        GetEventManager().OnCreateMotionSet(this);
+#endif
         RecursiveRewireParentSets(this);
     }
 } // namespace EMotionFX

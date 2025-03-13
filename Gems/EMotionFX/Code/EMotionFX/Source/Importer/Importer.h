@@ -209,7 +209,11 @@ namespace EMotionFX
          * @param settings The settings to use during loading, or nullptr when you want to use default settings, which would load everything.
          * @result Returns a pointer to the loaded motion, or nullptr when something went wrong and the motion could not be loaded.
          */
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        Motion* LoadMotion(MCore::File* f, MotionSettings* settings = nullptr, bool doRegisterMotion = true);
+#else
         Motion* LoadMotion(MCore::File* f, MotionSettings* settings = nullptr);
+#endif
 
         /**
          * Loads a motion from a file on disk.
@@ -226,8 +230,12 @@ namespace EMotionFX
          * @param settings The settings to use during loading, or nullptr when you want to use default settings, which would load everything.
          * @result Returns a pointer to the loaded motion, or nullptr when something went wrong and the motion could not be loaded.
          */
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        Motion* LoadMotion(uint8* memoryStart, size_t lengthInBytes, MotionSettings* settings = nullptr, bool doRegisterMotion = true);
+#else
         Motion* LoadMotion(uint8* memoryStart, size_t lengthInBytes, MotionSettings* settings = nullptr);
-
+#endif
+        
         bool ExtractMotionFileInfo(FileInfo* outInfo, const char* filename) const;
 
         //-------------------------------------------------------------------------------------------------

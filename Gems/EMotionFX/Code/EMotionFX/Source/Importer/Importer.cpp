@@ -361,8 +361,9 @@ namespace EMotionFX
     // try to load a motion from disk
     Motion* Importer::LoadMotion(AZStd::string filename, MotionSettings* settings)
     {
+#if !defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
-
+#endif
         // check if we want to load the motion even if a motion with the given filename is already inside the motion manager
         if (settings == nullptr || (settings && settings->m_forceLoading == false))
         {
@@ -380,7 +381,35 @@ namespace EMotionFX
         {
             MCore::LogInfo("- Trying to load motion from file '%s'...", filename.c_str());
         }
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        AZ::IO::FileIOStream fileStream;
+        if (!fileStream.Open(filename.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
+        {
+            if (GetLogging())
+            {
+                MCore::LogError("  + Failed to open the file for motion '%s'!", filename.c_str());
+            }
+            return nullptr;
+        }
+        const size_t fileSize = fileStream.GetLength();
+        uint8* fileBuffer = (uint8*)MCore::Allocate(fileSize, EMFX_MEMCATEGORY_IMPORTER);
+        fileStream.Read(fileSize, fileBuffer);
+        fileStream.Close();
 
+        // create the motion reading from memory
+        Motion* result = LoadMotion(fileBuffer, fileSize, settings);
+        if (result)
+        {
+            result->SetFileName(filename.c_str());
+            AZStd::string motionName;
+            AzFramework::StringFunc::Path::GetFileName(filename.c_str(), motionName);
+            result->SetName(motionName.c_str());  // set the name to make it similar to motions loaded by another callback
+        }
+        else
+        {
+            AZ_Error("EMotionFXdebug", false, "Importer::LoadMotion error loading  from file %s", filename.c_str());
+        }
+#else
         // try to open the file from disk
         MCore::DiskFile f;
         if (f.Open(filename.c_str(), MCore::DiskFile::READ) == false)
@@ -410,7 +439,7 @@ namespace EMotionFX
         {
             result->SetFileName(filename.c_str());
         }
-
+#endif
         // delete the filebuffer again
         MCore::Free(fileBuffer);
 
@@ -434,7 +463,15 @@ namespace EMotionFX
         return result;
     }
 
-
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+    Motion* Importer::LoadMotion(uint8* memoryStart, size_t lengthInBytes, MotionSettings* settings, bool doRegisterMotion)
+    {
+        MCore::MemoryFile memFile;
+        memFile.Open(memoryStart, lengthInBytes);
+        Motion* result = LoadMotion(&memFile, settings, doRegisterMotion);
+        return result;
+    }
+#else
     Motion* Importer::LoadMotion(uint8* memoryStart, size_t lengthInBytes, MotionSettings* settings)
     {
         MCore::MemoryFile memFile;
@@ -442,10 +479,14 @@ namespace EMotionFX
         Motion* result = LoadMotion(&memFile, settings);
         return result;
     }
-
+#endif
 
     // try to load a motion from an MCore file
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+    Motion* Importer::LoadMotion(MCore::File* f, MotionSettings* settings, bool doRegisterMotion)
+#else
     Motion* Importer::LoadMotion(MCore::File* f, MotionSettings* settings)
+#endif
     {
         MCORE_ASSERT(f);
         MCORE_ASSERT(f->GetIsOpen());
@@ -464,8 +505,11 @@ namespace EMotionFX
         }
 
         // create our motion
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        Motion* motion = aznew Motion("<Unknown>", /* registerWithMotionManager = */ false);  // register after loading, see the call before return
+#else
         Motion* motion = aznew Motion("<Unknown>");
-
+#endif
         // copy over the actor settings, or use defaults
         MotionSettings motionSettings;
         if (settings)
@@ -504,6 +548,12 @@ namespace EMotionFX
         ResetSharedData(sharedData);
         sharedData.clear();
 
+#if defined(CARBONATED) && defined(CARBONATED_EMOTIONFX_CONCURRENCY)
+        if (doRegisterMotion)
+        {
+            GetMotionManager().AddMotion(motion);  // register the motion, it can be used by other threads from this moment
+        }
+#endif
         return motion;
     }
 
