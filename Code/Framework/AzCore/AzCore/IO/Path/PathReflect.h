@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/AzCoreAPI.h>
+
 namespace AZ
 {
     class ReflectContext;
@@ -15,5 +17,5 @@ namespace AZ
 
 namespace AZ::IO
 {
-    void PathReflect(AZ::ReflectContext* context);
+    AZCORE_API void PathReflect(AZ::ReflectContext* context);
 }

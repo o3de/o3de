@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Statistics/RunningStatistic.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -27,7 +28,7 @@ namespace AZ::IO
         struct ReportData;
     }
 
-    struct FullFileDecompressorConfig final :
+    struct AZCORE_API FullFileDecompressorConfig final :
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::FullFileDecompressorConfig, "{C96B7EC1-8C73-4493-A7CB-66F5D550FC3A}", IStreamerStackConfig);
@@ -53,7 +54,7 @@ namespace AZ::IO
     //! Finally, the lack of an upper limit also means that the duration of the decompression job
     //! can vary largely so a dedicated job system is used to decompress on to avoid blocking
     //! the main job system from working.
-    class FullFileDecompressor
+    class AZCORE_API FullFileDecompressor
         : public StreamStackEntry
     {
     public:

@@ -14,6 +14,7 @@
 
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -28,7 +29,7 @@ namespace AZ
      * components. Creation and Destruction should be view aznew/delete.
      * Because the component will assume we can just delete the object. (we can change that if needed)
      */
-    class UserSettings
+    class AZCORE_API UserSettings
     {
         template<class T>
         friend struct AZStd::IntrusivePtrCountPolicy;
@@ -84,7 +85,7 @@ namespace AZ
      * The user settings loader queries this interface
      * for to resolve the file path for each user settings container
      */
-    class UserSettingsFileLocator
+    class AZCORE_API UserSettingsFileLocator
         : public EBusTraits
     {
     public:
@@ -104,8 +105,8 @@ namespace AZ
 
     namespace UserSettingsInternal
     {
-        void                                AddSettings(UserSettings* settings, u32 settingsId, u32 groupId);
-        AZStd::intrusive_ptr<UserSettings>  FindSettings(u32 settingsId, u32 groupId);
+        AZCORE_API void                                AddSettings(UserSettings* settings, u32 settingsId, u32 groupId);
+        AZCORE_API AZStd::intrusive_ptr<UserSettings>  FindSettings(u32 settingsId, u32 groupId);
     }   // namespace UserSettingsInternal
 
     //=========================================================================

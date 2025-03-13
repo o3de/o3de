@@ -11,16 +11,17 @@
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Dom::Utils
 {
-    Visitor::Result ReadFromString(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime, Visitor& visitor);
-    Visitor::Result ReadFromStringInPlace(Backend& backend, AZStd::string& string, Visitor& visitor);
+    AZCORE_API Visitor::Result ReadFromString(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime, Visitor& visitor);
+    AZCORE_API Visitor::Result ReadFromStringInPlace(Backend& backend, AZStd::string& string, Visitor& visitor);
 
-    AZ::Outcome<Value, AZStd::string> SerializedStringToValue(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime);
-    AZ::Outcome<void, AZStd::string> ValueToSerializedString(Backend& backend, Dom::Value value, AZStd::string& buffer);
+    AZCORE_API AZ::Outcome<Value, AZStd::string> SerializedStringToValue(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime);
+    AZCORE_API AZ::Outcome<void, AZStd::string> ValueToSerializedString(Backend& backend, Dom::Value value, AZStd::string& buffer);
 
-    AZ::Outcome<Value, AZStd::string> WriteToValue(const Backend::WriteCallback& writeCallback);
+    AZCORE_API AZ::Outcome<Value, AZStd::string> WriteToValue(const Backend::WriteCallback& writeCallback);
 
     struct ComparisonParameters
     {
@@ -30,9 +31,9 @@ namespace AZ::Dom::Utils
         bool m_treatOpaqueValuesOfSameTypeAsEqual = false;
     };
 
-    bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
-    Value TypeIdToDomValue(const AZ::TypeId& typeId);
-    AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
+    AZCORE_API bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
+    AZCORE_API Value TypeIdToDomValue(const AZ::TypeId& typeId);
+    AZCORE_API AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
     //! Runs a dry-run JSON Serializer over the Dom::Value to check if it can be converted to the type associated
     //! with the AZ TypeId
     //! @param typeId TypeInfo ID associated with C++ type to determine if the Dom Value can be deserialized into
@@ -40,12 +41,12 @@ namespace AZ::Dom::Utils
     //! @param settings Json Deserializer Settings which is used to query the serialize context to use for loading the raw object
     //!        data from the Dom Value
     //! @return true if the Dom Value can be deserialized into the type associated with the TypeInfo ID
-    bool CanLoadViaJsonSerialization(
+    AZCORE_API bool CanLoadViaJsonSerialization(
         const AZ::TypeId& typeId, const Value& root, JsonDeserializerSettings settings = {});
 
-    JsonSerializationResult::ResultCode LoadViaJsonSerialization(
+        AZCORE_API JsonSerializationResult::ResultCode LoadViaJsonSerialization(
         void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings = {});
-    JsonSerializationResult::ResultCode StoreViaJsonSerialization(
+        AZCORE_API JsonSerializationResult::ResultCode StoreViaJsonSerialization(
         const void* object,
         const void* defaultObject,
         const AZ::TypeId& typeId,
@@ -73,7 +74,7 @@ namespace AZ::Dom::Utils
         return StoreViaJsonSerialization(&object, &defaultObject, azrtti_typeid<T>(), output, settings);
     }
 
-    Value DeepCopy(const Value& value, bool copyStrings = true);
+    AZCORE_API Value DeepCopy(const Value& value, bool copyStrings = true);
 
     template <typename T>
     using is_dom_value = AZStd::bool_constant<AZStd::is_same_v<AZStd::remove_cvref_t<T>, Dom::Value>>;
@@ -110,8 +111,8 @@ namespace AZ::Dom::Utils
     extern const AZ::Name PointerValueFieldName;
     extern const AZ::Name PointerTypeFieldName;
 
-    Dom::Value MarshalTypedPointerToValue(const void* value, const AZ::TypeId& typeId);
-    void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType = AZ::TypeId::CreateNull());
+    AZCORE_API Dom::Value MarshalTypedPointerToValue(const void* value, const AZ::TypeId& typeId);
+    AZCORE_API void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType = AZ::TypeId::CreateNull());
 
     struct MarshalTypeTraits
     {
@@ -122,7 +123,7 @@ namespace AZ::Dom::Utils
         size_t m_typeSize{};
     };
 
-    Dom::Value MarshalOpaqueValue(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+    AZCORE_API Dom::Value MarshalOpaqueValue(const void* valueAddress, const MarshalTypeTraits& typeTraits,
         AZStd::any::action_handler_for_t actionHandler);
 
     template <typename T>
@@ -155,7 +156,7 @@ namespace AZ::Dom::Utils
         }
     }
 
-    Dom::Value ValueFromType(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+    AZCORE_API Dom::Value ValueFromType(const void* valueAddress, const MarshalTypeTraits& typeTraits,
         AZStd::any::action_handler_for_t actionHandler);
 
     template<typename T>
@@ -198,7 +199,7 @@ namespace AZ::Dom::Utils
         }
     }
 
-    AZ::TypeId GetValueTypeId(const Dom::Value& value);
+    AZCORE_API AZ::TypeId GetValueTypeId(const Dom::Value& value);
 
     template<typename T>
     bool CanConvertValueToType(const Dom::Value& value)

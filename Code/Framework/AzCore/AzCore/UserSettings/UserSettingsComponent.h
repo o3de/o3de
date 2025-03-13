@@ -8,6 +8,7 @@
 #pragma once
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace AZ
     /**
      * UserSettingsComponent
      */
-    class UserSettingsComponent
+    class AZCORE_API UserSettingsComponent
         : public Component
         , protected UserSettingsComponentRequestBus::Handler
     {

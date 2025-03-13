@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/limits.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
             struct ReportData;
         } // namespace Requests
 
-        struct ReadSplitterConfig final :
+        struct AZCORE_API ReadSplitterConfig final :
             public IStreamerStackConfig
         {
             AZ_RTTI(AZ::IO::ReadSplitterConfig, "{EDDD6CE5-D7BC-4FAB-8EBA-68F5C0390B05}", IStreamerStackConfig);
@@ -61,7 +62,7 @@ namespace AZ
             bool m_splitAlignedRequests{ true };
         };
 
-        class ReadSplitter
+        class AZCORE_API ReadSplitter
             : public StreamStackEntry
         {
         public:

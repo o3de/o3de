@@ -10,6 +10,7 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
          * CompressorStream wrap a GenericStream and runs the streaming functions through the supplied compressor
          *
          */
-        class CompressorStream
+        class AZCORE_API CompressorStream
             : public GenericStream
         {
         public:

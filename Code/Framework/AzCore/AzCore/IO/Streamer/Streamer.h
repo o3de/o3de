@@ -14,6 +14,7 @@
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZStd
 {
@@ -33,7 +34,7 @@ namespace AZ::IO
     /**
      * Data streamer.
      */
-    class Streamer final
+    class AZCORE_API Streamer final
         : public AZ::IO::IStreamer
     {
         friend Streamer_SchedulerTest_RequestSorting_Test;

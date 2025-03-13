@@ -14,6 +14,7 @@
 #include <AzCore/IO/Compressor.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Compression/Compression.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -41,7 +42,7 @@ namespace AZ
         /**
          * ZLib compressor per stream data.
          */
-        class CompressorZLibData
+        class AZCORE_API CompressorZLibData
             : public CompressorData
         {
         public:
@@ -78,7 +79,7 @@ namespace AZ
          * caching functionality into the base Compressor class to be shared. Please do so when you have
          * an actual need to implement another compressor, don't just copy and paste.
          */
-        class CompressorZLib
+        class AZCORE_API CompressorZLib
             : public Compressor
         {
         public:

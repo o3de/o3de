@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Threading
 {
@@ -19,5 +20,5 @@ namespace AZ::Threading
     //! @param maxNumWorkerThreads maximum value that will be returned. Ignored if 0 and overrides maximum derived from other parameters.
     //! @param reservedNumThreads number of hardware threads to reserve for O3DE system threads. Value clamped to num_hardware_threads.
     //! @return number of worker threads for the calling system to allocate
-    uint32_t CalcNumWorkerThreads(float workerThreadsRatio, uint32_t minNumWorkerThreads, uint32_t maxNumWorkerThreads, uint32_t reservedNumThreads);
+    AZCORE_API uint32_t CalcNumWorkerThreads(float workerThreadsRatio, uint32_t minNumWorkerThreads, uint32_t maxNumWorkerThreads, uint32_t reservedNumThreads);
 };

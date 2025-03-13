@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 #include "StatisticalProfilerProxy.h"
+#include <AzCore/AzCoreAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AZ
@@ -18,7 +19,7 @@ namespace AZ
         ////////////////////////////////////////////////////////////////////////////////////////////////
         //! This system component manages the globally unique StatisticalProfilerProxy instance.
         //! And this is all this component does... it simply makes sure the StatisticalProfilerProxy exists.
-        class StatisticalProfilerProxySystemComponent : public AZ::Component
+        class AZCORE_API StatisticalProfilerProxySystemComponent : public AZ::Component
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////////

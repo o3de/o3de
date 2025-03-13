@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Dom
 {
@@ -54,7 +55,7 @@ namespace AZ::Dom
     // VisitorError class
     //
     //! Details of the reason for failure within a VisitorInterface operation.
-    class VisitorError final
+    class AZCORE_API VisitorError final
     {
     public:
         explicit VisitorError(VisitorErrorCode code);
@@ -129,7 +130,7 @@ namespace AZ::Dom
     //!   Opaque values are rejected by the default VisitorInterface implementation.
     //!
     //!   Care should be ensured that DOMs representing opaque types are only visited by consumers that understand them.
-    class Visitor
+    class AZCORE_API Visitor
     {
     public:
         virtual ~Visitor() = default;

@@ -13,6 +13,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -34,7 +35,7 @@ namespace AZ
         struct CompressionInfo;
         using DecompressionFunc = AZStd::function<bool(const CompressionInfo& info, const void* compressed, size_t compressedSize, void* uncompressed, size_t uncompressedBufferSize)>;
 
-        struct CompressionInfo
+        struct AZCORE_API CompressionInfo
         {
             CompressionInfo() = default;
             CompressionInfo(const CompressionInfo& rhs) = default;
@@ -79,7 +80,9 @@ namespace AZ
 
         namespace CompressionUtils
         {
-            bool FindCompressionInfo(CompressionInfo& info, const AZ::IO::PathView filePath);
+            AZCORE_API bool FindCompressionInfo(CompressionInfo& info, const AZ::IO::PathView filePath);
         }
-    }
-}
+    } // namespace IO
+} // namespace AZ
+
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::IO::Compression);

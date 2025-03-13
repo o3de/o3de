@@ -22,27 +22,10 @@ set(FILES
     Dependency/Dependency.inl
     Dependency/Version.h
     Docs.h
-    DOM/DomBackend.cpp
-    DOM/DomBackend.h
-    DOM/DomPatch.cpp
-    DOM/DomPatch.h
-    DOM/DomPath.cpp
-    DOM/DomPath.h
-    DOM/DomUtils.cpp
-    DOM/DomUtils.h
-    DOM/DomValue.cpp
-    DOM/DomValue.h
-    DOM/DomValueWriter.cpp
-    DOM/DomValueWriter.h
-    DOM/DomVisitor.cpp
-    DOM/DomVisitor.h
-    DOM/DomComparison.cpp
-    DOM/DomComparison.h
-    DOM/DomPrefixTree.h
-    DOM/DomPrefixTree.inl
-    DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
+    DOM/DomValueWriter.cpp
+    DOM/DomValueWriter.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
@@ -68,76 +51,19 @@ set(FILES
     EBus/Internal/StoragePolicies.h
     Instance/InstancePool.h
     Interface/Interface.h
-    IO/AnsiTerminalUtils.cpp
-    IO/AnsiTerminalUtils.h
-    IO/ByteContainerStream.h
-    IO/CompressionBus.h
-    IO/CompressionBus.cpp
-    IO/Compressor.cpp
-    IO/Compressor.h
-    IO/CompressorStream.cpp
-    IO/CompressorStream.h
-    IO/CompressorZLib.cpp
-    IO/CompressorZLib.h
-    IO/CompressorZStd.cpp
-    IO/CompressorZStd.h
-    IO/FileIO.cpp
-    IO/FileIO.h
-    IO/FileReader.cpp
-    IO/FileReader.h
-    IO/IOUtils.h
     IO/IOUtils.cpp
-    IO/IStreamer.h
-    IO/IStreamerProfiler.h
-    IO/IStreamerTypes.h
-    IO/IStreamerTypes.inl
-    IO/IStreamerTypes.cpp
-    IO/GenericStreams.cpp
-    IO/GenericStreams.h
-    IO/OpenMode.h
-    IO/OpenMode.cpp
-    IO/Path/Path.cpp
-    IO/Path/Path.h
-    IO/Path/Path.inl
-    IO/Path/PathIterable.inl
-    IO/Path/PathParser.inl
-    IO/Path/PathReflect.cpp
-    IO/Path/PathReflect.h
-    IO/Path/Path_fwd.h
-    IO/SystemFile.cpp
-    IO/SystemFile.h
-    IO/TextStreamWriters.h
-    IO/Streamer/BlockCache.h
+    IO/IOUtils.h
     IO/Streamer/BlockCache.cpp
-    IO/Streamer/DedicatedCache.h
+    IO/Streamer/BlockCache.h
     IO/Streamer/DedicatedCache.cpp
-    IO/Streamer/FileRange.h
-    IO/Streamer/FileRange.cpp
+    IO/Streamer/DedicatedCache.h
     IO/Streamer/FileRequest.h
     IO/Streamer/FileRequest.inl
     IO/Streamer/FileRequest.cpp
-    IO/Streamer/FullFileDecompressor.h
-    IO/Streamer/FullFileDecompressor.cpp
-    IO/Streamer/ReadSplitter.h
-    IO/Streamer/ReadSplitter.cpp
-    IO/Streamer/RequestPath.h
-    IO/Streamer/RequestPath.cpp
-    IO/Streamer/Scheduler.h
-    IO/Streamer/Scheduler.cpp
-    IO/Streamer/Statistics.h
-    IO/Streamer/Statistics.cpp
-    IO/Streamer/StorageDrive.h
     IO/Streamer/StorageDrive.cpp
-    IO/Streamer/StreamerConfiguration.h
-    IO/Streamer/StreamerConfiguration.cpp
-    IO/Streamer/Streamer.cpp
-    IO/Streamer/Streamer.h
-    IO/Streamer/StreamerContext.h
-    IO/Streamer/StreamerContext.cpp
-    IO/Streamer/StreamerComponent.cpp
-    IO/Streamer/StreamerComponent.h
-    IO/Streamer/StreamStackEntry.h
-    IO/Streamer/StreamStackEntry.cpp
+    IO/Streamer/StorageDrive.h
+    IO/SystemFile.cpp
+    IO/SystemFile.h
     IPC/SharedMemory.cpp
     IPC/SharedMemory.h
     Jobs/Algorithms.h
@@ -571,16 +497,6 @@ set(FILES
     Socket/AzSocket.h
     State/HSM.cpp
     State/HSM.h
-    Statistics/NamedRunningStatistic.h
-    Statistics/RunningStatistic.cpp
-    Statistics/RunningStatistic.h
-    Statistics/StatisticalProfiler.h
-    Statistics/StatisticalProfilerProxy.h
-    Statistics/StatisticalProfilerProxySystemComponent.cpp
-    Statistics/StatisticalProfilerProxySystemComponent.h
-    Statistics/StatisticsManager.h
-    StringFunc/StringFunc.cpp
-    StringFunc/StringFunc.h
     Task/Internal/Task.cpp
     Task/Internal/Task.inl
     Task/Internal/Task.h
@@ -593,25 +509,6 @@ set(FILES
     Task/TaskGraph.inl
     Task/TaskGraphSystemComponent.h
     Task/TaskGraphSystemComponent.cpp
-    Threading/ThreadSafeDeque.h
-    Threading/ThreadSafeDeque.inl
-    Threading/ThreadSafeObject.h
-    Threading/ThreadSafeObject.inl
-    Threading/ThreadUtils.h
-    Threading/ThreadUtils.cpp
-    Time/ITime.h
-    Time/TimeSystem.cpp
-    Time/TimeSystem.h
-    UserSettings/UserSettings.cpp
-    UserSettings/UserSettings.h
-    UserSettings/UserSettingsComponent.cpp
-    UserSettings/UserSettingsComponent.h
-    UserSettings/UserSettingsProvider.cpp
-    UserSettings/UserSettingsProvider.h
-    Utils/TypeHash.cpp
-    Utils/TypeHash.h
-    Utils/Utils.cpp
-    Utils/Utils.h
     variadic.h
     XML/rapidxml.h
     XML/rapidxml_iterators.h

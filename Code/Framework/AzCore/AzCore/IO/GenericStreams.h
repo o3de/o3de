@@ -11,6 +11,7 @@
 #include <AzCore/IO/OpenMode.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -20,7 +21,7 @@ namespace AZ::IO
     /*
      * Base Class interface for implementing AZ::IO streams
      */
-    class GenericStream
+    class AZCORE_API GenericStream
     {
     public:
         enum SeekMode
@@ -62,7 +63,7 @@ namespace AZ::IO
     /*
      * Wraps around a SystemFile
      */
-    class SystemFileStream
+    class AZCORE_API SystemFileStream
         : public GenericStream
     {
     public:
@@ -112,7 +113,7 @@ namespace AZ::IO
     /*
      * Wraps around a memory buffer
      */
-    class MemoryStream
+    class AZCORE_API MemoryStream
         : public GenericStream
     {
     public:
@@ -167,7 +168,7 @@ namespace AZ::IO
     * that can write raw data to stdout file descriptor
     * Read operations are not supported
     */
-    class StdoutStream
+    class AZCORE_API StdoutStream
         : public GenericStream
     {
     public:

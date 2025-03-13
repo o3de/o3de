@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -112,7 +113,7 @@ namespace AZ::IO
     //! root-name -> root-directory -> file name(0 or more times)
     //! directory separators are skipped except for the one that represents the root directory
     //! A iterated path element is never empty
-    class PathView
+    class AZCORE_API PathView
     {
     public:
         using string_view_type = AZStd::string_view;

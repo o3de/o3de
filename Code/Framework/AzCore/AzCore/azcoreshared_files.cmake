@@ -87,6 +87,80 @@ set(FILES
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    DOM/DomBackend.cpp
+    DOM/DomBackend.h
+    DOM/DomPatch.cpp
+    DOM/DomPatch.h
+    DOM/DomPath.cpp
+    DOM/DomPath.h
+    DOM/DomUtils.cpp
+    DOM/DomUtils.h
+    DOM/DomValue.cpp
+    DOM/DomValue.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
+    DOM/DomComparison.cpp
+    DOM/DomComparison.h
+    DOM/DomPrefixTree.h
+    DOM/DomPrefixTree.inl
+    DOM/Backends/JSON/JsonBackend.h
+    IO/AnsiTerminalUtils.cpp
+    IO/AnsiTerminalUtils.h
+    IO/ByteContainerStream.h
+    IO/CompressionBus.h
+    IO/CompressionBus.cpp
+    IO/Compressor.cpp
+    IO/Compressor.h
+    IO/CompressorStream.cpp
+    IO/CompressorStream.h
+    IO/CompressorZLib.cpp
+    IO/CompressorZLib.h
+    IO/CompressorZStd.cpp
+    IO/CompressorZStd.h
+    IO/FileIO.cpp
+    IO/FileIO.h
+    IO/FileReader.cpp
+    IO/FileReader.h
+    IO/IStreamer.h
+    IO/IStreamerProfiler.h
+    IO/IStreamerTypes.h
+    IO/IStreamerTypes.inl
+    IO/IStreamerTypes.cpp
+    IO/GenericStreams.cpp
+    IO/GenericStreams.h
+    IO/OpenMode.h
+    IO/OpenMode.cpp
+    IO/Path/Path.cpp
+    IO/Path/Path.h
+    IO/Path/Path.inl
+    IO/Path/PathIterable.inl
+    IO/Path/PathParser.inl
+    IO/Path/PathReflect.cpp
+    IO/Path/PathReflect.h
+    IO/Path/Path_fwd.h
+    IO/TextStreamWriters.h
+    IO/Streamer/FileRange.h
+    IO/Streamer/FileRange.cpp
+    IO/Streamer/FullFileDecompressor.h
+    IO/Streamer/FullFileDecompressor.cpp
+    IO/Streamer/ReadSplitter.h
+    IO/Streamer/ReadSplitter.cpp
+    IO/Streamer/RequestPath.h
+    IO/Streamer/RequestPath.cpp
+    IO/Streamer/Scheduler.h
+    IO/Streamer/Scheduler.cpp
+    IO/Streamer/Statistics.h
+    IO/Streamer/Statistics.cpp
+    IO/Streamer/StreamerConfiguration.h
+    IO/Streamer/StreamerConfiguration.cpp
+    IO/Streamer/Streamer.cpp
+    IO/Streamer/Streamer.h
+    IO/Streamer/StreamerContext.h
+    IO/Streamer/StreamerContext.cpp
+    IO/Streamer/StreamerComponent.cpp
+    IO/Streamer/StreamerComponent.h
+    IO/Streamer/StreamStackEntry.h
+    IO/Streamer/StreamStackEntry.cpp
 
     Module/EBusInstantiations.cpp
     Module/AZStdInstantiations.cpp
@@ -116,4 +190,33 @@ set(FILES
     Settings/SettingsRegistryVisitorUtils.h
     Settings/TextParser.cpp
     Settings/TextParser.h
+    Statistics/NamedRunningStatistic.h
+    Statistics/RunningStatistic.cpp
+    Statistics/RunningStatistic.h
+    Statistics/StatisticalProfiler.h
+    Statistics/StatisticalProfilerProxy.h
+    Statistics/StatisticalProfilerProxySystemComponent.cpp
+    Statistics/StatisticalProfilerProxySystemComponent.h
+    Statistics/StatisticsManager.h
+    StringFunc/StringFunc.cpp
+    StringFunc/StringFunc.h
+    Threading/ThreadSafeDeque.h
+    Threading/ThreadSafeDeque.inl
+    Threading/ThreadSafeObject.h
+    Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
+    Time/ITime.h
+    Time/TimeSystem.cpp
+    Time/TimeSystem.h
+    UserSettings/UserSettings.cpp
+    UserSettings/UserSettings.h
+    UserSettings/UserSettingsComponent.cpp
+    UserSettings/UserSettingsComponent.h
+    UserSettings/UserSettingsProvider.cpp
+    UserSettings/UserSettingsProvider.h
+    Utils/TypeHash.cpp
+    Utils/TypeHash.h
+    Utils/Utils.cpp
+    Utils/Utils.h
 )

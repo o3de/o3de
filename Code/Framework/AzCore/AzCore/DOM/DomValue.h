@@ -21,6 +21,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/utility/to_underlying.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Dom
 {
@@ -50,7 +51,7 @@ namespace AZ::Dom
     class Value;
 
     //! Internal storage for a Value array: an ordered list of Values.
-    class Array
+    class AZCORE_API Array
     {
     public:
         using ContainerType = AZStd::vector<Value, ValueAllocator_for_std_t>;
@@ -71,7 +72,7 @@ namespace AZ::Dom
     using ConstArrayPtr = AZStd::shared_ptr<const Array>;
 
     //! Internal storage for a Value object: an ordered list of Name / Value pairs.
-    class Object
+    class AZCORE_API Object
     {
     public:
         using EntryType = AZStd::pair<KeyType, Value>;
@@ -95,7 +96,7 @@ namespace AZ::Dom
     //! Storage for a Value node: a named Value with both properties and children.
     //! Properties are stored as an ordered list of Name / Value pairs.
     //! Children are stored as an oredered list of Values.
-    class Node
+    class AZCORE_API Node
     {
     public:
         Node() = default;
@@ -145,7 +146,7 @@ namespace AZ::Dom
     //! value itself (objects, arrays, and nodes) are copied by new Values only when their contents change, so care should be taken in
     //! performance critical code to avoid mutation operations such as operator[] to avoid copies. It is recommended that an immutable Value
     //! be explicitly be stored as a `const Value` to avoid accidental detach and copy operations.
-    class Value final
+    class AZCORE_API Value final
     {
     public:
         AZ_TYPE_INFO(Value, "{3E20677F-3B8E-4F89-B665-ED41D74F4799}");

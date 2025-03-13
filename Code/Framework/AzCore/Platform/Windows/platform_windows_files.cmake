@@ -35,19 +35,10 @@ set(FILES
     AzCore/Debug/StackTracer_Windows.cpp
     ../Common/WinAPI/AzCore/Debug/Trace_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
-    ../Common/WinAPI/AzCore/IO/FileIO_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.h
     ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.h
-    AzCore/IO/SystemFile_Platform.h
-    AzCore/IO/Streamer/StorageDrive_Windows.h
-    AzCore/IO/Streamer/StorageDrive_Windows.cpp
-    AzCore/IO/Streamer/StorageDriveConfig_Windows.h
-    AzCore/IO/Streamer/StorageDriveConfig_Windows.cpp
-    AzCore/IO/Streamer/StreamerConfiguration_Windows.h
-    AzCore/IO/Streamer/StreamerConfiguration_Windows.cpp
-    AzCore/IO/Streamer/StreamerContext_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
     AzCore/IPC/SharedMemory_Windows.h
     AzCore/IPC/SharedMemory_Windows.cpp
@@ -74,8 +65,6 @@ set(FILES
     AzCore/Socket/AzSocket_fwd_Platform.h
     AzCore/Socket/AzSocket_fwd_Windows.h
     AzCore/std/time_Windows.cpp
-    ../Common/WinAPI/AzCore/Utils/Utils_WinAPI.cpp
-    AzCore/Utils/Utils_Windows.cpp
     AzCore/Debug/Profiler_Platform.inl
     ../Common/WinAPI/AzCore/Debug/Profiler_WinAPI.inl
 )

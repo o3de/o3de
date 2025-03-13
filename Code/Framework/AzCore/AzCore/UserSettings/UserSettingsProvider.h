@@ -12,6 +12,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -106,7 +107,7 @@ namespace AZ
     /**
      *
      */
-    class UserSettingsProvider
+    class AZCORE_API UserSettingsProvider
         : public UserSettingsBus::Handler
     {
     public:
