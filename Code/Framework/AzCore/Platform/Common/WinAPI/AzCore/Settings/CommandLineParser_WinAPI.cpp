@@ -24,14 +24,6 @@ namespace AZ::Settings::Platform
 
     CommandLineConverter::CommandLineConverter(int& argc, char**& argv)
     {
-        // Some test cases create an instance of ToolsTestApplication with new commandline parameters, which are different than the
-        // application commandline parameters retrieved by GetCommandLineW(). These test cases also set the argv[0] to nullptr, so it can be
-        // detected here.
-        if (argc >= 1 && argv[0] == nullptr)
-        {
-            return;
-        }
-
         // Read arguments form GetCommandLineW(), convert them to utf-8, and write them back to argc+argv. This is the most convenient way
         // on Windows to get the arguments as utf-8 encoded strings.
 
