@@ -71,7 +71,6 @@ jmespath==0.9.5 \
     # boto3, botocore
 MarkupSafe==3.0.2 \
     --hash=sha256:6af100e168aa82a50e186c82875a5893c5597a0c1ccdb0d8b40240b1f28b969a
-    # via -r .\requirements.txt, jinja2
 more-itertools==8.4.0 \
     --hash=sha256:68c70cc7167bdf5c7c9d8f6954a7837089c6a36bf565383919bb595efb8a17e5 \
     --hash=sha256:b78134b2063dd214000685165d81c154522c3ee0a1c0d4d113c80361c234c5a2 \
