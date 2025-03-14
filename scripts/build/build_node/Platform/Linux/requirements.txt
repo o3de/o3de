@@ -43,5 +43,3 @@ tempfile2==0.1.1 \
 PyGithub==1.57 \
     --hash=sha256:5822febeac2391f1306c55a99af2bc8f86c8bf82ded000030cd02c18f31b731f \
     --hash=sha256:c273f252b278fb81f1769505cc6921bdb6791e1cebd6ac850cc97dad13c31ff3
-MarkupSafe==3.0.2 \
-    --hash=sha256:6af100e168aa82a50e186c82875a5893c5597a0c1ccdb0d8b40240b1f28b969a
