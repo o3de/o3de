@@ -47,7 +47,7 @@ jmespath==0.10.0 \
 MarkupSafe==3.0.2 \
     --hash=sha256:6af100e168aa82a50e186c82875a5893c5597a0c1ccdb0d8b40240b1f28b969a \
     --hash=sha256:bbcb445fa71794da8f178f0f6d66789a28d7319071af7a496d4d507ed566270d \
-    --hash:sha256:b14f16f94cbc61215115b9b1236f9c18403c15dd3c52cf629072afa9d54c1cbf    
+    --hash=sha256:b14f16f94cbc61215115b9b1236f9c18403c15dd3c52cf629072afa9d54c1cbf    
     # via -r requirements.txt, jinja2
 p4python==2017.2.1615960 \
     --hash=sha256:0e6f7a1d654e32a2001a0b39ce360aabdc853e72d4f2ab59e9d1a3b1d1a0f9ed \
