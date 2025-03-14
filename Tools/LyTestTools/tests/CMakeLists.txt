@@ -8,6 +8,10 @@
 # LyTestTools tests.
 #
 
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
+
 # Unit tests.
 ly_add_pytest(
     NAME LyTestTools_Unit

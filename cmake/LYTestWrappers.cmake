@@ -95,10 +95,6 @@ endfunction()
 #      ly_add_* function below, not by user code
 # sets LY_ADDED_TEST_NAME to the fully qualified name of the test, in parent scope
 function(ly_add_test)
-    if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-        return()
-    endif()
-
     set(options EXCLUDE_TEST_RUN_TARGET_FROM_IDE)
     set(one_value_args NAME PARENT_NAME TEST_LIBRARY TEST_SUITE TIMEOUT)
     set(multi_value_args TEST_REQUIRES TEST_COMMAND NON_IDE_PARAMS RUNTIME_DEPENDENCIES COMPONENT LABELS)
@@ -366,8 +362,8 @@ endfunction()
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set, will have its timeout set by ly_add_test to the default timeout.
 # \arg:EXCLUDE_TEST_RUN_TARGET_FROM_IDE(bool) - If set the test run target will be not be shown in the IDE
 function(ly_add_googletest)
-    if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-        message(FATAL_ERROR "Platform does not support test targets")
+    if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
+        message(FATAL_ERROR "Googletest unavailable on this platform.  check PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED before using ly_add_googletest")
     endif()
 
     set(one_value_args NAME TARGET TEST_SUITE)
@@ -384,11 +380,6 @@ function(ly_add_googletest)
     # AzTestRunner modules only supports google test libraries, regardless of whether or not
     # google test suites are supported
     set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
-
-    if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
-        return()
-    endif()
-
 
     if (ly_add_googletest_TEST_SUITE AND NOT ly_add_googletest_TEST_SUITE STREQUAL "main")
         # if a suite is specified, we filter to only accept things which match that suite (in c++)
@@ -460,10 +451,8 @@ endfunction()
 #      NOTE: Not used if a custom TEST_COMMAND is supplied
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set, will have its timeout set by ly_add_test to the default timeout.
 function(ly_add_googlebenchmark)
-    if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-        message(FATAL_ERROR "Platform does not support test targets")
-    endif()
     if(NOT PAL_TRAIT_TEST_GOOGLE_BENCHMARK_SUPPORTED)
+        message(FATAL_ERROR "Platform does not support test targets - check PAL_TRAIT_TEST_GOOGLE_BENCHMARK_SUPPORTED")
         return()
     endif()
 
