@@ -82,6 +82,9 @@
 		__cpuid_count(function, subfunction, cpuinfo[0], cpuinfo[1], cpuinfo[2], cpuinfo[3]);
 	}
 
+#ifdef LINUX
+#undef _xgetbv
+#endif
 	FORCE_INLINE unsigned long long _xgetbv(unsigned int index)
 	{
 		unsigned int eax, edx;
