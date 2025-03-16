@@ -11,10 +11,11 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
-    class TaskGraphSystemComponent
+    class AZCORE_API TaskGraphSystemComponent
         : public Component
         , public TaskGraphActiveInterface
     {

@@ -18,4 +18,6 @@ set(FILES
     AzCore/IO/Streamer/StreamerContext_Platform.h
     AzCore/Utils/Utils_Windows.cpp
     ../Common/WinAPI/AzCore/Utils/Utils_WinAPI.cpp
+    ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp
+    ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.h
 )

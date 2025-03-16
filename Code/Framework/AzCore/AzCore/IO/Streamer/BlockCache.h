@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -28,7 +29,7 @@ namespace AZ::IO
         struct ReportData;
     }
 
-    struct BlockCacheConfig final :
+    struct AZCORE_API BlockCacheConfig final :
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::BlockCacheConfig, "{70120525-88A4-40B6-A75B-BAA7E8FD77F3}", IStreamerStackConfig);
@@ -57,7 +58,7 @@ namespace AZ::IO
         BlockSize m_blockSize{ BlockSize::MemoryAlignment };
     };
 
-    class BlockCache
+    class AZCORE_API BlockCache
         : public StreamStackEntry
     {
     public:

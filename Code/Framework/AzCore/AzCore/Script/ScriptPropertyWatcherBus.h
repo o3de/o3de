@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -34,4 +35,6 @@ namespace AZ
     };
     
     typedef AZ::EBus<ScriptPropertyWatcherInterface> ScriptPropertyWatcherBus;
-}
+} // namespace AZ
+
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::ScriptPropertyWatcherInterface);

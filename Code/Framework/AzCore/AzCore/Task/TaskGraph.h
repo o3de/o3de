@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -39,7 +40,7 @@ namespace AZ
     // A TaskToken is returned each time a Task is added to the TaskGraph. TaskTokens are used to
     // express dependencies between tasks within the graph, and have no purpose after the graph
     // is submitted (simply let them go out of scope)
-    class TaskToken final
+    class AZCORE_API TaskToken final
     {
     public:
         // Indicate that this task must finish before the task token(s) passed as the argument
@@ -71,7 +72,7 @@ namespace AZ
     //
     // After the TaskGraphEvent is signaled, you are NOT allowed to reuse the same TaskGraphEvent
     // for a future submission.
-    class TaskGraphEvent
+    class AZCORE_API TaskGraphEvent
     {
     public:
         // ! The supplied string label is expected to be a string literal or otherwise outlive the lifetime of this TG event.
@@ -99,7 +100,7 @@ namespace AZ
     //
     // The TaskGraph MAY be retained across multiple frames and resubmitted, provided the
     // user provides some guarantees (see comments associated with TaskGraph::Retain).
-    class TaskGraph final
+    class AZCORE_API TaskGraph final
     {
     public:
         // ! The supplied string label is expected to be a string literal or otherwise outlive the lifetime of this TG.

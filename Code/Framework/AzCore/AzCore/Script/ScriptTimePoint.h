@@ -12,6 +12,7 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -21,7 +22,7 @@ namespace AZ
 
 
     //! Wrapper that reflects a AZStd::chrono::steady_clock::time_point to script.
-    class ScriptTimePoint
+    class AZCORE_API ScriptTimePoint
     {
     public:
         AZ_TYPE_INFO(ScriptTimePoint, "{4c0f6ad4-0d4f-4354-ad4a-0c01e948245c}");

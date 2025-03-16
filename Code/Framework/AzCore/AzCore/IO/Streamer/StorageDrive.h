@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/chrono/chrono.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO::Requests
 {
@@ -24,7 +25,7 @@ namespace AZ::IO::Requests
 
 namespace AZ::IO
 {
-    struct StorageDriveConfig final :
+    struct AZCORE_API StorageDriveConfig final :
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::StorageDriveConfig, "{3D568902-6C09-4E9E-A4DB-8B561481D298}", IStreamerStackConfig);
@@ -44,11 +45,15 @@ namespace AZ::IO
     //! This entry is designed as a catch-all for any reads that weren't handled
     //! by platform specific implementations or the virtual file system. It should
     //! by the last entry in the stack as it will not forward calls to the next entry.
-    class StorageDrive
+    class AZCORE_API StorageDrive
         : public StreamStackEntry
     {
     public:
         explicit StorageDrive(u32 maxFileHandles);
+
+        StorageDrive(StorageDrive const&) = delete;
+        StorageDrive& operator=(StorageDrive const&) = delete;
+
         ~StorageDrive() override = default;
 
         void SetNext(AZStd::shared_ptr<StreamStackEntry> next) override;

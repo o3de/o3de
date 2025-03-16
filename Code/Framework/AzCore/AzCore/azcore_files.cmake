@@ -51,19 +51,6 @@ set(FILES
     EBus/Internal/StoragePolicies.h
     Instance/InstancePool.h
     Interface/Interface.h
-    IO/IOUtils.cpp
-    IO/IOUtils.h
-    IO/Streamer/BlockCache.cpp
-    IO/Streamer/BlockCache.h
-    IO/Streamer/DedicatedCache.cpp
-    IO/Streamer/DedicatedCache.h
-    IO/Streamer/FileRequest.h
-    IO/Streamer/FileRequest.inl
-    IO/Streamer/FileRequest.cpp
-    IO/Streamer/StorageDrive.cpp
-    IO/Streamer/StorageDrive.h
-    IO/SystemFile.cpp
-    IO/SystemFile.h
     IPC/SharedMemory.cpp
     IPC/SharedMemory.h
     Jobs/Algorithms.h
@@ -364,31 +351,8 @@ set(FILES
     RTTI/TypeInfo.cpp
     RTTI/TypeInfoSimple.h
     RTTI/TypeSafeIntegral.h
-    Script/lua/lua.h
-    Script/ScriptAsset.cpp
-    Script/ScriptAsset.h
-    Script/ScriptContext.h
-    Script/ScriptContext.cpp
-    Script/ScriptContextAttributes.h
-    Script/ScriptContextDebug.cpp
-    Script/ScriptContextDebug.h
-    Script/ScriptSystemBus.h
-    Script/ScriptSystemComponent.cpp
-    Script/ScriptSystemComponent.h
-    Script/ScriptTimePoint.cpp
-    Script/ScriptTimePoint.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
-    Script/ScriptPropertySerializer.h
-    Script/ScriptPropertySerializer.cpp
-    Script/ScriptPropertyTable.h
-    Script/ScriptPropertyTable.cpp
-    Script/ScriptPropertyWatcherBus.h
-    Script/ScriptDebug.cpp
-    Script/ScriptDebug.h
-    ScriptCanvas/ScriptCanvasAttributes.h
-    ScriptCanvas/ScriptCanvasOnDemandNames.cpp
-    ScriptCanvas/ScriptCanvasOnDemandNames.h
     Serialization/DataOverlay.h
     Serialization/DataOverlayInstanceMsgs.h
     Serialization/DataOverlayProviderMsgs.cpp
@@ -497,18 +461,6 @@ set(FILES
     Socket/AzSocket.h
     State/HSM.cpp
     State/HSM.h
-    Task/Internal/Task.cpp
-    Task/Internal/Task.inl
-    Task/Internal/Task.h
-    Task/Internal/TaskConfig.h
-    Task/TaskDescriptor.h
-    Task/TaskExecutor.cpp
-    Task/TaskExecutor.h
-    Task/TaskGraph.cpp
-    Task/TaskGraph.h
-    Task/TaskGraph.inl
-    Task/TaskGraphSystemComponent.h
-    Task/TaskGraphSystemComponent.cpp
     variadic.h
     XML/rapidxml.h
     XML/rapidxml_iterators.h

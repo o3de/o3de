@@ -121,6 +121,8 @@ set(FILES
     IO/FileIO.h
     IO/FileReader.cpp
     IO/FileReader.h
+    IO/IOUtils.cpp
+    IO/IOUtils.h
     IO/IStreamer.h
     IO/IStreamerProfiler.h
     IO/IStreamerTypes.h
@@ -130,6 +132,8 @@ set(FILES
     IO/GenericStreams.h
     IO/OpenMode.h
     IO/OpenMode.cpp
+    IO/SystemFile.cpp
+    IO/SystemFile.h
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
@@ -139,6 +143,15 @@ set(FILES
     IO/Path/PathReflect.h
     IO/Path/Path_fwd.h
     IO/TextStreamWriters.h
+    IO/Streamer/BlockCache.cpp
+    IO/Streamer/BlockCache.h
+    IO/Streamer/DedicatedCache.cpp
+    IO/Streamer/DedicatedCache.h
+    IO/Streamer/FileRequest.h
+    IO/Streamer/FileRequest.inl
+    IO/Streamer/FileRequest.cpp
+    IO/Streamer/StorageDrive.cpp
+    IO/Streamer/StorageDrive.h
     IO/Streamer/FileRange.h
     IO/Streamer/FileRange.cpp
     IO/Streamer/FullFileDecompressor.h
@@ -165,6 +178,31 @@ set(FILES
     Module/EBusInstantiations.cpp
     Module/AZStdInstantiations.cpp
 
+    Script/lua/lua.h
+    Script/ScriptAsset.cpp
+    Script/ScriptAsset.h
+    Script/ScriptContext.h
+    Script/ScriptContext.cpp
+    Script/ScriptContextAttributes.h
+    Script/ScriptContextDebug.cpp
+    Script/ScriptContextDebug.h
+    Script/ScriptSystemBus.cpp
+    Script/ScriptSystemBus.h
+    Script/ScriptSystemComponent.cpp
+    Script/ScriptSystemComponent.h
+    Script/ScriptTimePoint.cpp
+    Script/ScriptTimePoint.h
+    Script/ScriptPropertySerializer.h
+    Script/ScriptPropertySerializer.cpp
+    Script/ScriptPropertyTable.h
+    Script/ScriptPropertyTable.cpp
+    Script/ScriptPropertyWatcherBus.cpp
+    Script/ScriptPropertyWatcherBus.h
+    Script/ScriptDebug.cpp
+    Script/ScriptDebug.h
+    ScriptCanvas/ScriptCanvasAttributes.h
+    ScriptCanvas/ScriptCanvasOnDemandNames.cpp
+    ScriptCanvas/ScriptCanvasOnDemandNames.h
     Settings/CommandLine.cpp
     Settings/CommandLine.h
     Settings/CommandLineParser.cpp
@@ -200,6 +238,18 @@ set(FILES
     Statistics/StatisticsManager.h
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
+    Task/Internal/Task.cpp
+    Task/Internal/Task.inl
+    Task/Internal/Task.h
+    Task/Internal/TaskConfig.h
+    Task/TaskDescriptor.h
+    Task/TaskExecutor.cpp
+    Task/TaskExecutor.h
+    Task/TaskGraph.cpp
+    Task/TaskGraph.h
+    Task/TaskGraph.inl
+    Task/TaskGraphSystemComponent.h
+    Task/TaskGraphSystemComponent.cpp
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h

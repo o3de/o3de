@@ -10,6 +10,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
     /**
      * Reflects global Log, Warning, Error, and Assert functions to script under the "Debug." prefix.
      */
-    class ScriptDebug
+    class AZCORE_API ScriptDebug
     {
     public:
         AZ_TYPE_INFO(ScriptDebug, "{FBAFA9F8-9861-41F9-A9EF-3B943B91FF4E}");

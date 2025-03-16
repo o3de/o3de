@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
+#include <AzCore/AzCoreAPI.h>
 
 struct lua_State;
 
@@ -111,3 +112,5 @@ namespace AZ
 
 #endif // AZCORE_SCRIPT_SYSTEM_BUS_H
 #pragma once
+
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::ScriptSystemRequests);

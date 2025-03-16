@@ -13,6 +13,7 @@
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AZ
      * using the Hex facility. You are NOT REQUIRED to use it. You can use ScriptContext directly and
      * manage it anyway you like, but you will be provide ScriptAsset management too.
      */
-    class ScriptSystemComponent
+    class AZCORE_API ScriptSystemComponent
         : public Component
         , public ScriptSystemRequestBus::Handler
         , public SystemTickBus::Handler

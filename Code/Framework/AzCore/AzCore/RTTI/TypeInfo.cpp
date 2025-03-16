@@ -8,7 +8,7 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Memory/OSAllocator.h>
-
+#include <AzCore/AzCoreAPI.h>
 
 //! Add GetO3deTypeName and GetO3deTypeId definitions for commonly used O3DE types
 namespace AZ

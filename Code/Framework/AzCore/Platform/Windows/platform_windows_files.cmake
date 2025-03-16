@@ -37,8 +37,6 @@ set(FILES
     ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.h
-    ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp
-    ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.h
     AzCore/IPC/SharedMemory_Platform.h
     AzCore/IPC/SharedMemory_Windows.h
     AzCore/IPC/SharedMemory_Windows.cpp
