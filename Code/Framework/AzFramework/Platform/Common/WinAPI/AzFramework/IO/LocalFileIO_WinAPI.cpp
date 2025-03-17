@@ -94,7 +94,11 @@ namespace AZ
             for (AZ::IO::PathView pathSegment : resolvedPath.RelativePath())
             {
                 directoryPath /= pathSegment;
-                CreateDirectoryA(directoryPath.c_str(), nullptr);
+
+                AZStd::fixed_wstring<AZ::IO::MaxPathLength> directoryPathW;
+                AZStd::to_wstring(directoryPathW, directoryPath.String());
+                CreateDirectoryW(directoryPathW.c_str(), nullptr);
+
                 if (!IsDirectory(directoryPath.c_str()))
                 {
                     return ResultCode::Error;
