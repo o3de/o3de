@@ -14,7 +14,6 @@
 #include <Atom/RPI.Public/Model/ModelLod.h>
 #include <Atom/RHI/DrawPacket.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 
 #include <AzCore/Math/Obb.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -95,7 +94,9 @@ namespace AZ
             // By default it is NOT defined.
             // When defined, the value of @m_modelLodMeshIndex (aka subMesh index) is written
             // to the shader constant.
-            RHI::ShaderInputNameIndex m_drawSrgModelLodMeshIndex = "m_modelLodMeshIndex";
+            // REMARK: Unfortunately can't use RHI::ShaderInputNameIndex as it would cause
+            //         a crash in the UnitTest: MeshInstanceManagerTestFixture.AddInstance
+            static constexpr char DrawSrgModelLodMeshIndex[] = "m_modelLodMeshIndex";
 
             Ptr<RHI::DrawPacket> m_drawPacket;
 

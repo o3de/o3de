@@ -422,10 +422,13 @@ namespace AZ
                         drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
 
-                    // We need to call Reset for each ShaderItem, because not all shader have
-                    // the DrawSrg::m_modelLodMeshIndex constant defined in them.
-                    m_drawSrgModelLodMeshIndex.Reset();
-                    drawSrg->SetConstant(m_drawSrgModelLodMeshIndex, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                    AZ::Name drawSrgModelLodMeshIndex = AZ::Name(DrawSrgModelLodMeshIndex);
+                    index = drawSrg->FindShaderInputConstantIndex(drawSrgModelLodMeshIndex);
+
+                    if (index.IsValid())
+                    {
+                        drawSrg->SetConstant(index, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                    }
 
                     // TODO: Does it make sense to call Compile() in the case where both SetConstant() calls above fail?
                     // Leaving it as always calling Compile() as precaution that there's code somewhere else that assumes
