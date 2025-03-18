@@ -9,10 +9,10 @@
 
 #include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 #include <Atom/RHI/FrameEventBus.h>
+#include <AtomCore/std/containers/small_vector.h>
 #include <RHI/Descriptor.h>
 #include <RHI/MemorySubAllocator.h>
 #include <RHI/ShaderResourceGroup.h>
-
 
 namespace AZ
 {
