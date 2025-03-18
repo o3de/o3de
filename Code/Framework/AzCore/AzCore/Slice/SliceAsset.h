@@ -9,6 +9,7 @@
 #define AZCORE_SLICE_ASSET_H
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
     /**
      * Represents a Slice asset.
      */
-    class SliceAsset
+    class AZCORE_API SliceAsset
         : public Data::AssetData
     {
         friend class SliceAssetHandler;
@@ -82,7 +83,7 @@ namespace AZ
     /**
      * Represents an exported Dynamic Slice.
      */
-    class DynamicSliceAsset
+    class AZCORE_API DynamicSliceAsset
         : public SliceAsset
     {
     public:
@@ -118,7 +119,7 @@ namespace AZ
     namespace Data
     {
         /// Asset filter helper for stripping all assets except slices.
-        bool AssetFilterSourceSlicesOnly(const AssetFilterInfo& filterInfo);
+        AZCORE_API bool AssetFilterSourceSlicesOnly(const AssetFilterInfo& filterInfo);
     }
 
 } // namespace AZ

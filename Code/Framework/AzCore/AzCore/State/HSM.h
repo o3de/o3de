@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/delegate/delegate.h>
+#include <AzCore/AzCoreAPI.h>
 
 /**
  * Can be called from the user to automatically stinganize the state name, when a set is set
@@ -29,7 +30,7 @@ namespace AZ
      * if you want such behavior. This restriction is imposed only to prevent the user from creating
      * extremely complicated to trace state machines (which is what we are trying to avoid).
      */
-    class HSM
+    class AZCORE_API HSM
     {
     public:
         typedef unsigned char StateId;

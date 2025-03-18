@@ -178,6 +178,17 @@ set(FILES
     Module/EBusInstantiations.cpp
     Module/AZStdInstantiations.cpp
 
+    Name/Name.h
+    Name/Name.cpp
+    Name/NameDictionary.h
+    Name/NameDictionary.cpp
+    Name/NameJsonSerializer.h
+    Name/NameJsonSerializer.cpp
+    Name/NameSerializer.h
+    Name/NameSerializer.cpp
+    Name/Internal/NameData.h
+    Name/Internal/NameData.cpp
+    Process/ProcessInfo.h
     Script/lua/lua.h
     Script/ScriptAsset.cpp
     Script/ScriptAsset.h
@@ -228,6 +239,25 @@ set(FILES
     Settings/SettingsRegistryVisitorUtils.h
     Settings/TextParser.cpp
     Settings/TextParser.h
+    Slice/SliceAsset.cpp
+    Slice/SliceAsset.h
+    Slice/SliceAssetHandler.cpp
+    Slice/SliceAssetHandler.h
+    Slice/SliceBus.cpp
+    Slice/SliceBus.h
+    Slice/SliceComponent.cpp
+    Slice/SliceComponent.h
+    Slice/SliceSystemComponent.h
+    Slice/SliceSystemComponent.cpp
+    Slice/SliceMetadataInfoBus.cpp
+    Slice/SliceMetadataInfoBus.h
+    Slice/SliceMetadataInfoComponent.h
+    Slice/SliceMetadataInfoComponent.cpp
+    Socket/AzSocket_fwd.h
+    Socket/AzSocket.cpp
+    Socket/AzSocket.h
+    State/HSM.cpp
+    State/HSM.h
     Statistics/NamedRunningStatistic.h
     Statistics/RunningStatistic.cpp
     Statistics/RunningStatistic.h

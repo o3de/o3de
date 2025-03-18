@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
     /**
      * Manages prefab assets.
      */
-    class SliceAssetHandler
+    class AZCORE_API SliceAssetHandler
         : public Data::AssetHandler
         , AZ::AssetTypeInfoBus::MultiHandler
     {

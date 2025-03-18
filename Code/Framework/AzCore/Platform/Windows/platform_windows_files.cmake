@@ -31,7 +31,6 @@ set(FILES
     ../Common/VisualStudio/AzCore/Natvis/azcore.natstepfilter
     ../Common/VisualStudio/AzCore/Natvis/azcore.natjmc
     ../Common/VisualStudio/AzCore/Natvis/rapidjson.natvis
-    ../Common/WinAPI/AzCore/Process/ProcessInfo_WinAPI.cpp
     AzCore/Debug/StackTracer_Windows.cpp
     ../Common/WinAPI/AzCore/Debug/Trace_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
@@ -56,12 +55,6 @@ set(FILES
     ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.h
     ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.cpp
     ../Common/WinAPI/AzCore/Settings/CommandLineParser_WinAPI.cpp
-    ../Common/WinAPI/AzCore/Socket/AzSocket_fwd_WinAPI.h
-    ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.cpp
-    ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.h
-    AzCore/Socket/AzSocket_Platform.h
-    AzCore/Socket/AzSocket_fwd_Platform.h
-    AzCore/Socket/AzSocket_fwd_Windows.h
     AzCore/std/time_Windows.cpp
     AzCore/Debug/Profiler_Platform.inl
     ../Common/WinAPI/AzCore/Debug/Profiler_WinAPI.inl

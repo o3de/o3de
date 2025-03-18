@@ -17,6 +17,7 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Slice/SliceMetadataInfoBus.h>
 #include <AzCore/Component/ComponentExport.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -30,7 +31,7 @@ namespace AZ
     * referenced by the associated slice as well as, if applicable, the metadata entity belonging to the
     * slice holding the reference to the associated slice.
     */
-    class SliceMetadataInfoComponent
+    class AZCORE_API SliceMetadataInfoComponent
         : public AZ::Component
         , public SliceMetadataInfoRequestBus::Handler
         , public AZ::EntityBus::MultiHandler

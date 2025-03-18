@@ -10,6 +10,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -140,3 +141,7 @@ namespace AZ
 
     using SliceMetadataInfoNotificationBus = EBus<SliceMetadataInfoNotifications>;
 } // namespace AZ
+
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::SliceMetadataInfoRequests)
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::SliceMetadataInfoManipulationRequests)
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::SliceMetadataInfoNotifications)

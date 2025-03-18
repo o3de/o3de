@@ -290,16 +290,6 @@ set(FILES
     Module/ModuleManager.h
     Module/Internal/ModuleManagerSearchPathTool.h
     Module/Internal/ModuleManagerSearchPathTool.cpp
-    Name/Name.h
-    Name/Name.cpp
-    Name/NameDictionary.h
-    Name/NameDictionary.cpp
-    Name/NameJsonSerializer.h
-    Name/NameJsonSerializer.cpp
-    Name/NameSerializer.h
-    Name/NameSerializer.cpp
-    Name/Internal/NameData.h
-    Name/Internal/NameData.cpp
     NativeUI/NativeUISystemComponent.cpp
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.h
@@ -316,7 +306,6 @@ set(FILES
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h
-    Process/ProcessInfo.h
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
@@ -444,23 +433,6 @@ set(FILES
     Serialization/Json/UnsupportedTypesSerializer.h
     Serialization/Json/UnsupportedTypesSerializer.cpp
     Serialization/std/VariantReflection.inl
-    Slice/SliceAsset.cpp
-    Slice/SliceAsset.h
-    Slice/SliceAssetHandler.cpp
-    Slice/SliceAssetHandler.h
-    Slice/SliceBus.h
-    Slice/SliceComponent.cpp
-    Slice/SliceComponent.h
-    Slice/SliceSystemComponent.h
-    Slice/SliceSystemComponent.cpp
-    Slice/SliceMetadataInfoBus.h
-    Slice/SliceMetadataInfoComponent.h
-    Slice/SliceMetadataInfoComponent.cpp
-    Socket/AzSocket_fwd.h
-    Socket/AzSocket.cpp
-    Socket/AzSocket.h
-    State/HSM.cpp
-    State/HSM.h
     variadic.h
     XML/rapidxml.h
     XML/rapidxml_iterators.h

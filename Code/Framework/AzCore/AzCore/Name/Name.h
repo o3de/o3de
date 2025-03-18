@@ -11,6 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Internal/NameData.h>
 #include <AzCore/std/parallel/thread.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace UnitTest
 {
@@ -30,7 +31,7 @@ namespace AZ
     //! Smaller than Name but requires a memory indirection to look up
     //! the name text or hash.
     //! \see Name
-    class NameRef final
+    class AZCORE_API NameRef final
     {
         friend Name;
 
@@ -71,7 +72,7 @@ namespace AZ
     //! Names require the dictionary to be initialized before they are created, unless they are created from a
     //! string literal via Name::FromStringLiteral, in which they'll store their string for deferred initialization.
     //! A Name instance may only be statically declared using Name::FromStringLiteral (or the AZ_NAME_LITERAL helper macro).
-    class Name final
+    class AZCORE_API Name final
     {
         friend NameRef;
         friend NameDictionary;
@@ -174,10 +175,9 @@ namespace AZ
         //! Gets a reference to the current head of the deferred Name linked list.
         //! The list is used to initialize Names created before the NameDictionary when
         //! their modules are loaded.
-        static Name*& GetDeferredHead()
-        {
-            return s_staticNameBegin;
-        }
+        static Name*& GetDeferredHead();
+
+        static Name* SetStaticNameBegin(Name* staticNameBegin);
 
     private:
         // Assigns a new name.
@@ -223,9 +223,6 @@ namespace AZ
         //! Pointer to NameData in the NameDictionary. This holds both the hash and string pair.
         AZStd::intrusive_ptr<Internal::NameData> m_data;
 
-        //! Describes the begin of the static list of Names that were initialized before the NameDictionary was available.
-        //! On module initialization, these names are linked into the NameDictionary's static pool and created.
-        static Name* s_staticNameBegin;
         //! Describes the next name entry in the static list of Names.
         Name* m_nextName = nullptr;
         //! Describes the previous name entry in the static list of Names.

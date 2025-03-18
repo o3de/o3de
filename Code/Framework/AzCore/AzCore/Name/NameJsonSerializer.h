@@ -11,10 +11,11 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
-    class NameJsonSerializer
+    class AZCORE_API NameJsonSerializer
         : public BaseJsonSerializer
     {
     public:

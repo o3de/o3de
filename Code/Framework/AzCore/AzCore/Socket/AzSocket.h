@@ -13,6 +13,7 @@
 
 #include <AzCore/Socket/AzSocket_fwd.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 typedef fd_set  AZFD_SET;
 typedef timeval AZTIMEVAL;
@@ -68,40 +69,40 @@ namespace AZ
             LINGER                  = 0x20,
         };
 
-        const char* GetStringForError(AZ::s32 errorNumber);
+        AZCORE_API const char* GetStringForError(AZ::s32 errorNumber);
 
-        AZ::u32 HostToNetLong(AZ::u32 hstLong);
-        AZ::u32 NetToHostLong(AZ::u32 netLong);
-        AZ::u16 HostToNetShort(AZ::u16 hstShort);
-        AZ::u16 NetToHostShort(AZ::u16 netShort);
-        AZ::s32 GetHostName(AZStd::string& hostname);
+        AZCORE_API AZ::u32 HostToNetLong(AZ::u32 hstLong);
+        AZCORE_API AZ::u32 NetToHostLong(AZ::u32 netLong);
+        AZCORE_API AZ::u16 HostToNetShort(AZ::u16 hstShort);
+        AZCORE_API AZ::u16 NetToHostShort(AZ::u16 netShort);
+        AZCORE_API AZ::s32 GetHostName(AZStd::string& hostname);
 
-        AZSOCKET Socket();
-        AZSOCKET Socket(AZ::s32 af, AZ::s32 type, AZ::s32 protocol);
-        AZ::s32 SetSockOpt(AZSOCKET sock, AZ::s32 level, AZ::s32 optname, const char* optval, AZ::s32 optlen);
-        AZ::s32 SetSocketOption(AZSOCKET sock, AzSocketOption opt, bool enable);
-        AZ::s32 EnableTCPNoDelay(AZSOCKET sock, bool enable);
-        AZ::s32 SetSocketBlockingMode(AZSOCKET sock, bool blocking);
-        AZ::s32 CloseSocket(AZSOCKET sock);
-        AZ::s32 Shutdown(AZSOCKET sock, AZ::s32 how);
-        AZ::s32 GetSockName(AZSOCKET sock, AzSocketAddress& addr);
-        AZ::s32 Connect(AZSOCKET sock, const AzSocketAddress& addr);
-        AZ::s32 Listen(AZSOCKET sock, AZ::s32 backlog);
-        AZSOCKET Accept(AZSOCKET sock, AzSocketAddress& addr);
-        AZ::s32 Send(AZSOCKET sock, const char* buf, AZ::s32 len, AZ::s32 flags);
-        AZ::s32 Recv(AZSOCKET sock, char* buf, AZ::s32 len, AZ::s32 flags);
-        AZ::s32 Bind(AZSOCKET sock, const AzSocketAddress& addr);
+        AZCORE_API AZSOCKET Socket();
+        AZCORE_API AZSOCKET Socket(AZ::s32 af, AZ::s32 type, AZ::s32 protocol);
+        AZCORE_API AZ::s32 SetSockOpt(AZSOCKET sock, AZ::s32 level, AZ::s32 optname, const char* optval, AZ::s32 optlen);
+        AZCORE_API AZ::s32 SetSocketOption(AZSOCKET sock, AzSocketOption opt, bool enable);
+        AZCORE_API AZ::s32 EnableTCPNoDelay(AZSOCKET sock, bool enable);
+        AZCORE_API AZ::s32 SetSocketBlockingMode(AZSOCKET sock, bool blocking);
+        AZCORE_API AZ::s32 CloseSocket(AZSOCKET sock);
+        AZCORE_API AZ::s32 Shutdown(AZSOCKET sock, AZ::s32 how);
+        AZCORE_API AZ::s32 GetSockName(AZSOCKET sock, AzSocketAddress& addr);
+        AZCORE_API AZ::s32 Connect(AZSOCKET sock, const AzSocketAddress& addr);
+        AZCORE_API AZ::s32 Listen(AZSOCKET sock, AZ::s32 backlog);
+        AZCORE_API AZSOCKET Accept(AZSOCKET sock, AzSocketAddress& addr);
+        AZCORE_API AZ::s32 Send(AZSOCKET sock, const char* buf, AZ::s32 len, AZ::s32 flags);
+        AZCORE_API AZ::s32 Recv(AZSOCKET sock, char* buf, AZ::s32 len, AZ::s32 flags);
+        AZCORE_API AZ::s32 Bind(AZSOCKET sock, const AzSocketAddress& addr);
 
-        AZ::s32 Select(AZSOCKET sock, AZFD_SET* readfds, AZFD_SET* writefds, AZFD_SET* exceptfds, AZTIMEVAL* timeout);
-        AZ::s32 IsRecvPending(AZSOCKET sock, AZTIMEVAL* timeout);
-        AZ::s32 WaitForWritableSocket(AZSOCKET sock, AZTIMEVAL* timeout);
+        AZCORE_API AZ::s32 Select(AZSOCKET sock, AZFD_SET* readfds, AZFD_SET* writefds, AZFD_SET* exceptfds, AZTIMEVAL* timeout);
+        AZCORE_API AZ::s32 IsRecvPending(AZSOCKET sock, AZTIMEVAL* timeout);
+        AZCORE_API AZ::s32 WaitForWritableSocket(AZSOCKET sock, AZTIMEVAL* timeout);
 
         //! Required to call startup before using most other socket calls
         //!  This really only is necessary on windows, but may be relevant for other platforms soon
-        AZ::s32 Startup();
+        AZCORE_API AZ::s32 Startup();
 
         //! Required to call cleanup exactly as many times as startup
-        AZ::s32 Cleanup();
+        AZCORE_API AZ::s32 Cleanup();
 
         AZ_FORCE_INLINE bool IsAzSocketValid(const AZSOCKET& socket)
         {
@@ -115,7 +116,7 @@ namespace AZ
 
         bool ResolveAddress(const AZStd::string& ip, AZ::u16 port, AZSOCKADDR_IN& sockAddr);
 
-        class AzSocketAddress
+        class AZCORE_API AzSocketAddress
         {
         public:
             AzSocketAddress();

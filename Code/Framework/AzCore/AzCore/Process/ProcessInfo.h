@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/base.h>
+#include <AzCore/AzCoreAPI.h>
 
 /** Stores information about memory usage of process,
  * All size values are in bytes.
@@ -30,6 +31,6 @@ namespace AZ
         /** Retrieve information about memory usage of current process.
          * @param meminfo Output parameter where information is saved.
          */
-        bool QueryMemInfo(ProcessMemInfo& meminfo);
+        AZCORE_API bool QueryMemInfo(ProcessMemInfo& meminfo);
     }
 }
