@@ -9,13 +9,14 @@
 #define AZCORE_MATH_REFLECTION_H 1
 
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     /**
      * Reflect different aspects of math (depending on context)
      */
-    void MathReflect(ReflectContext* context);
+    AZCORE_API void MathReflect(ReflectContext* context);
 }
 
 #endif //AZCORE_MATH_REFLECTION_H

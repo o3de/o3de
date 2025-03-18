@@ -10,13 +10,14 @@
 
 #include <AzCore/Math/VectorN.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     class ReflectContext;
 
     //! Matrix with ROW_COUNT rows and COL_COUNT columns.
-    class MatrixMxN final
+    class AZCORE_API MatrixMxN final
     {
     public:
 

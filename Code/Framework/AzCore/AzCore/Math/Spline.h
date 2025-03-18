@@ -14,6 +14,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AZ
     /**
      * Interface for representing a specific position on a spline.
      */
-    struct SplineAddress
+    struct AZCORE_API SplineAddress
     {
         AZ_TYPE_INFO(SplineAddress, "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}")
 
@@ -50,7 +51,7 @@ namespace AZ
     /**
      * Result object for querying a position on a spline using a position/point.
      */
-    struct PositionSplineQueryResult
+    struct AZCORE_API PositionSplineQueryResult
     {
         AZ_TYPE_INFO(PositionSplineQueryResult, "{E35DCF28-1AC3-49E8-A0AB-2F6115348F45}")
 
@@ -66,7 +67,7 @@ namespace AZ
      * Result object for querying a position on a spline using a ray.
      * Includes same data as position query.
      */
-    struct RaySplineQueryResult
+    struct AZCORE_API RaySplineQueryResult
         : public PositionSplineQueryResult
     {
         AZ_TYPE_INFO(RaySplineQueryResult, "{FE862126-C838-4999-9B7B-4AEEA5507A49}")
@@ -82,7 +83,7 @@ namespace AZ
     /**
      *  Generic base spline class.
      */
-    class Spline
+    class AZCORE_API Spline
     {
     public:
         AZ_RTTI(Spline, "{6E2D31AF-5CB0-4A50-BD68-B00E2D2FD0A4}")
@@ -253,7 +254,7 @@ namespace AZ
     /**
      * Linear spline implementation
      */
-    class LinearSpline
+    class AZCORE_API LinearSpline
         : public Spline
     {
     public:
@@ -295,7 +296,7 @@ namespace AZ
     /**
      * Bezier spline implementation
      */
-    class BezierSpline
+    class AZCORE_API BezierSpline
         : public Spline
     {
     public:
@@ -379,7 +380,7 @@ namespace AZ
     /**
      *  Catmull-Rom spline implementation
      */
-    class CatmullRomSpline
+    class AZCORE_API CatmullRomSpline
         : public Spline
     {
     public:

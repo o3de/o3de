@@ -10,10 +10,11 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
-    class JsonColorSerializer
+    class AZCORE_API JsonColorSerializer
         : public BaseJsonSerializer
     {
     public:

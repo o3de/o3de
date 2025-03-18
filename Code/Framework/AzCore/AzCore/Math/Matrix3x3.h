@@ -11,6 +11,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -22,7 +23,7 @@ namespace AZ
 
     //! Matrix with 3 rows and 3 columns.
     //! See Matrix4x4 for general information about matrices.
-    class Matrix3x3
+    class AZCORE_API Matrix3x3
     {
     public:
 

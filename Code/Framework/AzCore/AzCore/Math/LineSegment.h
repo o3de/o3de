@@ -9,13 +9,14 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     class Ray;
 
     //! LineSegment defined by two Vector3, an start and a end.
-    class LineSegment
+    class AZCORE_API LineSegment
     {
     public:
         AZ_TYPE_INFO(LineSegment, "{7557da1e-cc20-11ec-9d64-0242ac120002}");

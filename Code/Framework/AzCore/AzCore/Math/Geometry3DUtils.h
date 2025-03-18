@@ -9,6 +9,7 @@
 #pragma once
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -26,7 +27,7 @@ namespace AZ
         //!   3 -> 1280         8 -> 1310720
         //!   4 -> 5120         9 -> 5242880
         //! Generally a depth of 3-6 will be sufficient for most purposes.
-        AZStd::vector<AZ::Vector3> GenerateIcoSphere(const uint8_t subdivisionDepth);
+        AZCORE_API AZStd::vector<AZ::Vector3> GenerateIcoSphere(const uint8_t subdivisionDepth);
 
     } // namespace Geometry3dUtils
 } // namespace AZ

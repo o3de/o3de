@@ -22,6 +22,7 @@
 #include <math.h>
 #include <utility>
 #include <inttypes.h>
+#include <AzCore/AzCoreAPI.h>
 
 // We have a separate inline define for math functions.
 // The performance of these functions is very sensitive to inlining, and some compilers don't deal well with this.
@@ -692,5 +693,5 @@ namespace AZ
 
     //! Creates a unit quaternion uniformly sampled from the space of all possible rotations.
     //! See Graphics Gems III, chapter 6.
-    Quaternion CreateRandomQuaternion(SimpleLcgRandom& rng);
+    AZCORE_API Quaternion CreateRandomQuaternion(SimpleLcgRandom& rng);
 }

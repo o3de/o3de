@@ -11,6 +11,7 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -22,7 +23,7 @@ namespace AZ
         //! @param s2 Segment end point.
         //! @param p Point to find the closest time to.
         //! @return Time (on the segment) for the shortest distance from 'p' to (s1,s2)  [0.0f (s1),1.0f (s2)]
-        float LineToPointDistanceTime(const Vector3& s1, const Vector3& s21, const Vector3& p);
+        AZCORE_API float LineToPointDistanceTime(const Vector3& s1, const Vector3& s21, const Vector3& p);
 
         //! LineToPointDistance computes the closest point to 'p' from a segment (s1,s2).
         //! @param s1 Segment start point
@@ -30,7 +31,7 @@ namespace AZ
         //! @param p Point to find the closest time to.
         //! @param u Time (on the segment) for the shortest distance from 'p' to (s1,s2)  [0.0f (s1),1.0f (s2)]
         //! @return The closest point
-        Vector3 LineToPointDistance(const Vector3& s1, const Vector3& s2, const Vector3& p, float& u);
+        AZCORE_API Vector3 LineToPointDistance(const Vector3& s1, const Vector3& s2, const Vector3& p, float& u);
 
         //! SegmentTriangleHitTester is an optimized form of "watertight" segment/triangle collisions that is designed
         //! to compare a single segment against multiple triangles.
@@ -41,7 +42,7 @@ namespace AZ
         //!   for (auto& tri : triangles)
         //!      if (hitTester.IntersectSegmentTriangle(tri.a, tri.b, tri.c, outNormal, outT))
         //!         hitPoint = rayStart + (rayEnd - rayStart) * outT;
-        class SegmentTriangleHitTester
+        class AZCORE_API SegmentTriangleHitTester
         {
         public:
             //! Construct a hit tester for segment pq that can be used to compare against multiple triangles.
@@ -120,7 +121,7 @@ namespace AZ
         //! @param normal Triangle normal at the intersection point if segment intersects triangle.
         //! @param t Time of intersection along the segment [0.0 (p), 1.0 (q)] if segment intersects triangle.
         //! @return true if the segment intersects the triangle otherwise false.
-        bool IntersectSegmentTriangleCCW(
+        AZCORE_API bool IntersectSegmentTriangleCCW(
             const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c, Vector3& normal, float& t);
 
         //! Same as \ref IntersectSegmentTriangleCCW without respecting the triangle (a,b,c) vertex order (i.e. double sided).
@@ -134,7 +135,7 @@ namespace AZ
         //! @param normal Triangle normal at the intersection point if segment intersects triangle.
         //! @param t Time of intersection along the segment [0.0 (p), 1.0 (q)] if segment intersects triangle.
         //! @return true if the segment intersects the triangle otherwise false.
-        bool IntersectSegmentTriangle(
+        AZCORE_API bool IntersectSegmentTriangle(
             const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c, Vector3& normal, float& t);
 
 
@@ -157,7 +158,7 @@ namespace AZ
         //! @param tEnd Time of the of the second intersection [0,1] (it can be > 1 if intersects after the rayEnd)
         //! @param startNormal Normal at the start point.
         //! @return \ref RayAABBIsectTypes
-        RayAABBIsectTypes IntersectRayAABB(
+        AZCORE_API RayAABBIsectTypes IntersectRayAABB(
             const Vector3& rayStart,
             const Vector3& dir,
             const Vector3& dirRCP,
@@ -174,7 +175,7 @@ namespace AZ
         //! @param end Length of the of the second intersection.
         //! @return \ref RayAABBIsectTypes In this faster version than IntersectRayAABB we return only ISECT_RAY_AABB_NONE and
         //! ISECT_RAY_AABB_ISECT. You can check yourself for that case.
-        RayAABBIsectTypes IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb, float& start, float& end);
+        AZCORE_API RayAABBIsectTypes IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb, float& start, float& end);
 
         //! Clip a ray to an aabb. return true if ray was clipped. The ray
         //! can be inside so don't use the result if the ray intersect the box.
@@ -184,7 +185,7 @@ namespace AZ
         //! @param[out] tClipStart The proportion where the ray enters the \ref Aabb.
         //! @param[out] tClipEnd The proportion where the ray exits the \ref Aabb.
         //! @return True if the ray was clipped, otherwise false.
-        bool ClipRayWithAabb(const Aabb& aabb, Vector3& rayStart, Vector3& rayEnd, float& tClipStart, float& tClipEnd);
+        AZCORE_API bool ClipRayWithAabb(const Aabb& aabb, Vector3& rayStart, Vector3& rayEnd, float& tClipStart, float& tClipEnd);
 
         //! Test segment and aabb where the segment is defined by midpoint
         //! midPoint = (p1-p0) * 0.5f and half vector halfVector = p1 - midPoint.
@@ -193,14 +194,14 @@ namespace AZ
         //! @param halfVector Half vector of an aabb.
         //! @param aabbExtends The extends of a bounded box.
         //! @return True if the segment and AABB intersect, otherwise false
-        bool TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& halfVector, const Vector3& aabbExtends);
+        AZCORE_API bool TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& halfVector, const Vector3& aabbExtends);
 
         //! Test if segment specified by points p0 and p1 intersects AABB. \ref TestSegmentAABBOrigin.
         //! @param p0 Segment start point.
         //! @param p1 Segment end point.
         //! @param aabb Bounded box to test against.
         //! @return True if the segment and AABB intersect, otherwise false.
-        bool TestSegmentAABB(const Vector3& p0, const Vector3& p1, const Aabb& aabb);
+        AZCORE_API bool TestSegmentAABB(const Vector3& p0, const Vector3& p1, const Aabb& aabb);
 
         //! Ray sphere intersection result types.
         enum SphereIsectTypes : AZ::s32
@@ -218,7 +219,7 @@ namespace AZ
         //! @param shereRadius Radius of sphere at origin.
         //! @param time of closest intersection [0,+INF] in relation to the normalized direction.
         //! @return \ref SphereIsectTypes.
-        SphereIsectTypes IntersectRaySphereOrigin(
+        AZCORE_API SphereIsectTypes IntersectRaySphereOrigin(
             const Vector3& rayStart, const Vector3& rayDirNormalized, const float sphereRadius, float& t);
 
         //! Intersect ray (rayStart,rayDirNormalized) and sphere (sphereCenter,sphereRadius) \ref IntersectRaySphereOrigin
@@ -229,7 +230,7 @@ namespace AZ
         //! @param[out] t Coefficient in the ray's explicit equation from which an 
         //! intersecting point is calculated as "rayOrigin + t1 * rayDir".
         //! @return SphereIsectTypes
-        SphereIsectTypes IntersectRaySphere(
+        AZCORE_API SphereIsectTypes IntersectRaySphere(
             const Vector3& rayStart, const Vector3& rayDirNormalized, const Vector3& sphereCenter, const float sphereRadius, float& t);
 
         //! Intersect ray (rayStarty, rayDirNormalized) and disk (center, radius, normal)
@@ -241,7 +242,7 @@ namespace AZ
         //! @param[out] t If returning 1 (indicating a hit), this contains distance from rayOrigin along the normalized rayDir
         //! that the hit occured at.
         //! @return False if not interesecting and true if intersecting
-        bool IntersectRayDisk(
+        AZCORE_API bool IntersectRayDisk(
             const Vector3& rayOrigin,
             const Vector3& rayDir,
             const Vector3& diskCenter,
@@ -258,7 +259,7 @@ namespace AZ
         //! @param[out] t1 A possible coefficient in the ray's explicit equation from which an intersecting point is calculated as "rayOrigin + t1 * rayDir".
         //! @param[out] t2 A possible coefficient in the ray's explicit equation from which an intersecting point is calculated as "rayOrigin + t2 * rayDir".
         //! @return The number of intersecting points.
-        int IntersectRayCappedCylinder(
+        AZCORE_API int IntersectRayCappedCylinder(
             const Vector3& rayOrigin,
             const Vector3& rayDir,
             const Vector3& cylinderEnd1,
@@ -278,7 +279,7 @@ namespace AZ
         //! @param[out] t1 A possible coefficient in the ray's explicit equation from which an intersecting point is calculated as "rayOrigin + t1 * rayDir".
         //! @param[out] t2 A possible coefficient in the ray's explicit equation from which an intersecting point is calculated as "rayOrigin + t2 * rayDir".
         //! @return The number of intersecting points.
-        int IntersectRayCone(
+        AZCORE_API int IntersectRayCone(
             const Vector3& rayOrigin,
             const Vector3& rayDir,
             const Vector3& coneApex,
@@ -295,7 +296,7 @@ namespace AZ
         //! @param planeNormal The normal of the plane to test intersection with.
         //! @param[out] t The coefficient in the ray's explicit equation from which the intersecting point is calculated as "rayOrigin + t * rayDirection".
         //! @return The number of intersection point.
-        int IntersectRayPlane(
+        AZCORE_API int IntersectRayPlane(
             const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& planePos, const Vector3& planeNormal, float& t);
 
         //! Test intersection between a ray and a two-sided quadrilateral defined by four points in 3D.
@@ -310,7 +311,7 @@ namespace AZ
         //! @param[out] t The coefficient in the ray's explicit equation from which the 
         //! intersecting point is calculated as "rayOrigin + t * rayDirection".
         //! @return The number of intersection point.
-        int IntersectRayQuad(
+        AZCORE_API int IntersectRayQuad(
             const Vector3& rayOrigin,
             const Vector3& rayDir,
             const Vector3& vertexA,
@@ -331,7 +332,7 @@ namespace AZ
         //! @param boxHalfExtent3 The half extent of the box on the dimension of \ref boxAxis3.
         //! @param[out] t The coefficient in the ray's explicit equation from which the intersecting point is calculated as "rayOrigin + t * rayDirection".
         //! @return true if there is an intersection, false otherwise.
-        bool IntersectRayBox(
+        AZCORE_API bool IntersectRayBox(
             const Vector3& rayOrigin,
             const Vector3& rayDir,
             const Vector3& boxCenter,
@@ -349,7 +350,7 @@ namespace AZ
         //! @param obb The OBB to test for intersection with the ray.
         //! @param[out] t The coefficient in the ray's explicit equation from which the intersecting point is calculated as "rayOrigin + t * rayDirection".
         //! @return True if there is an intersection, false otherwise.
-        bool IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayDir, const Obb& obb, float& t);
+        AZCORE_API bool IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayDir, const Obb& obb, float& t);
 
         //! Ray cylinder intersection types.
         enum CylinderIsectTypes : AZ::s32
@@ -370,7 +371,7 @@ namespace AZ
         //! @param r Radius of cylinder.
         //! @param[out] t Proporition along line segment.
         //! @return CylinderIsectTypes
-        CylinderIsectTypes IntersectSegmentCylinder(
+        AZCORE_API CylinderIsectTypes IntersectSegmentCylinder(
             const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t);
 
         //! Capsule ray intersect types.
@@ -393,7 +394,7 @@ namespace AZ
         //! @param r The radius of the capsule.
         //! @param[out] t Proporition along line segment.
         //! @return CapsuleIsectTypes
-        CapsuleIsectTypes IntersectSegmentCapsule(
+        AZCORE_API CapsuleIsectTypes IntersectSegmentCapsule(
             const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t);
 
         //! Intersect segment S(t)=A+t(B-A), 0<=t<=1 against convex polyhedron specified
@@ -408,7 +409,7 @@ namespace AZ
         //! @param[out] iFirstPlane The plane where the line enters.
         //! @param[out] iLastPlane The plane where the line exits.
         //! @return True if intersects else false.
-        bool IntersectSegmentPolyhedron(
+        AZCORE_API bool IntersectSegmentPolyhedron(
             const Vector3& sa,
             const Vector3& dir,
             const Plane p[],
@@ -432,7 +433,7 @@ namespace AZ
         //! @param[out] closestPointSegment1 Closest point on segment 1.
         //! @param[out] closestPointSegment2 Closest point on segment 2.
         //! @param epsilon The minimum square distance where a line segment can be treated as a single point.
-        void ClosestSegmentSegment(
+        AZCORE_API void ClosestSegmentSegment(
             const Vector3& segment1Start,
             const Vector3& segment1End,
             const Vector3& segment2Start,
@@ -453,7 +454,7 @@ namespace AZ
         //! @param[out] closestPointSegment1 Closest point on segment 1.
         //! @param[out] closestPointSegment2 Closest point on segment 2.
         //! @param epsilon The minimum square distance where a line segment can be treated as a single point.
-        void ClosestSegmentSegment(
+        AZCORE_API void ClosestSegmentSegment(
             const Vector3& segment1Start,
             const Vector3& segment1End,
             const Vector3& segment2Start,
@@ -470,7 +471,7 @@ namespace AZ
         //! @param segmentEnd The end of the segment
         //! @param[out] proportion The proportion of the segment  L(t) = (end - start) * t
         //! @param[out] closestPointOnSegment The point along the line segment
-        void ClosestPointSegment(
+        AZCORE_API void ClosestPointSegment(
             const Vector3& point,
             const Vector3& segmentStart,
             const Vector3& segmentEnd,
@@ -483,7 +484,7 @@ namespace AZ
         //! @param segmentStart The start of the segment
         //! @param segmentEnd The end of the segment
         //! @return the distance squared from the point to the segment.
-        float PointSegmentDistanceSq(const Vector3& point, const Vector3& segmentStart, const Vector3& segmentEnd);
+        AZCORE_API float PointSegmentDistanceSq(const Vector3& point, const Vector3& segmentStart, const Vector3& segmentEnd);
 
     } // namespace Intersect
 } // namespace AZ

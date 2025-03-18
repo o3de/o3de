@@ -11,6 +11,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -28,31 +29,31 @@ namespace AZ
 namespace AZStd
 {
     //! Prints a Vector2 with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Vector2& value);
+    AZCORE_API void to_string(string& str, const AZ::Vector2& value);
 
     //! Prints a Vector3 with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Vector3& value);
+    AZCORE_API void to_string(string& str, const AZ::Vector3& value);
 
     //! Prints a Vector4 with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Vector4& value);
+    AZCORE_API void to_string(string& str, const AZ::Vector4& value);
 
     //! Prints a Quaternion with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Quaternion& value);
+    AZCORE_API void to_string(string& str, const AZ::Quaternion& value);
 
     //! Prints a 3x3 matrix in row major order over three lines with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Matrix3x3& value);
+    AZCORE_API void to_string(string& str, const AZ::Matrix3x3& value);
 
     //! Prints a 4x4 matrix in row major order over four lines with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Matrix4x4& value);
+    AZCORE_API void to_string(string& str, const AZ::Matrix4x4& value);
 
     //! Prints a transform as a 3x4 matrix in row major order over four lines with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Transform& value);
+    AZCORE_API void to_string(string& str, const AZ::Transform& value);
 
     //! Prints an AABB as a pair of Vector3s with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Aabb& value);
+    AZCORE_API void to_string(string& str, const AZ::Aabb& value);
 
     //! Prints a Color as four unsigned ints representing RGBA.
-    void to_string(string& str, const AZ::Color& value);
+    AZCORE_API void to_string(string& str, const AZ::Color& value);
 
     inline AZStd::string to_string(const AZ::Vector2& val)
     {

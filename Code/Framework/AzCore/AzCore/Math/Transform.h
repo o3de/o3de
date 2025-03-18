@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
 
     //! The basic transformation class, represented using a quaternion rotation, float scale and vector translation.
     //! By design, cannot represent skew transformations.
-    class Transform
+    class AZCORE_API Transform
     {
     public:
 
@@ -147,8 +148,6 @@ namespace AZ
         float m_scale;
         Vector3 m_translation;
     };
-
-    extern const Transform g_transformIdentity;
 
     //! Non-member functionality belonging to the AZ namespace
     //!

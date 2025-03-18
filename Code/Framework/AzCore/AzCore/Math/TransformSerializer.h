@@ -9,10 +9,11 @@
 #pragma once
 
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
-    class JsonTransformSerializer : public BaseJsonSerializer
+    class AZCORE_API JsonTransformSerializer : public BaseJsonSerializer
     {
     public:
         AZ_RTTI(JsonTransformSerializer, "{51C321B8-9214-4E85-AA5C-B720428A3B17}", BaseJsonSerializer);

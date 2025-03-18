@@ -9,22 +9,23 @@
 #pragma once
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     namespace Geometry2DUtils
     {
         //! Computes the square of the shortest distance between a point and a line segment.
-        float ShortestDistanceSqPointSegment(const Vector2& point, const Vector2& segmentStart, const Vector2& segmentEnd,
+        AZCORE_API float ShortestDistanceSqPointSegment(const Vector2& point, const Vector2& segmentStart, const Vector2& segmentEnd,
             float epsilon = 1e-4f);
 
         //! Computes a signed area of the triangle with vertices a, b, c.
         //! A positive result indicates a counterclockwise winding direction, negative indicates clockwise.
         //! See Real-Time Collision Detection, Christer Ericson, ISBN 978-1558607323, Chapter 5.1.9.1.
-        float Signed2DTriangleArea(const Vector2& a, const Vector2& b, const Vector2& c);
+        AZCORE_API float Signed2DTriangleArea(const Vector2& a, const Vector2& b, const Vector2& c);
 
         //! Computes the square of the shortest distance between two line segments.
-        float ShortestDistanceSqSegmentSegment(
+        AZCORE_API float ShortestDistanceSqSegmentSegment(
             const Vector2& segment1Start, const Vector2& segment1End,
             const Vector2& segment2Start, const Vector2& segment2End);
 
@@ -35,13 +36,13 @@ namespace AZ
         //! @param epsilon If any non-consecutive edges of the polygon are closer than this value, it is considered self-intersecting.
         //! @return True if the vertices form a simple polygon.
         //! See https://en.wikipedia.org/wiki/Simple_polygon.
-        bool IsSimplePolygon(AZStd::span<const AZ::Vector2> vertices, float epsilon = 1e-3f);
+        AZCORE_API bool IsSimplePolygon(AZStd::span<const AZ::Vector2> vertices, float epsilon = 1e-3f);
 
         //! Determines if every angle in a series of vertices considered in counterclockwise winding order is convex.
         //! Note that this function does not test for self-intersection, so a pentagram for example would be considered
         //! convex.  IsSimplePolygon may be used to separately test for self-intersection.
         //! @param vertices Vertices, assumed to be in counterclockwise order.
         //! @return True if all the angles are convex (but the edges may be self-intersecting).
-        bool IsConvex(AZStd::span<const AZ::Vector2> vertices);
+        AZCORE_API bool IsConvex(AZStd::span<const AZ::Vector2> vertices);
     } // namespace Geometry2DUtils
 } // namespace AZ

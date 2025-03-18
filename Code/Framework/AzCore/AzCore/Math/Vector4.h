@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Internal/MathTypes.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -19,7 +20,7 @@ namespace AZ
 
     //! A vector class with 4 components.
     //! To convert back to a Vector3, call the GetHomogenized function.
-    class Vector4
+    class AZCORE_API Vector4
     {
     public:
 

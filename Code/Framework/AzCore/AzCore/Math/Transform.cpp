@@ -145,6 +145,11 @@ namespace AZ
 
     const Transform g_transformIdentity = Transform::CreateIdentity();
 
+    const Transform& Transform::Identity()
+    {
+        return g_transformIdentity;
+    }
+
     size_t TransformSerializer::Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian)
     {
         const Transform* transform = reinterpret_cast<const Transform*>(classPtr);

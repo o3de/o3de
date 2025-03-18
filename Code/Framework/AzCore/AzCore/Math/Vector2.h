@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Internal/MathTypes.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
     class ReflectContext;
 
     //! 2-dimensional vector class.
-    class Vector2
+    class AZCORE_API Vector2
     {
     public:
 
