@@ -6,11 +6,11 @@
  *
  */
 
- #include <Atom/RHI/BufferView.h>
- #include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/Buffer.h>
 
- namespace AZ::RHI
- {
+namespace AZ::RHI
+{
     //! Given a device index, return the corresponding DeviceBufferView for the selected device
     const RHI::Ptr<RHI::DeviceBufferView> BufferView::GetDeviceBufferView(int deviceIndex) const
     {
@@ -31,4 +31,22 @@
 
         return result;
     }
- }
+    
+    bool BufferView::GetBindlessIndices(int deviceIndex, uint32_t* outReadIndex, uint32_t* outReadWriteIndex) const
+    {
+        const auto& deviceBufferView = GetDeviceBufferView(deviceIndex);
+        if (!deviceBufferView)
+        {
+            return false;
+        }
+        if (outReadIndex != nullptr)
+        {
+            *outReadIndex = deviceBufferView->GetBindlessReadIndex();
+        }
+        if (outReadWriteIndex != nullptr)
+        {
+            *outReadWriteIndex = deviceBufferView->GetBindlessReadWriteIndex();
+        }
+        return true;
+    }
+}
