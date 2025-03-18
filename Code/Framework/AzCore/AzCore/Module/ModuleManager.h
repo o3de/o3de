@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -28,7 +29,7 @@ namespace AZ
      *
      * \returns whether the component represented by descriptor has at least one tag that is present in required tags
      */
-    bool ShouldUseSystemComponent(const ComponentDescriptor& descriptor, const AZStd::vector<Crc32>& requiredTags, const SerializeContext& serialize);
+    AZCORE_API bool ShouldUseSystemComponent(const ComponentDescriptor& descriptor, const AZStd::vector<Crc32>& requiredTags, const SerializeContext& serialize);
 
     /**
      * ModuleEntity is an Entity that carries a module class id along with it.
@@ -36,7 +37,7 @@ namespace AZ
      * when it's loaded from the stream, we can use that id to associate the
      * entity with the appropriate module.
      */
-    class ModuleEntity
+    class AZCORE_API ModuleEntity
         : public Entity
     {
         friend class ModuleManager;
@@ -64,7 +65,7 @@ namespace AZ
     /**
      * Contains a static or dynamic AZ::Module.
      */
-    struct ModuleDataImpl
+    struct AZCORE_API ModuleDataImpl
         : public ModuleData
     {
         AZ_CLASS_ALLOCATOR(ModuleDataImpl, SystemAllocator);
@@ -103,7 +104,7 @@ namespace AZ
     /*!
      * Handles reloading modules and their dependents at runtime
      */
-    class ModuleManager
+    class AZCORE_API ModuleManager
         : public ModuleManagerRequestBus::Handler
         , protected EntityBus::Handler
     {

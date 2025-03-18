@@ -10,6 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::NativeUI
 {
@@ -90,3 +91,5 @@ namespace AZ::NativeUI
 
     using NativeUIRequestBus = AZ::EBus<NativeUIRequests, NativeUIEBusTraits>;
 } // namespace AZ::NativeUI
+
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(AZ::NativeUI::NativeUIRequests, AZ::NativeUI::NativeUIEBusTraits);

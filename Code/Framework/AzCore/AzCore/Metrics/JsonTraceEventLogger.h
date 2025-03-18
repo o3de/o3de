@@ -14,6 +14,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -34,7 +35,7 @@ namespace AZ::Metrics
         AZ::SettingsRegistryInterface* m_settingsRegistry{};
     };
 
-    class JsonTraceEventLogger
+    class AZCORE_API JsonTraceEventLogger
         : public IEventLogger
     {
     public:

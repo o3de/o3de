@@ -16,15 +16,17 @@ set(FILES
     AzCore/IO/Streamer/StreamerConfiguration_Windows.h
     AzCore/IO/Streamer/StreamerConfiguration_Windows.cpp
     AzCore/IO/Streamer/StreamerContext_Platform.h
+    AzCore/NativeUI/NativeUISystemComponent_Windows.cpp
     AzCore/Socket/AzSocket_Platform.h
     AzCore/Socket/AzSocket_fwd_Platform.h
     AzCore/Socket/AzSocket_fwd_Windows.h
     AzCore/Utils/Utils_Windows.cpp
-    ../Common/WinAPI/AzCore/Utils/Utils_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.h
+    ../Common/WinAPI/AzCore/Module/DynamicModuleHandle_WinAPI.cpp
     ../Common/WinAPI/AzCore/Process/ProcessInfo_WinAPI.cpp
     ../Common/WinAPI/AzCore/Socket/AzSocket_fwd_WinAPI.h
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.cpp
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.h
+    ../Common/WinAPI/AzCore/Utils/Utils_WinAPI.cpp
 )

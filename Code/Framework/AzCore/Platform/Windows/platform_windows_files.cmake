@@ -46,8 +46,6 @@ set(FILES
     AzCore/Math/Random_Windows.h
     AzCore/Module/Internal/ModuleManagerSearchPathTool_Windows.cpp
     AzCore/Math/Internal/MathTypes_Windows.h
-    ../Common/WinAPI/AzCore/Module/DynamicModuleHandle_WinAPI.cpp
-    AzCore/NativeUI/NativeUISystemComponent_Windows.cpp
     AzCore/Platform_Windows.cpp
     AzCore/PlatformIncl_Platform.h
     AzCore/PlatformIncl_Windows.h

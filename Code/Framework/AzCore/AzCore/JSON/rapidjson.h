@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/AzCoreAPI.h>
 
 #if defined(RAPIDJSON_RAPIDJSON_H_)
 // if this happens, someone has already included the default rapidjson.h already, which is a bad idea as it won't
@@ -80,9 +81,9 @@
         typedef void* pointer_type;
         typedef size_t size_type;
 
-        pointer_type do_malloc(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord);
-        pointer_type do_realloc(pointer_type ptr, size_type newSize, size_type newAlignment);
-        void do_free(pointer_type ptr);
+        AZCORE_API pointer_type do_malloc(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord);
+        AZCORE_API pointer_type do_realloc(pointer_type ptr, size_type newSize, size_type newAlignment);
+        AZCORE_API void do_free(pointer_type ptr);
     } 
 
 #   define RAPIDJSON_MALLOC(_size)         AZ::JSON::do_malloc(_size, 16, 0, "RapidJSON", __FILE__, __LINE__, 0)

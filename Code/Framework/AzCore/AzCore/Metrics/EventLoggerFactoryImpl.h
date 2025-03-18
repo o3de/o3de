@@ -12,11 +12,12 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Metrics/IEventLoggerFactory.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Metrics
 {
     class IEventLogger;
-    class EventLoggerFactoryImpl final
+    class AZCORE_API EventLoggerFactoryImpl final
         : public IEventLoggerFactory
     {
     public:

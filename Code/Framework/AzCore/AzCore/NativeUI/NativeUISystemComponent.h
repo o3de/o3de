@@ -10,10 +10,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::NativeUI
 {
-    class NativeUISystem
+    class AZCORE_API NativeUISystem
         : public NativeUIRequestBus::Handler
     {
     public:

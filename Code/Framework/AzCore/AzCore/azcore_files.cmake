@@ -53,31 +53,6 @@ set(FILES
     Interface/Interface.h
     IPC/SharedMemory.cpp
     IPC/SharedMemory.h
-    JSON/allocators.h
-    JSON/cursorstreamwrapper.h
-    JSON/document.h
-    JSON/encodedstream.h
-    JSON/encodings.h
-    JSON/filereadstream.h
-    JSON/filewritestream.h
-    JSON/fwd.h
-    JSON/istreamwrapper.h
-    JSON/memorybuffer.h
-    JSON/memorystream.h
-    JSON/ostreamwrapper.h
-    JSON/pointer.h
-    JSON/prettywriter.h
-    JSON/rapidjson.h
-    JSON/rapidjson.cpp
-    JSON/RapidJsonAllocator.h
-    JSON/RapidjsonAllocatorAdapter.h
-    JSON/reader.h
-    JSON/schema.h
-    JSON/stream.h
-    JSON/stringbuffer.h
-    JSON/writer.h
-    JSON/error/en.h
-    JSON/error/error.h
     Math/Crc.cpp
     Math/Crc.inl
     Math/Crc.h
@@ -112,30 +87,6 @@ set(FILES
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h
-    Metrics/EventLoggerFactoryImpl.h
-    Metrics/EventLoggerFactoryImpl.cpp
-    Metrics/EventLoggerReflectUtils.cpp
-    Metrics/EventLoggerReflectUtils.h
-    Metrics/EventLoggerUtils.cpp
-    Metrics/EventLoggerUtils.h
-    Metrics/JsonTraceEventLogger.h
-    Metrics/JsonTraceEventLogger.cpp
-    Metrics/IEventLogger.h
-    Metrics/IEventLogger.cpp
-    Metrics/IEventLogger.inl
-    Metrics/IEventLoggerFactory.h
-    Module/DynamicModuleHandle.cpp
-    Module/DynamicModuleHandle.h
-    Module/Module.cpp
-    Module/Module.h
-    Module/ModuleManagerBus.h
-    Module/ModuleManager.cpp
-    Module/ModuleManager.h
-    Module/Internal/ModuleManagerSearchPathTool.h
-    Module/Internal/ModuleManagerSearchPathTool.cpp
-    NativeUI/NativeUISystemComponent.cpp
-    NativeUI/NativeUISystemComponent.h
-    NativeUI/NativeUIRequests.h
     Outcome/Outcome.h
     Outcome/Internal/OutcomeImpl.h
     Platform.cpp

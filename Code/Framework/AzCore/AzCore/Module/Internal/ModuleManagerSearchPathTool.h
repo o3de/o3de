@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/string/osstring.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -19,7 +20,7 @@ namespace AZ
          * Helper class to attempt to set a module path in a platform specific way (if possible) so that
          * modules can be located with attempting to do a load library
          */
-        class ModuleManagerSearchPathTool
+        class AZCORE_API ModuleManagerSearchPathTool
         {
         public:
             ModuleManagerSearchPathTool();
