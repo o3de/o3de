@@ -274,7 +274,6 @@ namespace AZ
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
         {
-            auto index = static_cast<uint8_t>(m_attachmentBindingsSize);
             if (attachmentBinding.m_scopeAttachmentStage == RHI::ScopeAttachmentStage::Uninitialized)
             {
                 attachmentBinding.m_scopeAttachmentStage = attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::Shader
@@ -282,17 +281,8 @@ namespace AZ
                     : RHI::ScopeAttachmentStage::Any;
             }
 
-            // Add the binding. This will assert if the fixed size array is full.
-
-            if (m_attachmentBindingsSize < m_attachmentBindings.size())
-            {
-                m_attachmentBindings[m_attachmentBindingsSize] = attachmentBinding;
-            }
-            else
-            {
-                m_attachmentBindings.push_back(attachmentBinding);
-            }
-            ++m_attachmentBindingsSize;
+            auto index = aznumeric_cast<uint8_t>(m_attachmentBindings.size());
+            m_attachmentBindings.push_back(attachmentBinding);
 
             // Add the index of the binding to the input, output or input/output list based on the slot type
             switch (attachmentBinding.m_slotType)
@@ -346,9 +336,8 @@ namespace AZ
 
         PassAttachmentBinding* Pass::FindAttachmentBinding(const Name& slotName)
         {
-            for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
+            for (auto& binding : m_attachmentBindings)
             {
-                auto& binding = m_attachmentBindings[slotIndex];
                 if (slotName == binding.m_name)
                 {
                     return &binding;
@@ -359,9 +348,8 @@ namespace AZ
 
         const PassAttachmentBinding* Pass::FindAttachmentBinding(const Name& slotName) const
         {
-            for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
+            for (const auto& binding : m_attachmentBindings)
             {
-                const auto& binding = m_attachmentBindings[slotIndex];
                 if (slotName == binding.m_name)
                 {
                     return &binding;
@@ -902,7 +890,7 @@ namespace AZ
         void Pass::DeclareAttachmentsToFrameGraph(
             RHI::FrameGraphInterface frameGraph, PassSlotType slotType, RHI::ScopeAttachmentAccess accessMask) const
         {
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
+            for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
                 const auto& attachmentBinding = m_attachmentBindings[slotIndex];
                 if(slotType == PassSlotType::Uninitialized || slotType == attachmentBinding.m_slotType)
@@ -1111,7 +1099,7 @@ namespace AZ
             // An example of this could be reading from and writing to different mips of the same texture
 
             // Loop over all attachments bound to this pass
-            size_t size = m_attachmentBindingsSize;
+            size_t size = m_attachmentBindings.size();
             for (size_t i = 0; i < size; ++i)
             {
                 PassAttachmentBinding& binding01 = m_attachmentBindings[i];
@@ -1166,9 +1154,8 @@ namespace AZ
         {
             // Depending on whether a pass is enabled or not, it may switch it's bindings to become a pass-through
             // For this reason we update connecting bindings on a per-frame basis
-            for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
+            for (auto& binding : m_attachmentBindings)
             {
-                auto& binding = m_attachmentBindings[slotIndex];
                 UpdateConnectedBinding(binding);
             }
         }
@@ -1310,12 +1297,7 @@ namespace AZ
             m_inputBindingIndices.clear();
             m_inputOutputBindingIndices.clear();
             m_outputBindingIndices.clear();
-            // [GFX TODO][GHI-18438] we cannot clear the attamentBindings here (m_attachmentBindings.clear();)
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
-            {
-                m_attachmentBindings[slotIndex].Clear();
-            }
-            m_attachmentBindingsSize = 0;
+            m_attachmentBindings.clear();
             m_ownedAttachments.clear();
             m_executeAfterPasses.clear();
             m_executeBeforePasses.clear();
@@ -1673,9 +1655,8 @@ namespace AZ
                 return false;
             }
             uint32_t bindingIndex = 0;
-            for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
+            for (auto& binding :  m_attachmentBindings)
             {
-                auto& binding = m_attachmentBindings[slotIndex];
                 if (slotName == binding.m_name)
                 {
                     RHI::AttachmentType type = binding.GetAttachment()->GetAttachmentType();
@@ -1782,9 +1763,8 @@ namespace AZ
         void Pass::ReplaceSubpassInputs(RHI::SubpassInputSupportType supportedTypes)
         {
             m_flags.m_hasSubpassInput = false;
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
+            for (auto& binding :  m_attachmentBindings)
             {
-                PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
                 {
                     const RHI::ImageViewDescriptor& descriptor = binding.m_unifiedScopeDesc.GetImageViewDescriptor();
@@ -1871,9 +1851,8 @@ namespace AZ
                 AZStd::string stringOutput;
                 PrintPassName(stringOutput);
 
-                for (int slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
+                for (auto& binding : m_attachmentBindings)
                 {
-                    const auto& binding = m_attachmentBindings[slotIndex];
                     uint32_t bindingMask = (1 << uint32_t(binding.m_slotType));
                     if ((bindingMask & slotTypeMask) && (binding.GetAttachment() == nullptr))
                     {

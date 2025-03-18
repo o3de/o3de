@@ -404,5 +404,27 @@ namespace AZ
             m_originalAttachment.reset();
         }
 
+        void PassAttachmentBindingList::push_back(const PassAttachmentBinding& attachmentBinding)
+        {
+            if (m_attachmentBindingCount < m_attachmentBindings.size())
+            {
+                m_attachmentBindings[m_attachmentBindingCount] = attachmentBinding;
+            }
+            else
+            {
+                m_attachmentBindings.push_back(attachmentBinding);
+            }
+            ++m_attachmentBindingCount;
+        }
+
+        void PassAttachmentBindingList::clear()
+        {
+            // Clear all entries but do not clear the underlying container itself. @see [GFX TODO][GHI-18438]
+            for (auto& attachmentBinding : *this)
+            {
+                attachmentBinding.Clear();
+            }
+            m_attachmentBindingCount = 0;
+        }
     } // namespace RPI
 } // namespace AZ

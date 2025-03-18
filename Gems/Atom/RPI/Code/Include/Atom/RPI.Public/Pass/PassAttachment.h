@@ -215,9 +215,41 @@ namespace AZ
             Ptr<PassAttachment> m_originalAttachment = nullptr;
         };
 
-        using PassAttachmentBindingList = AZStd::deque<PassAttachmentBinding>;
-        using PassAttachmentBindingListView = const AZStd::deque<PassAttachmentBinding>;
+        //! A convenience class for storing pass attachment bindings which ensures existing pointers to already added pass attachment
+        //! bindings are not invalidated when new pass attachment bindings are added, as well as ensuring pass attachment bindings are
+        //! stored at the same addresses when a pass is rebuilt.
+        //! @see [GFX TODO][GHI-18438]
+        class ATOM_RPI_PUBLIC_API PassAttachmentBindingList final
+        {
+            using ContainerType = AZStd::deque<PassAttachmentBinding>;
+
+        public:
+            using size_type = ContainerType::size_type;
+            using iterator = ContainerType::iterator;
+            using const_iterator = ContainerType::const_iterator;
+
+            // clang-format off
+            size_type size()  const noexcept { return m_attachmentBindingCount; }
+            bool      empty() const noexcept { return size() == 0; }
+            PassAttachmentBinding&       operator[](size_type index)       { return m_attachmentBindings[index]; }
+            const PassAttachmentBinding& operator[](size_type index) const { return m_attachmentBindings[index]; }
+            iterator       begin()        noexcept { return m_attachmentBindings.begin(); }
+            iterator       end()          noexcept { return m_attachmentBindings.begin() + m_attachmentBindingCount; }
+            const_iterator begin()  const noexcept { return m_attachmentBindings.begin(); }
+            const_iterator end()    const noexcept { return m_attachmentBindings.begin() + m_attachmentBindingCount; }
+            const_iterator cbegin() const noexcept { return m_attachmentBindings.cbegin(); }
+            const_iterator cend()   const noexcept { return m_attachmentBindings.cbegin() + m_attachmentBindingCount; }
+            // clang-format on
+
+            void push_back(const PassAttachmentBinding& attachmentBinding);
+            void clear();
+
+        private:
+            ContainerType m_attachmentBindings;
+            size_type m_attachmentBindingCount{ 0 };
+        };
+
+        using PassAttachmentBindingListView = const PassAttachmentBindingList&;
 
     }   // namespace RPI
-
 }   // namespace AZ

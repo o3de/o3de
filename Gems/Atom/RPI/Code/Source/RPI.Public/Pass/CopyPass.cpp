@@ -96,10 +96,10 @@ namespace AZ
                 GetOutputCount());
 
             AZ_Assert(
-                (m_attachmentBindingsSize == 2) || (m_inputOutputCopy && m_attachmentBindingsSize == 1),
+                (m_attachmentBindings.size() == 2) || (m_inputOutputCopy && m_attachmentBindings.size() == 1),
                 "CopyPass must have exactly 2 bindings: 1 input and 1 output. %s has %d bindings.",
                 GetPathName().GetCStr(),
-                m_attachmentBindingsSize);
+                m_attachmentBindings.size());
 
             bool sameDevice = (m_data.m_sourceDeviceIndex == -1 && m_data.m_destinationDeviceIndex == -1) ||
                 m_data.m_sourceDeviceIndex == m_data.m_destinationDeviceIndex;
