@@ -80,8 +80,9 @@ Job* WorkQueue::TryStealFront()
     return nullptr;
 }
 
-
-AZ_THREAD_LOCAL JobManagerWorkStealing::ThreadInfo* JobManagerWorkStealing::m_currentThreadInfo = nullptr;
+// thread-local pointer to the info for this thread. This is set for worker threads all the time,
+// and user threads only while they are processing jobs
+AZ_THREAD_LOCAL JobManagerWorkStealing::ThreadInfo* m_currentThreadInfo = nullptr;
 
 JobManagerWorkStealing::JobManagerWorkStealing(const JobManagerDesc& desc)
     : m_isAsynchronous(!desc.m_workerThreads.empty())

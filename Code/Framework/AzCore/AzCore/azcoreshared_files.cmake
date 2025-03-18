@@ -174,6 +174,30 @@ set(FILES
     IO/Streamer/StreamerComponent.h
     IO/Streamer/StreamStackEntry.h
     IO/Streamer/StreamStackEntry.cpp
+    Jobs/Algorithms.h
+    Jobs/Internal/JobManagerBase.cpp
+    Jobs/Internal/JobManagerBase.h
+    Jobs/Internal/JobManagerWorkStealing.cpp
+    Jobs/Internal/JobManagerWorkStealing.h
+    Jobs/Internal/JobNotify.h
+    Jobs/Job.cpp
+    Jobs/Job.h
+    Jobs/JobCancelGroup.h
+    Jobs/JobCompletion.h
+    Jobs/JobCompletionSpin.h
+    Jobs/JobContext.cpp
+    Jobs/JobContext.h
+    Jobs/JobEmpty.h
+    Jobs/JobFunction.h
+    Jobs/JobManager.cpp
+    Jobs/JobManager.h
+    Jobs/JobManagerBus.cpp
+    Jobs/JobManagerBus.h
+    Jobs/JobManagerComponent.cpp
+    Jobs/JobManagerComponent.h
+    Jobs/JobManagerDesc.h
+    Jobs/MultipleDependentJob.h
+    Jobs/task_group.h
 
     Module/EBusInstantiations.cpp
     Module/AZStdInstantiations.cpp

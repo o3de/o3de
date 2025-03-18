@@ -11,13 +11,14 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     /**
      *
      */
-    class JobManagerComponent
+    class AZCORE_API JobManagerComponent
         : public Component
         , public JobManagerBus::Handler
     {

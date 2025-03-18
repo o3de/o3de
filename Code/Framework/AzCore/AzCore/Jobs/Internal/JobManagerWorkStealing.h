@@ -20,6 +20,7 @@
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/thread.h>
+#include <AzCore/AzCoreAPI.h>
 
 // #define JOBMANAGER_ENABLE_STATS
 
@@ -29,7 +30,7 @@ namespace AZ
 
     namespace Internal
     {
-        class WorkQueue final
+        class AZCORE_API WorkQueue final
         {
         public:
             void LocalInsert(Job *job);
@@ -56,7 +57,7 @@ namespace AZ
          * those sticky points (if they are a problem). In addition we can think about writing a more advanced
          * scheduler or use some off the shelf.
          */
-        class JobManagerWorkStealing final
+        class AZCORE_API JobManagerWorkStealing final
             : public JobManagerBase
         {
         public:
@@ -86,6 +87,7 @@ namespace AZ
 
             void ActivateWorker();
 
+        public:
             struct ThreadInfo
             {
                 AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator);
@@ -111,6 +113,8 @@ namespace AZ
                 AZStd::chrono::milliseconds m_stealTime;
 #endif
             };
+
+        private:
             using ThreadList = AZStd::vector<ThreadInfo*>;
 
             void ProcessJobsWorker(ThreadInfo* info);
@@ -144,7 +148,7 @@ namespace AZ
 
             //thread-local pointer to the info for this thread. This is set for worker threads all the time,
             //and user threads only while they are processing jobs
-            static AZ_THREAD_LOCAL ThreadInfo* m_currentThreadInfo;
+            //static AZ_THREAD_LOCAL ThreadInfo* m_currentThreadInfo;
         };
     }
 }

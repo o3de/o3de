@@ -8,13 +8,15 @@
 #ifndef AZCORE_JOBS_INTERNAL_JOBMANAGER_BASE_H
 #define AZCORE_JOBS_INTERNAL_JOBMANAGER_BASE_H 1
 
+#include <AzCore/AzCoreAPI.h>
+
 namespace AZ
 {
     class Job;
 
     namespace Internal
     {
-        class JobManagerBase
+        class AZCORE_API JobManagerBase
         {
         public:
             static const AZ::u32 InvalidWorkerThreadId = ~0u;

@@ -14,6 +14,7 @@
 #include <AzCore/std/parallel/atomic.h> 
                                          
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/AzCoreAPI.h>
 
 #if defined(_DEBUG)
 #   define AZ_DEBUG_JOB_STATE
@@ -39,7 +40,7 @@ namespace AZ
      * effectively starting dependent jobs. Also jobs can manipulate the dependent count directly, allowing derived
      * jobs to manage their dependents directly. See MultipleDependentJob for an example of this.
      */
-    class Job
+    class AZCORE_API Job
     {
     public:
         enum State

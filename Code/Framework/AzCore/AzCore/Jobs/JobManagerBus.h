@@ -9,6 +9,7 @@
 #define AZCORE_JOB_MANAGER_BUS_H
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -35,7 +36,10 @@ namespace AZ
     };
 
     typedef AZ::EBus<JobManagerEvents>  JobManagerBus;
-}
+} // namespace AZ
+
+// AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::JobManagerEvents);
 
 #endif // AZCORE_JOB_MANAGER_BUS_H
 #pragma once
+
