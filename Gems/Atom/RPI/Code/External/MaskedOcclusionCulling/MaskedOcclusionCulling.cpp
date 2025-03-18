@@ -421,7 +421,7 @@ namespace MaskedOcclusionCullingAVX2
 	extern MaskedOcclusionCulling *CreateMaskedOcclusionCulling(pfnAlignedAlloc alignedAlloc, pfnAlignedFree alignedFree);
 }
 
-MaskedOcclusionCulling * MaskedOcclusionCulling::Create(Implementation RequestedSIMD)
+MaskedOcclusionCulling *MaskedOcclusionCulling::Create(Implementation RequestedSIMD)
 {
 	return Create(RequestedSIMD, aligned_alloc, aligned_free);
 }
