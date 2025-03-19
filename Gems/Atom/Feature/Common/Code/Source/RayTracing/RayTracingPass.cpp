@@ -246,6 +246,11 @@ namespace AZ
                 return false;
             }
 
+            if (m_pipeline == nullptr)
+            {
+                return false;
+            }
+
             RPI::Scene* scene = m_pipeline->GetScene();
             if (!scene)
             {
