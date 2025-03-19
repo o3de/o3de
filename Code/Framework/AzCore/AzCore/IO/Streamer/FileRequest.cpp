@@ -486,4 +486,24 @@ namespace AZ::IO
         }
     }
 
+    bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs)
+    {
+        return lhs.m_request == &rhs->m_request;
+    }
+
+    bool operator==(const FileRequestPtr& lhs, const FileRequestHandle& rhs)
+    {
+        return rhs == lhs;
+    }
+
+    bool operator!=(const FileRequestHandle& lhs, const FileRequestPtr& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    bool operator!=(const FileRequestPtr& lhs, const FileRequestHandle& rhs)
+    {
+        return !(rhs == lhs);
+    }
+
 } // namespace AZ::IO

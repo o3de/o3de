@@ -51,11 +51,11 @@ set(FILES
     EBus/Internal/StoragePolicies.h
     Instance/InstancePool.h
     Interface/Interface.h
-    IPC/SharedMemory.cpp
-    IPC/SharedMemory.h
     Math/Crc.cpp
     Math/Crc.inl
     Math/Crc.h
+    Math/Sfmt.cpp
+    Math/Sfmt.h
     Math/Uuid.cpp
     Math/Uuid.h
     Math/Uuid.inl
@@ -92,10 +92,6 @@ set(FILES
     Platform.cpp
     Platform.h
     PlatformDef.h
-    PlatformId/PlatformDefaults.h
-    PlatformId/PlatformDefaults.cpp
-    PlatformId/PlatformId.h
-    PlatformId/PlatformId.cpp
     PlatformIncl.h
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h

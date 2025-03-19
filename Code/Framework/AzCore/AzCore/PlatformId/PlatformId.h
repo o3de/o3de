@@ -8,6 +8,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -41,7 +42,7 @@ namespace AZ
         return false;
     }
 
-    const char* GetPlatformName(PlatformID platform);
+    AZCORE_API const char* GetPlatformName(PlatformID platform);
 } // namespace AZ
 
 #include <AzCore/PlatformId/PlatformId_Platform.h>

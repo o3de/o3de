@@ -16,6 +16,13 @@ set(FILES
     AzCore/IO/Streamer/StreamerConfiguration_Windows.h
     AzCore/IO/Streamer/StreamerConfiguration_Windows.cpp
     AzCore/IO/Streamer/StreamerContext_Platform.h
+    AzCore/IPC/SharedMemory_Platform.h
+    AzCore/IPC/SharedMemory_Windows.h
+    AzCore/IPC/SharedMemory_Windows.cpp
+    AzCore/Math/Random_Platform.h
+    AzCore/Math/Random_Windows.cpp
+    AzCore/Math/Random_Windows.h
+    AzCore/Module/Internal/ModuleManagerSearchPathTool_Windows.cpp
     AzCore/NativeUI/NativeUISystemComponent_Windows.cpp
     AzCore/Socket/AzSocket_Platform.h
     AzCore/Socket/AzSocket_fwd_Platform.h

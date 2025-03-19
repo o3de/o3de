@@ -9,14 +9,14 @@
 #pragma once
 
 #include <AzCore/base.h>
-
+#include <AzCore/AzCoreAPI.h>
 namespace AZ
 {
     /**
      * Provides a better yet more computationally costly random implementation.
      * To be used in less frequent scenarios, i.e. to get a good seed.
      */
-    class BetterPseudoRandom_Windows
+    class AZCORE_API BetterPseudoRandom_Windows
     {
     public:
         BetterPseudoRandom_Windows();

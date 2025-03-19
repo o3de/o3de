@@ -9,10 +9,11 @@
 
 #include <AzCore/IPC/SharedMemory_Common.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
-    class SharedMemory_Windows : public SharedMemory_Common
+    class AZCORE_API SharedMemory_Windows : public SharedMemory_Common
     {
     protected:
         SharedMemory_Windows();

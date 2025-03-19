@@ -29,6 +29,7 @@ set(FILES
     Asset/AssetTypeInfoBus.h
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
+    Component/ComponentApplicationBus.cpp
     Component/ComponentApplicationBus.h
     Component/ComponentApplicationLifecycle.cpp
     Component/ComponentApplicationLifecycle.h
@@ -49,7 +50,9 @@ set(FILES
     Component/NamedEntityId.h
     Component/NonUniformScaleBus.cpp
     Component/NonUniformScaleBus.h
+    Component/TickBus.cpp
     Component/TickBus.h
+    Component/TransformBus.cpp
     Component/TransformBus.h
     Compression/compression.cpp
     Compression/Compression.h
@@ -84,6 +87,7 @@ set(FILES
     Debug/ProfilerReflection.cpp
     Debug/ProfilerReflection.h
     Debug/Timer.h
+    Debug/TraceMessageBus.cpp
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
@@ -174,6 +178,8 @@ set(FILES
     IO/Streamer/StreamerComponent.h
     IO/Streamer/StreamStackEntry.h
     IO/Streamer/StreamStackEntry.cpp
+    IPC/SharedMemory.cpp
+    IPC/SharedMemory.h
     Jobs/Algorithms.h
     Jobs/Internal/JobManagerBase.cpp
     Jobs/Internal/JobManagerBase.h
@@ -312,8 +318,6 @@ set(FILES
     Math/Random.h
     Math/Ray.cpp
     Math/Ray.h
-    Math/Sfmt.cpp
-    Math/Sfmt.h
     Math/ShapeIntersection.cpp
     Math/ShapeIntersection.h
     Math/ShapeIntersection.inl
@@ -395,6 +399,10 @@ set(FILES
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.cpp
     NativeUI/NativeUIRequests.h
+    PlatformId/PlatformDefaults.h
+    PlatformId/PlatformDefaults.cpp
+    PlatformId/PlatformId.h
+    PlatformId/PlatformId.cpp
     Process/ProcessInfo.h
     Script/lua/lua.h
     Script/ScriptAsset.cpp

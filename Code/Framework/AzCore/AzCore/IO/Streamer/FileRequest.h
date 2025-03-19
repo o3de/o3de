@@ -439,7 +439,7 @@ namespace AZ::IO
         friend class Scheduler;
         friend class Device;
         friend class Streamer_SchedulerTest_RequestSorting_Test;
-        friend bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
+        friend AZCORE_API bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
     public:
         AZ_CLASS_ALLOCATOR(ExternalFileRequest, SystemAllocator);
@@ -459,7 +459,7 @@ namespace AZ::IO
     {
     public:
         friend class Streamer;
-        friend bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
+        friend AZCORE_API bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
         // Intentional cast operator.
         FileRequestHandle(FileRequest& request)
@@ -475,25 +475,13 @@ namespace AZ::IO
         FileRequest* m_request;
     };
 
-    bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs)
-    {
-        return lhs.m_request == &rhs->m_request;
-    }
+    AZCORE_API bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
-    bool operator==(const FileRequestPtr& lhs, const FileRequestHandle& rhs)
-    {
-        return rhs == lhs;
-    }
+    AZCORE_API bool operator==(const FileRequestPtr& lhs, const FileRequestHandle& rhs);
 
-    bool operator!=(const FileRequestHandle& lhs, const FileRequestPtr& rhs)
-    {
-        return !(lhs == rhs);
-    }
+    AZCORE_API bool operator!=(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
-    bool operator!=(const FileRequestPtr& lhs, const FileRequestHandle& rhs)
-    {
-        return !(rhs == lhs);
-    }
+    AZCORE_API bool operator!=(const FileRequestPtr& lhs, const FileRequestHandle& rhs);
 
 } // namespace AZ::IO
 

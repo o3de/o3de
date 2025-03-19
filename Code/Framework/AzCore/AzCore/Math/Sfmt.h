@@ -12,7 +12,6 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/typetraits/static_storage.h>
 #include <AzCore/Math/Internal/MathTypes.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -33,8 +32,8 @@ namespace AZ
         typedef W128_T w128_t;
         static_assert(N == MEXP / (sizeof(W128_T) * 8) + 1, "The m_smft member array must fit all iterations of the correct 128-bit size.");
 
-        AZCORE_API void gen_rand_all(Sfmt& g);
-        AZCORE_API void gen_rand_array(Sfmt& g, SfmtInternal::w128_t* array, int size);
+        void gen_rand_all(Sfmt& g);
+        void gen_rand_array(Sfmt& g, SfmtInternal::w128_t* array, int size);
     }
 
     /**
@@ -52,7 +51,7 @@ namespace AZ
      * The new BSD License is applied to this software.
      * see LICENSE.txt
      */
-    class AZCORE_API Sfmt
+    class Sfmt
     {
         friend void SfmtInternal::gen_rand_all(Sfmt& g);
         friend void SfmtInternal::gen_rand_array(Sfmt& g, SfmtInternal::w128_t* array, int size);

@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/AzCoreAPI.h>
 
 // On IOS builds IOS will be defined and interfere with the below enums
 #pragma push_macro("IOS")
@@ -99,12 +100,12 @@ namespace AZ
         // Additional byte is added to take into account the comma
         using AssetPlatformCombinedString = AZStd::fixed_string < (AssetPlatformFixedString{}.max_size() + 1)* PlatformId::NumPlatformIds > ;
 
-        const char* PlatformIdToPalFolder(PlatformId platform);
+        AZCORE_API const char* PlatformIdToPalFolder(PlatformId platform);
 
-        const char* OSPlatformToDefaultAssetPlatform(AZStd::string_view osPlatform);
+        AZCORE_API const char* OSPlatformToDefaultAssetPlatform(AZStd::string_view osPlatform);
 
         //! Platform Helper is an utility class that can be used to retrieve platform related information
-        class PlatformHelper
+        class AZCORE_API PlatformHelper
         {
         public:
 

@@ -36,15 +36,8 @@ set(FILES
     ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.h
-    AzCore/IPC/SharedMemory_Platform.h
-    AzCore/IPC/SharedMemory_Windows.h
-    AzCore/IPC/SharedMemory_Windows.cpp
     ../Common/WinAPI/AzCore/Memory/OSAllocator_WinAPI.h
     AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Math/Random_Platform.h
-    AzCore/Math/Random_Windows.cpp
-    AzCore/Math/Random_Windows.h
-    AzCore/Module/Internal/ModuleManagerSearchPathTool_Windows.cpp
     AzCore/Math/Internal/MathTypes_Windows.h
     AzCore/Platform_Windows.cpp
     AzCore/PlatformIncl_Platform.h
