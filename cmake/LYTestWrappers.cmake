@@ -452,7 +452,10 @@ endfunction()
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set, will have its timeout set by ly_add_test to the default timeout.
 function(ly_add_googlebenchmark)
     if(NOT PAL_TRAIT_TEST_GOOGLE_BENCHMARK_SUPPORTED)
-        message(FATAL_ERROR "Platform does not support test targets - check PAL_TRAIT_TEST_GOOGLE_BENCHMARK_SUPPORTED")
+        # Special case for benchmarks.  Most of the time, the benchmark is inside an existing module
+        # that also contains non-benchmark googletest tests.  In this case, its easier to just early out and ignore
+        # the request to add a benchmark rather than to FATAL ERROR which would require a separate if check for every
+        # module that contains benchmarks.
         return()
     endif()
 
