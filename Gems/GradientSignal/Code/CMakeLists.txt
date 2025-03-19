@@ -91,7 +91,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework.Static
-                AZ::AzToolsFramework.EBus
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
                 Gem::${gem_name}.Static

@@ -45,28 +45,6 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AzToolsFramework.EBus SHARED
-    NAMESPACE AZ
-    FILES_CMAKE
-        AzToolsFramework/aztoolsframework_ebus_files.cmake
-    INCLUDE_DIRECTORIES
-        PUBLIC
-            .
-            AzToolsFramework
-    COMPILE_DEFINITIONS
-        PRIVATE
-            AZTF_EBUS_EXPORTS
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-        PUBLIC
-            AZ::AzFramework
-            AZ::AzFramework.NativeUI
-            AZ::AzToolsFramework.Static
-            AZ::AzQtComponents
-)
-
-ly_add_target(
     NAME AzToolsFramework SHARED
     NAMESPACE AZ
     AUTOMOC
@@ -74,6 +52,7 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         AzToolsFramework/aztoolsframework_shared_files.cmake
+        AzToolsFramework/aztoolsframework_ebus_files.cmake
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
@@ -95,7 +74,6 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzFramework.NativeUI
             AZ::AzToolsFramework.Static
-            AZ::AzToolsFramework.EBus
             AZ::AzQtComponents
 )
 

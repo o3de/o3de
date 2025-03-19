@@ -26,7 +26,7 @@ namespace Camera
     /**
      * This bus allows you to get and set the current editor viewport camera
      */
-    class AZTF_EBUS_API EditorCameraRequests : public AZ::EBusTraits
+    class AZTF_API EditorCameraRequests : public AZ::EBusTraits
     {
     public:
         using Bus = AZ::EBus<EditorCameraRequests>;

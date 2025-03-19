@@ -45,7 +45,7 @@ namespace AzToolsFramework
     }
 
     //! Provide interface for EditorTransformComponentSelection requests.
-    class AZTF_EBUS_API EditorTransformComponentSelectionRequests : public AZ::EBusTraits
+    class AZTF_API EditorTransformComponentSelectionRequests : public AZ::EBusTraits
     {
     public:
         using BusIdType = AzFramework::EntityContextId;

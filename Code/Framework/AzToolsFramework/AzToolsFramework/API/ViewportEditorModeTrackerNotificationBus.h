@@ -49,7 +49,7 @@ namespace AzToolsFramework
     //! Provides a bus to notify when the different editor modes are entered/exit.
     //! @note The editor modes are not discrete states but rather each progression of mode retain the active the parent
     //! mode that the new mode progressed from.
-    class AZTF_EBUS_API ViewportEditorModeNotifications : public AZ::EBusTraits
+    class AZTF_API ViewportEditorModeNotifications : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////
