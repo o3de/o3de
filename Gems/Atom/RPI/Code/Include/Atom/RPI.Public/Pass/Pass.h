@@ -448,10 +448,7 @@ namespace AZ
             const Name PipelineGlobalKeyword{"PipelineGlobal"};
 
             // List of input, output and input/output attachment bindings
-            // [GFX TODO][GHI-18438] Using a deque here that is not cleared, since pointers are held to the bindings for connections and are
-            // not expected to be changed even during a rebuild
-            int m_attachmentBindingsSize{ 0 };
-            AZStd::deque<PassAttachmentBinding> m_attachmentBindings;
+            PassAttachmentBindingList m_attachmentBindings;
 
             // List of attachments owned by this pass.
             // It includes both transient attachments and imported attachments
