@@ -427,6 +427,8 @@ namespace Terrain
             float xyScale = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
             meshGroup.m_mesh.m_transform = AZ::Transform::CreateIdentity();
             meshGroup.m_mesh.m_nonUniformScale = AZ::Vector3(xyScale, xyScale, m_worldHeightBounds.m_max - m_worldHeightBounds.m_min);
+            meshGroup.m_mesh.m_instanceMask |=
+                static_cast<uint32_t>(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH);
         };
 
         createMesh(rtSector.m_meshGroups[0], 0, totalIndexBufferByteCount);
