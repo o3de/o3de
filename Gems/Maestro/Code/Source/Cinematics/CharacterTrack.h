@@ -33,12 +33,12 @@ namespace Maestro
         //////////////////////////////////////////////////////////////////////////
         bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
         void SerializeKey(ICharacterKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
         //! Gets the duration of an animation key. If it's a looped animation,
         //! a special consideration is required to compute the actual duration.
-        float GetKeyDuration(int key) const;
+        float GetKeyDuration(int keyIndex) const;
 
         int GetAnimationLayerIndex() const override
         {
@@ -50,7 +50,7 @@ namespace Maestro
             m_iAnimationLayer = index;
         }
 
-        AnimValueType GetValueType() override;
+        AnimValueType GetValueType() const override;
 
         float GetEndTime() const
         {

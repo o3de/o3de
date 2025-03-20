@@ -50,7 +50,7 @@ namespace Maestro
             {
             }
 
-            void GetKeyInfo([[maybe_unused]] int index, [[maybe_unused]] const char*& description, [[maybe_unused]] float& duration)
+            void GetKeyInfo([[maybe_unused]] int index, [[maybe_unused]] const char*& description, [[maybe_unused]] float& duration) const
             {
             }
             void SerializeKey([[maybe_unused]] ITestKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) {}
@@ -333,7 +333,7 @@ namespace Maestro
         {
             m_testTrackA.CloneKey(2);
             EXPECT_EQ(m_testTrackA.GetNumKeys(), 4);
-            EXPECT_EQ(m_testTrackA.GetKeyTime(3), m_testKeyA_2.time);
+            EXPECT_EQ(m_testTrackA.GetKeyTime(3), m_testKeyA_2.time + m_testTrackA.GetMinKeyTimeDelta());
         }
 
         TEST_F(TAnimTrackTest, CopyKey)

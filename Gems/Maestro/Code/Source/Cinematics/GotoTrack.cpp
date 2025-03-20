@@ -12,24 +12,18 @@
 
 namespace Maestro
 {
-
-    namespace
-    {
-        constexpr float MinTimePrecision = 0.01f;
-    }
-
     CGotoTrack::CGotoTrack()
     {
         m_flags = 0;
         m_DefaultValue = -1.0f;
     }
 
-    AnimValueType CGotoTrack::GetValueType()
+    AnimValueType CGotoTrack::GetValueType() const
     {
         return AnimValueType::DiscreteFloat;
     }
 
-    void CGotoTrack::GetValue(float time, float& value, bool applyMultiplier)
+    void CGotoTrack::GetValue(float time, float& value, bool applyMultiplier) const
     {
         size_t nTotalKeys(m_keys.size());
 
@@ -39,8 +33,6 @@ namespace Maestro
         {
             return;
         }
-
-        CheckValid();
 
         size_t nKey(0);
         for (nKey = 0; nKey < nTotalKeys; ++nKey)
@@ -55,7 +47,7 @@ namespace Maestro
             }
         }
 
-        if (applyMultiplier && m_trackMultiplier != 1.0f)
+        if (applyMultiplier && m_trackMultiplier != 1.0f && m_trackMultiplier > AZ::Constants::Tolerance)
         {
             value /= m_trackMultiplier;
         }
@@ -65,6 +57,13 @@ namespace Maestro
     {
         if (!bDefault)
         {
+            if (((m_timeRange.end - m_timeRange.start) > AZ::Constants::Tolerance) && (time < m_timeRange.start || time > m_timeRange.end))
+            {
+                AZ_Warning("GotoTrack",false,"SetValue(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                    time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+                AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+            }
+
             IDiscreteFloatKey oKey;
             if (applyMultiplier && m_trackMultiplier != 1.0f)
             {
@@ -111,30 +110,50 @@ namespace Maestro
         }
     }
 
-    void CGotoTrack::GetKeyInfo(int index, const char*& description, [[maybe_unused]] float& duration)
+    void CGotoTrack::GetKeyInfo(int keyIndex, const char*& description, [[maybe_unused]] float& duration) const
     {
+        description = 0;
+        duration = 0;
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+
         static char str[64];
         description = str;
-        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is invalid", index);
-        float& k = m_keys[index].m_fValue;
-        sprintf_s(str, "%.2f", k);
+        const float& k = m_keys[keyIndex].m_fValue;
+        azsprintf(str, "%.2f", k);
     }
 
     void CGotoTrack::SetKeyAtTime(float time, IKey* key)
     {
-        AZ_Assert(key != 0, "key is null");
+        if (!key)
+        {
+            AZ_Assert(key, "Expected valid key pointer.");
+            return;
+        }
+
+        if (((m_timeRange.end - m_timeRange.start) > AZ::Constants::Tolerance) && (time < m_timeRange.start || time > m_timeRange.end))
+        {
+            AZ_WarningOnce("GotoTrack", false, "SetValue(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+        }
 
         key->time = time;
 
         bool found = false;
         // Find key with given time.
-        for (size_t i = 0; i < m_keys.size(); i++)
+        for (int i = 0; i < GetNumKeys(); i++)
         {
             float keyt = m_keys[i].time;
-            if (fabs(keyt - time) < MinTimePrecision)
+            if (fabs(keyt - time) < GetMinKeyTimeDelta())
             {
                 key->flags = m_keys[i].flags; // Reserve the flag value.
-                SetKey(static_cast<int>(i), key);
+                SetKey(i, key);
                 found = true;
                 break;
             }
@@ -150,6 +169,8 @@ namespace Maestro
             key->flags = m_keys[keyIndex].flags; // Reserve the flag value.
             SetKey(keyIndex, key);
         }
+
+        SortKeys();
     }
 
     static bool GotoTrackVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)

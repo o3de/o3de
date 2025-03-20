@@ -40,48 +40,50 @@ namespace Maestro
         }
     }
 
-    AnimValueType CSelectTrack::GetValueType()
+    AnimValueType CSelectTrack::GetValueType() const
     {
         return AnimValueType::Select;
     };
 
-    void CSelectTrack::GetKeyInfo(int index, const char*& description, float& duration)
+    void CSelectTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index %i is out of range", index);
-        CheckValid();
-        auto& key = m_keys[index];
-        if (key.CheckValid())
+        description = 0;
+        duration = 0;
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        const auto& key = m_keys[keyIndex];
+        if (key.IsValid())
         {
             duration = key.fDuration;
             description = key.szSelection.c_str();
         }
-        else
-        {
-            description = nullptr;
-            duration = 0;
-        }
     }
 
-    void CSelectTrack::SetKey(int index, IKey* key)
+    void CSelectTrack::SetKey(int keyIndex, IKey* key)
     {
-        const int numKeys = (int)m_keys.size();
-        if (index < 0 || index >= numKeys || !key)
+        const int numKeys = GetNumKeys();
+        if (keyIndex < 0 || keyIndex >= numKeys || !key)
         {
-            AZ_Assert(index >= 0 && index < numKeys, "CSelectTrack::SetKey(%d): Key index is out of range", index);
-            AZ_Assert(key != 0, "CSelectTrack::SetKey(%d): Key cannot be null!", index);
+            AZ_Assert(keyIndex >= 0 && keyIndex < numKeys, "Key index (%d) is out of range (0 .. %d)", keyIndex, numKeys);
+            AZ_Assert(key != nullptr, "CSelectTrack::SetKey(%d): Key cannot be null!", keyIndex);
             return;
         }
 
-        ISelectKey oldKey = m_keys[index];
-        ISelectKey newKey = *((ISelectKey*)key);
+        ISelectKey& oldKey = m_keys[keyIndex];
+        ISelectKey& newKey = *(static_cast<ISelectKey*>(key));
         if (oldKey.cameraAzEntityId != newKey.cameraAzEntityId)
         {
             newKey.ResetCameraProperies(); // stored camera parameters are now probably invalid
         }
 
-        m_keys[index] = newKey; // Store the key
+        m_keys[numKeys] = newKey; // Store the key
 
-        CalculateDurationForEachKey(); // and sorted timeline
+        CalculateDurationForEachKey(); // and sort timeline
 
         if(!newKey.IsValid() || newKey.IsInitialized())
         {
@@ -91,16 +93,18 @@ namespace Maestro
         // Try to find a valid key with same camera controller EntityId in order to copy stored camera parameters.
         for (int idx = 0; idx < numKeys; ++idx)
         {
-            if (idx != index)
+            if (idx != keyIndex)
             {
                 ISelectKey& aKey = m_keys[idx];
                 if (aKey.IsInitialized() && (aKey.cameraAzEntityId == newKey.cameraAzEntityId))
                 {
-                    m_keys[index].CopyCameraProperies(aKey);
+                    m_keys[keyIndex].CopyCameraProperies(aKey);
                     return;
                 }
             }
         }
+
+        SortKeys();
         // Key keeps invalid camera properties, and until animation reset and re-activation,
         // the needed camera properties cannot be requested (could have been changed while playing animation).
     }
@@ -147,8 +151,9 @@ namespace Maestro
 
     int CSelectTrack::GetActiveKey(float time, ISelectKey* key)
     {
-        if (key == nullptr)
+        if (!key)
         {
+            AZ_Assert(false, "CSelectTrack::SetKey(): Key cannot be null!");
             return -1;
         }
 
@@ -160,8 +165,6 @@ namespace Maestro
             return m_currKey;
         }
         const int lastKeyIdx = nkeys - 1;
-
-        CheckValid();
 
         m_lastTime = time;
 
