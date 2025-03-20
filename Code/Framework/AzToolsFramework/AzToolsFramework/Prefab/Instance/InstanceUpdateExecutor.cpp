@@ -305,6 +305,11 @@ namespace AzToolsFramework
             return isUpdateSuccessful;
         }
 
+        bool InstanceUpdateExecutor::IsUpdatingTemplateInstancesInQueue() const
+        {
+            return m_updatingTemplateInstancesInQueue;
+        }
+
         void InstanceUpdateExecutor::QueueRootPrefabLoadedNotificationForNextPropagation()
         {
             m_isRootPrefabInstanceLoaded = false;
