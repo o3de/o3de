@@ -772,8 +772,17 @@ namespace AzToolsFramework
                 pausedBreakpoints = true;
             }
 
+            // Using "resumeUndoBatch" here has 3 outcomes:
+            // If we call this function repeatedly, so that the most recent undo on the stack is the same as the current one, it will reopen that
+            // undo batch and just update it with the new data rather than create a new one.
+            // If we are already inside a different undo batch, it will make this new one a child of the exsiting one.
+            // If there is undo batch operation in progress, or some other undo operation is the most recent one, it will make a new one and return it.
+
+            // The result is that you can call this function repeatedly and it will just update the most recent undo without creating a new one.
+            // You can also call it inside another undo, and it will become a child of that undo.
             if (m_scriptComponent.LoadInContext())
             {
+                ToolsApplicationRequests::Bus::BroadcastResult(m_undoPoint, &ToolsApplicationRequests::Bus::Events::ResumeUndoBatch, m_undoPoint, "Update Script Properties");
                 LoadProperties();
             }
 
@@ -783,7 +792,11 @@ namespace AzToolsFramework
             }
 
             InvalidatePropertyDisplay(Refresh_EntireTree);
-            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
+            if (m_undoPoint)
+            {
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+            }
         }
 
         void ScriptEditorComponent::LoadProperties()

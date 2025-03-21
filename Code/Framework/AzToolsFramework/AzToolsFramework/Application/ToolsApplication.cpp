@@ -1285,7 +1285,13 @@ namespace AzToolsFramework
 
     UndoSystem::URSequencePoint* ToolsApplication::ResumeUndoBatch(UndoSystem::URSequencePoint* expected, const char* label)
     {
-        if (m_currentBatchUndo)
+        if ((!m_undoStack) || (!expected))
+        {
+            return BeginUndoBatch(label);
+        }
+
+        // if we are in an undo already, and its already the expected one, just return it.
+        if ((m_currentBatchUndo) && (m_currentBatchUndo == expected))
         {
             if (m_undoStack->GetTop() == m_currentBatchUndo)
             {
@@ -1295,16 +1301,13 @@ namespace AzToolsFramework
             return m_currentBatchUndo;
         }
 
-        if (m_undoStack)
+        const auto ptr = m_undoStack->GetTop();
+        if (ptr && ptr == expected)
         {
-            const auto ptr = m_undoStack->GetTop();
-            if (ptr && ptr == expected)
-            {
-                m_currentBatchUndo = ptr;
-                m_undoStack->PopTop();
+            m_currentBatchUndo = ptr;
+            m_undoStack->PopTop();
 
-                return m_currentBatchUndo;
-            }
+            return m_currentBatchUndo;
         }
 
         return BeginUndoBatch(label);
@@ -1336,6 +1339,10 @@ namespace AzToolsFramework
     void ToolsApplication::EndUndoBatch()
     {
         AZ_Assert(m_currentBatchUndo, "Cannot end batch - no batch current");
+        if (!m_currentBatchUndo)
+        {
+            return; // let's not crash just becuase there's a programmer error.
+        }
 
         if (m_currentBatchUndo->GetParent())
         {

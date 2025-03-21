@@ -108,6 +108,8 @@ namespace AzToolsFramework
             AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
 
             AZStd::string m_customName;
+
+            AzToolsFramework::UndoSystem::URSequencePoint* m_undoPoint = nullptr;
         };
     } // namespace Component
 } // namespace AzToolsFramework
