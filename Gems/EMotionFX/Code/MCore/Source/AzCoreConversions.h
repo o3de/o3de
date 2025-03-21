@@ -26,185 +26,6 @@
 
 namespace MCore
 {
-    AZ_FORCE_INLINE AZ::Transform EmfxTransformToAzTransform(const EMotionFX::Transform& emfxTransform)
-    {
-        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(emfxTransform.m_rotation, emfxTransform.m_position);
-        EMFX_SCALECODE
-        (
-            transform.MultiplyByUniformScale(emfxTransform.m_scale.GetMaxElement());
-        )
-        return transform;
-    }
-
-    AZ_FORCE_INLINE EMotionFX::Transform AzTransformToEmfxTransform(const AZ::Transform& azTransform)
-    {
-        return EMotionFX::Transform(azTransform);
-    }
-
-    // O3DE_DEPRECATION_NOTICE(GHI-10471)
-    //! @deprecated AZ::Quaternion::CreateFromAxisAngle where the axis is normalized should be equivelent to MCore::CreateFromAxisAndAngle
-    AZ_FORCE_INLINE AZ::Quaternion CreateFromAxisAndAngle(const AZ::Vector3& axis, const float angle)
-    {
-        const float squaredLength = axis.GetLengthSq();
-        if (squaredLength > 0.0f)
-        {
-            const float halfAngle = angle * 0.5f;
-            const float sinScale = Math::Sin(halfAngle) / Math::Sqrt(squaredLength);
-            return AZ::Quaternion(axis.GetX() * sinScale,
-                axis.GetY() * sinScale,
-                axis.GetZ() * sinScale,
-                Math::Cos(halfAngle));
-        }
-        else
-        {
-            return AZ::Quaternion::CreateIdentity();
-        }
-    }
-
-    //! O3DE_DEPRECATION_NOTICE(GHI-10508)
-    //! @deprecated use AZ::Quaternion::CreateFromEulerRadiansZYX
-    AZ_FORCE_INLINE AZ::Quaternion AzEulerAnglesToAzQuat(float pitch, float yaw, float roll)
-    {
-        // In the LY coordinate system, pitch: X, yaw: Z, roll: Y.
-        const float halfYaw = yaw * 0.5f;
-        const float halfPitch = pitch * 0.5f;
-        const float halfRoll = roll * 0.5f;
-
-        const float cY = Math::Cos(halfYaw);
-        const float sY = Math::Sin(halfYaw);
-        const float cP = Math::Cos(halfPitch);
-        const float sP = Math::Sin(halfPitch);
-        const float cR = Math::Cos(halfRoll);
-        const float sR = Math::Sin(halfRoll);
-
-        // Method 1:
-        return AZ::Quaternion(
-            cY * sP * cR - sY * cP * sR,
-            cY * sP * sR + sY * cP * cR,
-            cY * cP * sR - sY * sP * cR,
-            cY * cP * cR + sY * sP * sR
-        );
-
-        // Method 2:
-        /*const AZ::Quaternion Qx = MCore::CreateFromAxisAndAngle(AZ::Vector3(sP, 0, 0), cP);
-        const AZ::Quaternion Qy = MCore::CreateFromAxisAndAngle(AZ::Vector3(0, sY, 0), cY);
-        const AZ::Quaternion Qz = MCore::CreateFromAxisAndAngle(AZ::Vector3(0, 0, sR), cR);
-
-        return Qx * Qy * Qz;*/
-
-        //  Normalize();    // we might be able to leave the normalize away, but better safe than not, this is more robust :)
-    }
-
-    AZ_FORCE_INLINE AZ::Quaternion AzEulerAnglesToAzQuat(const AZ::Vector3& eulerAngles)
-    {
-        return AzEulerAnglesToAzQuat(eulerAngles.GetX(), eulerAngles.GetY(), eulerAngles.GetZ());
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 AzQuaternionToEulerAngles(const AZ::Quaternion& q)
-    {
-        /*
-            // METHOD #1:
-
-            Vector3 euler;
-
-            float matrix[3][3];
-            float cx,sx;
-            float cy,sy,yr;
-            float cz,sz;
-
-            matrix[0][0] = 1.0 - (2.0 * y * y) - (2.0 * z * z);
-            matrix[1][0] = (2.0 * x * y) + (2.0 * w * z);
-            matrix[2][0] = (2.0 * x * z) - (2.0 * w * y);
-            matrix[2][1] = (2.0 * y * z) + (2.0 * w * x);
-            matrix[2][2] = 1.0 - (2.0 * x * x) - (2.0 * y * y);
-
-            sy = -matrix[2][0];
-            cy = Math::Sqrt(1 - (sy * sy));
-            yr = Math::ATan2(sy,cy);
-            euler.y = yr;
-
-            // avoid divide by zero only where y ~90 or ~270
-            if (sy != 1.0 && sy != -1.0)
-            {
-                cx = matrix[2][2] / cy;
-                sx = matrix[2][1] / cy;
-                euler.x = Math::ATan2(sx,cx);
-
-                cz = matrix[0][0] / cy;
-                sz = matrix[1][0] / cy;
-                euler.z = Math::ATan2(sz,cz);
-            }
-            else
-            {
-                matrix[1][1] = 1.0 - (2.0 * x * x) - (2.0 * z * z);
-                matrix[1][2] = (2.0 * y * z) - (2.0 * w * x);
-                cx = matrix[1][1];
-                sx = -matrix[1][2];
-                euler.x = Math::ATan2(sx,cx);
-
-                cz = 1.0;
-                sz = 0.0;
-                euler.z = Math::ATan2(sz,cz);
-            }
-
-            return euler;
-        */
-
-        /*
-            // METHOD #2:
-            Matrix mat = ToMatrix();
-
-            //
-            float cy = Math::Sqrt(mat.m44[0][0]*mat.m44[0][0] + mat.m44[0][1]*mat.m44[0][1]);
-            if (cy > 16.0*Math::epsilon)
-            {
-                result.x = -atan2(mat.m44[1][2], mat.m44[2][2]);
-                result.y = -atan2(-mat.m44[0][2], cy);
-                result.z = -atan2(mat.m44[0][1], mat.m44[0][0]);
-            }
-            else
-            {
-                result.x = -atan2(-mat.m44[2][1], mat.m44[1][1]);
-                result.y = -atan2(-mat.m44[0][2], cy);
-                result.z = 0.0;
-            }
-
-            return result;
-        */
-
-        // METHOD #3 (without conversion to matrix first):
-        // TODO: safety checks?
-        float m00 = 1.0f - (2.0f * ((q.GetY() * q.GetY()) + q.GetZ() * q.GetZ()));
-        float m01 = 2.0f * (q.GetX() * q.GetY() + q.GetW() * q.GetZ());
-
-        AZ::Vector3 result(
-            Math::ATan2(2.0f * (q.GetY() * q.GetZ() + q.GetW() * q.GetX()), 1.0f - (2.0f * ((q.GetX() * q.GetX()) + (q.GetY() * q.GetY())))),
-            Math::ATan2(-2.0f * (q.GetX() * q.GetZ() - q.GetW() * q.GetY()), Math::Sqrt((m00 * m00) + (m01 * m01))),
-            Math::ATan2(m01, m00)
-        );
-
-        return result;
-    }
-
-    AZ_FORCE_INLINE AZ::Quaternion NLerp(const AZ::Quaternion& left, const AZ::Quaternion& right, float t)
-    {
-        const float omt = 1.0f - t;
-        const float dot = left.Dot(right);
-        if (dot < 0.0f)
-        {
-            t = -t;
-        }
-
-        // calculate the interpolated values
-        const AZ::Quaternion newQuat = omt * left + t * right;
-
-        // calculate the inverse length
-        const float invLen = Math::InvSqrt(newQuat.Dot(newQuat));
-
-        // return the normalized linear interpolation
-        return invLen * newQuat;
-    }
-
     AZ_FORCE_INLINE AZ::Vector3 CalcUpAxis(const AZ::Quaternion& q)
     {
         // TODO: make it more vector friendly, something like this:
@@ -239,24 +60,6 @@ namespace MCore
             2.0f * q.GetY() * q.GetZ() + 2.0f * q.GetX() * q.GetW());
     }
 
-    // TODO: replace in favor of AzFramework::ConvertQuaternionToAxisAngle
-    AZ_FORCE_INLINE void ToAxisAngle(const AZ::Quaternion& q, AZ::Vector3& axis, float& angle)
-    {
-        angle = 2.0f * Math::ACos(q.GetW());
-
-        const float sinHalfAngle = Math::Sin(angle * 0.5f);
-        if (sinHalfAngle > 0.0f)
-        {
-            const float invS = 1.0f / sinHalfAngle;
-            axis.Set(q.GetX() * invS, q.GetY() * invS, q.GetZ() * invS);
-        }
-        else
-        {
-            axis.Set(0.0f, 1.0f, 0.0f);
-            angle = 0.0f;
-        }
-    }
-
     AZ_FORCE_INLINE float GetEulerZ(const AZ::Quaternion& q)
     {
         float m00 = 1.0f - (2.0f * ((q.GetY() * q.GetY()) + q.GetZ() * q.GetZ()));
@@ -271,7 +74,7 @@ namespace MCore
         {
             const float angleRadians = Math::ACos(dot);
             const AZ::Vector3 rotAxis = fromVector.Cross(toVector);
-            return CreateFromAxisAndAngle(rotAxis, angleRadians);
+            return AZ::Quaternion::CreateFromAxisAngle(rotAxis, angleRadians);
         }
         else
         {
@@ -354,15 +157,6 @@ namespace MCore
         matrix.SetElement(0, 2, t * vzwy * uyvx + D * wxuz);
         matrix.SetElement(1, 2, t * wxuz * uyvx - D * vzwy);
         return matrix;
-    }
-
-    AZ_FORCE_INLINE AZ::Transform CreateFromQuaternionAndTranslationAndScale(const AZ::Quaternion& rotation, const AZ::Vector3& translation, const AZ::Vector3& scale)
-    {
-        AZ::Transform result;
-        result.SetTranslation(translation);
-        result.SetRotation(rotation);
-        result.SetUniformScale(scale.GetMaxElement());
-        return result;
     }
 
     AZ_FORCE_INLINE AZ::Transform GetRotationMatrixAxisAngle(const AZ::Vector3& axis, float angle)
@@ -453,46 +247,6 @@ namespace MCore
         //  0                      2/(top-bottom)            0                                  0
         //  0                      0                         1/(znearPlane-zfarPlane)           0
         //  (l+right)/(l-right)  (top+bottom)/(bottom-top)  znearPlane/(znearPlane-zfarPlane)  1
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 GetRight(const AZ::Matrix4x4& mat)
-    {
-        return mat.GetColumnAsVector3(0);
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 GetForward(const AZ::Matrix4x4& mat)
-    {
-        return mat.GetColumnAsVector3(1);
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 GetUp(const AZ::Matrix4x4& mat)
-    {
-        return mat.GetColumnAsVector3(2);
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 GetTranslation(const AZ::Matrix4x4& mat)
-    {
-        return mat.GetColumnAsVector3(3);
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 GetRight(const AZ::Transform& mat)
-    {
-        return mat.GetBasisX();
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 GetForward(const AZ::Transform& mat)
-    {
-        return mat.GetBasisY();
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 GetUp(const AZ::Transform& mat)
-    {
-        return mat.GetBasisZ();
-    }
-
-    AZ_FORCE_INLINE AZ::Vector3 GetTranslation(const AZ::Transform& mat)
-    {
-        return mat.GetTranslation();
     }
 
     // MCore::Matrix was not doing a full invertion of the matrix, it was just inverting the 3x3 region and converting

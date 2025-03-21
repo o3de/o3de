@@ -669,7 +669,7 @@ namespace EMotionFX
                 return;
             }
 
-            m_actorInstance->SetLocalSpaceTransform(MCore::AzTransformToEmfxTransform(world));
+            m_actorInstance->SetLocalSpaceTransform(Transform(world));
         }
 
         //////////////////////////////////////////////////////////////////////////
