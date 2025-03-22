@@ -29,6 +29,7 @@ public:
     void GetKey(IKey* pKey) const;
     float GetTime() const;
     const CTrackViewTrack* GetTrack() const { return m_pTrack; }
+    unsigned int GetIndex() const { return m_keyIndex; }
 
 private:
     unsigned int m_keyIndex;
@@ -108,11 +109,11 @@ public:
     bool AreAllKeysOfSameType() const { return m_bAllOfSameType; }
 
     unsigned int GetKeyCount() const { return static_cast<unsigned int>(m_keys.size()); }
-    CTrackViewKeyHandle GetKey(unsigned int index) const { return m_keys[index]; }
+    CTrackViewKeyHandle GetKey(unsigned int keyIndex) const { return m_keys[keyIndex]; }
+    CTrackViewKeyHandle GetSingleSelectedKey() const;
 
     void SelectKeys(const bool bSelected);
 
-    CTrackViewKeyHandle GetSingleSelectedKey();
 
 private:
     void AppendKey(const CTrackViewKeyHandle& keyHandle);
@@ -214,7 +215,7 @@ public:
     CTrackViewNode* GetFirstSelectedNode();
 
     // Get director of this node
-    CTrackViewAnimNode* GetDirector();
+    CTrackViewAnimNode* GetDirector() const;
 
 protected:
     void AddNode(CTrackViewNode* pNode);

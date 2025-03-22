@@ -24,45 +24,80 @@
 
 void CTrackViewKeyConstHandle::GetKey(IKey* pKey) const
 {
+    if (!pKey  || !m_pTrack)
+    {
+        AZ_Assert(pKey != nullptr, "Expected valid key pointer.");
+        AZ_Assert(m_pTrack != nullptr, "Const Key handle is invalid.");
+        return;
+    }
+
     m_pTrack->GetKey(m_keyIndex, pKey);
 }
 
 float CTrackViewKeyConstHandle::GetTime() const
 {
+    if (!m_pTrack)
+    {
+        AZ_Assert(false, "Const Key handle is invalid");
+        return 0;
+    }
+
     return m_pTrack->GetKeyTime(m_keyIndex);
 }
 
 void CTrackViewKeyHandle::SetKey(IKey* pKey)
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!pKey || !m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(pKey != nullptr, "Expected valid key pointer.");
+        AZ_Assert(m_bIsValid && m_pTrack != nullptr, "Key handle is invalid.");
+        return;
+    }
 
     m_pTrack->SetKey(m_keyIndex, pKey);
 }
 
 void CTrackViewKeyHandle::GetKey(IKey* pKey) const
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!pKey || !m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(pKey != nullptr, "Expected valid key pointer.");
+        AZ_Assert(m_bIsValid && m_pTrack != nullptr, "Key handle is invalid.");
+        return;
+    }
 
     m_pTrack->GetKey(m_keyIndex, pKey);
 }
 
 void CTrackViewKeyHandle::Select(bool bSelect)
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return;
+    }
 
     m_pTrack->SelectKey(m_keyIndex, bSelect);
 }
 
 bool CTrackViewKeyHandle::IsSelected() const
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return false;
+    }
 
     return m_pTrack->IsKeySelected(m_keyIndex);
 }
 
 void CTrackViewKeyHandle::SetTime(float time, bool notifyListeners)
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return;
+    }
 
     // Flag the current key, because the key handle may become invalid
     // after the time is set and it is potentially sorted into a different
@@ -71,7 +106,7 @@ void CTrackViewKeyHandle::SetTime(float time, bool notifyListeners)
 
     // set the new time, this may cause a sort that reorders the keys, making
     // m_keyIndex incorrect.
-    m_pTrack->SetKeyTime(m_keyIndex, time, notifyListeners);
+    m_pTrack->SetKeyTime(m_keyIndex, time, notifyListeners); // Let CTrackViewTrack::SetKeyTime() manage Undo/Redo
 
     // If the key at this index changed because of the key sort by time.
     // We need to search through the keys now and find the marker.
@@ -80,7 +115,7 @@ void CTrackViewKeyHandle::SetTime(float time, bool notifyListeners)
         CTrackViewKeyBundle allKeys = m_pTrack->GetAllKeys();
         for (unsigned int x = 0; x < allKeys.GetKeyCount(); x++)
         {
-            unsigned int curIndex = allKeys.GetKey(x).GetIndex();
+            const auto curIndex = allKeys.GetKey(x).GetIndex();
             if (m_pTrack->IsSortMarkerKey(curIndex))
             {
                 m_keyIndex = curIndex;
@@ -95,14 +130,22 @@ void CTrackViewKeyHandle::SetTime(float time, bool notifyListeners)
 
 float CTrackViewKeyHandle::GetTime() const
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return 0;
+    }
 
     return m_pTrack->GetKeyTime(m_keyIndex);
 }
 
 float CTrackViewKeyHandle::GetDuration() const
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!m_bIsValid || !m_pTrack || !m_pTrack->m_pAnimTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return 0;
+    }
 
     const char* desc = nullptr;
     float duration = 0;
@@ -113,9 +156,13 @@ float CTrackViewKeyHandle::GetDuration() const
 
 const char* CTrackViewKeyHandle::GetDescription() const
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
-
     const char* desc = "";
+    if (!m_bIsValid || !m_pTrack || !m_pTrack->m_pAnimTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return desc;
+    }
+
     float duration = 0;
     m_pTrack->m_pAnimTrack->GetKeyInfo(m_keyIndex, desc, duration);
 
@@ -124,15 +171,23 @@ const char* CTrackViewKeyHandle::GetDescription() const
 
 void CTrackViewKeyHandle::Offset(float offset, bool notifyListeners)
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid");
+        return;
+    }
 
-    float newTime = m_pTrack->GetKeyTime(m_keyIndex) + offset;
+    const float newTime = m_pTrack->GetKeyTime(m_keyIndex) + offset;
     m_pTrack->SetKeyTime(m_keyIndex, newTime, notifyListeners);
 }
 
 void CTrackViewKeyHandle::Delete()
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return;
+    }
 
     m_pTrack->RemoveKey(m_keyIndex);
     m_bIsValid = false;
@@ -140,35 +195,59 @@ void CTrackViewKeyHandle::Delete()
 
 CTrackViewKeyHandle CTrackViewKeyHandle::Clone()
 {
-    AZ_Assert(m_bIsValid, "Key handle is invalid");
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return CTrackViewKeyHandle();
+    }
 
-    unsigned int newKeyIndex = m_pTrack->CloneKey(m_keyIndex);
+    const auto newKeyIndex = m_pTrack->CloneKey(m_keyIndex);
     return CTrackViewKeyHandle(m_pTrack, newKeyIndex);
 }
 
 CTrackViewKeyHandle CTrackViewKeyHandle::GetNextKey()
 {
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return CTrackViewKeyHandle();
+    }
+
     return m_pTrack->GetNextKey(GetTime());
 }
 
 CTrackViewKeyHandle CTrackViewKeyHandle::GetPrevKey()
 {
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return CTrackViewKeyHandle();
+    }
+
     return m_pTrack->GetPrevKey(GetTime());
 }
 
 CTrackViewKeyHandle CTrackViewKeyHandle::GetAboveKey() const
 {
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return CTrackViewKeyHandle();
+    }
+
     // Search for track above that has keys
     for (CTrackViewNode* pCurrentNode = m_pTrack->GetAboveNode(); pCurrentNode; pCurrentNode = pCurrentNode->GetAboveNode())
     {
         if (pCurrentNode->GetNodeType() == eTVNT_Track)
         {
-            CTrackViewTrack* pCurrentTrack = static_cast<CTrackViewTrack*>(pCurrentNode);
-            const unsigned int keyCount = pCurrentTrack->GetKeyCount();
-            if (keyCount > 0)
+            if (CTrackViewTrack* pCurrentTrack = static_cast<CTrackViewTrack*>(pCurrentNode))
             {
-                // Return key with nearest time to this key
-                return pCurrentTrack->GetNearestKeyByTime(GetTime());
+                const auto keyCount = pCurrentTrack->GetKeyCount();
+                if (keyCount > 0)
+                {
+                    // Return key with nearest time to this key
+                    return pCurrentTrack->GetNearestKeyByTime(GetTime());
+                }
             }
         }
     }
@@ -178,17 +257,25 @@ CTrackViewKeyHandle CTrackViewKeyHandle::GetAboveKey() const
 
 CTrackViewKeyHandle CTrackViewKeyHandle::GetBelowKey() const
 {
+    if (!m_bIsValid || !m_pTrack)
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return CTrackViewKeyHandle();
+    }
+
     // Search for track below that has keys
     for (CTrackViewNode* pCurrentNode = m_pTrack->GetBelowNode(); pCurrentNode; pCurrentNode = pCurrentNode->GetBelowNode())
     {
         if (pCurrentNode->GetNodeType() == eTVNT_Track)
         {
-            CTrackViewTrack* pCurrentTrack = static_cast<CTrackViewTrack*>(pCurrentNode);
-            const unsigned int keyCount = pCurrentTrack->GetKeyCount();
-            if (keyCount > 0)
+            if (CTrackViewTrack* pCurrentTrack = static_cast<CTrackViewTrack*>(pCurrentNode))
             {
-                // Return key with nearest time to this key
-                return pCurrentTrack->GetNearestKeyByTime(GetTime());
+                const auto keyCount = pCurrentTrack->GetKeyCount();
+                if (keyCount > 0)
+                {
+                    // Return key with nearest time to this key
+                    return pCurrentTrack->GetNearestKeyByTime(GetTime());
+                }
             }
         }
     }
@@ -208,6 +295,12 @@ bool CTrackViewKeyHandle::operator!=(const CTrackViewKeyHandle& keyHandle) const
 
 void CTrackViewKeyBundle::AppendKey(const CTrackViewKeyHandle& keyHandle)
 {
+    if (!keyHandle.IsValid() || !keyHandle.GetTrack())
+    {
+        AZ_Assert(false, "Key handle is invalid.");
+        return;
+    }
+
     // Check if newly added key has different type than existing ones
     if (m_bAllOfSameType && m_keys.size() > 0)
     {
@@ -215,16 +308,31 @@ void CTrackViewKeyBundle::AppendKey(const CTrackViewKeyHandle& keyHandle)
 
         const CTrackViewTrack* pMyTrack = keyHandle.GetTrack();
         const CTrackViewTrack* pOtherTrack = lastKey.GetTrack();
+        if (!lastKey.IsValid() || !pOtherTrack)
+        {
+            AZ_Assert(false, "Expected valid key handle in bundle.")
+            return;
+        }
 
         // Check if keys are from sub tracks, always compare types of parent track
         if (pMyTrack->IsSubTrack())
         {
             pMyTrack = static_cast<const CTrackViewTrack*>(pMyTrack->GetParentNode());
+            if (!pMyTrack)
+            {
+                AZ_Assert(false, "Expected valid parent track for sub-track to append key.");
+                return;
+            }
         }
 
         if (pOtherTrack->IsSubTrack())
         {
             pOtherTrack = static_cast<const CTrackViewTrack*>(pOtherTrack->GetParentNode());
+            if (!pOtherTrack)
+            {
+                AZ_Assert(false, "Expected valid parent track for sub-track of previously appended key.") return;
+                return;
+            }
         }
 
         // Do comparison
@@ -257,7 +365,7 @@ void CTrackViewKeyBundle::SelectKeys(const bool bSelected)
     }
 }
 
-CTrackViewKeyHandle CTrackViewKeyBundle::GetSingleSelectedKey()
+CTrackViewKeyHandle CTrackViewKeyBundle::GetSingleSelectedKey() const
 {
     const unsigned int keyCount = GetKeyCount();
 
@@ -306,6 +414,12 @@ bool CTrackViewNode::HasObsoleteTrack() const
 
 bool CTrackViewNode::HasObsoleteTrackRec(const CTrackViewNode* pCurrentNode) const
 {
+    if (!pCurrentNode)
+    {
+        AZ_Assert(false, "Expected valid TrackViewNode pointer.");
+        return false;
+    }
+
     if (pCurrentNode->GetNodeType() == eTVNT_Track)
     {
         const CTrackViewTrack* pTrack = static_cast<const CTrackViewTrack*>(pCurrentNode);
@@ -418,7 +532,7 @@ CTrackViewNode* CTrackViewNode::GetPrevSibling() const
     }
 
     // Search for prev sibling
-    unsigned int siblingCount = pParent->GetChildCount();
+    const unsigned int siblingCount = pParent->GetChildCount();
     AZ_Assert(siblingCount > 0, "No siblings for parent %p", pParent);
 
     for (unsigned int i = 1; i < siblingCount; ++i)
@@ -443,7 +557,7 @@ CTrackViewNode* CTrackViewNode::GetNextSibling() const
     }
 
     // Search for next sibling
-    unsigned int siblingCount = pParent->GetChildCount();
+    const unsigned int siblingCount = pParent->GetChildCount();
     AZ_Assert(siblingCount > 0, "No siblings for parent %p", pParent);
 
     for (unsigned int i = 0; i < siblingCount - 1; ++i)
@@ -488,7 +602,7 @@ CTrackViewSequence* CTrackViewNode::GetSequence()
     }
 
     // Every node belongs to a sequence
-    AZ_Assert(false, "Sequence node not found");
+    AZ_Assert(false, "Sequence node not found for node (%s).", GetName().c_str());
 
     return nullptr;
 }
@@ -510,13 +624,23 @@ const CTrackViewSequence* CTrackViewNode::GetSequenceConst() const
 
 void CTrackViewNode::AddNode(CTrackViewNode* pNode)
 {
-    AZ_Assert(pNode->GetNodeType() != eTVNT_Sequence, "Attempting to add a sequence node");
+    auto pSequence = GetSequence();
+    if (!pNode || !pSequence)
+    {
+        AZ_Assert(pNode, "Expected a valid node pointer to be added to node (%s).", GetName().c_str());
+        return;
+    }
+    if (pNode->GetNodeType() == eTVNT_Sequence)
+    {
+        AZ_Assert(false, "Attempting to add a sequence node (%s) to node (%s).", pNode->GetName().c_str(), GetName().c_str());
+        return;
+    }
 
     m_childNodes.push_back(AZStd::unique_ptr<CTrackViewNode>(pNode));
     SortNodes();
 
     pNode->m_pParentNode = this;
-    GetSequence()->OnNodeChanged(pNode, ITrackViewSequenceListener::eNodeChangeType_Added);
+    pSequence->OnNodeChanged(pNode, ITrackViewSequenceListener::eNodeChangeType_Added);
 }
 
 void CTrackViewNode::SortNodes()
@@ -648,7 +772,7 @@ CTrackViewNode* CTrackViewNode::GetFirstSelectedNode()
     return nullptr;
 }
 
-CTrackViewAnimNode* CTrackViewNode::GetDirector()
+CTrackViewAnimNode* CTrackViewNode::GetDirector() const
 {
     for (CTrackViewNode* pCurrentNode = GetParentNode(); pCurrentNode; pCurrentNode = pCurrentNode->GetParentNode())
     {
