@@ -316,7 +316,7 @@ namespace AZStd
         AZ_FORCE_INLINE size_type max_size() const  { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(block_node_type); }
         AZ_FORCE_INLINE bool empty() const          { return m_size == 0; }
 
-        AZ_FORCE_INLINE const_reference at(size_type offset) const { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator, m_firstOffset + offset, this)); }
+        AZ_FORCE_INLINE const_reference at(size_type offset) const { return *iterator(AZSTD_CHECKED_ITERATOR_2(iterator, m_firstOffset + offset, this)); }
         AZ_FORCE_INLINE reference       at(size_type offset)       { return *iterator(AZSTD_CHECKED_ITERATOR_2(iterator, m_firstOffset + offset, this)); }
         AZ_FORCE_INLINE const_reference operator[](size_type offset) const { return *iterator(AZSTD_CHECKED_ITERATOR_2(iterator, m_firstOffset + offset, this)); }
         AZ_FORCE_INLINE reference       operator[](size_type offset)       { return *iterator(AZSTD_CHECKED_ITERATOR_2(iterator, m_firstOffset + offset, this)); }
