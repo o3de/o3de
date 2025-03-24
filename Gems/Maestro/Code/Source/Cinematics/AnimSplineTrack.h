@@ -541,9 +541,38 @@ namespace Maestro
             return newKeyIndex;
         }
 
-        int CloneKey(int srcKeyIndex) override
+        int CloneKey(int srcKeyIndex, float timeOffset) override
         {
-            return CopyKey(this, srcKeyIndex);
+            const auto numKeys = GetNumKeys();
+            if (srcKeyIndex < 0 || srcKeyIndex >= numKeys)
+            {
+                AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", srcKeyIndex, numKeys);
+                return -1;
+            }
+
+            ITcbKey key;
+            GetKey(srcKeyIndex, &key);
+
+            if (AZStd::abs(timeOffset) < GetMinKeyTimeDelta())
+            {
+                timeOffset = timeOffset >= 0.0f ? GetMinKeyTimeDelta() : -GetMinKeyTimeDelta();
+            }
+
+            key.time += timeOffset;
+
+            const auto existingKeyIndex = FindKey(key.time);
+            if (existingKeyIndex >= 0)
+            {
+                AZ_Error("AnimSplineTrack", false, "CloneKey(%d, %f): A key at this time already exists in this track (%s).", srcKeyIndex, key.time, (GetNode() ? GetNode()->GetName() : ""));
+                return -1;
+            }
+
+            SetNumKeys(numKeys + 1);
+            SetKey(numKeys, &key);
+
+            SortKeys();
+
+            return FindKey(key.time);
         }
 
         int CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex) override
@@ -1033,6 +1062,9 @@ namespace Maestro
     //! Create key at given time, and return its index.
     template<>
     int TAnimSplineTrack<Vec2>::CreateKey(float time);
+
+    template<>
+    int TAnimSplineTrack<Vec2>::CloneKey(int srcKeyIndex, float timeOffset);
 
     template<>
     int TAnimSplineTrack<Vec2>::CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex);

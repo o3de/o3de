@@ -229,6 +229,61 @@ namespace Maestro
     }
 
     template<>
+    int TAnimSplineTrack<Vec2>::CloneKey(int srcKeyIndex, float timeOffset)
+    {
+        const auto numKeys = GetNumKeys();
+        if (srcKeyIndex < 0 || srcKeyIndex >= numKeys)
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", srcKeyIndex, numKeys);
+            return -1;
+        }
+
+        I2DBezierKey key;
+        GetKey(srcKeyIndex, &key);
+
+        // Key time offset must be big enough to prevent generation of singular tangents
+        const auto minTimeOffset = AZStd::max(0.01f, GetMinKeyTimeDelta() * 1.1f);
+        if (AZStd::abs(timeOffset) < minTimeOffset)
+        {
+            timeOffset = timeOffset >= 0.0f ? minTimeOffset : minTimeOffset;
+        }
+
+        key.time += timeOffset;
+
+        const auto timeRange = GetTimeRange();
+        AZStd::clamp(key.time, timeRange.start, timeRange.end);
+
+        // Check that no key is too close
+        for (int i = 0; i < numKeys; ++i)
+        {
+            I2DBezierKey aKey;
+            GetKey(i, &aKey);
+
+            const auto dt = AZStd::abs(aKey.time - key.time);
+            if (dt < minTimeOffset)
+            {
+                AZ_Error("AnimSplineTrack", false,
+                    "CloneKey(%d, %f): A key at time (%f) with index (%d) in this track (%s) is too close to cloned key time (%f).",
+                    srcKeyIndex, timeOffset, aKey.time, i, (GetNode() ? GetNode()->GetName() : ""), key.time);
+                return -1;
+            }
+        }
+
+        const auto newIndex = CreateKey(key.time);
+        if (newIndex < 0)
+        {
+            return -1;
+        }
+
+        key.value.x = key.time;
+        SetKey(newIndex, &key);
+
+        SortKeys();
+
+        return FindKey(key.time);
+    }
+
+    template<>
     int TAnimSplineTrack<Vec2>::CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex)
     {
         if (!pFromTrack ||  fromKeyIndex < 0 || fromKeyIndex >= pFromTrack->GetNumKeys())
@@ -241,7 +296,7 @@ namespace Maestro
         I2DBezierKey key;
         pFromTrack->GetKey(fromKeyIndex, &key);
 
-        if (this == pFromTrack) // Used in CloneKey()
+        if (this == pFromTrack)
         {
             // Shift key time to prevent generation of singular tangents, with offset selected bigger than minimal legal key time delta.
             const float timeOffset = AZStd::max(0.01f, GetMinKeyTimeDelta() * 1.1f);

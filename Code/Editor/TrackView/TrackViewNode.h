@@ -77,7 +77,7 @@ public:
     // Deletes key. Note that handle will be invalid afterwards
     void Delete();
 
-    CTrackViewKeyHandle Clone();
+    CTrackViewKeyHandle Clone(float timeOffset);
 
     // Get next/prev/above/below key in expanded node tree
     // Note: Key is assumed to be already visible

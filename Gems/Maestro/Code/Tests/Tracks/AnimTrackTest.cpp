@@ -331,9 +331,10 @@ namespace Maestro
 
         TEST_F(TAnimTrackTest, CloneKey)
         {
-            m_testTrackA.CloneKey(2);
+            constexpr const float timeOffset = -0.2f;
+            const int keyIndex = m_testTrackA.CloneKey(2, timeOffset);
             EXPECT_EQ(m_testTrackA.GetNumKeys(), 4);
-            EXPECT_EQ(m_testTrackA.GetKeyTime(3), m_testKeyA_2.time + m_testTrackA.GetMinKeyTimeDelta());
+            EXPECT_EQ(m_testTrackA.GetKeyTime(keyIndex), m_testKeyA_2.time + timeOffset);
         }
 
         TEST_F(TAnimTrackTest, CopyKey)

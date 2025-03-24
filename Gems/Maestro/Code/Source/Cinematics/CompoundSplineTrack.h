@@ -93,7 +93,7 @@ namespace Maestro
         //! @return First index of new keys created in sub-tracks, or -1 if keys are not created (for example, if a key at this time exists).
         int CreateKey(float time) override;
 
-        int CloneKey([[maybe_unused]] int srcKeyIndex) override
+        int CloneKey([[maybe_unused]] int srcKeyIndex, [[maybe_unused]] float timeOffset) override
         {
             AZ_Assert(false, "Not expected to be used");
             return 0;

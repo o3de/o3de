@@ -174,7 +174,7 @@ namespace Maestro
         void RemoveKey(int keyIndex) override;
 
         int CreateKey(float time) override;
-        int CloneKey(int srcKeyIndex) override;
+        int CloneKey(int srcKeyIndex, float timeOffset) override;
         int CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex) override;
 
         //! Get key at specified location.
@@ -773,7 +773,7 @@ namespace Maestro
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline int TAnimTrack<KeyType>::CloneKey(int srcKeyIndex)
+    inline int TAnimTrack<KeyType>::CloneKey(int srcKeyIndex, float timeOffset)
     {
         const auto numKeys = GetNumKeys();
         if (srcKeyIndex < 0 || srcKeyIndex >= numKeys)
@@ -785,12 +785,17 @@ namespace Maestro
         KeyType key;
         GetKey(srcKeyIndex, &key);
 
-        key.time += GetMinKeyTimeDelta();
+        if (AZStd::abs(timeOffset) < GetMinKeyTimeDelta())
+        {
+            timeOffset = timeOffset >= 0.0f ? GetMinKeyTimeDelta() : -GetMinKeyTimeDelta();
+        }
+
+        key.time += timeOffset;
 
         const auto existingKeyIndex = FindKey(key.time);
         if (existingKeyIndex >= 0)
         {
-            AZ_Error("AnimTrack", false, "CloneKey(%d): A key at time (%f) already exists in this track (%s).", srcKeyIndex, key.time, (GetNode() ? GetNode()->GetName() : ""));
+            AZ_Error("AnimTrack", false, "CloneKey(%d, %f): A key at this time already exists in this track (%s).", srcKeyIndex, key.time, (GetNode() ? GetNode()->GetName() : ""));
             return -1;
         }
 

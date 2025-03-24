@@ -359,9 +359,9 @@ struct IAnimTrack
 
     //! Clone key at specified index, adding minimal legal time delta between keys to the new key.
     //! @retun Index of new key if cloned, otherwise -1 (for example, if a key at increased time exists)).
-    virtual int CloneKey(int srcKeyIndex) = 0;
+    virtual int CloneKey(int srcKeyIndex, float timeOffset) = 0;
 
-    //! Clone key at specified index from another track of SAME TYPE.
+    //! Copy key at specified index from another track of SAME TYPE.
     //! @retun Index of new key if copied, otherwise -1 (for example, if a key at the source key time exists)).
     virtual int CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex) = 0;
 
@@ -436,7 +436,7 @@ struct IAnimTrack
     //! Get the animation layer index assigned. (only for character/look-at tracks ATM)
     virtual int GetAnimationLayerIndex() const { return -1; }
     //! Set the animation layer index. (only for character/look-at tracks ATM)
-    virtual void SetAnimationLayerIndex([[maybe_unused]] int keyIndex) {}
+    virtual void SetAnimationLayerIndex([[maybe_unused]] int index) {}
 
     //! Returns whether the track responds to muting (false by default), which only affects the Editor.
     //! Tracks that use mute should override this, such as CSoundTrack

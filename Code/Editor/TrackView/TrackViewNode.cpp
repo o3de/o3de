@@ -193,7 +193,7 @@ void CTrackViewKeyHandle::Delete()
     m_bIsValid = false;
 }
 
-CTrackViewKeyHandle CTrackViewKeyHandle::Clone()
+CTrackViewKeyHandle CTrackViewKeyHandle::Clone(float timeOffset)
 {
     if (!m_bIsValid || !m_pTrack)
     {
@@ -201,7 +201,7 @@ CTrackViewKeyHandle CTrackViewKeyHandle::Clone()
         return CTrackViewKeyHandle();
     }
 
-    const auto newKeyIndex = m_pTrack->CloneKey(m_keyIndex);
+    const auto newKeyIndex = m_pTrack->CloneKey(m_keyIndex, timeOffset);
     return CTrackViewKeyHandle(m_pTrack, newKeyIndex);
 }
 
@@ -422,12 +422,13 @@ bool CTrackViewNode::HasObsoleteTrackRec(const CTrackViewNode* pCurrentNode) con
 
     if (pCurrentNode->GetNodeType() == eTVNT_Track)
     {
-        const CTrackViewTrack* pTrack = static_cast<const CTrackViewTrack*>(pCurrentNode);
-
-        EAnimCurveType trackType = pTrack->GetCurveType();
-        if (trackType == eAnimCurveType_TCBFloat || trackType == eAnimCurveType_TCBQuat || trackType == eAnimCurveType_TCBVector)
+        if (const CTrackViewTrack* pTrack = static_cast<const CTrackViewTrack*>(pCurrentNode))
         {
-            return true;
+            EAnimCurveType trackType = pTrack->GetCurveType();
+            if (trackType == eAnimCurveType_TCBFloat || trackType == eAnimCurveType_TCBQuat || trackType == eAnimCurveType_TCBVector)
+            {
+                return true;
+            }
         }
     }
 
@@ -453,7 +454,10 @@ void CTrackViewNode::ClearSelection()
     const unsigned int numChilds = GetChildCount();
     for (unsigned int childIndex = 0; childIndex < numChilds; ++childIndex)
     {
-        GetChild(childIndex)->ClearSelection();
+        if (const auto pChild = GetChild(childIndex))
+        {
+            pChild->ClearSelection();
+        }
     }
 }
 
@@ -574,21 +578,24 @@ CTrackViewNode* CTrackViewNode::GetNextSibling() const
 
 void CTrackViewNode::SetSelected(bool bSelected)
 {
-    if (bSelected != m_bSelected)
+    const auto  pSequence = GetSequence();
+    if (!pSequence)
     {
-        m_bSelected = bSelected;
-
-        if (m_bSelected)
-        {
-            GetSequence()->OnNodeChanged(this, ITrackViewSequenceListener::eNodeChangeType_Selected);
-        }
-        else
-        {
-            GetSequence()->OnNodeChanged(this, ITrackViewSequenceListener::eNodeChangeType_Deselected);
-        }
-
-        GetSequence()->OnNodeSelectionChanged();
+        return;
     }
+
+    if (bSelected == m_bSelected)
+    {
+        return; // nothing to do
+    }
+
+    m_bSelected = bSelected;
+
+    pSequence->OnNodeChanged(this, m_bSelected
+        ? ITrackViewSequenceListener::eNodeChangeType_Selected
+        : ITrackViewSequenceListener::eNodeChangeType_Deselected);
+
+    pSequence->OnNodeSelectionChanged();
 }
 
 CTrackViewSequence* CTrackViewNode::GetSequence()
@@ -630,6 +637,7 @@ void CTrackViewNode::AddNode(CTrackViewNode* pNode)
         AZ_Assert(pNode, "Expected a valid node pointer to be added to node (%s).", GetName().c_str());
         return;
     }
+
     if (pNode->GetNodeType() == eTVNT_Sequence)
     {
         AZ_Assert(false, "Attempting to add a sequence node (%s) to node (%s).", pNode->GetName().c_str(), GetName().c_str());
@@ -734,17 +742,22 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
 
 void CTrackViewNode::SetHidden(bool bHidden)
 {
-    bool bWasHidden = m_bHidden;
+    const auto pSequence = GetSequence();
+    if (!pSequence)
+    {
+        return;
+    }
+
+    if (bHidden == m_bHidden)
+    {
+        return; // nothing to do
+    }
+
     m_bHidden = bHidden;
 
-    if (bHidden && !bWasHidden)
-    {
-        GetSequence()->OnNodeChanged(this, ITrackViewSequenceListener::eNodeChangeType_Hidden);
-    }
-    else if (!bHidden && bWasHidden)
-    {
-        GetSequence()->OnNodeChanged(this, ITrackViewSequenceListener::eNodeChangeType_Unhidden);
-    }
+    pSequence->OnNodeChanged(this, bHidden
+        ? ITrackViewSequenceListener::eNodeChangeType_Hidden
+        : ITrackViewSequenceListener::eNodeChangeType_Unhidden);
 }
 
 bool CTrackViewNode::IsHidden() const
@@ -762,7 +775,8 @@ CTrackViewNode* CTrackViewNode::GetFirstSelectedNode()
     const unsigned int numChilds = GetChildCount();
     for (unsigned int childIndex = 0; childIndex < numChilds; ++childIndex)
     {
-        CTrackViewNode* pSelectedNode = GetChild(childIndex)->GetFirstSelectedNode();
+        const auto pChild = GetChild(childIndex);
+        const auto pSelectedNode = pChild ? GetFirstSelectedNode() : nullptr;
         if (pSelectedNode)
         {
             return pSelectedNode;
@@ -778,11 +792,12 @@ CTrackViewAnimNode* CTrackViewNode::GetDirector() const
     {
         if (pCurrentNode->GetNodeType() == eTVNT_AnimNode)
         {
-            CTrackViewAnimNode* pParentAnimNode = static_cast<CTrackViewAnimNode*>(pCurrentNode);
-
-            if (pParentAnimNode->GetType() == AnimNodeType::Director)
+            if (CTrackViewAnimNode* pParentAnimNode = static_cast<CTrackViewAnimNode*>(pCurrentNode))
             {
-                return pParentAnimNode;
+                if (pParentAnimNode->GetType() == AnimNodeType::Director)
+                {
+                    return pParentAnimNode;
+                }
             }
         }
         else if (pCurrentNode->GetNodeType() == eTVNT_Sequence)
