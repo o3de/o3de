@@ -848,7 +848,7 @@ namespace Maestro
             return;
         }
 
-        AZ_Printf("CAnimSequence::PrecacheStatic", "Precaching render data for cutscene: %s", GetName());
+        AZ_Trace("AnimSequence", "PrecacheStatic(%f): For cut-scene: %s", startTime, GetName());
 
         m_precached = true;
     }

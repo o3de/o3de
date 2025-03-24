@@ -228,8 +228,6 @@ void CTrackViewSequenceManager::OnSequenceDeactivated(const AZ::EntityId& entity
         return;
     }
 
-    AZ_Info("TrackViewSequenceManager", "OnSequenceDeactivated('%s')", entityId.ToString().c_str());
-
     CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
     if (pAnimationContext != nullptr)
     {
@@ -442,9 +440,6 @@ void CTrackViewSequenceManager::OnDeleteSequenceEntity(const AZ::EntityId& entit
         AZ_Assert(entityId.IsValid(), "Expected valid EntityId.");
         return;
     }
-
-    AZ_Info("TrackViewSequenceManager", "OnDeleteSequenceEntity('%s'): Undo:%d, suspended=%d.",
-        sequence->GetName().c_str(), AzToolsFramework::UndoRedoOperationInProgress() ? 1 : 0, GetIEditor()->IsUndoSuspended() ? 1 : 0);
 
     const bool bUndoWasSuspended = !AzToolsFramework::UndoRedoOperationInProgress() && GetIEditor()->IsUndoSuspended();
 
