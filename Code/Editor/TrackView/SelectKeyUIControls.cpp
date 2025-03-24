@@ -55,12 +55,13 @@ bool CSelectKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
                 AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, cameraComponentEntities.values[i]);
                 if (entity)
                 {
-                    // For Camera Components the enum value is the stringified AZ::EntityId of the entity with the Camera Component
+                    // For Camera Components the enum value is the AZ::EntityId of the entity with the Camera Component stored as string
                     QString entityIdString = QString::number(static_cast<AZ::u64>(entity->GetId()));
                     mv_camera->AddEnumItem(entity->GetName().c_str(), entityIdString);
                 }
             }            
 
+            m_skipOnUIChange = true;
             ISelectKey selectKey;
             keyHandle.GetKey(&selectKey);
 
@@ -69,6 +70,7 @@ bool CSelectKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
             mv_BlendTime.GetVar()->SetLimits(0.0f, selectKey.fDuration > .0f ? selectKey.fDuration : 1.0f, 0.1f, true, false);
             mv_BlendTime = selectKey.fBlendTime;
             mv_BlendTime->OnSetValue(false); // update dialog value
+            m_skipOnUIChange = false;
 
             bAssigned = true;        
         }
@@ -81,7 +83,7 @@ void CSelectKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
 
-    if (!sequence || !selectedKeys.AreAllKeysOfSameType())
+    if (!sequence || !selectedKeys.AreAllKeysOfSameType() || m_skipOnUIChange)
     {
         return;
     }
@@ -96,6 +98,7 @@ void CSelectKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
             ISelectKey selectKey;
             keyHandle.GetKey(&selectKey);
 
+            bool isKeyChanged = false;
             if (pVar == mv_camera.GetVar())
             {
                 QString entityIdString = mv_camera;
@@ -105,6 +108,7 @@ void CSelectKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
                 {
                     selectKey.szSelection.clear(); // Erase "<None>" got from menu for unassigned key 
                 }
+                isKeyChanged = true;
             }
 
             if (pVar == mv_BlendTime.GetVar())
@@ -118,6 +122,12 @@ void CSelectKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sele
                     mv_BlendTime = selectKey.fDuration;
                 }
                 selectKey.fBlendTime = mv_BlendTime;
+                isKeyChanged = true;
+            }
+
+            if (!isKeyChanged)
+            {
+                return; // nothing to do
             }
 
             bool isDuringUndo = false;
@@ -145,7 +155,7 @@ void CSelectKeyUIControls::OnCameraAdded(const AZ::EntityId & cameraId)
     AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, cameraId);
     if (entity)
     {
-        // For Camera Components the enum value is the stringified AZ::EntityId of the entity with the Camera Component
+        // For Camera Components the enum value is the AZ::EntityId of the entity with the Camera Component stored as string
         QString entityIdString = QString::number(static_cast<AZ::u64>(entity->GetId()));
         mv_camera->AddEnumItem(entity->GetName().c_str(), entityIdString);
     }
