@@ -55,7 +55,7 @@ bool CSelectKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
                 AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, cameraComponentEntities.values[i]);
                 if (entity)
                 {
-                    // For Camera Components the enum value is the AZ::EntityId of the entity with the Camera Component stored as string
+                    // For Camera Components the enum value is the stringified AZ::EntityId of the entity with the Camera Component
                     QString entityIdString = QString::number(static_cast<AZ::u64>(entity->GetId()));
                     mv_camera->AddEnumItem(entity->GetName().c_str(), entityIdString);
                 }
@@ -155,7 +155,7 @@ void CSelectKeyUIControls::OnCameraAdded(const AZ::EntityId & cameraId)
     AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, cameraId);
     if (entity)
     {
-        // For Camera Components the enum value is the AZ::EntityId of the entity with the Camera Component stored as string
+        // For Camera Components the enum value is the stringified AZ::EntityId of the entity with the Camera Component
         QString entityIdString = QString::number(static_cast<AZ::u64>(entity->GetId()));
         mv_camera->AddEnumItem(entity->GetName().c_str(), entityIdString);
     }
