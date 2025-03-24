@@ -74,16 +74,16 @@ namespace Maestro
             return;
         }
 
-        ISelectKey& oldKey = m_keys[keyIndex];
-        ISelectKey& newKey = *(static_cast<ISelectKey*>(key));
+        ISelectKey oldKey = m_keys[keyIndex];
+        ISelectKey newKey = *(static_cast<ISelectKey*>(key));
         if (oldKey.cameraAzEntityId != newKey.cameraAzEntityId)
         {
             newKey.ResetCameraProperies(); // stored camera parameters are now probably invalid
         }
 
-        m_keys[numKeys] = newKey; // Store the key
+        m_keys[keyIndex] = newKey; // Store the key
 
-        CalculateDurationForEachKey(); // and sort timeline
+        CalculateDurationForEachKey(); // and sorted timeline
 
         if(!newKey.IsValid() || newKey.IsInitialized())
         {
