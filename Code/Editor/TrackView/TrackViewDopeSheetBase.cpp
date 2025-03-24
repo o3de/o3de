@@ -563,7 +563,6 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
          {
              QPoint ofs = point - m_mouseDownPos;
              float timeOffset = ofs.x() / m_timeScale;
-             AZ_Info("TrackViewDopeSheetBase", "CloneSelectedKeys(): time offset=%f", timeOffset)
 
              pSequence->CloneSelectedKeys(timeOffset);
              m_bKeysCloned = true;
@@ -2229,7 +2228,7 @@ void CTrackViewDopeSheetBase::AcceptUndo()
             {
                 GetIEditor()->CancelUndo();
 
-                // Keys Cloned, mark the sequence dirty to get an AZ undo event.
+                // Keys Noved, mark the sequence dirty to get an AZ undo event.
                 AzToolsFramework::ScopedUndoBatch undoBatch("Move Keys");
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
 
@@ -2246,7 +2245,7 @@ void CTrackViewDopeSheetBase::AcceptUndo()
             {
                 GetIEditor()->CancelUndo();
         
-                // Keys Moved, mark the sequence dirty to get an AZ undo event.
+                // Keys Cloned, mark the sequence dirty to get an AZ undo event.
                 AzToolsFramework::ScopedUndoBatch undoBatch("Clone Keys");
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
 

@@ -330,7 +330,7 @@ void CTrackViewKeyBundle::AppendKey(const CTrackViewKeyHandle& keyHandle)
             pOtherTrack = static_cast<const CTrackViewTrack*>(pOtherTrack->GetParentNode());
             if (!pOtherTrack)
             {
-                AZ_Assert(false, "Expected valid parent track for sub-track of previously appended key.") return;
+                AZ_Assert(false, "Expected valid parent track for sub-track of previously appended key.");
                 return;
             }
         }
