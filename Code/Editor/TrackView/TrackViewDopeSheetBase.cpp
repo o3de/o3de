@@ -2228,7 +2228,7 @@ void CTrackViewDopeSheetBase::AcceptUndo()
             {
                 GetIEditor()->CancelUndo();
 
-                // Keys Noved, mark the sequence dirty to get an AZ undo event.
+                // Keys Moved, mark the sequence dirty to get an AZ undo event.
                 AzToolsFramework::ScopedUndoBatch undoBatch("Move Keys");
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
 
