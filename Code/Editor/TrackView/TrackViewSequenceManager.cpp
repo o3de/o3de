@@ -174,10 +174,6 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
             undoBatch->MarkEntityDirty(newEntityId);
         }
     }
-    else if (undoBatch)
-    {
-        undoBatch.reset();
-    }
 }
 
 IAnimSequence* CTrackViewSequenceManager::OnCreateSequenceObject(QString name, bool isLegacySequence, AZ::EntityId entityId)

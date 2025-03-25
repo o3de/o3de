@@ -14,6 +14,8 @@
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
+
 // Editor
 #include "TrackViewSequence.h"
 #include "TrackViewNodeFactories.h"
@@ -337,7 +339,6 @@ CTrackViewKeyHandle CTrackViewTrack::CreateKey(float time)
     if (keyIndex < 0)
     {
         AZ_Error("CTrackViewTrack", false, "CreateKey(%f): no keys added to %s", time, GetName().c_str());
-        undoBatch.reset();
         return keyHandle;
     }
 
@@ -392,8 +393,18 @@ void CTrackViewTrack::UpdateKeyDataAfterParentChanged(const AZ::Transform& oldPa
         return;
     }
 
+    // Is InstanceUpdateExecutor currently Updating Template Instances In Queue ?
+    // It removes Entities while cleaning-up in-memory DOM template, and thus marking deleted Entity as dirty breaks Undo/Redo stack.
+    bool areInstancesBeingUpdated = false;
+    if (const auto instanceUpdateExecutorInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get())
+    {
+        areInstancesBeingUpdated = instanceUpdateExecutorInterface->IsUpdatingTemplateInstancesInQueue();
+    }
+
+    // Don't create Undo batch while an Undo/Redo operation is in progress or
+    // while an InstanceUpdateExecutor is currently Updating Template Instances In Queue
     AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
-    if (!AzToolsFramework::UndoRedoOperationInProgress())
+    if (!AzToolsFramework::UndoRedoOperationInProgress() && !areInstancesBeingUpdated)
     {
         undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Update Key Data After Parent Changed");
     }

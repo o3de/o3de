@@ -339,7 +339,6 @@ namespace AzToolsFramework
             {
                 undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Enable Component(s)");
             }
-            unsigned int numComponentsEvaluated = 0;
 
             // Enable all the components requested
             for (auto component : components)
@@ -394,17 +393,10 @@ namespace AzToolsFramework
 
                 EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityComponentEnabled, entity->GetId(), componentId);
 
-                ++numComponentsEvaluated;
-
                 if (undoBatch)
                 {
                     undoBatch->MarkEntityDirty(entity->GetId());
                 }
-            }
-
-            if (undoBatch && (numComponentsEvaluated < 1))
-            {
-                undoBatch.reset();
             }
         }
 
@@ -417,7 +409,6 @@ namespace AzToolsFramework
             {
                 undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Disable Component(s)");
             }
-            unsigned int numComponentsEvaluated = 0;
 
             // Disable all the components requested
             for (auto component : components)
@@ -472,17 +463,10 @@ namespace AzToolsFramework
 
                 EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityComponentDisabled, entity->GetId(), componentId);
 
-                ++numComponentsEvaluated;
-
                 if (undoBatch)
                 {
                     undoBatch->MarkEntityDirty(entity->GetId());
                 }
-            }
-
-            if (undoBatch && (numComponentsEvaluated < 1))
-            {
-                undoBatch.reset();
             }
         }
 
@@ -497,7 +481,6 @@ namespace AzToolsFramework
                 {
                     undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Remove Component(s)");
                 }
-                unsigned int numComponentsEvaluated = 0;
 
                 // Only remove, do not delete components until we know it was successful
                 AZ::Entity::ComponentArrayType removedComponents;
@@ -564,13 +547,6 @@ namespace AzToolsFramework
 
                     EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityComponentRemoved, entity->GetId(), removedComponentId);
 
-                    ++numComponentsEvaluated;
-
-                }
-
-                if (undoBatch && (numComponentsEvaluated < 1))
-                {
-                    undoBatch.reset(); // no components were removed
                 }
 
                 for (auto removedComponent : removedComponents)
@@ -657,7 +633,6 @@ namespace AzToolsFramework
             {
                 undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Add Component(s) to Entity");
             }
-            unsigned int numComponentsEvaluated = 0;
 
             EntityToAddedComponentsMap entityToAddedComponentsMap;
             {
@@ -702,8 +677,6 @@ namespace AzToolsFramework
                         undoBatch->MarkEntityDirty(entityId);
                     }
 
-                    numComponentsEvaluated += componentsToAddToEntity.size();
-
                     auto addExistingComponentsResult = AddExistingComponentsToEntityById(entityId, componentsToAddToEntity);
                     // This should never fail since we check the preconditions already (entity is non-null and it ignores null components)
                     AZ_Assert(addExistingComponentsResult, "Adding the components created to an entity failed.");
@@ -714,11 +687,6 @@ namespace AzToolsFramework
                     }
 
                 }
-            }
-
-            if (undoBatch && (numComponentsEvaluated < 1))
-            {
-                undoBatch.reset(); // no components were added
             }
 
             EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityCompositionChanged, entityIds);

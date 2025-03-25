@@ -378,7 +378,6 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
 
     const float time = (float)ui->TIME->value();
     bool allowDeletingKeys = false;
-    unsigned int numKeysChanged = 0;
 
     for (unsigned int i = 0; i < m_selectedKeys.GetKeyCount(); ++i)
     {
@@ -448,8 +447,6 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
 
                 keyHandle.SetTime(time);
 
-                ++numKeysChanged;
-
                 if (undoBatch)
                 {
                     undoBatch->MarkEntityDirty(sequenceId);
@@ -460,7 +457,6 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
             else
             {
                 keyHandle.SetTime(time);
-                ++numKeysChanged;
                 if (undoBatch)
                 {
                     undoBatch->MarkEntityDirty(sequenceId);
@@ -471,11 +467,6 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
         {
             keyHandle.SetTime(time);
         }
-    }
-
-    if (undoBatch && numKeysChanged < 1)
-    {
-        undoBatch.reset(); // nothing was changed
     }
 }
 
