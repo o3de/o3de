@@ -255,11 +255,15 @@ namespace AZ
 
             // Show pass execution timeline
             bool m_showTimeline = false;
+            float m_timelineOffset{ 0.f };
+            float m_timelineWindowWidth{ 1.f };
 
             // Controls how often the timestamp data is refreshed
             RefreshType m_refreshType = RefreshType::Realtime;
             AZStd::sys_time_t m_lastUpdateTimeMicroSecond = 0;
 
+            AZStd::unordered_map<int, AZStd::pair<uint64_t, uint64_t>> m_lastCalibratedTimestamps;
+            AZStd::unordered_map<int, AZStd::pair<uint64_t, uint64_t>> m_calibratedTimestamps;
         };
 
         class ImGuiGpuMemoryView

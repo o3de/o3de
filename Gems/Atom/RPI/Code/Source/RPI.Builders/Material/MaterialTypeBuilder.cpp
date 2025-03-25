@@ -519,7 +519,7 @@ namespace AZ
                 {
                     for (const AZStd::string& objectSrgAddition : *perMaterialPipelineAdditions)
                     {
-                        generatedAzsl += AZStd::string::format("%s;   \\\n", objectSrgAddition.c_str());
+                        generatedAzsl += AZStd::string::format("%s   \\\n", objectSrgAddition.c_str());
                     }
                 }
 

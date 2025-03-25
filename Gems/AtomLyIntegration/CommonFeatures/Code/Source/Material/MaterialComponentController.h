@@ -49,9 +49,11 @@ namespace AZ
             MaterialAssignmentMap GetDefaultMaterialMap() const override;
             MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
+            bool IsDefaultMaterialAssetReady(const MaterialAssignmentId& materialAssignmentId) const override;
             AZStd::string GetMaterialLabel(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetMaterialMap(const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialMap() const override;
+            MaterialAssignmentMap GetMaterialMapCopy() const override;
             void ClearMaterialMap() override;
             void ClearMaterialsOnModelSlots() override;
             void ClearMaterialsOnLodSlots() override;
@@ -64,6 +66,7 @@ namespace AZ
             void ClearMaterialAssetIdOnDefaultSlot() override;
             void SetMaterialAssetId(const MaterialAssignmentId& materialAssignmentId, const AZ::Data::AssetId& materialAssetId) override;
             AZ::Data::AssetId GetMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
+            bool IsMaterialAssetReady(const MaterialAssignmentId& materialAssignmentId) const override;
             void ClearMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) override;
             bool IsMaterialAssetIdOverridden(const MaterialAssignmentId& materialAssignmentId) const override;
             bool HasPropertiesOverridden(const MaterialAssignmentId& materialAssignmentId) const override;

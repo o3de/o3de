@@ -164,7 +164,7 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
             id<MTLDevice> mtlDevice = device.GetMtlDevice();
-            auto* image = static_cast<Image*>(request.m_image);
+            auto* image = static_cast<Image*>(request.m_image.get());
             const uint16_t startMip = residentMip - 1;
             const uint16_t endMip = static_cast<uint16_t>(residentMip - request.m_mipSlices.size());
 

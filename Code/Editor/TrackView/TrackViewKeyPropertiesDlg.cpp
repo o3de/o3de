@@ -61,6 +61,12 @@ CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     m_pVarBlock = new CVarBlock;
 
     // Add key UI classes
+    // Compound tracks
+    m_keyControls.push_back(new CQuatKeyUIControls());
+    m_keyControls.push_back(new CRgbKeyUIControls());
+    m_keyControls.push_back(new CVectorKeyUIControls());
+    m_keyControls.push_back(new CVector4KeyUIControls());
+    // Simple tracks
     m_keyControls.push_back(new C2DBezierKeyUIControls());
     m_keyControls.push_back(new CAssetBlendKeyUIControls());
     m_keyControls.push_back(new CCaptureKeyUIControls());
@@ -72,6 +78,7 @@ CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     m_keyControls.push_back(new CSelectKeyUIControls());
     m_keyControls.push_back(new CSequenceKeyUIControls());
     m_keyControls.push_back(new CSoundKeyUIControls());
+    m_keyControls.push_back(new CStringKeyUIControls());
     m_keyControls.push_back(new CTimeRangeKeyUIControls());
     m_keyControls.push_back(new CTrackEventKeyUIControls());
 
@@ -130,9 +137,26 @@ void CTrackViewKeyPropertiesDlg::OnKeysChanged(CTrackViewSequence* pSequence)
 {
     const CTrackViewKeyBundle& selectedKeys = pSequence->GetSelectedKeys();
 
-    if (selectedKeys.GetKeyCount() > 0 && selectedKeys.AreAllKeysOfSameType())
+    const auto numSelectedKeys = selectedKeys.GetKeyCount();
+    if (numSelectedKeys > 0 && selectedKeys.AreAllKeysOfSameType())
     {
-        const CTrackViewTrack* pTrack = selectedKeys.GetKey(0).GetTrack();
+        auto pTrack = selectedKeys.GetKey(0).GetTrack();
+        if (!pTrack)
+        {
+            return;
+        }
+
+        const bool areSubTrackKeysSelected = (numSelectedKeys > 1) && pTrack->IsSubTrack();
+        if (areSubTrackKeysSelected)
+        {
+            if (const auto pParentNode = pTrack->GetParentNode())
+            {
+                if (pParentNode->GetNodeType() == ETrackViewNodeType::eTVNT_Track)
+                {
+                    pTrack = static_cast<CTrackViewTrack*>(pParentNode);
+                }
+            }
+        }
 
         const CAnimParamType paramType = pTrack->GetParameterType();
         const EAnimCurveType trackType = pTrack->GetCurveType();
@@ -151,39 +175,60 @@ void CTrackViewKeyPropertiesDlg::OnKeysChanged(CTrackViewSequence* pSequence)
 
 void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* sequence)
 {
-    m_sequence = sequence;
-
-    if (nullptr == sequence)
+    auto cleanup = [this]()
     {
         m_wndProps->ClearSelection();
         m_pVarBlock->DeleteAllVariables();
         m_wndProps->setEnabled(false);
         m_wndTrackProps->setEnabled(false);
+        m_pLastTrackSelected = nullptr;
+    };
+
+    m_sequence = sequence;
+    if (!sequence)
+    {
+        cleanup();
         return;
     }
 
     const CTrackViewKeyBundle& selectedKeys = sequence->GetSelectedKeys();
+    const auto numSelectedKeys = selectedKeys.GetKeyCount();
+    if (numSelectedKeys < 1 || !selectedKeys.AreAllKeysOfSameType())
+    {
+        cleanup();
+        return;
+    }
 
     m_wndTrackProps->OnKeySelectionChange(selectedKeys);
 
-    const bool bSelectChangedInSameTrack
-        = m_pLastTrackSelected
-            && selectedKeys.GetKeyCount() == 1
-            && selectedKeys.GetKey(0).GetTrack() == m_pLastTrackSelected;
+    const auto pFirstTrack = selectedKeys.GetKey(0).GetTrack();
+    if (!pFirstTrack)
+    {
+        cleanup();
+        return;
+    }
+
+    auto pTrack = pFirstTrack;
+    // Check if a Compound track is selected with keys selected in sub-tracks?
+    if ((numSelectedKeys > 1) && pFirstTrack->IsSubTrack())
+    {
+        if (const auto pParentNode = pFirstTrack->GetParentNode())
+        {
+            if (pParentNode->GetNodeType() == ETrackViewNodeType::eTVNT_Track)
+            {
+                pTrack = static_cast<CTrackViewTrack*>(pParentNode);
+            }
+        }
+    }
+
+    const bool bSelectChangedInSameTrack = m_pLastTrackSelected && pTrack == m_pLastTrackSelected;
 
     // Every Key in an Asset Blend track can have different min/max values on the float sliders
     // because it's based on the duration of the motion that is set. So don't try to
     // reuse the controls when the selection changes, otherwise the tooltips may be wrong.
     const bool reuseControls = bSelectChangedInSameTrack && m_pLastTrackSelected && (m_pLastTrackSelected->GetValueType() != AnimValueType::AssetBlend);
 
-    if (selectedKeys.GetKeyCount() == 1)
-    {
-        m_pLastTrackSelected = selectedKeys.GetKey(0).GetTrack();
-    }
-    else
-    {
-        m_pLastTrackSelected = nullptr;
-    }
+    m_pLastTrackSelected = pTrack;
 
     if (reuseControls)
     {
@@ -200,11 +245,9 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
     {
         if (!reuseControls)
         {
-            const CTrackViewTrack* pTrack = selectedKeys.GetKey(0).GetTrack();
-
             const CAnimParamType paramType = pTrack->GetParameterType();
             const EAnimCurveType trackType = pTrack->GetCurveType();
-            const AnimValueType valueType = pTrack->GetValueType();
+            const AnimValueType  valueType = pTrack->GetValueType();
 
             for (const auto& keyControl : m_keyControls)
             {
@@ -293,7 +336,8 @@ bool CTrackViewTrackPropsDlg::OnKeySelectionChange(const CTrackViewKeyBundle& se
 {
     m_keyHandle = CTrackViewKeyHandle();
 
-    if (selectedKeys.GetKeyCount() == 1)
+    const auto keysCount = selectedKeys.GetKeyCount();
+    if (keysCount == 1 || ((keysCount > 1) && selectedKeys.AreAllKeysOfSameType()))
     {
         m_keyHandle = selectedKeys.GetKey(0);
     }

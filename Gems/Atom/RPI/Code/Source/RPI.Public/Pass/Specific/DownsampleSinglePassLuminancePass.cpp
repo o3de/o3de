@@ -89,7 +89,7 @@ namespace AZ::RPI
         {
             imageViewDescriptor.m_mipSliceMin = static_cast<uint16_t>(mipIndex);
             imageViewDescriptor.m_mipSliceMax = static_cast<uint16_t>(mipIndex);
-            Ptr<RHI::ImageView> imageView = const_cast<RHI::Image*>(rhiImage)->BuildImageView(imageViewDescriptor);
+            Ptr<RHI::ImageView> imageView = const_cast<RHI::Image*>(rhiImage)->GetImageView(imageViewDescriptor);
             srg.SetImageView(m_imageDestinationIndex, imageView.get(), mipIndex);
             m_imageViews[mipIndex] = imageView;
         }

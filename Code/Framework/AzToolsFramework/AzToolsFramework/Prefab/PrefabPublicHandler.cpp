@@ -989,7 +989,12 @@ namespace AzToolsFramework
                 else
                 {
                     // Source Template Editing
-                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState);
+                    // If we're editing the source template directly (meaning, we are basically just moving an entity around or something like that)
+                    // and we are not reparenting it or anything, it means that we can skip over instance updates of the owning instance
+                    // We can do this because handleEntityChange will take care of updating both the instance's cached dom as well as the template,
+                    // and the AZ::Entity itself is already up to date due to this, because it was created by serializing, so only OTHER instances
+                    // of the same prefab need an update.
+                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState, owningInstance);
 
                     if (isNewParentOwnedByDifferentInstance)
                     {
@@ -1015,11 +1020,11 @@ namespace AzToolsFramework
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-            PrefabDom& afterState)
+            PrefabDom& afterState, InstanceOptionalConstReference instanceToSkipUpdateQueue )
         {
             // Update the state of the entity
-            PrefabUndoHelpers::UpdateEntity(beforeState, afterState,
-                entityId, undoBatch);
+            constexpr bool updateCache = true;
+            PrefabUndoHelpers::UpdateEntity(beforeState, afterState, entityId, undoBatch, updateCache, instanceToSkipUpdateQueue);
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(

@@ -17,7 +17,7 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RHI);
             
-            Image* image = static_cast<Image*>(request.m_image);
+            Image* image = static_cast<Image*>(request.m_image.get());
             const RHI::ImageDescriptor& imageDescriptor = image->GetDescriptor();
             
             for (uint32_t arraySlice = 0; arraySlice < imageDescriptor.m_arraySize; ++arraySlice)

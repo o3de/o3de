@@ -19,6 +19,7 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
+#include <CryCommon/Maestro/Types/AnimValueType.h>
 
 #define DEFAULT_NEAR 0.2f
 #define DEFAULT_FOV (75.0f * gf_PI / 180.0f)
@@ -195,24 +196,13 @@ struct SAnimContext
     float startTime;        //!< The start time of this playing sequence
 };
 
-/** Parameters for cut-scene cameras
-*/
-struct SCameraParams
-{
-    SCameraParams();
-    AZ::EntityId cameraEntityId;
-    float fov;
-    float nearZ;
-    bool justActivated;
-};
-
 //! Interface for movie-system implemented by user for advanced function-support
 struct IMovieUser
 {
     // <interfuscator:shuffle>
     virtual ~IMovieUser(){}
     //! Called when movie system requests a camera-change.
-    virtual void SetActiveCamera(const SCameraParams& Params) = 0;
+    virtual void SetActiveCamera(const AZ::EntityId& cameraEntityId) = 0;
     //! Called when movie system enters into cut-scene mode.
     virtual void BeginCutScene(IAnimSequence* pSeq, unsigned long dwFlags, bool bResetFX) = 0;
     //! Called when movie system exits from cut-scene mode.
@@ -274,7 +264,7 @@ struct IAnimTrack
 
     //////////////////////////////////////////////////////////////////////////
     virtual EAnimCurveType GetCurveType() = 0;
-    virtual AnimValueType     GetValueType() = 0;
+    virtual AnimValueType  GetValueType() = 0;
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
     // This color is used for the editor.
@@ -298,7 +288,7 @@ struct IAnimTrack
     // Animation track can contain sub-tracks (Position XYZ anim track have sub-tracks for x,y,z)
     // Get count of sub tracks.
     virtual int GetSubTrackCount() const = 0;
-    // Retrieve pointer the specfied sub track.
+    // Retrieve pointer the specified sub track.
     virtual IAnimTrack* GetSubTrack(int nIndex) const = 0;
     virtual AZStd::string GetSubTrackName(int nIndex) const = 0;
     virtual void SetSubTrackName(int nIndex, const char* name) = 0;
@@ -318,7 +308,7 @@ struct IAnimTrack
     virtual void SetNumKeys(int numKeys) = 0;
 
     //! Remove specified key.
-    virtual void RemoveKey(int num) = 0;
+    virtual void RemoveKey(int index) = 0;
 
     //! Get key at specified location.
     //! @param key Must be valid pointer to compatible key structure, to be filled with specified key location.
@@ -372,9 +362,10 @@ struct IAnimTrack
     virtual int CopyKey(IAnimTrack* pFromTrack, int nFromKey) = 0;
 
     //! Get info about specified key.
-    //! @param Short human readable text description of this key.
-    //! @param duration of this key in seconds.
-    virtual void GetKeyInfo(int key, const char*& description, float& duration) = 0;
+    //! @param index The index specifying the this key.
+    //! @param description The short human readable text description of this key.
+    //! @param duration The duration of this key in seconds.
+    virtual void GetKeyInfo(int index, const char*& description, float& duration) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Get track value at specified time.
@@ -387,6 +378,7 @@ struct IAnimTrack
     virtual void GetValue(float time, AZ::Quaternion& value) = 0;
     virtual void GetValue(float time, bool& value) = 0;
     virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) = 0;
+    virtual void GetValue(float time, AZStd::string& value) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Set track value at specified time.
@@ -398,6 +390,7 @@ struct IAnimTrack
     virtual void SetValue(float time, const AZ::Quaternion& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) = 0;
+    virtual void SetValue(float time, const AZStd::string& value, bool bDefault = false) = 0;
 
     // Only for position tracks, offset all track keys by this amount.
     virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
@@ -428,7 +421,7 @@ struct IAnimTrack
     virtual bool IsSortMarkerKey([[maybe_unused]] unsigned int keyIndex) const { return false; }
 
     //! Return the index of the key which lies right after the given key in time.
-    //! @param key Index of of key.
+    //! @param key Index of key.
     //! @return Index of the next key in time. If the last key given, this returns -1.
     // In case of keys sorted, it's just 'key+1', but if not sorted, it can be another value.
     virtual int NextKeyByTime(int key) const;
@@ -438,9 +431,9 @@ struct IAnimTrack
     //! Set the animation layer index. (only for character/look-at tracks ATM)
     virtual void SetAnimationLayerIndex([[maybe_unused]] int index) { }
 
-    //! Returns whether the track responds to muting (false by default), which only affects the Edtior.
+    //! Returns whether the track responds to muting (false by default), which only affects the Editor.
     //! Tracks that use mute should override this, such as CSoundTrack
-    //! @return Boolean of whether the track respnnds to muting or not
+    //! @return Boolean of whether the track responds to muting or not
     virtual bool UsesMute() const { return false; }
 
     //! Set a multiplier which will be multiplied to track values in SetValue and divided out in GetValue if requested
@@ -501,8 +494,8 @@ public:
 
         AZStd::string name;           // parameter name.
         CAnimParamType paramType;     // parameter id.
-        AnimValueType valueType;       // value type, defines type of track to use for animating this parameter.
-        ESupportedParamFlags flags; // combination of flags from ESupportedParamFlags.
+        AnimValueType valueType;      // value type, defines type of track to use for animating this parameter.
+        ESupportedParamFlags flags;   // combination of flags from ESupportedParamFlags.
     };
 
     using AnimParamInfos = AZStd::vector<SParamInfo>;
@@ -637,11 +630,14 @@ public:
     // Get the index of a given track among tracks with the same parameter type in this node.
     virtual uint32 GetTrackParamIndex(const IAnimTrack* pTrack) const = 0;
 
-    // Creates a new track for given parameter.
-    virtual IAnimTrack* CreateTrack(const CAnimParamType& paramType) = 0;
+    // Creates a new track for given parameter, with possible remapping.
+    virtual IAnimTrack* CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) = 0;
 
     // Initializes track default values after de-serialization / user creation. Only called in editor.
-    virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType) = 0;
+    virtual void InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) = 0;
+
+    // Updates track default values before adding a new key at time, so that animated entity is not affected by adding a key
+    virtual void UpdateTrackDefaultValue(float time, IAnimTrack* pTrack) = 0;
 
     // Assign animation track to parameter.
     // if track parameter is NULL track with parameter id param will be removed.
@@ -1223,14 +1219,14 @@ struct IMovieSystem
 
     virtual IMovieCallback* GetCallback() = 0;
 
-    virtual const SCameraParams& GetCameraParams() const = 0;
-    virtual void SetCameraParams(const SCameraParams& Params) = 0;
+    virtual AZ::EntityId GetActiveCamera() const = 0;
+    virtual void SetActiveCamera(const AZ::EntityId& entityId) = 0;
     virtual void SendGlobalEvent(const char* pszEvent) = 0;
 
     // Gets the float time value for a sequence that is already playing
     virtual float GetPlayingTime(IAnimSequence* pSeq) = 0;
     virtual float GetPlayingSpeed(IAnimSequence* pSeq) = 0;
-    // Sets the time progression of an already playing cutscene.
+    // Sets the time progression of an already playing cut-scene.
     // If IAnimSequence:NO_SEEK flag is set on pSeq, this call is ignored.
     virtual bool SetPlayingTime(IAnimSequence* pSeq, float fTime) = 0;
     virtual bool SetPlayingSpeed(IAnimSequence* pSeq, float fSpeed) = 0;

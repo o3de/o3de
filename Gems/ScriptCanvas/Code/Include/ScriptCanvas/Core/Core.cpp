@@ -197,6 +197,7 @@ namespace ScriptCanvas
         , m_id(source.Id())
         , m_relativePath(source.m_relativePath)
         , m_absolutePath(source.m_absolutePath)
+        , m_suggestedFileName(source.m_suggestedFileName)
     {
         SanitizePath();
     }
@@ -236,6 +237,16 @@ namespace ScriptCanvas
     const AZ::IO::Path& SourceHandle::AbsolutePath() const
     {
         return m_absolutePath;
+    }
+
+    void SourceHandle::SetSuggestedFileName(const AZStd::string_view suggestedFileName)
+    {
+        m_suggestedFileName = suggestedFileName;
+    }
+
+    AZStd::string SourceHandle::GetSuggestedFileName() const
+    {
+        return m_suggestedFileName;
     }
 
     bool SourceHandle::AnyEquals(const SourceHandle& other) const
