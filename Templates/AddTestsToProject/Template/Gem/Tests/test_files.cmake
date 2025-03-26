@@ -1,9 +1,11 @@
-#
+# {BEGIN_LICENSE}
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
+# {END_LICENSE}
 
-set(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED FALSE)
+set(FILES
+    testmain.cpp # Relative to the current folder.
+)
