@@ -1292,7 +1292,7 @@ namespace EMotionFX
     {
         RunEMotionFXUpdateLoop();
     }
-    INSTANTIATE_TEST_CASE_P(TestMotionCondition, MotionConditionFixture,
+    INSTANTIATE_TEST_SUITE_P(TestMotionCondition, MotionConditionFixture,
         ::testing::ValuesIn(motionTransitionConditionData)
     );
 
@@ -1300,7 +1300,7 @@ namespace EMotionFX
     {
         RunEMotionFXUpdateLoop();
     }
-    INSTANTIATE_TEST_CASE_P(TestRangedMotionCondition, RangedMotionEventConditionFixture,
+    INSTANTIATE_TEST_SUITE_P(TestRangedMotionCondition, RangedMotionEventConditionFixture,
         ::testing::ValuesIn(rangedMotionTransitionConditionData)
     );
 
@@ -1309,7 +1309,7 @@ namespace EMotionFX
     {
         RunEMotionFXUpdateLoop();
     }
-    INSTANTIATE_TEST_CASE_P(TestParameterCondition, ParameterConditionFixture,
+    INSTANTIATE_TEST_SUITE_P(TestParameterCondition, ParameterConditionFixture,
         ::testing::ValuesIn(parameterTransitionConditionData)
     );
 
@@ -1318,7 +1318,7 @@ namespace EMotionFX
     {
         RunEMotionFXUpdateLoop();
     }
-    INSTANTIATE_TEST_CASE_P(TestPlayTimeCondition, PlayTimeConditionFixture,
+    INSTANTIATE_TEST_SUITE_P(TestPlayTimeCondition, PlayTimeConditionFixture,
         ::testing::ValuesIn(playTimeTransitionConditionData)
     );
 
@@ -1326,7 +1326,7 @@ namespace EMotionFX
     {
         RunEMotionFXUpdateLoop();
     }
-    INSTANTIATE_TEST_CASE_P(TestStateCondition, StateConditionFixture,
+    INSTANTIATE_TEST_SUITE_P(TestStateCondition, StateConditionFixture,
         ::testing::ValuesIn(stateTransitionConditionData)
     );
 
@@ -1335,7 +1335,7 @@ namespace EMotionFX
     {
         RunEMotionFXUpdateLoop();
     }
-    INSTANTIATE_TEST_CASE_P(TestTagCondition, TagConditionFixture,
+    INSTANTIATE_TEST_SUITE_P(TestTagCondition, TagConditionFixture,
         ::testing::ValuesIn(tagTransitionConditionData)
     );
 
@@ -1345,7 +1345,7 @@ namespace EMotionFX
     {
         RunEMotionFXUpdateLoop();
     }
-    INSTANTIATE_TEST_CASE_P(TestTimeCondition, TimeConditionFixture,
+    INSTANTIATE_TEST_SUITE_P(TestTimeCondition, TimeConditionFixture,
         ::testing::ValuesIn(timeTransitionConditionData)
     );
 
@@ -1354,7 +1354,7 @@ namespace EMotionFX
     {
         RunEMotionFXUpdateLoop();
     }
-    INSTANTIATE_TEST_CASE_P(TestVector2Condition, Vector2ConditionFixture,
+    INSTANTIATE_TEST_SUITE_P(TestVector2Condition, Vector2ConditionFixture,
         ::testing::ValuesIn(vector2TransitionConditionData)
     );
 

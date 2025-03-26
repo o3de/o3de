@@ -1,0 +1,209 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3aa81220..e56ee41a 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -17,7 +17,6 @@ if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.17")
+     cmake_policy(SET CMP0100 NEW)
+ endif()
+ 
+-
+ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+ 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
+ 		message(WARNING "Your version of GCC contains an optimizer bug. Please verify that you do not use -O3!")
+@@ -193,13 +192,12 @@ set(PRIVATE_LIBS "-lOpenMeshCore -lOpenMeshTools")
+ 
+ configure_file("openmesh.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/openmesh.pc" @ONLY)
+ 
+-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openmesh.pc DESTINATION libdata/pkgconfig)
+-
+-# generate target file
+-
+-install(EXPORT OpenMeshConfig DESTINATION share/OpenMesh/cmake)
+-
+-export(TARGETS OpenMeshCore OpenMeshTools FILE OpenMeshConfig.cmake)
++if (NOT OPENMESH_DISABLE_INSTALL)
++  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openmesh.pc DESTINATION libdata/pkgconfig)
++  # generate target file
++  install(EXPORT OpenMeshConfig DESTINATION share/OpenMesh/cmake)
++  export(TARGETS OpenMeshCore OpenMeshTools FILE OpenMeshConfig.cmake)
++endif()
+ 
+ # display results
+ vci_print_configure_header (OPENMESH "OpenMesh")
+diff --git a/src/OpenMesh/Core/CMakeLists.txt b/src/OpenMesh/Core/CMakeLists.txt
+index 48f55474..76a678a3 100644
+--- a/src/OpenMesh/Core/CMakeLists.txt
++++ b/src/OpenMesh/Core/CMakeLists.txt
+@@ -221,26 +221,27 @@ else()
+   set (OPENMESH_NO_INSTALL_HEADERS TRUE CACHE BOOL "Should OpenMesh skip installing headers?")
+ endif()
+ 
+-if (NOT APPLE AND NOT ${OPENMESH_NO_INSTALL_HEADERS})
+-
+-# Install Header Files)
+-install(DIRECTORY . 
+-	DESTINATION include/OpenMesh/Core
+-        FILES_MATCHING 
+-	PATTERN "*.hh"
+-        PATTERN "CVS" EXCLUDE
+-        PATTERN ".svn" EXCLUDE
+-        PATTERN "tmp" EXCLUDE
+-	PATTERN "Templates" EXCLUDE
+-        PATTERN "Debian*" EXCLUDE)
+-
+-#install the config file
+-install(FILES System/config.h DESTINATION include/OpenMesh/Core/System)
+-
+-endif ()
+-
+-install(TARGETS OpenMeshCore EXPORT OpenMeshConfig
+-  ARCHIVE DESTINATION ${VCI_PROJECT_LIBDIR}
+-  LIBRARY DESTINATION ${VCI_PROJECT_LIBDIR}
+-  RUNTIME DESTINATION ${VCI_PROJECT_BINDIR})
+-
++if (NOT OPENMESH_DISABLE_INSTALL)
++  if (NOT APPLE AND NOT ${OPENMESH_NO_INSTALL_HEADERS})
++
++  # Install Header Files)
++  install(DIRECTORY . 
++    DESTINATION include/OpenMesh/Core
++          FILES_MATCHING 
++    PATTERN "*.hh"
++          PATTERN "CVS" EXCLUDE
++          PATTERN ".svn" EXCLUDE
++          PATTERN "tmp" EXCLUDE
++    PATTERN "Templates" EXCLUDE
++          PATTERN "Debian*" EXCLUDE)
++
++  #install the config file
++  install(FILES System/config.h DESTINATION include/OpenMesh/Core/System)
++
++  endif ()
++
++  install(TARGETS OpenMeshCore EXPORT OpenMeshConfig
++    ARCHIVE DESTINATION ${VCI_PROJECT_LIBDIR}
++    LIBRARY DESTINATION ${VCI_PROJECT_LIBDIR}
++    RUNTIME DESTINATION ${VCI_PROJECT_BINDIR})
++endif()
+diff --git a/src/OpenMesh/Core/IO/exporter/ExporterT.hh b/src/OpenMesh/Core/IO/exporter/ExporterT.hh
+index 2c1d4be5..10be83c1 100644
+--- a/src/OpenMesh/Core/IO/exporter/ExporterT.hh
++++ b/src/OpenMesh/Core/IO/exporter/ExporterT.hh
+@@ -103,12 +103,16 @@ public:
+ 
+   bool is_point_double() const override
+   {
+-    return OMFormat::is_double(typename Mesh::Point()[0]);
++// o3de change begin
++    return OMFormat::is_double(typename Mesh::Point().GetX());
++// o3de change end
+   }
+ 
+   bool is_normal_double() const override
+   {
+-    return OMFormat::is_double(typename Mesh::Normal()[0]);
++// o3de change begin
++    return OMFormat::is_double(typename Mesh::Normal().GetX());
++// o3de change end
+   }
+ 
+   Vec3f  normal(VertexHandle _vh)   const override
+diff --git a/src/OpenMesh/Core/Mesh/PolyMeshT_impl.hh b/src/OpenMesh/Core/Mesh/PolyMeshT_impl.hh
+index 5026a364..5ca6db10 100644
+--- a/src/OpenMesh/Core/Mesh/PolyMeshT_impl.hh
++++ b/src/OpenMesh/Core/Mesh/PolyMeshT_impl.hh
+@@ -103,6 +103,17 @@ PolyMeshT<Kernel>::calc_face_normal(FaceHandle _fh) const
+   >::Result());
+ }
+ 
++// o3de change begin
++template<typename Point, typename Normal>
++void newell_norm(
++    Normal& n, const Point& a, const Point& b)
++{
++    n[0] += static_cast<typename vector_traits<Normal>::value_type>(a[1] * b[2]);
++    n[1] += static_cast<typename vector_traits<Normal>::value_type>(a[2] * b[0]);
++    n[2] += static_cast<typename vector_traits<Normal>::value_type>(a[0] * b[1]);
++}
++// o3de change end
++
+ template <class Kernel>
+ typename PolyMeshT<Kernel>::Normal
+ PolyMeshT<Kernel>::calc_face_normal_impl(FaceHandle _fh, PointIs3DTag) const
+@@ -134,9 +145,7 @@ PolyMeshT<Kernel>::calc_face_normal_impl(FaceHandle _fh, PointIs3DTag) const
+ 
+     // Due to traits, the value types of normals and points can be different.
+     // Therefore we cast them here.
+-    n[0] += static_cast<typename vector_traits<Normal>::value_type>(a[1] * b[2]);
+-    n[1] += static_cast<typename vector_traits<Normal>::value_type>(a[2] * b[0]);
+-    n[2] += static_cast<typename vector_traits<Normal>::value_type>(a[0] * b[1]);
++    newell_norm(n, a, b); // o3de change
+   }
+ 
+   const typename vector_traits<Normal>::value_type length = norm(n);
+diff --git a/src/OpenMesh/Core/Mesh/TriConnectivity.cc b/src/OpenMesh/Core/Mesh/TriConnectivity.cc
+index cfae830d..1b16bcbc 100644
+--- a/src/OpenMesh/Core/Mesh/TriConnectivity.cc
++++ b/src/OpenMesh/Core/Mesh/TriConnectivity.cc
+@@ -494,7 +494,7 @@ void TriConnectivity::split_copy(EdgeHandle _eh, VertexHandle _vh)
+   const VertexHandle v0 = to_vertex_handle(halfedge_handle(_eh, 0));
+   const VertexHandle v1 = to_vertex_handle(halfedge_handle(_eh, 1));
+ 
+-  const size_t nf = n_faces();
++  const auto nf = n_faces(); // o3de change
+ 
+   // Split the halfedge ( handle will be preserved)
+   split(_eh, _vh);
+diff --git a/src/OpenMesh/Tools/CMakeLists.txt b/src/OpenMesh/Tools/CMakeLists.txt
+index 08baecbd..867f4a32 100644
+--- a/src/OpenMesh/Tools/CMakeLists.txt
++++ b/src/OpenMesh/Tools/CMakeLists.txt
+@@ -185,24 +185,26 @@ else()
+   set (OPENMESH_NO_INSTALL_HEADERS TRUE CACHE BOOL "Should OpenMesh skip installing headers?")
+ endif()
+ 
+-if (NOT APPLE AND NOT ${OPENMESH_NO_INSTALL_HEADERS})
+-  # Install Header Files
+-  install(DIRECTORY .
+-        DESTINATION include/OpenMesh/Tools
+-        FILES_MATCHING
+-        PATTERN "*.hh"
+-        PATTERN "CVS" EXCLUDE
+-        PATTERN ".svn" EXCLUDE
+-        PATTERN "tmp" EXCLUDE
+-        PATTERN "Templates" EXCLUDE
+-        PATTERN "Debian*" EXCLUDE)
+-
+-  #install the config file
+-  install(FILES Utils/getopt.h DESTINATION include/OpenMesh/Tools/Utils)
+-endif ()
+-
+-install(TARGETS OpenMeshTools EXPORT OpenMeshConfig
+-  ARCHIVE DESTINATION ${VCI_PROJECT_LIBDIR}
+-  LIBRARY DESTINATION ${VCI_PROJECT_LIBDIR}
+-  RUNTIME DESTINATION ${VCI_PROJECT_BINDIR})
+-
++if (NOT OPENMESH_DISABLE_INSTALL)
++  if (NOT APPLE AND NOT ${OPENMESH_NO_INSTALL_HEADERS})
++    # Install Header Files
++    install(DIRECTORY .
++          DESTINATION include/OpenMesh/Tools
++          FILES_MATCHING
++          PATTERN "*.hh"
++          PATTERN "CVS" EXCLUDE
++          PATTERN ".svn" EXCLUDE
++          PATTERN "tmp" EXCLUDE
++          PATTERN "Templates" EXCLUDE
++          PATTERN "Debian*" EXCLUDE)
++
++    #install the config file
++    install(FILES Utils/getopt.h DESTINATION include/OpenMesh/Tools/Utils)
++  endif ()
++
++  install(TARGETS OpenMeshTools EXPORT OpenMeshConfig
++    ARCHIVE DESTINATION ${VCI_PROJECT_LIBDIR}
++    LIBRARY DESTINATION ${VCI_PROJECT_LIBDIR}
++    RUNTIME DESTINATION ${VCI_PROJECT_BINDIR})
++
++endif()
+\ No newline at end of file

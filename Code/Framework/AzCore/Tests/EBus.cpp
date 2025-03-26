@@ -553,14 +553,14 @@ namespace UnitTest
         AZStd::unordered_map<int, AZStd::vector<BusHandler*>> m_handlers;
         int m_numHandlers = 0;
     };
-    TYPED_TEST_CASE(EBusTestAll, BusTypesAll);
+    TYPED_TEST_SUITE(EBusTestAll, BusTypesAll);
 
     template <typename Bus>
     class EBusTestId
         : public EBusTestAll<Bus>
     {
     };
-    TYPED_TEST_CASE(EBusTestId, BusTypesId);
+    TYPED_TEST_SUITE(EBusTestId, BusTypesId);
 
     using BusTypesIdMultiHandlers = ::testing::Types<
         ManyToMany, ManyToManyOrdered,
@@ -570,7 +570,7 @@ namespace UnitTest
         : public EBusTestAll<Bus>
     {
     };
-    TYPED_TEST_CASE(EBusTestIdMultiHandlers, BusTypesIdMultiHandlers);
+    TYPED_TEST_SUITE(EBusTestIdMultiHandlers, BusTypesIdMultiHandlers);
 
     //////////////////////////////////////////////////////////////////////////
     // Non-event functions
@@ -4130,7 +4130,7 @@ namespace UnitTest
 
     using ThreadDispatchParamFixture = EBusParamFixture<ThreadDispatchParams>;
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         ThreadDispatch,
         ThreadDispatchParamFixture,
         ::testing::Values(

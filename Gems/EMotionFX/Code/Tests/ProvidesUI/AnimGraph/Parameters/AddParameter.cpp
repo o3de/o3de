@@ -107,7 +107,7 @@ namespace EMotionFX
         return result;
     }
 
-    INSTANTIATE_TEST_CASE_P(AddParameters,
+    INSTANTIATE_TEST_SUITE_P(AddParameters,
         AddParametersFixture,
         ::testing::ValuesIn(GetValueParameterTypeIndices()));
 } // namespace EMotionFX

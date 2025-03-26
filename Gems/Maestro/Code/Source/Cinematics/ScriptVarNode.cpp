@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include "ScriptVarNode.h"
 #include "AnimTrack.h"
@@ -16,97 +15,92 @@
 
 #include <ISystem.h>
 
-//////////////////////////////////////////////////////////////////////////
-CAnimScriptVarNode::CAnimScriptVarNode(const int id)
-    : CAnimNode(id, AnimNodeType::ScriptVar)
-{
-    SetFlags(GetFlags() | eAnimNodeFlags_CanChangeName);
-    m_value = -1e-20f;
-}
-
-//////////////////////////////////////////////////////////////////////////
-CAnimScriptVarNode::CAnimScriptVarNode()
-    : CAnimScriptVarNode(0)
+namespace Maestro
 {
 
-}
-
-void CAnimScriptVarNode::OnReset()
-{
-    m_value = -1e-20f;
-}
-
-void CAnimScriptVarNode::OnResume()
-{
-    OnReset();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CAnimScriptVarNode::CreateDefaultTracks()
-{
-    CreateTrack(AnimParamType::Float);
-};
-
-//////////////////////////////////////////////////////////////////////////
-unsigned int CAnimScriptVarNode::GetParamCount() const
-{
-    return 1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-CAnimParamType CAnimScriptVarNode::GetParamType(unsigned int nIndex) const
-{
-    if (nIndex == 0)
+    CAnimScriptVarNode::CAnimScriptVarNode(const int id)
+        : CAnimNode(id, AnimNodeType::ScriptVar)
     {
-        return AnimParamType::Float;
+        SetFlags(GetFlags() | eAnimNodeFlags_CanChangeName);
+        m_value = -1e-20f;
     }
 
-    return AnimParamType::Invalid;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CAnimScriptVarNode::GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const
-{
-    if (paramId.GetType() == AnimParamType::Float)
+    CAnimScriptVarNode::CAnimScriptVarNode()
+        : CAnimScriptVarNode(0)
     {
-        info.flags = IAnimNode::ESupportedParamFlags(0);
-        info.name = "Value";
-        info.paramType = AnimParamType::Float;
-        info.valueType = AnimValueType::Float;
-        return true;
     }
-    return false;
-}
 
-
-//////////////////////////////////////////////////////////////////////////
-void CAnimScriptVarNode::Animate(SAnimContext& ec)
-{
-    float value = m_value;
-
-    IAnimTrack* pValueTrack = GetTrackForParameter(AnimParamType::Float);
-
-    if (pValueTrack)
+    void CAnimScriptVarNode::OnReset()
     {
-        if (pValueTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled)
+        m_value = -1e-20f;
+    }
+
+    void CAnimScriptVarNode::OnResume()
+    {
+        OnReset();
+    }
+
+    void CAnimScriptVarNode::CreateDefaultTracks()
+    {
+        CreateTrack(AnimParamType::Float);
+    };
+
+    unsigned int CAnimScriptVarNode::GetParamCount() const
+    {
+        return 1;
+    }
+
+    CAnimParamType CAnimScriptVarNode::GetParamType(unsigned int nIndex) const
+    {
+        if (nIndex == 0)
         {
-            return;
+            return AnimParamType::Float;
         }
 
-        pValueTrack->GetValue(ec.time, value);
+        return AnimParamType::Invalid;
     }
 
-    if (value != m_value)
+    bool CAnimScriptVarNode::GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const
     {
-        m_value = value;
+        if (paramId.GetType() == AnimParamType::Float)
+        {
+            info.flags = IAnimNode::ESupportedParamFlags(0);
+            info.name = "Value";
+            info.paramType = AnimParamType::Float;
+            info.valueType = AnimValueType::Float;
+            return true;
+        }
+        return false;
     }
-}
 
-void CAnimScriptVarNode::Reflect(AZ::ReflectContext* context)
-{
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    void CAnimScriptVarNode::Animate(SAnimContext& ec)
     {
-        serializeContext->Class<CAnimScriptVarNode, CAnimNode>()
-            ->Version(1);
+        float value = m_value;
+
+        IAnimTrack* pValueTrack = GetTrackForParameter(AnimParamType::Float);
+
+        if (pValueTrack)
+        {
+            if (pValueTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled)
+            {
+                return;
+            }
+
+            pValueTrack->GetValue(ec.time, value);
+        }
+
+        if (value != m_value)
+        {
+            m_value = value;
+        }
     }
-}
+
+    void CAnimScriptVarNode::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CAnimScriptVarNode, CAnimNode>()->Version(1);
+        }
+    }
+
+} // namespace Maestro

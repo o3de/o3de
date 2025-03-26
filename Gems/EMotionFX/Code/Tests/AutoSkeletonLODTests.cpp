@@ -244,7 +244,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AutoSkeletonLOD_Tests,
+    INSTANTIATE_TEST_SUITE_P(AutoSkeletonLOD_Tests,
         AutoSkeletonLODFixture,
             ::testing::ValuesIn(testParams)
         );

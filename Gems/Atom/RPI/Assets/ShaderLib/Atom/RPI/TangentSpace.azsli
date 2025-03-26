@@ -215,8 +215,13 @@ void SurfaceGradientNormalMapping_Init(real3 normalWS, float3 posWS, bool isBack
     float fs = (isBackface && backfaceMode != BACKFACE_MODE_NONE) ? -1.0 : 1.0;
     g_nrmBaseNormal = (fs*renormFactor) * normalWS;
     g_resolveSign = (isBackface && backfaceMode == BACKFACE_MODE_FLIP) ? -1.0 : 1.0; 
+#ifdef CS_SAMPLERS
+    g_dPdx = float3(0, 0, 0);
+    g_dPdy = float3(0, 0, 0);
+#else
     g_dPdx = ddx_fine(posWS);
     g_dPdy = ddy_fine(posWS);
+#endif
 
     //already in world space
     g_sigmaX = g_dPdx - dot(g_dPdx, g_nrmBaseNormal)*g_nrmBaseNormal;
@@ -227,8 +232,13 @@ void SurfaceGradientNormalMapping_Init(real3 normalWS, float3 posWS, bool isBack
 //! Utility function to generate a tangent basis without using explicit tangent/bitangent vectors.
 void SurfaceGradientNormalMapping_GenerateTB(float2 uv, out real3 tangentWS, out real3 bitangentWS)
 {
+#ifdef CS_SAMPLERS
+    float2 dUVdx = float2(0, 0); 
+    float2 dUVdy = float2(0, 0);
+#else
     float2 dUVdx = ddx_fine(uv); 
     float2 dUVdy = ddy_fine(uv);
+#endif
     float det = dot(dUVdx , float2(dUVdy.y, -dUVdy.x)); 
     float signDet = det < 0 ? -1 : 1;
 

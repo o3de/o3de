@@ -653,7 +653,7 @@ namespace UnitTest
         return testCaseName;
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MATH_Frustum, Tests, ::testing::ValuesIn(GenerateFrustumIntersectionTestCases()),
         GenerateFrustumIntersectionTestCaseName);
 

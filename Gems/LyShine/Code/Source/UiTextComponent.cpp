@@ -11,6 +11,7 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
@@ -406,6 +407,7 @@ namespace
             }
             else if (!pImageTag->m_height.empty())
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for reading/writing floats with "." in them
                 imageHeight = AZ::GetMax(0.0f, AZStd::stof(pImageTag->m_height));
             }
 

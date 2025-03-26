@@ -17,7 +17,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Common shared include file to hide compiler/os specific functions from the rest of the code. 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
 	#define __MICROSOFT_COMPILER
 #endif
@@ -82,6 +81,7 @@
 		__cpuid_count(function, subfunction, cpuinfo[0], cpuinfo[1], cpuinfo[2], cpuinfo[3]);
 	}
 
+#if !defined(_xgetbv)
 	FORCE_INLINE unsigned long long _xgetbv(unsigned int index)
 	{
 		unsigned int eax, edx;
@@ -92,6 +92,7 @@
 		);
 		return ((unsigned long long)edx << 32) | eax;
 	}
+#endif
 
 #else
 	#error Unsupported compiler

@@ -302,7 +302,7 @@ namespace ScriptCanvas
 
     Slot::~Slot()
     {
-        VariableNotificationBus::Handler::BusDisconnect();
+        VariableNotificationBus::MultiHandler::BusDisconnect();
     }
 
     Slot& Slot::operator=(const Slot& slot)
@@ -391,7 +391,9 @@ namespace ScriptCanvas
 
             if (m_variable)
             {
-                VariableNotificationBus::Handler::BusConnect(m_variable->GetGraphScopedId());
+                DisconnectVariableNotificationBus();
+
+                VariableNotificationBus::MultiHandler::BusConnect(m_variable->GetGraphScopedId());
             }
             else if (m_node)
             {
@@ -516,7 +518,6 @@ namespace ScriptCanvas
 
         m_variableReference = variableId;
         m_variable = nullptr;
-        VariableNotificationBus::Handler::BusDisconnect();
 
         if (IsDynamicSlot())
         {
@@ -798,7 +799,7 @@ namespace ScriptCanvas
             {
                 return AZ::Failure(AZStd::string::format("%s is a Container type and not a Value type.", ScriptCanvas::Data::GetName(otherType).c_str()));
             }
-        }        
+        }
 
         if (otherSlot.IsDynamicSlot())
         {
@@ -958,6 +959,11 @@ namespace ScriptCanvas
         return m_node->ConstructTransientIdentifier((*this));
     }
 
+    void Slot::OnVariableRenamed(AZStd::string_view variableName)
+    {
+        Rename(variableName);
+    }
+
     void Slot::SetDynamicGroup(const AZ::Crc32& dynamicGroup)
     {
         m_dynamicGroup = dynamicGroup;
@@ -968,4 +974,12 @@ namespace ScriptCanvas
         m_isVisible = isVisible;
     }
 
+    void Slot::DisconnectVariableNotificationBus()
+    {
+        if (VariableNotificationBus::MultiHandler::BusIsConnectedId(m_variable->GetGraphScopedId()))
+        {
+            VariableNotificationBus::MultiHandler::BusDisconnect(m_variable->GetGraphScopedId());
+        }
+    }
 }
+

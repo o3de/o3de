@@ -158,7 +158,7 @@ namespace JsonSerializationTests
         ScopedEnumBitFlagsU64,
         ScopedEnumBitFlagsNoZero
     >;
-    TYPED_TEST_CASE(TypedJsonEnumSerializationTests, EnumTypes);
+    TYPED_TEST_SUITE(TypedJsonEnumSerializationTests, EnumTypes);
 
     TYPED_TEST(TypedJsonEnumSerializationTests, Load_EmptyInstanceOfArrayType_ReturnsDefault)
     {

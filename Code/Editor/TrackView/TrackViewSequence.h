@@ -6,18 +6,18 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSEQUENCE_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSEQUENCE_H
 #pragma once
 
 #include <IEditor.h>
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include "TrackViewAnimNode.h"
 #include "Undo/Undo.h"
+
+#include <AzCore/std/containers/deque.h>
+#include <AzCore/std/containers/vector.h>
 
 struct ITrackViewSequenceListener
 {
@@ -67,12 +67,12 @@ struct ITrackViewSequenceManagerListener
     virtual void OnSequenceRemoved([[maybe_unused]] CTrackViewSequence* pSequence) {}
 };
 
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 //
 // This class represents a IAnimSequence in TrackView and contains
 // the editor side code for changing it
 //
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 class CTrackViewSequence
     : public CTrackViewAnimNode
     , public IUndoManagerListener
@@ -205,8 +205,8 @@ public:
 
     // Returns a vector of pairs that match the XML track nodes in the clipboard to the tracks in the sequence for pasting.
     // It is used by PasteKeysFromClipboard directly and to preview the locations of the to be pasted keys.
-    typedef std::pair<CTrackViewTrack*, XmlNodeRef> TMatchedTrackLocation;
-    std::vector<TMatchedTrackLocation> GetMatchedPasteLocations(XmlNodeRef clipboardContent, CTrackViewAnimNode* pTargetNode, CTrackViewTrack* pTargetTrack);
+    typedef AZStd::pair<CTrackViewTrack*, XmlNodeRef> TMatchedTrackLocation;
+    AZStd::vector<TMatchedTrackLocation> GetMatchedPasteLocations(XmlNodeRef clipboardContent, CTrackViewAnimNode* pTargetNode, CTrackViewTrack* pTargetTrack);
 
     // Adjust the time range
     void AdjustKeysToTimeRange(Range newTimeRange);
@@ -271,15 +271,15 @@ public:
     // Called when the 'Record' button is pressed in the toolbar
     void SetRecording(bool enableRecording);
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     // PropertyEditorEntityChangeNotificationBus handler
     void OnEntityComponentPropertyChanged(AZ::ComponentId /*changedComponentId*/) override;
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
     CTrackViewTrack* FindTrackById(unsigned int trackId);
 
-    std::vector<bool> SaveKeyStates() const;
-    void RestoreKeyStates(const std::vector<bool>& keyStates);
+    AZStd::vector<bool> SaveKeyStates() const;
+    void RestoreKeyStates(const AZStd::vector<bool>& keyStates);
 
     // Helper function to find a sequence by entity id
     static CTrackViewSequence* LookUpSequenceByEntityId(const AZ::EntityId& sequenceId);
@@ -305,8 +305,8 @@ private:
 
     void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
 
-    std::deque<CTrackViewTrack*> GetMatchingTracks(CTrackViewAnimNode* pAnimNode, XmlNodeRef trackNode);
-    void GetMatchedPasteLocationsRec(std::vector<TMatchedTrackLocation>& locations, CTrackViewNode* pCurrentNode, XmlNodeRef clipboardNode);
+    AZStd::deque<CTrackViewTrack*> GetMatchingTracks(CTrackViewAnimNode* pAnimNode, XmlNodeRef trackNode);
+    void GetMatchedPasteLocationsRec(AZStd::vector<TMatchedTrackLocation>& locations, CTrackViewNode* pCurrentNode, XmlNodeRef clipboardNode);
 
     void BeginUndoTransaction() override;
     void EndUndoTransaction() override;
@@ -327,7 +327,7 @@ private:
     bool m_bBoundToEditorObjects = false;
 
     AZStd::intrusive_ptr<IAnimSequence> m_pAnimSequence;
-    std::vector<ITrackViewSequenceListener*> m_sequenceListeners;
+    AZStd::vector<ITrackViewSequenceListener*> m_sequenceListeners;
 
     // Notification queuing
     unsigned int m_selectionRecursionLevel = 0;
@@ -339,7 +339,7 @@ private:
     bool m_bKeysChanged = false;
 };
 
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 class CTrackViewSequenceNotificationContext
 {
 public:
@@ -373,7 +373,7 @@ private:
     CTrackViewSequence* m_pSequence;
 };
 
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 class CTrackViewSequenceNoNotificationContext
 {
 public:
@@ -403,4 +403,3 @@ private:
     // the same camera.
     bool m_bNoNotificationsPreviously;
 };
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSEQUENCE_H

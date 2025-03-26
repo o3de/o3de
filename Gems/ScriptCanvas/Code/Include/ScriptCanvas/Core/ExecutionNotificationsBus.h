@@ -204,11 +204,13 @@ namespace ScriptCanvas
 
         virtual ~LoggableEvent() = default;
 
-        virtual LoggableEvent* Duplicate() const = 0;
-        virtual Timestamp GetTimestamp() const = 0;
-        virtual void SetTimestamp(Timestamp) = 0;
-        virtual AZStd::string ToString() const = 0;
-        virtual void Visit(LoggableEventVisitor& visitor) = 0;
+        LoggableEvent() = default;
+        LoggableEvent(const LoggableEvent& rhs) = default;
+
+        virtual Timestamp GetTimestamp() const { return Timestamp(); }
+        virtual void SetTimestamp(Timestamp) {}
+        virtual AZStd::string ToString() const { return {}; }
+        virtual void Visit(LoggableEventVisitor&) {}
     };
 
     template<typename t_Tag, typename t_Parent>
@@ -241,11 +243,6 @@ namespace ScriptCanvas
             : t_Parent(parent)
             , m_timestamp(AZStd::GetTimeUTCMilliSecond())
         {}
-
-        LoggableEvent* Duplicate() const override
-        {
-            return aznew ThisType(*this);
-        }
 
         Timestamp GetTimestamp() const override
         {
@@ -422,16 +419,6 @@ namespace ScriptCanvas
             , m_timestamp(AZStd::GetTimeUTCMilliSecond())
         {}
 
-        //TaggedDataValue(const Signal& signal)
-        //    : Signal(signal)
-        //    , m_timestamp(AZStd::GetTimeUTCMilliSecond())
-        //{}
-
-        LoggableEvent* Duplicate() const override
-        {
-            return aznew TaggedDataValue<t_Tag>(*this);
-        }
-
         Timestamp GetTimestamp() const override
         {
             return m_timestamp;
@@ -472,8 +459,6 @@ namespace ScriptCanvas
         {}
 
         virtual ~ExecutionThreadBeginning() = default;
-
-        LoggableEvent* Duplicate() const override;
 
         Timestamp GetTimestamp() const override;
 
@@ -518,7 +503,6 @@ namespace ScriptCanvas
         NodeStateChange();
         NodeStateChange(const NodeStateChange&) = default;
 
-        LoggableEvent* Duplicate() const override;
         AZStd::string ToString() const override;
 
         void Visit(LoggableEventVisitor& visitor) override;
@@ -543,8 +527,6 @@ namespace ScriptCanvas
         AnnotateNodeSignal();
         AnnotateNodeSignal(const AnnotateNodeSignal&) = default;
         AnnotateNodeSignal(const GraphInfo& graphInfo, AnnotationLevel annotationLevel, AZStd::string_view annotation, const AZ::NamedEntityId& assetId);
-
-        LoggableEvent* Duplicate() const override;
 
         AZStd::string ToString() const override;
 

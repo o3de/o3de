@@ -97,6 +97,8 @@ namespace ScriptCanvasBuilder
     {
         using namespace ScriptCanvasBuilder;
 
+        m_buildResultsByHandle.clear();
+
         BuilderSourceStorage result;
 
         AZ::ApplicationTypeQuery appType;

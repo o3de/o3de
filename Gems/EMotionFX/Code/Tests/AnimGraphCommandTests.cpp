@@ -135,7 +135,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<bool>
     {
     };
-    INSTANTIATE_TEST_CASE_P(LoadAnimGraphCommandTests, LoadAnimGraphCommandTestsBoolParam, ::testing::Bool());
+    INSTANTIATE_TEST_SUITE_P(LoadAnimGraphCommandTests, LoadAnimGraphCommandTestsBoolParam, ::testing::Bool());
 
     TEST_F(LoadAnimGraphCommandTests, DISABLED_LoadAnimGraph)
     {

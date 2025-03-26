@@ -318,7 +318,7 @@ namespace PhysX
         FixedJointConfiguration, 
         BallJointConfiguration, 
         HingeJointConfiguration>;
-    TYPED_TEST_CASE(PhysXJointsApiTest, JointTypes);
+    TYPED_TEST_SUITE(PhysXJointsApiTest, JointTypes);
 
     TYPED_TEST(PhysXJointsApiTest, Joint_ChildFollowsParent)
     {

@@ -217,6 +217,7 @@ namespace AZ::Metal
                         depthAttachment.storeAction = resolveStoreAction;
                         //Metal drivers support min/max depth resolve filters but there is no way to set them at a higher level yet.
                     }
+                    break;
                 }
                 case RHI::ScopeAttachmentUsage::SubpassInput:
                 {

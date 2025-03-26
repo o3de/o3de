@@ -264,7 +264,7 @@ namespace PhysX::Pipeline
 
     MeshAssetData::ShapeConfigurationPair FitPrimitiveShape(
         [[maybe_unused]] const AZStd::string& meshName,
-        const AZStd::vector<Vec3>& vertices,
+        const AZStd::vector<AZ::Vector3>& vertices,
         const double volumeTermWeight,
         const PrimitiveShapeTarget targetShape
     )
@@ -289,8 +289,8 @@ namespace PhysX::Pipeline
                     vertices.begin(),
                     vertices.end(),
                     verticesConverted.begin(),
-                    [&mean] (const Vec3& vertex) {
-                        Vector converted{{ vertex[0], vertex[1], vertex[2] }};
+                    [&mean] (const AZ::Vector3& vertex) {
+                        Vector converted{{ vertex.GetX(), vertex.GetY(), vertex.GetZ() }};
                         mean = mean + converted;
                         return converted;
                     }

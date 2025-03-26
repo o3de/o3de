@@ -61,6 +61,11 @@ namespace UnitTest
         undoNode.Redo();
         PropagateAllTemplateChanges();
 
+        // Note for the following code and all other code in this file, 
+        // PropagateAllTemplateChanges() may delete and re-create entities, it is not safe
+        // to hold onto entity* pointers across this call.  You must fetch them by ID again.
+
+        wheelEntity = AzToolsFramework::GetEntityById(wheelEntityId);
         ASSERT_FLOAT_EQ(10.0f, wheelEntity->GetTransform()->GetWorldX());
         ASSERT_TRUE(wheelEntity->FindComponent<PrefabTestComponent>());
 
@@ -68,6 +73,7 @@ namespace UnitTest
         undoNode.Undo();
         PropagateAllTemplateChanges();
 
+        wheelEntity = AzToolsFramework::GetEntityById(wheelEntityId);
         ASSERT_FLOAT_EQ(0.0f, wheelEntity->GetTransform()->GetWorldX());
         ASSERT_FALSE(wheelEntity->FindComponent<PrefabTestComponent>());
 
@@ -75,6 +81,7 @@ namespace UnitTest
         undoNode.Redo();
         PropagateAllTemplateChanges();
 
+        wheelEntity = AzToolsFramework::GetEntityById(wheelEntityId);
         ASSERT_FLOAT_EQ(10.0f, wheelEntity->GetTransform()->GetWorldX());
         ASSERT_TRUE(wheelEntity->FindComponent<PrefabTestComponent>());
     }
@@ -122,6 +129,11 @@ namespace UnitTest
         undoNode.CaptureAndRedo({ wheelEntity }, carInstance->get(), levelRootInstance->get());
         PropagateAllTemplateChanges();
 
+        // Note for the following code and all other code in this file, 
+        // PropagateAllTemplateChanges() may delete and re-create entities, it is not safe
+        // to hold onto entity* pointers across this call.  You must fetch them by ID again.
+
+        wheelEntity = AzToolsFramework::GetEntityById(wheelEntityId);
         ASSERT_TRUE(overrideInterface->AreOverridesPresent(wheelEntityId));
         ASSERT_FLOAT_EQ(10.0f, wheelEntity->GetTransform()->GetWorldX());
         ASSERT_TRUE(wheelEntity->FindComponent<PrefabTestComponent>());
@@ -130,6 +142,7 @@ namespace UnitTest
         undoNode.Undo();
         PropagateAllTemplateChanges();
 
+        wheelEntity = AzToolsFramework::GetEntityById(wheelEntityId);
         ASSERT_FALSE(overrideInterface->AreOverridesPresent(wheelEntityId));
         ASSERT_FLOAT_EQ(0.0f, wheelEntity->GetTransform()->GetWorldX());
         ASSERT_FALSE(wheelEntity->FindComponent<PrefabTestComponent>());
@@ -138,6 +151,7 @@ namespace UnitTest
         undoNode.Redo();
         PropagateAllTemplateChanges();
 
+        wheelEntity = AzToolsFramework::GetEntityById(wheelEntityId);
         ASSERT_TRUE(overrideInterface->AreOverridesPresent(wheelEntityId));
         ASSERT_FLOAT_EQ(10.0f, wheelEntity->GetTransform()->GetWorldX());
         ASSERT_TRUE(wheelEntity->FindComponent<PrefabTestComponent>());
@@ -188,6 +202,11 @@ namespace UnitTest
         undoNode.CaptureAndRedo({ addedEntity }, carInstance->get(), levelRootInstance->get());
         PropagateAllTemplateChanges();
 
+        // Note for the following code and all other code in this file, 
+        // PropagateAllTemplateChanges() may delete and re-create entities, it is not safe
+        // to hold onto entity* pointers across this call.  You must fetch them by ID again.
+
+        addedEntity = AzToolsFramework::GetEntityById(addedEntityId);
         ASSERT_TRUE(overrideInterface->AreOverridesPresent(addedEntityId));
         ASSERT_FLOAT_EQ(10.0f, addedEntity->GetTransform()->GetWorldX());
         ASSERT_TRUE(addedEntity->FindComponent<PrefabTestComponent>());
@@ -196,6 +215,7 @@ namespace UnitTest
         undoNode.Undo();
         PropagateAllTemplateChanges();
 
+        addedEntity = AzToolsFramework::GetEntityById(addedEntityId);
         ASSERT_TRUE(overrideInterface->AreOverridesPresent(addedEntityId)); // The added entity itself is an override edit
         ASSERT_FLOAT_EQ(0.0f, addedEntity->GetTransform()->GetWorldX());
         ASSERT_FALSE(addedEntity->FindComponent<PrefabTestComponent>());
@@ -204,6 +224,7 @@ namespace UnitTest
         undoNode.Redo();
         PropagateAllTemplateChanges();
 
+        addedEntity = AzToolsFramework::GetEntityById(addedEntityId);
         ASSERT_TRUE(overrideInterface->AreOverridesPresent(addedEntityId));
         ASSERT_FLOAT_EQ(10.0f, addedEntity->GetTransform()->GetWorldX());
         ASSERT_TRUE(addedEntity->FindComponent<PrefabTestComponent>());

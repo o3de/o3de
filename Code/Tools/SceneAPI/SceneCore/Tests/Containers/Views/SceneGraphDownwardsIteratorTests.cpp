@@ -84,7 +84,7 @@ namespace AZ
                     using Traversal = T;
                 };
 
-                TYPED_TEST_CASE_P(SceneGraphDownwardsIteratorContext);
+                TYPED_TEST_SUITE_P(SceneGraphDownwardsIteratorContext);
 
                 TYPED_TEST_P(SceneGraphDownwardsIteratorContext, MakeSceneGraphDownwardsIterator_FunctionComparedWithExplicitlyDeclaredIterator_IteratorsAreEqual)
                 {
@@ -317,7 +317,7 @@ namespace AZ
                     EXPECT_EQ(3, value->m_id);
                 }
 
-                REGISTER_TYPED_TEST_CASE_P(SceneGraphDownwardsIteratorContext,
+                REGISTER_TYPED_TEST_SUITE_P(SceneGraphDownwardsIteratorContext,
                     MakeSceneGraphDownwardsIterator_FunctionComparedWithExplicitlyDeclaredIterator_IteratorsAreEqual,
                     MakeSceneGraphDownwardsIterator_ExtendedFunctionComparedWithExplicitlyDeclaredIterator_IteratorsAreEqual,
                     MakeSceneGraphDownwardsIterator_NodeAndHierarchyVersions_IteratorsAreEqual,
@@ -341,7 +341,7 @@ namespace AZ
                     );
 
                 using Group = ::testing::Types<DepthFirst, BreadthFirst>;
-                INSTANTIATE_TYPED_TEST_CASE_P(SceneGraphDownwardsIteratorTests, SceneGraphDownwardsIteratorContext, Group);
+                INSTANTIATE_TYPED_TEST_SUITE_P(SceneGraphDownwardsIteratorTests, SceneGraphDownwardsIteratorContext, Group);
 
                 TEST_F(SceneGraphDownwardsIteratorTest, DepthFirst_IncrementOperator_MoveDownTheTree_IteratorReturnsParentOfPreviousIteration)
                 {

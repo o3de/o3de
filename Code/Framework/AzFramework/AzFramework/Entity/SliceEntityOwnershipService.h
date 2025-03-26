@@ -150,6 +150,9 @@ namespace AzFramework
     private:
         EntityList GetRootSliceEntities();
 
+        // Checks if the root and root component is available, asserts if its not, and returns true if things are OK to proceed, false otherwise.
+        bool CheckAndAssertRootComponentIsAvailable();
+
         /// Helper function to send OnSliceInstantiationFailed events.
         static void DispatchOnSliceInstantiationFailed(const SliceInstantiationTicket& ticket,
             const AZ::Data::AssetId& assetId, bool canceled);

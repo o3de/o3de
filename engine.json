@@ -113,6 +113,7 @@
     ],
     "templates": [
         "Templates/AssetGem",
+        "Templates/AddTestsToProject",
         "Templates/CppToolGem",
         "Templates/DefaultComponent",
         "Templates/DefaultGem",

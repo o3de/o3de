@@ -101,29 +101,34 @@ namespace EMotionFX
                 const auto innerMatcher = ::testing::SafeMatcherCast<InnerMatcherArg>(KeyIsClose(0.01f));
                 if (!innerMatcher.MatchAndExplain(::testing::make_tuple(gotKey, expectedKey), result_listener))
                 {
-                    *result_listener << "where the value pair at index #" << i << " don't match\n";
-
-                    const uint32 numContextLines = 2;
-                    const size_t beginContextLines = i > numContextLines ? i - numContextLines : 0;
-                    const size_t endContextLines = i > commonSize - numContextLines - 1 ? commonSize : i + numContextLines + 1;
-                    for (size_t contextIndex = beginContextLines; contextIndex < endContextLines; ++contextIndex)
+                    // The listener may be uninterested in actually getting an explanation, in which case, variables like
+                    // result_listener->stream() is null, and operator << on it does nothing..
+                    if (result_listener->IsInterested())
                     {
-                        const bool contextLineMatches = ::testing::Matches(innerMatcher)(::testing::make_tuple(got.GetKey(contextIndex), m_expected.GetKey(contextIndex)));
-                        if (!contextLineMatches)
+                        *result_listener << "where the value pair at index #" << i << " don't match\n";
+
+                        const uint32 numContextLines = 2;
+                        const size_t beginContextLines = i > numContextLines ? i - numContextLines : 0;
+                        const size_t endContextLines = i > commonSize - numContextLines - 1 ? commonSize : i + numContextLines + 1;
+                        for (size_t contextIndex = beginContextLines; contextIndex < endContextLines; ++contextIndex)
                         {
-                            *result_listener << "\033[0;31m"; // red
-                        }
-                        *result_listener << contextIndex << ": Expected: ";
-                        PrintTo(m_expected.GetKey(contextIndex), result_listener->stream());
-                        *result_listener << "\n" << contextIndex << ":   Actual: ";
-                        PrintTo(got.GetKey(contextIndex), result_listener->stream());
-                        if (!contextLineMatches)
-                        {
-                            *result_listener << "\033[0;m";
-                        }
-                        if (contextIndex != endContextLines-1)
-                        {
-                            *result_listener << "\n";
+                            const bool contextLineMatches = ::testing::Matches(innerMatcher)(::testing::make_tuple(got.GetKey(contextIndex), m_expected.GetKey(contextIndex)));
+                            if (!contextLineMatches)
+                            {
+                                *result_listener << "\033[0;31m"; // red
+                            }
+                            *result_listener << contextIndex << ": Expected: ";
+                            PrintTo(m_expected.GetKey(contextIndex), result_listener->stream());
+                            *result_listener << "\n" << contextIndex << ":   Actual: ";
+                            PrintTo(got.GetKey(contextIndex), result_listener->stream());
+                            if (!contextLineMatches)
+                            {
+                                *result_listener << "\033[0;m";
+                            }
+                            if (contextIndex != endContextLines-1)
+                            {
+                                *result_listener << "\n";
+                            }
                         }
                     }
                     return false;
@@ -294,7 +299,7 @@ namespace EMotionFX
         recording->Destroy();
     }
 
-    INSTANTIATE_TEST_CASE_P(DISABLED_TestPoses, PoseComparisonFixture,
+    INSTANTIATE_TEST_SUITE_P(DISABLED_TestPoses, PoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
@@ -311,7 +316,7 @@ namespace EMotionFX
         )
     );
 
-    INSTANTIATE_TEST_CASE_P(DISABLED_TestPoseComparison, TestPoseComparisonFixture,
+    INSTANTIATE_TEST_SUITE_P(DISABLED_TestPoseComparison, TestPoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
                 "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",

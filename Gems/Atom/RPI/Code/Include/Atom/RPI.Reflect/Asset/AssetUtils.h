@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
@@ -193,8 +194,26 @@ namespace AZ
             //! multiple ebus functions to handle callbacks. It will invoke the provided callback function when the
             //! asset loads or errors. It will stop listening on destruction, so it should be held onto until the
             //! callback fires.
+            //! This class will always invoke the callback during OnSystemTick() to prevent
+            //! deadlocks related with StreamingImage assets. Here is a quick summary of the deadlock
+            //! this class avoids:
+             //** Main Thread                | ** Secondary Copy Queue Thread                                                
+             //AssetBus::lock(mutex)         |                                                 
+             //AssetBus::OnAssetReady        |                                                 
+             //StreamingImage::FindOrCreate  |                                                 
+             //AsyncUploadQueue::queueWork   |                                                 
+             //Wait For Work Complete        |                                                 
+             //                              |                      
+             //                              | workQueue signaled                              
+             //                              | Pop Work                                        
+             //                              | StreaminImage::Destructor()                     
+             //                              | AssetBus::Disconnect()                          
+             //                              | AssetBus::lock(mutex) <- Deadlocked             
+             //                                                                                                           
             AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-            class ATOM_RPI_REFLECT_API AsyncAssetLoader : private Data::AssetBus::Handler
+            class ATOM_RPI_REFLECT_API AsyncAssetLoader :
+                private Data::AssetBus::Handler,
+                private SystemTickBus::Handler
             {
                 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
@@ -222,6 +241,12 @@ namespace AZ
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
+                // SystemTickBus::Handler overrides..
+                void OnSystemTick() override;
+
+                // This function should never be called directly under the scope
+                // of any of the AssetBus::OnAssetXXXX() functions to avoid deadlocks
+                // when working with StreaminImage assets.
                 void HandleCallback(Data::Asset<Data::AssetData> asset);
 
                 AssetCallback m_callback;

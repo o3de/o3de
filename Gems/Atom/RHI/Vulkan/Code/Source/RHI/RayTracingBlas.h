@@ -46,11 +46,18 @@ namespace AZ
             // RHI::DeviceRayTracingBlas overrides...
             virtual bool IsValid() const override { return GetBuffers().m_accelerationStructure != VK_NULL_HANDLE; }
 
+            uint64_t GetAccelerationStructureByteSize() override;
+
         private:
             RayTracingBlas() = default;
 
             // RHI::DeviceRayTracingBlas overrides...
             RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingBlasDescriptor* descriptor, const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            RHI::ResultCode CreateCompactedBuffersInternal(
+                RHI::Device& device,
+                RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+                uint64_t compactedBufferSize,
+                const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
             static VkBuildAccelerationStructureFlagsKHR GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags);
 

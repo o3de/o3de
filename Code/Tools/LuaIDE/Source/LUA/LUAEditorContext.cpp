@@ -645,7 +645,7 @@ namespace LUAEditor
 
             if (bp.m_assetName == assetIdString)
             {
-                if (bp.m_documentLine == lineNumber - 1) // -1 offset is counter to the +1 line numbering scheme used by the LUA editor
+                if (bp.m_documentLine == lineNumber)
                 {
                     DeleteBreakpoint(bp.m_breakpointId);
                     LUABreakpointTrackerMessages::Bus::Broadcast(

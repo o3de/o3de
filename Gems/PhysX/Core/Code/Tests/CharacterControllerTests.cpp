@@ -356,7 +356,7 @@ namespace PhysX
         EXPECT_EQ(errorHandler.GetErrorCount(), 1);
     }
 
-    INSTANTIATE_TEST_CASE_P(PhysXCharacters, CharacterControllerFixture, ::testing::ValuesIn(controllerShapeTypes));
+    INSTANTIATE_TEST_SUITE_P(PhysXCharacters, CharacterControllerFixture, ::testing::ValuesIn(controllerShapeTypes));
 
     TEST_F(PhysXDefaultWorldTest, CharacterController_ResizingCapsuleControllerBelowTwiceRadius_EmitsError)
     {

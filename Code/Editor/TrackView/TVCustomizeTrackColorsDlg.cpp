@@ -19,6 +19,9 @@
 #include <QMessageBox>
 #include <QSettings>
 
+// AzCore
+#include <AzCore/std/algorithm.h>
+
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 
@@ -114,7 +117,7 @@ namespace
     const int kMutedEntryIndex = arraysize(g_trackEntries) - 1;
 }
 
-std::map<CAnimParamType, QColor> CTVCustomizeTrackColorsDlg::s_trackColors;
+AZStd::map<CAnimParamType, QColor> CTVCustomizeTrackColorsDlg::s_trackColors;
 QColor CTVCustomizeTrackColorsDlg::s_colorForDisabled;
 QColor CTVCustomizeTrackColorsDlg::s_colorForMuted;
 QColor CTVCustomizeTrackColorsDlg::s_colorForOthers;
@@ -148,7 +151,7 @@ void CTVCustomizeTrackColorsDlg::OnInitDialog()
     QRect buttonRect(QPoint(180, 30), QPoint(280, 50));
     // Create a label and a color button for each track.
     int col = 0, i = 0;
-    std::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
+    AZStd::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
     {
         const QString labelText = entry.name;
 
@@ -163,20 +166,20 @@ void CTVCustomizeTrackColorsDlg::OnInitDialog()
 
             if(entry.paramType.GetType() == AnimParamType::User)
             {
-                assert(kOthersEntryIndex <= i);
+                AZ_Assert(kOthersEntryIndex <= i, "Button color is %i is out of range", i);
                 if (i == kOthersEntryIndex)
-                    {
+                {
                     m_colorButtons[i]->SetColor(s_colorForOthers);
-                    }
-                else if(i == kDisabledEntryIndex)
-                    {
-                    m_colorButtons[i]->SetColor(s_colorForDisabled);
-                    }
-                else if(i == kMutedEntryIndex)
-                    {
-                    m_colorButtons[i]->SetColor(s_colorForMuted);
-                    }
                 }
+                else if (i == kDisabledEntryIndex)
+                {
+                    m_colorButtons[i]->SetColor(s_colorForDisabled);
+                }
+                else if (i == kMutedEntryIndex)
+                {
+                    m_colorButtons[i]->SetColor(s_colorForMuted);
+                }
+            }
             else
             {
                 m_colorButtons[i]->SetColor(s_trackColors[entry.paramType]);
@@ -212,7 +215,7 @@ void CTVCustomizeTrackColorsDlg::accept()
 void CTVCustomizeTrackColorsDlg::OnApply()
 {
     int i = 0;
-    std::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
+    AZStd::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
     {
         if(entry.paramType.GetType() != AnimParamType::User)
         {
@@ -231,7 +234,7 @@ void CTVCustomizeTrackColorsDlg::OnApply()
 void CTVCustomizeTrackColorsDlg::OnResetAll()
 {
     int i = 0;
-    std::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
+    AZStd::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
     {
         const QString labelText = entry.name;
         if(!labelText.isEmpty())
@@ -249,8 +252,8 @@ void CTVCustomizeTrackColorsDlg::SaveColors(const char* sectionName)
     {
         settings.beginGroup(g);
     }
-    std::for_each(begin(s_trackColors), end(s_trackColors),
-    [&](const std::pair<CAnimParamType, QColor>& pair)
+    AZStd::for_each(begin(s_trackColors), end(s_trackColors),
+    [&](const AZStd::pair<CAnimParamType, QColor>& pair)
     {
         const QString trackColorEntry = QString::fromLatin1("%1%2").arg(TRACKCOLOR_ENTRY_PREFIX).arg(static_cast<int>(pair.first.GetType()));
         settings.setValue(trackColorEntry, pair.second.rgb());
@@ -268,7 +271,7 @@ void CTVCustomizeTrackColorsDlg::LoadColors(const char* sectionName)
     {
         settings.beginGroup(g);
     }
-    std::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
+    AZStd::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
     {
         if (entry.paramType.GetType() != AnimParamType::User)
         {
@@ -315,7 +318,7 @@ void CTVCustomizeTrackColorsDlg::Export(const QString& fullPath) const
     XmlNodeRef customTrackColorsNode = XmlHelpers::CreateXmlNode("customtrackcolors");
 
     int i = 0;
-    std::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
+    AZStd::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const STrackEntry& entry)
     {
         if(entry.paramType.GetType() != AnimParamType::User)
         {

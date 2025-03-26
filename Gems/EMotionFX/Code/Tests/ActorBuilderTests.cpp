@@ -237,5 +237,5 @@ namespace EMotionFX
         EXPECT_TRUE(emfxLocal.IsClose(builderLocal));
     }
 
-    INSTANTIATE_TEST_CASE_P(ActorBuilder_Transforms, ActorBuilderPipelineTransformTestFixture, ::testing::ValuesIn(EMotionFX::Matrix3x4s));
+    INSTANTIATE_TEST_SUITE_P(ActorBuilder_Transforms, ActorBuilderPipelineTransformTestFixture, ::testing::ValuesIn(EMotionFX::Matrix3x4s));
 } // namespace EMotionFX

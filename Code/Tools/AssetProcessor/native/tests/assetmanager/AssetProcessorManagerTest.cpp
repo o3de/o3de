@@ -4815,7 +4815,7 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnly_MultipleJobs_EmitOK)
 }
 
 
-TEST_F(AssetProcessorManagerTest, SourceFile_With_NonASCII_Characters_Fail_Job_OK)
+TEST_F(AssetProcessorManagerTest, SourceFile_With_NonASCII_Characters_Job_OK)
 {
     // This test ensures that asset processor manager detects a source file that has non-ASCII characters
     // and sends a notification for a dummy autofail job.
@@ -4839,15 +4839,15 @@ TEST_F(AssetProcessorManagerTest, SourceFile_With_NonASCII_Characters_Fail_Job_O
     const ScanFolderInfo* scanFolder = m_config->GetScanFolderByPath(watchFolderPath);
     ASSERT_NE(scanFolder, nullptr);
 
-    QString folderPath(m_assetRootDir.absoluteFilePath("subfolder1/Test\xD0"));
+    QString folderPath(m_assetRootDir.absoluteFilePath(u8"subfolder1/Test\u2133")); // u+2133 -> "Script Capital M" unicode character
     QDir folderPathDir(folderPath);
-    QString absPath(folderPathDir.absoluteFilePath("Test.txt"));
+    QString absPath(folderPathDir.absoluteFilePath(u8"Test\u21334.txt"));
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absPath, QString("test\n")));
 
     m_assetProcessorManager.get()->AssessAddedFile(absPath);
 
     ASSERT_TRUE(BlockUntilIdle(5000));
-    EXPECT_EQ(failedjobDetails.m_autoFail, true);
+    EXPECT_EQ(failedjobDetails.m_autoFail, false);
     EXPECT_EQ(failedjobDetails.m_jobEntry.GetAbsoluteSourcePath(), absPath);
 
     // folder delete notification

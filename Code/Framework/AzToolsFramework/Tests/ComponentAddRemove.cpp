@@ -1414,7 +1414,9 @@ namespace UnitTest
         ASSERT_EQ(pendingComponents.size(), 1);
 
         // the boots component should be flagged as invalid, since our entity was not activated
-        EntityCompositionRequests::ScrubEntityResults& resultForTestEntity = scrubResults.GetValue()[entities[0]->GetId()];
+        // Note that this copies the invalidated / validated components array into resultForTestEntity, rather than references
+        // as the reference will later become invalid as we reset scrubResults.
+        EntityCompositionRequests::ScrubEntityResults resultForTestEntity = scrubResults.GetValue()[entities[0]->GetId()];
         ASSERT_EQ(resultForTestEntity.m_invalidatedComponents.size(), 1);
 
         // Don't actually want to keep the component in the pending set, so that we can validate the initial problem, so add it back onto the entity

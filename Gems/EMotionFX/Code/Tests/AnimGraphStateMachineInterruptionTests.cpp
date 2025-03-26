@@ -380,7 +380,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphStateMachine_InterruptionTest,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphStateMachine_InterruptionTest,
         AnimGraphStateMachine_InterruptionFixture,
             ::testing::ValuesIn(animGraphStateMachineInterruptionTestData)
         );
@@ -558,7 +558,7 @@ namespace EMotionFX
         },
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphStateMachine_InterruptionPropertiesTest,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphStateMachine_InterruptionPropertiesTest,
         AnimGraphStateMachine_InterruptionPropertiesFixture,
             ::testing::ValuesIn(animGraphStateMachineInterruptionPropertiesTestData)
         );

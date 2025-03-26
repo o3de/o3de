@@ -115,16 +115,6 @@ SAnimContext::SAnimContext()
 }
 
 
-// SCameraParams member functions
-
-SCameraParams::SCameraParams()
-{
-    fov = 0.0f;
-    nearZ = DEFAULT_NEAR;
-    justActivated = false;
-}
-
-
 // IAnimTrack member definitions
 AZ_TYPE_INFO_WITH_NAME_IMPL(IAnimTrack, "IAnimTrack", "{AA0D5170-FB28-426F-BA13-7EFF6BB3AC67}");
 AZ_RTTI_NO_TYPE_INFO_IMPL(IAnimTrack);

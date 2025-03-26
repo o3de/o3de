@@ -1557,6 +1557,7 @@ namespace ScriptCanvasEditor
         AZ::Uuid assetId = AZ::Uuid::CreateRandom();
         auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(SourceHandle(graph, assetId), assetPath);
         SourceHandle handle = relativeOption ? *relativeOption : SourceHandle(graph, assetId);
+        handle.SetSuggestedFileName(assetPath);
 
         outTabIndex = InsertTabForAsset(assetPath, handle, tabIndex);
 
@@ -1652,7 +1653,7 @@ namespace ScriptCanvasEditor
         bool isValidFileName = false;
 
         AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
-        projectSourcePath /= "ScriptCanvas//";
+        projectSourcePath /= "Assets/ScriptCanvas";
         QString selectedFile;
 
         if (save == Save::InPlace)
@@ -1690,41 +1691,38 @@ namespace ScriptCanvasEditor
 
         while (!isValidFileName)
         {
-            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), suggestedDirectoryPath.data(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"));
+            AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
+
+            QDir dir(suggestedDirectoryPath.c_str());
+            if (!dir.exists())
+            {
+                auto result = AZ::IO::SystemFile::CreateDir(suggestedDirectoryPath.c_str());
+                if (!result)
+                {
+                    AZ_Error("Script Canvas", false, "Failed to make new folder: %s", suggestedDirectoryPath.c_str());
+                    return false;
+                }
+            }
+
+            AZ::IO::FixedMaxPath fullPath = suggestedDirectoryPath.c_str();
+            AZStd::string suggestedFileName = sourceHandle.GetSuggestedFileName() + SourceDescription::GetFileExtension();
+            fullPath /= suggestedFileName;
+
+            QString localSelectedFilter;
+            QFileDialog::Options options;
+            QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
+
+            selectedFile = filePath.toUtf8().toStdString().c_str();
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.
-            if (!selectedFile.isEmpty())
+            if (selectedFile.isEmpty())
             {
-                AZStd::string filePath = selectedFile.toUtf8().data();
-
-                if (!AZ::StringFunc::EndsWith(filePath, SourceDescription::GetFileExtension(), false))
-                {
-                    filePath += SourceDescription::GetFileExtension();
-                }
-
-                AZStd::string fileName;
-
-                if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
-                {
-                    isValidFileName = !(fileName.empty());
-                    if (isValidFileName)
-                    {
-                        if (AzFramework::StringFunc::FirstCharacter(fileName.c_str()) >= '0' &&
-                            AzFramework::StringFunc::FirstCharacter(fileName.c_str()) <= '9')
-                        {
-                            QMessageBox::warning(this, QObject::tr("Unable to Save"), QObject::tr("File name cannot start with a number"));
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
-                }
+                QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
             }
             else
             {
+                isValidFileName = true;
                 break;
             }
         }
@@ -1732,7 +1730,6 @@ namespace ScriptCanvasEditor
         if (isValidFileName)
         {
             AZStd::string internalStringFile = selectedFile.toUtf8().data();
-
 
             if (!AZ::StringFunc::EndsWith(internalStringFile, SourceDescription::GetFileExtension(), false))
             {

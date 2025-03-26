@@ -6,7 +6,8 @@
 #
 #
 
-if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+# This gem itself is a test module.
+if(NOT PAL_TRAIT_BUILD_HOST_TOOLS OR NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     return()
 endif()
 

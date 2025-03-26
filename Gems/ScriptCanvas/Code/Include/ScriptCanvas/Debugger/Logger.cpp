@@ -34,7 +34,9 @@ namespace ScriptCanvas
 
         void Logger::ClearLog()
         {
-            m_logAsset.GetData().Clear();
+#if defined(SC_EXECUTION_TRACE_ENABLED)
+            m_logData.m_events.clear();
+#endif // SC_EXECUTION_TRACE_ENABLED
         }
 
         void Logger::ClearLogExecutionOverride()
@@ -42,9 +44,9 @@ namespace ScriptCanvas
             m_logExecutionOverrideEnabled = false;
         }
 
-        void Logger::Connected(const ScriptCanvas::Debugger::Target& target)
+        void Logger::Connected(ScriptCanvas::Debugger::Target& target)
         {
-            m_target = target;
+            m_target = &target;
         }
 
         AZ::Data::Asset<ExecutionLogAsset> Logger::LoadFromRelativePath([[maybe_unused]] AZStd::string_view path)
@@ -85,7 +87,10 @@ namespace ScriptCanvas
 #if defined(SC_EXECUTION_TRACE_ENABLED) 
             AZ::IO::FixedMaxPath fullpath = ExecutionLogAsset::GetDefaultDirectoryPath() / path;
 
-            AZ_VerifyError("ScriptCanvas", AZ::Utils::SaveObjectToFile(fullpath.String(), AZ::DataStream::ST_XML, &m_logAsset),
+            ExecutionLogAsset logAsset;
+            logAsset.SetData(m_logData);
+
+            AZ_VerifyError("ScriptCanvas", AZ::Utils::SaveObjectToFile(fullpath.String(), AZ::DataStream::ST_XML, &logAsset),
                 "File failed to save: %s", fullpath.c_str());
 #endif
         }

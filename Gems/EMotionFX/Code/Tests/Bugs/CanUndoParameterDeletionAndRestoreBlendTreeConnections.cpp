@@ -184,5 +184,5 @@ namespace EMotionFX
         Run();
     };
 
-    INSTANTIATE_TEST_CASE_P(UndoParameterDeletionTests, UndoParameterDeletionTests, ::testing::Values(prepareLY92860Commands));
+    INSTANTIATE_TEST_SUITE_P(UndoParameterDeletionTests, UndoParameterDeletionTests, ::testing::Values(prepareLY92860Commands));
 } // EMotionFX

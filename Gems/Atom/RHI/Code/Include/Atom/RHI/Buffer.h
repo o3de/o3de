@@ -42,16 +42,13 @@ namespace AZ::RHI
         //! Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
-        Ptr<BufferView> BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
 
         //! Get the hash associated with the Buffer
         const HashValue64 GetHash() const;
 
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
-
-        //! Returns true if the DeviceResourceView is in the cache of all single device buffers
-        bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
 
     protected:
         void SetDescriptor(const BufferDescriptor& descriptor);
@@ -61,64 +58,5 @@ namespace AZ::RHI
 
         //! The RHI descriptor for this Buffer.
         BufferDescriptor m_descriptor;
-    };
-
-    //! A BufferView is a light-weight representation of a view onto a multi-device buffer.
-    //! It holds a raw pointer to a multi-device buffer as well as a BufferViewDescriptor
-    //! Using both, single-device BufferViews can be retrieved
-    class BufferView : public ResourceView
-    {
-    public:
-        AZ_RTTI(BufferView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", ResourceView);
-        virtual ~BufferView() = default;
-
-        BufferView(const RHI::Buffer* buffer, BufferViewDescriptor descriptor, MultiDevice::DeviceMask deviceMask)
-            : m_buffer{ buffer }
-            , m_descriptor{ descriptor }
-            , m_deviceMask{ deviceMask }
-        {
-        }
-
-        //! Given a device index, return the corresponding DeviceBufferView for the selected device
-        const RHI::Ptr<RHI::DeviceBufferView> GetDeviceBufferView(int deviceIndex) const;
-
-        //! Return the contained multi-device buffer
-        const RHI::Buffer* GetBuffer() const
-        {
-            return m_buffer.get();
-        }
-
-        //! Return the contained BufferViewDescriptor
-        const BufferViewDescriptor& GetDescriptor() const
-        {
-            return m_descriptor;
-        }
-
-        AZStd::unordered_map<int, uint32_t> GetBindlessReadIndex() const;
-
-        const Resource* GetResource() const override
-        {
-            return m_buffer.get();
-        }
-
-        const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
-        {
-            return GetDeviceBufferView(deviceIndex).get();
-        }
-
-    private:
-        //! Safe-guard access to DeviceBufferView cache during parallel access
-        mutable AZStd::mutex m_bufferViewMutex;
-        //! A raw pointer to a multi-device buffer
-        ConstPtr<RHI::Buffer> m_buffer;
-        //! The corresponding BufferViewDescriptor for this view.
-        BufferViewDescriptor m_descriptor;
-        //! The device mask of the buffer stored for comparison to figure out when cache entries need to be freed.
-        mutable MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
-        //! DeviceBufferView cache
-        //! This cache is necessary as the caller receives raw pointers from the ResourceCache, 
-        //! which now, with multi-device objects in use, need to be held in memory as long as
-        //! the multi-device view is held.
-        mutable AZStd::unordered_map<int, Ptr<RHI::DeviceBufferView>> m_cache;
     };
 } // namespace AZ::RHI

@@ -84,7 +84,7 @@ namespace AZ
                     ~ConvertIteratorTests() override = default;
                 };
 
-                TYPED_TEST_CASE_P(ConvertIteratorTests);
+                TYPED_TEST_SUITE_P(ConvertIteratorTests);
 
                 // MakeConvertIterator
                 TYPED_TEST_P(ConvertIteratorTests, MakeConvertIterator_FunctionComparedWithExplicitlyDeclaredIterator_IteratorsAreEqual)
@@ -120,13 +120,13 @@ namespace AZ
                     EXPECT_EQ(view.end(), end);
                 }
 
-                REGISTER_TYPED_TEST_CASE_P(ConvertIteratorTests,
+                REGISTER_TYPED_TEST_SUITE_P(ConvertIteratorTests,
                     MakeConvertIterator_FunctionComparedWithExplicitlyDeclaredIterator_IteratorsAreEqual,
                     MakeConvertView_IteratorVersionComparedWithExplicitlyDeclaredIterators_ViewHasEquivalentBeginAndEnd,
                     MakeConvertView_ViewVersionComparedWithExplicitlyDeclaredIterators_ViewHasEquivalentBeginAndEnd
                     );
 
-                INSTANTIATE_TYPED_TEST_CASE_P(CommonTests, ConvertIteratorTests, BasicCollectionTypes);
+                INSTANTIATE_TYPED_TEST_SUITE_P(CommonTests, ConvertIteratorTests, BasicCollectionTypes);
 
                 // Casting
                 TEST(ConvertIterator, Casting_CanBetweenValueTypes_GetCastedValueAsInt)

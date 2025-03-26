@@ -65,7 +65,7 @@ bool TitleBarOverdrawScreenHandler::eventFilter(QObject *watched, QEvent *event)
         // Intentional fall-through
         case QEvent::Show:
         {
-            if (QWindow* window = qobject_cast<QWindow*>(watched))
+            if (qobject_cast<QWindow*>(watched))
             {
                 applyOverdrawMargins();
             }

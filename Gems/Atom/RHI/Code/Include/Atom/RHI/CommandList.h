@@ -20,6 +20,7 @@
 namespace AZ::RHI
 {
     class ScopeProducer;
+    class DeviceRayTracingCompactionQuery;
 
     //! Supported operations for rendering predication.
     enum class PredicationOp : uint32_t
@@ -83,6 +84,13 @@ namespace AZ::RHI
 
         /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of DeviceRayTracingGeometry entries
         virtual void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) = 0;
+
+        /// Inserts queries for the size of the compacted Blas
+        virtual void QueryBlasCompactionSizes(
+            const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery) = 0;
+
+        /// Copies the given sourceBlas into the compactBlas
+        virtual void CompactBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas) = 0;
 
         /// Builds a Top Level Acceleration Structure (TLAS) for ray tracing operations, which is made up of RayTracingInstance entries that
         /// refer to a BLAS entry

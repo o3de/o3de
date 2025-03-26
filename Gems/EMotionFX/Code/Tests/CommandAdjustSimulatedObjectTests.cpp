@@ -254,7 +254,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(TestCommandAdjustSimulatedObject, CommandAdjustSimulatedObjectTestsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestCommandAdjustSimulatedObject, CommandAdjustSimulatedObjectTestsFixture,
         ::testing::Combine(
             ::testing::Bool(), // Test execute or test undo
             ::testing::Bool(), // Use command strings or not
@@ -618,7 +618,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(TestCommandAdjustSimulatedJoint, CommandAdjustSimulatedJointTestsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestCommandAdjustSimulatedJoint, CommandAdjustSimulatedJointTestsFixture,
         ::testing::Combine(
             ::testing::Bool(), // Test execute or test undo
             ::testing::Bool(), // Use command strings or not

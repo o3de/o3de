@@ -442,12 +442,12 @@ namespace UnitTest
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(ValidIntersections,
+    INSTANTIATE_TEST_SUITE_P(ValidIntersections,
         CylinderShapeRayIntersectTest,
         ::testing::ValuesIn(CylinderShapeRayIntersectTest::ShouldPass)
     );
 
-    INSTANTIATE_TEST_CASE_P(InvalidIntersections,
+    INSTANTIATE_TEST_SUITE_P(InvalidIntersections,
         CylinderShapeRayIntersectTest,
         ::testing::ValuesIn(CylinderShapeRayIntersectTest::ShouldFail)
     );
@@ -469,7 +469,7 @@ namespace UnitTest
         EXPECT_TRUE(aabb.GetMax().IsClose(maxExtent));
     }
 
-    INSTANTIATE_TEST_CASE_P(AABB,
+    INSTANTIATE_TEST_SUITE_P(AABB,
         CylinderShapeAABBTest,
         ::testing::ValuesIn(CylinderShapeAABBTest::ShouldPass)
     );
@@ -492,7 +492,7 @@ namespace UnitTest
         EXPECT_TRUE(aabb.GetMax().IsClose(maxExtent));
     }
 
-    INSTANTIATE_TEST_CASE_P(TransformAndLocalBounds,
+    INSTANTIATE_TEST_SUITE_P(TransformAndLocalBounds,
         CylinderShapeTransformAndLocalBoundsTest,
         ::testing::ValuesIn(CylinderShapeTransformAndLocalBoundsTest::ShouldPass)
     );
@@ -513,13 +513,13 @@ namespace UnitTest
         EXPECT_EQ(inside, expectedInside);
     }
 
-    INSTANTIATE_TEST_CASE_P(ValidIsPointInside,
+    INSTANTIATE_TEST_SUITE_P(ValidIsPointInside,
         CylinderShapeIsPointInsideTest,
         ::testing::ValuesIn(CylinderShapeIsPointInsideTest::ShouldPass)
     );
 
 
-    INSTANTIATE_TEST_CASE_P(InvalidIsPointInside,
+    INSTANTIATE_TEST_SUITE_P(InvalidIsPointInside,
         CylinderShapeIsPointInsideTest,
         ::testing::ValuesIn(CylinderShapeIsPointInsideTest::ShouldFail)
     );
@@ -541,7 +541,7 @@ namespace UnitTest
         EXPECT_NEAR(distance, expectedDistance, epsilon);
     }
 
-    INSTANTIATE_TEST_CASE_P(ValidIsDistanceFromPoint,
+    INSTANTIATE_TEST_SUITE_P(ValidIsDistanceFromPoint,
         CylinderShapeDistanceFromPointTest,
         ::testing::ValuesIn(CylinderShapeDistanceFromPointTest::ShouldPass)
     );

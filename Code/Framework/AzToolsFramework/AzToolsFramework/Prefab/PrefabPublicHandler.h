@@ -184,9 +184,14 @@ namespace AzToolsFramework
             static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
                 const LinkId linkId);
+
+            // if a non-nullopt const reference is sent to HandleEntityChange, it essentially means that the instance in question
+            // will be fully updated by this function (as in, the template it came from will be updated, as well as the instance in question)
+            // and thus, it can skip the instance update queue that happens later.
             static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-                PrefabDom& afterState);
+                PrefabDom& afterState, InstanceOptionalConstReference instanceToSkipUpdateQueue = AZStd::nullopt);
+
             void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void UpdateLinkPatchesWithNewEntityAliases(

@@ -132,7 +132,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphRefCountTest_SimpleChain,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphRefCountTest_SimpleChain,
          AnimGraphRefCountTest_SimpleChain,
          ::testing::ValuesIn(animGraphRefCountTest_SimpleChainTestData)
     );

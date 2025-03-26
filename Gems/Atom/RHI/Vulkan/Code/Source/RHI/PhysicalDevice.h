@@ -67,6 +67,7 @@ namespace AZ
             TimelineSempahore,
             LoadStoreOpNone,
             SubpassMergeFeedback,
+            CalibratedTimestamps,
             Count
         };
 
@@ -121,6 +122,8 @@ namespace AZ
             RawStringList FilterSupportedOptionalExtensions();
             //! Returns the supported vulkan version of the physical device.
             uint32_t GetVulkanVersion() const;
+            //! Query the set of available time domains for timestamp calibration
+            AZStd::vector<VkTimeDomainEXT> GetCalibratedTimeDomains(const GladVulkanContext& context) const;
 
         private:
             

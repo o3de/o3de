@@ -6,42 +6,38 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_GOTOTRACK_H
-#define CRYINCLUDE_CRYMOVIE_GOTOTRACK_H
-
 #pragma once
 
 #include "IMovieSystem.h"
 #include "AnimTrack.h"
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-/** Goto track, every key on this track negates boolean value.
-*/
-class CGotoTrack
-    : public TAnimTrack<IDiscreteFloatKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CGotoTrack, AZ::SystemAllocator);
-    AZ_RTTI(CGotoTrack, "{B9A6BD22-F669-4D84-AD1D-B7BD07165C5D}", IAnimTrack);
 
-    CGotoTrack();
+    /** Goto track, every key on this track negates boolean value.
+     */
+    class CGotoTrack : public TAnimTrack<IDiscreteFloatKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CGotoTrack, AZ::SystemAllocator);
+        AZ_RTTI(CGotoTrack, "{B9A6BD22-F669-4D84-AD1D-B7BD07165C5D}", IAnimTrack);
 
-    virtual AnimValueType GetValueType();
+        CGotoTrack();
 
-    void GetValue(float time, float& value, bool applyMultiplier=false);
-    void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false);
+        AnimValueType GetValueType() override;
 
-    void SerializeKey(IDiscreteFloatKey& key, XmlNodeRef& keyNode, bool bLoading);
-    void GetKeyInfo(int key, const char*& description, float& duration);
+        void GetValue(float time, float& value, bool applyMultiplier = false) override;
+        void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) override;
 
-    static void Reflect(AZ::ReflectContext* context);
+        void SerializeKey(IDiscreteFloatKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
 
-protected:
-    void SetKeyAtTime(float time, IKey* key);
+        static void Reflect(AZ::ReflectContext* context);
 
-    float m_DefaultValue;
-};
+    protected:
+        void SetKeyAtTime(float time, IKey* key);
 
-#endif // CRYINCLUDE_CRYMOVIE_GOTOTRACK_H
+        float m_DefaultValue;
+    };
+
+} // namespace Maestro

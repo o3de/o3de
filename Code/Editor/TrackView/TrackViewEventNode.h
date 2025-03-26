@@ -6,17 +6,14 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWEVENTNODE_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWEVENTNODE_H
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "TrackViewAnimNode.h"
 
-////////////////////////////////////////////////////////////////////////////
-// This class represents an IAnimNode deditcated to firing Track Events
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// This class represents an IAnimNode dedicated to firing Track Events
+//////////////////////////////////////////////////////////////////////////
 
 class CTrackViewEventNode
     : public CTrackViewAnimNode
@@ -36,5 +33,3 @@ protected:
     // updates existing keys using removedEventName events to use the empty string (representing no event)
     void RemoveTrackEvent(const char* removedEventName);
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWEVENTNODE_H

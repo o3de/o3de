@@ -263,7 +263,7 @@ namespace JsonSerializationTests
         ComplextTestDescription<AZStd::vector<SimpleClass>>,
         ComplextTestDescription<AZStd::fixed_vector<SimpleClass, 256>>
     >;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonBasicContainers, JsonSerializerConformityTests, BasicContainerConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(JsonBasicContainers, JsonSerializerConformityTests, BasicContainerConformityTestTypes));
 
     class JsonBasicContainerSerializerTests
         : public BaseJsonSerializerFixture

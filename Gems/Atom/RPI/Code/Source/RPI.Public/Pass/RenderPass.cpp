@@ -83,9 +83,10 @@ namespace AZ
                 ReplaceSubpassInputs(RHI::SubpassInputSupportType::None);
             }
 
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
+            int slotIndex = -1;
+            for (const auto& binding : m_attachmentBindings)
             {
-                const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
+                slotIndex++;
 
                 if (!binding.GetAttachment())
                 {
@@ -179,9 +180,8 @@ namespace AZ
         {
             RHI::MultisampleState outputMultiSampleState;
             bool wasSet = false;
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
+            for (const auto& binding : m_attachmentBindings)
             {
-                const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
                 if (binding.m_slotType != PassSlotType::Output && binding.m_slotType != PassSlotType::InputOutput)
                 {
                     continue;

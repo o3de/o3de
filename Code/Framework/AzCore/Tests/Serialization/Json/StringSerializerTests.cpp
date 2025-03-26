@@ -8,6 +8,8 @@
 
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Serialization/Json/StringSerializer.h>
+#include <AzCore/Serialization/Locale.h>
+
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 
@@ -58,7 +60,7 @@ namespace JsonSerializationTests
         StringTestDescription<AZStd::string, AZ::JsonStringSerializer>,
         StringTestDescription<AZ::OSString, AZ::JsonOSStringSerializer>
     >;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(String, JsonSerializerConformityTests, StringConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(String, JsonSerializerConformityTests, StringConformityTestTypes));
 
     template<typename> struct SerializerInfo {};
 
@@ -98,7 +100,7 @@ namespace JsonSerializationTests
     using StringSerializationTypes = ::testing::Types<
         AZ::JsonStringSerializer,
         AZ::JsonOSStringSerializer >;
-    TYPED_TEST_CASE(TypedJsonStringSerializerTests, StringSerializationTypes);
+    TYPED_TEST_SUITE(TypedJsonStringSerializerTests, StringSerializationTypes);
 
     TYPED_TEST(TypedJsonStringSerializerTests, Load_FalseBoolean_FalseAsString)
     {
@@ -181,6 +183,8 @@ namespace JsonSerializationTests
     TYPED_TEST(TypedJsonStringSerializerTests, Load_ParseFloatingPointValue_NumberReturnedAsString)
     {
         using namespace AZ::JsonSerializationResult;
+
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // For the purposes of test stability, assume the culture-invariant locale.
 
         rapidjson::Value testValue;
         testValue.SetDouble(3.1415);

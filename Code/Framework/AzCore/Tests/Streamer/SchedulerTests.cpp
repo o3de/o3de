@@ -33,8 +33,9 @@ namespace AZ::IO
             using ::testing::AnyNumber;
 
             UnitTest::LeakDetectionFixture::SetUp();
-
-            m_mock = AZStd::make_shared<StreamStackEntryMock>();
+            // a regular mock warns every time functions are called without being expected
+            // a NiceMock only pays attention to calls you tell it to pay attention to.
+            m_mock = AZStd::make_shared<testing::NiceMock<StreamStackEntryMock>>();
             ON_CALL(*m_mock, PrepareRequest(_)).WillByDefault([this](FileRequest* request) { m_mock->ForwardPrepareRequest(request); });
             ON_CALL(*m_mock, QueueRequest(_)).WillByDefault([this](FileRequest* request)   { m_mock->ForwardQueueRequest(request); });
             ON_CALL(*m_mock, UpdateStatus(_)).WillByDefault([this](StreamStackEntry::Status& status)
@@ -158,7 +159,7 @@ namespace AZ::IO
         // is publicly exposed. Since Streamer is mostly the threaded front end for
         // the Scheduler, this is fine.
         Streamer* m_streamer{ nullptr };
-        AZStd::shared_ptr<StreamStackEntryMock> m_mock;
+        AZStd::shared_ptr<testing::NiceMock<StreamStackEntryMock>> m_mock;
         AZStd::atomic_bool m_isStackIdle = false;
     };
 
@@ -406,9 +407,10 @@ namespace AZ::IO
         //////////////////////////////////////////////////////////////
         // Test equal priority requests that are both reading the same file
         //////////////////////////////////////////////////////////////
+        RequestPath emptyPath;
         FileRequestPtr readRequest = m_streamer->Read("SameFile", fakeBuffer, sizeof(fakeBuffer), 8, panicDeadline);
         FileRequestPtr sameFileRequest = m_streamer->CreateRequest();
-        sameFileRequest->m_request.CreateRead(&sameFileRequest->m_request, fakeBuffer, 8, RequestPath(), 0, 8);
+        sameFileRequest->m_request.CreateRead(&sameFileRequest->m_request, fakeBuffer, 8, emptyPath, 0, 8);
         sameFileRequest->m_request.m_parent = &readRequest->m_request;
         sameFileRequest->m_request.m_dependencies = 0;
 
@@ -419,7 +421,7 @@ namespace AZ::IO
 
         FileRequestPtr readRequest2 = m_streamer->Read("SameFile2", fakeBuffer, sizeof(fakeBuffer), 8, panicDeadline);
         FileRequestPtr sameFileRequest2 = m_streamer->CreateRequest();
-        sameFileRequest2->m_request.CreateRead(&sameFileRequest2->m_request, fakeBuffer, 8, RequestPath(), 0, 8);
+        sameFileRequest2->m_request.CreateRead(&sameFileRequest2->m_request, fakeBuffer, 8, emptyPath, 0, 8);
         sameFileRequest2->m_request.m_parent = &readRequest2->m_request;
         sameFileRequest2->m_request.m_dependencies = 0;
 

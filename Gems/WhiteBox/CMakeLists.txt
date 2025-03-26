@@ -8,6 +8,8 @@
 
 o3de_gem_setup("WhiteBox")
 
-ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+# when compiling from source, use the 3rdParty/FindOpenMesh.cmake file
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 
 add_subdirectory(Code)

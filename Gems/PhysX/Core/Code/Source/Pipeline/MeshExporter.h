@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>

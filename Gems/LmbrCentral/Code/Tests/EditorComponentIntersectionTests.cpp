@@ -152,7 +152,7 @@ namespace LmbrCentral
         VerifySelectionIntersection();
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         ShapeEditorComponentIndirectCallManipulatorViewportInteractionFixtureParam,
         testing::Values(IntersectionQueryOutcome{ true, true }, IntersectionQueryOutcome{ false, false }));
@@ -162,7 +162,7 @@ namespace LmbrCentral
         VerifySelectionIntersection();
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         SplineEditorComponentIndirectCallManipulatorViewportInteractionFixtureParam,
         testing::Values(IntersectionQueryOutcome{ true, true }, IntersectionQueryOutcome{ false, false }));

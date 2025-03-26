@@ -33,7 +33,7 @@ namespace AZ::IO
         }
     };
 
-    INSTANTIATE_TYPED_TEST_CASE_P(
+    INSTANTIATE_TYPED_TEST_SUITE_P(
         Streamer_FullFileDecompressorConformityTests, StreamStackEntryConformityTests, FullFileDecompressorTestDescription);
 
     class Streamer_FullDecompressorTest

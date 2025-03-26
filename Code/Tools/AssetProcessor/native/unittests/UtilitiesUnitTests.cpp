@@ -553,7 +553,7 @@ TEST_F(UtilitiesUnitTests, GetFileHashFromStream_LargeFileForcedAnotherThreadWri
     AZ::IO::FileIOBase::GetInstance()->Open(fileName.toUtf8(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, writeHandle);
 
     // The job will close the stream
-    FileWriteThrashTestJob* job = aznew FileWriteThrashTestJob(true, nullptr, writeHandle, buffer);
+    FileWriteThrashTestJob* job = aznew FileWriteThrashTestJob(true, nullptr, writeHandle, AZStd::string_view(buffer, AZ_ARRAY_SIZE(buffer)));
     job->m_writeLoopCount = 100; // compensate for artificial hashing delay below, keeping this test duration similar to others
     job->Start();
 

@@ -6,186 +6,185 @@
  *
  */
 
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include "GotoTrack.h"
 #include "Maestro/Types/AnimValueType.h"
 
-#define MIN_TIME_PRECISION 0.01f
-
-//////////////////////////////////////////////////////////////////////////
-CGotoTrack::CGotoTrack()
+namespace Maestro
 {
-    m_flags = 0;
-    m_DefaultValue = -1.0f;
-}
 
-AnimValueType CGotoTrack::GetValueType()
-{
-    return AnimValueType::DiscreteFloat;
-}
-
-////////////////////////////////////////////////////////////////////////
-void CGotoTrack::GetValue(float time, float& value, bool applyMultiplier)
-{
-    size_t nTotalKeys(m_keys.size());
-
-    value = m_DefaultValue;
-
-    if (nTotalKeys < 1)
+    namespace
     {
-        return;
+        constexpr float MinTimePrecision = 0.01f;
     }
 
-    CheckValid();
-
-    size_t nKey(0);
-    for (nKey = 0; nKey < nTotalKeys; ++nKey)
+    CGotoTrack::CGotoTrack()
     {
-        if (time >= m_keys[nKey].time)
+        m_flags = 0;
+        m_DefaultValue = -1.0f;
+    }
+
+    AnimValueType CGotoTrack::GetValueType()
+    {
+        return AnimValueType::DiscreteFloat;
+    }
+
+    void CGotoTrack::GetValue(float time, float& value, bool applyMultiplier)
+    {
+        size_t nTotalKeys(m_keys.size());
+
+        value = m_DefaultValue;
+
+        if (nTotalKeys < 1)
         {
-            value = m_keys[nKey].m_fValue;
+            return;
         }
-        else
-        {
-            break;
-        }
-    }
 
-    if (applyMultiplier && m_trackMultiplier != 1.0f)
-    {
-        value /= m_trackMultiplier;
-    }
-}
-//////////////////////////////////////////////////////////////////////////
-void CGotoTrack::SetValue(float time, const float& value, bool bDefault, bool applyMultiplier)
-{
-    if (!bDefault)
-    {
-        IDiscreteFloatKey oKey;
+        CheckValid();
+
+        size_t nKey(0);
+        for (nKey = 0; nKey < nTotalKeys; ++nKey)
+        {
+            if (time >= m_keys[nKey].time)
+            {
+                value = m_keys[nKey].m_fValue;
+            }
+            else
+            {
+                break;
+            }
+        }
+
         if (applyMultiplier && m_trackMultiplier != 1.0f)
         {
-            oKey.SetValue(value * m_trackMultiplier);
+            value /= m_trackMultiplier;
+        }
+    }
+
+    void CGotoTrack::SetValue(float time, const float& value, bool bDefault, bool applyMultiplier)
+    {
+        if (!bDefault)
+        {
+            IDiscreteFloatKey oKey;
+            if (applyMultiplier && m_trackMultiplier != 1.0f)
+            {
+                oKey.SetValue(value * m_trackMultiplier);
+            }
+            else
+            {
+                oKey.SetValue(value);
+            }
+            SetKeyAtTime(time, &oKey);
         }
         else
         {
-            oKey.SetValue(value);
+            if (applyMultiplier && m_trackMultiplier != 1.0f)
+            {
+                m_DefaultValue = value * m_trackMultiplier;
+            }
+            else
+            {
+                m_DefaultValue = value;
+            }
         }
-        SetKeyAtTime(time, &oKey);
     }
-    else
+
+    void CGotoTrack::SerializeKey(IDiscreteFloatKey& key, XmlNodeRef& keyNode, bool bLoading)
     {
-        if (applyMultiplier && m_trackMultiplier != 1.0f)
+        if (bLoading)
         {
-            m_DefaultValue = value * m_trackMultiplier;
+            keyNode->getAttr("time", key.time);
+            keyNode->getAttr("value", key.m_fValue);
+
+            keyNode->getAttr("flags", key.flags);
         }
         else
         {
-            m_DefaultValue = value;
+            keyNode->setAttr("time", key.time);
+            keyNode->setAttr("value", key.m_fValue);
+
+            int flags = key.flags;
+            if (flags != 0)
+            {
+                keyNode->setAttr("flags", flags);
+            }
         }
     }
-}
-////////////////////////////////////////////////////////////////////////
-void CGotoTrack::SerializeKey(IDiscreteFloatKey& key, XmlNodeRef& keyNode, bool bLoading)
-{
-    if (bLoading)
-    {
-        keyNode->getAttr("time", key.time);
-        keyNode->getAttr("value", key.m_fValue);
-        //assert(key.time == key.m_fValue);
 
-        keyNode->getAttr("flags", key.flags);
+    void CGotoTrack::GetKeyInfo(int index, const char*& description, [[maybe_unused]] float& duration)
+    {
+        static char str[64];
+        description = str;
+        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is invalid", index);
+        float& k = m_keys[index].m_fValue;
+        sprintf_s(str, "%.2f", k);
     }
-    else
-    {
-        keyNode->setAttr("time", key.time);
-        keyNode->setAttr("value", key.m_fValue);
 
-        int flags = key.flags;
-        if (flags != 0)
+    void CGotoTrack::SetKeyAtTime(float time, IKey* key)
+    {
+        AZ_Assert(key != 0, "key is null");
+
+        key->time = time;
+
+        bool found = false;
+        // Find key with given time.
+        for (size_t i = 0; i < m_keys.size(); i++)
         {
-            keyNode->setAttr("flags", flags);
+            float keyt = m_keys[i].time;
+            if (fabs(keyt - time) < MinTimePrecision)
+            {
+                key->flags = m_keys[i].flags; // Reserve the flag value.
+                SetKey(static_cast<int>(i), key);
+                found = true;
+                break;
+            }
+            // if (keyt > time)
+            // break;
         }
-    }
-}
-//////////////////////////////////////////////////////////////////////////
-void CGotoTrack::GetKeyInfo(int index, const char*& description, [[maybe_unused]] float& duration)
-{
-    static char str[64];
-    description = str;
-    assert(index >= 0 && index < GetNumKeys());
-    float& k = m_keys[index].m_fValue;
-    sprintf_s(str, "%.2f", k);
-}
-//////////////////////////////////////////////////////////////////////////
-void CGotoTrack::SetKeyAtTime(float time, IKey* key)
-{
-    assert(key != 0);
-
-    key->time = time;
-
-    bool found = false;
-    // Find key with given time.
-    for (size_t i = 0; i < m_keys.size(); i++)
-    {
-        float keyt = m_keys[i].time;
-        if (fabs(keyt - time) < MIN_TIME_PRECISION)
+        if (!found)
         {
-            key->flags = m_keys[i].flags;               // Reserve the flag value.
-            SetKey(static_cast<int>(i), key);
-            found = true;
-            break;
+            // Key with this time not found.
+            // Create a new one.
+            int keyIndex = CreateKey(time);
+            // Reserve the flag value.
+            key->flags = m_keys[keyIndex].flags; // Reserve the flag value.
+            SetKey(keyIndex, key);
         }
-        //if (keyt > time)
-        //break;
     }
-    if (!found)
+
+    static bool GotoTrackVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
     {
-        // Key with this time not found.
-        // Create a new one.
-        int keyIndex = CreateKey(time);
-        // Reserve the flag value.
-        key->flags = m_keys[keyIndex].flags;        // Reserve the flag value.
-        SetKey(keyIndex, key);
-    }
-}
+        if (rootElement.GetVersion() < 3)
+        {
+            rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+        }
 
-//////////////////////////////////////////////////////////////////////////
-static bool GotoTrackVersionConverter(
-    AZ::SerializeContext& serializeContext,
-    AZ::SerializeContext::DataElementNode& rootElement)
-{
-    if (rootElement.GetVersion() < 3)
+        return true;
+    }
+
+    template<>
+    inline void TAnimTrack<IDiscreteFloatKey>::Reflect(AZ::ReflectContext* context)
     {
-        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<TAnimTrack<IDiscreteFloatKey>, IAnimTrack>()
+                ->Version(3, &GotoTrackVersionConverter)
+                ->Field("Flags", &TAnimTrack<IDiscreteFloatKey>::m_flags)
+                ->Field("Range", &TAnimTrack<IDiscreteFloatKey>::m_timeRange)
+                ->Field("ParamType", &TAnimTrack<IDiscreteFloatKey>::m_nParamType)
+                ->Field("Keys", &TAnimTrack<IDiscreteFloatKey>::m_keys)
+                ->Field("Id", &TAnimTrack<IDiscreteFloatKey>::m_id);
+        }
     }
 
-    return true;
-}
-
-template<>
-inline void TAnimTrack<IDiscreteFloatKey>::Reflect(AZ::ReflectContext* context)
-{
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    void CGotoTrack::Reflect(AZ::ReflectContext* context)
     {
-        serializeContext->Class<TAnimTrack<IDiscreteFloatKey>, IAnimTrack>()
-            ->Version(3, &GotoTrackVersionConverter)
-            ->Field("Flags", &TAnimTrack<IDiscreteFloatKey>::m_flags)
-            ->Field("Range", &TAnimTrack<IDiscreteFloatKey>::m_timeRange)
-            ->Field("ParamType", &TAnimTrack<IDiscreteFloatKey>::m_nParamType)
-            ->Field("Keys", &TAnimTrack<IDiscreteFloatKey>::m_keys)
-            ->Field("Id", &TAnimTrack<IDiscreteFloatKey>::m_id);
-    }
-}
+        TAnimTrack<IDiscreteFloatKey>::Reflect(context);
 
-//////////////////////////////////////////////////////////////////////////
-void CGotoTrack::Reflect(AZ::ReflectContext* context)
-{
-    TAnimTrack<IDiscreteFloatKey>::Reflect(context);
-
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-    {
-        serializeContext->Class<CGotoTrack, TAnimTrack<IDiscreteFloatKey>>()
-            ->Version(1);
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CGotoTrack, TAnimTrack<IDiscreteFloatKey>>()->Version(1);
+        }
     }
-}
+
+} // namespace Maestro

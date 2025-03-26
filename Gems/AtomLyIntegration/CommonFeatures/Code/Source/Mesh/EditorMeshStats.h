@@ -17,6 +17,17 @@ namespace AZ
 {
     namespace Render
     {
+        struct EditorSubMeshStatsForLod final
+        {
+            AZ_RTTI(EditorSubMeshStatsForLod, "{1B1DD151-237A-486E-A9A1-A652FE3D4CA8}");
+            AZ_CLASS_ALLOCATOR(EditorSubMeshStatsForLod, SystemAllocator);
+
+            static void Reflect(ReflectContext* context);
+
+            AZ::u32 m_vertCount = 0;
+            AZ::u32 m_triCount = 0;
+        };
+
         struct EditorMeshStatsForLod final
         {
             AZ_RTTI(EditorMeshStatsForLod, "{626E3AEB-0F7A-4777-BAF1-2BBA8C1857ED}");
@@ -27,6 +38,7 @@ namespace AZ
             AZ::u32 m_meshCount = 0;
             AZ::u32 m_vertCount = 0;
             AZ::u32 m_triCount = 0;
+            AZStd::vector<EditorSubMeshStatsForLod> m_subMeshStatsForLod;
         };
 
         struct EditorMeshStats final

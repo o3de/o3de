@@ -747,5 +747,5 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(MotionInstanceTests, MotionInstanceFixture, ::testing::ValuesIn(motionInstanceTestParams));
+    INSTANTIATE_TEST_SUITE_P(MotionInstanceTests, MotionInstanceFixture, ::testing::ValuesIn(motionInstanceTestParams));
 } // namespace EMotionFX

@@ -162,7 +162,13 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
 
         # 5) Verify the save/export of the level
         level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
-        success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_prefab_path), 10.0)
+
+        # In normal conditions this should be a few milliseconds but if AP is busy processing other files, or whatever
+        # it might take longer.  Make it a really long timer, like 30 minutes, so that if this does die, its 99.99%
+        # because it is broken, not because it is slow.  In normal tests, this should run instantly anyway and stops waiting
+        # as soon as its condition is met.
+        success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_prefab_path), 60.0 * 30.0)
+
         Report.result(Tests.saved_and_exported, success)
 
     run_test()

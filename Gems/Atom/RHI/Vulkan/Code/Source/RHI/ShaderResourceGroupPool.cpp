@@ -111,6 +111,20 @@ namespace AZ
 
             const RHI::ShaderResourceGroupLayout* layout = groupData.GetLayout();
 
+            {
+                size_t numUpdates = 0;
+                numUpdates += layout->GetShaderInputListForBuffers().size();
+                numUpdates += layout->GetShaderInputListForImages().size();
+                numUpdates += layout->GetShaderInputListForBufferUnboundedArrays().size();
+                numUpdates += layout->GetShaderInputListForImageUnboundedArrays().size();
+                numUpdates += layout->GetShaderInputListForSamplers().size();
+                if (!groupData.GetConstantData().empty())
+                {
+                    numUpdates++;
+                }
+                descriptorSet.ReserveUpdateData(numUpdates);
+            }
+
             for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForBuffers().size()); ++groupIndex)
             {
                 const RHI::ShaderInputBufferIndex index(groupIndex);

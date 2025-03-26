@@ -20,21 +20,21 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 // Qt
-#include <QAction>
-#include <QFileDialog>
-#include <QStringListModel>
 #include <QtConcurrent>
+#include <QStringListModel>
+#include <QFileDialog>
+#include <QAction>
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 
 // Editor
-#include "MainWindow.h"
+#include "CryEdit.h"
 #include "CustomResolutionDlg.h"
-#include "ViewPane.h"
 #include "GameEngine.h"
 #include "Include/ICommandManager.h"
-#include "CryEdit.h"
+#include "MainWindow.h"
+#include "ViewPane.h"
 #include "Viewport.h"
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -394,8 +394,8 @@ void CSequenceBatchRenderDialog::CheckForEnableUpdateButton()
         SRenderItem item;
         if (SetUpNewRenderItem(item))
         {
-            int index = m_ui->m_renderList->currentIndex().row();
-            assert(index >= 0 && index < m_renderItems.size());
+            const int index = m_ui->m_renderList->currentIndex().row();
+            AZ_Assert(index >= 0 && index < m_renderItems.size(), "Render item row index %i is out of range", index);
             enable = !(m_renderItems[index] == item);
         }
     }
@@ -434,8 +434,9 @@ void CSequenceBatchRenderDialog::OnAddRenderItem()
 
 void CSequenceBatchRenderDialog::OnRemoveRenderItem()
 {
-    int index = m_ui->m_renderList->currentIndex().row();
-    assert(index != CB_ERR);
+    const int index = m_ui->m_renderList->currentIndex().row();
+    AZ_Assert(index != CB_ERR, "Invalid row index");
+
     m_ui->m_renderList->model()->removeRow(index);
     m_renderItems.erase(m_renderItems.begin() + index);
 
@@ -466,8 +467,8 @@ void CSequenceBatchRenderDialog::OnClearRenderItems()
 
 void CSequenceBatchRenderDialog::OnUpdateRenderItem()
 {
-    int index = m_ui->m_renderList->currentIndex().row();
-    assert(index != -1);
+    const int index = m_ui->m_renderList->currentIndex().row();
+    AZ_Assert(index != CB_ERR, "Invalid row index");
 
     // Set up a new render item.
     SRenderItem item;

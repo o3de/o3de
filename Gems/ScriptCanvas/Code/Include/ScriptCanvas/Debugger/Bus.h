@@ -27,7 +27,7 @@ namespace ScriptCanvas
             virtual void BecameUnavailable(const Target&) {}
             virtual void BecameAvailable(const Target&) {}
 
-            virtual void Connected(const Target&) {}
+            virtual void Connected(Target&) {}
             virtual void ConnectionRefused(const Target&) {}
             virtual void Disconnected() {}
             

@@ -134,7 +134,7 @@ namespace UnitTest
         EXPECT_THAT(parseSettingsVector, ::testing::ContainerEq(textFileParam.m_expectedLines));
     }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ReadTextFile,
     TextParserParamFixture,
     ::testing::Values(

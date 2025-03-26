@@ -309,7 +309,7 @@ namespace EMotionFX
         },
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeMaskNode,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeMaskNode,
         BlendTreeMaskNodeTestFixture,
             ::testing::ValuesIn(maskNodeTestData));
 } // namespace EMotionFX

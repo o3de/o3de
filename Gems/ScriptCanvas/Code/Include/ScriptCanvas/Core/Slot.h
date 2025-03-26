@@ -43,7 +43,7 @@ namespace ScriptCanvas
     };
 
     class Slot final
-        : public VariableNotificationBus::Handler
+        : public VariableNotificationBus::MultiHandler
     {
         friend class Node;
     public:
@@ -230,6 +230,13 @@ namespace ScriptCanvas
         ////
 
     protected:
+
+        // VariableNotificationBus...
+        void OnVariableRenamed(AZStd::string_view /*newVariableName*/) override;
+        ///
+
+        void DisconnectVariableNotificationBus();
+
         bool m_isOverload = false;
         bool m_isVisible = true;
         bool m_isUserAdded = false;

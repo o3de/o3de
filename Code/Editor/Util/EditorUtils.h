@@ -115,9 +115,9 @@ namespace EditorUtils
         // Move constructor: needed to use CreateScopedVariable, and transfers ownership.
         TScopedVariableValue(TScopedVariableValue&& tInput)
         {
-            std::move(m_pVariable, tInput.m_tVariable);
-            std::move(m_tConstructValue, tInput.m_tConstructValue);
-            std::move(m_tDestructValue, tInput.m_tDestructtValue);
+            m_pVariable = tInput.m_pVariable;
+            m_tConstructValue = tInput.m_tConstructValue;
+            m_tDestructValue = tInput.m_tDestructValue;
         }
 
         // Applies the scoping exit, if the variable is valid.

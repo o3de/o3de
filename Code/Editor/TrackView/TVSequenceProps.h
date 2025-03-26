@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TVSEQUENCEPROPS_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TVSEQUENCEPROPS_H
 #pragma once
-
 
 class CTrackViewSequence;
 
@@ -57,5 +53,3 @@ private slots:
     void ToggleCutsceneOptions(bool);
     void UpdateSequenceProps(const QString& name);
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TVSEQUENCEPROPS_H

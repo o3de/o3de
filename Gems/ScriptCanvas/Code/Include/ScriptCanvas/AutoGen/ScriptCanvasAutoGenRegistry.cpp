@@ -63,6 +63,14 @@ void ScriptCanvasModel::Init()
 
 bool ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFunction reflect, AZ::ComponentDescriptor* descriptor/* = nullptr*/)
 {
+    if (AZStd::find(m_descriptors.begin(), m_descriptors.end(), descriptor) != m_descriptors.end())
+    {
+        if (m_verbose)
+        {
+            AZ_Info("ScriptCanvas", "RegisterReflection Descriptor duplicated: %s", name.c_str());
+        }
+        return false;
+    }
     if (!m_registeredReflections.contains(name))
     {
         if (descriptor)

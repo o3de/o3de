@@ -30,6 +30,7 @@ namespace AZ::RHI
     class MultiDeviceObject : public Object
     {
         friend struct UnitTest::MultiDeviceDrawPacketData;
+        friend class ResourceView;
 
     public:
         AZ_RTTI(MultiDeviceObject, "{17D34F71-944C-4AF5-9823-627474C4C0A6}", Object);

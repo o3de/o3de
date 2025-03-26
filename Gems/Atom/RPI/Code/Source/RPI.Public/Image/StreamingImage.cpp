@@ -153,7 +153,7 @@ namespace AZ
                 // Set rhi image name
                 m_imageAsset = { &imageAsset, AZ::Data::AssetLoadBehavior::PreLoad };
                 m_image->SetName(Name(m_imageAsset.GetHint()));
-                m_imageView = m_image->BuildImageView(imageAsset.GetImageViewDescriptor());
+                m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());
                 if(!m_imageView.get())
                 {
                    AZ_Error("Image", false, "Failed to initialize RHI image view. This is not a recoverable error and is likely a bug.");
@@ -503,6 +503,7 @@ namespace AZ
                 // the callback is executed
                 request.m_completeCallback = [=, thisPtr = RHI::Ptr<StreamingImage>(this)]()
                 {
+                    AZ_UNUSED(thisPtr);
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
                     AZ_TracePrintf("StreamingImage", "Upload mipchain done [%s]\n", mipChainAsset.GetHint().c_str());
 #endif

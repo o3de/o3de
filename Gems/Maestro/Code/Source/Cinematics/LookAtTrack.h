@@ -6,40 +6,45 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_LOOKATTRACK_H
-#define CRYINCLUDE_CRYMOVIE_LOOKATTRACK_H
-
 #pragma once
 
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-/** Look at target track, keys represent new lookat targets for entity.
-*/
-class CLookAtTrack
-    : public TAnimTrack<ILookAtKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CLookAtTrack, AZ::SystemAllocator);
-    AZ_RTTI(CLookAtTrack, "{30A5C53C-F158-4CCE-A7A0-1A902D13B91C}", IAnimTrack);
 
-    CLookAtTrack()
-        : m_iAnimationLayer(-1) {}
+    /** Look at target track, keys represent new lookat targets for entity.
+     */
+    class CLookAtTrack : public TAnimTrack<ILookAtKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CLookAtTrack, AZ::SystemAllocator);
+        AZ_RTTI(CLookAtTrack, "{30A5C53C-F158-4CCE-A7A0-1A902D13B91C}", IAnimTrack);
 
-    bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+        CLookAtTrack()
+            : m_iAnimationLayer(-1)
+        {
+        }
 
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(ILookAtKey& key, XmlNodeRef& keyNode, bool bLoading);
+        bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-    int GetAnimationLayerIndex() const { return m_iAnimationLayer; }
-    void SetAnimationLayerIndex(int index) { m_iAnimationLayer = index; }
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey(ILookAtKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
-    static void Reflect(AZ::ReflectContext* context);
-private:
-    int m_iAnimationLayer;
-};
+        int GetAnimationLayerIndex() const override
+        {
+            return m_iAnimationLayer;
+        }
+        void SetAnimationLayerIndex(int index) override
+        {
+            m_iAnimationLayer = index;
+        }
 
-#endif // CRYINCLUDE_CRYMOVIE_LOOKATTRACK_H
+        static void Reflect(AZ::ReflectContext* context);
+
+    private:
+        int m_iAnimationLayer;
+    };
+
+} // namespace Maestro

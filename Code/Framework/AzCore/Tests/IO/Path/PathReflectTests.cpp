@@ -85,7 +85,7 @@ namespace UnitTest
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathSerialization,
         PathSerializationFixture,
         ::testing::Values(
@@ -216,7 +216,7 @@ namespace UnitTest
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathScripting,
         PathScriptingParamFixture,
         ::testing::Values(

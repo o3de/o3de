@@ -1,6 +1,8 @@
 // Modified from original
 // Copyright 2006 Nemanja Trifunovic
 
+// Original repository at https://github.com/nemtrif/utfcpp
+
 /*
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by

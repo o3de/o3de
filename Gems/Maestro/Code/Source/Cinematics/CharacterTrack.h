@@ -7,50 +7,60 @@
  */
 
 
-#ifndef CRYINCLUDE_CRYMOVIE_CHARACTERTRACK_H
-#define CRYINCLUDE_CRYMOVIE_CHARACTERTRACK_H
-
 #pragma once
 
-//forward declarations.
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
-/** CCharacterTrack contains entity keys, when time reach event key, it fires script event or start animation etc...
-*/
-class CCharacterTrack
-    : public TAnimTrack<ICharacterKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CCharacterTrack, AZ::SystemAllocator);
-    AZ_RTTI(CCharacterTrack, "{3F701860-78BC-451A-B1DD-90F75DB9A7A2}", IAnimTrack);
 
-    CCharacterTrack()
-        : m_iAnimationLayer(-1) {}
+    /** CCharacterTrack contains entity keys, when time reach event key, it fires script event or start animation etc...
+     */
+    class CCharacterTrack : public TAnimTrack<ICharacterKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CCharacterTrack, AZ::SystemAllocator);
+        AZ_RTTI(CCharacterTrack, "{3F701860-78BC-451A-B1DD-90F75DB9A7A2}", IAnimTrack);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides of IAnimTrack.
-    //////////////////////////////////////////////////////////////////////////
-    bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+        CCharacterTrack()
+            : m_iAnimationLayer(-1)
+        {
+        }
 
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(ICharacterKey& key, XmlNodeRef& keyNode, bool bLoading);
+        //////////////////////////////////////////////////////////////////////////
+        // Overrides of IAnimTrack.
+        //////////////////////////////////////////////////////////////////////////
+        bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-    //! Gets the duration of an animation key. If it's a looped animation,
-    //! a special consideration is required to compute the actual duration.
-    float GetKeyDuration(int key) const;
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey(ICharacterKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
-    int GetAnimationLayerIndex() const { return m_iAnimationLayer; }
-    void SetAnimationLayerIndex(int index) { m_iAnimationLayer = index; }
+        //! Gets the duration of an animation key. If it's a looped animation,
+        //! a special consideration is required to compute the actual duration.
+        float GetKeyDuration(int key) const;
 
-    virtual AnimValueType GetValueType();
+        int GetAnimationLayerIndex() const override
+        {
+            return m_iAnimationLayer;
+        }
 
-    float GetEndTime() const { return m_timeRange.end; }
+        void SetAnimationLayerIndex(int index) override
+        {
+            m_iAnimationLayer = index;
+        }
 
-    static void Reflect(AZ::ReflectContext* context);
+        AnimValueType GetValueType() override;
 
-private:
-    int m_iAnimationLayer;
-};
+        float GetEndTime() const
+        {
+            return m_timeRange.end;
+        }
 
-#endif // CRYINCLUDE_CRYMOVIE_CHARACTERTRACK_H
+        static void Reflect(AZ::ReflectContext* context);
+
+    private:
+        int m_iAnimationLayer;
+    };
+
+} // namespace Maestro

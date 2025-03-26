@@ -30,9 +30,6 @@ namespace AZ
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef SERIALIZE_CLASS
-                    ->Field("IsEnabled", &DeferredFogComponentConfig::m_enabled)
-                    ->Field("UseNoiseTextureShaderOption", &DeferredFogComponentConfig::m_useNoiseTextureShaderOption)
-                    ->Field("EnableFogLayerShaderOption", &DeferredFogComponentConfig::m_enableFogLayerShaderOption)
                     ;
             }
         }

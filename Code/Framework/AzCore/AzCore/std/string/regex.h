@@ -2295,10 +2295,6 @@ namespace AZStd
             {
                 m_regEx = 0;
             }
-            else
-            {
-                this->_Adopt(m_regEx);
-            }
         }
 
         bool operator==(const this_type& right) const

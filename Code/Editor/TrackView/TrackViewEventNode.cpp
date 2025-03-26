@@ -15,7 +15,6 @@
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewEventNode::CTrackViewEventNode(IAnimSequence* pSequence, IAnimNode* pAnimNode, CTrackViewNode* pParentNode)
     : CTrackViewAnimNode(pSequence, pAnimNode, pParentNode)
 {
@@ -25,7 +24,6 @@ CTrackViewEventNode::CTrackViewEventNode(IAnimSequence* pSequence, IAnimNode* pA
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewEventNode::~CTrackViewEventNode()
 {
     if (GetAnimNode() && GetAnimNode()->GetSequence())
@@ -34,7 +32,6 @@ CTrackViewEventNode::~CTrackViewEventNode()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewEventNode::OnTrackEvent([[maybe_unused]] IAnimSequence* pSequence, int reason, const char* event, void* pUserData)
 {
     ITrackEventListener::ETrackEventReason  eReason = static_cast<ITrackEventListener::ETrackEventReason>(reason);
@@ -51,7 +48,6 @@ void CTrackViewEventNode::OnTrackEvent([[maybe_unused]] IAnimSequence* pSequence
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewEventNode::RenameTrackEvent(const char* fromName, const char* toName)
 {
     CTrackViewTrackBundle eventTracks = GetTracksByParam(AnimParamType::TrackEvent);
@@ -82,7 +78,6 @@ void CTrackViewEventNode::RenameTrackEvent(const char* fromName, const char* toN
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewEventNode::RemoveTrackEvent(const char* removedEventName)
 {
     // rename the removedEventName keys to the empty string, which represents an unset event key

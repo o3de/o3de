@@ -11,51 +11,20 @@ set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
-    ly_add_target(
-        NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            whitebox_unsupported_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Source
-            PUBLIC
-                Include
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-    )
-    if(PAL_TRAIT_BUILD_HOST_TOOLS)
-        ly_add_target(
-            NAME ${gem_name}.Editor GEM_MODULE
-            NAMESPACE Gem
-            FILES_CMAKE
-                whitebox_unsupported_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    Source
-                PUBLIC
-                    Include
-            COMPILE_DEFINITIONS
-                PRIVATE
-                    WHITE_BOX_EDITOR
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    AZ::AzCore
-            RUNTIME_DEPENDENCIES
-                Gem::EditorPythonBindings.Editor
-        )
-    endif()
+# note to maintainers
+# it is not necessary to make fake empty targets for platforms that are unsupported.
+# The gem system will only load modules if you declare 
+# ly_create_alias(NAME ${gem_name}.xxxxxx  NAMESPACE Gem TARGETS Gem::${gem_name})
+# If you don't declare any aliases with ${gem_name}.${variant}, then it communicates to the system
+# that no such module exists for that platform, and it will not be loaded.
 
-    # Inject the gem name into the Unsupported Module source file
-    ly_add_source_properties(
-        SOURCES
-            Source/WhiteBoxModuleUnsupported.cpp
-        PROPERTY COMPILE_DEFINITIONS
-            VALUES
-                O3DE_GEM_NAME=${gem_name}
-                O3DE_GEM_VERSION=${gem_version})
+# Note that actually loading a level with WhiteBox components in it into the Editor on a platform
+# that doesn't support it will cause it to load without those components, and more importantly,
+# save without those components, destroying the data.  This would happen regardless of whether no
+# dll is loaded, or a dummy empty dll is loaded.  To preserve the data, you must make a real component
+# that declares all its structs and components so it knows how to load and save them at the very least!
+
+if(NOT PAL_TRAIT_WHITEBOX_SUPPORTED)
     return()
 endif()
 
@@ -113,9 +82,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         FILES_CMAKE
             whitebox_editor_supported_files.cmake
-        PLATFORM_INCLUDE_FILES
-            ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_tools.cmake
-            ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/whitebox_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -134,6 +100,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCommon
                 Legacy::Editor.Headers
                 Gem::${gem_name}.Static
+                3rdParty::OpenMesh # Needs to be public, so that the below .Editor gem module includes the lib.
     )
 
     ly_add_target(
@@ -164,8 +131,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # use the above ${gem_name}.Editor module in dev tools:
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
-
-
 endif()
 
 ################################################################################
@@ -232,10 +197,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::PhysX.Editor
         )
 
-        ly_add_googletest(
-            NAME Gem::${gem_name}.Editor.Physics.Tests
-            LABELS REQUIRES_tiaf
-        )
+        ly_add_googletest(NAME Gem::${gem_name}.Editor.Physics.Tests)
 
     endif()
 endif()

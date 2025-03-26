@@ -88,7 +88,7 @@ namespace AZ::SceneAPI::Containers::Views
         CollectionType m_secondContainer;
     };
 
-    TYPED_TEST_CASE_P(PairIteratorTests);
+    TYPED_TEST_SUITE_P(PairIteratorTests);
 
     TYPED_TEST_P(PairIteratorTests, MakePairIterator_BuildFromTwoSeparateIterators_StoredIteratorsMatchTheGivenIterators)
     {
@@ -214,7 +214,7 @@ namespace AZ::SceneAPI::Containers::Views
         }
     }
 
-    REGISTER_TYPED_TEST_CASE_P(PairIteratorTests,
+    REGISTER_TYPED_TEST_SUITE_P(PairIteratorTests,
         MakePairIterator_BuildFromTwoSeparateIterators_StoredIteratorsMatchTheGivenIterators,
         MakePairIterator_BuildFromTwoSeparateIterators_FirstAndSecondInContainersCanBeAccessedThroughIterator,
         MakePairView_CreateFromIterators_IteratorsInViewMatchExplicitlyCreatedIterators,
@@ -227,7 +227,7 @@ namespace AZ::SceneAPI::Containers::Views
         PostIncrementOperator_IncrementingMovesBothIterators_BothStoredIteratorsMoved,
         Algorithms_Generate_FirstContainerFilledWithTheFirstAndSecondContainerFilledWithSecondInGivenPair);
 
-    INSTANTIATE_TYPED_TEST_CASE_P(CommonTests, PairIteratorTests, BasicCollectionTypes);
+    INSTANTIATE_TYPED_TEST_SUITE_P(CommonTests, PairIteratorTests, BasicCollectionTypes);
 
     // The following tests are done as standalone tests as not all iterators support this functionality
     TEST(PairIteratorTest, PreDecrementIterator_DecrementingMovesBothIterators_BothStoredIteratorsMoved)

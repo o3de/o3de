@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/std/any.h>
+#include <Range.h>
 
 namespace AzToolsFramework
 {

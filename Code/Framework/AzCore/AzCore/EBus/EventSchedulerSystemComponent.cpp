@@ -62,6 +62,8 @@ namespace AZ
         m_freeEvents.clear();
         m_handles.clear();
         m_freeHandles.clear();
+        m_queue = {};
+        m_pendingQueue = {};
     }
 
     void EventSchedulerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)

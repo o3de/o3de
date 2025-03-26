@@ -228,7 +228,7 @@ namespace SettingsRegistryTests
 
     using SettingsTypes = ::testing::Types<
         BoolTrue, BoolFalse, AZ::s64, double, AZStd::string, AZ::SettingsRegistryInterface::FixedValueString>;
-    TYPED_TEST_CASE(TypedSettingsRegistryTest, SettingsTypes);
+    TYPED_TEST_SUITE(TypedSettingsRegistryTest, SettingsTypes);
 
     TYPED_TEST(TypedSettingsRegistryTest, GetSet_SetAndGetValue_Success)
     {

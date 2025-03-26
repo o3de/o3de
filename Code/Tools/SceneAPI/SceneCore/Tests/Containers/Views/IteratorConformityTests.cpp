@@ -262,7 +262,7 @@ namespace AZ
                         ~AllContext() override = default;
                     };
 
-                    TYPED_TEST_CASE_P(AllContext);
+                    TYPED_TEST_SUITE_P(AllContext);
 
                     // Constructor
                     TYPED_TEST_P(AllContext, Constructor_CanBeConstructedAndDestructed_DoesNotCrash)
@@ -343,7 +343,7 @@ namespace AZ
                         ++iterator;
                     }
 
-                    REGISTER_TYPED_TEST_CASE_P(AllContext,
+                    REGISTER_TYPED_TEST_SUITE_P(AllContext,
                         Constructor_CanBeConstructedAndDestructed_DoesNotCrash,
                         CopyConstructor_CanBeCopyConstructedExplicit_DoesNotCrash,
                         CopyConstructor_CanBeCopyConstructedImplicit_DoesNotCrash,
@@ -370,7 +370,7 @@ namespace AZ
                         ~InputContext() override = default;
                     };
 
-                    TYPED_TEST_CASE_P(InputContext);
+                    TYPED_TEST_SUITE_P(InputContext);
 
                     // Equal operator
                     TYPED_TEST_P(InputContext, EqualsOperator_IteratorComparedWithSelf_SameIteratorObject)
@@ -580,7 +580,7 @@ namespace AZ
                         EXPECT_EQ(iteratorFirst, iteratorThird);
                     }
 
-                    REGISTER_TYPED_TEST_CASE_P(InputContext,
+                    REGISTER_TYPED_TEST_SUITE_P(InputContext,
                         EqualsOperator_IteratorComparedWithSelf_SameIteratorObject,
                         EqualsOperator_IdenticallyConstructedIterators_IteratorsAreEqual,
                         EqualsOperator_DifferentIterators_IteratorsAreNotEqual,
@@ -617,7 +617,7 @@ namespace AZ
                         ~ForwardContext() override = default;
                     };
 
-                    TYPED_TEST_CASE_P(ForwardContext);
+                    TYPED_TEST_SUITE_P(ForwardContext);
 
                     // Default constructor
                     TYPED_TEST_P(ForwardContext, DefaultConstructor_CanExplicityConstructed_DoesNotCrash)
@@ -648,7 +648,7 @@ namespace AZ
                         EXPECT_EQ(aValue, bValue);
                     }
 
-                    REGISTER_TYPED_TEST_CASE_P(ForwardContext,
+                    REGISTER_TYPED_TEST_SUITE_P(ForwardContext,
                         DefaultConstructor_CanExplicityConstructed_DoesNotCrash,
                         DefaultConstructor_CanImplicityConstructed_DoesNotCrash,
                         MultiPass_DereferencingMultipleTimes_ValueBeforeAndAfterIncrementingIsTheSame
@@ -669,7 +669,7 @@ namespace AZ
                         ~BidirectionalContext() override = default;
                     };
 
-                    TYPED_TEST_CASE_P(BidirectionalContext);
+                    TYPED_TEST_SUITE_P(BidirectionalContext);
 
                     // Post Decrement Operator
                     TYPED_TEST_P(BidirectionalContext, PostDecrementOperator_IterateOneStep_DoesNotCrash)
@@ -757,7 +757,7 @@ namespace AZ
                         EXPECT_EQ(*copy, *original);
                     }
 
-                    REGISTER_TYPED_TEST_CASE_P(BidirectionalContext,
+                    REGISTER_TYPED_TEST_SUITE_P(BidirectionalContext,
                         PostDecrementOperator_IterateOneStep_DoesNotCrash,
                         PostDecrementOperator_ReturnsIterator_DoesNotCrash,
                         PostDecrementOperator_IteratorReturnsOriginalIterator_OriginalIteratorMatchesCopiedValueAndNotMoveIterator,
@@ -783,7 +783,7 @@ namespace AZ
                         ~RandomAccessContext() override = default;
                     };
 
-                    TYPED_TEST_CASE_P(RandomAccessContext);
+                    TYPED_TEST_SUITE_P(RandomAccessContext);
 
                     // Difference subtract operator
                     TYPED_TEST_P(RandomAccessContext, DifferenceSubtractOperator_DifferenceWithItself_DifferenceIsZero)
@@ -995,7 +995,7 @@ namespace AZ
                         EXPECT_EQ(*moved, original[1]);
                     }
 
-                    REGISTER_TYPED_TEST_CASE_P(RandomAccessContext,
+                    REGISTER_TYPED_TEST_SUITE_P(RandomAccessContext,
                         DifferenceSubtractOperator_DifferenceWithItself_DifferenceIsZero,
                         DifferenceSubtractOperator_DifferenceBetweenIteratorsAtSamePosition_DifferenceIsZero,
                         DifferenceSubtractOperator_DifferenceBetweenIteratorsAtDifferentPositions_DifferenceIsOne,
@@ -1030,9 +1030,9 @@ namespace AZ
                     using GraphGroup = ::testing::Types<
                         SceneGraphUpwardsIteratorContext, SceneGraphChildIteratorContext,
                         SceneGraphDownwardsIteratorContext_DepthFirst, SceneGraphDownwardsIteratorContext_BreadthFirst>;
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_Base, AllContext, BaseGroup);
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_BaseExt, AllContext, BaseExtGroup);
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_Graph, AllContext, GraphGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_Base, AllContext, BaseGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_BaseExt, AllContext, BaseExtGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_Graph, AllContext, GraphGroup);
                 }
                 namespace InputIterators
                 {
@@ -1044,9 +1044,9 @@ namespace AZ
                     using GraphGroup = ::testing::Types<
                         SceneGraphUpwardsIteratorContext, SceneGraphChildIteratorContext,
                         SceneGraphDownwardsIteratorContext_DepthFirst, SceneGraphDownwardsIteratorContext_BreadthFirst>;
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_Base, InputContext, BaseGroup);
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_BaseExt, InputContext, BaseExtGroup);
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_Graph, InputContext, GraphGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_Base, InputContext, BaseGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_BaseExt, InputContext, BaseExtGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_Graph, InputContext, GraphGroup);
                 }
                 namespace ForwardIterators
                 {
@@ -1058,9 +1058,9 @@ namespace AZ
                     using GraphGroup = ::testing::Types<
                         SceneGraphUpwardsIteratorContext, SceneGraphChildIteratorContext,
                         SceneGraphDownwardsIteratorContext_DepthFirst, SceneGraphDownwardsIteratorContext_BreadthFirst>;
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_Base, ForwardContext, BaseGroup);
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_BaseExt, ForwardContext, BaseExtGroup);
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_Graph, ForwardContext, GraphGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_Base, ForwardContext, BaseGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_BaseExt, ForwardContext, BaseExtGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_Graph, ForwardContext, GraphGroup);
                 }
                 namespace BidirectionalIterators
                 {
@@ -1069,15 +1069,15 @@ namespace AZ
                             ConvertIteratorContext<VectorIteratorContext>, ConvertIteratorContext<ListIteratorContext>,
                             FilterIteratorContext<VectorIteratorContext>, FilterIteratorContext<ListIteratorContext>,
                             PairIteratorContext<VectorIteratorContext>, PairIteratorContext<ListIteratorContext>>;
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_Base, BidirectionalContext, BaseGroup);
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_BaseExt, BidirectionalContext, BaseExtGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_Base, BidirectionalContext, BaseGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_BaseExt, BidirectionalContext, BaseExtGroup);
                 }
                 namespace RandomAccessIterators
                 {
                     using BaseGroup = ::testing::Types<VectorIteratorContext>;
                     using BaseExtGroup = ::testing::Types<ConvertIteratorContext<VectorIteratorContext>, PairIteratorContext<VectorIteratorContext>>;
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_Base, RandomAccessContext, BaseGroup);
-                    INSTANTIATE_TYPED_TEST_CASE_P(IteratorConformityTests_BaseExt, RandomAccessContext, BaseExtGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_Base, RandomAccessContext, BaseGroup);
+                    INSTANTIATE_TYPED_TEST_SUITE_P(IteratorConformityTests_BaseExt, RandomAccessContext, BaseExtGroup);
                 }
             } // Views
         } // Containers

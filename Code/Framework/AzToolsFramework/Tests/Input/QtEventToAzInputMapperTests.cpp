@@ -369,7 +369,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
-    INSTANTIATE_TEST_CASE_P(All, MouseButtonParamQtEventToAzInputMapperFixture,
+    INSTANTIATE_TEST_SUITE_P(All, MouseButtonParamQtEventToAzInputMapperFixture,
         testing::Values(
             MouseButtonIdsParam{ Qt::MouseButton::LeftButton, AzFramework::InputDeviceMouse::Button::Left },
             MouseButtonIdsParam{ Qt::MouseButton::RightButton, AzFramework::InputDeviceMouse::Button::Right },
@@ -462,7 +462,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
-    INSTANTIATE_TEST_CASE_P(All, PrintableKeyEventParamQtEventToAzInputMapperFixture,
+    INSTANTIATE_TEST_SUITE_P(All, PrintableKeyEventParamQtEventToAzInputMapperFixture,
         testing::Values(
             KeyEventIdsParam{ Qt::Key_0, AzFramework::InputDeviceKeyboard::Key::Alphanumeric0 },
             KeyEventIdsParam{ Qt::Key_1, AzFramework::InputDeviceKeyboard::Key::Alphanumeric1 },
@@ -526,9 +526,9 @@ namespace UnitTest
 
     // Note that this class is identical to the previous fixture class.
     // This is intentional - the test framework appears to gather all TEST_P bodies and execute them for all
-    // fixtures that use the same class, even if they have different names in INSTANTIATE_TEST_CASE_P.
-    // By making a different class here, we can separate them so the above INSTANTIATE_TEST_CASE_P params
-    // do not get fed into the below TEST_P.  (This happens even if you give the INSTANTIATE_TEST_CASE_P calls different names.)
+    // fixtures that use the same class, even if they have different names in INSTANTIATE_TEST_SUITE_P.
+    // By making a different class here, we can separate them so the above INSTANTIATE_TEST_SUITE_P params
+    // do not get fed into the below TEST_P.  (This happens even if you give the INSTANTIATE_TEST_SUITE_P calls different names.)
     class ModifierKeyEventFixture
         : public QtEventToAzInputMapperFixture
         , public ::testing::WithParamInterface<KeyEventIdsParam>
@@ -606,7 +606,7 @@ namespace UnitTest
 
     // Test case exercises each modifier key and makes sure it doesn't "stick" when the application
     // is deactivated.
-    INSTANTIATE_TEST_CASE_P(All, ModifierKeyEventFixture,
+    INSTANTIATE_TEST_SUITE_P(All, ModifierKeyEventFixture,
         testing::Values(
             KeyEventIdsParam{ Qt::Key_Alt, AzFramework::InputDeviceKeyboard::Key::ModifierAltL },
             KeyEventIdsParam{ Qt::Key_Shift, AzFramework::InputDeviceKeyboard::Key::ModifierShiftL },
@@ -676,7 +676,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
-    INSTANTIATE_TEST_CASE_P(All, MoveMoveWrapParamQtEventToAzInputMapperFixture,
+    INSTANTIATE_TEST_SUITE_P(All, MoveMoveWrapParamQtEventToAzInputMapperFixture,
         testing::Values(
             // verify CursorModeWrappedX wrapping
             MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedX, 

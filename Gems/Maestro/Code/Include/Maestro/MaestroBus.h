@@ -22,6 +22,4 @@ namespace Maestro
     };
     using MaestroRequestBus = AZ::EBus<MaestroRequests>;
 
-
-
 } // namespace Maestro

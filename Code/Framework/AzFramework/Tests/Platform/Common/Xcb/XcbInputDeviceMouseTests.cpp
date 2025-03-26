@@ -342,7 +342,7 @@ namespace AzFramework
         EXPECT_THAT(inactiveButtonChannels, Each(Property(&InputChannel::GetState, Eq(InputChannel::State::Idle))));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         AllButtons,
         XcbInputDeviceMouseButtonTests,
         testing::Values(
@@ -634,7 +634,7 @@ namespace AzFramework
         ));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         AllPointerPositions,
         XcbGetSystemCursorPositionTests,
         testing::Values(

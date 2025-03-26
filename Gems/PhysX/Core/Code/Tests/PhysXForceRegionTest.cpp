@@ -357,7 +357,7 @@ namespace PhysX
         EXPECT_LE(maxVelocityZ, 0.0f);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PhysXForceRegion,
         PhysXForceRegionTestParameterized,
         ::testing::Combine(::testing::Values(1.0f, 1e2f, 1e4f, 1e6f), ::testing::Values(1e-3f, 1e-2f, 1e-1f, 1.0f)));

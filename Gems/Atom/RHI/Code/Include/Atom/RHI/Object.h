@@ -39,6 +39,8 @@ namespace AZ::RHI
         // IntrusivePtrCountPolicy overrides
         template<typename Type>
         friend struct AZStd::IntrusivePtrCountPolicy;
+        template<typename ResourceType>
+        friend struct ResourceViewCache;
         void add_ref() const;
 
         //! All objects have an explicit Init / Shutdown path in addition to

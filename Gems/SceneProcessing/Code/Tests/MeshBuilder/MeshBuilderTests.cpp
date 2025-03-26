@@ -199,7 +199,7 @@ namespace AZ::MeshBuilder
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(MeshBuilderTest_MaxSubMeshVertices,
+    INSTANTIATE_TEST_SUITE_P(MeshBuilderTest_MaxSubMeshVertices,
         MeshBuilderFixture,
         ::testing::ValuesIn(meshBuilderMaxSubMeshVerticesTestData));
 } // namespace AZ::MeshBuilder

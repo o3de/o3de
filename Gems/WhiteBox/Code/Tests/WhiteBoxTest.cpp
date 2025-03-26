@@ -180,15 +180,57 @@ namespace UnitTest
 
         Api::InitializeAsUnitCube(*m_whiteBox);
 
+        // Note to future maintainers, a half-edge is an edge between two vertices, with a direction.
+        // Think of it like an arrow starting at one vertex, and then pointing to another at its tip.
+        // The other vertex then has a corresponding half edge, from itself, pointing back to the first vertex.
+
+        // Given a vertex handle, you can ask Open Mesh to iterate over half-edges from that vertex.
+        // If you ask it for "outgoing" half-edges, you'll get all of the ones which start at the given vertex and point at others.
+        // If you ask it for "incoming" half-edges, you'll get all of the ones which point at the given vertex and start at others.
+
+        // Most importantly, the "handle" of a half edge is an opaque integer that is implementation version specific and does not
+        // impart meaning, similar to how the actual integer file handle returned when you open a user file using 'open' does not
+        // impart meaning.  You can only use it to refer to the half-edge in functions which query other aspects, such as which faces
+        // it is beside or which vertices it points at or comes from.  The acutal integer number is not guarinteed to remain in order
+        // or to be stable.
+
+        // Users, however to specify vertices, and in that case, the order matters. For this unit cube,
+        // vertex 0 is at the corner of the top of the cube.
+        // Vertex 0 has 5 outgoing half-edges, one for each of the 5 edges that connect from vertex 0 to other vertices as the model
+        // is actually made of triangles (not quads), so each quad face is actually 2 triangles.
+        // It has no 6th outgoing edge because the triangle-strip like zig-zag pattern which
+        // the triangles are constructed from means that vertex 0 connects to 5 other vertices via edges but isn't the nexus of all
+        // 3 cube sides it touches, as that would form a triangle fan around it instead of a strip.
+
         AZStd::vector<Api::HalfedgeHandle> outgoingHalfedgeHandles =
             Api::VertexOutgoingHalfedgeHandles(*m_whiteBox, Api::VertexHandle{0});
 
-        const Api::HalfedgeHandle expectedHalfedgeHandles[] = {
-            Api::HalfedgeHandle{9}, Api::HalfedgeHandle{34}, Api::HalfedgeHandle{24}, Api::HalfedgeHandle{0},
-            Api::HalfedgeHandle{5}};
+        ASSERT_EQ(outgoingHalfedgeHandles.size(), 5); // we are going to assume this going forward, so stop here if its not.
 
-        EXPECT_THAT(
-            outgoingHalfedgeHandles, ElementsAreArray(expectedHalfedgeHandles, std::size(expectedHalfedgeHandles)));
+        for (const auto& halfedgeHandle : outgoingHalfedgeHandles)
+        {
+            // when we are iterating over half-edges, the "tail" is the vertex that the half-edge is coming from, so in this case,
+            // because we asked it to get all the outgoing half-edges 0, that means 0 should be the tail of every such 'arrow'.
+            auto tailHandle = Api::VertexHandle{ 0 };
+            EXPECT_EQ(Api::HalfedgeVertexHandleAtTail(*m_whiteBox, halfedgeHandle), tailHandle);
+        }
+
+        // On the other hand, when we ask it for which vertex is at the tip of the edge, its the vertex on the other side of the
+        // half-edge, from vertex 0 - We expect it to connect to exactly 5 other vertices since there are 5 half-edges and no duplicates.
+        // Specifically the closest 5 from that corner in the cube.  Because the iterator always runs counter clockwise, this order is FIXED.
+        const Api::VertexHandle expectedOtherSideVertexHandles[] = {
+             Api::VertexHandle{ 7 },
+             Api::VertexHandle{ 4 },
+             Api::VertexHandle{ 1 },
+             Api::VertexHandle{ 2 },
+             Api::VertexHandle{ 3 }
+        };
+
+        ASSERT_EQ(AZ_ARRAY_SIZE(expectedOtherSideVertexHandles), outgoingHalfedgeHandles.size());
+        for (size_t halfEdgeIndex = 0; halfEdgeIndex < outgoingHalfedgeHandles.size(); ++halfEdgeIndex)
+        {
+            EXPECT_EQ(Api::HalfedgeVertexHandleAtTip(*m_whiteBox, outgoingHalfedgeHandles[halfEdgeIndex]), expectedOtherSideVertexHandles[halfEdgeIndex]);
+        }
     }
 
     TEST_F(WhiteBoxTestFixture, IncomingHalfedgesFromVertex)
@@ -201,12 +243,33 @@ namespace UnitTest
         AZStd::vector<Api::HalfedgeHandle> incomingHalfedgeHandles =
             Api::VertexIncomingHalfedgeHandles(*m_whiteBox, Api::VertexHandle{0});
 
-        const Api::HalfedgeHandle expectedHalfedgeHandles[] = {
-            Api::HalfedgeHandle{8}, Api::HalfedgeHandle{35}, Api::HalfedgeHandle{25}, Api::HalfedgeHandle{1},
-            Api::HalfedgeHandle{4}};
+        // see the note in the above check.
+        ASSERT_EQ(incomingHalfedgeHandles.size(), 5); // we are going to assume this going forward, so stop here if its not.
+        for (const auto& halfedgeHandle : incomingHalfedgeHandles)
+        {
+            // when we are iterating over half-edges, the "tip" is the vertex that the half-edge is pointing at,
+            // because we asked it to get all the incoming half-edges pointing at vertex 0, we expect that all of them return vertex 0
+            auto tailHandle = Api::VertexHandle{ 0 };
+            EXPECT_EQ(Api::HalfedgeVertexHandleAtTip(*m_whiteBox, halfedgeHandle), tailHandle);
+        }
 
-        EXPECT_THAT(
-            incomingHalfedgeHandles, ElementsAreArray(expectedHalfedgeHandles, std::size(expectedHalfedgeHandles)));
+        // On the other hand, when we ask it for which vertex is at the tail of the edge, its the one on the opposite side to vertex 0
+        // this should be exactly 5 other vertices, in counter clockwise order (so it should be a fixed order).
+        const Api::VertexHandle expectedOtherSideVertexHandles[] = {
+            Api::VertexHandle{ 7 },
+            Api::VertexHandle{ 4 },
+            Api::VertexHandle{ 1 },
+            Api::VertexHandle{ 2 },
+            Api::VertexHandle{ 3 }
+        };
+
+        ASSERT_EQ(AZ_ARRAY_SIZE(expectedOtherSideVertexHandles), incomingHalfedgeHandles.size());
+        for (size_t halfEdgeIndex = 0; halfEdgeIndex < incomingHalfedgeHandles.size(); ++halfEdgeIndex)
+        {
+            EXPECT_EQ(
+                Api::HalfedgeVertexHandleAtTail(*m_whiteBox, incomingHalfedgeHandles[halfEdgeIndex]),
+                expectedOtherSideVertexHandles[halfEdgeIndex]);
+        }
     }
 
     TEST_F(WhiteBoxTestFixture, AllHalfedgesFromVertex)
@@ -216,15 +279,59 @@ namespace UnitTest
 
         Api::InitializeAsUnitCube(*m_whiteBox);
 
+        // see the note on the previous 2 functions.  This one gets ALL of the half edges related to a vertex
+        // both incoming and outgiong.  Handles are opaque data types, so its unreliable to expect the handles
+        // to be any particular value.  However, each handle should point at vertex 0 at its head or tail
+        // and there is always a fixed number of them (5 incoming, 5 outgoing = 10 total).
+        // However, the iterator returns them in counter clockwise order, so the verts they connect to on each end are predictable.
         AZStd::vector<Api::HalfedgeHandle> allHalfedgeHandles =
             Api::VertexHalfedgeHandles(*m_whiteBox, Api::VertexHandle{0});
 
-        const Api::HalfedgeHandle expectedHalfedgeHandles[] = {
-            Api::HalfedgeHandle{9}, Api::HalfedgeHandle{34}, Api::HalfedgeHandle{24}, Api::HalfedgeHandle{0},
-            Api::HalfedgeHandle{5}, Api::HalfedgeHandle{8},  Api::HalfedgeHandle{35}, Api::HalfedgeHandle{25},
-            Api::HalfedgeHandle{1}, Api::HalfedgeHandle{4}};
+        ASSERT_EQ(allHalfedgeHandles.size(), 10);
 
-        EXPECT_THAT(allHalfedgeHandles, ElementsAreArray(expectedHalfedgeHandles, std::size(expectedHalfedgeHandles)));
+        // notice that when we ask for all halfedges, we get 5 incoming and 5 outgoing
+        // and it gets the outgoing first (so the tip will be all the other verts)
+        // then the incoming, so the tip will all be the vert we asked for, which is zero.
+        const Api::VertexHandle expectedTipVertexHandles[] = {
+            Api::VertexHandle{ 7 },
+            Api::VertexHandle{ 4 },
+            Api::VertexHandle{ 1 },
+            Api::VertexHandle{ 2 },
+            Api::VertexHandle{ 3 },
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 0 } };
+
+        // Similarly when we ask for all halfedges, the tail of each one is going be the outgoing
+        // first, so all 0's (since we asked for 0's halfedges), and then the incoming, so the other verts.
+        const Api::VertexHandle expectedTailVertexHandles[] = {
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 0 },
+            Api::VertexHandle{ 7 },
+            Api::VertexHandle{ 4 },
+            Api::VertexHandle{ 1 },
+            Api::VertexHandle{ 2 },
+            Api::VertexHandle{ 3 } };
+
+        AZStd::vector<Api::VertexHandle> actualTipVertexHandles;
+        AZStd::vector<Api::VertexHandle> actualTailVertexHandles;
+
+        ASSERT_EQ(AZ_ARRAY_SIZE(expectedTipVertexHandles),  allHalfedgeHandles.size());
+        ASSERT_EQ(AZ_ARRAY_SIZE(expectedTailVertexHandles), allHalfedgeHandles.size());
+
+        for (size_t halfEdgeIndex = 0; halfEdgeIndex < allHalfedgeHandles.size(); ++halfEdgeIndex)
+        {
+            actualTipVertexHandles.push_back(Api::HalfedgeVertexHandleAtTip(*m_whiteBox, allHalfedgeHandles[halfEdgeIndex]));
+            actualTailVertexHandles.push_back(Api::HalfedgeVertexHandleAtTail(*m_whiteBox, allHalfedgeHandles[halfEdgeIndex]));
+        }
+
+        EXPECT_THAT(actualTipVertexHandles, ElementsAreArray(expectedTipVertexHandles, std::size(expectedTipVertexHandles)));
+        EXPECT_THAT(actualTailVertexHandles, ElementsAreArray(expectedTailVertexHandles, std::size(expectedTailVertexHandles)));
     }
 
     TEST_F(WhiteBoxTestFixture, VerticesForFace)
@@ -2012,8 +2119,10 @@ namespace UnitTest
 
         const auto vertexUserEdgeVectors = Api::VertexUserEdgeVectors(*m_whiteBox, Api::VertexHandle{2});
 
+        // The order of these can change between versions of OM3D but the values should be the same (one for each basis)
+        // Winding is counter clockwise so it tends to go -X ... -Y ... -Z in latest OpenMesh 11.x
         const auto expectedUserEdgeVectors = AZStd::vector<AZ::Vector3>{
-            -AZ::Vector3::CreateAxisZ(), -AZ::Vector3::CreateAxisX(), -AZ::Vector3::CreateAxisY()};
+            -AZ::Vector3::CreateAxisX(), -AZ::Vector3::CreateAxisY(), -AZ::Vector3::CreateAxisZ()};
 
         EXPECT_THAT(vertexUserEdgeVectors, Pointwise(ContainerIsClose(), expectedUserEdgeVectors));
     }
@@ -2055,10 +2164,12 @@ namespace UnitTest
         const auto vertexUserEdgeVectors = Api::VertexUserEdgeVectors(*m_whiteBox, Api::VertexHandle{2});
         const auto vertexUserEdgeAxes = Api::VertexUserEdgeAxes(*m_whiteBox, Api::VertexHandle{2});
 
-        const auto expectedUserEdgeVectors =
-            AZStd::vector<AZ::Vector3>{-AZ::Vector3::CreateAxisZ(2.0f), -AZ::Vector3::CreateAxisY(3.0f)};
-        const auto expectedUserEdgeAxes =
-            AZStd::vector<AZ::Vector3>{-AZ::Vector3::CreateAxisZ(), -AZ::Vector3::CreateAxisY()};
+        // Again, these could change in order between versions of OpenMesh.  But the values will be present.
+        // In the OpenMesh 11.0 it tends to go (-x ... -y ... -z) so in this case its (-y, -z) becuase we have 
+        // collapsed along x, which will have a zero length and should no be returned.
+
+        const auto expectedUserEdgeVectors = AZStd::vector<AZ::Vector3>{ -AZ::Vector3::CreateAxisY(3.0f), -AZ::Vector3::CreateAxisZ(2.0f) };
+        const auto expectedUserEdgeAxes    = AZStd::vector<AZ::Vector3>{ -AZ::Vector3::CreateAxisY(), -AZ::Vector3::CreateAxisZ() };
 
         EXPECT_THAT(vertexUserEdgeVectors, Pointwise(ContainerIsClose(), expectedUserEdgeVectors));
         EXPECT_THAT(vertexUserEdgeAxes, Pointwise(ContainerIsClose(), expectedUserEdgeAxes));

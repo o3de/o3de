@@ -12,30 +12,31 @@
 #include "Maestro/Types/AnimNodeType.h"
 #include "Maestro/Types/AnimParamType.h"
 
-//////////////////////////////////////////////////////////////////////////
-CAnimNodeGroup::CAnimNodeGroup()
-    : CAnimNodeGroup(0)
+namespace Maestro
 {
-}
 
-//////////////////////////////////////////////////////////////////////////
-CAnimNodeGroup::CAnimNodeGroup(const int id)
-    : CAnimNode(id, AnimNodeType::Group) 
-{ 
-    SetFlags(GetFlags() | eAnimNodeFlags_CanChangeName);
-}
-
-CAnimParamType CAnimNodeGroup::GetParamType([[maybe_unused]] unsigned int nIndex) const
-{
-    return AnimParamType::Invalid;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CAnimNodeGroup::Reflect(AZ::ReflectContext* context)
-{
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    CAnimNodeGroup::CAnimNodeGroup()
+        : CAnimNodeGroup(0)
     {
-        serializeContext->Class<CAnimNodeGroup, CAnimNode>()
-            ->Version(1);
     }
-}
+
+    CAnimNodeGroup::CAnimNodeGroup(const int id)
+        : CAnimNode(id, AnimNodeType::Group)
+    {
+        SetFlags(GetFlags() | eAnimNodeFlags_CanChangeName);
+    }
+
+    CAnimParamType CAnimNodeGroup::GetParamType([[maybe_unused]] unsigned int nIndex) const
+    {
+        return AnimParamType::Invalid;
+    }
+
+    void CAnimNodeGroup::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CAnimNodeGroup, CAnimNode>()->Version(1);
+        }
+    }
+
+} // namespace Maestro

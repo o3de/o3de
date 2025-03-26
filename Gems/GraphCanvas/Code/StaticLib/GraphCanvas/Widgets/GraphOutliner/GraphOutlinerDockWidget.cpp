@@ -91,6 +91,7 @@ namespace GraphCanvas
         verticalLayout->addWidget(m_nodelistTable);
 
         this->setWindowTitle("Graph Outliner");
+        this->setObjectName("GraphOutlinerDockWidget");
         this->setWidget(dockWidgetContents);
 
     }

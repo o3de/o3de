@@ -77,6 +77,10 @@ namespace AZ
             // Get the data reference of device heap memory usage 
             RHI::HeapMemoryUsage& GetDeviceHeapMemoryUsage();
 
+            // A helper function that makes sure any previous upload request
+            // is actually completed on @image.
+            void WaitFinishUploading(const Image& image);
+
             // whether to enable tiled resource
             bool m_enableTileResource = false;
 

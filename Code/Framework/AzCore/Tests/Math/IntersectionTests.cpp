@@ -597,7 +597,7 @@ namespace UnitTest
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(MATH_IntersectSegmentTriangleTest, RayTriangleTests, ::testing::ValuesIn(RayTriangleTestParams));
+    INSTANTIATE_TEST_SUITE_P(MATH_IntersectSegmentTriangleTest, RayTriangleTests, ::testing::ValuesIn(RayTriangleTestParams));
 
     class MATH_IntersectRayCappedCylinderTest
         : public LeakDetectionFixture

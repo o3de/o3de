@@ -548,7 +548,7 @@ namespace AZStd
 
         // Removes unused capacity - For fixed_vector this only asserts
         // that the supplied capacity is not longer than the fixed_vector capacity
-        void reserve(size_type newCapacity)
+        void reserve([[maybe_unused]] size_type newCapacity)
         {
             // No-op - Implemented to provide consistent std::vector
             AZSTD_CONTAINER_ASSERT(newCapacity <= capacity(),

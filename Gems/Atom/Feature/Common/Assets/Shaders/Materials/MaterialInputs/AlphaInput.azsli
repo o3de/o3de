@@ -26,7 +26,11 @@ real SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorU
             }
             else
             {
+            #ifdef CS_SAMPLERS
+                alpha = real(baseColorMap.SampleLevel(mapSampler, baseColorUv, 0).a);
+            #else
                 alpha = real(baseColorMap.Sample(mapSampler, baseColorUv).a);
+            #endif
             }
             break;
         }
@@ -38,7 +42,11 @@ real SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorU
             }
             else
             {
+            #ifdef CS_SAMPLERS
+                alpha = real(opacityMap.SampleLevel(mapSampler, opacityUv, 0).r);
+            #else
                 alpha = real(opacityMap.Sample(mapSampler, opacityUv).r);
+            #endif
             }
             break;
         }

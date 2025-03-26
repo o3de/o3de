@@ -6,37 +6,34 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_COMMENTTRACK_H
-#define CRYINCLUDE_CRYMOVIE_COMMENTTRACK_H
 #pragma once
 
-
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 #include "AnimTrack.h"
 
-class CCommentTrack
-    : public TAnimTrack<ICommentKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CCommentTrack, AZ::SystemAllocator);
-    AZ_RTTI(CCommentTrack, "{A28FE42D-5B42-4E47-9813-4290D275D5A9}", IAnimTrack);
 
-    //-----------------------------------------------------------------------------
-    //!
-    CCommentTrack();
+    class CCommentTrack : public TAnimTrack<ICommentKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CCommentTrack, AZ::SystemAllocator);
+        AZ_RTTI(CCommentTrack, "{A28FE42D-5B42-4E47-9813-4290D275D5A9}", IAnimTrack);
 
-    //-----------------------------------------------------------------------------
-    //! IAnimTrack Method Overriding.
-    //-----------------------------------------------------------------------------
-    virtual void GetKeyInfo(int key, const char*& description, float& duration);
-    virtual void SerializeKey(ICommentKey& key, XmlNodeRef& keyNode, bool bLoading);
+        CCommentTrack();
 
-    //-----------------------------------------------------------------------------
-    //!
-    void ValidateKeyOrder() { CheckValid(); }
+        //-----------------------------------------------------------------------------
+        //! IAnimTrack Method Overriding.
+        //-----------------------------------------------------------------------------
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey(ICommentKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
-    static void Reflect(AZ::ReflectContext* context);
-};
+        void ValidateKeyOrder()
+        {
+            CheckValid();
+        }
 
-#endif // CRYINCLUDE_CRYMOVIE_COMMENTTRACK_H
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
+} // namespace Maestro

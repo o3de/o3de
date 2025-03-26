@@ -464,7 +464,7 @@ namespace AZ::Dom
         }
 
         size_t pathEntryCount = 0;
-        for (size_t i = 1; i <= pathString.size(); ++i)
+        for (size_t i = 1; i < pathString.size(); ++i)
         {
             if (pathString[i] == PathSeparator)
             {

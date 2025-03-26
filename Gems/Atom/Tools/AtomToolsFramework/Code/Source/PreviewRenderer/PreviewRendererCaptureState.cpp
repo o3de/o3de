@@ -39,7 +39,7 @@ namespace AtomToolsFramework
             return;
         }
 
-        if (AZStd::chrono::steady_clock::now() > m_captureTime)
+        if (m_renderer->IsContentReadyToRender())
         {
             if (!AZ::Render::FrameCaptureNotificationBus::Handler::BusIsConnected())
             {

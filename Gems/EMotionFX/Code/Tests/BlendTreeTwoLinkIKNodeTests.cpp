@@ -537,7 +537,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeTwoLinkIKNode_OutputTests,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeTwoLinkIKNode_OutputTests,
         BlendTreeTwoLinkIKNodeFixture,
         ::testing::Combine(
             ::testing::Bool(),

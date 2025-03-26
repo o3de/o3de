@@ -24,14 +24,20 @@ namespace AZ
                     ->Field("DynamicBufferPoolSize", &DynamicDrawSystemDescriptor::m_dynamicBufferPoolSize)
                     ;
 
+                serializeContext->Class<RayTracingSystemDescriptor>()
+                    ->Version(0)
+                    ->Field("EnableBlasCompaction", &RayTracingSystemDescriptor::m_enableBlasCompaction)
+                    ->Field("MaxBlasCreatedPerFrame", &RayTracingSystemDescriptor::m_maxBlasCreatedPerFrame)
+                    ->Field("RayTracingCompactionQueryPoolSize", &RayTracingSystemDescriptor::m_rayTracingCompactionQueryPoolSize);
+
                 serializeContext->Class<RPISystemDescriptor>()
                     ->Version(7) // ATOM-16237
                     ->Field("CommonSrgsShaderAssetPath", &RPISystemDescriptor::m_commonSrgsShaderAssetPath)
                     ->Field("ImageSystemDescriptor", &RPISystemDescriptor::m_imageSystemDescriptor)
                     ->Field("GpuQuerySystemDescriptor", &RPISystemDescriptor::m_gpuQuerySystemDescriptor)
                     ->Field("DynamicDrawSystemDescriptor", &RPISystemDescriptor::m_dynamicDrawSystemDescriptor)
-                    ->Field("NullRenderer", &RPISystemDescriptor::m_isNullRenderer)
-                    ;
+                    ->Field("RayTracingSystemDescriptor", &RPISystemDescriptor::m_rayTracingSystemDescriptor)
+                    ->Field("NullRenderer", &RPISystemDescriptor::m_isNullRenderer);
             }
         }
     } // namespace RPI

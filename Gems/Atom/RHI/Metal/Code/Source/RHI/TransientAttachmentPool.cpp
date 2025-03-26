@@ -8,6 +8,8 @@
 
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI/AliasedAttachmentAllocator.h>
+#include <Atom/RHI/RHIBus.h>
+
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/Scope.h>
@@ -138,6 +140,17 @@ namespace AZ
                 return RHI::ResultCode::InvalidArgument;
             }
             
+            struct
+            {
+                size_t m_alignment = 0;
+                void operator=(size_t value)
+                {
+                    m_alignment = AZStd::max(m_alignment, value);
+                }
+            } alignment;
+            AZ::RHI::RHIRequirementRequestBus::BroadcastResult(alignment, &AZ::RHI::RHIRequirementsRequest::GetRequiredAlignment, device);
+
+            
             if (descriptor.m_imageBudgetInBytes || allowNoBudget)
             {
                 AliasedAttachmentAllocator::Descriptor heapAllocatorDesc;
@@ -145,10 +158,9 @@ namespace AZ
                 heapAllocatorDesc.m_budgetInBytes = descriptor.m_imageBudgetInBytes;
                 heapAllocatorDesc.m_resourceTypeMask = RHI::AliasedResourceTypeFlags::Image;
                 heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
-                //Alignment will come from heapTextureSizeAndAlignWithDescriptor which returns the size and alignment, in
-                //bytes, of a texture sub-allocated from a heap
-                heapAllocatorDesc.m_alignment = 0;
+                heapAllocatorDesc.m_alignment = AZStd::max(alignment.m_alignment, heapAllocatorDesc.m_alignment);
 
+                
                 RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
                 allocator->SetName(Name("TransientAttachmentPool [Images]"));
                 allocator->Init(device, heapAllocatorDesc);
@@ -165,10 +177,8 @@ namespace AZ
                 heapAllocatorDesc.m_budgetInBytes = descriptor.m_renderTargetBudgetInBytes;
                 heapAllocatorDesc.m_resourceTypeMask = RHI::AliasedResourceTypeFlags::RenderTarget;
                 heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
-                //Alignment will come from heapTextureSizeAndAlignWithDescriptor which returns the size and alignment, in
-                //bytes, of a texture sub-allocated from a heap
-                heapAllocatorDesc.m_alignment = 0;
-
+                heapAllocatorDesc.m_alignment = AZStd::max(alignment.m_alignment, heapAllocatorDesc.m_alignment);
+                
                 RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
                 allocator->SetName(Name("TransientAttachmentPool [Render Targets]"));
                 allocator->Init(device, heapAllocatorDesc);
@@ -184,10 +194,8 @@ namespace AZ
                 heapAllocatorDesc.m_budgetInBytes = descriptor.m_bufferBudgetInBytes;
                 heapAllocatorDesc.m_resourceTypeMask = RHI::AliasedResourceTypeFlags::Buffer;
                 heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
-                //Alignment will come from heapTextureSizeAndAlignWithDescriptor which returns the size and alignment, in
-                //bytes, of a buffer sub-allocated from a heap
-                heapAllocatorDesc.m_alignment = 0;
-
+                heapAllocatorDesc.m_alignment = AZStd::max(alignment.m_alignment, heapAllocatorDesc.m_alignment);
+                
                 RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
                 allocator->SetName(Name("TransientAttachmentPool [Buffers]"));
                 allocator->Init(device, heapAllocatorDesc);

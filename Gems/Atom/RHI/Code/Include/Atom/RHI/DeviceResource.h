@@ -8,9 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/DeviceObject.h>
-#include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/std/containers/unordered_map.h>
-
+#include <Atom/RHI/ResourceViewCache.h>
 
 namespace AZ::RHI
 {
@@ -31,6 +29,7 @@ namespace AZ::RHI
         : public DeviceObject
     {
         friend class Resource;
+        friend class ResourceView;
         friend class DeviceResourcePool;
     public:
         AZ_RTTI(DeviceResource, "{9D02CDAC-80EB-4B77-8E62-849AC6E69206}", DeviceObject);
@@ -90,12 +89,6 @@ namespace AZ::RHI
 
         /// Called by the frame attachment at frame building time.
         void SetFrameAttachment(FrameAttachment* frameAttachment);
-
-        /// Called by GetResourceView to insert a new image view
-        Ptr<DeviceImageView> InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const;
-
-        /// Called by GetResourceView to insert a new buffer view
-        Ptr<DeviceBufferView> InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const;
                                     
         /// The parent pool this resource is registered with.
         DeviceResourcePool* m_pool = nullptr;
@@ -112,8 +105,6 @@ namespace AZ::RHI
         // Cache the resourceViews in order to avoid re-creation
         // Since DeviceResourceView has a dependency to DeviceResource this cache holds raw pointers here in order to ensure there
         // is no circular dependency between the resource and it's resourceview.
-        mutable AZStd::unordered_map<size_t, DeviceResourceView*> m_resourceViewCache;
-        // This should help provide thread safe access to resourceView cache
-        mutable AZStd::mutex m_cacheMutex;
+        mutable ResourceViewCache<DeviceResource> m_resourceViewCache;
     };
 }

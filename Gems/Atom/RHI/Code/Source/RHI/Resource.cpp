@@ -7,12 +7,12 @@
  */
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceResourceView.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/ResourcePool.h>
-#include <Atom/RHI/DeviceResourceView.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/hash.h>
 
@@ -119,5 +119,30 @@ namespace AZ::RHI
             m_pool->ShutdownResource(this);
         }
         MultiDeviceObject::Shutdown();
+    }
+
+    Ptr<ImageView> Resource::GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const
+    {
+        return m_resourceViewCache.GetResourceView(this, imageViewDescriptor);
+    }
+
+    Ptr<BufferView> Resource::GetResourceView(const BufferViewDescriptor& bufferViewDescriptor) const
+    {
+        return m_resourceViewCache.GetResourceView(this, bufferViewDescriptor);
+    }
+
+    void Resource::EraseResourceView(ResourceView* resourceView) const
+    {
+        m_resourceViewCache.EraseResourceView(resourceView);
+    }
+
+    bool Resource::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
+    {
+        return m_resourceViewCache.IsInResourceCache(imageViewDescriptor);
+    }
+
+    bool Resource::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
+    {
+        return m_resourceViewCache.IsInResourceCache(bufferViewDescriptor);
     }
 } // namespace AZ::RHI

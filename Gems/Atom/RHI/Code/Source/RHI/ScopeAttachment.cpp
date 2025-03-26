@@ -6,9 +6,11 @@
  *
  */
 
+#include <Atom/RHI/FrameAttachment.h>
+#include <Atom/RHI/ResourceView.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <Atom/RHI/FrameAttachment.h>
+
 
 namespace AZ::RHI
 {

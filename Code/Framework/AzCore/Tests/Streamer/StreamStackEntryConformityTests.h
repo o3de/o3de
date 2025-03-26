@@ -77,7 +77,7 @@ namespace AZ::IO
         AZStd::unique_ptr<StreamerContext> m_context;
     };
 
-    TYPED_TEST_CASE_P(StreamStackEntryConformityTests);
+    TYPED_TEST_SUITE_P(StreamStackEntryConformityTests);
 
     TYPED_TEST_P(StreamStackEntryConformityTests, GetName_RetrieveNameSetOnConstruction_NameIsNotEmpty)
     {
@@ -317,7 +317,7 @@ namespace AZ::IO
         entry.CollectStatistics(statistics);
     }
 
-    REGISTER_TYPED_TEST_CASE_P(StreamStackEntryConformityTests,
+    REGISTER_TYPED_TEST_SUITE_P(StreamStackEntryConformityTests,
         GetName_RetrieveNameSetOnConstruction_NameIsNotEmpty,
         Next_SetAndGetNext_NextIsSetAndCanBeRetrieved,
         SetContext_ContextIsForwardedToNext_SetContextOnMockIsCalled,

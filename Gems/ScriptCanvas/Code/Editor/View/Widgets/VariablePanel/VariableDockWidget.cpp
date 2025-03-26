@@ -163,7 +163,7 @@ namespace ScriptCanvasEditor
 
     void VariablePropertiesComponent::OnVariableRemoved()
     {
-        ScriptCanvas::VariableNotificationBus::Handler::BusDisconnect();        
+        ScriptCanvas::VariableNotificationBus::Handler::BusDisconnect();
 
         m_variableName = AZStd::string();
         m_variable = nullptr;
@@ -179,7 +179,10 @@ namespace ScriptCanvasEditor
     void VariablePropertiesComponent::OnVariableRenamed(AZStd::string_view variableName)
     {
         m_variableName = variableName;
-        PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RefreshPropertyGrid);
+
+        m_variable->ModDatum().SetLabel(m_variableName);
+
+        PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RebuildPropertyGrid);
     }
 
     void VariablePropertiesComponent::OnVariableScopeChanged()
@@ -781,7 +784,7 @@ namespace ScriptCanvasEditor
 
             if (propertiesComponent)
             {
-                ScriptCanvas::GraphVariable* graphVariable = owningGraph->FindVariableById(varId);;
+                ScriptCanvas::GraphVariable* graphVariable = owningGraph->FindVariableById(varId);
                 propertiesComponent->SetVariable(graphVariable);
 
                 selection.push_back(propertiesComponent->GetEntityId());
@@ -1018,4 +1021,3 @@ namespace ScriptCanvasEditor
 
 #include <Editor/View/Widgets/VariablePanel/moc_VariableDockWidget.cpp>
 }
-

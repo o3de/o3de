@@ -249,5 +249,17 @@ namespace AZ
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
+
+        RHI::Ptr<RHI::DeviceRayTracingCompactionQueryPool> CreateRayTracingCompactionQueryPool()
+        {
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
+
+        RHI::Ptr<RHI::DeviceRayTracingCompactionQuery> CreateRayTracingCompactionQuery()
+        {
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
     }
 }

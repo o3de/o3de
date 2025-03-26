@@ -196,7 +196,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeFloatConditionNode_ConditionTest,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeFloatConditionNode_ConditionTest,
         BlendTreeFloatConditionNodeFixture,
         ::testing::Combine(
             ::testing::Bool(),

@@ -195,7 +195,7 @@ namespace EMotionFX
         SimulateTest(params.m_simulationTime, params.m_expectedFps, params.m_fpsVariance);
     }
 
-    INSTANTIATE_TEST_CASE_P(TestAnimGraphEvents,
+    INSTANTIATE_TEST_SUITE_P(TestAnimGraphEvents,
          AnimGraphEventTestFixture,
          ::testing::ValuesIn(animGraphEventTestData));
 } // EMotionFX

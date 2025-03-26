@@ -292,7 +292,7 @@ namespace EMotionFX
 
     // Note that these values are instantiated before the SystemAllocator is
     // created, so we can't use AZStd::vector
-    INSTANTIATE_TEST_CASE_P(TestMorphTargetCreation, MorphTargetCreationTestFixture,
+    INSTANTIATE_TEST_SUITE_P(TestMorphTargetCreation, MorphTargetCreationTestFixture,
         ::testing::Values(
             std::vector<std::string> {},
             std::vector<std::string> {"testMorphTarget0"},

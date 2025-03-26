@@ -37,6 +37,8 @@ namespace AzToolsFramework
 
             void AddInstanceToQueue(InstanceOptionalReference instance) override;
             void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) override;
+
+            // Note, this function destroys and re-creates Entity* and Component*, do not assume your pointers are still good after this.
             bool UpdateTemplateInstancesInQueue() override;
             void RemoveTemplateInstanceFromQueue(Instance* instance) override;
             void QueueRootPrefabLoadedNotificationForNextPropagation() override;

@@ -105,30 +105,23 @@
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #endif
 
-// Detect what is available in the compiler and enable those features in RapidJSON.
-// Note that RapidJSON will use the combination of any of these to determine its final
-// set of instructions to use, so its best to set all that are applicable:
-#if defined(__SSE4_2__)
-#define RAPIDJSON_SSE42
-#endif
+// RapidJSON has a number of optimizations available such as the ability to use NEON and SSE2.
+// We do not enable these operations.  
+// If you enable these optimizations in the current version of RapidJSON,
+// the function that scans for whitespace in the buffer requires that all strings you feed it 
+// to parse, 
+// * must be aligned to 16 bytes 
+// * must be a multiple of 16 bytes long,
+// * cannot be malformed in terms of missing a closing quote or bracket.
+// We cannot guarantee this as we use it for user generated input data, strings from
+// document files, inline strings from string literals, etc.
 
-#if defined(__SSE2__)
-#define RAPIDJSON_SSE2
-#endif
-
-#if defined(__ARM_NEON__) || defined(__ARM_NEON) // older compilers define __ARM_NEON
-#define RAPIDJSON_NEON
-#endif
+// See https://github.com/Tencent/rapidjson/pull/2213 for the active discussion
+// currently ongoing in the RapidJSON community about this.
 
 #if defined(AZ_COMPILER_MSVC)
     // windows defines may or may not be present for unity builds, so ensure StrCmp resolves to StrCmpW to avoid conflicts
     #define StrCmp StrCmpW
-
-    // MSVC compiler does not necessarily specify any of the above macros.
-    // if we're compiling for a X64 target we can target SSE2.x at the very least.
-    #if defined(_M_AMD64)
-        #define RAPIDJSON_SSE2
-    #endif
 #endif
 
 // Push all of rapidjson into a different namespace (rapidjson_ly for backward compatibility, as this is what

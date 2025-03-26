@@ -6,55 +6,77 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_SCREENFADERTRACK_H
-#define CRYINCLUDE_CRYMOVIE_SCREENFADERTRACK_H
 #pragma once
 
+#include <IMovieSystem.h>
+#include <AzCore/std/containers/vector.h>
 
-#include "IMovieSystem.h"
 #include "AnimTrack.h"
 
-class CScreenFaderTrack
-    : public TAnimTrack<IScreenFaderKey>
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CScreenFaderTrack, AZ::SystemAllocator);
-    AZ_RTTI(CScreenFaderTrack, "{3279BB19-D32D-482E-BD6E-C2DCD8858328}", IAnimTrack);
 
-    //-----------------------------------------------------------------------------
-    //!
-    CScreenFaderTrack();
-    ~CScreenFaderTrack();
+    class CScreenFaderTrack : public TAnimTrack<IScreenFaderKey>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CScreenFaderTrack, AZ::SystemAllocator);
+        AZ_RTTI(CScreenFaderTrack, "{3279BB19-D32D-482E-BD6E-C2DCD8858328}", IAnimTrack);
 
-    //-----------------------------------------------------------------------------
-    //! IAnimTrack Method Overriding.
-    //-----------------------------------------------------------------------------
-    void GetKeyInfo(int key, const char*& description, float& duration) override;
-    void SerializeKey(IScreenFaderKey& key, XmlNodeRef& keyNode, bool bLoading) override;
-    void SetFlags(int flags) override;
+        CScreenFaderTrack();
+        ~CScreenFaderTrack();
 
-    void PreloadTextures();
-    ITexture* GetActiveTexture() const;
-    void SetScreenFaderTrackDefaults();
+        //-----------------------------------------------------------------------------
+        //! IAnimTrack Method Overriding.
+        //-----------------------------------------------------------------------------
+        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void SerializeKey(IScreenFaderKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+        void SetFlags(int flags) override;
 
-    bool IsTextureVisible() const {return m_bTextureVisible; };
-    void SetTextureVisible(bool bVisible){m_bTextureVisible = bVisible; };
-    Vec4 GetDrawColor() const {return m_drawColor; };
-    void SetDrawColor(Vec4 vDrawColor){m_drawColor = vDrawColor; };
-    int GetLastTextureID() const { return m_lastTextureID; };
-    void SetLastTextureID(int nTextureID){ m_lastTextureID = nTextureID; };
-    bool SetActiveTexture(int index);
+        void PreloadTextures();
+        ITexture* GetActiveTexture() const;
+        void SetScreenFaderTrackDefaults();
 
-    static void Reflect(AZ::ReflectContext* context);
+        bool IsTextureVisible() const
+        {
+            return m_bTextureVisible;
+        }
 
-private:
-    void ReleasePreloadedTextures();
+        void SetTextureVisible(bool bVisible)
+        {
+            m_bTextureVisible = bVisible;
+        }
 
-    std::vector<ITexture*> m_preloadedTextures;
-    bool m_bTextureVisible;
-    Vec4 m_drawColor;
-    int m_lastTextureID;
-};
+        Vec4 GetDrawColor() const
+        {
+            return m_drawColor;
+        }
 
-#endif // CRYINCLUDE_CRYMOVIE_SCREENFADERTRACK_H
+        void SetDrawColor(Vec4 vDrawColor)
+        {
+            m_drawColor = vDrawColor;
+        }
+
+        int GetLastTextureID() const
+        {
+            return m_lastTextureID;
+        }
+
+        void SetLastTextureID(int nTextureID)
+        {
+            m_lastTextureID = nTextureID;
+        }
+
+        bool SetActiveTexture(int index);
+
+        static void Reflect(AZ::ReflectContext* context);
+
+    private:
+        void ReleasePreloadedTextures();
+
+        AZStd::vector<ITexture*> m_preloadedTextures;
+        bool m_bTextureVisible;
+        Vec4 m_drawColor;
+        int m_lastTextureID;
+    };
+
+} // namespace Maestro

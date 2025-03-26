@@ -348,7 +348,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void LiveLoggingWindowSession::Connected([[maybe_unused]] const ScriptCanvas::Debugger::Target& target)
+    void LiveLoggingWindowSession::Connected([[maybe_unused]] ScriptCanvas::Debugger::Target& target)
     {
         if (m_userSettings->IsAutoCaptureEnabled() && isVisible())
         {

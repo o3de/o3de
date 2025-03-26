@@ -165,12 +165,18 @@ namespace UnitTest
 
         // Add a component to Wheel instance and use it to update the wheel template.
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
+        // cache the RTTI name of the prefab test component, because the component will be deleted during the next few lines.
+        AZStd::string prefabTestComponentRTTIName = prefabTestComponent->RTTI_GetTypeName();
+
         wheelEntity->AddComponent(prefabTestComponent);
         auto expectedComponentId = prefabTestComponent->GetId();
         PrefabDom updatedWheelInstanceDom;
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*wheelIsolatedInstance, updatedWheelInstanceDom));
         m_prefabSystemComponent->UpdatePrefabTemplate(wheelTemplateId, updatedWheelInstanceDom);
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
+        // The above call destroys and recreates Entity and component instances, so pointers into 
+        // entities and components are no longer valid.
+        prefabTestComponent = nullptr;
 
         // Validate that the wheel entity does have a component under it.
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
@@ -178,8 +184,7 @@ namespace UnitTest
         EXPECT_EQ(wheelEntityComponents->MemberCount(), 1);
 
         // Extract the component id of the entity in wheel template and verify that it matches with the component id of the wheel instance.
-        PrefabTestDomUtils::ValidateComponentsDomHasId(
-            *wheelEntityComponents, prefabTestComponent->RTTI_GetTypeName(), expectedComponentId);
+        PrefabTestDomUtils::ValidateComponentsDomHasId(*wheelEntityComponents, prefabTestComponentRTTIName.c_str(), expectedComponentId);
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);

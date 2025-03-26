@@ -128,151 +128,26 @@ namespace AZ::RHI
     
     Ptr<DeviceImageView> DeviceResource::GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const
     {
-        const HashValue64 hash = imageViewDescriptor.GetHash();
-        AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
-        auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
-        if (it == m_resourceViewCache.end())
-        {
-            return InsertNewImageView(hash, imageViewDescriptor);
-        }
-        else
-        {
-            // We've found a matching DeviceResourceView in the cache, but another thread may be releasing the last intrusive_ptr while
-            // we are in this function, dropping the refcount to 0 (and forcing it to -1 for good measure) then deleting it.
-            //
-            //  There are 2 scenarios:
-            //
-            // m_useCount is -1. The other thread is already on the path to deleting it. We need to make a new one here
-            // and replace the old one.
-            //
-            // m_useCount is >=0. We cannot guarantee another thread won't drop the refcount to 0 after we check the value here
-            // so before we create a new intrusive_ptr, we need to use fetch_add to increment the refcount as we check the value to
-            // prevent a race
-            int useCount = it->second->m_useCount.fetch_add(2);
-            if (useCount == -1)
-            {
-                // The useCount was -1 before we incremented.
-                // Another thread is going to come along and delete the one we just found.
-                // Go ahead and erase it and insert a new one instead
-                m_resourceViewCache.erase(it);
-
-                return InsertNewImageView(hash, imageViewDescriptor);
-            }
-            else
-            {
-                // Create the new Ptr, increasing the refcount
-                Ptr<DeviceImageView> result = static_cast<DeviceImageView*>(it->second);
-
-                // Before we checked the value we artificially incremented the refcount to prevent another
-                // thread from letting it go to 0 again. Get rid of that artificial increase now that we have
-                // our new Ptr to hold on to the refcount
-                it->second->m_useCount.fetch_sub(2);
-                return result;
-            }
-        }       
+        return m_resourceViewCache.GetResourceView(this, imageViewDescriptor);
     }
 
     Ptr<DeviceBufferView> DeviceResource::GetResourceView(const BufferViewDescriptor& bufferViewDescriptor) const
     {
-        const HashValue64 hash = bufferViewDescriptor.GetHash();
-        AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
-        auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
-        if (it == m_resourceViewCache.end())
-        {
-            return InsertNewBufferView(hash, bufferViewDescriptor);
-        }
-        else
-        {
-            // We've found a matching DeviceResourceView in the cache, but another thread may be releasing the last intrusive_ptr while
-            // we are in this function, dropping the refcount to 0 (and forcing it to -1 for good measure) then deleting it.
-            //
-            //  There are 2 scenarios:
-            // 
-            // m_useCount is -1. The other thread is already on the path to deleting it. We need to make a new one here
-            // and replace the old one.
-            //
-            // m_useCount is >=0. We cannot guarantee another thread won't drop the refcount to 0 after we check the value here
-            // so before we create a new intrusive_ptr, we need to use fetch_add to increment the refcount as we check the value to prevent a race
-            int useCount = it->second->m_useCount.fetch_add(2);
-            if (useCount == -1)
-            {
-                // The useCount was -1 before we incremented.
-                // Another thread is going to come along and delete the one we just found.
-                // Go ahead and erase it and insert a new one instead
-                m_resourceViewCache.erase(it);
-
-                return InsertNewBufferView(hash, bufferViewDescriptor);
-            }
-            else
-            {
-                // Create the new Ptr, increasing the refcount
-                Ptr<DeviceBufferView> result = static_cast<DeviceBufferView*>(it->second);
-
-                // Before we checked the value we artificially incremented the refcount to prevent another
-                // thread from letting it go to 0 again. Get rid of that artificial increase now that we have
-                // our new Ptr to hold on to the refcount
-                it->second->m_useCount.fetch_sub(2);
-                return result;
-            }
-        }
-    }
-
-    Ptr<DeviceImageView> DeviceResource::InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const
-    {
-        Ptr<DeviceImageView> imageViewPtr = RHI::Factory::Get().CreateImageView();
-        RHI::ResultCode resultCode = imageViewPtr->Init(static_cast<const DeviceImage&>(*this), imageViewDescriptor);
-        if (resultCode == RHI::ResultCode::Success)
-        {
-            m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<DeviceResourceView*>(imageViewPtr.get());
-            return imageViewPtr;
-        }
-        else
-        {
-            return nullptr;
-        }
-    }
-
-    Ptr<DeviceBufferView> DeviceResource::InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const
-    {
-        Ptr<DeviceBufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
-        RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const DeviceBuffer&>(*this), bufferViewDescriptor);
-        if (resultCode == RHI::ResultCode::Success)
-        {
-            m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<DeviceResourceView*>(bufferViewPtr.get());
-            return bufferViewPtr;
-        }
-        else
-        {
-            return nullptr;
-        }
+        return m_resourceViewCache.GetResourceView(this, bufferViewDescriptor);
     }
 
     void DeviceResource::EraseResourceView(DeviceResourceView* resourceView) const
     {
-        AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
-        auto itr = m_resourceViewCache.begin();
-        while (itr != m_resourceViewCache.end())
-        {
-            if (itr->second == resourceView)
-            {
-                m_resourceViewCache.erase(itr->first);
-                break;
-            }
-            itr++;
-        }
+        m_resourceViewCache.EraseResourceView(resourceView);
     }
     
     bool DeviceResource::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
     {
-        const HashValue64 hash = imageViewDescriptor.GetHash();
-        auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
-        return it != m_resourceViewCache.end();
+        return m_resourceViewCache.IsInResourceCache(imageViewDescriptor);
     }
     
     bool DeviceResource::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
     {
-        const HashValue64 hash = bufferViewDescriptor.GetHash();
-        auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
-        return it != m_resourceViewCache.end();
+        return m_resourceViewCache.IsInResourceCache(bufferViewDescriptor);
     }
 }

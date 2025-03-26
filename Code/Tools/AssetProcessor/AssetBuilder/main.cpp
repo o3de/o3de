@@ -8,6 +8,7 @@
 #include "AssetBuilderApplication.h"
 #include "TraceMessageHook.h"
 #include "AssetBuilderComponent.h"
+#include <AzCore/Settings/CommandLineParser_Platform.h>
 
 // the user is not expected to interact with the AssetBuilderApplication directly,
 // so it can be always running in the culture-invariant locale.
@@ -23,6 +24,9 @@ int main(int argc, char** argv)
     // other invariant locale files, setting it to the invariant locale means that individual builders
     // don't need to keep track of locale, change it, set it, etc.
     setlocale(LC_ALL, "C"); 
+
+    // Make sure utf-8 commandline parameters can be used on all platforms
+    AZ::Settings::Platform::CommandLineConverter converter(argc, argv);
 
     const AZ::Debug::Trace tracer;
     AssetBuilderApplication app(&argc, &argv);

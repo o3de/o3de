@@ -326,6 +326,7 @@ namespace EMotionFX::MotionMatching
 
             auto LoadVector3FromString = [&valueTokens](size_t& valueIndex, AZ::Vector3& outVec)
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for reading/writing floats with "." in them
                 outVec.SetX(AZStd::stof(valueTokens[valueIndex + 0]));
                 outVec.SetY(AZStd::stof(valueTokens[valueIndex + 1]));
                 outVec.SetZ(AZStd::stof(valueTokens[valueIndex + 2]));

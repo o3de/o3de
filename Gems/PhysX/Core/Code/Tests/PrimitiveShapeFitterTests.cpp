@@ -78,22 +78,6 @@ namespace PhysX::Pipeline
         ExpectNear(zAxis, xAxis.Cross(yAxis), defaultTolerance);
     }
 
-    static AZStd::vector<Vec3> AZVerticesToLYVertices(const AZStd::vector<AZ::Vector3>& vertices)
-    {
-        AZStd::vector<Vec3> converted(vertices.size(), Vec3(ZERO));
-
-        AZStd::transform(
-            vertices.begin(),
-            vertices.end(),
-            converted.begin(),
-            [] (const AZ::Vector3& vertex) {
-                return AZVec3ToLYVec3(vertex);
-            }
-        );
-
-        return converted;
-    }
-
     template<size_t N>
     static AZStd::vector<AZ::Vector3> TransformVertices(
         const AZStd::array<AZ::Vector3, N>& vertices,
@@ -137,7 +121,7 @@ namespace PhysX::Pipeline
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         ArgumentPackingTestFixture,
         ::testing::Values(
@@ -176,7 +160,7 @@ namespace PhysX::Pipeline
         EXPECT_NEAR(testData.m_shape->GetVolume(), testData.m_expectedVolume, 1e-6);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         VolumeTestFixture,
         ::testing::Values(
@@ -234,7 +218,7 @@ namespace PhysX::Pipeline
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         SquaredDistanceTestFixture,
         ::testing::Values(
@@ -477,7 +461,7 @@ namespace PhysX::Pipeline
         EXPECT_THAT(pair.second, ::testing::IsNull());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         GetDegenerateShapeConfigurationTestFixture,
         ::testing::Values(
@@ -499,7 +483,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "sphere",
-            AZVerticesToLYVertices(TransformVertices(SphereVertices, transform)),
+            TransformVertices(SphereVertices, transform),
             0.0,
             PrimitiveShapeTarget::Sphere
         );
@@ -529,7 +513,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "box",
-            AZVerticesToLYVertices(TransformVertices(BoxVertices, transform)),
+            TransformVertices(BoxVertices, transform),
             0.0,
             PrimitiveShapeTarget::Box
         );
@@ -567,7 +551,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "capsule",
-            AZVerticesToLYVertices(TransformVertices(CapsuleVertices, transform)),
+            TransformVertices(CapsuleVertices, transform),
             0.0,
             PrimitiveShapeTarget::Capsule
         );
@@ -608,7 +592,7 @@ namespace PhysX::Pipeline
 
         MeshAssetData::ShapeConfigurationPair pair = FitPrimitiveShape(
             "minimal",
-            AZVerticesToLYVertices(expectedVertices),
+            expectedVertices,
             5.0e-4,
             PrimitiveShapeTarget::BestFit
         );
@@ -661,7 +645,7 @@ namespace PhysX::Pipeline
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         FitPrimitiveShapeTestFixture,
         ::testing::ValuesIn(TestTransforms)

@@ -55,12 +55,6 @@ namespace PhysX
         typedef EntityPtr(* EntityFactoryFunc)(AzPhysics::SceneHandle, const AZ::Vector3&, const char*);
     }
 
-    class PhysXEntityFactoryParamTest
-        : public PhysXSpecificTest
-        , public ::testing::WithParamInterface<PhysXTests::EntityFactoryFunc>
-    {
-    };
-
     void SetCollisionLayerName(AZ::u8 index, const AZStd::string& name)
     {
         AZ::Interface<Physics::CollisionRequests>::Get()->SetCollisionLayerName(index, name);
@@ -279,9 +273,6 @@ namespace PhysX
             EXPECT_NEAR(boxGeometry.halfExtents.z, halfExtents.GetZ(), PhysXSpecificTest::tolerance);
         }
     }
-
-    auto entityFactories = { TestUtils::AddUnitTestObject<BoxColliderComponent>, TestUtils::AddUnitTestBoxComponentsMix };
-    INSTANTIATE_TEST_CASE_P(DifferentBoxes, PhysXEntityFactoryParamTest, ::testing::ValuesIn(entityFactories));
 
     TEST_F(PhysXSpecificTest, RigidBody_GetNativeType_ReturnsPhysXRigidBodyType)
     {
@@ -1299,7 +1290,7 @@ namespace PhysX
     }
 
     // Valid material density values: [0.01f, 1e5f]
-    INSTANTIATE_TEST_CASE_P(PhysX, MultiShapesDensityTestFixture,
+    INSTANTIATE_TEST_SUITE_P(PhysX, MultiShapesDensityTestFixture,
         ::testing::Values(
             AZStd::make_pair(0.01f, 0.01f),
             AZStd::make_pair(1e5f, 1e5f),
@@ -1351,7 +1342,7 @@ namespace PhysX
     }
 
     // Valid material density values: [0.01f, 1e5f]
-    INSTANTIATE_TEST_CASE_P(PhysX, DensityBoundariesTestFixture,
+    INSTANTIATE_TEST_SUITE_P(PhysX, DensityBoundariesTestFixture,
         ::testing::Values(
             std::numeric_limits<float>::min(),
             std::numeric_limits<float>::max(),
@@ -1575,7 +1566,7 @@ namespace PhysX
         AzPhysics::MassComputeFlags::DEFAULT, // COMPUTE_COM | COMPUTE_INERTIA | COMPUTE_MASS
     };
 
-    INSTANTIATE_TEST_CASE_P(PhysX, MassComputeFixture, ::testing::Combine(
+    INSTANTIATE_TEST_SUITE_P(PhysX, MassComputeFixture, ::testing::Combine(
         ::testing::ValuesIn({ Physics::ShapeType::Sphere, Physics::ShapeType::Box, Physics::ShapeType::Capsule }), // Values for GetShapeType() const
         ::testing::ValuesIn({ SimulatedShapesMode::NONE, SimulatedShapesMode::MIXED, SimulatedShapesMode::ALL }), // Values for GetShapesMode()
         ::testing::ValuesIn(PossibleMassComputeFlags), // Values for GetMassComputeFlags()
@@ -1642,7 +1633,7 @@ namespace PhysX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(PhysX, MassPropertiesWithTriangleMesh,
+    INSTANTIATE_TEST_SUITE_P(PhysX, MassPropertiesWithTriangleMesh,
         ::testing::ValuesIn(PossibleMassComputeFlags)); // Values for GetMassComputeFlags()
 
     TEST_F(PhysXSpecificTest, RigidBodyWithBoxGeometryCanSwitchFromKinematicToDynamic)

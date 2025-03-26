@@ -2991,31 +2991,6 @@ namespace AssetProcessor
                         // keep track of its parent folder so that if it is deleted later we know it is a folder
                         // delete and not a file delete.
                         AddKnownFoldersRecursivelyForFile(normalizedPath, sourceAssetReference.ScanFolderPath().c_str());
-
-                        if (normalizedPath.toUtf8().length() > normalizedPath.length())
-                        {
-                            // if we are here it implies that the source file path contains non ascii characters
-                            AutoFailJob(
-                                AZStd::string::format(
-                                    "ProcessFilesToExamineQueue: source file path ( %s ) contains non ascii characters.\n",
-                                    normalizedPath.toUtf8().constData()),
-                                AZStd::string::format(
-                                    "Source file ( %s ) contains non ASCII characters.\n"
-                                    "O3DE currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
-                                    "Please rename the source file to fix this error.\n",
-                                    normalizedPath.toUtf8().constData()),
-                                JobEntry(
-                                    sourceAssetReference,
-                                    AZ::Uuid::CreateNull(),
-                                    { "all", {} },
-                                    QString("PreCreateJobs"),
-                                    0,
-                                    GenerateNewJobRunKey(),
-                                    AZ::Uuid::CreateNull())
-                                );
-
-                            continue;
-                        }
                     }
                     else
                     {

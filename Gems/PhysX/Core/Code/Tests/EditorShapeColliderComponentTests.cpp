@@ -933,7 +933,7 @@ namespace PhysXEditorTests
         delete rigidBodyComponent;
     }
 
-    INSTANTIATE_TEST_CASE_P(PhysXEditorTest, PhysXEditorParamBoolFixture, ::testing::Bool());
+    INSTANTIATE_TEST_SUITE_P(PhysXEditorTest, PhysXEditorParamBoolFixture, ::testing::Bool());
 
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_SingleSidedQuadDoesNotCollideFromBelow)
     {

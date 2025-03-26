@@ -153,11 +153,6 @@ namespace ScriptCanvas
     ExecutionThreadBeginning::ExecutionThreadBeginning()
     {}
 
-    LoggableEvent* ExecutionThreadBeginning::Duplicate() const
-    {
-        return aznew ExecutionThreadBeginning(*this);
-    }
-
     Timestamp ExecutionThreadBeginning::GetTimestamp() const
     {
         return m_timestamp;
@@ -221,14 +216,8 @@ namespace ScriptCanvas
     NodeStateChange::NodeStateChange()
     {}
 
-    LoggableEvent* NodeStateChange::Duplicate() const
-    {
-        return aznew NodeStateChange(*this);
-    }
-
     AZStd::string NodeStateChange::ToString() const
     {
-        // \todo I think....this should get...cut...it's not actually a script canvas level feature
         return "NodeStateChange";
     }
 
@@ -270,11 +259,6 @@ namespace ScriptCanvas
         , m_annotation(annotation)
         , m_assetNodeId(assetId)
     {
-    }
-
-    LoggableEvent* AnnotateNodeSignal::Duplicate() const
-    {
-        return aznew AnnotateNodeSignal((*this));
     }
 
     AZStd::string AnnotateNodeSignal::ToString() const

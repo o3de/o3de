@@ -374,7 +374,7 @@ namespace EMotionFX
         TestInput<MCore::AttributeBool, bool>("BoolParam", m_param.m_xInputBool);
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeFloatMath1Node_ValidOutputTests,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeFloatMath1Node_ValidOutputTests,
         BlendTreeFloatMath1NodeFixture,
             ::testing::ValuesIn(blendTreeFloatMath1NodeTestData)
     );

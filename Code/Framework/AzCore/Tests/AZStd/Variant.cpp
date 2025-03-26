@@ -37,7 +37,7 @@ namespace UnitTest
         , VariantSizeTestConfig<AZStd::variant<void*, const void*>, 2>
         , VariantSizeTestConfig<AZStd::variant<uint64_t, AZStd::string, uint64_t, double>, 4>
     >;
-    TYPED_TEST_CASE(VariantSizeTest, VariantSizeTestConfigs);
+    TYPED_TEST_SUITE(VariantSizeTest, VariantSizeTestConfigs);
 
     template<typename TestConfig>
     class VariantAlternativeTest
@@ -61,7 +61,7 @@ namespace UnitTest
         , VariantAlternativeTestConfig<Variant6AltType, 4, int32_t>
         , VariantAlternativeTestConfig<Variant6AltType, 5, uintptr_t>
     >;
-    TYPED_TEST_CASE(VariantAlternativeTest, VariantAlternativeTestConfigs);
+    TYPED_TEST_SUITE(VariantAlternativeTest, VariantAlternativeTestConfigs);
 
     namespace VariantTestInternal
     {

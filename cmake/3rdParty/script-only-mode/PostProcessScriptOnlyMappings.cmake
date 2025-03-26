@@ -85,7 +85,8 @@ foreach(data_file IN LISTS file_list)
         endif()
     endif()
 
-    string(APPEND final_data "add_library(${target_name} INTERFACE IMPORTED GLOBAL)\n")
+    string(APPEND final_data "if (NOT TARGET ${target_name})\n")
+    string(APPEND final_data "    add_library(${target_name} INTERFACE IMPORTED GLOBAL)\n")
 
     # binary_folder can be a genex but will always be the Default folder since monolithic
     # cannot be combined with script-only
@@ -99,12 +100,13 @@ foreach(data_file IN LISTS file_list)
                 set(file_name "${installer_binaries}/${file_name}")
             endif()
             string(APPEND final_data 
-                    "ly_add_target_files(TARGETS ${target_name}\n\
+                    "    ly_add_target_files(TARGETS ${target_name}\n\
                         FILES\n\
                             \"${file_name}\"\n\
                         OUTPUT_SUBDIRECTORY \"${relative_path}\")\n\n")
         endforeach()        
     endif()
+    string(APPEND final_data "endif() # NOT TARGET ${target_name}\n")
 
     string(REPLACE "::" "__" CLEAN_TARGET_NAME "${target_name}")  
     file(WRITE "${output_directory}/${CLEAN_TARGET_NAME}.cmake" "${final_data}")

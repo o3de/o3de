@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include "EventNode.h"
 #include "AnimTrack.h"
@@ -17,101 +16,97 @@
 
 #include <ISystem.h>
 
-//////////////////////////////////////////////////////////////////////////
-CAnimEventNode::CAnimEventNode()
-    : CAnimEventNode(0)
+namespace Maestro
 {
-}
 
-//////////////////////////////////////////////////////////////////////////
-CAnimEventNode::CAnimEventNode(const int id)
-    : CAnimNode(id, AnimNodeType::Event)
-{
-    SetFlags(GetFlags() | eAnimNodeFlags_CanChangeName);
-    m_lastEventKey = -1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CAnimEventNode::CreateDefaultTracks()
-{
-    CreateTrack(AnimParamType::TrackEvent);
-}
-
-//////////////////////////////////////////////////////////////////////////
-unsigned int CAnimEventNode::GetParamCount() const
-{
-    return 1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-CAnimParamType CAnimEventNode::GetParamType(unsigned int nIndex) const
-{
-    if (nIndex == 0)
+    CAnimEventNode::CAnimEventNode()
+        : CAnimEventNode(0)
     {
-        return AnimParamType::TrackEvent;
     }
 
-    return AnimParamType::Invalid;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CAnimEventNode::GetParamInfoFromType(const CAnimParamType& animParamType, SParamInfo& info) const
-{
-    if (animParamType.GetType() == AnimParamType::TrackEvent)
+    CAnimEventNode::CAnimEventNode(const int id)
+        : CAnimNode(id, AnimNodeType::Event)
     {
-        info.flags = IAnimNode::ESupportedParamFlags(0);
-        info.name = "Track Event";
-        info.paramType = AnimParamType::TrackEvent;
-        info.valueType = AnimValueType::Unknown;
-        return true;
+        SetFlags(GetFlags() | eAnimNodeFlags_CanChangeName);
+        m_lastEventKey = -1;
     }
-    return false;
-}
 
-//////////////////////////////////////////////////////////////////////////
-void CAnimEventNode::Animate(SAnimContext& ec)
-{
-    // Get track event
-    int trackCount = NumTracks();
-    for (int paramIndex = 0; paramIndex < trackCount; paramIndex++)
+    void CAnimEventNode::CreateDefaultTracks()
     {
-        CAnimParamType trackType = m_tracks[paramIndex]->GetParameterType();
-        IAnimTrack* pTrack = m_tracks[paramIndex].get();
+        CreateTrack(AnimParamType::TrackEvent);
+    }
 
-        if (pTrack && pTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled)
+    unsigned int CAnimEventNode::GetParamCount() const
+    {
+        return 1;
+    }
+
+    CAnimParamType CAnimEventNode::GetParamType(unsigned int nIndex) const
+    {
+        if (nIndex == 0)
         {
-            continue;
+            return AnimParamType::TrackEvent;
         }
 
-        // Check for fire
-        if (CTrackEventTrack* pEventTrack = (CTrackEventTrack*)pTrack)
+        return AnimParamType::Invalid;
+    }
+
+    bool CAnimEventNode::GetParamInfoFromType(const CAnimParamType& animParamType, SParamInfo& info) const
+    {
+        if (animParamType.GetType() == AnimParamType::TrackEvent)
         {
-            IEventKey key;
-            int nEventKey = pEventTrack->GetActiveKey(ec.time, &key);
-            if (nEventKey != m_lastEventKey && nEventKey >= 0)
+            info.flags = IAnimNode::ESupportedParamFlags(0);
+            info.name = "Track Event";
+            info.paramType = AnimParamType::TrackEvent;
+            info.valueType = AnimValueType::Unknown;
+            return true;
+        }
+        return false;
+    }
+
+    void CAnimEventNode::Animate(SAnimContext& ec)
+    {
+        // Get track event
+        int trackCount = NumTracks();
+        for (int paramIndex = 0; paramIndex < trackCount; paramIndex++)
+        {
+            CAnimParamType trackType = m_tracks[paramIndex]->GetParameterType();
+            IAnimTrack* pTrack = m_tracks[paramIndex].get();
+
+            if (pTrack && pTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled)
             {
-                bool bKeyAfterStartTime = key.time >= ec.startTime;
-                if (bKeyAfterStartTime)
-                {
-                    ec.sequence->TriggerTrackEvent(key.event.c_str(), key.eventValue.c_str());
-                }
+                continue;
             }
-            m_lastEventKey = nEventKey;
+
+            // Check for fire
+            if (CTrackEventTrack* pEventTrack = (CTrackEventTrack*)pTrack)
+            {
+                IEventKey key;
+                int nEventKey = pEventTrack->GetActiveKey(ec.time, &key);
+                if (nEventKey != m_lastEventKey && nEventKey >= 0)
+                {
+                    bool bKeyAfterStartTime = key.time >= ec.startTime;
+                    if (bKeyAfterStartTime)
+                    {
+                        ec.sequence->TriggerTrackEvent(key.event.c_str(), key.eventValue.c_str());
+                    }
+                }
+                m_lastEventKey = nEventKey;
+            }
         }
     }
-}
 
-void CAnimEventNode::OnReset()
-{
-    m_lastEventKey = -1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CAnimEventNode::Reflect(AZ::ReflectContext* context)
-{
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    void CAnimEventNode::OnReset()
     {
-        serializeContext->Class<CAnimEventNode, CAnimNode>()
-            ->Version(1);
+        m_lastEventKey = -1;
     }
-}
+
+    void CAnimEventNode::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CAnimEventNode, CAnimNode>()->Version(1);
+        }
+    }
+
+} // namespace Maestro

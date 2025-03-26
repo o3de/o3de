@@ -15,9 +15,6 @@
 */
 
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_COMMENTNODEANIMATOR_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_COMMENTNODEANIMATOR_H
 #pragma once
 
 #include "TrackViewAnimNode.h"
@@ -51,8 +48,8 @@ class CCommentNodeAnimator
 {
 public:
     CCommentNodeAnimator(CTrackViewAnimNode* pCommentNode);
-    virtual void Animate(CTrackViewAnimNode* pNode, const SAnimContext& ac);
-    virtual void Render(CTrackViewAnimNode* pNode, const SAnimContext& ac);
+    void Animate(CTrackViewAnimNode* pNode, const SAnimContext& ac) override;
+    void Render(CTrackViewAnimNode* pNode, const SAnimContext& ac) override;
 
 private:
     virtual ~CCommentNodeAnimator();
@@ -65,4 +62,3 @@ private:
     CTrackViewAnimNode* m_pCommentNode;
     CCommentContext m_commentContext;
 };
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_COMMENTNODEANIMATOR_H

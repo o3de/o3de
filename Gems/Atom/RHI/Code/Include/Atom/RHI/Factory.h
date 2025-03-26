@@ -46,6 +46,8 @@ namespace AZ::RHI
     class DeviceRayTracingTlas;
     class DeviceRayTracingPipelineState;
     class DeviceRayTracingShaderTable;
+    class DeviceRayTracingCompactionQueryPool;
+    class DeviceRayTracingCompactionQuery;
 
     //! Priority of a Factory. The lower the number the higher the priority.
     //! Used when there's multiple factories available and the user hasn't define
@@ -194,5 +196,9 @@ namespace AZ::RHI
         virtual Ptr<DeviceRayTracingShaderTable> CreateRayTracingShaderTable() = 0;
 
         virtual Ptr<DeviceDispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() = 0;
+
+        virtual Ptr<DeviceRayTracingCompactionQueryPool> CreateRayTracingCompactionQueryPool() = 0;
+
+        virtual Ptr<DeviceRayTracingCompactionQuery> CreateRayTracingCompactionQuery() = 0;
     };
 } // namespace AZ::RHI

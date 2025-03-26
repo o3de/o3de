@@ -43,5 +43,6 @@ namespace Maestro
         AZStd::unordered_map<Maestro::SequenceComponentRequests::AnimatablePropertyAddress, AZ::BehaviorEBus::VirtualProperty*> m_addressToBehaviorVirtualPropertiesMap;        
         AZStd::unordered_map<AZ::ComponentId, AZ::BehaviorEBusEventSender*> m_addressToGetAssetDurationMap;
     };
+
 } // namespace Maestro
 

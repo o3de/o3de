@@ -7,10 +7,12 @@
  */
 #pragma once
 
-#include <RHI/ShaderResourceGroup.h>
-#include <RHI/MemorySubAllocator.h>
-#include <Atom/RHI/FrameEventBus.h>
 #include <Atom/RHI/DeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/FrameEventBus.h>
+#include <AtomCore/std/containers/small_vector.h>
+#include <RHI/Descriptor.h>
+#include <RHI/MemorySubAllocator.h>
+#include <RHI/ShaderResourceGroup.h>
 
 namespace AZ
 {
@@ -20,6 +22,7 @@ namespace AZ
         class ImageView;
         class ShaderResourceGroupLayout;
         class DescriptorContext;
+        constexpr size_t SRGViewsFixedSize = 16;
 
         class ShaderResourceGroupPool final
             : public RHI::DeviceShaderResourceGroupPool
@@ -71,13 +74,11 @@ namespace AZ
 
             void UpdateDescriptorTableRange(
                 DescriptorTable descriptorTable,
-                const AZStd::vector<DescriptorHandle>& descriptors,
+                const AZStd::span<DescriptorHandle>& descriptors,
                 RHI::ShaderInputBufferIndex bufferInputIndex);
 
             void UpdateDescriptorTableRange(
-                DescriptorTable descriptorTable,
-                const AZStd::vector<DescriptorHandle>& descriptors,
-                RHI::ShaderInputImageIndex imageIndex);
+                DescriptorTable descriptorTable, const AZStd::span<DescriptorHandle>& descriptors, RHI::ShaderInputImageIndex imageIndex);
 
             void UpdateDescriptorTableRange(
                 DescriptorTable descriptorTable,
@@ -93,12 +94,20 @@ namespace AZ
             DescriptorTable GetSamplerTable(DescriptorTable descriptorTable, RHI::ShaderInputSamplerIndex samplerInputIndex) const;
 
             template<typename T, typename U>
-            AZStd::vector<DescriptorHandle> GetSRVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& imageViews, D3D12_SRV_DIMENSION dimension);
+            void GetSRVsFromImageViews(
+                const AZStd::span<const RHI::ConstPtr<T>>& imageViews,
+                D3D12_SRV_DIMENSION dimension,
+                AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result);
 
             template<typename T, typename U>
-            AZStd::vector<DescriptorHandle> GetUAVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& bufferViews, D3D12_UAV_DIMENSION dimension);
+            void GetUAVsFromImageViews(
+                const AZStd::span<const RHI::ConstPtr<T>>& bufferViews,
+                D3D12_UAV_DIMENSION dimension,
+                AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result);
 
-            AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews);
+            void GetCBVsFromBufferViews(
+                const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews,
+                AZStd::small_vector<DescriptorHandle, SRGViewsFixedSize>& result);
 
             MemoryPoolSubAllocator m_constantAllocator;
             DescriptorContext* m_descriptorContext = nullptr;

@@ -81,7 +81,7 @@ namespace ScriptCanvasEditor
 
         // VariableNotificationBus::Handler
         void OnVariableRemoved() override;
-        void OnVariableRenamed(AZStd::string_view variableName) override;        
+        void OnVariableRenamed(AZStd::string_view variableName) override;
         void OnVariableScopeChanged() override;
 
         void OnVariableValueChanged() override;

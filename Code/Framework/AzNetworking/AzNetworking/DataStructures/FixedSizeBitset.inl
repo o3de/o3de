@@ -85,8 +85,8 @@ namespace AzNetworking
     inline void FixedSizeBitset<SIZE, ElementType>::SetBit(uint32_t index, bool value)
     {
         AZ_Assert(index < SIZE, "Out of bounds access (requested %u, size %u)", index, SIZE);
-        constexpr uint32_t ElementTypeBitsLogTwo = AZ::Log2(ElementTypeBits - 1);
-        const uint32_t    element = index >> ElementTypeBitsLogTwo;
+        constexpr uint32_t ElementTypeBitCount = AZ::RequiredBitsForValue(ElementTypeBits - 1);
+        const uint32_t    element = index >> ElementTypeBitCount;
         const ElementType offset  = index &  (ElementTypeBits - 1);
         const ElementType mask    = static_cast<ElementType>(0x01) << offset;
         const ElementType current = m_container[element];
@@ -97,8 +97,8 @@ namespace AzNetworking
     inline bool FixedSizeBitset<SIZE, ElementType>::GetBit(uint32_t index) const
     {
         AZ_Assert(index < SIZE, "Out of bounds access (requested %u, size %u)", index, SIZE);
-        constexpr uint32_t ElementTypeBitsLogTwo = AZ::Log2(ElementTypeBits - 1);
-        const uint32_t    element = index >> ElementTypeBitsLogTwo;
+        constexpr uint32_t ElementTypeBitCount = AZ::RequiredBitsForValue(ElementTypeBits - 1);
+        const uint32_t    element = index >> ElementTypeBitCount;
         const ElementType offset  = index &  (ElementTypeBits - 1);
         return (static_cast<ElementType>(m_container[element] >> offset) & static_cast<ElementType>(0x01)) ? true : false;
     }

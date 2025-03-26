@@ -721,13 +721,9 @@ namespace AZ
             }
         }
 
-        void DirectionalLightFeatureProcessor::OnRenderPipelinePersistentViewChanged(RPI::RenderPipeline* pipeline, RPI::PipelineViewTag, RPI::ViewPtr, RPI::ViewPtr)
+        void DirectionalLightFeatureProcessor::OnRenderPipelinePersistentViewChanged(RPI::RenderPipeline*, RPI::PipelineViewTag, RPI::ViewPtr, RPI::ViewPtr)
         {
-            if (m_cascadedShadowmapsPasses.find(pipeline->GetId()) != m_cascadedShadowmapsPasses.end() ||
-                m_esmShadowmapsPasses.find(pipeline->GetId()) != m_esmShadowmapsPasses.end())
-            {
-                PrepareForChangingRenderPipelineAndCameraView();
-            }
+            PrepareForChangingRenderPipelineAndCameraView();
         }
 
         void DirectionalLightFeatureProcessor::PrepareForChangingRenderPipelineAndCameraView() 

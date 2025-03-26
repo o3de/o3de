@@ -6,6 +6,7 @@
  *
  */
 
+#include "CommandLineParser_UnixLike.h"
 #include <AzCore/Settings/CommandLineParser.h>
 
 namespace AZ::Settings::Platform
@@ -17,4 +18,11 @@ namespace AZ::Settings::Platform
     {
         return CommandLineOptionPrefixArray{ "--", "-" };
     }
-}
+
+    CommandLineConverter::CommandLineConverter(int& argc, char**& argv)
+    {
+        // Do nothing, arguments are already in utf-8 encoding
+        AZ_UNUSED(argc);
+        AZ_UNUSED(argv);
+    }
+} // namespace AZ::Settings::Platform

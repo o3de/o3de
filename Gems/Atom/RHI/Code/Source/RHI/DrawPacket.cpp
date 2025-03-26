@@ -20,11 +20,11 @@ namespace AZ::RHI
         return m_drawItems.size();
     }
 
-    s32 DrawPacket::GetDrawListIndex(DrawListTag drawListTag) const
+    s32 DrawPacket::GetDrawListIndex(DrawListTag drawListTag, DrawFilterMask materialPipelineMask) const
     {
         for (size_t i = 0; i < m_drawItems.size(); ++i)
         {
-            if (GetDrawListTag(i) == drawListTag)
+            if ((GetDrawListTag(i) == drawListTag) && (GetDrawFilterMask(i) & materialPipelineMask))
             {
                 return s32(i);
             }
@@ -42,9 +42,9 @@ namespace AZ::RHI
         return (index < m_drawItems.size()) ? &m_drawItems[index] : nullptr;
     }
 
-    DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag)
+    DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag, DrawFilterMask materialPipelineMask)
     {
-        s32 index = GetDrawListIndex(drawListTag);
+        s32 index = GetDrawListIndex(drawListTag, materialPipelineMask);
         if (index > -1)
         {
             return GetDrawItem(index);
@@ -52,9 +52,9 @@ namespace AZ::RHI
         return nullptr;
     }
 
-    const DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag) const
+    const DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag, DrawFilterMask materialPipelineMask) const
     {
-        s32 index = GetDrawListIndex(drawListTag);
+        s32 index = GetDrawListIndex(drawListTag, materialPipelineMask);
         if (index > -1)
         {
             return GetDrawItem(index);

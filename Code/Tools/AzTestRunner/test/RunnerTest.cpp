@@ -45,7 +45,7 @@ TEST_P(EndsWithTest, CallEndsWith)
     ASSERT_EQ(p.m_expected, b);
 }
 
-INSTANTIATE_TEST_CASE_P(All, EndsWithTest, ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(All, EndsWithTest, ::testing::Values(
     EndsWithParam("foo.dll", ".dll", true),
     EndsWithParam("foo.dll", ".dxx", false),
     EndsWithParam("abcdef", "bcd", false), // value found in middle
@@ -127,7 +127,7 @@ TEST_P(RemoveParametersTest, Foo)
     delete[] argv;
 }
 
-INSTANTIATE_TEST_CASE_P(All, RemoveParametersTest, ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(All, RemoveParametersTest, ::testing::Values(
     RemoveParam { { "a", "b" }, 0, 0, { "b" } } // remove from start
     ,RemoveParam { { "a", "b" }, 1, 1, { "a" } } // remove from end
     ,RemoveParam { { "a", "b", "c" }, 1, 1, { "a", "c" } } // remove from middle

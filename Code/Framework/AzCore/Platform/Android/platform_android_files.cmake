@@ -28,6 +28,7 @@ set(FILES
     ../Common/UnixLike/AzCore/Platform_UnixLike.cpp
     AzCore/PlatformIncl_Platform.h
     AzCore/Serialization/Locale_Platform.h
+    AzCore/Settings/CommandLineParser_Platform.h
     ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.h
     ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.cpp
     ../Common/UnixLike/AzCore/Process/ProcessInfo_UnixLike.cpp
@@ -58,6 +59,7 @@ set(FILES
     AzCore/Module/DynamicModuleHandle_Android.cpp
     AzCore/NativeUI/NativeUISystemComponent_Android.cpp
     ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_fwd_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.cpp
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.h

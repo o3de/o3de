@@ -407,19 +407,16 @@ namespace PhysX
                 serializeContext
             )
             {
-                serializeContext->Class<ConvexDecompositionParams>()->Version(1)
+                serializeContext->Class<ConvexDecompositionParams>()->Version(2)
                     ->Field("MaxConvexHulls", &ConvexDecompositionParams::m_maxConvexHulls)
-                    ->Field("MaxNumVerticesPerConvexHull", &ConvexDecompositionParams::m_maxNumVerticesPerConvexHull)
-                    ->Field("Concavity", &ConvexDecompositionParams::m_concavity)
                     ->Field("Resolution", &ConvexDecompositionParams::m_resolution)
-                    ->Field("Mode", &ConvexDecompositionParams::m_mode)
-                    ->Field("Alpha", &ConvexDecompositionParams::m_alpha)
-                    ->Field("Beta", &ConvexDecompositionParams::m_beta)
-                    ->Field("MinVolumePerConvexHull", &ConvexDecompositionParams::m_minVolumePerConvexHull)
-                    ->Field("PlaneDownsampling", &ConvexDecompositionParams::m_planeDownsampling)
-                    ->Field("ConvexHullDownsampling", &ConvexDecompositionParams::m_convexHullDownsampling)
-                    ->Field("PCA", &ConvexDecompositionParams::m_pca)
-                    ->Field("ProjectHullVertices", &ConvexDecompositionParams::m_projectHullVertices);
+                    ->Field("MaxNumVerticesPerConvexHull", &ConvexDecompositionParams::m_maxNumVerticesPerConvexHull)
+                    ->Field("MinVolumePercentError", &ConvexDecompositionParams::m_minVolumePercentError)
+                    ->Field("MaxRecursionDepth", &ConvexDecompositionParams::m_maxRecursionDepth)
+                    ->Field("ShrinkWrap", &ConvexDecompositionParams::m_shrinkWrap)
+                    ->Field("FillMode", &ConvexDecompositionParams::m_fillMode)
+                    ->Field("MaxNumVerticesPerConvexHull", &ConvexDecompositionParams::m_maxNumVerticesPerConvexHull)
+                    ->Field("MinEdgeLength", &ConvexDecompositionParams::m_minEdgeLength);
 
                 if (
                     AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -432,122 +429,54 @@ namespace PhysX
                         ->DataElement(AZ_CRC_CE("MaxConvexHulls"), &ConvexDecompositionParams::m_maxConvexHulls, "Maximum Hulls",
                             "<span>Controls the maximum number of hulls to generate.</span>")
                             ->Attribute(AZ::Edit::Attributes::Min, 1)
-                            ->Attribute(AZ::Edit::Attributes::Max, 1024)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100000)
 
                         ->DataElement(AZ_CRC_CE("MaxNumVerticesPerConvexHull"), &ConvexDecompositionParams::m_maxNumVerticesPerConvexHull, "Maximum Vertices Per Hull",
                             "<span>Controls the maximum number of triangles per convex hull.</span>")
-                            ->Attribute(AZ::Edit::Attributes::Min, 4)
-                            ->Attribute(AZ::Edit::Attributes::Max, 1024)
-
-                        ->DataElement(AZ_CRC_CE("Concavity"), &ConvexDecompositionParams::m_concavity, "Concavity",
-                            "<span>Maximum concavity of each approximate convex hull.</span>")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                            ->Attribute(AZ::Edit::Attributes::Decimals, 4)
-                            ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 4)
+                            ->Attribute(AZ::Edit::Attributes::Min, 8)
+                            ->Attribute(AZ::Edit::Attributes::Max, 2048)
 
                         ->DataElement(AZ_CRC_CE("Resolution"), &ConvexDecompositionParams::m_resolution, "Resolution",
                             "<span>Maximum number of voxels generated during the voxelization stage.</span>")
                             ->Attribute(AZ::Edit::Attributes::Min, 10000)
-                            ->Attribute(AZ::Edit::Attributes::Max, 64000000)
+                            ->Attribute(AZ::Edit::Attributes::Max, 10000000)
                             ->Attribute(AZ::Edit::Attributes::Step, 10000)
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ConvexDecompositionParams::m_mode, "Mode",
-                            "<span>Select voxel-based approximate convex decomposition or tetrahedron-based "
-                            "approximate convex decomposition.</span>")
-                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZStd::vector<AZ::Edit::EnumConstant<AZ::u32>> {
-                                AZ::Edit::EnumConstant<AZ::u32>(0, "Voxel-based"),
-                                AZ::Edit::EnumConstant<AZ::u32>(1, "Tetrahedron-based")
-                            })
-
-                        ->DataElement(AZ_CRC_CE("Alpha"), &ConvexDecompositionParams::m_alpha, "Alpha",
-                            "<span>Controls the bias toward clipping along symmetry planes.</span>")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+                        ->DataElement(AZ_CRC_CE("MinVolumePercentError"), &ConvexDecompositionParams::m_minVolumePercentError, "Minimum Volume % Per Hull",
+                            "<span>Controls the voxels within % of the volume of the hull is allowed.</span>")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
+                            ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
                             ->Attribute(AZ::Edit::Attributes::Decimals, 4)
                             ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 4)
 
-                        ->DataElement(AZ_CRC_CE("Beta"), &ConvexDecompositionParams::m_beta, "Beta",
-                            "<span>Controls the bias toward clipping along revolution axes.</span>")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                            ->Attribute(AZ::Edit::Attributes::Decimals, 4)
-                            ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 4)
+                        ->DataElement(AZ_CRC_CE("MaxRecursionDepth"), &ConvexDecompositionParams::m_maxRecursionDepth, "Max Recursion Depth",
+                            "<span>Controls the maximum recursion depth.</span>")
+                            ->Attribute(AZ::Edit::Attributes::Min, 2)
+                            ->Attribute(AZ::Edit::Attributes::Max, 64)
 
-                        ->DataElement(AZ_CRC_CE("MinVolumePerConvexHull"), &ConvexDecompositionParams::m_minVolumePerConvexHull, "Minimum Volume Per Hull",
-                            "<span>Controls the adaptive sampling of the generated convex hulls.</span>")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 0.01f)
-                            ->Attribute(AZ::Edit::Attributes::Step, 0.0001f)
-                            ->Attribute(AZ::Edit::Attributes::Decimals, 6)
-                            ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 6)
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ConvexDecompositionParams::m_shrinkWrap, "Shrink Wrap",
+                            "<span>Control whether to shrinkwrap the voxel positions to the source mesh on output</span>")
 
-                        ->DataElement(AZ_CRC_CE("PlaneDownsampling"), &ConvexDecompositionParams::m_planeDownsampling, "Plane Downsampling",
-                            "<span>Controls the granularity of the search for the \"best\" clipping plane.</span>")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ConvexDecompositionParams::m_fillMode, "Fill Mode",
+                            "<span>Select how the voxels as filled to create a solid object.</span>")
+                            ->Attribute(
+                                AZ::Edit::Attributes::EnumValues,
+                                AZStd::vector<AZ::Edit::EnumConstant<FillMode>>{
+                                    AZ::Edit::EnumConstant<FillMode>(FillMode::FloodFill, "Flood fill"),
+                                    AZ::Edit::EnumConstant<FillMode>(FillMode::SurfaceOnly, "Surface only"),
+                                    AZ::Edit::EnumConstant<FillMode>(FillMode::RaycastFill, "Raycast fill"),
+                                })
+
+                        ->DataElement(AZ_CRC_CE("MinEdgeLength"), &ConvexDecompositionParams::m_minEdgeLength, "Max Edge Length",
+                            "<span>Once a voxel patch has an edge length of less than 4 on all 3 sides, we don't keep recursing.</span>")
                             ->Attribute(AZ::Edit::Attributes::Min, 1)
-                            ->Attribute(AZ::Edit::Attributes::Max, 16)
-
-                        ->DataElement(AZ_CRC_CE("ConvexHullDownsampling"), &ConvexDecompositionParams::m_convexHullDownsampling, "Hull Downsampling",
-                            "<span>Controls the precision of the convex hull generation process during the clipping "
-                            "plane selection stage.</span>")
-                            ->Attribute(AZ::Edit::Attributes::Min, 1)
-                            ->Attribute(AZ::Edit::Attributes::Max, 16)
-
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ConvexDecompositionParams::m_pca, "Enable PCA",
-                            "<span>Enable or disable normalizing the mesh before applying the convex "
-                            "decomposition.</span>")
-
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ConvexDecompositionParams::m_projectHullVertices, "Project Hull Vertices",
-                            "<span>Project the output convex hull vertices onto the original source mesh to increase "
-                            "the floating point accuracy of the results.</span>");
+                            ->Attribute(AZ::Edit::Attributes::Max, 32);
                 }
             }
-        }
-
-        float ConvexDecompositionParams::GetConcavity() const
-        {
-            return m_concavity;
-        }
-
-        float ConvexDecompositionParams::GetAlpha() const
-        {
-            return m_alpha;
-        }
-
-        float ConvexDecompositionParams::GetBeta() const
-        {
-            return m_beta;
-        }
-
-        float ConvexDecompositionParams::GetMinVolumePerConvexHull() const
-        {
-            return m_minVolumePerConvexHull;
-        }
-
-        AZ::u32 ConvexDecompositionParams::GetResolution() const
-        {
-            return m_resolution;
-        }
-
-        AZ::u32 ConvexDecompositionParams::GetMaxNumVerticesPerConvexHull() const
-        {
-            return m_maxNumVerticesPerConvexHull;
-        }
-
-        AZ::u32 ConvexDecompositionParams::GetPlaneDownsampling() const
-        {
-            return m_planeDownsampling;
-        }
-
-        AZ::u32 ConvexDecompositionParams::GetConvexHullDownsampling() const
-        {
-            return m_convexHullDownsampling;
         }
 
         AZ::u32 ConvexDecompositionParams::GetMaxConvexHulls() const
@@ -555,20 +484,41 @@ namespace PhysX
             return m_maxConvexHulls;
         }
 
-        bool ConvexDecompositionParams::GetPca() const
+        AZ::u32 ConvexDecompositionParams::GetResolution() const
         {
-            return m_pca;
+            return m_resolution;
         }
 
-        AZ::u32 ConvexDecompositionParams::GetMode() const
+        float ConvexDecompositionParams::GetMinVolumePercentError() const
         {
-            return m_mode;
+            return m_minVolumePercentError;
         }
 
-        bool ConvexDecompositionParams::GetProjectHullVertices() const
+        AZ::u32 ConvexDecompositionParams::GetMaxRecursionDepth() const
         {
-            return m_projectHullVertices;
+            return m_maxRecursionDepth;
         }
+
+        bool ConvexDecompositionParams::GetShrinkWrap() const
+        {
+            return m_shrinkWrap;
+        }
+
+        ConvexDecompositionParams::FillMode ConvexDecompositionParams::GetFillMode() const
+        {
+            return m_fillMode;
+        }
+
+        AZ::u32 ConvexDecompositionParams::GetMaxNumVerticesPerConvexHull() const
+        {
+            return m_maxNumVerticesPerConvexHull;
+        }
+
+        AZ::u32 ConvexDecompositionParams::GetMinEdgeLength() const
+        {
+            return m_minEdgeLength;
+        }
+
 
 
         AZ_CLASS_ALLOCATOR_IMPL(MeshGroup, AZ::SystemAllocator)

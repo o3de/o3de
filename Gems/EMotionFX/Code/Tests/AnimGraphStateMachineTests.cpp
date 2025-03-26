@@ -80,7 +80,7 @@ namespace EMotionFX
         static_cast<int>(AnimGraphStateMachine::GetMaxNumPasses())
     };
 
-    INSTANTIATE_TEST_CASE_P(TestAnimGraphStateMachine_MultiplePassesSingleFrameTest,
+    INSTANTIATE_TEST_SUITE_P(TestAnimGraphStateMachine_MultiplePassesSingleFrameTest,
          AnimGraphStateMachine_MultiplePassesSingleFrameFixture,
          ::testing::ValuesIn(animGraphStateMachinePassesTestData)
      );

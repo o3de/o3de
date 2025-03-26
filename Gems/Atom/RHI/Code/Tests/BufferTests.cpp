@@ -396,8 +396,8 @@ namespace UnitTest
         return BufferBindFlagsToString(info.param.bufferBindFlags) + "BufferWith" + BufferBindFlagsToString(info.param.viewBindFlags) + "BufferView";
     }
 
-    INSTANTIATE_TEST_CASE_P(BufferView, BufferBindFlagTests, ::testing::ValuesIn(GenerateCompatibleBufferBindFlagCombinations()), GenerateBufferBindFlagTestCaseName);
-    INSTANTIATE_TEST_CASE_P(BufferView, BufferBindFlagFailureCases, ::testing::ValuesIn(GenerateIncompatibleBufferBindFlagCombinations()), GenerateBufferBindFlagTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(BufferView, BufferBindFlagTests, ::testing::ValuesIn(GenerateCompatibleBufferBindFlagCombinations()), GenerateBufferBindFlagTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(BufferView, BufferBindFlagFailureCases, ::testing::ValuesIn(GenerateIncompatibleBufferBindFlagCombinations()), GenerateBufferBindFlagTestCaseName);
 
 
     enum class ParallelGetBufferViewTestCases

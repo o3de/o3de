@@ -1101,7 +1101,7 @@ namespace UnitTest
         EXPECT_THAT(manipulatorTransform->GetTranslation(), IsClose(Entity2WorldTranslation));
     }
 
-    INSTANTIATE_TEST_CASE_P(All, EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam, testing::Values(true, false));
+    INSTANTIATE_TEST_SUITE_P(All, EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam, testing::Values(true, false));
 
     // create alias for EditorTransformComponentSelectionViewportPickingManipulatorTestFixture to help group tests
     using EditorTransformComponentSelectionManipulatorInteractionTestFixture =
@@ -1169,7 +1169,7 @@ namespace UnitTest
         AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f)),
         EditorTransformComponentSelectionViewportPickingFixture::Entity1WorldTranslation);
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionRotationManipulatorSingleEntityTestFixtureParam,
         testing::Values(
@@ -1280,7 +1280,7 @@ namespace UnitTest
         AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation) *
         AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateRotationX(AZ::DegToRad(-90.0f)));
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionRotationManipulatorMultipleEntityTestFixtureParam,
         testing::Values(
@@ -1391,7 +1391,7 @@ namespace UnitTest
         AggregateManipulatorPositionWithEntity2and3Selected +
         AZ::Vector3(0.0f, LinearManipulatorYAxisMovement, LinearManipulatorZAxisMovement));
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionTranslationManipulatorSingleEntityTestFixtureParam,
         testing::Values(
@@ -1516,7 +1516,7 @@ namespace UnitTest
         EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation +
         AZ::Vector3(0.0f, LinearManipulatorYAxisMovement, LinearManipulatorZAxisMovement));
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionTranslationManipulatorMultipleEntityTestFixtureParam,
         testing::Values(
@@ -1623,7 +1623,7 @@ namespace UnitTest
         AZ::Transform::CreateTranslation(EditorTransformComponentSelectionViewportPickingFixture::Entity3WorldTranslation) *
         AZ::Transform::CreateUniformScale(LinearManipulatorZAxisMovement);
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionScaleManipulatorMultipleEntityTestFixtureParam,
         testing::Values(
@@ -1708,7 +1708,7 @@ namespace UnitTest
                     -ManipulatorPickBoxHalfSize + ManipulatorPickOffsetTolerance,
                     -ManipulatorPickBoxHalfSize + ManipulatorPickOffsetTolerance);
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionTranslationManipulatorPickingEntityTestFixtureParam,
         testing::Values(
@@ -2046,7 +2046,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionSingleEntityPivotFixture,
         testing::Values(
@@ -2095,7 +2095,7 @@ namespace UnitTest
     }
 
     // with a single entity selected with a parent the orientation reference frames follow as you'd expect
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionSingleEntityWithParentPivotFixture,
         testing::Values(
@@ -2152,7 +2152,7 @@ namespace UnitTest
 
     // with a group selection, when the entities are not in a hierarchy, no matter what reference frame,
     // we will always get an orientation aligned to the world
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionMultipleEntitiesPivotFixture,
         testing::Values(
@@ -2215,7 +2215,7 @@ namespace UnitTest
 
     // here two entities are selected with the same parent - local and parent will match parent space, with world
     // giving the identity (aligned to world axes)
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionMultipleEntitiesWithSameParentPivotFixture,
         testing::Values(
@@ -2278,7 +2278,7 @@ namespace UnitTest
     }
 
     // if multiple entities are selected without a parent in common, orientation will always be world again
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionMultipleEntitiesWithDifferentParentPivotFixture,
         testing::Values(
@@ -2328,7 +2328,7 @@ namespace UnitTest
 
     // local reference frame will still return local orientation for entity, but pivot override will trump parent
     // space (world will still give identity alignment for axes)
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionSingleEntityPivotAndOverrideFixture,
         testing::Values(
@@ -2388,7 +2388,7 @@ namespace UnitTest
     }
 
     // with multiple entities selected, override frame wins in both local and parent reference frames
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionMultipleEntitiesPivotAndOverrideFixture,
         testing::Values(
@@ -2446,7 +2446,7 @@ namespace UnitTest
     }
 
     // multiple entities selected (no hierarchy) always get world aligned axes (identity)
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionMultipleEntitiesPivotAndNoOverrideFixture,
         testing::Values(
@@ -2509,7 +2509,7 @@ namespace UnitTest
 
     // no optional frame, same parent, local and parent both get parent alignment (world reference frame
     // gives world alignment (identity))
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         EditorTransformComponentSelectionMultipleEntitiesSameParentPivotAndNoOverrideFixture,
         testing::Values(

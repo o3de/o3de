@@ -136,6 +136,10 @@ namespace AzToolsFramework
         EntityOutlinerSortFilterProxyModel* m_proxyModel;
         AZStd::vector<AZ::EntityId> m_selectedEntityIds;
 
+        // ToolsApplicationEventBus handler
+        void BeforeUndoRedo() override;
+        void AfterUndoRedo() override;
+
         void PrepareSelection();
         void DoCreateEntity();
         void DoCreateEntityWithParent(const AZ::EntityId& parentId);
@@ -193,6 +197,8 @@ namespace AzToolsFramework
 
         QIcon m_emptyIcon;
         QIcon m_clearIcon;
+
+        bool m_isDuringUndoRedo = false;
 
         void QueueContentUpdateSort(const AZ::EntityId& entityId);
         void SortContent();

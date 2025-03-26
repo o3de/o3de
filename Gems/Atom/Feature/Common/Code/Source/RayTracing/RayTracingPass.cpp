@@ -45,7 +45,7 @@ namespace AZ
         RayTracingPass::RayTracingPass(const RPI::PassDescriptor& descriptor)
             : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
-            , m_dispatchRaysItem(RHI::MultiDevice::AllDevices)
+            , m_dispatchRaysItem(RHI::RHISystemInterface::Get()->GetRayTracingSupport())
         {
             m_flags.m_canBecomeASubpass = false;
             if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
@@ -246,6 +246,11 @@ namespace AZ
                 return false;
             }
 
+            if (m_pipeline == nullptr)
+            {
+                return false;
+            }
+
             RPI::Scene* scene = m_pipeline->GetScene();
             if (!scene)
             {
@@ -278,8 +283,8 @@ namespace AZ
                     m_indirectDispatchRaysBufferSignature = aznew AZ::RHI::IndirectBufferSignature();
                     AZ::RHI::IndirectBufferSignatureDescriptor signatureDescriptor{};
                     signatureDescriptor.m_layout = bufferLayout;
-                    [[maybe_unused]] auto result =
-                        m_indirectDispatchRaysBufferSignature->Init(AZ::RHI::MultiDevice::AllDevices, signatureDescriptor);
+                    [[maybe_unused]] auto result = m_indirectDispatchRaysBufferSignature->Init(
+                        AZ::RHI::RHISystemInterface::Get()->GetRayTracingSupport(), signatureDescriptor);
 
                     AZ_Assert(result == AZ::RHI::ResultCode::Success, "Fail to initialize Indirect Buffer Signature");
                 }
@@ -320,7 +325,8 @@ namespace AZ
 
                 if (!m_dispatchRaysIndirectBuffer)
                 {
-                    m_dispatchRaysIndirectBuffer = aznew AZ::RHI::DispatchRaysIndirectBuffer{ AZ::RHI::MultiDevice::AllDevices };
+                    m_dispatchRaysIndirectBuffer =
+                        aznew AZ::RHI::DispatchRaysIndirectBuffer{ AZ::RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
                     m_dispatchRaysIndirectBuffer->Init(
                         AZ::RPI::BufferSystemInterface::Get()->GetCommonBufferPool(AZ::RPI::CommonBufferPoolType::Indirect).get());
                 }
@@ -484,7 +490,8 @@ namespace AZ
                 // scene changed, need to rebuild the shader table
                 m_rayTracingShaderTableRevision = rayTracingFeatureProcessor->GetRevision();
                 m_rayTracingShaderTable = aznew AZ::RHI::RayTracingShaderTable();
-                m_rayTracingShaderTable->Init(AZ::RHI::MultiDevice::AllDevices, rayTracingFeatureProcessor->GetBufferPools());
+                m_rayTracingShaderTable->Init(
+                    AZ::RHI::RHISystemInterface::Get()->GetRayTracingSupport(), rayTracingFeatureProcessor->GetBufferPools());
 
                 AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
 

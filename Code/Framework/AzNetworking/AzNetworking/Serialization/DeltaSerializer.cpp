@@ -73,7 +73,13 @@ namespace AzNetworking
         // Delete any left over records that might be hanging around
         for (auto iter : m_records)
         {
-            delete iter;
+            if (iter)
+            {
+                // this will probably trigger ASAN, since we don't know what the type is.
+                // But it should also only happen in scenarios where we are crashing or have already asserted/warned
+                // about mismatched serialize/deserialize.
+                delete iter;  
+            }
         }
         m_records.clear();
     }
@@ -194,8 +200,19 @@ namespace AzNetworking
     template <typename T>
     bool DeltaSerializerCreate::SerializeHelper(T& value, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name)
     {
+        // The way this functions is that it expects its operation to be done in two phases:
+        // First, it gathers records into the m_records vector for each object being serialized, representing the prior state
+        // Then it expects to be called again, on objects in exactly the same order but with the new state.
+        // It will then compare the two states and generate a delta in m_delta for the differences.
+        // Once it has done this, the value stored in m_records is no longer required, and can be deleted while we still
+        // are in a templated function that knows the type of T and can thus invoke the correct delete operator.
+
+        // if this starts be a bottleneck or memory hotspot, consider using a static frame buffer for m_records, the kind of datastructure
+        // that runs on pre-allocated memory and resets it every frame instead of frees it, to avoid needing to delete.
+
         typedef AbstractValue::ValueT<T> ValueType;
 
+        uint32_t objectPos = m_objectCounter;
         AbstractValue::BaseValue* baseValue = m_records.size() > m_objectCounter ? m_records[m_objectCounter] : nullptr;
         ++m_objectCounter;
 
@@ -238,6 +255,10 @@ namespace AzNetworking
                     return false;
                 }
             }
+
+            // once we get here, we don't need the record anymore, so discard it while we know what the type is.
+            delete static_cast<ValueType*>(baseValue);
+            m_records[objectPos] = nullptr;
         }
 
         return true;
