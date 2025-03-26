@@ -13,11 +13,13 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Script/ScriptContextDebug.h>
 
@@ -772,18 +774,20 @@ namespace AzToolsFramework
                 pausedBreakpoints = true;
             }
 
-            // Using "resumeUndoBatch" here has 3 outcomes:
-            // If we call this function repeatedly, so that the most recent undo on the stack is the same as the current one, it will reopen that
-            // undo batch and just update it with the new data rather than create a new one.
-            // If we are already inside a different undo batch, it will make this new one a child of the exsiting one.
-            // If there is undo batch operation in progress, or some other undo operation is the most recent one, it will make a new one and return it.
-
-            // The result is that you can call this function repeatedly and it will just update the most recent undo without creating a new one.
-            // You can also call it inside another undo, and it will become a child of that undo.
+            AzToolsFramework::UndoSystem::URSequencePoint* undoPoint = nullptr;
+            bool wasInsideAnotherUndo = false;
             if (m_scriptComponent.LoadInContext())
             {
-                ToolsApplicationRequests::Bus::BroadcastResult(m_undoPoint, &ToolsApplicationRequests::Bus::Events::ResumeUndoBatch, m_undoPoint, "Update Script Properties");
-                LoadProperties();
+                if (LoadProperties()) // returns true if changed.
+                {
+                    ToolsApplicationRequests::Bus::BroadcastResult(undoPoint, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Update Script Properties");
+                    wasInsideAnotherUndo = (undoPoint) && (undoPoint->GetParent());
+                    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
+                    // If the undo point has a parent, it means its part of a bigger undo that was likely user-initiated like assigning
+                    // the script, in which case, there is no need to notify the user as they will expect the change and will save the
+                    // level. If it has no parent, this means it is a spontaneous fixup that happens during level loading or prefab loading,
+                    // and the user will need notification.
+                }
             }
 
             if (pausedBreakpoints)
@@ -792,16 +796,43 @@ namespace AzToolsFramework
             }
 
             InvalidatePropertyDisplay(Refresh_EntireTree);
-            if (m_undoPoint)
+            if (undoPoint)
             {
-                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
-                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+                bool wasKept = false;
+                ToolsApplicationRequests::Bus::BroadcastResult(wasKept, &ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+
+                // Empty undos are discarded.  If this happens it means that there were no changes applied, we don't need to tell the user
+                // We also don't have to tell them if we asynchronously update the script properties when loading a new script from asset assignment
+                // since the entity will already be marked dirty / for save.
+                if ((wasKept)&&(!wasInsideAnotherUndo)&&(!m_loadingNewScript))
+                {
+                    AZ_Warning(
+                        "ScriptComponent",
+                        false,
+                        "While loading a Lua Script Component, some properties (from the Properties section in the assigned lua script file) were\n"
+                        "missing or incorrect in the saved file.  (Entity:  %s)\n"
+                        "This has automatically been repaired.\nPlease save the level, to apply it permanently.\n"
+                        "If the problem was inside a prefab inside the level, the fix has been applied as an override.  If you want to apply it to\n"
+                        "every instance of the prefab, push these overrides to the prefab file itself by left clicking the Script component's icon in\n"
+                        "the component inspector for this entity.",
+                        GetEntity()->GetName().c_str());
+                }
             }
+
+            m_loadingNewScript = false;
         }
 
-        void ScriptEditorComponent::LoadProperties()
+        bool ScriptEditorComponent::LoadProperties()
         {
             ClearDataElements();
+
+            // cache the old properties for comparison.
+            AZStd::string oldProperties;
+            oldProperties.reserve(1024);
+            {
+                AZ::IO::ByteContainerStream<AZStd::string> byteStream(&oldProperties);
+                AZ::JsonSerializationUtils::SaveObjectToStream(&m_scriptComponent.m_properties, byteStream);
+            }
 
             AZ::ScriptContext* context = m_scriptComponent.m_context;
             LSV_BEGIN(context->NativeContext(), -1);
@@ -811,7 +842,7 @@ namespace AzToolsFramework
 
             if (!success)
             {
-                return;
+                return false;
             }
 
             AZ::ScriptDataContext stackContext;
@@ -855,7 +886,20 @@ namespace AzToolsFramework
 
             SortProperties(m_scriptComponent.m_properties);
 
-            InvalidatePropertyDisplay(Refresh_EntireTree);
+            // compare with the old properties.
+            AZStd::string newProperties;
+            newProperties.reserve(1024);
+            {
+                AZ::IO::ByteContainerStream<AZStd::string> byteStream(&newProperties);
+                AZ::JsonSerializationUtils::SaveObjectToStream(&m_scriptComponent.m_properties, byteStream);
+            }
+
+            if (oldProperties.compare(newProperties) != 0)
+            {
+                InvalidatePropertyDisplay(Refresh_EntireTree);
+                return true;
+            }
+            return false;
         }
 
         void ScriptEditorComponent::ClearDataElements()
@@ -926,6 +970,7 @@ namespace AzToolsFramework
 
             // Only clear properties and data elements if the asset we're changing to is not the same one we already had set on our scriptComponent
             // The only time we shouldn't do this is when someone has set the same script on the component through the editor
+            m_loadingNewScript = true;
             if (m_scriptAsset != m_scriptComponent.GetScript())
             {
                 m_scriptComponent.m_properties.Clear();
