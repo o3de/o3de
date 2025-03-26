@@ -74,7 +74,7 @@ namespace MCore
         {
             const float angleRadians = Math::ACos(dot);
             const AZ::Vector3 rotAxis = fromVector.Cross(toVector);
-            return AZ::Quaternion::CreateFromAxisAngle(rotAxis, angleRadians);
+            return AZ::Quaternion::CreateFromAxisAngle(rotAxis.Normalize(), angleRadians);
         }
         else
         {
