@@ -65,7 +65,7 @@ namespace AzFramework
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             return AZStd::make_unique<XcbApplication>();
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-			return AZStd::make_unique<WaylandApplication>();
+            return AZStd::make_unique<WaylandApplication>();
 #else
             #error "Linux Window Manager not recognized."
             return nullptr;
@@ -81,7 +81,7 @@ namespace AzFramework
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             return AZStd::make_unique<XcbInputDeviceKeyboard>(inputDevice);
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-			return AZStd::unique_ptr<InputDeviceKeyboard::Implementation>(WaylandInputDeviceKeyboard::Create(inputDevice));;
+            return AZStd::unique_ptr<InputDeviceKeyboard::Implementation>(WaylandInputDeviceKeyboard::Create(inputDevice));;
 #else
             #error "Linux Window Manager not recognized."
             return nullptr;
@@ -95,7 +95,6 @@ namespace AzFramework
         AZStd::unique_ptr<InputDeviceMouse::Implementation> Create(InputDeviceMouse& inputDevice) override
         {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-            
             return AZStd::unique_ptr<InputDeviceMouse::Implementation>(XcbInputDeviceMouse::Create(inputDevice));
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
             return AZStd::unique_ptr<InputDeviceMouse::Implementation>(WaylandInputDeviceMouse::Create(inputDevice));;
@@ -114,7 +113,7 @@ namespace AzFramework
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             return AZStd::make_unique<XcbNativeWindow>();
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-			return AZStd::make_unique<WaylandNativeWindow>();
+            return AZStd::make_unique<WaylandNativeWindow>();
 #else
             #error "Linux Window Manager not recognized."
             return nullptr;

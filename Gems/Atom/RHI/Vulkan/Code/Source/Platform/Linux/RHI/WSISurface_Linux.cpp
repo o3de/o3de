@@ -48,25 +48,25 @@ namespace AZ
 
             return ConvertResult(result);
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-			wl_display* display = nullptr;
-			if(auto wlConManager = AzFramework::WaylandConnectionManagerInterface::Get();
-					wlConManager != nullptr)
-			{
-				display = wlConManager->GetWaylandDisplay();
-			}
-			if(display == nullptr){
-				AZ_Error("AtomVulkan_RHI", display!=nullptr, "Unable to get Wayland Display.");
-				return RHI::ResultCode::Fail;
-			}
+            wl_display* display = nullptr;
+            if(auto wlConManager = AzFramework::WaylandConnectionManagerInterface::Get();
+                wlConManager != nullptr)
+            {
+                display = wlConManager->GetWaylandDisplay();
+            }
+            if(display == nullptr){
+                AZ_Error("AtomVulkan_RHI", display!=nullptr, "Unable to get Wayland Display.");
+                return RHI::ResultCode::Fail;
+            }
 
-			VkWaylandSurfaceCreateInfoKHR createInfo{};
-			createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-			createInfo.pNext = nullptr;
-			createInfo.flags = 0;
-			createInfo.display = display;
-			createInfo.surface = (wl_surface*)m_descriptor.m_windowHandle.GetIndex();
-			const VkResult result = instance.GetContext().CreateWaylandSurfaceKHR(instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
-			AssertSuccess(result);
+            VkWaylandSurfaceCreateInfoKHR createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+            createInfo.pNext = nullptr;
+            createInfo.flags = 0;
+            createInfo.display = display;
+            createInfo.surface = (wl_surface*)m_descriptor.m_windowHandle.GetIndex();
+            const VkResult result = instance.GetContext().CreateWaylandSurfaceKHR(instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
+            AssertSuccess(result);
 
             return ConvertResult(result);
 #else
