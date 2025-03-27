@@ -73,8 +73,9 @@ namespace MCore
         if (dot < 0.99999f) // we have rotated compared to the forward direction
         {
             const float angleRadians = Math::ACos(dot);
-            const AZ::Vector3 rotAxis = fromVector.Cross(toVector);
-            return AZ::Quaternion::CreateFromAxisAngle(rotAxis.Normalize(), angleRadians);
+            AZ::Vector3 rotAxis = fromVector.Cross(toVector);
+            rotAxis.Normalize();
+            return AZ::Quaternion::CreateFromAxisAngle(rotAxis, angleRadians);
         }
         else
         {
