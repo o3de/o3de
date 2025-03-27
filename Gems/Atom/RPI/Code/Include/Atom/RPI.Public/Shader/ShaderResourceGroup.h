@@ -75,6 +75,8 @@ namespace AZ
             /// Returns whether the group is currently queued for compilation.
             bool IsQueuedForCompile() const;
 
+            bool IsInitialized() const;
+
             /// Finds the shader input index from the shader input name for each type of resource.
             RHI::ShaderInputBufferIndex    FindShaderInputBufferIndex(const Name& name) const;
             RHI::ShaderInputImageIndex     FindShaderInputImageIndex(const Name& name) const;

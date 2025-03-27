@@ -20,7 +20,11 @@ real GetSubsurfaceInput(Texture2D map, sampler mapSampler, float2 uv, real surfa
         }
         else
         {
+        #ifdef CS_SAMPLERS
+            surfaceScatteringFactor *= real(map.SampleLevel(mapSampler, uv, 0).r);
+        #else
             surfaceScatteringFactor *= real(map.Sample(mapSampler, uv).r);
+        #endif
         }
     }
     return surfaceScatteringFactor;

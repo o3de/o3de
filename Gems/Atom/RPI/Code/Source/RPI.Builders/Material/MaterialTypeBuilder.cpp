@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 50; // Using ordered map for shader templates to fix unstable assets sub IDs
+            materialBuilderDescriptor.m_version = 51; // Added support for "drawSrgAdditions" in *.materialpipeline files.
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -373,6 +373,43 @@ namespace AZ
             return Name{materialPipelineFilePath.Stem().Native()};
         }
 
+        //! Returns the number of redundant additions.
+        static uint32_t AddSrgAdditionsFromMaterialPipeline(
+            const AZStd::vector<AZStd::string>& inSrgAdditions,
+            AZStd::unordered_map<AZStd::string, uint32_t>& redundancyMap,
+            AZStd::vector<AZStd::string>& outSrgAdditions)
+        {
+            uint32_t redundantCount = 0;
+            for (const auto& srgAddition : inSrgAdditions)
+            {
+                auto redundancyItor = redundancyMap.find(srgAddition);
+                if (redundancyItor != redundancyMap.end())
+                {
+                    redundancyItor->second += 1;
+                    redundantCount++;
+                    continue;
+                }
+                redundancyMap.emplace(srgAddition, 1);
+                outSrgAdditions.push_back(srgAddition);
+            }
+            return redundantCount;
+        }
+
+        static void ReportRedundantSrgAdditions(const char* srgName,
+            const AZStd::vector<AZStd::string>& srgAdditionsFromMaterialPipelines,
+            const AZStd::unordered_map<AZStd::string, uint32_t>& objectSrgAdditionsRedundancyMap)
+        {
+            AZ_Warning(MaterialTypeBuilderName, false, "List of redundant additions to '%s':\n", srgName);
+            for (const auto& addition : srgAdditionsFromMaterialPipelines)
+            {
+                uint32_t count = objectSrgAdditionsRedundancyMap.at(addition);
+                if (count > 1)
+                {
+                    AZ_Warning(MaterialTypeBuilderName, false, "\t'%s' found in %u material pipelines:\n", addition.c_str(), count);
+                }
+            }
+        }
+
         void MaterialTypeBuilder::PipelineStage::ProcessJobHelper(
             const AssetBuilderSDK::ProcessJobRequest& request,
             AssetBuilderSDK::ProcessJobResponse& response,
@@ -389,7 +426,21 @@ namespace AZ
             // Each leaf element is a line that will be included in the object SRG of every shader
             // This allows Material Pipelines to add members to object SRGs, for example a texture space shading
             // pipeline can add a texture index to the Object SRG so the object can refer to it's lighting texture.
-            AZStd::vector<const AZStd::vector<AZStd::string>*> objectSrgAdditionsFromMaterialPipelines;
+            AZStd::vector<AZStd::string> objectSrgAdditionsFromMaterialPipelines;
+            // A Project or custom Gem can have several material pipelines that share the same "objectSrgAddtions".
+            // This map is used to prevent the same shader constants to be declared more than once, in ObjectSrg, by different material pipelines.
+            AZStd::unordered_map<AZStd::string, uint32_t> objectSrgAdditionsRedundancyMap;
+            uint32_t objectSrgRedundancyCount = 0;
+
+            // A list of pointers to lists
+            // Each leaf element is a line that will be included in the Draw SRG of every shader
+            // This allows Material Pipelines to add members to Draw SRGs, for example a texture space shading
+            // pipeline can add a texture index to the Draw SRG so the Draw/Dispatch item can refer to it's lighting texture.
+            AZStd::vector<AZStd::string> drawSrgAdditionsFromMaterialPipelines;
+            // A Project or custom Gem can have several material pipelines that share the same "drawSrgAddtions".
+            // This map is used to prevent the same shader constants to be declared more than once, in DrawSrg, by different material pipelines.
+            AZStd::unordered_map<AZStd::string, uint32_t> drawSrgAdditionsRedundancyMap;
+            uint32_t drawSrgRedundancyCount = 0;
 
             // Some shader templates may be reused by multiple pipelines, so first collect a full picture of all the dependencies
             AZStd::map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<Name/*materialPipielineName*/>> shaderTemplateReferences;
@@ -446,7 +497,33 @@ namespace AZ
                     // This avoids adding extra SRG members in materials for MaterialPipelines it won't be rendered in
                     if (!shaderTemplateList.empty())
                     {
-                        objectSrgAdditionsFromMaterialPipelines.push_back(&materialPipeline.m_objectSrgAdditions);
+                        uint32_t redundantCount = AddSrgAdditionsFromMaterialPipeline(
+                            materialPipeline.m_objectSrgAdditions,
+                            objectSrgAdditionsRedundancyMap,
+                            objectSrgAdditionsFromMaterialPipelines);
+                        objectSrgRedundancyCount += redundantCount;
+                        if (redundantCount > 0)
+                        {
+                            AZ_Printf(
+                                MaterialTypeBuilderName,
+                                "Material Pipeline '%s' Contains %u redundant 'objectSrgAdditions'.\n",
+                                materialPipelineName.GetCStr(),
+                                redundantCount);
+                        }
+
+                        redundantCount = AddSrgAdditionsFromMaterialPipeline(
+                            materialPipeline.m_drawSrgAdditions,
+                            drawSrgAdditionsRedundancyMap,
+                            drawSrgAdditionsFromMaterialPipelines);
+                        drawSrgRedundancyCount += redundantCount;
+                        if (redundantCount > 0)
+                        {
+                            AZ_Printf(
+                                MaterialTypeBuilderName,
+                                "Material Pipeline '%s' Contains %u redundant 'drawSrgAdditions'.\n",
+                                materialPipelineName.GetCStr(),
+                                redundantCount);
+                        }
                     }
                 }
 
@@ -454,6 +531,16 @@ namespace AZ
                 {
                     return;
                 }
+            }
+
+            if (objectSrgRedundancyCount > 0)
+            {
+                ReportRedundantSrgAdditions("ObjectSrg", objectSrgAdditionsFromMaterialPipelines, objectSrgAdditionsRedundancyMap);
+            }
+
+            if (drawSrgRedundancyCount > 0)
+            {
+                ReportRedundantSrgAdditions("DrawSrg", drawSrgAdditionsFromMaterialPipelines, drawSrgAdditionsRedundancyMap);
             }
 
             // The new material type will no longer be abstract, we remove the reference to the partial
@@ -512,18 +599,30 @@ namespace AZ
                 AZStd::string generatedAzsl;
                 generatedAzsl += AZStd::string::format("// This code was generated by %s. Do not modify.\n", MaterialTypeBuilderName);
 
-                // Generate the #define that will include new object srg members that were specified in the material pipelines 
-                generatedAzsl += AZStd::string::format("#define MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS   \\\n");
-
-                for (const AZStd::vector<AZStd::string>* perMaterialPipelineAdditions : objectSrgAdditionsFromMaterialPipelines)
+                if (!objectSrgAdditionsFromMaterialPipelines.empty())
                 {
-                    for (const AZStd::string& objectSrgAddition : *perMaterialPipelineAdditions)
+                    // Generate the #define that will include new object srg members that were specified in the material pipelines
+                    generatedAzsl += AZStd::string::format("#define MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS   \\\n");
+
+                    for (const AZStd::string& objectSrgAddition : objectSrgAdditionsFromMaterialPipelines)
                     {
                         generatedAzsl += AZStd::string::format("%s   \\\n", objectSrgAddition.c_str());
                     }
+                    generatedAzsl += AZStd::string::format("\n");
                 }
 
-                generatedAzsl += AZStd::string::format("\n");
+                if (!drawSrgAdditionsFromMaterialPipelines.empty())
+                {
+                    // Generate the #define that will include new Draw srg members that were specified in the material pipelines
+                    generatedAzsl += AZStd::string::format("#define MATERIAL_PIPELINE_DRAW_SRG_MEMBERS   \\\n");
+
+                    for (const AZStd::string& drawSrgAddition : drawSrgAdditionsFromMaterialPipelines)
+                    {
+                        generatedAzsl += AZStd::string::format("%s   \\\n", drawSrgAddition.c_str());
+                    }
+
+                    generatedAzsl += AZStd::string::format("\n");
+                }
 
                 // At this point m_azsli should be absolute due to ResolvePathReference() being called above.
                 // It might be better for the include path to be relative to the generated .shader file path in the intermediate cache,

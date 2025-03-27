@@ -21,6 +21,8 @@ namespace AZ
 {
     namespace RPI
     {
+        Data::Instance<RPI::ShaderResourceGroup> MeshDrawPacket::InvalidSrg;
+
         AZ_CVAR(bool,
             r_forceRootShaderVariantUsage,
             false,
@@ -243,6 +245,15 @@ namespace AZ
                 AZ_TracePrintf("MeshDrawPacket", "%d: %s", index++, variant.data());
             }
 #endif
+        }
+
+        Data::Instance<RPI::ShaderResourceGroup>& MeshDrawPacket::GetDrawSrg(uint32_t drawItemIndex)
+        {
+            if (drawItemIndex >= aznumeric_cast<uint32_t>(m_perDrawSrgs.size()))
+            {
+                return InvalidSrg;
+            }
+            return m_perDrawSrgs[drawItemIndex];
         }
 
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
