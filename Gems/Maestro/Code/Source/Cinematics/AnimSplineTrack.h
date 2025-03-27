@@ -156,6 +156,7 @@ namespace Maestro
             if (!m_spline)
             {
                 AZ_Assert(false, "Invalid spline.");
+                return;
             }
 
             m_spline->resize(numKeys);
@@ -424,7 +425,7 @@ namespace Maestro
         //! Set track flags.
         void SetFlags(int flags) override
         {
-            if (!(m_spline))
+            if (!m_spline)
             {
                 AZ_Assert(false, "Invalid spline.");
                 return;
@@ -482,7 +483,7 @@ namespace Maestro
 
         int FindKey(float time) const override
         {
-            if (!(m_spline))
+            if (!m_spline)
             {
                 AZ_Assert(false, "Invalid spline.");
                 return -1;
@@ -511,7 +512,7 @@ namespace Maestro
                 AZStd::clamp(time, timeRange.start, timeRange.end);
             }
 
-             const auto existingKeyIndex = FindKey(time);
+            const auto existingKeyIndex = FindKey(time);
             if (existingKeyIndex >= 0)
             {
                 AZ_Error("AnimSplineTrack", false, "CreateKey(%f): Key (%d) with this time exists in track (%s).",

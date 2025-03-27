@@ -134,8 +134,8 @@ namespace Maestro
         }
 
         static auto str = m_keys[keyIndex].m_strValue;
-        constexpr const size_t allowdLength = 30;
-        if (str.length() > allowdLength)
+        constexpr const size_t allowedLength = 30;
+        if (str.length() > allowedLength)
         {
             // Get a sub-string for description.
             // First check if its a path, then shorten description to filename.
@@ -147,9 +147,9 @@ namespace Maestro
             else // General string, take the tail sub-string.
             {
                 AzFramework::StringFunc::TrimWhiteSpace(str, true, true);
-                if (str.length() > allowdLength)
+                if (str.length() > allowedLength)
                 {
-                    AzFramework::StringFunc::LChop(str, str.length() - allowdLength);
+                    AzFramework::StringFunc::LChop(str, str.length() - allowedLength);
                 }
             }
         }
