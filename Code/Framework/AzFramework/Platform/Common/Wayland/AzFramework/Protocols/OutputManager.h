@@ -11,7 +11,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <AzFramework/Protocols/Gen/xdg-shell-client-protocol.h>
 #include <wayland-client.hpp>
 
 namespace AzFramework

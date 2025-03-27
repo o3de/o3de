@@ -14,7 +14,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <AzFramework/Protocols/Gen/pointer-constraints-client-protocol.h>
+#include <pointer-constraints-unstable-v1-client-protocol.h>
 #include <AzFramework/WaylandInterface.h>
 
 namespace AzFramework

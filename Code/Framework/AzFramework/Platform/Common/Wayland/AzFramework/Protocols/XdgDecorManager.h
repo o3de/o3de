@@ -11,7 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <AzFramework/Protocols/Gen/xdg-decor-client-protocol.h>
+#include <xdg-decoration-unstable-v1-client-protocol.h>
 
 namespace AzFramework
 {

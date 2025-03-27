@@ -370,7 +370,7 @@ namespace AzFramework
         // TODO: WindowPosOptions::m_ignoreScreenSizeLimit
         xdg_surface_set_window_geometry(m_xdgSurface, 0, 0, (int32_t)clientAreaSize.m_width, (int32_t)clientAreaSize.m_height);
         InternalWindowSizeChanged(clientAreaSize.m_width, clientAreaSize.m_height);
-        AZ_Info(WaylandErrorWindow, "Resized client area(normal window geo) to %ix%i", clientAreaSize.m_width, clientAreaSize.m_height);
+        // AZ_Info(WaylandErrorWindow, "Resized client area(normal window geo) to %ix%i", clientAreaSize.m_width, clientAreaSize.m_height);
     }
 
     float WaylandNativeWindow::GetDpiScaleFactor() const

@@ -30,10 +30,55 @@ if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
 
 elseif(PAL_TRAIT_LINUX_WINDOW_MANAGER STREQUAL "wayland")
 
+    execute_process(
+            COMMAND pkg-config --variable=pkgdatadir wayland-protocols
+            OUTPUT_VARIABLE WAYLAND_PROTOCOLS_PKGDATADIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    find_program(WAYLAND_SCANNER wayland-scanner)
+    if(NOT WAYLAND_SCANNER)
+        message(FATAL_ERROR "wayland-scanner not found")
+    endif()
+
+    # Protocol files to generate
+    set(WAYLAND_PROTOCOLS
+            stable/xdg-shell/xdg-shell
+            unstable/xdg-decoration/xdg-decoration-unstable-v1
+            staging/cursor-shape/cursor-shape-v1
+            stable/tablet/tablet-v2
+            unstable/pointer-constraints/pointer-constraints-unstable-v1
+            unstable/relative-pointer/relative-pointer-unstable-v1
+    )
+
+    set(WAYLAND_PROTOCOL_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    set(WAYLAND_PROTOCOL_INCLUDE_DIR "${WAYLAND_PROTOCOL_GENERATED_DIR}/include")
+    set(WAYLAND_PROTOCOL_SRC_DIR "${WAYLAND_PROTOCOL_GENERATED_DIR}/src")
+
+    foreach(PROTOCOL ${WAYLAND_PROTOCOLS})
+        get_filename_component(PROTOCOL_NAME "${PROTOCOL}" NAME)
+        set(PROTO_XML "${WAYLAND_PROTOCOLS_PKGDATADIR}/${PROTOCOL}.xml")
+        set(PROTO_H "${WAYLAND_PROTOCOL_INCLUDE_DIR}/${PROTOCOL_NAME}-client-protocol.h")
+        set(PROTO_C "${WAYLAND_PROTOCOL_SRC_DIR}/${PROTOCOL_NAME}-client-protocol.c")
+
+        list(APPEND LY_FILES ${PROTO_C} ${PROTO_H})
+
+        add_custom_command(
+                OUTPUT ${PROTO_H} ${PROTO_C}
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${WAYLAND_PROTOCOL_INCLUDE_DIR}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${WAYLAND_PROTOCOL_SRC_DIR}"
+                COMMAND ${WAYLAND_SCANNER} client-header ${PROTO_XML} ${PROTO_H}
+                COMMAND ${WAYLAND_SCANNER} private-code ${PROTO_XML} ${PROTO_C}
+                DEPENDS ${PROTO_XML}
+                VERBATIM
+        )
+    endforeach()
+
     set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND)
     set(LY_INCLUDE_DIRECTORIES
         PUBLIC
             Platform/Common/Wayland
+            ${WAYLAND_PROTOCOL_INCLUDE_DIR}
     )
     set(LY_FILES_CMAKE
             Platform/Common/Wayland/azframework_wayland_files.cmake

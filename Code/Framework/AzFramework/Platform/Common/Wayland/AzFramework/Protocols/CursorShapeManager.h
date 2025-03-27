@@ -14,7 +14,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <AzFramework/Protocols/Gen/cursor-shape-client-protocol.h>
+#include <cursor-shape-v1-client-protocol.h>
 #include <AzFramework/WaylandInterface.h>
 
 namespace AzFramework
