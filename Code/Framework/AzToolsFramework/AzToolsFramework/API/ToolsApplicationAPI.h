@@ -352,8 +352,9 @@ namespace AzToolsFramework
         /*!
          * Completes the current undo batch.
          * It's still possible to resume the batch as long as it's still the most recent one.
+         * Returns false if the undo batch was discarded because it was empty, true in all other cases.
          */
-        virtual void EndUndoBatch() = 0;
+        virtual bool EndUndoBatch() = 0;
 
         /*!
          * \return true if the entity (or entities) can be edited/modified.

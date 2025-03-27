@@ -1285,7 +1285,13 @@ namespace AzToolsFramework
 
     UndoSystem::URSequencePoint* ToolsApplication::ResumeUndoBatch(UndoSystem::URSequencePoint* expected, const char* label)
     {
-        if (m_currentBatchUndo)
+        if ((!m_undoStack) || (!expected))
+        {
+            return BeginUndoBatch(label);
+        }
+
+        // if we are in an undo already, and its already the expected one, just return it.
+        if ((m_currentBatchUndo) && (m_currentBatchUndo == expected))
         {
             if (m_undoStack->GetTop() == m_currentBatchUndo)
             {
@@ -1295,16 +1301,13 @@ namespace AzToolsFramework
             return m_currentBatchUndo;
         }
 
-        if (m_undoStack)
+        const auto ptr = m_undoStack->GetTop();
+        if (ptr && ptr == expected)
         {
-            const auto ptr = m_undoStack->GetTop();
-            if (ptr && ptr == expected)
-            {
-                m_currentBatchUndo = ptr;
-                m_undoStack->PopTop();
+            m_currentBatchUndo = ptr;
+            m_undoStack->PopTop();
 
-                return m_currentBatchUndo;
-            }
+            return m_currentBatchUndo;
         }
 
         return BeginUndoBatch(label);
@@ -1333,9 +1336,14 @@ namespace AzToolsFramework
         return root->Changed() || changed;
     }
 
-    void ToolsApplication::EndUndoBatch()
+    bool ToolsApplication::EndUndoBatch()
     {
+        bool resultValue = true;
         AZ_Assert(m_currentBatchUndo, "Cannot end batch - no batch current");
+        if (!m_currentBatchUndo)
+        {
+            return false; // let's not crash just becuase there's a programmer error.
+        }
 
         if (m_currentBatchUndo->GetParent())
         {
@@ -1364,6 +1372,7 @@ namespace AzToolsFramework
             }
             else
             {
+                resultValue = false; // we discarded it because it was empty
                 delete m_currentBatchUndo;
             }
 
@@ -1372,6 +1381,7 @@ namespace AzToolsFramework
 #endif
             m_currentBatchUndo = nullptr;
         }
+        return resultValue;
     }
 
     void ToolsApplication::OnPrefabInstancePropagationBegin()
