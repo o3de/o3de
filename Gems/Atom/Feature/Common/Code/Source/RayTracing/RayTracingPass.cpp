@@ -36,6 +36,396 @@ namespace AZ
 {
     namespace Render
     {
+
+        void RayTracingShaderLibs::AddShaderFunction(
+            const ShaderFunctionType type, const AZStd::string& entryFunction, ShaderLib* shaderLib)
+        {
+            switch (type)
+            {
+            case ShaderFunctionType::RayGen:
+                {
+                    AZ_Assert(shaderLib->m_rayGen.IsEmpty(), "RayGeneration function is already specified");
+                    shaderLib->m_rayGen = AZ::Name{ entryFunction };
+                    break;
+                }
+            case ShaderFunctionType::ProceduralClosestHit:
+                {
+                    AZ_Assert(shaderLib->m_proceduralClosestHit.IsEmpty(), "ClosestHit function is already specified");
+                    shaderLib->m_proceduralClosestHit = AZ::Name{ entryFunction };
+                    break;
+                }
+            case ShaderFunctionType::ClosestHit:
+                {
+                    AZ_Assert(shaderLib->m_closestHit.IsEmpty(), "ClosestHit function is already specified");
+                    shaderLib->m_closestHit = AZ::Name{ entryFunction };
+                    break;
+                }
+            case ShaderFunctionType::AnyHit:
+                {
+                    AZ_Assert(shaderLib->m_anyHit.IsEmpty(), "AnyHit function is already specified");
+                    shaderLib->m_anyHit = AZ::Name{ entryFunction };
+                    break;
+                }
+            case ShaderFunctionType::Intersection:
+                {
+                    AZ_Assert(shaderLib->m_intersection.IsEmpty(), "Intersection function is already specified");
+                    shaderLib->m_intersection = AZ::Name{ entryFunction };
+                    break;
+                }
+            case ShaderFunctionType::Miss:
+                {
+                    AZ_Assert(shaderLib->m_miss.IsEmpty(), "Miss function is already specified");
+                    shaderLib->m_miss = AZ::Name{ entryFunction };
+                    break;
+                }
+            default:
+                AZ_Assert(false, "Unknown Raytracing Shader type");
+                break;
+            }
+            m_assignedShaderLibs[static_cast<size_t>(type)].push_back(shaderLib);
+        } // namespace Render
+
+        RayTracingShaderLibs::ShaderLib* RayTracingShaderLibs::GetOrCreateShaderLib(
+            const AZ::Data::Instance<AZ::RPI::Shader>& shader, [[maybe_unused]] const AZ::Name& supervariantName)
+        {
+            auto it = m_shaderLibs.find(shader->GetAssetId());
+            if (it == m_shaderLibs.end())
+            {
+                auto shaderLib = AZStd::make_unique<ShaderLib>(ShaderLib{ shader });
+                const auto& [new_it, inserted] = m_shaderLibs.emplace(AZStd::make_pair(shader->GetAssetId(), AZStd::move(shaderLib)));
+                return new_it->second.get();
+            }
+            return it->second.get();
+        }
+
+        void RayTracingShaderLibs::AddShaderFunction(
+            const RayTracingShaderLibs::ShaderFunctionType type,
+            const AZStd::string& entryFunction,
+            const AZ::Data::Instance<AZ::RPI::Shader>& shader,
+            const AZ::Name& supervariantName)
+        {
+            auto* shaderLib = GetOrCreateShaderLib(shader, supervariantName);
+            AddShaderFunction(type, entryFunction, shaderLib);
+        }
+
+        RayTracingShaderLibs::ShaderLib* RayTracingShaderLibs::GetOrCreateShaderLib(
+            const RPI::AssetReference& assetReference, const AZ::Name& supervariantName)
+        {
+            auto it = m_shaderLibs.find(assetReference.m_assetId);
+            if (it == m_shaderLibs.end())
+            {
+                auto shaderAsset{ AZ::RPI::FindShaderAsset(assetReference.m_assetId, assetReference.m_filePath) };
+                AZ_Assert(shaderAsset.IsReady(), "Failed to load shader %s", assetReference.m_filePath.c_str());
+                auto shader{ AZ::RPI::Shader::FindOrCreate(shaderAsset, supervariantName) };
+                AZ_Assert(shader, "Failed to load shader %s", assetReference.m_filePath.c_str());
+                auto shaderLib = AZStd::make_unique<ShaderLib>(ShaderLib{ shader });
+                const auto& [new_it, inserted] = m_shaderLibs.emplace(AZStd::make_pair(shader->GetAssetId(), AZStd::move(shaderLib)));
+                return new_it->second.get();
+            }
+            return it->second.get();
+        }
+
+        void RayTracingShaderLibs::AddShaderFunction(
+            const RayTracingShaderLibs::ShaderFunctionType type,
+            const AZStd::string& entryFunction,
+            const RPI::AssetReference& assetReference,
+            const AZ::Name& supervariantName)
+        {
+            auto* shaderLib = GetOrCreateShaderLib(assetReference, supervariantName);
+            AddShaderFunction(type, entryFunction, shaderLib);
+        }
+
+        bool RayTracingPass::ValidateShaderLibs(const AZStd::span<const RayTracingShaderLibs* const> shaderLibsCollection) const
+        {
+            auto GetLayoutId = [&](const RayTracingShaderLibs::ShaderLib* shaderLib, const uint32_t slot)
+            {
+                auto layout = shaderLib->m_shader->FindShaderResourceGroupLayout(slot);
+                if (layout)
+                {
+                    return layout->GetUniqueId();
+                }
+                // shader doesn't use this slot
+                return AZStd::string{ "" };
+            };
+
+            bool valid = true;
+            const RayTracingShaderLibs::ShaderLib* rayGenShaderLib{ nullptr };
+            for (auto* shaderLibs : shaderLibsCollection)
+            {
+                rayGenShaderLib = shaderLibs->GetRayGenShaderLib();
+                if (rayGenShaderLib)
+                {
+                    break;
+                }
+            }
+
+            if (!rayGenShaderLib)
+            {
+                AZ_Error("RayTracingPass", false, "None of the loaded shaderLib contains a RayGeneration shader");
+                return false;
+            }
+
+            // note: this assumes the Bindless SRG is the last srg
+            AZStd::array<AZStd::string, RPI::SrgBindingSlot::Bindless + 1> layoutIds;
+            for (uint32_t slot = 0; slot <= RPI::SrgBindingSlot::Bindless; ++slot)
+            {
+                // collect the SRG layout from the first shader library
+                layoutIds[slot] = GetLayoutId(rayGenShaderLib, slot);
+            }
+
+            AZStd::unordered_set<AZ::Name> shaderNames;
+
+            for (auto shaderLibs : shaderLibsCollection)
+            {
+                // make sure the names of all shaders are unique, since the HitGroups reference the shaders only with the name
+                for (auto& [_, shaderLib] : shaderLibs->GetShaderLibraries())
+                {
+                    if (!shaderLib->m_anyHit.IsEmpty())
+                    {
+                        const auto& [__, inserted] = shaderNames.insert(shaderLib->m_anyHit);
+                        if (inserted == false)
+                        {
+                            valid = false;
+                            AZ_Error(
+                                "RayTracingPass",
+                                false,
+                                "AnyHit shader name %s is not unique across all hit groups",
+                                shaderLib->m_anyHit.GetCStr());
+                        }
+                    }
+                    if (!shaderLib->m_closestHit.IsEmpty())
+                    {
+                        const auto& [__, inserted] = shaderNames.insert(shaderLib->m_closestHit);
+                        if (inserted == false)
+                        {
+                            valid = false;
+                            AZ_Error(
+                                "RayTracingPass",
+                                false,
+                                "ClosestHit shader name %s is not unique across all hit groups",
+                                shaderLib->m_closestHit.GetCStr());
+                        }
+                    }
+                    if (!shaderLib->m_intersection.IsEmpty())
+                    {
+                        const auto& [__, inserted] = shaderNames.insert(shaderLib->m_intersection);
+                        if (inserted == false)
+                        {
+                            valid = false;
+                            AZ_Error(
+                                "RayTracingPass",
+                                false,
+                                "Intersection shader name %s is not unique across all hit groups",
+                                shaderLib->m_intersection.GetCStr());
+                        }
+                    }
+                    if (!shaderLib->m_proceduralClosestHit.IsEmpty())
+                    {
+                        const auto& [__, inserted] = shaderNames.insert(shaderLib->m_proceduralClosestHit);
+                        if (inserted == false)
+                        {
+                            valid = false;
+                            AZ_Error(
+                                "RayTracingPass",
+                                false,
+                                "ProceduralClosestHit shader name %s is not unique across all hit groups",
+                                shaderLib->m_proceduralClosestHit.GetCStr());
+                        }
+                    }
+
+                    for (uint32_t slot = 0; slot <= RPI::SrgBindingSlot::Bindless; ++slot)
+                    {
+                        // - The shader we're testing has an empty layout but the RayGenerationShader doesnt: that is okay, since the shader
+                        // won't access whatever is actually bound in that slot anyway.
+                        // - The slot is empty in the RayGeneration-shader but the current shader expects an SRG: That is not okay, since
+                        // it could clash with other shaders binding something different in that slot, and we also won't bind anything
+                        // there.
+                        auto layoutId = GetLayoutId(shaderLib.get(), slot);
+                        if (!layoutId.empty() && layoutId != layoutIds[slot])
+                        {
+                            valid = false;
+                            AZ_Error(
+                                "RayTracingPass",
+                                false,
+                                "Srg Layouts in binding slot %d of Raytracing shaders %s [%s] and %s [%s] don't match",
+                                slot,
+                                rayGenShaderLib->m_shader->GetAsset().GetHint().c_str(),
+                                layoutIds[slot].c_str(),
+                                shaderLib->m_shader->GetAsset().GetHint().c_str(),
+                                layoutId.c_str());
+                        }
+                    }
+                }
+            }
+            return valid;
+        }
+
+        const RayTracingShaderLibs::AssignedShaderLibraries& RayTracingShaderLibs::GetAssignedShaderLibraries() const
+        {
+            return m_assignedShaderLibs;
+        }
+        const RayTracingShaderLibs::UniqueShaderLibraries& RayTracingShaderLibs::GetShaderLibraries() const
+        {
+            return m_shaderLibs;
+        }
+
+        const RayTracingShaderLibs::ShaderLib* RayTracingShaderLibs::GetRayGenShaderLib() const
+        {
+            auto& rayGenShaderLibs{ m_assignedShaderLibs[static_cast<size_t>(ShaderFunctionType::RayGen)] };
+            if (rayGenShaderLibs.empty())
+            {
+                return nullptr;
+            }
+            return rayGenShaderLibs.span().front();
+        }
+
+        const RPI::Shader* RayTracingShaderLibs::GetShaderForSrgs() const
+        {
+            // we assume we always have a RayGeneration Shader
+            return GetRayGenShaderLib()->m_shader.get();
+        }
+
+        void RayTracingShaderLibs::RegisterShaderLibraries(RHI::RayTracingPipelineStateDescriptor& descriptor)
+        {
+            for (auto& [_, shaderLib] : m_shaderLibs)
+            {
+                descriptor.ShaderLibrary(shaderLib->m_pipelineStateDescriptor);
+                if (!shaderLib->m_rayGen.IsEmpty())
+                {
+                    descriptor.RayGenerationShaderName(shaderLib->m_rayGen);
+                }
+                if (!shaderLib->m_closestHit.IsEmpty())
+                {
+                    descriptor.ClosestHitShaderName(shaderLib->m_closestHit);
+                }
+                if (!shaderLib->m_proceduralClosestHit.IsEmpty())
+                {
+                    // the procedural closest-hit - shader is a normal ClosestHit - shader for the GPU
+                    descriptor.ClosestHitShaderName(shaderLib->m_proceduralClosestHit);
+                }
+                if (!shaderLib->m_anyHit.IsEmpty())
+                {
+                    descriptor.AnyHitShaderName(shaderLib->m_anyHit);
+                }
+                if (!shaderLib->m_intersection.IsEmpty())
+                {
+                    descriptor.IntersectionShaderName(shaderLib->m_intersection);
+                }
+                if (!shaderLib->m_miss.IsEmpty())
+                {
+                    descriptor.MissShaderName(shaderLib->m_miss);
+                }
+            }
+        }
+
+        void RayTracingShaderLibs::Reset()
+        {
+            for (auto& libs : m_assignedShaderLibs)
+            {
+                libs.clear();
+            };
+            m_shaderLibs.clear();
+        }
+
+        void RayTracingHitGroups::SetRayGenerationShader(RayTracingShaderLibs::ShaderLib* shaderLib)
+        {
+            AZ_Assert(!shaderLib->m_rayGen.IsEmpty(), "ShaderLib has no RayGen Shader");
+            m_rayGenShader = shaderLib->m_rayGen;
+        }
+
+        void RayTracingHitGroups::SetMissShader(RayTracingShaderLibs::ShaderLib* shaderLib)
+        {
+            AZ_Assert(!shaderLib->m_miss.IsEmpty(), "ShaderLib has no Miss Shader");
+            m_missShader = shaderLib->m_miss;
+        }
+
+        void RayTracingHitGroups::AddHitGroup(const AZ::Name& name, const HitGroupShaderLibs& shaderLibs, bool IsProceduralHitGroup)
+        {
+            HitGroup hitGroup{};
+
+            hitGroup.m_name = name;
+
+            int hitShaderCount = 0;
+            if (shaderLibs.m_closestHit)
+            {
+                if (IsProceduralHitGroup)
+                {
+                    AZ_Assert(!shaderLibs.m_closestHit->m_proceduralClosestHit.IsEmpty(), "ShaderLib has no ProceduralClosestHit Shader");
+                    hitShaderCount++;
+                    hitGroup.m_closestHit = shaderLibs.m_closestHit->m_proceduralClosestHit;
+                }
+                else
+                {
+                    AZ_Assert(!shaderLibs.m_closestHit->m_closestHit.IsEmpty(), "ShaderLib has no ClosestHit Shader");
+                    hitShaderCount++;
+                    hitGroup.m_closestHit = shaderLibs.m_closestHit->m_closestHit;
+                }
+            }
+            if (shaderLibs.m_anyHit)
+            {
+                AZ_Assert(!shaderLibs.m_anyHit->m_anyHit.IsEmpty(), "ShaderLib has no AnyHit Shader");
+                hitShaderCount++;
+                hitGroup.m_anyHit = shaderLibs.m_anyHit->m_anyHit;
+            }
+            if (shaderLibs.m_intersection)
+            {
+                AZ_Assert(!shaderLibs.m_intersection->m_intersection.IsEmpty(), "ShaderLib has no intersection Shader");
+                hitGroup.m_intersection = shaderLibs.m_intersection->m_intersection;
+            }
+            AZ_Assert(hitShaderCount > 0, "Hit group needs at least one hit shader");
+            m_hitGroups.push_back(hitGroup);
+        }
+
+        void RayTracingHitGroups::RegisterHitGroups(RHI::RayTracingPipelineStateDescriptor& descriptor)
+        {
+            for (auto& hitGroup : m_hitGroups)
+            {
+                descriptor.HitGroup(hitGroup.m_name);
+
+                if (!hitGroup.m_closestHit.IsEmpty())
+                {
+                    descriptor.ClosestHitShaderName(hitGroup.m_closestHit);
+                }
+                if (!hitGroup.m_anyHit.IsEmpty())
+                {
+                    descriptor.AnyHitShaderName(hitGroup.m_anyHit);
+                }
+                if (!hitGroup.m_intersection.IsEmpty())
+                {
+                    descriptor.IntersectionShaderName(hitGroup.m_intersection);
+                }
+            }
+        }
+
+        const AZStd::vector<RayTracingHitGroups::HitGroup>& RayTracingHitGroups::GetHitGroups() const
+        {
+            return m_hitGroups;
+        }
+
+        void RayTracingHitGroups::Reset()
+        {
+            m_rayGenShader = AZ::Name{ "" };
+            m_missShader = AZ::Name{ "" };
+            m_hitGroups.clear();
+        }
+
+        AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> RayTracingHitGroups::CreateRayTracingShaderTableDescriptor(
+            RHI::Ptr<RHI::RayTracingPipelineState>& rayTracingPipelineState) const
+        {
+            AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
+
+            descriptor->Build(AZ::Name("RayTracingShaderTable"), rayTracingPipelineState)
+                ->RayGenerationRecord(m_rayGenShader)
+                ->MissRecord(m_missShader);
+
+            // choose the Hit-groups
+            for (auto& hitGroup : m_hitGroups)
+            {
+                descriptor->HitGroupRecord(hitGroup.m_name);
+            }
+            return descriptor;
+        }
+
         RPI::Ptr<RayTracingPass> RayTracingPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<RayTracingPass> pass = aznew RayTracingPass(descriptor);
@@ -74,7 +464,18 @@ namespace AZ
                 GetPathName().GetCStr());
 
             m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::RayTracingShader;
-            CreatePipelineState();
+
+            // store the max ray length
+            m_maxRayLength = m_passData->m_maxRayLength;
+
+            LoadShaderLibs(m_passData);
+            if (!ValidateShaderLibs(AZStd::array{ &m_meshShaders, &m_proceduralShaders }))
+            {
+                AZ_Error(
+                    "PassSystem", false, "RayTracingPass [%s]: Failed to validate all raytracing shader libs", GetPathName().GetCStr());
+                return;
+            }
+            PrepareSrgs();
         }
 
         RayTracingPass::~RayTracingPass()
@@ -82,92 +483,191 @@ namespace AZ
             RPI::ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
         }
 
+        void RayTracingPass::LoadProceduralShaderLibs(RayTracingFeatureProcessorInterface* rtfp)
+        {
+            m_proceduralShaders.Reset();
+            const auto& proceduralGeometryTypes = rtfp->GetProceduralGeometryTypes();
+            for (auto it = proceduralGeometryTypes.cbegin(); it != proceduralGeometryTypes.cend(); ++it)
+            {
+                m_proceduralShaders.AddShaderFunction(
+                    RayTracingShaderLibs::ShaderFunctionType::Intersection,
+                    it->m_intersectionShaderName.GetStringView(),
+                    it->m_intersectionShader);
+            }
+        }
+
+        bool ShaderEntryFunctionsSpecified(const RayTracingPassData* passData)
+        {
+            bool result = true;
+            result &=
+                (passData->m_rayGenerationShaderAssetReference.m_assetId.IsValid() ||
+                 !passData->m_rayGenerationShaderAssetReference.m_filePath.empty());
+            result &=
+                (passData->m_missShaderAssetReference.m_assetId.IsValid() ||
+                 !passData->m_closestHitProceduralShaderAssetReference.m_filePath.empty());
+            result &=
+                (passData->m_closestHitShaderAssetReference.m_assetId.IsValid() ||
+                 !passData->m_closestHitShaderAssetReference.m_filePath.empty());
+            // the procedural hit shader is optional
+            return result;
+        }
+
+        void RayTracingPass::LoadShaderLibs(const RayTracingPassData* passData)
+        {
+            m_meshShaders.Reset();
+
+            // make sure the Procedural Shader Libs are also reloaded
+            m_proceduralGeometryTypeRevision = std::numeric_limits<uint32_t>::max();
+
+            if (!ShaderEntryFunctionsSpecified(m_passData))
+            {
+                AZ_Error(
+                    "PassSystem",
+                    false,
+                    "RayTracingPass [%s]: Either Raytracing Shader Functions or a DrawListTag needs to be specified",
+                    GetPathName().GetCStr());
+                return;
+            }
+
+            using Type = RayTracingShaderLibs::ShaderFunctionType;
+
+            m_meshShaders.AddShaderFunction(
+                Type::RayGen, passData->m_rayGenerationShaderName, passData->m_rayGenerationShaderAssetReference);
+            m_meshShaders.AddShaderFunction(Type::ClosestHit, passData->m_closestHitShaderName, passData->m_closestHitShaderAssetReference);
+            m_meshShaders.AddShaderFunction(Type::Miss, passData->m_missShaderName, passData->m_missShaderAssetReference);
+
+            // The procedural hit shader is a normal ClosestHit shader, but it works together with
+            // the procedural intersection shaders that are registered with the RayTracingFeatureProcessor.
+            if (!passData->m_closestHitProceduralShaderName.empty())
+            {
+                m_meshShaders.AddShaderFunction(
+                    RayTracingShaderLibs::ShaderFunctionType::ProceduralClosestHit,
+                    passData->m_closestHitProceduralShaderName,
+                    passData->m_closestHitProceduralShaderAssetReference);
+            }
+        }
+
+        void RayTracingPass::PrepareHitGroups()
+        {
+            // We don't offer anything to specify the hit-groups directly, so we make the following assumptions about how they should be
+            // created from the ShaderLibs:
+            // - The ClosestHit shader-functions and AnyHit shader-functions are in separate lists, but end up in a Hit-Group based on the
+            // index:
+            //     With e.g. 2 ClosestHit and 3 AnyHit shaders we get 3 HitGroups, where the third hit-group doesn't have a ClosestHit
+            //     shader.
+            // - Each Intersection - shader is assigned in a (procedural) hit-group that is added after the existing Hit groups. Also each
+            // procedural hit-group uses the same ClosestHit - shader specified in the 'ProceduralClosestHit' - passdata - field.
+
+            m_hitGroups.Reset();
+            using Type = RayTracingShaderLibs::ShaderFunctionType;
+
+            const auto& shaderLibs = m_meshShaders.GetAssignedShaderLibraries();
+
+            // RayGeneration shader
+            m_hitGroups.SetRayGenerationShader(shaderLibs[static_cast<size_t>(Type::RayGen)].span().front());
+            // MissShader
+            m_hitGroups.SetMissShader(shaderLibs[static_cast<size_t>(Type::Miss)].span().front());
+
+            // Hit-Groups for normal meshes: Either anyHit, closestHit or both, but they can't have an intersection shader
+            const auto hitShaderCount =
+                AZStd::max(shaderLibs[static_cast<size_t>(Type::AnyHit)].size(), shaderLibs[static_cast<size_t>(Type::ClosestHit)].size());
+            for (int index = 0; index < hitShaderCount; ++index)
+            {
+                auto name = AZ::Name{ AZStd::string::format("HitGroup_%d", index) };
+
+                HitGroupShaderLibs hitGroupShaderLibs;
+                if (shaderLibs[static_cast<size_t>(Type::ClosestHit)].size() > index)
+                {
+                    hitGroupShaderLibs.m_closestHit = shaderLibs[static_cast<size_t>(Type::ClosestHit)][index];
+                }
+                if (shaderLibs[static_cast<size_t>(Type::AnyHit)].size() > index)
+                {
+                    hitGroupShaderLibs.m_anyHit = shaderLibs[static_cast<size_t>(Type::AnyHit)][index];
+                }
+                // no Intersection shader
+                m_hitGroups.AddHitGroup(name, hitGroupShaderLibs);
+            }
+
+            // Hit-Groups for procedural meshes: We use the same closesthit for each procedural intersection shader
+            const auto& proceduralShaderLibs = m_proceduralShaders.GetAssignedShaderLibraries();
+            for (int index = 0; index < proceduralShaderLibs[static_cast<size_t>(Type::Intersection)].size(); index++)
+            {
+                auto name = AZ::Name{ AZStd::string::format("ProceduralHitGroup_%d", index) };
+                HitGroupShaderLibs hitGroupShaderLibs;
+
+                if (!shaderLibs[static_cast<size_t>(Type::ProceduralClosestHit)].empty())
+                {
+                    hitGroupShaderLibs.m_closestHit = shaderLibs[static_cast<size_t>(Type::ProceduralClosestHit)].span().front();
+                }
+
+                // support for procedural anyhit shaders would go here
+
+                hitGroupShaderLibs.m_intersection = proceduralShaderLibs[static_cast<size_t>(Type::Intersection)][index];
+
+                m_hitGroups.AddHitGroup(name, hitGroupShaderLibs, true);
+            }
+        }
+
+        void RayTracingPass::PrepareSrgs()
+        {
+            auto* shader{ m_meshShaders.GetShaderForSrgs() };
+            if (!shader)
+            {
+                AZ_Error(
+                    "PassSystem",
+                    shader != nullptr,
+                    "RayTracingPass [%s] Failed to find any shader to determine the PassSrg layout",
+                    GetPathName().GetCStr());
+                return;
+            }
+            // create global srg
+            const auto& globalSrgLayout = shader->FindShaderResourceGroupLayout(RayTracingGlobalSrgBindingSlot);
+            AZ_Error(
+                "PassSystem",
+                globalSrgLayout != nullptr,
+                "RayTracingPass [%s] Failed to find RayTracingGlobalSrg layout",
+                GetPathName().GetCStr());
+
+            m_shaderResourceGroup =
+                RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), globalSrgLayout->GetName());
+            AZ_Assert(m_shaderResourceGroup, "RayTracingPass [%s]: Failed to create RayTracingGlobalSrg", GetPathName().GetCStr());
+            RPI::PassUtils::BindDataMappingsToSrg(m_passDescriptor, m_shaderResourceGroup.get());
+
+            // check to see if the shader requires the View, Scene, or RayTracingMaterial Srgs
+            const auto& viewSrgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View);
+            m_requiresViewSrg = (viewSrgLayout != nullptr);
+
+            const auto& sceneSrgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene);
+            m_requiresSceneSrg = (sceneSrgLayout != nullptr);
+
+            const auto& rayTracingMaterialSrgLayout = shader->FindShaderResourceGroupLayout(RayTracingMaterialSrgBindingSlot);
+            m_requiresRayTracingMaterialSrg = (rayTracingMaterialSrgLayout != nullptr);
+
+            const auto& rayTracingSceneSrgLayout = shader->FindShaderResourceGroupLayout(RayTracingSceneSrgBindingSlot);
+            m_requiresRayTracingSceneSrg = (rayTracingSceneSrgLayout != nullptr);
+        }
+
         void RayTracingPass::CreatePipelineState()
         {
             m_rayTracingShaderTable.reset();
             m_maxRayLengthInputIndex.Reset();
 
-            struct RTShaderLib
+            if (!ValidateShaderLibs(AZStd::array{ &m_meshShaders, &m_proceduralShaders }))
             {
-                AZ::Data::AssetId m_shaderAssetId;
-                AZ::Data::Instance<AZ::RPI::Shader> m_shader;
-                AZ::RHI::PipelineStateDescriptorForRayTracing m_pipelineStateDescriptor;
-                AZ::Name m_rayGenerationShaderName;
-                AZ::Name m_missShaderName;
-                AZ::Name m_closestHitShaderName;
-                AZ::Name m_closestHitProceduralShaderName;
-            };
-            AZStd::fixed_vector<RTShaderLib, 4> shaderLibs;
-
-            auto loadRayTracingShader = [&](auto& assetReference, const AZ::Name& supervariantName = AZ::Name("")) -> RTShaderLib&
-            {
-                auto it = std::find_if(
-                    shaderLibs.begin(),
-                    shaderLibs.end(),
-                    [&](auto& entry)
-                    {
-                        return entry.m_shaderAssetId == assetReference.m_assetId;
-                    });
-                if (it != shaderLibs.end())
-                {
-                    return *it;
-                }
-                auto shaderAsset{ AZ::RPI::FindShaderAsset(assetReference.m_assetId, assetReference.m_filePath) };
-                AZ_Assert(shaderAsset.IsReady(), "Failed to load shader %s", assetReference.m_filePath.c_str());
-                auto shader{ AZ::RPI::Shader::FindOrCreate(shaderAsset, supervariantName) };
-                auto shaderVariant{ shader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId) };
-                AZ::RHI::PipelineStateDescriptorForRayTracing pipelineStateDescriptor;
-                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shader->GetDefaultShaderOptions());
-                auto& shaderLib = shaderLibs.emplace_back();
-                shaderLib.m_shaderAssetId = assetReference.m_assetId;
-                shaderLib.m_shader = shader;
-                shaderLib.m_pipelineStateDescriptor = pipelineStateDescriptor;
-                return shaderLib;
-            };
-
-            auto& rayGenShaderLib{ loadRayTracingShader(m_passData->m_rayGenerationShaderAssetReference) };
-            rayGenShaderLib.m_rayGenerationShaderName = m_passData->m_rayGenerationShaderName;
-            m_rayGenerationShader = rayGenShaderLib.m_shader;
-
-            auto& closestHitShaderLib{ loadRayTracingShader(m_passData->m_closestHitShaderAssetReference) };
-            closestHitShaderLib.m_closestHitShaderName = m_passData->m_closestHitShaderName;
-            m_closestHitShader = closestHitShaderLib.m_shader;
-
-            if (!m_passData->m_closestHitProceduralShaderName.empty())
-            {
-                auto& closestHitProceduralShaderLib{ loadRayTracingShader(
-                    m_passData->m_closestHitProceduralShaderAssetReference, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback()) };
-                closestHitProceduralShaderLib.m_closestHitProceduralShaderName = m_passData->m_closestHitProceduralShaderName;
-                m_closestHitProceduralShader = closestHitProceduralShaderLib.m_shader;
+                AZ_Error(
+                    "PassSystem", false, "RayTracingPass [%s]: Failed to validate all raytracing shader libs", GetPathName().GetCStr());
+                return;
             }
 
-            auto& missShaderLib{ loadRayTracingShader(m_passData->m_missShaderAssetReference) };
-            missShaderLib.m_missShaderName = m_passData->m_missShaderName;
-            m_missShader = missShaderLib.m_shader;
+            // by now we should have all hit shaders, the main and the procedural ones, and we can prepare the hit groups
+            PrepareHitGroups();
 
-            m_globalPipelineState = m_rayGenerationShader->AcquirePipelineState(shaderLibs.front().m_pipelineStateDescriptor);
+            auto* rayGenShaderLib{ m_meshShaders.GetRayGenShaderLib() };
+            auto& rayGenShader{ rayGenShaderLib->m_shader };
+            auto& rayGenPipelineStateDesc{ rayGenShaderLib->m_pipelineStateDescriptor };
+
+            m_globalPipelineState = rayGenShader->AcquirePipelineState(rayGenPipelineStateDesc);
             AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
-
-            // create global srg
-            const auto& globalSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingGlobalSrgBindingSlot);
-            AZ_Error("PassSystem", globalSrgLayout != nullptr, "RayTracingPass [%s] Failed to find RayTracingGlobalSrg layout", GetPathName().GetCStr());
-
-            m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(  m_rayGenerationShader->GetAsset(), m_rayGenerationShader->GetSupervariantIndex(), globalSrgLayout->GetName());
-            AZ_Assert(m_shaderResourceGroup, "RayTracingPass [%s]: Failed to create RayTracingGlobalSrg", GetPathName().GetCStr());
-            RPI::PassUtils::BindDataMappingsToSrg(m_passDescriptor, m_shaderResourceGroup.get());
-
-            // check to see if the shader requires the View, Scene, or RayTracingMaterial Srgs
-            const auto& viewSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View);
-            m_requiresViewSrg = (viewSrgLayout != nullptr);
-
-            const auto& sceneSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene);
-            m_requiresSceneSrg = (sceneSrgLayout != nullptr);
-
-            const auto& rayTracingMaterialSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingMaterialSrgBindingSlot);
-            m_requiresRayTracingMaterialSrg = (rayTracingMaterialSrgLayout != nullptr);
-
-            const auto& rayTracingSceneSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingSceneSrgBindingSlot);
-            m_requiresRayTracingSceneSrg = (rayTracingSceneSrgLayout != nullptr);
 
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
@@ -176,46 +676,11 @@ namespace AZ
                 ->MaxPayloadSize(m_passData->m_maxPayloadSize)
                 ->MaxAttributeSize(m_passData->m_maxAttributeSize)
                 ->MaxRecursionDepth(m_passData->m_maxRecursionDepth);
-            for (auto& shaderLib : shaderLibs)
-            {
-                descriptor.ShaderLibrary(shaderLib.m_pipelineStateDescriptor);
-                if (!shaderLib.m_rayGenerationShaderName.IsEmpty())
-                {
-                    descriptor.RayGenerationShaderName(AZ::Name{ m_passData->m_rayGenerationShaderName });
-                }
-                if (!shaderLib.m_closestHitShaderName.IsEmpty())
-                {
-                    descriptor.ClosestHitShaderName(AZ::Name{ m_passData->m_closestHitShaderName });
-                }
-                if (!shaderLib.m_closestHitProceduralShaderName.IsEmpty())
-                {
-                    descriptor.ClosestHitShaderName(AZ::Name{ m_passData->m_closestHitProceduralShaderName });
-                }
-                if (!shaderLib.m_missShaderName.IsEmpty())
-                {
-                    descriptor.MissShaderName(AZ::Name{ m_passData->m_missShaderName });
-                }
-            }
-            descriptor.HitGroup(AZ::Name("HitGroup"))->ClosestHitShaderName(AZ::Name(m_passData->m_closestHitShaderName.c_str()));
 
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor =
-                GetScene() ? GetScene()->GetFeatureProcessor<RayTracingFeatureProcessor>() : nullptr;
-            if (rayTracingFeatureProcessor && !m_passData->m_closestHitProceduralShaderName.empty())
-            {
-                const auto& proceduralGeometryTypes = rayTracingFeatureProcessor->GetProceduralGeometryTypes();
-                for (auto it = proceduralGeometryTypes.cbegin(); it != proceduralGeometryTypes.cend(); ++it)
-                {
-                    auto shaderVariant{ it->m_intersectionShader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId) };
-                    AZ::RHI::PipelineStateDescriptorForRayTracing pipelineStateDescriptor;
-                    shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-                    descriptor.ShaderLibrary(pipelineStateDescriptor);
-                    descriptor.IntersectionShaderName(it->m_intersectionShaderName);
+            m_meshShaders.RegisterShaderLibraries(descriptor);
+            m_proceduralShaders.RegisterShaderLibraries(descriptor);
 
-                    descriptor.HitGroup(it->m_name)
-                        ->ClosestHitShaderName(AZ::Name(m_passData->m_closestHitProceduralShaderName))
-                        ->IntersectionShaderName(it->m_intersectionShaderName);
-                }
-            }
+            m_hitGroups.RegisterHitGroups(descriptor);
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = aznew RHI::RayTracingPipelineState;
@@ -225,18 +690,13 @@ namespace AZ
             m_dispatchRaysItem.SetRayTracingPipelineState(m_rayTracingPipelineState.get());
             m_dispatchRaysItem.SetPipelineState(m_globalPipelineState.get());
 
-            // make sure the shader table rebuilds if we're hotreloading
-            m_rayTracingShaderTableRevision = 0;
-
-            // store the max ray length
-            m_maxRayLength = m_passData->m_maxRayLength;
-
             RPI::ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
-            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_rayGenerationShaderAssetReference.m_assetId);
-            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_closestHitShaderAssetReference.m_assetId);
-            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_closestHitProceduralShaderAssetReference.m_assetId);
-            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_missShaderAssetReference.m_assetId);
-            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_intersectionShaderAssetReference.m_assetId);
+
+            for (auto& [assetId, _] : m_meshShaders.GetShaderLibraries())
+            {
+                RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(assetId);
+            }
+            // reloading of the procedural Shaders happens via the proceduralGeometryTypeRevision
         }
 
         bool RayTracingPass::IsEnabled() const
@@ -293,10 +753,11 @@ namespace AZ
                 if (!m_indirectDispatchBufferSlotName.IsEmpty())
                 {
                     m_indirectDispatchRaysBufferBinding = FindAttachmentBinding(m_indirectDispatchBufferSlotName);
-                    AZ_Assert(m_indirectDispatchRaysBufferBinding,
-                            "[RaytracingPass '%s']: Indirect dispatch buffer slot %s not found.",
-                            GetPathName().GetCStr(),
-                            m_indirectDispatchBufferSlotName.GetCStr());
+                    AZ_Assert(
+                        m_indirectDispatchRaysBufferBinding,
+                        "[RaytracingPass '%s']: Indirect dispatch buffer slot %s not found.",
+                        GetPathName().GetCStr(),
+                        m_indirectDispatchBufferSlotName.GetCStr());
                     if (m_indirectDispatchRaysBufferBinding)
                     {
                         AZ_Assert(
@@ -316,12 +777,11 @@ namespace AZ
                             break;
                         }
                     }
-                    AZ_Assert(m_indirectDispatchRaysBufferBinding,
-                    "[RaytracingPass '%s']: No valid indirect dispatch buffer slot found.",
-                    GetPathName().GetCStr());
+                    AZ_Assert(
+                        m_indirectDispatchRaysBufferBinding,
+                        "[RaytracingPass '%s']: No valid indirect dispatch buffer slot found.",
+                        GetPathName().GetCStr());
                 }
-
-
 
                 if (!m_dispatchRaysIndirectBuffer)
                 {
@@ -338,10 +798,10 @@ namespace AZ
                 {
                     m_fullscreenSizeSourceBinding = FindAttachmentBinding(m_fullscreenSizeSourceSlotName);
                     AZ_Assert(
-                            m_fullscreenSizeSourceBinding,
-                            "[RaytracingPass '%s']: Fullscreen size source slot %s not found.",
-                            GetPathName().GetCStr(),
-                            m_fullscreenSizeSourceSlotName.GetCStr());
+                        m_fullscreenSizeSourceBinding,
+                        "[RaytracingPass '%s']: Fullscreen size source slot %s not found.",
+                        GetPathName().GetCStr(),
+                        m_fullscreenSizeSourceSlotName.GetCStr());
                 }
                 else
                 {
@@ -357,6 +817,22 @@ namespace AZ
                         m_fullscreenSizeSourceBinding,
                         "[RaytracingPass '%s']: No valid Output or InputOutput slot as a fullscreen size source found.",
                         GetPathName().GetCStr());
+                }
+            }
+            // Load the procedural shader libs from the featureprocessor as soon as we are able, since we need it for the Pipeline State
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (scene)
+            {
+                RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+                if (rayTracingFeatureProcessor)
+                {
+                    uint32_t proceduralGeometryTypeRevision = rayTracingFeatureProcessor->GetProceduralGeometryTypeRevision();
+                    if (m_proceduralGeometryTypeRevision != proceduralGeometryTypeRevision)
+                    {
+                        LoadProceduralShaderLibs(rayTracingFeatureProcessor);
+                        CreatePipelineState();
+                        m_proceduralGeometryTypeRevision = proceduralGeometryTypeRevision;
+                    }
                 }
             }
         }
@@ -390,11 +866,13 @@ namespace AZ
                     AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
                     if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId) == false)
                     {
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                        [[maybe_unused]] RHI::ResultCode result =
+                            frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
                     }
 
-                    uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer()->GetDescriptor().m_byteCount);
+                    uint32_t tlasBufferByteCount =
+                        aznumeric_cast<uint32_t>(rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer()->GetDescriptor().m_byteCount);
                     RHI::BufferViewDescriptor tlasBufferViewDescriptor =
                         RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
 
@@ -403,7 +881,8 @@ namespace AZ
                     desc.m_bufferViewDescriptor = tlasBufferViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::RayTracingShader);
+                    frameGraph.UseShaderAttachment(
+                        desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::RayTracingShader);
                 }
             }
         }
@@ -476,7 +955,10 @@ namespace AZ
             uint32_t proceduralGeometryTypeRevision = rayTracingFeatureProcessor->GetProceduralGeometryTypeRevision();
             if (m_proceduralGeometryTypeRevision != proceduralGeometryTypeRevision)
             {
+                LoadProceduralShaderLibs(rayTracingFeatureProcessor);
+
                 CreatePipelineState();
+
                 RPI::SceneNotificationBus::Event(
                     GetScene()->GetId(),
                     &RPI::SceneNotification::OnRenderPipelineChanged,
@@ -493,28 +975,18 @@ namespace AZ
                 m_rayTracingShaderTable->Init(
                     AZ::RHI::RHISystemInterface::Get()->GetRayTracingSupport(), rayTracingFeatureProcessor->GetBufferPools());
 
-                AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
+                auto shaderTableDescriptor = m_hitGroups.CreateRayTracingShaderTableDescriptor(m_rayTracingPipelineState);
 
-                if (rayTracingFeatureProcessor->HasGeometry())
-                {
-                    // build the ray tracing shader table descriptor
-                    RHI::RayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
-                        ->RayGenerationRecord(AZ::Name(m_passData->m_rayGenerationShaderName.c_str()))
-                        ->MissRecord(AZ::Name(m_passData->m_missShaderName.c_str()));
+                // We need to provide a corresponding hit group for each hit group the tlas expects.
+                // auto TLasHitGroupCount = rayTracingFeatureProcessor->GetCurrentHitGroupCount();
+                // TODO: currently this is estimated as one single hit group for meshes, and one hit group per procedural geometry type
+                auto TLasHitGroupCount = rayTracingFeatureProcessor->GetProceduralGeometryTypes().size() + 1;
 
-                    // add a hit group for standard meshes mesh to the shader table
-                    descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"));
+                AZ_Assert(
+                    m_hitGroups.GetHitGroups().size() == TLasHitGroupCount,
+                    "Not every hit-group in the Raytracing Scene has a corresponding hit-shader");
 
-                    // add a hit group for each procedural geometry type to the shader table
-                    const auto& proceduralGeometryTypes = rayTracingFeatureProcessor->GetProceduralGeometryTypes();
-                    for (auto it = proceduralGeometryTypes.cbegin(); it != proceduralGeometryTypes.cend(); ++it)
-                    {
-                        descriptorBuild->HitGroupRecord(it->m_name);
-                        // TODO(intersection): Set per-hitgroup SRG once RayTracingPipelineState supports local root signatures
-                    }
-                }
-
-                m_rayTracingShaderTable->Build(descriptor);
+                m_rayTracingShaderTable->Build(shaderTableDescriptor);
 
                 // register the shader-table with the dispatch item
                 m_dispatchRaysItem.SetRayTracingPipelineState(m_rayTracingPipelineState.get());
@@ -580,8 +1052,8 @@ namespace AZ
             }
 
             // TODO: change this to BindSrgsForDispatchRays() as soon as it exists
-            // IMPORTANT: The data in shaderResourceGroups must be sorted by (entry)->GetBindingSlot() (FrequencyId value in SRG source file
-            // from SrgSemantics.azsli) in order for them to be correctly assigned by Vulkan
+            // IMPORTANT: The data in shaderResourceGroups must be sorted by (entry)->GetBindingSlot() (FrequencyId value in SRG source
+            // file from SrgSemantics.azsli) in order for them to be correctly assigned by Vulkan
             AZStd::sort(
                 m_rayTracingSRGsToBind.begin(),
                 m_rayTracingSRGsToBind.end(),
@@ -602,17 +1074,23 @@ namespace AZ
 
         void RayTracingPass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
         {
+            LoadShaderLibs(m_passData);
+            PrepareSrgs();
             CreatePipelineState();
         }
 
         void RayTracingPass::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<RPI::ShaderAsset>& shaderAsset)
         {
+            LoadShaderLibs(m_passData);
+            PrepareSrgs();
             CreatePipelineState();
         }
 
         void RayTracingPass::OnShaderVariantReinitialized(const RPI::ShaderVariant&)
         {
+            LoadShaderLibs(m_passData);
+            PrepareSrgs();
             CreatePipelineState();
         }
-    }   // namespace Render
-}   // namespace AZ
+    } // namespace Render
+} // namespace AZ
