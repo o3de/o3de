@@ -399,13 +399,13 @@ namespace AZ
             const AZStd::vector<AZStd::string>& srgAdditionsFromMaterialPipelines,
             const AZStd::unordered_map<AZStd::string, uint32_t>& objectSrgAdditionsRedundancyMap)
         {
-            AZ_Warning(MaterialTypeBuilderName, false, "List of redundant additions to '%s':\n", srgName);
+            AZ_Printf(MaterialTypeBuilderName, "List of redundant additions to '%s':\n", srgName);
             for (const auto& addition : srgAdditionsFromMaterialPipelines)
             {
                 uint32_t count = objectSrgAdditionsRedundancyMap.at(addition);
                 if (count > 1)
                 {
-                    AZ_Warning(MaterialTypeBuilderName, false, "\t'%s' found in %u material pipelines:\n", addition.c_str(), count);
+                    AZ_Printf(MaterialTypeBuilderName, "\t'%s' found in %u material pipelines:\n", addition.c_str(), count);
                 }
             }
         }
