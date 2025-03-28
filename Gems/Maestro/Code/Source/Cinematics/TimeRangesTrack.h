@@ -23,12 +23,12 @@ namespace Maestro
         AZ_RTTI(CTimeRangesTrack, "{6BD2B893-7E42-47C7-92B3-5C58F8AE33F3}", IAnimTrack);
 
         // IAnimTrack.
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
         bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
         void SerializeKey(ITimeRangeKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
         //! Gets the duration of an animation key.
-        float GetKeyDuration(int key) const;
+        float GetKeyDuration(int keyIndex) const;
 
         int GetActiveKeyIndexForTime(const float time);
 

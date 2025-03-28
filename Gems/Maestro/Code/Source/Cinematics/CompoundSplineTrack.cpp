@@ -65,9 +65,20 @@ namespace Maestro
 
     void CCompoundSplineTrack::SetNode(IAnimNode* node)
     {
+        if (!node)
+        {
+            AZ_Assert(false, "Expected valid node pointer.");
+            return;
+        }
+
         m_node = node;
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
             m_subTracks[i]->SetNode(node);
         }
     }
@@ -75,14 +86,31 @@ namespace Maestro
     {
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             m_subTracks[i]->SetTimeRange(timeRange);
         }
+    }
+
+    Range CCompoundSplineTrack::GetTimeRange() const
+    {
+        return (m_subTracks[0]) ? m_subTracks[0]->GetTimeRange() : Range();
     }
 
     /// @deprecated Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence
     /// Component
     bool CCompoundSplineTrack::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks /*=true */)
     {
+        if (!xmlNode)
+        {
+            AZ_Assert(false, "Expected valid node XML Node reference.");
+            return false;
+        }
+
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
         if (bLoading)
         {
@@ -111,8 +139,16 @@ namespace Maestro
         }
 #endif
 
+        bool result = true;
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                result = false;
+                continue;
+            }
+
             XmlNodeRef subTrackNode;
             if (bLoading)
             {
@@ -124,14 +160,29 @@ namespace Maestro
             }
             m_subTracks[i]->Serialize(subTrackNode, bLoading, bLoadEmptyTracks);
         }
-        return true;
+
+        return result;
     }
 
     bool CCompoundSplineTrack::SerializeSelection(
         XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected /*=false*/, float fTimeOffset /*=0*/)
     {
+        if (!xmlNode)
+        {
+            AZ_Assert(false, "Expected valid node XML Node reference.");
+            return false;
+        }
+
+        bool result = true;
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                result = false;
+                continue;
+            }
+
             XmlNodeRef subTrackNode;
             if (bLoading)
             {
@@ -141,9 +192,9 @@ namespace Maestro
             {
                 subTrackNode = xmlNode->newChild("NewSubTrack");
             }
-            m_subTracks[i]->SerializeSelection(subTrackNode, bLoading, bCopySelected, fTimeOffset);
+            result = result && m_subTracks[i]->SerializeSelection(subTrackNode, bLoading, bCopySelected, fTimeOffset);
         }
-        return true;
+        return result;
     }
 
     void CCompoundSplineTrack::InitPostLoad([[maybe_unused]] IAnimSequence* sequence)
@@ -151,50 +202,65 @@ namespace Maestro
         SetKeyValueRanges();
     }
 
-    void CCompoundSplineTrack::GetValue(float time, float& value, bool applyMultiplier)
+    void CCompoundSplineTrack::GetValue(float time, float& value, bool applyMultiplier) const
     {
-        for (int i = 0; i < 1 && i < m_nDimensions; i++)
+        value = 0.0f;
+        for (int i = 0; i < 1 && i < m_nDimensions && m_subTracks[i]; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             m_subTracks[i]->GetValue(time, value, applyMultiplier);
         }
     }
 
-    void CCompoundSplineTrack::GetValue(float time, AZ::Vector3& value, bool applyMultiplier)
+    void CCompoundSplineTrack::GetValue(float time, AZ::Vector3& value, bool applyMultiplier) const
     {
-        AZ_Assert(m_nDimensions == 3, "mismatched dimension %d", m_nDimensions);
+        AZ_Assert(m_nDimensions == 3, "expect 3 sub-tracks, found %d.", m_nDimensions);
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             float temp;
             m_subTracks[i]->GetValue(time, temp, applyMultiplier);
             value.SetElement(i, temp);
         }
     }
 
-    void CCompoundSplineTrack::GetValue(float time, AZ::Vector4& value, bool applyMultiplier)
+    void CCompoundSplineTrack::GetValue(float time, AZ::Vector4& value, bool applyMultiplier) const
     {
-        AZ_Assert(m_nDimensions == 4, "mismatched dimension %d", m_nDimensions);
+        AZ_Assert(m_nDimensions == 4, "Expected 4 sub-tracks, found %d.", m_nDimensions);
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             float temp;
             m_subTracks[i]->GetValue(time, temp, applyMultiplier);
             value.SetElement(i, temp);
         }
     }
 
-    void CCompoundSplineTrack::GetValue(float time, AZ::Quaternion& value)
+    void CCompoundSplineTrack::GetValue(float time, AZ::Quaternion& value) const
     {
-        AZ_Assert(m_nDimensions == 3, "mismatched dimension %d", m_nDimensions);
+        AZ_Assert(m_nDimensions == 3, "Expected 3 sub-tracks, found %d.", m_nDimensions);
         if (m_nDimensions == 3)
         {
-            // Euler Angles XYZ
-            float angles[3] = { 0, 0, 0 };
-            for (int i = 0; i < m_nDimensions; i++)
-            {
-                m_subTracks[i]->GetValue(time, angles[i]);
-            }
+            AZ::Vector3 angles; // Euler Angles XYZ
+            GetValue(time, angles);
             // Use ZYX Euler (actually Tait-Bryan) rotation angles order instead of using CreateFromEulerDegreesXYZ(),
             // in order to provide "pitch, roll, yaw" editing in TrackView
-            value = AZ::Quaternion::CreateFromEulerDegreesZYX(AZ::Vector3(angles[0], angles[1], angles[2]));
+            value = AZ::Quaternion::CreateFromEulerDegreesZYX(angles);
         }
         else
         {
@@ -204,31 +270,81 @@ namespace Maestro
 
     void CCompoundSplineTrack::SetValue(float time, const float& value, bool bDefault, bool applyMultiplier)
     {
+        const Range timeRange(GetTimeRange());
+        if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+        {
+            AZ_WarningOnce("CompoundSplineTrack", false, "SetValue(%f, float): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, timeRange.start, timeRange.end);
+        }
+
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                return;
+            }
+
             m_subTracks[i]->SetValue(time, value, bDefault, applyMultiplier);
         }
     }
 
     void CCompoundSplineTrack::SetValue(float time, const AZ::Vector3& value, bool bDefault, bool applyMultiplier)
     {
+        const Range timeRange(GetTimeRange());
+        if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+        {
+            AZ_WarningOnce("CompoundSplineTrack", false, "SetValue(%f, Vector3): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, timeRange.start, timeRange.end);
+        }
+
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                return;
+            }
+
             m_subTracks[i]->SetValue(time, value.GetElement(i), bDefault, applyMultiplier);
         }
     }
 
     void CCompoundSplineTrack::SetValue(float time, const AZ::Vector4& value, bool bDefault, bool applyMultiplier)
     {
+        const Range timeRange(GetTimeRange());
+        if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+        {
+            AZ_WarningOnce("CompoundSplineTrack", false, "SetValue(%f, Vector4): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, timeRange.start, timeRange.end);
+        }
+
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             m_subTracks[i]->SetValue(time, value.GetElement(i), bDefault, applyMultiplier);
         }
     }
 
     void CCompoundSplineTrack::SetValue(float time, const AZ::Quaternion& value, bool bDefault)
     {
-        AZ_Assert(m_nDimensions == 3, "mismatched dimension %d", m_nDimensions);
+        const Range timeRange(GetTimeRange());
+        if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+        {
+            AZ_WarningOnce("CompoundSplineTrack", false, "SetValue(%f, Quat): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, timeRange.start, timeRange.end);
+        }
+
+        AZ_Assert(m_nDimensions == 3, "Expected 3 sub-tracks, found %d.", m_nDimensions);
         if (m_nDimensions == 3)
         {
             // Use ZYX Euler (actually Tait-Bryan) rotation angles order instead of using
@@ -236,6 +352,12 @@ namespace Maestro
             AZ::Vector3 eulerAngle = value.GetEulerDegreesZYX();
             for (int i = 0; i < 3; i++)
             {
+                if (!m_subTracks[i])
+                {
+                    AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                    continue;
+                }
+
                 float degree = eulerAngle.GetElement(i);
                 if (false == bDefault)
                 {
@@ -251,11 +373,17 @@ namespace Maestro
 
     void CCompoundSplineTrack::OffsetKeyPosition(const AZ::Vector3& offset)
     {
-        AZ_Assert(m_nDimensions == 3, "expect 3 subtracks found %d", m_nDimensions);
+        AZ_Assert(m_nDimensions == 3, "Expected 3 sub-tracks, found %d.", m_nDimensions);
         if (m_nDimensions == 3)
         {
             for (int i = 0; i < 3; i++)
             {
+                if (!m_subTracks[i])
+                {
+                    AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                    continue;
+                }
+
                 IAnimTrack* pSubTrack = m_subTracks[i].get();
                 // Iterate over all keys.
                 for (int k = 0, num = pSubTrack->GetNumKeys(); k < num; k++)
@@ -274,12 +402,12 @@ namespace Maestro
     void CCompoundSplineTrack::UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM)
     {
         // Only update the position tracks
-        if (m_nParamType.GetType() != AnimParamType::Position)
+        if (m_nParamType.GetType() != AnimParamType::Position || m_nDimensions != 3)
         {
+            AZ_Assert(m_nParamType.GetType() != AnimParamType::Position, "Called for an invalid track (%s).", (GetNode() ? GetNode()->GetName() : ""));
+            AZ_Assert(m_nDimensions == 3, "Expected 3 dimensions (position, rotation or scale), found %d.", m_nDimensions);
             return;
         }
-
-        AZ_Assert(m_nDimensions == 3, "Expected 3 dimensions, position, rotation or scale.");
 
         struct KeyValues
         {
@@ -303,6 +431,12 @@ namespace Maestro
         for (int subTrackIndex = 0; subTrackIndex < 3; subTrackIndex++)
         {
             IAnimTrack* subTrack = m_subTracks[subTrackIndex].get();
+            if (!subTrack)
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", subTrackIndex);
+                continue;
+            }
+
             for (int k = 0, num = subTrack->GetNumKeys(); k < num; k++)
             {
                 // If this key time is not already in the list, add it.
@@ -331,26 +465,59 @@ namespace Maestro
         // Set key data for each time gathered from the keys.
         for (auto valuePair : newKeyValues)
         {
+            const auto pSubTrack = m_subTracks[valuePair.index];
+            if (!pSubTrack)
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", valuePair.index);
+                continue;
+            }
+
             m_subTracks[valuePair.index]->SetValue(valuePair.time, valuePair.value);
         }
     }
 
     IAnimTrack* CCompoundSplineTrack::GetSubTrack(int nIndex) const
     {
-        AZ_Assert(nIndex >= 0 && nIndex < m_nDimensions, "Subtrack index %i is out of range", nIndex);
+        if (nIndex < 0 || nIndex >= m_nDimensions)
+        {
+            AZ_Assert(false, "Sub-track index (%d) is out of range (0 .. %d).", nIndex, m_nDimensions);
+            return nullptr;
+        }
+
         return m_subTracks[nIndex].get();
     }
 
     AZStd::string CCompoundSplineTrack::GetSubTrackName(int nIndex) const
     {
-        AZ_Assert(nIndex >= 0 && nIndex < m_nDimensions, "Subtrack index %i is out of range", nIndex);
+        if (nIndex < 0 || nIndex >= m_nDimensions)
+        {
+            AZ_Assert(false, "Sub-track index (%d) is out of range (0 .. %d).", nIndex, m_nDimensions);
+            return AZStd::string();
+        }
+        if (!m_subTracks[nIndex])
+        {
+            AZ_Assert(false, "Expected valid sub-track(%d)", nIndex);
+            return AZStd::string();
+        }
+
         return m_subTrackNames[nIndex];
     }
 
     void CCompoundSplineTrack::SetSubTrackName(int nIndex, const char* name)
     {
-        AZ_Assert(nIndex >= 0 && nIndex < m_nDimensions, "Subtrack index %i is out of range", nIndex);
-        AZ_Assert(name, "Subtrack name is null");
+        name = nullptr;
+        if (nIndex < 0 || nIndex >= m_nDimensions || !name || !name[0])
+        {
+            AZ_Assert(nIndex >= 0 && nIndex < m_nDimensions, "Sub-track index (%d) is out of range (0 .. %d).", nIndex, m_nDimensions);
+            AZ_Assert(name && name[0], "Subtrack name is null.");
+            return;
+        }
+        if (!m_subTracks[nIndex])
+        {
+            AZ_Assert(false, "Expected valid sub-track(%d)", nIndex);
+            return;
+        }
+
         m_subTrackNames[nIndex] = name;
     }
 
@@ -359,6 +526,12 @@ namespace Maestro
         int nKeys = 0;
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             nKeys += m_subTracks[i]->GetNumKeys();
         }
         return nKeys;
@@ -368,6 +541,12 @@ namespace Maestro
     {
         for (int i = 0; i < m_nDimensions; i++)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                return false;
+            }
+
             if (m_subTracks[i]->GetNumKeys())
             {
                 return true;
@@ -379,7 +558,7 @@ namespace Maestro
     float CCompoundSplineTrack::PreferShortestRotPath(float degree, float degree0) const
     {
         // Assumes the degree is in (-PI, PI).
-        AZ_Assert(-181.0f < degree && degree < 181.0f, "degree %f is out of range", degree);
+        AZ_Assert(-180.01f < degree && degree < 180.01f, "degree %f is out of range", degree);
         float degree00 = degree0;
         degree0 = fmod_tpl(degree0, 360.0f);
         float n = (degree00 - degree0) / 360.0f;
@@ -402,19 +581,26 @@ namespace Maestro
         }
     }
 
-    int CCompoundSplineTrack::GetSubTrackIndex(int& key) const
+    int CCompoundSplineTrack::GetSubTrackIndex(int& keyIndex) const
     {
-        if (key < 0 || key >= GetNumKeys())
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            AZ_Assert(false, "Key index %i is invalid (0-%d))", key, GetNumKeys());
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
             return -1;
         }
+
         int count = 0;
         for (int i = 0; i < m_nDimensions; i++)
         {
-            if (key < count + m_subTracks[i]->GetNumKeys())
+            if (!m_subTracks[i])
             {
-                key = key - count;
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                return -1;
+            }
+
+            if (keyIndex < count + m_subTracks[i]->GetNumKeys())
+            {
+                keyIndex = keyIndex - count;
                 return i;
             }
             count += m_subTracks[i]->GetNumKeys();
@@ -422,44 +608,94 @@ namespace Maestro
         return -1;
     }
 
-    void CCompoundSplineTrack::RemoveKey(int num)
+    void CCompoundSplineTrack::RemoveKey(int keyIndex)
     {
-        AZ_Assert(num >= 0 && num < GetNumKeys(), "Key index %i is invalid", num);
-        int i = GetSubTrackIndex(num);
-        AZ_Assert(i >= 0, "No subtrack for index %i is found", num);
-        if (i < 0)
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
             return;
         }
-        m_subTracks[i]->RemoveKey(num);
+
+        const auto firstTrackIdx = GetSubTrackIndex(keyIndex); // Key index is now adjusted to the selected track.
+        if (firstTrackIdx < 0)
+        {
+            AZ_Error("CompoundSplineTrack", false, "RemoveKey(%d): No keys with this index found in track (%s).",
+                keyIndex, (GetNode() ? GetNode()->GetName() : ""));
+            return;
+        }
+
+        const auto time = m_subTracks[firstTrackIdx]->GetKeyTime(keyIndex);
+        for (int i = 0; i < this->GetSubTrackCount(); ++i)
+        {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+            
+            if (const int subKeyIdx = m_subTracks[i]->FindKey(time) >= 0)
+            {
+                m_subTracks[i]->RemoveKey(subKeyIdx);
+            }
+        }
     }
 
     int CCompoundSplineTrack::CreateKey(float time)
     {
-        int keyIdx = -1;
+        const Range timeRange(GetTimeRange());
+        if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+        {
+            AZ_WarningOnce("CompoundSplineTrack", false, "CreateKey(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, timeRange.start, timeRange.end);
+        }
+
+        const auto existingKeyIndex = FindKey(time);
+        if (existingKeyIndex >= 0)
+        {
+            AZ_Error("CompoundSplineTrack", false, "CreateKey(%f): A key (%d) with this time exists in track (%s).",
+                time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""));
+            return -1;
+        }
+
         for (int i = 0; i < m_nDimensions; ++i)
         {
-            const int keyIdxInSubTrack = m_subTracks[i]->CreateKey(time);
-            keyIdx = AZStd::max(keyIdx, keyIdxInSubTrack);
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
+            m_subTracks[i]->CreateKey(time);
         }
-        return keyIdx;
+
+        return FindKey(time);
     }
 
-    void CCompoundSplineTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CCompoundSplineTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        static char str[64];
         duration = 0;
-        description = str;
+        description = 0;
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        static char str[64];
         const char* subDesc = nullptr;
-        float time = GetKeyTime(key);
+        float time = GetKeyTime(keyIndex);
+
         int m = 0;
         /// Using the time obtained, combine descriptions from keys of the same time
         /// in sub-tracks if any into one compound description.
         str[0] = 0;
         // A head case
-        for (m = 0; m < m_subTracks[0]->GetNumKeys(); ++m)
+        const auto numKeysInFirstSubTrack = m_subTracks[0]->GetNumKeys();
+        for (m = 0; m < numKeysInFirstSubTrack; ++m)
         {
-            if (m_subTracks[0]->GetKeyTime(m) == time)
+            if (AZStd::abs(m_subTracks[0]->GetKeyTime(m) - time) < s_MinTimePrecision)
             {
                 float dummy;
                 m_subTracks[0]->GetKeyInfo(m, subDesc, dummy);
@@ -467,13 +703,20 @@ namespace Maestro
                 break;
             }
         }
-        if (m == m_subTracks[0]->GetNumKeys())
+        if (m == numKeysInFirstSubTrack)
         {
             azstrcat(str, AZ_ARRAY_SIZE(str), m_subTrackNames[0].c_str());
         }
+
         // Tail cases
         for (int i = 1; i < GetSubTrackCount(); ++i)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             azstrcat(str, AZ_ARRAY_SIZE(str), ",");
             for (m = 0; m < m_subTracks[i]->GetNumKeys(); ++m)
             {
@@ -492,56 +735,132 @@ namespace Maestro
         }
     }
 
-    float CCompoundSplineTrack::GetKeyTime(int index) const
+    float CCompoundSplineTrack::GetKeyTime(int keyIndex) const
     {
-        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is invalid", index);
-        int i = GetSubTrackIndex(index);
-        AZ_Assert(i >= 0, "No subtrack for index %i is found", index);
-        if (i < 0)
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            return 0;
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return -1.0f;
         }
-        return m_subTracks[i]->GetKeyTime(index);
+
+        const auto trackIdx = GetSubTrackIndex(keyIndex); // Key index is now adjusted to the selected track.
+        if (trackIdx < 0)
+        {
+            AZ_Error("CompoundSplineTrack", false, "GetKeyTime(%d): No keys with this index found in track (%s).",
+                keyIndex, (GetNode() ? GetNode()->GetName() : ""));
+            return -1.0f;
+        }
+
+        return m_subTracks[trackIdx]->GetKeyTime(keyIndex);
     }
 
-    void CCompoundSplineTrack::SetKeyTime(int index, float time)
+    int CCompoundSplineTrack::FindKey(float time) const
     {
-        AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is invalid", index);
-        int i = GetSubTrackIndex(index);
-        AZ_Assert(i >= 0, "No subtrack for index %i is found", index);
-        if (i < 0)
+        int keysCount = 0;
+        for (int i = 0; i < GetSubTrackCount(); ++i)
         {
+            const auto numKeysInTrack = m_subTracks[i]->GetNumKeys();
+            for (int m = 0; m < numKeysInTrack; ++m)
+            {
+                if (!m_subTracks[i])
+                {
+                    AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                    continue;
+                }
+
+                if (AZStd::abs(m_subTracks[i]->GetKeyTime(m) - time) < AZ::Constants::Tolerance)
+                {
+                    return keysCount + m;
+                }
+            }
+        }
+        return -1;
+    }
+
+    void CCompoundSplineTrack::SetKeyTime(int keyIndex, float time)
+    {
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
             return;
         }
-        m_subTracks[i]->SetKeyTime(index, time);
+
+        const Range timeRange(GetTimeRange());
+        if (((timeRange.end - timeRange.start) > AZ::Constants::Tolerance) && (time < timeRange.start || time > timeRange.end))
+        {
+            AZ_WarningOnce("CompoundSplineTrack", false, "SetKeyTime(%d, %f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                keyIndex, time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, timeRange.start, timeRange.end);
+        }
+
+        const int existingKeyIndex = FindKey(time);
+        if (existingKeyIndex >= 0)
+        {
+            AZ_Error("CompoundSplineTrack", existingKeyIndex == keyIndex, "SetKeyTime(%d, %f): A key (%d) with this time exists in track (%s).",
+                keyIndex, time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""));
+            return;
+        }
+
+        const auto trackIdx = GetSubTrackIndex(keyIndex); // Key index is now adjusted to the selected track.
+        if (trackIdx < 0)
+        {
+            AZ_Error("CompoundSplineTrack", false, "SetKeyTime(%d, %f): No keys with this key index found in track (%s).",
+                keyIndex, time, (GetNode() ? GetNode()->GetName() : ""));
+            return;
+        }
+
+        // Change keys time in sub-tracks
+        const auto targetKeyTime = m_subTracks[trackIdx]->GetKeyTime(keyIndex);
+        for (int i = 0; i < GetSubTrackCount(); ++i)
+        {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
+            const int existingSubTrackKeyIndex = m_subTracks[i]->FindKey(targetKeyTime);
+            if (existingSubTrackKeyIndex >= 0)
+            {
+                m_subTracks[i]->SetKeyTime(existingSubTrackKeyIndex, time);
+            }
+        }
     }
 
-    bool CCompoundSplineTrack::IsKeySelected(int key) const
+    bool CCompoundSplineTrack::IsKeySelected(int keyIndex) const
     {
-        if (key < 0 || key >= GetNumKeys())
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            AZ_Assert(false, "Key index %i is invalid, total keys=%d", key, GetNumKeys());
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
             return false;
         }
 
         // Initial key index is belonging to the set of all keys in all sub-tracks
-        int firstIdx = GetSubTrackIndex(key);
-        if (firstIdx < 0)
+        int trackIdx = GetSubTrackIndex(keyIndex); // Key index is now adjusted to the selected track.
+        if (trackIdx < 0)
         {
-            AZ_Assert(false, "No subtrack for key index %i is found", key);
+            AZ_Warning("CompoundSplineTrack", false, "IsKeySelected(%d): No keys with this key index found in track (%s).",
+                keyIndex, (GetNode() ? GetNode()->GetName() : ""));
             return false;
         }
 
-        // The key at m_subTracks[firstIdx][key] maybe active or inactive.
+        // The key at m_subTracks[firstIdx][key] maybe selected or not.
         // A "logical key" for a compound track is regarded as selected when all keys at the same timeline are selected
-        const auto firtsKeyTime = m_subTracks[firstIdx]->GetKeyTime(key);
+        const auto firstKeyTime = m_subTracks[trackIdx]->GetKeyTime(keyIndex);
+
         for (int subTrackIdx = 0; subTrackIdx < GetSubTrackCount(); ++subTrackIdx)
         {
             const auto pSubTrack = m_subTracks[subTrackIdx];
+            if (!pSubTrack)
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", subTrackIdx);
+                continue;
+            }
+
             for (int keyIdx = 0; keyIdx < pSubTrack->GetNumKeys(); ++keyIdx)
             {
                 const auto subKeyTime = pSubTrack->GetKeyTime(keyIdx);
-                if ((AZStd::abs(firtsKeyTime - subKeyTime) < AZ::Constants::Tolerance) && !pSubTrack->IsKeySelected(keyIdx))
+                if ((AZStd::abs(firstKeyTime - subKeyTime) < AZ::Constants::Tolerance) && !pSubTrack->IsKeySelected(keyIdx))
                 {
                     return false;
                 }
@@ -551,39 +870,65 @@ namespace Maestro
         return true;
     }
 
-    void CCompoundSplineTrack::SelectKey(int key, bool select)
+    void CCompoundSplineTrack::SelectKey(int keyIndex, bool select)
     {
-        AZ_Assert(key >= 0 && key < GetNumKeys(), "Key index %i is invalid", key);
-        int i = GetSubTrackIndex(key);
-        AZ_Assert(i >= 0, "No subtrack for index %i is found", key);
-        if (i < 0)
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
+            AZ_Assert(false, "Key index (%d) is out of  range (0..%d).", keyIndex, GetNumKeys());
             return;
         }
-        float keyTime = m_subTracks[i]->GetKeyTime(key);
+
+        // Initial key index is belonging to the set of all keys in all sub-tracks
+        int trackIdx = GetSubTrackIndex(keyIndex); // Key index is now adjusted to the selected track.
+        if (trackIdx < 0)
+        {
+            AZ_Warning("CompoundSplineTrack", false, "SelectKey(%d): No keys with this key index found in track (%s).",
+                keyIndex, (GetNode() ? GetNode()->GetName() : ""));
+            return;
+        }
+
+        float keyTime = m_subTracks[trackIdx]->GetKeyTime(keyIndex);
         // In the case of compound tracks, animators want to
         // select all keys of the same time in the sub-tracks together.
-        for (int k = 0; k < m_nDimensions; ++k)
+        for (int i = 0; i < m_nDimensions; ++i)
         {
-            for (int m = 0; m < m_subTracks[k]->GetNumKeys(); ++m)
+            if (!m_subTracks[i])
             {
-                if (fabs(m_subTracks[k]->GetKeyTime(m) - keyTime) < AZ::Constants::Tolerance)
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
+            for (int k = 0; k < m_subTracks[i]->GetNumKeys(); ++k)
+            {
+                if (fabs(m_subTracks[i]->GetKeyTime(k) - keyTime) < AZ::Constants::Tolerance)
                 {
-                    m_subTracks[k]->SelectKey(m, select);
+                    m_subTracks[i]->SelectKey(k, select);
                     break;
                 }
             }
         }
     }
 
-    int CCompoundSplineTrack::NextKeyByTime(int key) const
+    int CCompoundSplineTrack::NextKeyByTime(int keyIndex) const
     {
-        AZ_Assert(key >= 0 && key < GetNumKeys(), "Key index %i is invalid", key);
-        float time = GetKeyTime(key);
-        int count = 0, result = -1;
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of  range (0 .. %d).", keyIndex, GetNumKeys());
+            return -1;
+        }
+
+        float time = GetKeyTime(keyIndex);
+        int count = 0;
+        int result = -1;
         float timeNext = FLT_MAX;
         for (int i = 0; i < GetSubTrackCount(); ++i)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             for (int k = 0; k < m_subTracks[i]->GetNumKeys(); ++k)
             {
                 float t = m_subTracks[i]->GetKeyTime(k);
@@ -613,6 +958,14 @@ namespace Maestro
                     AZ_Assert(false, "Invalid dimensions %d for RGB track", m_nDimensions);
                     return;
                 }
+                if (!(m_subTracks[0] && m_subTracks[1] && m_subTracks[2]))
+                {
+                    AZ_Assert(m_subTracks[0], "Expected valid sub-track(0)");
+                    AZ_Assert(m_subTracks[1], "Expected valid sub-track(1)");
+                    AZ_Assert(m_subTracks[2], "Expected valid sub-track(2)");
+                    return;
+                }
+
                 m_subTrackNames[0] = "Red";
                 m_subTrackNames[1] = "Green";
                 m_subTrackNames[2] = "Blue";
@@ -625,6 +978,14 @@ namespace Maestro
                     AZ_Assert(false, "Invalid dimensions %d for Quaternion track", m_nDimensions);
                     return;
                 }
+                if (!(m_subTracks[0] && m_subTracks[1] && m_subTracks[2]))
+                {
+                    AZ_Assert(m_subTracks[0], "Expected valid sub-track(0)");
+                    AZ_Assert(m_subTracks[1], "Expected valid sub-track(1)");
+                    AZ_Assert(m_subTracks[2], "Expected valid sub-track(2)");
+                    return;
+                }
+
                 m_subTrackNames[0] = "Pitch";
                 m_subTrackNames[1] = "Roll";
                 m_subTrackNames[2] = "Yaw";
@@ -652,6 +1013,14 @@ namespace Maestro
                     AZ_Assert(false, "Invalid dimensions %d for Quaternion track", m_nDimensions);
                     return;
                 }
+                if (!(m_subTracks[0] && m_subTracks[1] && m_subTracks[2]))
+                {
+                    AZ_Assert(m_subTracks[0], "Expected valid sub-track(0)");
+                    AZ_Assert(m_subTracks[1], "Expected valid sub-track(1)");
+                    AZ_Assert(m_subTracks[2], "Expected valid sub-track(2)");
+                    return;
+                }
+
                 m_subTracks[0]->SetKeyValueRange(-90.0f, 90.0f);
                 m_subTracks[1]->SetKeyValueRange(-180.0f, 180.0f);
                 m_subTracks[2]->SetKeyValueRange(-180.0f, 180.0f);
@@ -661,6 +1030,12 @@ namespace Maestro
             {
                 for (int i = 0; i < m_nDimensions; ++i)
                 {
+                    if (!m_subTracks[i])
+                    {
+                        AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                        continue;
+                    }
+
                     switch (m_subTracks[i]->GetParameterType().GetType())
                     {
                     case AnimParamType::PositionX:
@@ -689,6 +1064,12 @@ namespace Maestro
             {
                 for (int i = 0; i < GetSubTrackCount(); i++)
                 {
+                    if (!m_subTracks[i])
+                    {
+                        AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                        continue;
+                    }
+
                     float fMinKeyValue = 0;
                     float fMaxKeyValue = 0;
                     m_subTracks[i]->GetKeyValueRange(fMinKeyValue, fMaxKeyValue);
