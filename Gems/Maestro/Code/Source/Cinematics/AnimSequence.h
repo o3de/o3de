@@ -85,7 +85,7 @@ namespace Maestro
         bool IsAncestorOf(const IAnimSequence* pSequence) const override;
 
         void SetTimeRange(Range timeRange) override;
-        Range GetTimeRange() override
+        Range GetTimeRange() const override
         {
             return m_timeRange;
         }

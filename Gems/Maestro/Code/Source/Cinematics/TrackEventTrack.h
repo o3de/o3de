@@ -70,9 +70,9 @@ namespace Maestro
         //////////////////////////////////////////////////////////////////////////
         // Overrides of IAnimTrack.
         //////////////////////////////////////////////////////////////////////////
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
         void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading) override;
-        void SetKey(int index, IKey* key) override;
+        void SetKey(int keyIndex, IKey* key) override;
         void InitPostLoad(IAnimSequence* sequence) override;
 
         static void Reflect(AZ::ReflectContext* context);

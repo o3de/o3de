@@ -24,15 +24,20 @@ namespace Maestro
         ReleasePreloadedTextures();
     }
 
-    void CScreenFaderTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CScreenFaderTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        static char desc[32];
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        CheckValid();
         description = 0;
-        duration = m_keys[key].m_fadeTime;
-        azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[key].m_fadeType == IScreenFaderKey::eFT_FadeIn ? "In" : "Out");
+        duration = 0;
 
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        static char desc[32];
+        duration = m_keys[keyIndex].m_fadeTime;
+        azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[keyIndex].m_fadeType == IScreenFaderKey::eFT_FadeIn ? "In" : "Out");
         description = desc;
     }
 
