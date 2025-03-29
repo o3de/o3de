@@ -91,6 +91,8 @@ jobs:
         # Get the last runid of the target branch of a PR or the current branch
         uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
         id: last-run-id
+        if: ${{ inputs.last_artifact }}
+        continue-on-error: true
         with:
           workflow_search: true
           workflow_conclusion: ""
@@ -98,31 +100,34 @@ jobs:
           search_artifacts: true
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
-          if_no_artifact_found: warn
-        
+                  
+      - name: Set artifact run ID
+        # Set the run ID of the artifact to be used for the download step
+        id: set-artifact-run-id
+        if: steps.last-run-id.outcome == 'success' && inputs.last_artifact == true
+        run: |
+          runId=${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
+          echo "artifact_run_id=$runId" >> $GITHUB_OUTPUT
+          echo "Using artifacts from previous run: $runId"
+      
       - name: Restore artifact cache
         # Restore the artifact from the "Get last run" step or from the current run
+        id: restore-artifact-cache
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         continue-on-error: true
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ inputs.last_artifact == true && fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id || github.run_id }}
+          run-id: ${{ steps.set-artifact-run-id.outputs.artifact_run_id || github.run_id }}
 
       - name: Extract artifact
         # Extract the tar file from the artifact
+        id: extract-artifact
         continue-on-error: true
+        if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         run: |
-          echo "Current Runid: ${{ github.run_id }}"
-          echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
-          
-          tar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
-            python \
-            3rdParty/packages \
-            AutomatedTesting/Cache \
-            AutomatedTesting/user \
-            .ccache || true
-          if [ -f ${{ github.workspace }}/cache.tar ]; then
+          if [ -f ${{ github.workspace }}/cache.tar ]; then          
+            tar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read
             rm ${{ github.workspace }}/cache.tar
           fi
 
@@ -172,9 +177,11 @@ jobs:
 
       - name: Compress artifacts
         # Compress with posix format to preserve permissions and timestamps at nanosecond precision
+        # Skip compression and upload if the type is a test to reduce dirty build artifacts from previous runs
+        if: ${{ steps.extract-artifact.outcome == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         run: |
-          tar --format=posix -cvpf ${{ github.workspace }}/cache.tar \
+          tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
             python \
             3rdParty/packages \
             AutomatedTesting/Cache \
@@ -183,6 +190,7 @@ jobs:
   
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ steps.extract-artifact.outcome == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
