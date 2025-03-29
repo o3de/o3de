@@ -895,7 +895,7 @@ void CTrackViewDialog::Update()
         const auto animSequence = movieSystem->FindSequenceById(sequence->GetCryMovieId());
         IAnimNode* activeDirector = animSequence ? animSequence->GetActiveDirector() : nullptr;
 
-        AZ::EntityId camId = movieSystem->GetCameraParams().cameraEntityId;
+        AZ::EntityId camId = movieSystem->GetActiveCamera();
         if (camId.IsValid() && activeDirector)
         {
             AZ::Entity* entity = nullptr;
@@ -1300,6 +1300,14 @@ void CTrackViewDialog::OnSequenceChanged(CTrackViewSequence* sequence)
         sequence->ClearSelection();
 
         AddSequenceListeners(sequence);
+
+        // Sync the sequence looping flag with looping states in the dialog and the editing animation context.
+        const bool isLooped = (sequence->GetFlags() & IAnimSequence::eSeqFlags_OutOfRangeLoop) != 0;
+        if (m_actions[ID_PLAY_LOOP])
+        {
+            m_actions[ID_PLAY_LOOP]->setChecked(isLooped);
+        }
+        GetIEditor()->GetAnimation()->SetLoopMode(isLooped);
     }
     else
     {
@@ -1364,6 +1372,7 @@ void CTrackViewDialog::OnGoToStart()
 
     // notify explicit time changed and return to playback controls *after* the sequence is reset.
     pAnimationContext->TimeChanged(startTime);
+    UpdateActions(); // Sync buttons states with the above actions
 }
 
 void CTrackViewDialog::OnGoToEnd()
@@ -1372,6 +1381,7 @@ void CTrackViewDialog::OnGoToEnd()
     pAnimationContext->SetTime(pAnimationContext->GetMarkers().end);
     pAnimationContext->SetPlaying(false);
     pAnimationContext->SetRecording(false);
+    UpdateActions(); // Sync buttons states with the above actions
 }
 
 void CTrackViewDialog::OnPlay()
@@ -1457,8 +1467,12 @@ void CTrackViewDialog::OnPause()
 
 void CTrackViewDialog::OnLoop()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
-    pAnimationContext->SetLoopMode(!pAnimationContext->IsLoopMode());
+    // Sync the looping state in the dialog with the looping state of the editing animation context.
+    if (auto pAnimationContext = GetIEditor()->GetAnimation())
+    {
+        const bool isLooped = m_actions[ID_PLAY_LOOP] && m_actions[ID_PLAY_LOOP]->isChecked();
+        pAnimationContext->SetLoopMode(isLooped);
+    }
 }
 
 void CTrackViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)

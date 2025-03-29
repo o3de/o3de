@@ -23,7 +23,7 @@ namespace AZ::RHI
         AZ_RTTI(DeviceBufferView, "{3012F770-1DD7-4CEC-A5D0-E2FC807548C1}", DeviceResourceView);
         virtual ~DeviceBufferView() = default;
 
-        static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+        static constexpr uint32_t InvalidBindlessIndex = static_cast<uint32_t>(-1);
 
         //! Initializes the buffer view with the provided buffer and view descriptor.
         ResultCode Init(const DeviceBuffer& buffer, const BufferViewDescriptor& viewDescriptor);

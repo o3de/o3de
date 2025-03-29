@@ -25,8 +25,10 @@ namespace ScriptCanvasEditor
         , m_ui(new Ui::LoggingWindow)
     {
         m_ui->setupUi(this);
+        m_ui->emptyCapture->setParent(this);
 
         // Hack to hide the close button on the first tab. Since we always want it open.
+        
         m_ui->tabWidget->setTabsClosable(true);
         m_ui->tabWidget->tabBar()->setTabButton(0, QTabBar::ButtonPosition::RightSide, nullptr);
         m_ui->tabWidget->tabBar()->setTabButton(0, QTabBar::ButtonPosition::LeftSide, nullptr);
@@ -47,11 +49,11 @@ namespace ScriptCanvasEditor
 
         OnActiveTabChanged(m_ui->tabWidget->currentIndex());
         PivotOnEntities();
+
     }
 
     LoggingWindow::~LoggingWindow()
     {
-
     }
 
     void LoggingWindow::OnActiveTabChanged([[maybe_unused]] int index)

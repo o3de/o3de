@@ -396,7 +396,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeBlendNNode,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeBlendNNode,
         BlendTreeBlendNNodeSyncTestFixture,
         ::testing::ValuesIn(blendNNodeSyncTestData));
 } // namespace EMotionFX

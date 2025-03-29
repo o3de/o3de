@@ -19,6 +19,7 @@
 #include "GeneratedTransforms/CalculateLuminance_LinearSrgb.azsli"
 #include "GeneratedTransforms/CalculateLuminance_AcesCg.azsli"
 
+// !! THIS ENUM MUST MATCH THE ONE IN: TransformColor.h !!
 // Removing enum class so that variables can be created using this type without causing compile errors.
 enum ColorSpaceId
 {

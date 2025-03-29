@@ -80,6 +80,7 @@ namespace AZ
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
             m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
+            m_descriptor.m_optionalExtensions.push_back(VK_EXT_HDR_METADATA_EXTENSION_NAME);
 
             uint32_t appApiVersion = VK_API_VERSION_1_0;
             m_instanceVersion = VK_API_VERSION_1_0;

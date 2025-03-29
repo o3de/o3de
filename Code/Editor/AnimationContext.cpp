@@ -851,7 +851,12 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnBeginGameMode:
         if (m_pSequence)
         {
-            m_pSequence->Resume();
+            // Reset the sequence, so that changed camera positions are restored
+            m_pSequence->Reset(false);
+
+            // Force recent changes made in TrackView, updating in-memory prefab using Undo/Redo framework
+            AzToolsFramework::ScopedUndoBatch undoBatch("Update TrackView Sequence Before Playing Game");
+            undoBatch.MarkEntityDirty(m_pSequence->GetSequenceComponentEntityId());
         }
         {
             // This notification arrives before even the OnStartPlayInEditorBegin and later OnStartPlayInEditor events
@@ -866,9 +871,18 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
     case eNotify_OnBeginSceneSave:
     case eNotify_OnBeginLayerExport:
+        if (m_pSequence)
         {
-            constexpr const bool isSwitchingToGameMode = false;
+            // Reset the sequence, so that changed camera positions are restored
+            m_pSequence->Reset(false);
+
+            // Force recent changes made in TrackView, updating in-memory prefab using Undo/Redo framework
+            AzToolsFramework::ScopedUndoBatch undoBatch("Update TrackView Sequence Before Saving");
+            undoBatch.MarkEntityDirty(m_pSequence->GetSequenceComponentEntityId());
+        }
+        {
             // Store active sequence and camera Ids and drop this sequence.
+            constexpr const bool isSwitchingToGameMode = false;
             StoreSequenceOnExitingEditMode(isSwitchingToGameMode);
         }
         break;
@@ -900,7 +914,7 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_mostRecentSequenceTime = 0.0f;
         m_bSavedRecordingState = m_recording;
         SetRecordingInternal(false);
-        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
+        SetSequence(nullptr, false, false);
         break;
 
     case eNotify_OnEndLoad:

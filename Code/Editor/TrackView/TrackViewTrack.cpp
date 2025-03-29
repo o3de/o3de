@@ -266,16 +266,51 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const flo
 
 CTrackViewKeyHandle CTrackViewTrack::CreateKey(const float time)
 {
+    CTrackViewKeyHandle keyHandle;
+
+    const auto sequence = GetSequence();
+    if (!m_pAnimTrack || !sequence)
+    {
+        AZ_Assert(m_pAnimTrack, "CreateKey(%f): no animation track");
+        AZ_Assert(sequence, "CreateKey(%f): no sequence", time);
+        return keyHandle;
+    }
+
+    AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+    if (!AzToolsFramework::UndoRedoOperationInProgress())
+    {
+        undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Create Key in Track");
+    }
+
     const int keyIndex = m_pAnimTrack->CreateKey(time);
-    GetSequence()->OnKeysChanged();
+
+    if (keyIndex < 0)
+    {
+        AZ_Error("CTrackViewTrack", false, "CreateKey(%f): no keys added to %s", time, GetName().c_str());
+        undoBatch.reset();
+        return keyHandle;
+    }
+
+    if (undoBatch.get())
+    {
+        undoBatch->MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+    }
+
+    sequence->OnKeysChanged();
     CTrackViewKeyHandle createdKeyHandle(this, keyIndex);
-    GetSequence()->OnKeyAdded(createdKeyHandle);
+    sequence->OnKeyAdded(createdKeyHandle);
 
     return createdKeyHandle;
 }
 
 void CTrackViewTrack::SlideKeys(const float time0, const float timeOffset)
 {
+    AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+    if (!AzToolsFramework::UndoRedoOperationInProgress())
+    {
+        undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Slide Keys In Track");
+    }
+
     for (int i = 0; i < m_pAnimTrack->GetNumKeys(); ++i)
     {
         float keyTime = m_pAnimTrack->GetKeyTime(i);
@@ -283,6 +318,11 @@ void CTrackViewTrack::SlideKeys(const float time0, const float timeOffset)
         {
             m_pAnimTrack->SetKeyTime(i, keyTime + timeOffset);
         }
+    }
+
+    if (undoBatch.get())
+    {
+        undoBatch->MarkEntityDirty(GetSequence()->GetSequenceComponentEntityId());
     }
 }
 
@@ -514,11 +554,22 @@ void CTrackViewTrack::SetKeyTime(const int index, const float time, bool notifyL
 {
     const float bOldTime = m_pAnimTrack->GetKeyTime(index);
 
+    AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+    if (!AzToolsFramework::UndoRedoOperationInProgress())
+    {
+        undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Set Key Time");
+    }
+
     m_pAnimTrack->SetKeyTime(index, time);
+
+    if (undoBatch.get())
+    {
+        undoBatch->MarkEntityDirty(GetSequence()->GetSequenceComponentEntityId());
+    }
 
     if (notifyListeners && (bOldTime != time))
     {
-        // The keys were just make invalid by the above SetKeyTime(), so sort them now
+        // The keys were just made invalid by the above SetKeyTime(), so sort them now
         // to make sure they are ready to be used. Only do this when notifyListeners
         // is set so client callers can batch up a bunch of SetKeyTime calls if desired.
         m_pAnimTrack->SortKeys();
@@ -534,7 +585,19 @@ float CTrackViewTrack::GetKeyTime(const int index) const
 
 void CTrackViewTrack::RemoveKey(const int index)
 {
+    AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+    if (!AzToolsFramework::UndoRedoOperationInProgress())
+    {
+        undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Remove Key From Track");
+    }
+
     m_pAnimTrack->RemoveKey(index);
+
+    if (undoBatch.get())
+    {
+        undoBatch->MarkEntityDirty(GetSequence()->GetSequenceComponentEntityId());
+    }
+
     m_pTrackAnimNode->GetSequence()->OnKeysChanged();
 }
 

@@ -8,8 +8,16 @@
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     set(GOOGLETEST_GIT_REPOSITORY "https://github.com/google/googletest.git")
-    set(GOOGLETEST_GIT_TAG 2fe3bd994b3189899d93f1d5a881e725e046fdc2) # release-1.8.1
-    set(GOOGLETEST_VERSION_STRING "release-1.8.1")
+    set(GOOGLETEST_GIT_TAG b514bdc898e2951020cbdca1304b75f5950d1f59) # tag name is v1.15.2
+    set(GOOGLETEST_VERSION_STRING "v1.15.2")
+
+    # there are optional flags you can pass FetchContent that make the project cleaner but require newer versions of cmake
+    
+    set(ADDITIONAL_FETCHCONTENT_FLAGS "")
+
+    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.25")
+    list(APPEND ADDITIONAL_FETCHCONTENT_FLAGS "SYSTEM")  # treat it as a 3p library, that is, do not issue warnings using the same warning level
+    endif()
 
     o3de_pal_dir(pal_aztest_dir ${CMAKE_CURRENT_LIST_DIR}/AzTest/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
@@ -21,7 +29,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     FetchContent_Declare(
         googletest
         GIT_REPOSITORY ${GOOGLETEST_GIT_REPOSITORY}
-        GIT_TAG ${GOOGLETEST_GIT_TAG} 
+        GIT_TAG ${GOOGLETEST_GIT_TAG}
+        ${ADDITIONAL_FETCHCONTENT_FLAGS}
         CMAKE_ARGS "-DCMAKE_WARN_DEPRECATED=FALSE;-Dgtest_force_shared_crt=ON;-DBUILD_GMOCK=ON;-DBUILD_GTEST=ON;-DINSTALL_GTEST=OFF;-Dgmock_build_tests=OFF;-Dgtest_build_tests=OFF;-Dgtest_build_samples=OFF;-Dgtest_hide_internal_symbols=ON"
     )
     
@@ -30,6 +39,20 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     set(PYTHON_VERSION_STRING ${Python_VERSION})
 
     FetchContent_MakeAvailable(googletest)
+
+    # Let's not clutter the root of any IDE folder structure with 3rd party dependencies
+    # Setting the FOLDER makes it show up there in the solution build in VS and similarly
+    # any other IDEs that organize in folders.
+    # Setting EXCLUDE_FROM_ALL Makes it not appear in the first place.
+    set_target_properties(
+            gtest 
+            gmock 
+            gtest_main 
+            gmock_main 
+        PROPERTIES 
+            FOLDER "3rdParty Dependencies" 
+            EXCLUDE_FROM_ALL TRUE)
+
     unset(CMAKE_POLICY_DEFAULT_CMP0148)
     set(CMAKE_WARN_DEPRECATED ${OLD_CMAKE_WARN_DEPRECATED} CACHE BOOL "" FORCE)
 

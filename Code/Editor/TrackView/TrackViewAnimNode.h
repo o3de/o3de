@@ -106,6 +106,9 @@ public:
     virtual CTrackViewTrack* CreateTrack(const CAnimParamType& paramType);
     virtual void RemoveTrack(CTrackViewTrack* pTrack);
 
+    // Updates track default values before adding a new key at time, so that animated entity is not affected by adding a key
+    void UpdateTrackDefaultValue(float time, IAnimTrack* pTrack);
+
     // Add selected entities from scene to group node
     virtual CTrackViewAnimNodeBundle AddSelectedEntities(const AZStd::vector<AnimParamType>& tracks);
 

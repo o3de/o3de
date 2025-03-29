@@ -110,7 +110,10 @@ namespace AZ
         {
             // Remove outdated level settings aggregate
             m_globalAggregateLevelSettings = AZStd::make_unique<PostProcessSettings>(this);
-            m_blendedPerViewSettings.clear();
+            for (auto& [view, settings] : m_blendedPerViewSettings)
+            {
+                m_globalAggregateLevelSettings->ApplySettingsTo(&settings);
+            }
             // Apply settings from priority sorted list of level settings
             AZStd::vector_set<const RPI::View*> activeViews;
             for (auto& settings : m_sortedFrameSettings)

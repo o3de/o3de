@@ -87,7 +87,13 @@ namespace Maestro
 
         bool IsKeySelected(int key) const override
         {
-            AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index is out of range");
+            bool valid = (key >= 0 && key < static_cast<int>(m_keys.size()));
+            AZ_Assert(valid, "Key index (%i) is out of range (%i)", key, static_cast<int>(m_keys.size()));
+            if (!valid)
+            {
+                return false;
+            }
+
             if (m_keys[key].flags & AKEY_SELECTED)
             {
                 return true;
@@ -97,7 +103,13 @@ namespace Maestro
 
         void SelectKey(int key, bool select) override
         {
-            AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index is out of range");
+            bool valid = (key >= 0 && key < static_cast<int>(m_keys.size()));
+            AZ_Assert(valid, "Key index (%i) is out of range (%i)", key, static_cast<int>(m_keys.size()));
+            if (!valid)
+            {
+                return;
+            }
+
             if (select)
             {
                 m_keys[key].flags |= AKEY_SELECTED;
@@ -110,7 +122,13 @@ namespace Maestro
 
         bool IsSortMarkerKey(unsigned int key) const override
         {
-            AZ_Assert(key < m_keys.size(), "key index is out of range");
+            bool valid = (key < (int)m_keys.size());
+            AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(key), static_cast<int>(m_keys.size()));
+            if (!valid)
+            {
+                return false;
+            }
+
             if (m_keys[key].flags & AKEY_SORT_MARKER)
             {
                 return true;
@@ -120,7 +138,13 @@ namespace Maestro
 
         void SetSortMarkerKey(unsigned int key, bool enabled) override
         {
-            AZ_Assert(key < m_keys.size(), "key index is out of range");
+            bool valid = (key < (int)m_keys.size());
+            AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(key), static_cast<int>(m_keys.size()));
+            if (!valid)
+            {
+                return;
+            }
+
             if (enabled)
             {
                 m_keys[key].flags |= AKEY_SORT_MARKER;
@@ -240,6 +264,11 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZStd::string& value) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
         //////////////////////////////////////////////////////////////////////////
         // Set track value at specified time.
         // Adds new keys if required.
@@ -290,6 +319,11 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZStd::string& value, [[maybe_unused]] bool bDefault = false) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
         void OffsetKeyPosition([[maybe_unused]] const AZ::Vector3& value) override
         {
             AZ_Assert(false, "Not expected to be used");
@@ -321,12 +355,14 @@ namespace Maestro
         */
         virtual void SerializeKey(KeyType& key, XmlNodeRef& keyNode, bool bLoading) = 0;
 
+        void InitPostLoad([[maybe_unused]] IAnimSequence* sequence) override { }
+
         //////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////
         /** Get last key before specified time.
                 @return Index of key, or -1 if such key not exist.
         */
-        int GetActiveKey(float time, KeyType* key);
+        virtual int GetActiveKey(float time, KeyType* key);
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
         ColorB GetCustomColor() const override
@@ -365,7 +401,10 @@ namespace Maestro
 
         void SetMultiplier(float trackMultiplier) override
         {
-            m_trackMultiplier = trackMultiplier;
+            if (AZStd::abs(trackMultiplier) > AZ::Constants::Tolerance)
+            {
+                m_trackMultiplier = trackMultiplier;
+            }
         }
 
         void SetExpanded([[maybe_unused]] bool expanded) override
@@ -428,7 +467,7 @@ namespace Maestro
 
         IAnimNode* m_node;
 
-        float m_trackMultiplier;
+        float m_trackMultiplier = 1.0f;
 
         unsigned int m_id = 0;
     };
@@ -470,7 +509,13 @@ namespace Maestro
     template<class KeyType>
     inline void TAnimTrack<KeyType>::RemoveKey(int index)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
+        bool valid = (index >= 0 && index < (int)m_keys.size());
+        AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(index), static_cast<int>(m_keys.size()));
+        if (!valid)
+        {
+            return;
+        }
+
         m_keys.erase(m_keys.begin() + index);
         Invalidate();
     }
@@ -479,8 +524,13 @@ namespace Maestro
     template<class KeyType>
     inline void TAnimTrack<KeyType>::GetKey(int index, IKey* key) const
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        AZ_Assert(key != 0, "Key cannot be null!");
+        bool valid = key && (index >= 0 && index < (int)m_keys.size());
+        AZ_Assert(valid, "Key index (%i) is out of range (%i) or key (%p) is nullptr", static_cast<int>(index), static_cast<int>(m_keys.size()), key);
+        if (!valid)
+        {
+            return;
+        }
+
         *(KeyType*)key = m_keys[index];
     }
 
@@ -488,8 +538,12 @@ namespace Maestro
     template<class KeyType>
     inline void TAnimTrack<KeyType>::SetKey(int index, IKey* key)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        AZ_Assert(key != 0, "Key cannot be null!");
+        bool valid = key && (index >= 0 && index < (int)m_keys.size());
+        AZ_Assert(valid, "Key index (%i) is out of range (%i) or key (%p) is nullptr", static_cast<int>(index), static_cast<int>(m_keys.size()), key);
+        if (!valid)
+        {
+            return;
+        }
         m_keys[index] = *(KeyType*)key;
         Invalidate();
     }
@@ -498,7 +552,12 @@ namespace Maestro
     template<class KeyType>
     inline float TAnimTrack<KeyType>::GetKeyTime(int index) const
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
+        bool valid = (index >= 0 && index < static_cast<int> (m_keys.size()));
+        AZ_Assert(valid, "Key index (%i) is out of range (%i)", index, static_cast<int>(m_keys.size()));
+        if (!valid)
+        {
+            return 0.0f;
+        }
         return m_keys[index].time;
     }
 
@@ -506,7 +565,13 @@ namespace Maestro
     template<class KeyType>
     inline void TAnimTrack<KeyType>::SetKeyTime(int index, float time)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
+        bool valid = (index >= 0 && index < (int)m_keys.size());
+        AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(index), static_cast<int>(m_keys.size()));
+        if (!valid)
+        {
+            return;
+        }
+
         m_keys[index].time = time;
         Invalidate();
     }
@@ -529,7 +594,13 @@ namespace Maestro
     template<class KeyType>
     inline int TAnimTrack<KeyType>::GetKeyFlags(int index)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
+        bool valid = (index >= 0 && index < (int)m_keys.size());
+        AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(index), static_cast<int>(m_keys.size()));
+        if (!valid)
+        {
+            return 0;
+        }
+
         return m_keys[index].flags;
     }
 
@@ -537,7 +608,12 @@ namespace Maestro
     template<class KeyType>
     inline void TAnimTrack<KeyType>::SetKeyFlags(int index, int flags)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
+        bool valid = (index >= 0 && index < (int)m_keys.size());
+        AZ_Assert(valid, "Key index (%i) is out of range (%i)", static_cast<int>(index), static_cast<int>(m_keys.size()));
+        if (!valid)
+        {
+            return;
+        }
         m_keys[index].flags = flags;
         Invalidate();
     }

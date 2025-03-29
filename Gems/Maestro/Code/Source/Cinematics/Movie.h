@@ -128,8 +128,8 @@ public:
     IMovieCallback* GetCallback() override { return m_pCallback; }
     void Callback(IMovieCallback::ECallbackReason Reason, IAnimNode* pNode);
 
-    const SCameraParams& GetCameraParams() const override { return m_ActiveCameraParams; }
-    void SetCameraParams(const SCameraParams& Params) override;
+    AZ::EntityId GetActiveCamera() const override { return m_ActiveCameraEntityId; }
+    void SetActiveCamera(const AZ::EntityId& entityId) override;
 
     void SendGlobalEvent(const char* pszEvent) override;
     void SetSequenceStopBehavior(ESequenceStopBehavior behavior) override;
@@ -171,11 +171,6 @@ public:
     void OnSequenceActivated(IAnimSequence* sequence) override;
 
     static void Reflect(AZ::ReflectContext* context);
-
-    static float GetCameraPrecacheTime()
-    {
-        return m_mov_cameraPrecacheTime;
-    }
 
 private:
 
@@ -233,7 +228,7 @@ private:
     bool    m_bPaused;
     bool    m_bCutscenesPausedInEditor;
 
-    SCameraParams m_ActiveCameraParams;
+    AZ::EntityId m_ActiveCameraEntityId;
 
     ESequenceStopBehavior m_sequenceStopBehavior;
 
@@ -279,7 +274,6 @@ private:
     void RegisterParamTypes();
 
 private:
-    static float m_mov_cameraPrecacheTime;
 #if !defined(_RELEASE)
     static int m_mov_DebugEvents;
     static int m_mov_debugCamShake;

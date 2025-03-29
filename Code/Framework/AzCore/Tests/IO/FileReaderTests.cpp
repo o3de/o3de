@@ -35,7 +35,7 @@ namespace UnitTest
 
     using FileIOTypes = ::testing::Types<void, TestFileIOBase>;
 
-    TYPED_TEST_CASE(FileReaderTestFixture, FileIOTypes);
+    TYPED_TEST_SUITE(FileReaderTestFixture, FileIOTypes);
 
     TYPED_TEST(FileReaderTestFixture, ConstructorWithFilePath_OpensFileSuccessfully)
     {

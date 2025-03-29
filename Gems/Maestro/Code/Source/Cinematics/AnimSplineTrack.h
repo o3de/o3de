@@ -203,26 +203,46 @@ namespace Maestro
 
         float GetKeyTime(int index) const override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+            if (index < 0 || index >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index %i is out of range (0-%d)", index, GetNumKeys());
+                return 0.0f;
+            }
+
             return m_spline->time(index);
         }
 
         void SetKeyTime(int index, float time) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+            if (index < 0 || index >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index %i is out of range (0-%d)", index, GetNumKeys());
+                return;
+            }
+
             m_spline->SetKeyTime(index, time);
             Invalidate();
         }
 
         int GetKeyFlags(int index) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+            if (index < 0 || index >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index %i is out of range (0-%d)", index, GetNumKeys());
+                return 0;
+            }
+
             return m_spline->key(index).flags;
         }
 
         void SetKeyFlags(int index, int flags) override
         {
-            AZ_Assert(index >= 0 && index < GetNumKeys(), "Key index %i is out of range", index);
+            if (index < 0 || index >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index %i is out of range (0-%d)", index, GetNumKeys());
+                return;
+            }
+
             m_spline->key(index).flags = flags;
         }
 
@@ -270,6 +290,11 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZStd::string& value) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
         void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) override
         {
             AZ_Assert(false, "Not expected to be used");
@@ -308,6 +333,11 @@ namespace Maestro
             [[maybe_unused]] float time,
             [[maybe_unused]] const AssetBlends<AZ::Data::AssetData>& value,
             [[maybe_unused]] bool bDefault = false) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZStd::string& value, [[maybe_unused]] bool bDefault = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
@@ -493,7 +523,10 @@ namespace Maestro
 
         void SetMultiplier(float trackMultiplier) override
         {
-            m_trackMultiplier = trackMultiplier;
+            if (AZStd::abs(trackMultiplier) > AZ::Constants::Tolerance)
+            {
+                m_trackMultiplier = trackMultiplier;
+            }
         }
 
         void SetExpanded([[maybe_unused]] bool expanded) override
@@ -556,7 +589,7 @@ namespace Maestro
 
         IAnimNode* m_node;
 
-        float m_trackMultiplier;
+        float m_trackMultiplier = 1.0f;
 
         unsigned int m_id = 0;
 

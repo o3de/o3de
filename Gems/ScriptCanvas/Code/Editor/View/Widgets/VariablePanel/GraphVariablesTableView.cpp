@@ -627,8 +627,8 @@ namespace ScriptCanvasEditor
 
             if (graphVariable->GetScope() != ScriptCanvas::VariableFlags::Scope::FunctionReadOnly)
             {
-            itemFlags |= Qt::ItemIsEditable;
-        }
+                itemFlags |= Qt::ItemIsEditable;
+            }
 
         }
         else if (index.column() == ColumnIndex::InitialValueSource)
@@ -867,6 +867,19 @@ namespace ScriptCanvasEditor
             QModelIndex otherIndex = createIndex(index, ColumnIndex::Count - 1, nullptr);
 
             dataChanged(modelIndex, otherIndex);
+        }
+    }
+
+    void GraphVariablesModel::OnVariableRenamed(AZStd::string_view /*newVariableName*/)
+    {
+        const ScriptCanvas::GraphScopedVariableId* variableId = ScriptCanvas::VariableNotificationBus::GetCurrentBusId();
+
+        int index = FindRowForVariableId((*variableId).m_identifier);
+
+        if (index >= 0)
+        {
+            QModelIndex modelIndex = createIndex(index, ColumnIndex::Name, nullptr);
+            dataChanged(modelIndex, modelIndex);
         }
     }
 

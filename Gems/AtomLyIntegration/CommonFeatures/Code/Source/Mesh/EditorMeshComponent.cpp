@@ -247,10 +247,16 @@ namespace AZ
                 EditorMeshStatsForLod stats;
                 const auto& meshes = lodAsset->GetMeshes();
                 stats.m_meshCount = static_cast<AZ::u32>(meshes.size());
+                stats.m_subMeshStatsForLod.reserve(stats.m_meshCount);
                 for (const auto& mesh : meshes)
                 {
-                    stats.m_vertCount += mesh.GetVertexCount();
-                    stats.m_triCount += mesh.GetIndexCount() / 3;
+                    const auto vertexCount = mesh.GetVertexCount();
+                    const auto triCount = mesh.GetIndexCount() / 3;
+                    stats.m_subMeshStatsForLod.push_back({});
+                    stats.m_subMeshStatsForLod.back().m_vertCount = vertexCount;
+                    stats.m_subMeshStatsForLod.back().m_triCount = triCount;
+                    stats.m_vertCount += vertexCount;
+                    stats.m_triCount += triCount;
                 }
                 m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
             }

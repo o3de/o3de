@@ -10,8 +10,10 @@
 
 #include <Atom/Feature/RayTracing/RayTracingIndexList.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/RayTracingCompactionQueryPool.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Public/GpuQuery/Query.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/Utils/StableDynamicArray.h>
@@ -108,8 +110,8 @@ namespace AZ::Render
             // vertex buffer usage flags
             RayTracingSubMeshBufferFlags m_bufferFlags = RayTracingSubMeshBufferFlags::None;
 
-            // ray tracing Blas
-            RHI::Ptr<RHI::RayTracingBlas> m_blas;
+            // id for accessing the blas instance (assetId, subMeshIdx)
+            AZStd::pair<Data::AssetId, int> m_blasInstanceId;
 
             // submesh material
             SubMeshMaterial m_material;
@@ -342,8 +344,8 @@ namespace AZ::Render
         virtual const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const = 0;
 
         //! If necessary recreates TLAS buffers and updates the ray tracing SRGs. Should only be called by the
-        //! RayTracingAccelerationStructurePass. Returns the current revision.
-        virtual uint32_t BeginFrame() = 0;
+        //! RayTracingAccelerationStructurePass.
+        virtual void BeginFrame() = 0;
 
         //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the
         //! RayTracingAccelerationStructurePass
@@ -351,7 +353,22 @@ namespace AZ::Render
 
         struct SubMeshBlasInstance
         {
+            // Uncompacted Blas for the submesh
+            // When acceleration structure compaction is enabled, this will be deleted after the compacted Blas is ready
             RHI::Ptr<RHI::RayTracingBlas> m_blas;
+
+            // Compacted Blas
+            // Should be empty after creation
+            // This is created after the uncompacted Blas is built, if compaction is enabled for this submesh
+            RHI::Ptr<RHI::RayTracingBlas> m_compactBlas;
+
+            // Query for getting the compacted size of the acceleration structure buffer
+            // If this is set the RayTracingAccelerationStructurePass will compact this blas instance
+            // Either none, or all SubMeshBlasInstances in a MeshBlasInstance must have compaction enabled
+            RHI::Ptr<RHI::RayTracingCompactionQuery> m_compactionSizeQuery;
+
+            //! Descriptor from which the m_blas is built
+            RHI::RayTracingBlasDescriptor m_blasDescriptor;
         };
 
         struct MeshBlasInstance
@@ -366,6 +383,30 @@ namespace AZ::Render
 
         using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
         virtual BlasInstanceMap& GetBlasInstances() = 0;
+
+        using BlasBuildList = AZStd::unordered_set<AZ::Data::AssetId>;
+
+        //! Returns the list of Blas instance asset ids that need to be built for the given device
+        //! The returned asset ids can be used to access the Blas instance returned by GetBlasInstances
+        //! The caller is responsible for deleting entries that where enqueued for building
+        virtual BlasBuildList& GetBlasBuildList(int deviceIndex) = 0;
+
+        //! Returns the asset id of all skinned mesh Blas instances in the scene
+        //! The returned asset ids can be used to access the Blas instance returned by GetBlasInstances
+        virtual const BlasBuildList& GetSkinnedMeshBlasList() = 0;
+
+        //! Returns the list of Blas instance asset ids that are ready for compaction
+        //! The returned asset ids can be used to access the Blas instance returned by GetBlasInstances
+        //! The caller is responsible for deleting entries that where enqueued for building
+        virtual BlasBuildList& GetBlasCompactionList(int deviceIndex) = 0;
+
+        //! Signals that the compaction size queries of the asset have been enqueued
+        //! The mesh will be inserted into the queue returned by GetBlasCompactionList when the compacted size is ready
+        virtual const void MarkBlasInstanceForCompaction(int deviceIndex, Data::AssetId assetId) = 0;
+
+        //! Signals that the Blas compaction has been enqueued
+        //! The original uncompacted BLAS will be deleted when it's no longer needed
+        virtual const void MarkBlasInstanceAsCompactionEnqueued(int deviceIndex, Data::AssetId assetId) = 0;
 
         //! Retrieves the list of all procedural geometry types in the scene
         virtual const ProceduralGeometryTypeList& GetProceduralGeometryTypes() const = 0;

@@ -41,7 +41,6 @@
 
 
 int CMovieSystem::m_mov_NoCutscenes = 0;
-float CMovieSystem::m_mov_cameraPrecacheTime = 1.f;
 #if !defined(_RELEASE)
 int CMovieSystem::m_mov_DebugEvents = 0;
 int CMovieSystem::m_mov_debugCamShake = 0;
@@ -235,7 +234,6 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_nextSequenceId = 1;
 
     REGISTER_CVAR2("mov_NoCutscenes", &m_mov_NoCutscenes, 0, 0, "Disable playing of Cut-Scenes");
-    REGISTER_CVAR2("mov_cameraPrecacheTime", &m_mov_cameraPrecacheTime, 1.f, VF_NULL, "");
     m_mov_overrideCam = REGISTER_STRING("mov_overrideCam", "", VF_NULL, "Set the camera used for the sequence which overrides the camera track info in the sequence.\nUse the Camera Name for Object Entity Cameras (Legacy) or the Entity ID for Component Entity Cameras.");
 
     DoNodeStaticInitialisation();
@@ -911,11 +909,7 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
     m_bPaused = false;
 
     // Reset camera.
-    SCameraParams CamParams = GetCameraParams();
-    CamParams.cameraEntityId.SetInvalid();
-    CamParams.fov = 0.0f;
-    CamParams.justActivated = true;
-    SetCameraParams(CamParams);
+    SetActiveCamera(AZ::EntityId());
 }
 
 void CMovieSystem::PlayOnLoadSequences()
@@ -930,11 +924,7 @@ void CMovieSystem::PlayOnLoadSequences()
     }
 
     // Reset camera.
-    SCameraParams CamParams = GetCameraParams();
-    CamParams.cameraEntityId.SetInvalid();
-    CamParams.fov = 0.0f;
-    CamParams.justActivated = true;
-    SetCameraParams(CamParams);
+    SetActiveCamera(AZ::EntityId());
 }
 
 void CMovieSystem::StillUpdate()
@@ -1188,30 +1178,30 @@ void CMovieSystem::Reflect(AZ::ReflectContext* context)
     AnimSerializer::ReflectAnimTypes(context);
 }
 
-void CMovieSystem::SetCameraParams(const SCameraParams& Params)
+void CMovieSystem::SetActiveCamera(const AZ::EntityId& entityId)
 {
-    m_ActiveCameraParams = Params;
+    m_ActiveCameraEntityId = entityId;
 
     // Make sure the camera entity is valid
-    if (m_ActiveCameraParams.cameraEntityId.IsValid())
+    if (m_ActiveCameraEntityId.IsValid())
     {
         // Component Camera
         AZ::Entity* entity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_ActiveCameraParams.cameraEntityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_ActiveCameraEntityId);
         if (entity)
         {
             // Make sure the camera component was not removed from an entity that is used as a camera.
             if (!(entity->FindComponent(CameraComponentTypeId) || entity->FindComponent(EditorCameraComponentTypeId)))
             {
                 // if this entity does not have a camera component, do not use it.
-                m_ActiveCameraParams.cameraEntityId.SetInvalid();
+                m_ActiveCameraEntityId.SetInvalid();
             }
         }
     }
 
     if (m_pUser)
     {
-        m_pUser->SetActiveCamera(m_ActiveCameraParams);
+        m_pUser->SetActiveCamera(m_ActiveCameraEntityId);
     }
 }
 

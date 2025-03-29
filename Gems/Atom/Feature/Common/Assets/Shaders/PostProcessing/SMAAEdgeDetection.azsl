@@ -71,7 +71,13 @@ option enum class EdgeDetectionMode { Depth, Luma, Color } o_edgeDetectionMode =
 
 // This macro being defined before being included in SMAA.azsli, we can control which function is enabled in SMAA.azsli
 // This macro is intended to enable the edge detection functions only.
-#define ATOM_SMAA_EDGE_DETECTION_PASS_IMPLEMENTATION_ENABLE
+#ifdef CS_SAMPLERS
+    // When using Compute shaders, the "discard" intrinsic is not available (only valid for Fragment shaders).
+    // ATOM_SMAA_EDGE_DETECTION_PASS_IMPLEMENTATION_ENABLE in "SMAA.azsli" uses "discard".
+    #define ATOM_SMAA_BLENDING_WEIGHT_CALCULATION_PASS_IMPLEMENTATION_ENABLE
+#else
+    #define ATOM_SMAA_EDGE_DETECTION_PASS_IMPLEMENTATION_ENABLE
+#endif
 
 // Defining the elements below before including SMAA.azsli as they'll be used in it.
 // - PassSrg SRG to be used for the edge detection implementation.

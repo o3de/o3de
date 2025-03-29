@@ -78,11 +78,7 @@ namespace Maestro
         void RemoveKey(int num) override;
 
         void GetKeyInfo(int key, const char*& description, float& duration) override;
-        int CreateKey([[maybe_unused]] float time) override
-        {
-            AZ_Assert(false, "Not expected to be used");
-            return 0;
-        }
+        int CreateKey(float time) override;
 
         int CloneKey([[maybe_unused]] int fromKey) override
         {
@@ -166,6 +162,12 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZStd::string& value) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+
         //////////////////////////////////////////////////////////////////////////
         // Set track value at specified time.
         // Adds new keys if required.
@@ -187,6 +189,11 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZStd::string& value, [[maybe_unused]] bool bDefault = false) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
         void OffsetKeyPosition(const AZ::Vector3& value) override;
         void UpdateKeyDataAfterParentChanged(const AZ::Transform& oldParentWorldTM, const AZ::Transform& newParentWorldTM) override;
 
@@ -195,6 +202,8 @@ namespace Maestro
         bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true) override;
 
         bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected = false, float fTimeOffset = 0) override;
+
+        void InitPostLoad([[maybe_unused]] IAnimSequence* sequence) override;
 
         int NextKeyByTime(int key) const override;
 
@@ -260,6 +269,10 @@ namespace Maestro
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
+        void RenameSubTracksIfNeeded(); // Called in ctor, and then sub-track names are serialized.
+        void SetKeyValueRanges(); // Key Value Range in a sub-track is not serialized, set it depending on the m_valueType and sub-track's m_nParamType.
+
+
         int m_refCount;
         AnimValueType m_valueType;
         int m_nDimensions;
