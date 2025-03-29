@@ -32,8 +32,6 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/AttachmentNode.h>
 
-#include <MCore/Source/AzCoreConversions.h>
-
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace EMotionFX
@@ -796,17 +794,17 @@ namespace EMotionFX
             {
             case Space::LocalSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetLocalSpaceTransform(index));
+                return currentPose->GetLocalSpaceTransform(index).ToAZTransform();
             }
 
             case Space::ModelSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetModelSpaceTransform(index));
+                return currentPose->GetModelSpaceTransform(index).ToAZTransform();
             }
 
             case Space::WorldSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetWorldSpaceTransform(index));
+                return currentPose->GetWorldSpaceTransform(index).ToAZTransform();
             }
 
             default:

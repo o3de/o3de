@@ -557,6 +557,21 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
     {
         SetMouseCursor(Qt::ArrowCursor);
     }
+    else if (m_mouseMode == eTVMouseMode_Clone)
+    {
+         if (!m_bKeysCloned) // Prevent multiple cloning
+         {
+             QPoint ofs = point - m_mouseDownPos;
+             float timeOffset = ofs.x() / m_timeScale;
+
+             pSequence->CloneSelectedKeys(timeOffset);
+             m_bKeysCloned = true;
+         }
+         else
+         {
+             m_mouseMode = eTVMouseMode_None;
+         }
+    }
 
     OnCaptureChanged();
 
@@ -855,11 +870,6 @@ void CTrackViewDopeSheetBase::mouseMoveEvent(QMouseEvent* event)
         {
             CancelDrag();
         }
-    }
-    else if (m_mouseMode == eTVMouseMode_Clone)
-    {
-        pSequence->CloneSelectedKeys();
-        m_mouseMode = eTVMouseMode_Move;
     }
     else if (m_mouseMode == eTVMouseMode_DragTime)
     {
@@ -1247,7 +1257,7 @@ void CTrackViewDopeSheetBase::keyPressEvent(QKeyEvent* event)
     // HAVE TO INCLUDE CASES FOR THESE IN THE ShortcutOverride handler in ::event() below
     if (event->matches(QKeySequence::Delete))
     {
-        CUndo undo("Delete Keys");
+        CUndo undo("Delete Selected Keys");
         sequence->DeleteSelectedKeys();
         return;
     }
@@ -2212,15 +2222,34 @@ void CTrackViewDopeSheetBase::AcceptUndo()
         {
             GetIEditor()->CancelUndo();
         }
-        else if (m_mouseMode == eTVMouseMode_Move || m_mouseMode == eTVMouseMode_Clone)
+        else if (m_mouseMode == eTVMouseMode_Move)
         {
             if (sequence && m_bKeysMoved)
             {
                 GetIEditor()->CancelUndo();
 
                 // Keys Moved, mark the sequence dirty to get an AZ undo event.
-                AzToolsFramework::ScopedUndoBatch undoBatch("Move/Clone Keys");
+                AzToolsFramework::ScopedUndoBatch undoBatch("Move Keys");
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+                m_bKeysMoved = false;
+            }
+            else
+            {
+                GetIEditor()->CancelUndo();
+            }
+        }
+        else if (m_mouseMode == eTVMouseMode_Clone)
+        {
+            if (sequence && m_bKeysCloned)
+            {
+                GetIEditor()->CancelUndo();
+        
+                // Keys Cloned, mark the sequence dirty to get an AZ undo event.
+                AzToolsFramework::ScopedUndoBatch undoBatch("Clone Keys");
+                undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+                m_bKeysCloned = false;
             }
             else
             {

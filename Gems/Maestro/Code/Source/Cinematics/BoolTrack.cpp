@@ -19,42 +19,40 @@ namespace Maestro
     {
     }
 
-    void CBoolTrack::GetKeyInfo([[maybe_unused]] int index, const char*& description, float& duration)
+    void CBoolTrack::GetKeyInfo([[maybe_unused]] int keyIndex, const char*& description, float& duration) const
     {
         description = 0;
         duration = 0;
     }
 
-    AnimValueType CBoolTrack::GetValueType()
+    AnimValueType CBoolTrack::GetValueType() const
     {
         return AnimValueType::Bool;
     }
 
-    void CBoolTrack::GetValue(float time, bool& value)
+    void CBoolTrack::GetValue(float time, bool& value) const
     {
         value = m_bDefaultValue;
 
-        CheckValid();
-
-        int nkeys = static_cast<int>(m_keys.size());
-        if (nkeys < 1)
+        const int numKeys = GetNumKeys();
+        if (numKeys < 1)
         {
             return;
         }
 
-        int key = 0;
-        while ((key < nkeys) && (time >= m_keys[key].time))
+        int keyIdx = 0;
+        while ((keyIdx < numKeys) && (time >= m_keys[keyIdx].time))
         {
-            key++;
+            keyIdx++;
         }
 
         if (m_bDefaultValue)
         {
-            value = !(key & 1); // True if even key.
+            value = !(keyIdx & 1); // True if even key.
         }
         else
         {
-            value = (key & 1); // False if even key.
+            value = (keyIdx & 1); // False if even key.
         }
     }
 
@@ -64,7 +62,6 @@ namespace Maestro
         {
             SetDefaultValue(value);
         }
-        Invalidate();
     }
 
     void CBoolTrack::SetDefaultValue(const bool bDefaultValue)

@@ -23,6 +23,7 @@
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/typetraits/is_convertible.h>
+#include <AzCore/Serialization/Locale.h> // for locale-independent string to float conversions
 
 // we need this for AZ_TEST_FLOAT compare
 #include <cinttypes>
@@ -629,6 +630,7 @@ namespace UnitTest
 
     TEST_F(String, Algorithms)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for reading/writing floats with "." in them
         AZStd::string str = AZStd::string::format("%s %d", "BlaBla", 5);
         AZ_TEST_VALIDATE_STRING(str, 8);
 

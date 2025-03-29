@@ -62,26 +62,37 @@ namespace Maestro
         }
     }
 
-    void CEventTrack::GetKeyInfo(int key, const char*& description, float& duration)
+    void CEventTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        static char desc[128];
-
-        AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index %i is out of range", key);
-        CheckValid();
         description = 0;
         duration = 0;
-        azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[key].event.c_str());
-        if (!m_keys[key].eventValue.empty())
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        static char desc[128];
+        azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[keyIndex].event.c_str());
+        if (!m_keys[keyIndex].eventValue.empty())
         {
             azstrcat(desc, AZ_ARRAY_SIZE(desc), ", ");
-            azstrcat(desc, AZ_ARRAY_SIZE(desc), m_keys[key].eventValue.c_str());
+            azstrcat(desc, AZ_ARRAY_SIZE(desc), m_keys[keyIndex].eventValue.c_str());
         }
 
         description = desc;
     }
 
-    void CEventTrack::SetKey(int index, IKey* key)
+    void CEventTrack::SetKey(int keyIndex, IKey* key)
     {
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
         IEventKey* pEvKey = static_cast<IEventKey*>(key);
 
         // Intern string values
@@ -89,7 +100,9 @@ namespace Maestro
         pEvKey->eventValue = m_pStrings->Add(pEvKey->eventValue.c_str());
         pEvKey->animation = m_pStrings->Add(pEvKey->animation.c_str());
 
-        TAnimTrack<IEventKey>::SetKey(index, pEvKey);
+        TAnimTrack<IEventKey>::SetKey(keyIndex, pEvKey);
+
+        SortKeys();
     }
 
     void CEventTrack::InitPostLoad(IAnimSequence* sequence)

@@ -87,16 +87,12 @@ class CTrackViewSequence
     friend class CTrackViewSequenceNotificationContext;
     friend class CTrackViewSequenceNoNotificationContext;
 
-    // Undo friends
-    friend class CUndoAnimNodeReparent;
-    friend class CUndoTrackObject;
-
 public:
     CTrackViewSequence(IAnimSequence* pSequence);
     CTrackViewSequence(AZStd::intrusive_ptr<IAnimSequence>& sequence);
     ~CTrackViewSequence();
 
-    // Called after de-serialization of IAnimSequence
+    // Called after deserialization of IAnimSequence
     void Load() override;
 
     // ITrackViewNode
@@ -124,13 +120,13 @@ public:
     IAnimSequence::EAnimSequenceFlags GetFlags() const;
 
     // Get sequence object in scene
-    AZ::EntityId     GetSequenceComponentEntityId() const { return m_pAnimSequence.get() ? m_pAnimSequence->GetSequenceEntityId() : AZ::EntityId(); }
+    AZ::EntityId GetSequenceComponentEntityId() const { return m_pAnimSequence.get() ? m_pAnimSequence->GetSequenceEntityId() : AZ::EntityId(); }
 
     // Check if this node belongs to a sequence
     bool IsAncestorOf(CTrackViewSequence* pSequence) const;
 
     // Get single selected key if only one key is selected
-    CTrackViewKeyHandle FindSingleSelectedKey();
+    CTrackViewKeyHandle FindSingleSelectedKey() const;
 
     // Get CryMovie sequence ID
     uint32 GetCryMovieId() const { return m_pAnimSequence->GetId(); }
@@ -142,6 +138,7 @@ public:
     void Animate(const SAnimContext& animContext) override;
     void Resume() { m_pAnimSequence->Resume(); }
     void Pause() { m_pAnimSequence->Pause(); }
+    void IsPaused() const { m_pAnimSequence->IsPaused(); }
     void StillUpdate() { m_pAnimSequence->StillUpdate(); }
 
     void OnLoop() { m_pAnimSequence->OnLoop(); }
@@ -149,6 +146,7 @@ public:
     // Active & deactivate
     void Activate() { m_pAnimSequence->Activate(); }
     void Deactivate() { m_pAnimSequence->Deactivate(); }
+    bool IsActivated() const { return m_pAnimSequence->IsActivated(); }
     void PrecacheData(const float time) { m_pAnimSequence->PrecacheData(time); }
 
     // Begin & end cut scene
@@ -174,7 +172,7 @@ public:
     bool MoveDownTrackEvent(const char* szEvent)                       { MarkAsModified(); return m_pAnimSequence->MoveDownTrackEvent(szEvent); }
     void ClearTrackEvents()                                            { MarkAsModified(); m_pAnimSequence->ClearTrackEvents(); }
 
-    // Deletes all selected nodes (re-parents childs if group node gets deleted)
+    // Deletes all selected nodes (re-parents children if group node gets deleted)
     void DeleteSelectedNodes();
 
     // Select selected nodes in viewport
@@ -221,7 +219,7 @@ public:
     //! Push all the keys which come after the first key in time among selected ones by this offset.
     void SlideKeys(const float timeOffset);
     //! Clone all selected keys
-    void CloneSelectedKeys();
+    void CloneSelectedKeys(float timeOffset);
 
     // Limit the time offset so as to keep all involved keys in range when offsetting.
     float ClipTimeOffsetForOffsetting(const float timeOffset);
@@ -399,7 +397,7 @@ public:
 private:
     CTrackViewSequence* m_pSequence;
 
-    // Reentrance could happen if there are overlapping sub-sequences controlling
+    // Re-entrance could happen if there are overlapping sub-sequences controlling
     // the same camera.
     bool m_bNoNotificationsPreviously;
 };
