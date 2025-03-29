@@ -1,0 +1,206 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+name: Android Build
+
+# These jobs are to be triggered by ar.yml
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      compiler: 
+        required: true
+        type: string
+      config: 
+        required: true
+        type: string
+      image: 
+        required: true
+        type: string
+      platform: 
+        required: true
+        type: string
+      type: 
+        required: true
+        type: string
+      last_artifact: 
+        required: false
+        type: boolean
+
+run-name: ${{ inputs.platform }} - ${{ inputs.type }}
+
+# Activate compiler cache
+env: 
+  O3DE_ENABLE_COMPILER_CACHE: true
+  O3DE_COMPILER_CACHE_PATH: 'C:\ProgramData\Chocolatey\bin\ccache.exe'
+  NDK_VERSION: 25.1.8937393
+
+# Note: All 3P Github Actions use the commit hash for security reasons 
+# Avoid using the tag version, which is vulnerable to supply chain attacks
+
+jobs:
+  Build:
+    strategy:
+      fail-fast: false
+
+    runs-on: ${{ inputs.image }}
+        
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          show-progress: false
+
+      - name: Git LFS pull
+        # Minimal pull for profile builds, otherwise pull all
+        run: |
+          git lfs install
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+
+      - name: Setup 3p, user, and build folders
+        # Symlink the .o3de folder to the github workspace to avoid permission issues
+        run: |
+          "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
+          ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
+
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
+        continue-on-error: true
+        if: always()
+        with:
+          windows_compile_environment: msvc
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=15G
+            cache_dir=${{ github.workspace }}\.ccache
+      
+      - name: Get last run
+        # Get the last runid of the target branch of a PR or the current branch
+        uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
+        id: last-run-id
+        with:
+          workflow_search: true
+          workflow_conclusion: ""
+          branch: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+          search_artifacts: true
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          dry_run: true
+          if_no_artifact_found: warn
+
+      - name: Restore artifact cache
+        # Restore the artifact from the "Get last run" step or from the current run
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        continue-on-error: true
+        with:
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.last_artifact == true && fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id || github.run_id }}
+
+      - name: Extract artifact
+        # Extract the tar file from the artifact
+        continue-on-error: true
+        run: |
+          echo "Current Runid: ${{ github.run_id }}"
+          echo "Last run id: ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}"
+          
+          try {
+            $dirs = @(
+              "python",
+              "3rdParty/packages",
+              "AutomatedTesting/Cache",
+              "AutomatedTesting/user",
+              ".ccache"
+            )
+            foreach ($dir in $dirs) {
+              try {
+                tar -xvpf ${{ github.workspace }}\cache.tar $dir
+              } catch {
+                Write-Host "Warning: Could not extract $dir from archive: $_"
+              }
+            }
+          } catch {
+            Write-Host "Warning: Error during tar extraction: $_"
+          }
+          
+          if (Test-Path ${{ github.workspace }}\cache.tar) {
+            Remove-Item ${{ github.workspace }}\cache.tar
+          }
+      
+      - name: Setup cmake
+        # Pin the version of cmake  
+        uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
+        with:
+          cmakeVersion: "~3.30.0"
+
+      - name: Set MSBuild options
+        # Configuire VS environment variables through the developer command prompt for MSVC
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+                
+      - name: Configure environment
+        # Install dependencies for gradle and clang builds from the NDK
+        continue-on-error: true
+        run: |
+          echo "Installing dependancies"
+          echo "Getting python..."
+          python\get_python.bat
+
+          echo "Installing NDK ${{ env.NDK_VERSION }}..."
+          & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --install 'ndk;${{ env.NDK_VERSION }}' --sdk_root=$env:ANDROID_HOME
+          echo "LY_NDK_DIR=$env:ANDROID_HOME\ndk\${{ env.NDK_VERSION }}" >> $env:GITHUB_ENV
+          echo "JDK_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          echo "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          echo "GRADLE_BUILD_HOME=$env:GRADLE_HOME" >> $env:GITHUB_ENV
+          
+      - name: Build ${{ inputs.type }}
+        # Builds with presets in ../scripts/build/Platform/Android/build_config.json
+        env:
+          LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
+          USE_CCACHE: 1
+          NDK_CCACHE: ${{ env.O3DE_COMPILER_CACHE_PATH }}
+          CMAKE_C_COMPILER_LAUNCHER: ${{ env.O3DE_COMPILER_CACHE_PATH }}
+          CMAKE_CXX_COMPILER_LAUNCHER: ${{ env.O3DE_COMPILER_CACHE_PATH }}
+
+        run: |
+          scripts\o3de.bat register --this-engine # Resolves registration issue with gradle build
+          python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
+      
+      - name: Compress artifacts
+        # Compress with posix format to preserve permissions and timestamps at nanosecond precision
+        continue-on-error: true
+        run: |
+          try {
+            $dirs = @(
+              "python",
+              "3rdParty/packages",
+              "AutomatedTesting/Cache",
+              "AutomatedTesting/user",
+              ".ccache"
+            )
+            foreach ($dir in $dirs) {
+              try {
+                tar --format=posix -cvpf ${{ github.workspace }}\cache.tar $dir
+              } catch {
+                Write-Host "Warning: Could not compress $dir: $_"
+              }
+            }
+          } catch {
+            Write-Host "Warning: Error during tar compression: $_"
+          }
+  
+      - name: Save artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        continue-on-error: true
+        with:
+          name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
+          compression-level: 1
+          overwrite: true
+          path: |
+            ${{ github.workspace }}\cache.tar
