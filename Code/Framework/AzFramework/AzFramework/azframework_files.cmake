@@ -34,6 +34,8 @@ set(FILES
     Archive/ZipDirCacheFactory.h
     Archive/ZipDirFind.cpp
     Archive/ZipDirFind.h
+    Archive/ZipDirList.cpp
+    Archive/ZipDirList.h
     Archive/ZipDirStructures.cpp
     Archive/ZipDirStructures.h
     Archive/ZipDirTree.cpp

@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO::ZipDir
 {
@@ -24,12 +25,15 @@ namespace AZ::IO::ZipDir
         FileEntryBase* pFileEntryBase{}; // the file entry itself
     };
 
-    struct FileDataRecord
+    struct AZF_API FileDataRecord
         : public FileRecord
         , public AZStd::intrusive_base
     {
         AZ_CLASS_ALLOCATOR(FileDataRecord, AZ::SystemAllocator);
         FileDataRecord(const FileRecord& rThat);
+
+        FileDataRecord(FileDataRecord const&) = delete;
+        FileDataRecord& operator=(FileDataRecord const&) = delete;
 
         void* GetData() {return m_data.get(); }
     private:
@@ -46,7 +50,7 @@ namespace AZ::IO::ZipDir
     using FileDataRecordPtr = AZStd::intrusive_ptr<FileDataRecord>;
 
     // this is used for construction of CDR
-    class FileRecordList
+    class AZF_API FileRecordList
         : public AZStd::vector<FileRecord>
     {
     public:
@@ -97,11 +101,15 @@ namespace AZ::IO::ZipDir
     };
 
     // this is used for refreshing EOFOffsets
-    class FileEntryList
+    class AZF_API FileEntryList
         : public AZStd::set<FileEntry*, FileEntryFileOffsetOrder>
     {
     public:
         FileEntryList(FileEntryTree* pTree, uint32_t lCDROffset);
+
+        FileEntryList(FileEntryList const&) = delete;
+        FileEntryList& operator=(FileEntryList const&) = delete;
+
         // updates each file entry's info about the next file entry
         void RefreshEOFOffsets();
     protected:

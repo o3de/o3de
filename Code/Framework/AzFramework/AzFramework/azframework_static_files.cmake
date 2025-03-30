@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    Archive/ZipDirList.cpp
-    Archive/ZipDirList.h
     DocumentPropertyEditor/Reflection/LegacyReflectionBridgeConstants.cpp
     DocumentPropertyEditor/Reflection/LegacyReflectionBridgeConstants.h
     FileTag/FileTagConstants.cpp
