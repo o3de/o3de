@@ -18,6 +18,10 @@
 #define USE_DRAWSRG_MESHLOD_MESHINDEX 0
 #endif
 
+#ifndef MATERIAL_PIPELINE_DRAW_SRG_MEMBERS
+#define MATERIAL_PIPELINE_DRAW_SRG_MEMBERS
+#endif
+
 #if USE_CUSTOM_DRAW_SRG
 #else
 ShaderResourceGroup DrawSrg : SRG_PerDraw
@@ -34,6 +38,7 @@ ShaderResourceGroup DrawSrg : SRG_PerDraw
     {
         return (m_uvStreamTangentBitmask >> (4 * uvIndex)) & 0xF;
     }
+
+    MATERIAL_PIPELINE_DRAW_SRG_MEMBERS
 }
 #endif
-
