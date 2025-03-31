@@ -531,6 +531,9 @@ namespace AZ
                 // the project would require a rebuild of the cache anyway.
                 const AZ::IO::PathView materialAzsliFilePathView{ materialAzsliFilePath };
                 generatedAzsl += AZStd::string::format("#define MATERIAL_TYPE_AZSLI_FILE_PATH \"%s\" \n", materialAzsliFilePathView.StringAsPosix().c_str());
+                auto materialTypeNameUpper = materialTypeName;
+                AZStd::to_upper(materialTypeNameUpper);
+                generatedAzsl += AZStd::string::format("#define MATERIAL_TYPE_%s 1 \n", materialTypeNameUpper.c_str());
                 generatedAzsl += AZStd::string::format("#include \"%s\" \n", shaderTemplate.m_azsli.c_str());
 
                 AZ::IO::Path shaderName = shaderTemplate.m_shader;
