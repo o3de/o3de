@@ -78,18 +78,18 @@ namespace Vegetation
 
     void DistanceBetweenFilterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationFilterService", 0x9f97cc97));
-        services.push_back(AZ_CRC("VegetationDistanceBetweenFilterService", 0xd9654a5b));
+        services.push_back(AZ_CRC_CE("VegetationFilterService"));
+        services.push_back(AZ_CRC_CE("VegetationDistanceBetweenFilterService"));
     }
 
     void DistanceBetweenFilterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDistanceBetweenFilterService", 0xd9654a5b));
+        services.push_back(AZ_CRC_CE("VegetationDistanceBetweenFilterService"));
     }
 
     void DistanceBetweenFilterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void DistanceBetweenFilterComponent::Reflect(AZ::ReflectContext* context)
@@ -187,7 +187,7 @@ namespace Vegetation
 
     bool DistanceBetweenFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         bool intersects = false;
 

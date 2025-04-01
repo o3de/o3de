@@ -10,9 +10,9 @@
 
 #include <Source/AutoGen/MultiplayerEditor.AutoPacketDispatcher.h>
 #include <AzCore/IO/ByteContainerStream.h>
-#include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzCore/Component/TickBus.h>
+#include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
+#include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
 namespace AzNetworking
 {
@@ -27,7 +27,7 @@ namespace Multiplayer
     {
     public:
         MultiplayerEditorConnection();
-        ~MultiplayerEditorConnection() = default;
+        ~MultiplayerEditorConnection();
 
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReadyForLevelData& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerLevelData& packet);
@@ -50,5 +50,6 @@ namespace Multiplayer
         AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> m_byteStream;
         mutable bool m_isActivated = false;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
+        AZStd::unique_ptr<AzFramework::InMemorySpawnableAssetContainer> m_inMemorySpawnableAssetContainer = nullptr;
     };
 }

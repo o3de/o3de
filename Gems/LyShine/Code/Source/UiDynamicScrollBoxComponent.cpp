@@ -198,11 +198,11 @@ void UiDynamicScrollBoxComponent::RefreshContent()
     {
         // Check if the content's pivot is at the end (bottom or right)
         AZ::EntityId contentEntityId;
-        EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+        UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
         if (contentEntityId.IsValid())
         {
             AZ::Vector2 pivot(0.0f, 0.0f);
-            EBUS_EVENT_ID_RESULT(pivot, contentEntityId, UiTransformBus, GetPivot);
+            UiTransformBus::EventResult(pivot, contentEntityId, &UiTransformBus::Events::GetPivot);
 
             if (m_isVertical)
             {
@@ -349,7 +349,7 @@ void UiDynamicScrollBoxComponent::ScrollToEnd()
 
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (!contentEntityId.IsValid())
     {
@@ -358,7 +358,7 @@ void UiDynamicScrollBoxComponent::ScrollToEnd()
 
     // Get content's parent
     AZ::EntityId contentParentEntityId;
-    EBUS_EVENT_ID_RESULT(contentParentEntityId, contentEntityId, UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(contentParentEntityId, contentEntityId, &UiElementBus::Events::GetParentEntityId);
     if (!contentParentEntityId.IsValid())
     {
         return;
@@ -366,11 +366,11 @@ void UiDynamicScrollBoxComponent::ScrollToEnd()
 
     // Get content's rect in canvas space
     UiTransformInterface::Rect contentRect;
-    EBUS_EVENT_ID(contentEntityId, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, contentRect);
+    UiTransformBus::Event(contentEntityId, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, contentRect);
 
     // Get content parent's rect in canvas space
     UiTransformInterface::Rect parentRect;
-    EBUS_EVENT_ID(contentParentEntityId, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+    UiTransformBus::Event(contentParentEntityId, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
     float scrollDelta = 0.0f;
     if (m_isVertical)
@@ -699,7 +699,7 @@ void UiDynamicScrollBoxComponent::OnUiElementBeingDestroyed()
     {
         if (m_prototypeElement[i].IsValid())
         {
-            EBUS_EVENT_ID(m_prototypeElement[i], UiElementBus, DestroyElement);
+            UiElementBus::Event(m_prototypeElement[i], &UiElementBus::Events::DestroyElement);
             m_prototypeElement[i].SetInvalid();
         }
     }
@@ -743,7 +743,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDynamicScrollBox.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDynamicScrollBox.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoRefreshOnPostActivate, "Refresh on activate",
@@ -754,7 +754,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_variableItemElementSize, "Variable element size",
                 "Whether elements in the list can vary in size. If not, the element size is fixed and is determined by the prototype element.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoCalculateItemElementSize, "Auto calc element size",
                 "Whether element sizes should be auto calculated or whether they should be requested.")
@@ -774,7 +774,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_hasSections, "Enabled",
                 "Whether the list should be divided into sections with headers.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_headerPrototypeElement, "Prototype header",
                 "The prototype element to be used for the section headers in the list.")
@@ -787,7 +787,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_variableHeaderElementSize, "Variable header size",
                 "Whether headers in the list can vary in size. If not, the header size is fixed and is determined by the prototype element.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
             editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoCalculateHeaderElementSize, "Auto calc header size",
                 "Whether header sizes should be auto calculated or whether they should be requested.")
@@ -887,7 +887,7 @@ void UiDynamicScrollBoxComponent::PrepareListForDisplay()
 
     // Set whether list is vertical or horizontal
     m_isVertical = true;
-    EBUS_EVENT_ID_RESULT(m_isVertical, GetEntityId(), UiScrollBoxBus, GetIsVerticalScrollingEnabled);
+    UiScrollBoxBus::EventResult(m_isVertical, GetEntityId(), &UiScrollBoxBus::Events::GetIsVerticalScrollingEnabled);
 
     m_variableElementSize[ElementType::Item] = m_variableItemElementSize;
     m_autoCalculateElementSize[ElementType::Item] = m_variableItemElementSize ? m_autoCalculateItemElementSize : false;
@@ -903,10 +903,10 @@ void UiDynamicScrollBoxComponent::PrepareListForDisplay()
 
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     int numChildren = 0;
-    EBUS_EVENT_ID_RESULT(numChildren, contentEntityId, UiElementBus, GetNumChildElements);
+    UiElementBus::EventResult(numChildren, contentEntityId, &UiElementBus::Events::GetNumChildElements);
 
     // Make sure the item prototype element isn't pointing to itself (the dynamic scroll box) or an ancestor,
     // otherwise this scroll box will spawn scroll boxes recursively ad infinitum.
@@ -928,7 +928,7 @@ void UiDynamicScrollBoxComponent::PrepareListForDisplay()
         if (numChildren > 0)
         {
             AZ::EntityId prototypeEntityId;
-            EBUS_EVENT_ID_RESULT(prototypeEntityId, contentEntityId, UiElementBus, GetChildEntityId, 0);
+            UiElementBus::EventResult(prototypeEntityId, contentEntityId, &UiElementBus::Events::GetChildEntityId, 0);
             m_prototypeElement[ElementType::Item] = prototypeEntityId;
         }
     }
@@ -960,7 +960,8 @@ void UiDynamicScrollBoxComponent::PrepareListForDisplay()
 
             // Store the size of the item prototype element for future content element size calculations
             AZ::Vector2 prototypeElementSize(0.0f, 0.0f);
-            EBUS_EVENT_ID_RESULT(prototypeElementSize, m_prototypeElement[i], UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+            UiTransformBus::EventResult(
+                prototypeElementSize, m_prototypeElement[i], &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
             m_prototypeElementSize[i] = (m_isVertical ? prototypeElementSize.GetY() : prototypeElementSize.GetX());
 
@@ -982,21 +983,21 @@ void UiDynamicScrollBoxComponent::PrepareListForDisplay()
             for (int i = numChildren - 1; i >= 0; i--)
             {
                 AZ::EntityId entityId;
-                EBUS_EVENT_ID_RESULT(entityId, contentEntityId, UiElementBus, GetChildEntityId, i);
+                UiElementBus::EventResult(entityId, contentEntityId, &UiElementBus::Events::GetChildEntityId, i);
 
                 // Remove the child element
                 elementComponent->RemoveChild(entityId);
 
                 if (!IsPrototypeElement(entityId))
                 {
-                    EBUS_EVENT_ID(entityId, UiElementBus, DestroyElement);
+                    UiElementBus::Event(entityId, &UiElementBus::Events::DestroyElement);
                 }
             }
         }
 
         // Get the content's parent
         AZ::EntityId contentParentEntityId;
-        EBUS_EVENT_ID_RESULT(contentParentEntityId, contentEntityId, UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(contentParentEntityId, contentEntityId, &UiElementBus::Events::GetParentEntityId);
 
         // Create an entity that will be used as the sticky header
         m_currentStickyHeader.m_elementIndex = -1;
@@ -1006,7 +1007,7 @@ void UiDynamicScrollBoxComponent::PrepareListForDisplay()
         if (m_hasSections && m_stickyHeaders && contentParentEntityId.IsValid())
         {
             m_currentStickyHeader.m_element = ClonePrototypeElement(ElementType::SectionHeader, contentParentEntityId);
-            EBUS_EVENT_ID(m_currentStickyHeader.m_element, UiElementBus, SetIsEnabled, false);
+            UiElementBus::Event(m_currentStickyHeader.m_element, &UiElementBus::Events::SetIsEnabled, false);
         }
 
         // Listen for canvas space rect changes of the content's parent
@@ -1029,11 +1030,11 @@ AZ::Entity* UiDynamicScrollBoxComponent::GetContentEntity() const
 
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (contentEntityId.IsValid())
     {
-        EBUS_EVENT_RESULT(contentEntity, AZ::ComponentApplicationBus, FindEntity, contentEntityId);
+        AZ::ComponentApplicationBus::BroadcastResult(contentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, contentEntityId);
     }
 
     return contentEntity;
@@ -1046,28 +1047,29 @@ AZ::EntityId UiDynamicScrollBoxComponent::ClonePrototypeElement(ElementType elem
 
     // Clone the prototype element and add it as a child of the specified parent (defaults to content entity)
     AZ::Entity* prototypeEntity = nullptr;
-    EBUS_EVENT_RESULT(prototypeEntity, AZ::ComponentApplicationBus, FindEntity, m_prototypeElement[elementType]);
+    AZ::ComponentApplicationBus::BroadcastResult(
+        prototypeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_prototypeElement[elementType]);
     if (prototypeEntity)
     {
         if (!parentEntityId.IsValid())
         {
             AZ::EntityId contentEntityId;
-            EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+            UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
             parentEntityId = contentEntityId;
         }
 
         // Find the parent entity
         AZ::Entity* parentEntity = nullptr;
-        EBUS_EVENT_RESULT(parentEntity, AZ::ComponentApplicationBus, FindEntity, parentEntityId);
+        AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, parentEntityId);
 
         if (parentEntity)
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
             AZ::Entity* clonedElement = nullptr;
-            EBUS_EVENT_ID_RESULT(clonedElement, canvasEntityId, UiCanvasBus, CloneElement, prototypeEntity, parentEntity);
+            UiCanvasBus::EventResult(clonedElement, canvasEntityId, &UiCanvasBus::Events::CloneElement, prototypeEntity, parentEntity);
 
             if (clonedElement)
             {
@@ -1143,12 +1145,12 @@ void UiDynamicScrollBoxComponent::ResizeContentToFitElements()
         m_sections.clear();
 
         m_numElements = m_defaultNumElements;
-        EBUS_EVENT_ID_RESULT(m_numElements, GetEntityId(), UiDynamicScrollBoxDataBus, GetNumElements);
+        UiDynamicScrollBoxDataBus::EventResult(m_numElements, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetNumElements);
     }
     else
     {
         int numSections = m_defaultNumSections;
-        EBUS_EVENT_ID_RESULT(numSections, GetEntityId(), UiDynamicScrollBoxDataBus, GetNumSections);
+        UiDynamicScrollBoxDataBus::EventResult(numSections, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetNumSections);
         numSections = AZ::GetMax(numSections, 1);
 
         m_sections.clear();
@@ -1157,7 +1159,7 @@ void UiDynamicScrollBoxComponent::ResizeContentToFitElements()
         for (int i = 0; i < numSections; i++)
         {
             int numItems = m_defaultNumElements;
-            EBUS_EVENT_ID_RESULT(numItems, GetEntityId(), UiDynamicScrollBoxDataBus, GetNumElementsInSection, i);
+            UiDynamicScrollBoxDataBus::EventResult(numItems, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetNumElementsInSection, i);
 
             Section section;
             section.m_index = i;
@@ -1231,7 +1233,7 @@ void UiDynamicScrollBoxComponent::ResizeContentElement(float newSize) const
 {
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (!contentEntityId.IsValid())
     {
@@ -1240,7 +1242,7 @@ void UiDynamicScrollBoxComponent::ResizeContentElement(float newSize) const
 
     // Get current content size
     AZ::Vector2 curContentSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(curContentSize, contentEntityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(curContentSize, contentEntityId, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     float curSize = m_isVertical ? curContentSize.GetY() : curContentSize.GetX();
 
@@ -1249,10 +1251,10 @@ void UiDynamicScrollBoxComponent::ResizeContentElement(float newSize) const
         // Resize content element
 
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, contentEntityId, UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, contentEntityId, &UiTransform2dBus::Events::GetOffsets);
 
         AZ::Vector2 pivot;
-        EBUS_EVENT_ID_RESULT(pivot, contentEntityId, UiTransformBus, GetPivot);
+        UiTransformBus::EventResult(pivot, contentEntityId, &UiTransformBus::Events::GetPivot);
 
         float sizeDiff = newSize - curSize;
 
@@ -1267,7 +1269,7 @@ void UiDynamicScrollBoxComponent::ResizeContentElement(float newSize) const
             offsets.m_right += sizeDiff * (1.0f - pivot.GetX());
         }
 
-        EBUS_EVENT_ID(contentEntityId, UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(contentEntityId, &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -1276,7 +1278,7 @@ void UiDynamicScrollBoxComponent::AdjustContentSizeAndScrollOffsetByDelta(float 
 {
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (!contentEntityId.IsValid())
     {
@@ -1285,7 +1287,7 @@ void UiDynamicScrollBoxComponent::AdjustContentSizeAndScrollOffsetByDelta(float 
 
     // Get content size
     AZ::Vector2 contentSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(contentSize, contentEntityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(contentSize, contentEntityId, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     if (sizeDelta != 0.0f)
     {
@@ -1301,7 +1303,7 @@ void UiDynamicScrollBoxComponent::AdjustContentSizeAndScrollOffsetByDelta(float 
 
     // Get scroll offset
     AZ::Vector2 scrollOffset(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(scrollOffset, GetEntityId(), UiScrollBoxBus, GetScrollOffset);
+    UiScrollBoxBus::EventResult(scrollOffset, GetEntityId(), &UiScrollBoxBus::Events::GetScrollOffset);
 
     if (scrollDelta != 0.0f)
     {
@@ -1315,7 +1317,7 @@ void UiDynamicScrollBoxComponent::AdjustContentSizeAndScrollOffsetByDelta(float 
         }
     }
 
-    EBUS_EVENT_ID(GetEntityId(), UiScrollBoxBus, ChangeContentSizeAndScrollOffset, contentSize, scrollOffset);
+    UiScrollBoxBus::Event(GetEntityId(), &UiScrollBoxBus::Events::ChangeContentSizeAndScrollOffset, contentSize, scrollOffset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1338,18 +1340,24 @@ float UiDynamicScrollBoxComponent::CalculateVariableElementSize(int index)
         {
             if (!m_hasSections)
             {
-                EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiDynamicScrollBoxDataBus, GetElementHeight, index);
+                UiDynamicScrollBoxDataBus::EventResult(size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetElementHeight, index);
             }
             else
             {
                 ElementIndexInfo elementIndexInfo = GetElementIndexInfoFromIndex(index);
                 if (elementType == ElementType::Item)
                 {
-                    EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiDynamicScrollBoxDataBus, GetElementInSectionHeight, elementIndexInfo.m_sectionIndex, elementIndexInfo.m_itemIndexInSection);
+                    UiDynamicScrollBoxDataBus::EventResult(
+                        size,
+                        GetEntityId(),
+                        &UiDynamicScrollBoxDataBus::Events::GetElementInSectionHeight,
+                        elementIndexInfo.m_sectionIndex,
+                        elementIndexInfo.m_itemIndexInSection);
                 }
                 else if (elementType == ElementType::SectionHeader)
                 {
-                    EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiDynamicScrollBoxDataBus, GetSectionHeaderHeight, elementIndexInfo.m_sectionIndex);
+                    UiDynamicScrollBoxDataBus::EventResult(
+                        size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetSectionHeaderHeight, elementIndexInfo.m_sectionIndex);
                 }
                 else
                 {
@@ -1361,18 +1369,24 @@ float UiDynamicScrollBoxComponent::CalculateVariableElementSize(int index)
         {
             if (!m_hasSections)
             {
-                EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiDynamicScrollBoxDataBus, GetElementWidth, index);
+                UiDynamicScrollBoxDataBus::EventResult(size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetElementWidth, index);
             }
             else
             {
                 ElementIndexInfo elementIndexInfo = GetElementIndexInfoFromIndex(index);
                 if (elementType == ElementType::Item)
                 {
-                    EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiDynamicScrollBoxDataBus, GetElementInSectionWidth, elementIndexInfo.m_sectionIndex, elementIndexInfo.m_itemIndexInSection);
+                    UiDynamicScrollBoxDataBus::EventResult(
+                        size,
+                        GetEntityId(),
+                        &UiDynamicScrollBoxDataBus::Events::GetElementInSectionWidth,
+                        elementIndexInfo.m_sectionIndex,
+                        elementIndexInfo.m_itemIndexInSection);
                 }
                 else if (elementType == ElementType::SectionHeader)
                 {
-                    EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiDynamicScrollBoxDataBus, GetSectionHeaderWidth, elementIndexInfo.m_sectionIndex);
+                    UiDynamicScrollBoxDataBus::EventResult(
+                        size, GetEntityId(), &UiDynamicScrollBoxDataBus::Events::GetSectionHeaderWidth, elementIndexInfo.m_sectionIndex);
                 }
                 else
                 {
@@ -1391,18 +1405,31 @@ float UiDynamicScrollBoxComponent::CalculateVariableElementSize(int index)
         // Notify listeners to setup this element for auto calculation
         if (!m_hasSections)
         {
-            EBUS_EVENT_ID(GetEntityId(), UiDynamicScrollBoxElementNotificationBus, OnPrepareElementForSizeCalculation, elementForAutoSizeCalculation, index);
+            UiDynamicScrollBoxElementNotificationBus::Event(
+                GetEntityId(),
+                &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareElementForSizeCalculation,
+                elementForAutoSizeCalculation,
+                index);
         }
         else
         {
             ElementIndexInfo elementIndexInfo = GetElementIndexInfoFromIndex(index);
             if (elementType == ElementType::Item)
             {
-                EBUS_EVENT_ID(GetEntityId(), UiDynamicScrollBoxElementNotificationBus, OnPrepareElementInSectionForSizeCalculation, elementForAutoSizeCalculation, elementIndexInfo.m_sectionIndex, elementIndexInfo.m_itemIndexInSection);
+                UiDynamicScrollBoxElementNotificationBus::Event(
+                    GetEntityId(),
+                    &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareElementInSectionForSizeCalculation,
+                    elementForAutoSizeCalculation,
+                    elementIndexInfo.m_sectionIndex,
+                    elementIndexInfo.m_itemIndexInSection);
             }
             else if (elementType == ElementType::SectionHeader)
             {
-                EBUS_EVENT_ID(GetEntityId(), UiDynamicScrollBoxElementNotificationBus, OnPrepareSectionHeaderForSizeCalculation, elementForAutoSizeCalculation, elementIndexInfo.m_sectionIndex);
+                UiDynamicScrollBoxElementNotificationBus::Event(
+                    GetEntityId(),
+                    &UiDynamicScrollBoxElementNotificationBus::Events::OnPrepareSectionHeaderForSizeCalculation,
+                    elementForAutoSizeCalculation,
+                    elementIndexInfo.m_sectionIndex);
             }
             else
             {
@@ -1636,7 +1663,7 @@ void UiDynamicScrollBoxComponent::ClearDisplayedElements()
         m_recycledElements[elementType].push_front(e.m_element);
 
         // Disable element
-        EBUS_EVENT_ID(e.m_element, UiElementBus, SetIsEnabled, false);
+        UiElementBus::Event(e.m_element, &UiElementBus::Events::SetIsEnabled, false);
     }
 
     m_displayedElements.clear();
@@ -1671,7 +1698,7 @@ float UiDynamicScrollBoxComponent::GetVisibleAreaSize() const
 
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (!contentEntityId.IsValid())
     {
@@ -1680,7 +1707,7 @@ float UiDynamicScrollBoxComponent::GetVisibleAreaSize() const
 
     // Get content's parent
     AZ::EntityId contentParentEntityId;
-    EBUS_EVENT_ID_RESULT(contentParentEntityId, contentEntityId, UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(contentParentEntityId, contentEntityId, &UiElementBus::Events::GetParentEntityId);
     if (!contentParentEntityId.IsValid())
     {
         return visibleAreaSize;
@@ -1688,7 +1715,7 @@ float UiDynamicScrollBoxComponent::GetVisibleAreaSize() const
 
     // Get content parent's size in canvas space
     AZ::Vector2 contentParentSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(contentParentSize, contentParentEntityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(contentParentSize, contentParentEntityId, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     if (m_isVertical)
     {
@@ -1712,7 +1739,7 @@ bool UiDynamicScrollBoxComponent::AreAnyElementsVisible(AZ::Vector2& visibleCont
 
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (!contentEntityId.IsValid())
     {
@@ -1721,7 +1748,7 @@ bool UiDynamicScrollBoxComponent::AreAnyElementsVisible(AZ::Vector2& visibleCont
 
     // Get content's parent
     AZ::EntityId contentParentEntityId;
-    EBUS_EVENT_ID_RESULT(contentParentEntityId, contentEntityId, UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(contentParentEntityId, contentEntityId, &UiElementBus::Events::GetParentEntityId);
     if (!contentParentEntityId.IsValid())
     {
         return false;
@@ -1729,11 +1756,11 @@ bool UiDynamicScrollBoxComponent::AreAnyElementsVisible(AZ::Vector2& visibleCont
 
     // Get content's rect in canvas space
     UiTransformInterface::Rect contentRect;
-    EBUS_EVENT_ID(contentEntityId, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, contentRect);
+    UiTransformBus::Event(contentEntityId, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, contentRect);
 
     // Get content parent's rect in canvas space
     UiTransformInterface::Rect parentRect;
-    EBUS_EVENT_ID(contentParentEntityId, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+    UiTransformBus::Event(contentParentEntityId, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
     // Check if any items are visible
     AZ::Vector2 minA(contentRect.left, contentRect.top);
@@ -1824,7 +1851,7 @@ void UiDynamicScrollBoxComponent::UpdateElementVisibility(bool keepAtEndIfWasAtE
             m_recycledElements[e.m_type].push_front(e.m_element);
 
             // Disable element
-            EBUS_EVENT_ID(e.m_element, UiElementBus, SetIsEnabled, false);
+            UiElementBus::Event(e.m_element, &UiElementBus::Events::SetIsEnabled, false);
 
             // Remove element from the displayed element list
             return true;
@@ -1865,17 +1892,27 @@ void UiDynamicScrollBoxComponent::UpdateElementVisibility(bool keepAtEndIfWasAtE
                 // Notify listeners that this element is about to be displayed
                 if (!m_hasSections)
                 {
-                    EBUS_EVENT_ID(GetEntityId(), UiDynamicScrollBoxElementNotificationBus, OnElementBecomingVisible, element, i);
+                    UiDynamicScrollBoxElementNotificationBus::Event(
+                        GetEntityId(), &UiDynamicScrollBoxElementNotificationBus::Events::OnElementBecomingVisible, element, i);
                 }
                 else
                 {
                     if (elementType == ElementType::Item)
                     {
-                        EBUS_EVENT_ID(GetEntityId(), UiDynamicScrollBoxElementNotificationBus, OnElementInSectionBecomingVisible, element, elementIndexInfo.m_sectionIndex, elementIndexInfo.m_itemIndexInSection);
+                        UiDynamicScrollBoxElementNotificationBus::Event(
+                            GetEntityId(),
+                            &UiDynamicScrollBoxElementNotificationBus::Events::OnElementInSectionBecomingVisible,
+                            element,
+                            elementIndexInfo.m_sectionIndex,
+                            elementIndexInfo.m_itemIndexInSection);
                     }
                     else if (elementType == ElementType::SectionHeader)
                     {
-                        EBUS_EVENT_ID(GetEntityId(), UiDynamicScrollBoxElementNotificationBus, OnSectionHeaderBecomingVisible, element, elementIndexInfo.m_sectionIndex);
+                        UiDynamicScrollBoxElementNotificationBus::Event(
+                            GetEntityId(),
+                            &UiDynamicScrollBoxElementNotificationBus::Events::OnSectionHeaderBecomingVisible,
+                            element,
+                            elementIndexInfo.m_sectionIndex);
                     }
                     else
                     {
@@ -2013,7 +2050,7 @@ void UiDynamicScrollBoxComponent::UpdateStickyHeader(int firstVisibleElementInde
         {
             if (m_currentStickyHeader.m_elementIndex < 0)
             {
-                EBUS_EVENT_ID(m_currentStickyHeader.m_element, UiElementBus, SetIsEnabled, true);
+                UiElementBus::Event(m_currentStickyHeader.m_element, &UiElementBus::Events::SetIsEnabled, true);
             }
 
             m_currentStickyHeader.m_elementIndex = newStickyHeaderElementIndex;
@@ -2024,7 +2061,11 @@ void UiDynamicScrollBoxComponent::UpdateStickyHeader(int firstVisibleElementInde
                 SizeVariableElementAtIndex(m_currentStickyHeader.m_element, m_currentStickyHeader.m_elementIndex);
             }
 
-            EBUS_EVENT_ID(GetEntityId(), UiDynamicScrollBoxElementNotificationBus, OnSectionHeaderBecomingVisible, m_currentStickyHeader.m_element, m_currentStickyHeader.m_indexInfo.m_sectionIndex);
+            UiDynamicScrollBoxElementNotificationBus::Event(
+                GetEntityId(),
+                &UiDynamicScrollBoxElementNotificationBus::Events::OnSectionHeaderBecomingVisible,
+                m_currentStickyHeader.m_element,
+                m_currentStickyHeader.m_indexInfo.m_sectionIndex);
         }
 
         float stickyHeaderOffset = 0.0f;
@@ -2055,7 +2096,7 @@ void UiDynamicScrollBoxComponent::UpdateStickyHeader(int firstVisibleElementInde
         m_currentStickyHeader.m_indexInfo.m_sectionIndex = -1;
 
         // Hide the sticky header
-        EBUS_EVENT_ID(m_currentStickyHeader.m_element, UiElementBus, SetIsEnabled, false);
+        UiElementBus::Event(m_currentStickyHeader.m_element, &UiElementBus::Events::SetIsEnabled, false);
     }
 }
 
@@ -2579,7 +2620,7 @@ float UiDynamicScrollBoxComponent::CalculateContentBeginningDeltaAfterSizeChange
 {
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (!contentEntityId.IsValid())
     {
@@ -2588,13 +2629,13 @@ float UiDynamicScrollBoxComponent::CalculateContentBeginningDeltaAfterSizeChange
 
     // Get current content size
     AZ::Vector2 curContentSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(curContentSize, contentEntityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(curContentSize, contentEntityId, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     UiTransform2dInterface::Offsets offsets;
-    EBUS_EVENT_ID_RESULT(offsets, contentEntityId, UiTransform2dBus, GetOffsets);
+    UiTransform2dBus::EventResult(offsets, contentEntityId, &UiTransform2dBus::Events::GetOffsets);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, contentEntityId, UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, contentEntityId, &UiTransformBus::Events::GetPivot);
 
     float beginningDelta = 0.0f;
     if (m_isVertical)
@@ -2614,7 +2655,7 @@ float UiDynamicScrollBoxComponent::CalculateContentEndDeltaAfterSizeChange(float
 {
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (!contentEntityId.IsValid())
     {
@@ -2623,13 +2664,13 @@ float UiDynamicScrollBoxComponent::CalculateContentEndDeltaAfterSizeChange(float
 
     // Get current content size
     AZ::Vector2 curContentSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(curContentSize, contentEntityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(curContentSize, contentEntityId, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     UiTransform2dInterface::Offsets offsets;
-    EBUS_EVENT_ID_RESULT(offsets, contentEntityId, UiTransform2dBus, GetOffsets);
+    UiTransform2dBus::EventResult(offsets, contentEntityId, &UiTransform2dBus::Events::GetOffsets);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, contentEntityId, UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, contentEntityId, &UiTransformBus::Events::GetPivot);
 
     float endDelta = 0.0f;
     if (m_isVertical)
@@ -2651,7 +2692,7 @@ bool UiDynamicScrollBoxComponent::IsScrolledToEnd() const
 {
     // Find the content element
     AZ::EntityId contentEntityId;
-    EBUS_EVENT_ID_RESULT(contentEntityId, GetEntityId(), UiScrollBoxBus, GetContentEntity);
+    UiScrollBoxBus::EventResult(contentEntityId, GetEntityId(), &UiScrollBoxBus::Events::GetContentEntity);
 
     if (!contentEntityId.IsValid())
     {
@@ -2660,7 +2701,7 @@ bool UiDynamicScrollBoxComponent::IsScrolledToEnd() const
 
     // Get content's parent
     AZ::EntityId contentParentEntityId;
-    EBUS_EVENT_ID_RESULT(contentParentEntityId, contentEntityId, UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(contentParentEntityId, contentEntityId, &UiElementBus::Events::GetParentEntityId);
     if (!contentParentEntityId.IsValid())
     {
         return false;
@@ -2668,11 +2709,11 @@ bool UiDynamicScrollBoxComponent::IsScrolledToEnd() const
 
     // Get content's rect in canvas space
     UiTransformInterface::Rect contentRect;
-    EBUS_EVENT_ID(contentEntityId, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, contentRect);
+    UiTransformBus::Event(contentEntityId, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, contentRect);
 
     // Get content parent's rect in canvas space
     UiTransformInterface::Rect parentRect;
-    EBUS_EVENT_ID(contentParentEntityId, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+    UiTransformBus::Event(contentParentEntityId, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
     bool scrolledToEnd = false;
     if (m_isVertical)
@@ -2710,7 +2751,7 @@ AZ::EntityId UiDynamicScrollBoxComponent::GetElementForDisplay(ElementType eleme
         m_recycledElements[elementType].pop_front();
 
         // Enable element
-        EBUS_EVENT_ID(element, UiElementBus, SetIsEnabled, true);
+        UiElementBus::Event(element, &UiElementBus::Events::SetIsEnabled, true);
     }
     else
     {
@@ -2730,7 +2771,7 @@ AZ::EntityId UiDynamicScrollBoxComponent::GetElementForAutoSizeCalculation(Eleme
     else
     {
         // Enable element
-        EBUS_EVENT_ID(m_clonedElementForAutoSizeCalculation[elementType], UiElementBus, SetIsEnabled, true);
+        UiElementBus::Event(m_clonedElementForAutoSizeCalculation[elementType], &UiElementBus::Events::SetIsEnabled, true);
     }
 
     return m_clonedElementForAutoSizeCalculation[elementType];
@@ -2744,7 +2785,7 @@ void UiDynamicScrollBoxComponent::DisableElementsForAutoSizeCalculation() const
         if (m_clonedElementForAutoSizeCalculation[i].IsValid())
         {
             // Disable element
-            EBUS_EVENT_ID(m_clonedElementForAutoSizeCalculation[i], UiElementBus, SetIsEnabled, false);
+            UiElementBus::Event(m_clonedElementForAutoSizeCalculation[i], &UiElementBus::Events::SetIsEnabled, false);
         }
     }
 }
@@ -2771,7 +2812,7 @@ void UiDynamicScrollBoxComponent::SizeVariableElementAtIndex(AZ::EntityId elemen
 {
     // Get current element size
     AZ::Vector2 curElementSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(curElementSize, element, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(curElementSize, element, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     float curSize = m_isVertical ? curElementSize.GetY() : curElementSize.GetX();
 
@@ -2783,10 +2824,10 @@ void UiDynamicScrollBoxComponent::SizeVariableElementAtIndex(AZ::EntityId elemen
         // Resize the element
 
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, element, UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, element, &UiTransform2dBus::Events::GetOffsets);
 
         AZ::Vector2 pivot;
-        EBUS_EVENT_ID_RESULT(pivot, element, UiTransformBus, GetPivot);
+        UiTransformBus::EventResult(pivot, element, &UiTransformBus::Events::GetPivot);
 
         float sizeDiff = newSize - curSize;
 
@@ -2801,7 +2842,7 @@ void UiDynamicScrollBoxComponent::SizeVariableElementAtIndex(AZ::EntityId elemen
             offsets.m_right += sizeDiff * (1.0f - pivot.GetX());
         }
 
-        EBUS_EVENT_ID(element, UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(element, &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -2819,7 +2860,7 @@ void UiDynamicScrollBoxComponent::SetElementAnchors(AZ::EntityId element) const
 {
     // Get the element anchors
     UiTransform2dInterface::Anchors anchors;
-    EBUS_EVENT_ID_RESULT(anchors, element, UiTransform2dBus, GetAnchors);
+    UiTransform2dBus::EventResult(anchors, element, &UiTransform2dBus::Events::GetAnchors);
 
     if (m_isVertical)
     {
@@ -2834,7 +2875,7 @@ void UiDynamicScrollBoxComponent::SetElementAnchors(AZ::EntityId element) const
         anchors.m_right = 0.0f;
     }
 
-    EBUS_EVENT_ID(element, UiTransform2dBus, SetAnchors, anchors, false, false);
+    UiTransform2dBus::Event(element, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2842,7 +2883,7 @@ void UiDynamicScrollBoxComponent::SetElementOffsets(AZ::EntityId element, float 
 {
     // Get the element offsets
     UiTransform2dInterface::Offsets offsets;
-    EBUS_EVENT_ID_RESULT(offsets, element, UiTransform2dBus, GetOffsets);
+    UiTransform2dBus::EventResult(offsets, element, &UiTransform2dBus::Events::GetOffsets);
 
     if ((m_isVertical && offsets.m_top != offset) || (!m_isVertical && offsets.m_left != offset))
     {
@@ -2859,7 +2900,7 @@ void UiDynamicScrollBoxComponent::SetElementOffsets(AZ::EntityId element, float 
             offsets.m_right = offsets.m_left + width;
         }
 
-        EBUS_EVENT_ID(element, UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(element, &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -2931,11 +2972,11 @@ AZ::EntityId UiDynamicScrollBoxComponent::GetImmediateContentChildFromDescendant
     {
         immediateChild = childElement;
         AZ::Entity* parent = nullptr;
-        EBUS_EVENT_ID_RESULT(parent, immediateChild, UiElementBus, GetParent);
+        UiElementBus::EventResult(parent, immediateChild, &UiElementBus::Events::GetParent);
         while (parent && parent != contentEntity)
         {
             immediateChild = parent->GetId();
-            EBUS_EVENT_ID_RESULT(parent, immediateChild, UiElementBus, GetParent);
+            UiElementBus::EventResult(parent, immediateChild, &UiElementBus::Events::GetParent);
         }
 
         if (parent != contentEntity)

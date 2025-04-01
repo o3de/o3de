@@ -15,6 +15,7 @@
 #include <Config/SceneProcessingConfigBus.h>
 #include <Config/SettingsObjects/SoftNameSetting.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Events/ScriptConfigEventBus.h>
 
 namespace AZ
 {
@@ -22,11 +23,13 @@ namespace AZ
 
     namespace SceneProcessingConfig
     {
+        inline constexpr const char* AssetProcessorDefaultScriptsKey{ "/O3DE/AssetProcessor/SceneBuilder/defaultScripts" };
+
         class SceneProcessingConfigSystemComponentSerializationEvents
             : public SerializeContext::IEventHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(SceneProcessingConfigSystemComponentSerializationEvents, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SceneProcessingConfigSystemComponentSerializationEvents, SystemAllocator);
 
             void OnWriteBegin(void* classPtr) override;
         };
@@ -35,9 +38,13 @@ namespace AZ
             : public AZ::SceneAPI::SceneCore::SceneSystemComponent
             , protected SceneProcessingConfigRequestBus::Handler
             , public AZ::SceneAPI::Events::AssetImportRequestBus::Handler
+            , public AZ::SceneAPI::Events::ScriptConfigEventBus::Handler
         {
         public:
             AZ_COMPONENT(SceneProcessingConfigSystemComponent, "{80FE1130-91B4-44D4-869F-859BB996161A}", AZ::SceneAPI::SceneCore::SceneSystemComponent);
+
+            static constexpr const char AssetProcessorDefaultNodeSoftNameSettingsKey[] = "/O3DE/AssetProcessor/SceneBuilder/NodeSoftNameSettings";
+            static constexpr const char AssetProcessorDefaultFileSoftNameSettingsKey[] = "/O3DE/AssetProcessor/SceneBuilder/FileSoftNameSettings";
 
             SceneProcessingConfigSystemComponent();
             ~SceneProcessingConfigSystemComponent();
@@ -48,7 +55,7 @@ namespace AZ
             void Clear();
 
             // SceneProcessingConfigRequestBus START
-            const AZStd::vector<SoftNameSetting*>* GetSoftNames() override;
+            const AZStd::vector<AZStd::unique_ptr<SoftNameSetting>>* GetSoftNames() override;
             bool AddNodeSoftName(const char* pattern,
                 SceneAPI::SceneCore::PatternMatcher::MatchApproach approach,
                 const char* virtualType, bool includeChildren) override;
@@ -56,7 +63,18 @@ namespace AZ
                 const char* virtualType, bool inclusive, const AZStd::string& graphObjectTypeName) override;
             // SceneProcessingConfigRequestBus END
 
+            // AssetImportRequestBus START
             void AreCustomNormalsUsed(bool &value) override;
+            void GetPolicyName(AZStd::string& result) const override
+            {
+                result = "SceneProcessingConfigSystemComponent";
+            }
+            // AssetImportRequestBus END
+
+            // AZ::SceneAPI::Events::ScriptConfigEventBus START
+            void GetScriptConfigList(AZStd::vector<SceneAPI::Events::ScriptConfig>& scriptConfigList) const override;
+            AZStd::optional<SceneAPI::Events::ScriptConfig> MatchesScriptConfig(const AZStd::string& sourceFile) const override;
+            // AZ::SceneAPI::Events::ScriptConfigEventBus END
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -66,15 +84,25 @@ namespace AZ
             static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
 
         private:
-            /// It is the responsibility of the caller to delete newSoftname if this method returns
-            /// false.
-            bool AddSoftName(SoftNameSetting* newSoftname);
+            //unique_ptr cannot be copied -> vector of unique_ptrs cannot be copied -> class cannot be copied
+            SceneProcessingConfigSystemComponent(const SceneProcessingConfigSystemComponent&) = delete;
+
+            bool AddSoftName(AZStd::unique_ptr<SoftNameSetting> newSoftname);
+
+            void PopulateSoftNameSettings();
+
+            template<class SoftNameSettingsType>
+            bool AddSoftNameSettingsFromSettingsRegistry(
+                AZ::SettingsRegistryInterface* settingsRegistry, AZStd::string_view settingRegistryKey);
+
+            void LoadScriptSettings();
 
             static void ReflectSceneModule(ReflectContext* context, const AZStd::unique_ptr<DynamicModuleHandle>& module);
             static void ActivateSceneModule(const AZStd::unique_ptr<DynamicModuleHandle>& module);
             static void DeactivateSceneModule(const AZStd::unique_ptr<DynamicModuleHandle>& module);
 
-            AZStd::vector<SoftNameSetting*> m_softNames;
+            AZStd::vector<AZ::SceneAPI::Events::ScriptConfig> m_scriptConfigList;
+            AZStd::vector<AZStd::unique_ptr<SoftNameSetting>> m_softNames;
             bool m_UseCustomNormals;
         };
     } // namespace SceneProcessingConfig

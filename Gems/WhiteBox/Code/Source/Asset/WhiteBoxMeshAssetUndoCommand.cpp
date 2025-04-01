@@ -11,7 +11,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxMeshAssetUndoCommand, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxMeshAssetUndoCommand, AZ::SystemAllocator);
 
     WhiteBoxMeshAssetUndoCommand::WhiteBoxMeshAssetUndoCommand()
         : AzToolsFramework::UndoSystem::URSequencePoint("WhiteBoxMeshAssetUndoCommand")

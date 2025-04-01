@@ -13,8 +13,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 
-class CEntityObject;
-
 namespace AzToolsFramework
 {
     /**
@@ -25,9 +23,6 @@ namespace AzToolsFramework
     {
     public:
         virtual ~ComponentEntityEditorRequests() {}
-
-        /// Retrieve sandbox object associated with the entity.
-        virtual CEntityObject* GetSandboxObject() = 0;
 
         /// Returns true if the object is highlighted.
         virtual bool IsSandboxObjectHighlighted() = 0;
@@ -64,9 +59,6 @@ namespace AzToolsFramework
 
         /// Retrieve AZ Entity Id associated with this sandbox object.
         virtual AZ::EntityId GetAssociatedEntityId() = 0;
-
-        /// Updates the undo cache for this sandbox object
-        virtual void UpdatePreemptiveUndoCache() = 0;
     };
 
     using ComponentEntityObjectRequestBus = AZ::EBus < ComponentEntityObjectRequests >;

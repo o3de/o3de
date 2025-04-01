@@ -14,108 +14,22 @@
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
-#include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
 #include <Source/Framework/ScriptCanvasTestFixture.h>
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
 #include <Source/ScriptCanvasTestBus.h>
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
 using namespace ScriptCanvas;
 using namespace ScriptCanvasTests;
 using namespace TestNodes;
 using namespace ScriptCanvas::Execution;
 
-// TEST_F(ScriptCanvasTestFixture, NativeNodeableStack)
-// {
-//     TestNodeableObject nodeable;
-//     nodeable.Initialize();
-// 
-//     bool wasTrueCalled = false;
-//     bool wasFalseCalled = false;
-//         
-//     nodeable.SetExecutionOut
-//         ( AZ_CRC("BranchTrue", 0xd49f121c)
-//         , CreateOut
-//             ([&wasTrueCalled](ExecutionState&, Data::BooleanType condition, const Data::StringType& message)
-//             {
-//                 EXPECT_TRUE(condition);
-//                 EXPECT_EQ(message, AZStd::string("called the true version!"));
-//                 wasTrueCalled = true;
-//             }
-//             , StackAllocatorType{}));
-// 
-//     nodeable.SetExecutionOut
-//         ( AZ_CRC("BranchFalse", 0xaceca8bc)
-//         , CreateOut
-//             ([&wasFalseCalled](ExecutionState&, Data::BooleanType condition, const Data::StringType& message, const Data::Vector3Type& vector)
-//             {
-//                 EXPECT_FALSE(condition);
-//                 EXPECT_EQ(message, AZStd::string("called the false version!"));
-//                 EXPECT_EQ(vector, AZ::Vector3(1, 2, 3));
-//                 wasFalseCalled = true;
-//             }
-//             , StackAllocatorType{}));
-// 
-//     nodeable.Branch(true);
-//     nodeable.Branch(false);
-// 
-//     EXPECT_TRUE(wasTrueCalled);
-//     EXPECT_TRUE(wasFalseCalled);
-// }
-
-// 
-// TEST_F(ScriptCanvasTestFixture, NativeNodeableHeap)
-// {
-//     TestNodeableObject nodeable;
-//     nodeable.Initialize();
-//     
-//     AZStd::string routedArg("XYZ");
-//     AZStd::array<int, 2048> bigArray;
-//     std::fill(bigArray.begin(), bigArray.end(), 0);
-//     
-//     bigArray[0] = 7;
-//     bigArray[2047] = 7;
-// 
-//     EXPECT_EQ(bigArray[0], 7);
-//     EXPECT_EQ(bigArray[2047], 7);
-// 
-//     bool isHeapCalled = false;
-// 
-//     nodeable.SetExecutionOut
-//         ( AZ_CRC("BranchTrue", 0xd49f121c)
-//         , CreateOut
-//             ([routedArg, &isHeapCalled, bigArray](ExecutionState&, Data::BooleanType condition, const Data::StringType& message) mutable
-//             {
-//                 EXPECT_EQ(message, AZStd::string("called the true version!"));
-//                 routedArg = message;
-//                 isHeapCalled = true;
-//                 EXPECT_EQ(bigArray[0], 7);
-//                 EXPECT_EQ(bigArray[2047], 7);
-//                 bigArray[0] = 9;
-//                 bigArray[2047] = 9;
-//                 EXPECT_EQ(bigArray[0], 9);
-//                 EXPECT_EQ(bigArray[2047], 9);
-//             }
-//             , HeapAllocatorType{}));
-// 
-// 
-//     bigArray[0] = 8;
-//     bigArray[2047] = 8;
-//     EXPECT_EQ(bigArray[0], 8);
-//     EXPECT_EQ(bigArray[2047], 8);
-//     
-//     nodeable.Branch(true);
-//     EXPECT_TRUE(isHeapCalled);
-// 
-//     // just making sure no crash occurs on unconnected outs
-//     nodeable.Branch(false);
-// }
-
 class Grandparent
 {
 public:
     AZ_RTTI(Grandparent, "{76EF13EE-7F5E-41C8-A789-A86836D66D10}");
-    AZ_CLASS_ALLOCATOR(Grandparent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Grandparent, AZ::SystemAllocator);
 
     virtual ~Grandparent() = default;
 
@@ -145,7 +59,7 @@ class Parent
 {
 public:
     AZ_RTTI(Parent, "{2ABA91B7-24F7-495A-ACC6-4F93DE47B507}", Grandparent);
-    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator);
 
     ~Parent() override = default;
 
@@ -174,7 +88,7 @@ class Child
 {
 public:
     AZ_RTTI(Child, "{826DB77C-11B7-42C4-8F3F-3438AFE5B29B}", Parent);
-    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator);
 
     ~Child() override = default;
 
@@ -265,6 +179,11 @@ public:
 //     EXPECT_DEATH(CreateIdFromStringFast("0123ABCD4567EFAB0123ABCD4567EFAB0"), "");
 // }
 
+TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
+}
+
 TEST_F(ScriptCanvasTestFixture, TypeInheritance)
 {
     using namespace ScriptCanvas;
@@ -309,12 +228,36 @@ TEST_F(ScriptCanvasTestFixture, TypeInheritance)
     EXPECT_TRUE(childType.IS_EXACTLY_A(childType2));
 }
 
+TEST_F(ScriptCanvasTestFixture, TestLuaStringHandling)
+{
+    AZ::ScriptContext sc;
+    AZStd::string testingStrings[11] = {
+        "test",
+        "test]",
+        "[test]",
+        "=[test]=",
+        "[=[test]=]",
+        "[==[=[test]=]==]",
+        "==[=[test]=]==",
+        "test]=",
+        "[=[==[test]==]=]",
+        "[===[=[==[test]==]=]===]",
+        "\"\\/.'].["
+    };
+
+    for (AZStd::string item : testingStrings)
+    {
+        AZStd::string safeStringLiteral = Translation::MakeRuntimeSafeStringLiteral(item);
+        EXPECT_TRUE(sc.Execute(AZStd::string::format("print(%s)", safeStringLiteral.c_str()).c_str()));
+    }
+}
+
 // \todo turn this into a unit test nodeable that adds a unit test failure on destruction if it was never triggered (or triggered the required number of times)
 class Marker
 {
 public:
     AZ_TYPE_INFO(Marker, "{BEEB4BF4-81B8-45A0-AD3F-D1875703315B}");
-    AZ_CLASS_ALLOCATOR(Marker, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Marker, AZ::SystemAllocator);
 
     static AZStd::vector<int> s_markedPositions;
     

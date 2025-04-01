@@ -1,0 +1,55 @@
+{
+    "description": "Material Type with properties used to define Base PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 1,
+    "versionUpdates": [
+        {
+            "toVersion": 1,
+            "actions": [
+                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"},
+                {"op": "setValue", "name": "irradiance.irradianceColorSource", "value": "Manual"}
+            ]
+        }
+    ],
+    "propertyLayout": {
+        "propertyGroups": [
+            { 
+                "$import": "MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/VertexColorPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/MetallicPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/SpecularPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/NormalPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/UvPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/SilhouetteBlockerPropertyGroup.json"
+            }
+        ]
+    },
+    "lightingModel": "Base",
+    "materialShaderCode": "BasePBR.azsli",
+    "functors": [
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

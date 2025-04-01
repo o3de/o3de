@@ -11,7 +11,6 @@
 
 #include <AzCore/Component/EntityId.h>
 
-#include <QPushButton>
 #include <QVBoxLayout>
 
 namespace GradientSignal
@@ -22,14 +21,14 @@ namespace GradientSignal
 
     AZ::u32 GradientPreviewDataWidgetHandler::GetHandlerName() const
     {
-        return AZ_CRC("GradientPreviewer", 0x1dbbba45);
+        return AZ_CRC_CE("GradientPreviewer");
     }
 
     void GradientPreviewDataWidgetHandler::ConsumeAttribute(GradientPreviewDataWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName)
     {
         (void)debugName;
 
-        if (attrib == AZ_CRC("GradientFilter", 0x99bf0362))
+        if (attrib == AZ_CRC_CE("GradientFilter"))
         {
             GradientPreviewWidget::SampleFilterFunc filterFunc;
             if (attrValue->Read<GradientPreviewWidget::SampleFilterFunc>(filterFunc))
@@ -37,7 +36,7 @@ namespace GradientSignal
                 GUI->SetGradientSampleFilter(filterFunc);
             }
         }
-        else if (attrib == AZ_CRC("GradientSampler", 0xaec97010))
+        else if (attrib == AZ_CRC_CE("GradientSampler"))
         {
             GradientSampler* sampler = nullptr;
             if (attrValue->Read<GradientSampler*>(sampler) && sampler)
@@ -45,7 +44,7 @@ namespace GradientSignal
                 GUI->SetGradientSampler(*sampler);
             }
         }
-        else if (attrib == AZ_CRC("GradientEntity", 0xe8531817))
+        else if (attrib == AZ_CRC_CE("GradientEntity"))
         {
             AZ::EntityId id;
             if (attrValue->Read<AZ::EntityId>(id))
@@ -110,16 +109,18 @@ namespace GradientSignal
         layout->setContentsMargins(QMargins());
         layout->setAlignment(Qt::AlignHCenter);
 
-        m_preview = new GradientPreviewWidget(this);
+        constexpr bool enablePopout = true;
+        m_preview = new GradientPreviewWidget(this, enablePopout);
         m_preview->setFixedSize(256, 256);
         layout->addWidget(m_preview);
 
-        QPushButton* popout = new QPushButton("Show Larger Preview");
-        layout->addWidget(popout);
-        connect(popout, &QPushButton::clicked, this, [this]()
+        QObject::connect(m_preview, &GradientPreviewWidget::popoutClicked, this, [this]()
         {
             delete m_previewWindow;
             m_previewWindow = new GradientPreviewWidget;
+
+            // Make sure our popout preview always stays on top
+            m_previewWindow->setWindowFlag(Qt::WindowStaysOnTopHint, true);
 
             // We need to call show() once before the resize to initialize the window frame width/height,
             // so that way the resize correctly takes them into account.  We then call show() a second time

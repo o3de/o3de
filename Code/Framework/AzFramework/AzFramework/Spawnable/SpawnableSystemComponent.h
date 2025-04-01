@@ -68,6 +68,7 @@ namespace AzFramework
         uint64_t AssignRootSpawnable(AZ::Data::Asset<Spawnable> rootSpawnable) override;
         void ReleaseRootSpawnable() override;
         void ProcessSpawnableQueue() override;
+        void ProcessSpawnableQueueUntilEmpty() override;
 
         //
         // RootSpawnbleNotificationBus
@@ -76,7 +77,7 @@ namespace AzFramework
         void OnRootSpawnableAssigned(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReady(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
-        
+
     protected:
         void Activate() override;
         void Deactivate() override;
@@ -92,3 +93,4 @@ namespace AzFramework
         AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
     };
 } // namespace AzFramework
+

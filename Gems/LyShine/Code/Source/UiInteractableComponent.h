@@ -20,7 +20,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 // Forward declarations
 class ISprite;
@@ -82,6 +82,8 @@ public: // member functions
     void SetPressedActionName(const LyShine::ActionName& actionName) override;
     const LyShine::ActionName& GetReleasedActionName() override;
     void SetReleasedActionName(const LyShine::ActionName& actionName) override;
+    const LyShine::ActionName& GetOutsideReleasedActionName() const override;
+    void SetOutsideReleasedActionName(const LyShine::ActionName& actionName) override;
     OnActionCallback GetHoverStartActionCallback() override;
     void SetHoverStartActionCallback(OnActionCallback onActionCallback) override;
     OnActionCallback GetHoverEndActionCallback() override;
@@ -118,7 +120,7 @@ protected: // member functions
     void TriggerHoverStartAction();
     void TriggerHoverEndAction();
     void TriggerPressedAction();
-    void TriggerReleasedAction();
+    void TriggerReleasedAction(bool releasedOutside = false);
     void TriggerReceivedHoverByNavigatingFromDescendantAction(AZ::EntityId descendantEntityId);
 
     virtual bool IsAutoActivationSupported();
@@ -149,6 +151,9 @@ protected: // data members
     //! Action triggered on release
     LyShine::ActionName m_releasedActionName;
 
+    //! Action triggered on release outside
+    LyShine::ActionName m_outsideReleasedActionName;
+
     //! If true, the interactable automatically becomes active when navigated to via gamepad/keyboard.
     //! Otherwise, a key press is needed to put the interactable in an active state 
     bool m_isAutoActivationEnabled;
@@ -170,6 +175,9 @@ protected: // data members
 
     //! the viewport position at which the press event occured (only valid if m_isPressed is true)
     AZ::Vector2 m_pressedPoint;
+
+    //! the multitouch position at which the press event occured (only valid if m_isPressed is true)
+    int m_pressedMultiTouchIndex;
 
     //! The current interactable state. This is stored so that we can detect state changes.
     UiInteractableStatesInterface::State m_state;

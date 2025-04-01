@@ -47,7 +47,7 @@ namespace ScriptCanvasEditor
 
     HighlightElementValidationEffect::HighlightElementValidationEffect()
     {
-        m_templateConfiguration.m_blurRadius = 5;
+        m_templateConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
         m_templateConfiguration.m_pen = QPen();
         m_templateConfiguration.m_pen.setBrush(Qt::red);
@@ -591,7 +591,6 @@ namespace ScriptCanvasEditor
 
         m_proxyModel->setSourceModel(aznew GraphValidationModel()); 
         ui->statusTableView->setModel(m_proxyModel);
-
         ui->statusTableView->horizontalHeader()->setStretchLastSection(false);
 
         ui->statusTableView->horizontalHeader()->setSectionResizeMode(GraphValidationModel::Description, QHeaderView::ResizeMode::Stretch);

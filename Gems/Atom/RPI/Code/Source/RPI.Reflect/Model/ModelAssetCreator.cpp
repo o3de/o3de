@@ -89,6 +89,18 @@ namespace AZ
             return EndCommon(result);
         }
 
+        void ModelAssetCreator::AddTag(AZ::Name tag)
+        {
+            if (ValidateIsReady())
+            {
+                // add tag if it doesn't already exist
+                if (auto it = AZStd::find(m_asset->m_tags.begin(), m_asset->m_tags.end(), tag); it == m_asset->m_tags.end())
+                {
+                    m_asset->m_tags.push_back(AZStd::move(tag));
+                }
+            }
+        }
+
         bool ModelAssetCreator::Clone(const Data::Asset<ModelAsset>& sourceAsset, Data::Asset<ModelAsset>& clonedResult, const Data::AssetId& cloneAssetId)
         {
             if (!sourceAsset.IsReady())
@@ -101,7 +113,7 @@ namespace AZ
             creator.SetName(sourceAsset->GetName().GetStringView());
 
             AZ::Data::AssetId lastUsedId = cloneAssetId;
-            const AZStd::array_view<Data::Asset<ModelLodAsset>> sourceLodAssets = sourceAsset->GetLodAssets();
+            const AZStd::span<const Data::Asset<ModelLodAsset>> sourceLodAssets = sourceAsset->GetLodAssets();
             for (const Data::Asset<ModelLodAsset>& sourceLodAsset : sourceLodAssets)
             {
                 Data::Asset<ModelLodAsset> lodAsset;
@@ -126,5 +138,6 @@ namespace AZ
 
             return creator.End(clonedResult);
         }
+
     } // namespace RPI
 } // namespace AZ

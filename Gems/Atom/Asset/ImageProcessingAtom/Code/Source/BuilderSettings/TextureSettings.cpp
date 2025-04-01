@@ -16,6 +16,7 @@
 
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <ImageLoader/ImageLoaders.h>
+#include <Editor/EditorCommon.h>
 
 
 namespace ImageProcessingAtom
@@ -23,8 +24,7 @@ namespace ImageProcessingAtom
     const char* TextureSettings::ExtensionName = ".assetinfo";
 
     TextureSettings::TextureSettings()
-        : m_presetId(0)
-        , m_sizeReduceLevel(0)
+        : m_sizeReduceLevel(0)
         , m_suppressEngineReduce(false)
         , m_enableMipmap(true)
         , m_maintainAlphaCoverage(false)
@@ -51,12 +51,13 @@ namespace ImageProcessingAtom
                 ->Field("SizeReduceLevel", &TextureSettings::m_sizeReduceLevel)
                 ->Field("EngineReduce", &TextureSettings::m_suppressEngineReduce)
                 ->Field("EnableMipmap", &TextureSettings::m_enableMipmap)
-                ->Field("MaintainAlphaCoverage", &TextureSettings::m_maintainAlphaCoverage)
-                ->Field("MipMapAlphaAdjustments", &TextureSettings::m_mipAlphaAdjust)
                 ->Field("MipMapGenEval", &TextureSettings::m_mipGenEval)
                 ->Field("MipMapGenType", &TextureSettings::m_mipGenType)
+                ->Field("MaintainAlphaCoverage", &TextureSettings::m_maintainAlphaCoverage)
+                ->Field("MipMapAlphaAdjustments", &TextureSettings::m_mipAlphaAdjust)
                 ->Field("PlatformSpecificOverrides", &TextureSettings::m_platfromOverrides)
-                ->Field("OverridingPlatform", &TextureSettings::m_overridingPlatform);
+                ->Field("OverridingPlatform", &TextureSettings::m_overridingPlatform)
+                ->Field("Tags", &TextureSettings::m_tags);
 
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
@@ -65,15 +66,16 @@ namespace ImageProcessingAtom
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TextureSettings::m_mipAlphaAdjust, "Alpha Test Bias", "Multiplies the mipmap's alpha with a scale value that is based on alpha coverage. \
-                                            Set the mip 0 to mip 5 values to offset the alpha test values and ensure the mipmap's alpha coverage matches the original image. Specify a value from 0 to 100.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TextureSettings::m_mipAlphaAdjust, "Alpha Test Bias", "Multiplies the mipmap's alpha channel by a scale value that is based on alpha coverage. \
+                                            Specify a value from 0 to 100 for each mipmap to offset the alpha test values and ensure the mipmap's alpha coverage matches the original image.")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ::Edit::UIHandlers::Slider)
                         ->ElementAttribute(AZ::Edit::Attributes::Min, 0)
                         ->ElementAttribute(AZ::Edit::Attributes::Max, 100)
                         ->ElementAttribute(AZ::Edit::Attributes::Step, 1)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenType, "Filter Method", "")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenType, "Filter Type", "Filter Types specify sample sizes and algorithms \
+                                            for determining the color of each pixel as the texture resolution is reduced for each mipmap.")
                         ->EnumAttribute(MipGenType::point, "Point")
                         ->EnumAttribute(MipGenType::box, "Average")
                         ->EnumAttribute(MipGenType::triangle, "Linear")
@@ -81,11 +83,11 @@ namespace ImageProcessingAtom
                         ->EnumAttribute(MipGenType::gaussian, "Gaussian")
                         ->EnumAttribute(MipGenType::blackmanHarris, "BlackmanHarris")
                         ->EnumAttribute(MipGenType::kaiserSinc, "KaiserSinc")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenEval, "Pixel Sampling Type", "")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenEval, "Pixel Sampler", "The Pixel Sampler specifies how the final pixel value is calculated when mipmaps are generated.")
                         ->EnumAttribute(MipGenEvalType::max, "Max")
                         ->EnumAttribute(MipGenEvalType::min, "Min")
                         ->EnumAttribute(MipGenEvalType::sum, "Sum")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextureSettings::m_maintainAlphaCoverage, "Maintain Alpha Coverage", "Select this option to manually adjust Alpha channel mipmaps.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextureSettings::m_maintainAlphaCoverage, "Adjust Alpha", "Enable to manually adjust the alpha channel of the mipmaps with the Alpha Test Bias values.")
                 ;
             }
         }
@@ -117,7 +119,8 @@ namespace ImageProcessingAtom
             m_suppressEngineReduce == other.m_suppressEngineReduce &&
             m_maintainAlphaCoverage == other.m_maintainAlphaCoverage &&
             m_mipGenEval == other.m_mipGenEval &&
-            m_mipGenType == other.m_mipGenType;
+            m_mipGenType == other.m_mipGenType &&
+            m_tags == other.m_tags;
     }
 
     bool TextureSettings::Equals(const TextureSettings& other, AZ::SerializeContext* serializeContext)
@@ -229,7 +232,7 @@ namespace ImageProcessingAtom
 
         // If the suggested preset doesn't exist (or was failed to be loaded), return empty texture settings
         if (BuilderSettingManager::Instance()->GetPreset(suggestedPreset) == nullptr)
-        {            
+        {
             AZ_Error("Image Processing", false, "Failed to find suggested preset [%s]", suggestedPreset.GetCStr());
             return settings;
         }
@@ -271,7 +274,7 @@ namespace ImageProcessingAtom
         {
             textureSettingsOut = baseTextureSettings;
         }
-        
+
         return STRING_OUTCOME_SUCCESS;
     }
 

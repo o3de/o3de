@@ -40,18 +40,16 @@ namespace WhiteBox
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // WhiteBoxRequestBus ...
-        AZStd::unique_ptr<RenderMeshInterface> CreateRenderMeshInterface() override;
+        AZStd::unique_ptr<RenderMeshInterface> CreateRenderMeshInterface(AZ::EntityId entityId) override;
         void SetRenderMeshInterfaceBuilder(RenderMeshInterfaceBuilderFn builder) override;
 
     protected:
         // AZ::Component ...
         void Activate() override;
+        void Deactivate() override;
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
 
     private:
-        // AZ::Component ...
-        void Deactivate() override;
-
         //! The builder invoked by CreateRenderMeshInterface.
         RenderMeshInterfaceBuilderFn m_renderMeshInterfaceBuilder;
     };

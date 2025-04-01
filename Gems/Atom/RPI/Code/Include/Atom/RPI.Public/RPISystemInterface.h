@@ -12,16 +12,18 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 #include <AzCore/Name/Name.h>
 #include <AzFramework/Windowing/WindowBus.h>
+#include <Atom/RPI.Public/XR/XRRenderingInterface.h>
 
 namespace AZ
 {
     namespace RPI
     {
         //! Interface of RPISystem, which is the main entry point for the Atom renderer.
-        class RPISystemInterface
+        class ATOM_RPI_PUBLIC_API RPISystemInterface
         {
         public:
             AZ_RTTI(RPISystemInterface, "{62E72C4F-A985-4001-9004-DE53029DBF11}");
@@ -40,6 +42,10 @@ namespace AZ
             //! Was the RPI system initialized properly
             virtual bool IsInitialized() const = 0;
 
+            //! If the renderer is null.
+            //! It's controlled by renderer=null command line option
+            virtual bool IsNullRenderer() const = 0;
+
             //! Register a created scene to RPISystem. Registered scene will be simulated and rendered in RPISystem ticks
             virtual void RegisterScene(ScenePtr scene) = 0;
 
@@ -54,6 +60,9 @@ namespace AZ
 
             //! Get scene by using scene name.
             virtual Scene* GetSceneByName(const AZ::Name& name) const = 0;
+
+            //! Return the number of registered scenes
+            virtual uint32_t GetNumScenes() const = 0;
 
             //! Get the render pipeline created for a window
             virtual RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) = 0;
@@ -90,6 +99,13 @@ namespace AZ
 
             //! Get the index of current render tick
             virtual uint64_t GetCurrentTick() const = 0;
+
+            //! Application multisample state
+            virtual void SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState) = 0;
+            virtual const RHI::MultisampleState& GetApplicationMultisampleState() const = 0;
+
+            //! Get the XR system for XR specific functionality
+            virtual XRRenderingInterface* GetXRSystem() const = 0;
         };
 
     } // namespace RPI

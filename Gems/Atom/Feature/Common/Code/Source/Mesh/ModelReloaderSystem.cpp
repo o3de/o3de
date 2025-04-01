@@ -6,8 +6,8 @@
  *
  */
 
-#include <Source/Mesh/ModelReloaderSystem.h>
-#include <Source/Mesh/ModelReloader.h>
+#include <Mesh/ModelReloaderSystem.h>
+#include <Mesh/ModelReloader.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 
 namespace AZ
@@ -19,7 +19,7 @@ namespace AZ
             AZStd::scoped_lock lock(m_pendingReloadMutex);
             if (m_pendingReloads.find(modelAsset.GetId()) == m_pendingReloads.end())
             {
-                ModelReloader* reloader = new ModelReloader(modelAsset, m_removeModelHandler);
+                ModelReloader* reloader = new ModelReloader(modelAsset);
                 m_pendingReloads[modelAsset.GetId()] = reloader;
             }
 

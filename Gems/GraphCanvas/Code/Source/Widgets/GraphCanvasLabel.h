@@ -24,7 +24,7 @@ namespace GraphCanvas
         : public QGraphicsWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasLabel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasLabel, AZ::SystemAllocator);
 
         enum class WrapMode
         {
@@ -95,7 +95,7 @@ namespace GraphCanvas
         QSizeF sizeHint(Qt::SizeHint which, const QSizeF& constraint = QSizeF()) const override;
         ////
 
-    private:        
+    private:
 
         Qt::Alignment   m_defaultAlignment;
         bool m_elide;

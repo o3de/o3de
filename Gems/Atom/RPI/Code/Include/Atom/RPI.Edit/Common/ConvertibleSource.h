@@ -7,17 +7,25 @@
  */
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <AzCore/base.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
+namespace AZStd
+{
+    template<class T>
+    class shared_ptr;
+}
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RPI
     {
-        //! This class extends the functionality of AnyAssetBuilder so it can 
+        //! This class extends the functionality of AnyAssetBuilder so it can
         //! convert source asset to product asset which are different types.
         //! This should be used as base class for the source data type which can to be converted to another data type.
-        class ConvertibleSource
+        class ATOM_RPI_EDIT_API ConvertibleSource
         {
             public:
                 AZ_TYPE_INFO(ConvertibleSource, "{478DDAAC-E4A4-47B1-8E83-62F239D5BB57}");

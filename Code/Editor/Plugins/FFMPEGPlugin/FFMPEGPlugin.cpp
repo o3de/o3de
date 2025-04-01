@@ -55,12 +55,12 @@ bool CFFMPEGPlugin::CanExitNow()
 static void Command_FFMPEGEncode(const char* input, const char* output, const char* codec, int bitRateinKb, int fps, const char* etc)
 {
     QString ffmpegExectablePath = CFFMPEGPlugin::GetFFMPEGExectablePath();
-    QString ffmpegCmdLine = QStringLiteral("\"%1\" -r %2 -i \"%3\" -vcodec %4 -b %5k -r %6 %7 -strict experimental -y \"%8\"")
+    QString ffmpegCmdLine = QStringLiteral("\"%1\" -r %2 -i \"%3\" -vcodec %4 -b %5k -r %6 -vf %7 -strict experimental -y \"%8\"")
         .arg(ffmpegExectablePath, QString::number(fps), input, codec, QString::number(bitRateinKb), QString::number(fps), etc, output);
     GetIEditor()->GetSystem()->GetILog()->Log("Executing \"%s\" from FFMPEGPlugin...", ffmpegCmdLine.toUtf8().data());
     QString outTxt;
-    GetIEditor()->ExecuteConsoleApp(ffmpegCmdLine, outTxt, true, true);
-    GetIEditor()->GetSystem()->GetILog()->Log("FFMPEG execution done.");
+    GetIEditor()->ExecuteConsoleApp(ffmpegCmdLine, outTxt, true, false);
+    GetIEditor()->GetSystem()->GetILog()->Log("FFMPEG execution done. cmd result=\n%s", outTxt.toUtf8().data());
 }
 
 QString CFFMPEGPlugin::GetFFMPEGExectablePath()
@@ -129,7 +129,7 @@ void CFFMPEGPlugin::RegisterTheCommand()
     CommandManagerHelper::RegisterCommand<const char*, const char*, const char*, int, int, const char*>(
         GetIEditor()->GetICommandManager(),
         COMMAND_MODULE, COMMAND_NAME, "Encodes a video using ffmpeg.",
-        "plugin.ffmpeg_encode 'input.avi' 'result.mov' 'libx264' 200 30",
+        "plugin.ffmpeg_encode 'input.avi' 'result.webm' 'libvpx-vp9' 200 30",
         AZStd::bind(Command_FFMPEGEncode, _1, _2, _3, _4, _5, _6));
 }
 

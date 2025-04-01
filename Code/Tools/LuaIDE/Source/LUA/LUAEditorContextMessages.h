@@ -14,7 +14,6 @@
 #include <AzCore/Script/ScriptContextDebug.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
 
 #pragma once
 
@@ -103,7 +102,7 @@ namespace LUAEditor
         // if the execution is resumed ('run') then this happens:
         virtual void OnExecutionResumed() = 0; // removes line number from the current line number and lets us know that execution has resumed
 
-        // Remote script execution results
+        // Script execution results
         virtual void OnExecuteScriptResult(bool success) = 0;
 
         // requested actions from subordinate systems

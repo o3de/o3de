@@ -51,51 +51,37 @@ function(o3de_read_manifest o3de_manifest_json_data)
     endif()
 endfunction()
 
-#! o3de_recurse_gems: returns the gem paths
-#
-# \arg:object json path
-# \arg:gems returns the gems from the external subdirectory elements from the manifest
-function(o3de_recurse_gems object_json_path gems)
-    get_filename_component(object_json_parent_path ${object_json_path} DIRECTORY)
-    ly_file_read(${object_json_path} json_data)
-    string(JSON external_subdirectories_count ERROR_VARIABLE json_error LENGTH ${json_data} "external_subdirectories")
-    if(NOT json_error)
-        if(external_subdirectories_count GREATER 0)
-            math(EXPR external_subdirectories_range "${external_subdirectories_count}-1")
-            foreach(external_subdirectories_index RANGE ${external_subdirectories_range})
-                string(JSON external_subdirectories_entry ERROR_VARIABLE json_error GET ${json_data} "external_subdirectories" "${external_subdirectories_index}")
-                cmake_path(IS_RELATIVE external_subdirectories_entry is_relative)
-                if(${is_relative})
-                    cmake_path(ABSOLUTE_PATH external_subdirectories_entry BASE_DIRECTORY ${object_json_parent_path} NORMALIZE OUTPUT_VARIABLE external_subdirectories_entry)
-                endif()
-                if(EXISTS ${external_subdirectories_entry}/gem.json)
-                    list(APPEND gem_entries ${external_subdirectories_entry})
-                    o3de_recurse_gems(${external_subdirectories_entry}/gem.json gem_entries)
-                endif()
-            endforeach()
-        endif()
-    endif()
-    set(${gems} ${gem_entries} PARENT_SCOPE)
-endfunction()
-
-#! o3de_find_gem: returns the gem path
-#
+#! o3de_find_gem_with_registered_external_subdirs: Query the path of a gem using its name
+#  IMPORTANT NOTE: This does not take into account any gem versions or dependency resolution, 
+#  which is fine if you don't need it and just want speed.
 # \arg:gem_name the gem name to find
-# \arg:the path of the gem
-function(o3de_find_gem gem_name gem_path)
-    o3de_get_manifest_path(manifest_path)
-    if(EXISTS ${manifest_path})
-        o3de_recurse_gems(${manifest_path} gems)
-    endif()
-    o3de_recurse_gems(${LY_ROOT_FOLDER}/engine.json gems)
-    foreach(gem ${gems})
-        ly_file_read(${gem}/gem.json json_data)
-        string(JSON gem_json_name ERROR_VARIABLE json_error GET ${json_data} "gem_name")
-        if(gem_json_name STREQUAL gem_name)
-            set(${gem_path} ${gem} PARENT_SCOPE)
-            return()
+# \arg:output_gem_path the path of the gem to set
+# \arg:registered_external_subdirs a list of external subdirectories registered accross
+#      all manifest files to look for gems
+function(o3de_find_gem_with_registered_external_subdirs gem_name output_gem_path registered_external_subdirs)
+    foreach(external_subdir IN LISTS registered_external_subdirs)
+        set(candidate_gem_path ${external_subdir}/gem.json)
+        if(EXISTS ${candidate_gem_path})
+            o3de_read_json_key(gem_json_name ${candidate_gem_path} "gem_name")
+            if(gem_json_name STREQUAL gem_name)
+                set(${output_gem_path} ${external_subdir} PARENT_SCOPE)
+                return()
+            endif()
         endif()
     endforeach()
+endfunction()
+
+#! o3de_find_gem: Query the path of a gem using its name
+#
+# \arg:gem_name the gem name to find
+# \arg:output_gem_path the path of the gem to set
+#
+# If the list of registered external subdirectories are available in the caller,
+# then slightly better more performance can be achieved by calling `o3de_find_gem_with_registered_external_subdirs` above
+function(o3de_find_gem gem_name output_gem_path)
+    get_all_external_subdirectories(registered_external_subdirs)
+    o3de_find_gem_with_registered_external_subdirs(${gem_name} gem_path "${registered_external_subdirs}")
+    set(${output_gem_path} ${gem_path} PARENT_SCOPE)
 endfunction()
 
 #! o3de_manifest_restricted: returns the manifests restricted paths
@@ -275,6 +261,16 @@ ly_set(PAL_HOST_PLATFORM_NAME ${LY_HOST_PLATFORM_DETECTION_${CMAKE_SYSTEM_NAME}}
 string(TOLOWER ${PAL_HOST_PLATFORM_NAME} PAL_HOST_PLATFORM_NAME_LOWERCASE)
 ly_set(PAL_HOST_PLATFORM_NAME_LOWERCASE ${PAL_HOST_PLATFORM_NAME_LOWERCASE})
 
+# In addition to platform name, set the platform architecture if supported
+if (LY_ARCHITECTURE_DETECTION_${PAL_PLATFORM_NAME})
+    ly_set(LY_ARCHITECTURE_NAME_EXTENSION "_${LY_ARCHITECTURE_DETECTION_${PAL_PLATFORM_NAME}}")
+endif()
+if (LY_HOST_ARCHITECTURE_DETECTION_${PAL_HOST_PLATFORM_NAME})
+    ly_set(LY_HOST_ARCHITECTURE_NAME_EXTENSION "_${LY_HOST_ARCHITECTURE_DETECTION_${PAL_HOST_PLATFORM_NAME}}")
+endif()
+
+
+
 set(PAL_RESTRICTED_PLATFORMS)
 
 file(GLOB pal_restricted_files ${O3DE_ENGINE_RESTRICTED_PATH}/*/cmake/PAL_*.cmake)
@@ -442,6 +438,8 @@ include(${pal_cmake_dir}/Toolchain_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL
 
 set(LY_DISABLE_TEST_MODULES FALSE CACHE BOOL "Option to forcibly disable the inclusion of test targets in the build")
 
-if(LY_DISABLE_TEST_MODULES)
+if(LY_DISABLE_TEST_MODULES OR NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
+    # AzTest library, which requires google test, is not supported on this platform
+    # so none of the tests can build either.
     ly_set(PAL_TRAIT_BUILD_TESTS_SUPPORTED FALSE)
 endif()

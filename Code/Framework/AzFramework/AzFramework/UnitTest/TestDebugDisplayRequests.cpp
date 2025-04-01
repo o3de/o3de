@@ -7,6 +7,7 @@
  */
 
 #include "TestDebugDisplayRequests.h"
+#include <AzCore/Math/Geometry3DUtils.h>
 
 namespace UnitTest
 {
@@ -57,7 +58,7 @@ namespace UnitTest
         m_points.push_back(tm.TransformPoint(AZ::Vector3(0.5f * width, 0.0f, 0.5f * height)));
     }
 
-    void TestDebugDisplayRequests::DrawQuad(float width, float height)
+    void TestDebugDisplayRequests::DrawQuad(float width, float height, [[maybe_unused]] bool drawShaded)
     {
         DrawWireQuad(width, height);
     }
@@ -98,6 +99,24 @@ namespace UnitTest
         DrawPoints(lines);
     }
 
+    void TestDebugDisplayRequests::DrawWireSphere(const AZ::Vector3& pos, float radius)
+    {
+        const int subdivisionDepth = 3;
+        AZStd::vector<AZ::Vector3> icoSphereVertices = AZ::Geometry3dUtils::GenerateIcoSphere(subdivisionDepth);
+
+        // scale the icosphere vertices to the correct radius and move to the required position
+        AZStd::transform(
+            icoSphereVertices.begin(),
+            icoSphereVertices.end(),
+            icoSphereVertices.begin(),
+            [&radius, &pos](AZ::Vector3& vertex)
+            {
+                return pos + radius * vertex;
+            });
+
+        DrawPoints(icoSphereVertices);
+    }
+
     void TestDebugDisplayRequests::PushMatrix(const AZ::Transform& tm)
     {
         m_transforms.push(m_transforms.top() * tm);
@@ -113,5 +132,22 @@ namespace UnitTest
         {
             m_transforms.pop();
         }
+    }
+
+    AZ::Matrix3x4 TestDebugDisplayRequests::PopPremultipliedMatrix()
+    {
+        if (m_transforms.size() == 1)
+        {
+            AZ_Error("TestDebugDisplayRequest", false, "Invalid call to PopPremultipliedMatrix when no matrices were pushed.");
+            return AZ::Matrix3x4::CreateIdentity();
+        }
+        AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromTransform(m_transforms.top());
+        m_transforms.pop();
+        return matrix;
+    }
+
+    void TestDebugDisplayRequests::PushPremultipliedMatrix(const AZ::Matrix3x4& matrix)
+    {
+        m_transforms.push(AZ::Transform::CreateFromMatrix3x4(matrix));
     }
 } // namespace UnitTest

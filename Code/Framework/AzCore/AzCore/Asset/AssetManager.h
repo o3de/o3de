@@ -156,7 +156,7 @@ namespace AZ
             typedef AZStd::unordered_map<AssetContainerKey, AZStd::weak_ptr<AssetContainer>> WeakAssetContainerMap;
             typedef AZStd::unordered_map<AssetContainer*, AZStd::shared_ptr<AssetContainer>> OwnedAssetContainerMap;
 
-            AZ_CLASS_ALLOCATOR(AssetManager, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetManager, SystemAllocator);
 
             static bool Create(const Descriptor& desc);
             static void Destroy();
@@ -324,6 +324,9 @@ namespace AZ
             */
             bool HasActiveJobsOrStreamerRequests();
 
+            // memory debug output
+            void DumpLoadedAssetsInfo();
+
         protected:
             AssetManager(const Descriptor& desc);
             virtual ~AssetManager();
@@ -343,15 +346,18 @@ namespace AZ
             void AddJob(AssetDatabaseJob* job);
             void RemoveJob(AssetDatabaseJob* job);
             void AddActiveStreamerRequest(AssetId assetId, AZStd::shared_ptr<AssetDataStream> readRequest);
-            void RescheduleStreamerRequest(AssetId assetId, AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
+            void RescheduleStreamerRequest(AssetId assetId, AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
             void RemoveActiveStreamerRequest(AssetId assetId);
             void AddBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);
             void RemoveBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);
 
-            void ValidateAndPostLoad(AZ::Data::Asset < AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
-            void PostLoad(AZ::Data::Asset < AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
+            void ValidateAndPostLoad(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
+            void PostLoad(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
 
             Asset<AssetData> GetAssetInternal(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams = AssetLoadParameters{}, AssetInfo assetInfo = AssetInfo(), bool signalLoaded = false);
+            // Alternative path to GetAssetInternal intended to be called by the AssetContainer when reloading an asset
+            // Assumes the asset is already ready to go and just needs to be set up for loading
+            void QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset, bool signalLoaded);
 
             void UpdateDebugStatus(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
@@ -361,11 +367,11 @@ namespace AZ
             * \param loadFilter optional filter predicate for dependent asset loads.
             * If the asset container is already loaded just hand back a new shared ptr
             **/
-            AZStd::shared_ptr<AssetContainer> GetAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams = AssetLoadParameters{});
+            AZStd::shared_ptr<AssetContainer> GetAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams = AssetLoadParameters{}, bool isReload = false);
             /**
             * Creates a new shared AssetContainer with an optional loadFilter
             * **/
-            virtual AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams = AssetLoadParameters{}) const;
+            virtual AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams = AssetLoadParameters{}, bool isReload = false) const;
 
 
             /**
@@ -570,7 +576,7 @@ namespace AZ
             //! Asset Handlers have the ability to provide custom asset buffer allocators for any non-standard allocation needs.
             virtual IO::IStreamerTypes::RequestMemoryAllocator* GetAssetBufferAllocator() { return nullptr; }
 
-            virtual void GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type, AZStd::chrono::milliseconds& defaultDeadline,
+            virtual void GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type, IO::IStreamerTypes::Deadline& defaultDeadline,
                 AZ::IO::IStreamerTypes::Priority& defaultPriority) const
             {
                 defaultDeadline = IO::IStreamerTypes::s_noDeadline;

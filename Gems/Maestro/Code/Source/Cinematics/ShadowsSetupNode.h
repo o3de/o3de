@@ -9,42 +9,41 @@
 
 // Description : CryMovie animation node for shadow settings
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_SHADOWSSETUPNODE_H
-#define CRYINCLUDE_CRYMOVIE_SHADOWSSETUPNODE_H
 #pragma once
-
 
 #include "AnimNode.h"
 
-class CShadowsSetupNode
-    : public CAnimNode
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CShadowsSetupNode, AZ::SystemAllocator, 0);
-    AZ_RTTI(CShadowsSetupNode, "{419F9F77-FC64-43D1-ABCF-E78E90889DF8}", CAnimNode);
 
-    CShadowsSetupNode();
-    CShadowsSetupNode(const int id);
-    static void Initialize();
+    class CShadowsSetupNode : public CAnimNode
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CShadowsSetupNode, AZ::SystemAllocator);
+        AZ_RTTI(CShadowsSetupNode, "{419F9F77-FC64-43D1-ABCF-E78E90889DF8}", CAnimNode);
 
-    //-----------------------------------------------------------------------------
-    //! Overrides from CAnimNode
-    virtual void Animate(SAnimContext& ac);
+        CShadowsSetupNode();
+        explicit CShadowsSetupNode(const int id);
 
-    virtual void CreateDefaultTracks();
+        static void Initialize();
 
-    virtual void OnReset();
+        //-----------------------------------------------------------------------------
+        //! Overrides from CAnimNode
+        void Animate(SAnimContext& ac) override;
 
-    //-----------------------------------------------------------------------------
-    //! Overrides from IAnimNode
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+        void CreateDefaultTracks() override;
 
-    static void Reflect(AZ::ReflectContext* context);
+        void OnReset() override;
 
-protected:
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
-};
+        //-----------------------------------------------------------------------------
+        //! Overrides from IAnimNode
+        unsigned int GetParamCount() const override;
+        CAnimParamType GetParamType(unsigned int nIndex) const override;
 
-#endif // CRYINCLUDE_CRYMOVIE_SHADOWSSETUPNODE_H
+        static void Reflect(AZ::ReflectContext* context);
+
+    protected:
+        bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
+    };
+
+} // namespace Maestro

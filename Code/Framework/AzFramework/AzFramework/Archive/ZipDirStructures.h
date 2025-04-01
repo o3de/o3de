@@ -202,7 +202,7 @@ namespace AZ::IO::ZipDir
     struct FileEntry
         : FileEntryBase
     {
-        AZ_CLASS_ALLOCATOR(FileEntry, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FileEntry, AZ::SystemAllocator);
 
         // mutex that can be used to product reads for the current file entry
         AZStd::mutex m_readLock;
@@ -265,7 +265,7 @@ namespace AZ::IO::ZipDir
     // as on its name
     struct DirEntry
     {
-        AZ_CLASS_ALLOCATOR(DirEntry, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DirEntry, AZ::SystemAllocator);
         uint32_t nDirHeaderOffset{}; // offset, in bytes, relative to this object, of the actual directory record header
         uint32_t nNameOffset{}; // offset of the dir name in the name pool of the parent directory
 

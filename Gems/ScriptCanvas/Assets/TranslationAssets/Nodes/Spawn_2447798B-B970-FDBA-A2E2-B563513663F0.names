@@ -1,0 +1,77 @@
+{
+    "entries": [
+        {
+            "base": "{2447798B-B970-FDBA-A2E2-B563513663F0}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Spawn",
+                "category": "Prefab/Spawning",
+                "tooltip": "Spawns a selected prefab"
+            },
+            "slots": [
+                {
+                    "base": "Input_Request Spawn_0",
+                    "details": {
+                        "name": "Request Spawn"
+                    }
+                },
+                {
+                    "base": "DataInput_SpawnTicket_0",
+                    "details": {
+                        "name": "SpawnTicket"
+                    }
+                },
+                {
+                    "base": "DataInput_ParentId_1",
+                    "details": {
+                        "name": "ParentId"
+                    }
+                },
+                {
+                    "base": "DataInput_Local Translation_2",
+                    "details": {
+                        "name": "Local Translation"
+                    }
+                },
+                {
+                    "base": "DataInput_Local Rotation_3",
+                    "details": {
+                        "name": "Local Rotation"
+                    }
+                },
+                {
+                    "base": "DataInput_Local Scale_4",
+                    "details": {
+                        "name": "Local Scale"
+                    }
+                },
+                {
+                    "base": "Output_Spawn Requested_0",
+                    "details": {
+                        "name": "Spawn Requested"
+                    }
+                },
+                {
+                    "base": "Output_On Spawn Completed_1",
+                    "details": {
+                        "name": "On Spawn Completed",
+                        "tooltip": "Called when spawning entities is completed."
+                    }
+                },
+                {
+                    "base": "DataOutput_SpawnTicketOut_0",
+                    "details": {
+                        "name": "SpawnTicketOut"
+                    }
+                },
+                {
+                    "base": "DataOutput_SpawnedEntitiesList_1",
+                    "details": {
+                        "name": "SpawnedEntitiesList"
+                    }
+                }
+            ]
+        }
+    ]
+}

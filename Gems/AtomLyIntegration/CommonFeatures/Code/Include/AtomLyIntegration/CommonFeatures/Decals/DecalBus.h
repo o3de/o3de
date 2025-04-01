@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Decals/DecalComponentConfig.h>
@@ -36,6 +37,24 @@ namespace AZ
             //! Sets the decal opacity
             virtual void SetOpacity(float opacity) = 0;
 
+            //! Gets the decal color
+            virtual const AZ::Vector3& GetDecalColor() const = 0;
+
+            //! Sets the decal color
+            virtual void SetDecalColor(const AZ::Vector3& color) = 0;
+
+            //! Gets the decal color factor
+            virtual float GetDecalColorFactor() const = 0;
+
+            //! Sets the decal color factor
+            virtual void SetDecalColorFactor(float colorFactor) = 0;
+
+            //! Gets the decal normal map opacity
+            virtual float GetNormalMapOpacity() const = 0;
+
+            //! Sets the decal normal map opacity
+            virtual void SetNormalMapOpacity(float opacity) = 0;
+
             //! Gets the decal sort key. Decals with a larger sort key appear over top of smaller sort keys.
             virtual uint8_t GetSortKey() const = 0;
 
@@ -64,9 +83,21 @@ namespace AZ
             //! @param attenuationAngle This controls how much the angle between geometry and the decal affects decal opacity.
             virtual void OnAttenuationAngleChanged([[maybe_unused]] float attenuationAngle) { }
 
+            //! Signals that the decal color has changed.
+            //! @param decalColor This controls the decal color that gets multiplied with decal texture
+            virtual void OnDecalColorChanged([[maybe_unused]] const AZ::Vector3& decalColor) { }
+
+            //! Signals that the decal color factor has changed.
+            //! @param decalColorFacor This controls the decal color factor (in this case it is a multiplier) applied to the decal color
+            virtual void OnDecalColorFactorChanged([[maybe_unused]] float decalColorFacor) { }
+
             //! Signals that the opacity has changed.
             //! @param opacity The opaqueness of the decal.
             virtual void OnOpacityChanged([[maybe_unused]] float opacity){ }
+
+            //! Signals that the opacity has changed.
+            //! @param opacity The opaqueness of the decal.
+            virtual void OnNormalMapOpacityChanged([[maybe_unused]] float opacity){ }
 
             //! Signals that the sortkey has changed.
             //! @param sortKey Decals with a larger sort key appear over top of smaller sort keys.

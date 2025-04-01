@@ -11,7 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <Editor/View/Widgets/LoggingPanel/PivotTree/GraphPivotTree/GraphPivotTree.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 
 namespace ScriptCanvasEditor
 {
@@ -353,7 +353,7 @@ namespace ScriptCanvasEditor
         m_assetModel = new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel();
 
         AzToolsFramework::AssetBrowser::AssetGroupFilter* assetFilter = new AzToolsFramework::AssetBrowser::AssetGroupFilter();
-        assetFilter->SetAssetGroup(ScriptCanvasEditor::SourceDescription::GetGroup());
+        assetFilter->SetAssetGroup(SourceDescription::GetGroup());
 
         assetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 
@@ -582,7 +582,7 @@ namespace ScriptCanvasEditor
     /////////////////////////
 
     GraphPivotTreeWidget::GraphPivotTreeWidget(QWidget* parent)
-        : PivotTreeWidget(aznew GraphPivotTreeRoot(), AZ_CRC("GraphPivotTreeId", 0xed815ba3), parent)
+        : PivotTreeWidget(aznew GraphPivotTreeRoot(), AZ_CRC_CE("GraphPivotTreeId"), parent)
     {
         static_cast<GraphPivotTreeRoot*>(GetTreeRoot())->TraverseTree();
     }

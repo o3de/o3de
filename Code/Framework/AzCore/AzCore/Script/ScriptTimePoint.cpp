@@ -25,7 +25,6 @@ namespace AZ
                 Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)->
                 Attribute(AZ::Script::Attributes::Module, "script")->
                 Method("ToString", &ScriptTimePoint::ToString)->
-                    Attribute(Script::Attributes::Operator,Script::Attributes::OperatorType::ToString)->
                 Method("GetSeconds", &ScriptTimePoint::GetSeconds)->
                 Method("GetMilliseconds", &ScriptTimePoint::GetMilliseconds)
             ;
@@ -34,7 +33,7 @@ namespace AZ
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->Class<AZStd::chrono::system_clock::time_point>()
+            serializeContext->Class<AZStd::chrono::steady_clock::time_point>()
                 ;
 
             serializeContext->Class<ScriptTimePoint>()

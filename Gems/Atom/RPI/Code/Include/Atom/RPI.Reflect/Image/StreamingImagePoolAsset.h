@@ -11,8 +11,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageControllerAsset.h>
-
 #include <Atom/RHI.Reflect/StreamingImagePoolDescriptor.h>
 
 namespace AZ
@@ -34,18 +34,20 @@ namespace AZ
         //! Both of these overrides should be assigned at asset build time for the specific platform.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using StreamingImagePoolAssetCreator.
         //! See RPI::StreamingImagePool for runtime features based on this asset.
-        class StreamingImagePoolAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API StreamingImagePoolAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class StreamingImagePoolAssetCreator;
             friend class StreamingImagePoolAssetTester;
         public:
             AZ_RTTI(StreamingImagePoolAsset, "{877B2DA2-BBE7-42E7-AED3-F571929820FE}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(StreamingImagePoolAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePoolAsset, SystemAllocator);
 
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "StreamingImagePool" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "streamingimagepool" };
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -55,9 +57,6 @@ namespace AZ
             //! is a heap-allocated shared base-class pointer. It may be a RHI backend-specific derived class
             //! type. This is determined by the asset builder.
             const RHI::StreamingImagePoolDescriptor& GetPoolDescriptor() const;
-
-            //! Returns the controller asset that performs streaming priority management.
-            const Data::Asset<StreamingImageControllerAsset>& GetControllerAsset() const;
 
             //! Returns the name of the pool.
             AZStd::string_view GetPoolName() const;
@@ -69,9 +68,6 @@ namespace AZ
 
             // [Serialized] The platform-specific descriptor used to initialize the RHI pool.
             AZStd::unique_ptr<RHI::StreamingImagePoolDescriptor> m_poolDescriptor;
-
-            // [Serialized] The streaming controller used to budget the pool.
-            Data::Asset<StreamingImageControllerAsset> m_controllerAsset{ Data::AssetLoadBehavior::PreLoad };
 
             // [Serialized] A display name for this pool. 
             AZStd::string m_poolName;

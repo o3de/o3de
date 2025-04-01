@@ -41,7 +41,10 @@ namespace AZ
                 void InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target) override;
                 Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
-
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "BlendShapeRuleBehavior";
+                }
             private:
                 size_t SelectBlendShapes(const Containers::Scene& scene, DataTypes::ISceneNodeSelectionList& selection) const;
                 void UpdateBlendShapeRules(Containers::Scene& scene) const;

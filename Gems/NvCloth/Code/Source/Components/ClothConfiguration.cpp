@@ -74,31 +74,4 @@ namespace NvCloth
                 ;
         }
     }
-
-    MeshNodeList ClothConfiguration::PopulateMeshNodeList()
-    {
-        if (m_populateMeshNodeListCallback)
-        {
-            return m_populateMeshNodeListCallback();
-        }
-        return {};
-    }
-
-    bool ClothConfiguration::HasBackstopData()
-    {
-        if (m_hasBackstopDataCallback)
-        {
-            return m_hasBackstopDataCallback();
-        }
-        return false;
-    }
-
-    AZ::EntityId ClothConfiguration::GetEntityId()
-    {
-        if (m_getEntityIdCallback)
-        {
-            return m_getEntityIdCallback();
-        }
-        return AZ::EntityId();
-    }
 } // namespace NvCloth

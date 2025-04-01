@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix4x4Functions_MultiplyByVector",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Multiply By Vector",
+                "category": "Math/Matrix4x4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix4x4Functions_MultiplyByVector",
+                    "details": {
+                        "name": "Multiply By Vector",
+                        "tooltip": "Returns vector created by right left multiplying matrix by supplied vector"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

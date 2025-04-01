@@ -1,0 +1,15 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{69FE164E-0656-5AEE-9CE7-B954A44A519F}"
+            },
+            "platformFlags": 255,
+            "pathHint": "materials/whiteboxdefault.azmaterial"
+        }
+    ]
+}
+

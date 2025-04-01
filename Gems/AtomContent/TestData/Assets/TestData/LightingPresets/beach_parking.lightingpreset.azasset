@@ -1,0 +1,48 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{4CF4C63C-B317-5E0B-B523-44167A02F81E}",
+                "subId": 3000
+            },
+            "assetHint": "testdata/lightingpresets/beach_parking_1k_iblglobalcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{4CF4C63C-B317-5E0B-B523-44167A02F81E}",
+                "subId": 2000
+            },
+            "assetHint": "testdata/lightingpresets/beach_parking_1k_iblglobalcm_iblspecular.exr.streamingimage"
+        },
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{3CA875D6-27A7-5CB4-B302-AEDF0D3C38BA}",
+                "subId": 1000
+            },
+            "assetHint": "testdata/lightingpresets/beach_parking_2k_skyboxcm.exr.streamingimage"
+        },
+        "alternateSkyboxImageAsset": {
+            "assetId": {
+                "guid": "{4CF4C63C-B317-5E0B-B523-44167A02F81E}",
+                "subId": 3000
+            },
+            "assetHint": "testdata/lightingpresets/beach_parking_1k_iblglobalcm_ibldiffuse.exr.streamingimage"
+        },
+        "shadowCatcherOpacity": 0.30000001192092898,
+        "lights": [
+            {
+                "direction": [
+                    1.0,
+                    0.699999988079071,
+                    -0.4000000059604645
+                ],
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowmapSize": "Size2048"
+            }
+        ]
+    }
+}

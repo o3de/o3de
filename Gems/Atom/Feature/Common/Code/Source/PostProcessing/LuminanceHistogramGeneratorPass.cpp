@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -48,12 +48,12 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             const RHI::Size resolution = GetColorBufferResolution();
             SetTargetThreadCounts(resolution.m_width, resolution.m_height, 1);
 
-            commandList->Submit(m_dispatchItem);
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void LuminanceHistogramGeneratorPass::CreateHistogramBuffer()
@@ -73,7 +73,7 @@ namespace AZ
         {
             const auto& binding = GetInputBinding(0);
             AZ_Assert(binding.m_name == AZ::Name("ColorInput"), "ColorInput was expected to be the first input");
-            const RPI::PassAttachment* colorBuffer = binding.m_attachment.get();
+            const RPI::PassAttachment* colorBuffer = binding.GetAttachment().get();
             return colorBuffer->m_descriptor.m_image.m_size;
         }
 

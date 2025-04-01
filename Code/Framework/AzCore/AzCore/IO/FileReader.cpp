@@ -42,6 +42,13 @@ namespace AZ::IO
         return *this;
     }
 
+    FileReader FileReader::GetStdin()
+    {
+        FileReader fileReader;
+        fileReader.m_file.emplace<AZ::IO::SystemFile>(AZ::IO::SystemFile::GetStdin());
+        return fileReader;
+    }
+
     bool FileReader::Open(AZ::IO::FileIOBase* fileIoBase, const char* filePath)
     {
         // Close file if the FileReader has an instance open

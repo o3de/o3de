@@ -42,7 +42,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
 void ComputeSharedBinLocationFromLightIndex(uint lightIndex, out uint locationBin, out uint locationBit)
 {
-    locationBit = 1 << (lightIndex & 31);       // lightIndex % NUM_THREADS
+    locationBit = 1u << (lightIndex & 31);      // lightIndex % NUM_THREADS
     locationBin = lightIndex >> 5;              // lightIndex / NUM_THREADS    
 }
 
@@ -99,7 +99,7 @@ uint ComputeBaseBin(uint3 groupID)
 
 void WriteLightsToRemappedLightList(uint groupIndex, uint3 groupID, uint totalLights, inout uint writeIndices[NVLC_MAX_BINS])
 {
-    uint threadMask = (1 << groupIndex) - 1;
+    uint threadMask = (1u << groupIndex) - 1;
 
     for(uint lightIndex = groupIndex; lightIndex < totalLights; lightIndex += NUM_THREADS )
     {       

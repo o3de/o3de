@@ -40,50 +40,44 @@ def ScriptCanvas_TwoEntities_UseSimultaneously():
     """
 
     import os
-
-    import hydra_editor_utils as hydra
-    from utils import TestHelper as helper
-    from utils import Tracer
-
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
+    from editor_python_test_tools.utils import TestHelper
+    from editor_python_test_tools.utils import Tracer
     import azlmbr.legacy.general as general
     import azlmbr.math as math
-    import azlmbr.asset as asset
-    import azlmbr.bus as bus
 
-    LEVEL_NAME = "tmp_level"
+    TEST_ENTITY_NAME_1 = "test_entity_1"
+    TEST_ENTITY_NAME_2 = "test_entity_2"
     ASSET_PATH = os.path.join("scriptcanvas", "T92563191_test.scriptcanvas")
     EXPECTED_LINES = ["Entity Name: test_entity_1", "Entity Name: test_entity_2"]
     WAIT_TIME = 0.5  # SECONDS
 
-    def get_asset(asset_path):
-        return asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_path, math.Uuid(), False)
+    #Preconditions
+    general.idle_enable(True)
 
     # 1) Create temp level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+    TestHelper.open_level("", "Base")
 
     # 2) Create two new entities with different names
     position = math.Vector3(512.0, 512.0, 32.0)
-    test_entity_1 = hydra.Entity("test_entity_1")
-    test_entity_1.create_entity(position, ["Script Canvas"])
-
-    test_entity_2 = hydra.Entity("test_entity_2")
-    test_entity_2.create_entity(position, ["Script Canvas"])
+    editor_entity_1 = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME_1)
+    editor_entity_2 = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME_2)
 
     # 3) Set ScriptCanvas asset to both the entities
-    test_entity_1.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_PATH))
-    test_entity_2.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_PATH))
+    scriptcanvas_component_1 = ScriptCanvasComponent(editor_entity_1)
+    scriptcanvas_component_1.set_component_graph_file_from_path(ASSET_PATH)
+
+    scriptcanvas_component_2 = ScriptCanvasComponent(editor_entity_2)
+    scriptcanvas_component_2.set_component_graph_file_from_path(ASSET_PATH)
 
     # 4) Enter/Exit game mode and verify log lines
     with Tracer() as section_tracer:
 
-        helper.enter_game_mode(Tests.game_mode_entered)
+        TestHelper.enter_game_mode(Tests.game_mode_entered)
         # wait for WAIT_TIME to let the script print strings
         general.idle_wait(WAIT_TIME)
-        helper.exit_game_mode(Tests.game_mode_exited)
+        TestHelper.exit_game_mode(Tests.game_mode_exited)
 
     found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
     result = all(line in found_lines for line in EXPECTED_LINES)

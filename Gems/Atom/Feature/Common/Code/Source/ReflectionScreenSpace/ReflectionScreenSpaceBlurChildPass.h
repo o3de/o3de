@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(Render::ReflectionScreenSpaceBlurChildPass, "{238E4D6C-3213-4BA2-8DFE-EAC469346E77}", FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceBlurChildPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceBlurChildPass, SystemAllocator);
 
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionScreenSpaceBlurChildPass> Create(const RPI::PassDescriptor& descriptor);
@@ -40,19 +40,18 @@ namespace AZ
         private:
             explicit ReflectionScreenSpaceBlurChildPass(const RPI::PassDescriptor& descriptor);
 
-            // ComputePass Overrides...
+            // Pass Overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
-            RHI::ShaderInputNameIndex m_imageWidthIndex = "m_imageWidth";
-            RHI::ShaderInputNameIndex m_imageHeightIndex = "m_imageHeight";
-            RHI::ShaderInputNameIndex m_outputScaleIndex = "m_outputScale";
+            RHI::ShaderInputNameIndex m_invOutputScaleNameIndex = "m_invOutputScale";
+            RHI::ShaderInputNameIndex m_mipLevelNameIndex = "m_mipLevel";
 
             bool m_updateSrg = false;
             PassType m_passType;
             uint32_t m_mipLevel = 0;
             RHI::Size m_imageSize;
-            float m_outputScale = 1.0f;
+            float m_invOutputScale = 1.0f;
         };
     }   // namespace RPI
 }   // namespace AZ

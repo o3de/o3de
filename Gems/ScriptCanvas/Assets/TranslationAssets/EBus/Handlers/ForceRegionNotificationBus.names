@@ -12,33 +12,36 @@
                 {
                     "base": "OnCalculateNetForce",
                     "details": {
-                        "name": "On Calculate Net Force"
+                        "name": "On Calculate Net Force",
+                        "tooltip": "Fires when the net force applied to an entity within a force region is calculated"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "name": "Force Region Entity Id",
+                                "tooltip": "Id for the entity containing the force region"
                             }
                         },
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "name": "Force Recipient Entity Id",
+                                "tooltip": "Id for the entity to which the force is applied"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Force Direction",
+                                "tooltip": "Direction of the net force (normalized)"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Force Magnitude",
+                                "tooltip": "Magnitude of the net force"
                             }
                         }
                     ]

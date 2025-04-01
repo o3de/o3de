@@ -1,6 +1,0 @@
-<Material MtlFlags="524320" Shader="Illum" GenMask="21" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_TESSELATION" SurfaceType="mat_nodraw" MatTemplate="" Diffuse="0.87513757,0.52344316,0.04145189" Emissive="0.87513757,0.52344316,0.04145189" Shininess="10" Opacity="1">
- <Textures>
-  <Texture Map="Diffuse" File="textures/defaults/16_grey.dds"/>
- </Textures>
- <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
-</Material>

@@ -66,6 +66,7 @@ namespace ScriptCanvas
 
         void MarkVersion();
         const VersionData& GetVersion() const;
+        bool HasDeprecatedNode() const;
 
         void Parse(ValidationResults& validationResults);
 
@@ -86,6 +87,7 @@ namespace ScriptCanvas
         AZStd::pair< EndpointMapConstIterator, EndpointMapConstIterator > GetConnectedEndpointIterators(const Endpoint& endpoint) const override;
         bool IsEndpointConnected(const Endpoint& endpoint) const override;
         bool FindConnection(AZ::Entity*& connectionEntity, const Endpoint& firstEndpoint, const Endpoint& otherEndpoint) const override;
+        bool FindConnection(const Endpoint& firstEndpoint, const Endpoint& otherEndpoint) const;
 
         bool Connect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlotId, const AZ::EntityId& targetNodeId, const SlotId& targetSlotId) override;
         bool Disconnect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlotId, const AZ::EntityId& targetNodeId, const SlotId& targetSlotId) override;
@@ -111,6 +113,7 @@ namespace ScriptCanvas
 
         GraphData* GetGraphData() override { return &m_graphData; }
         const GraphData* GetGraphDataConst() const override { return &m_graphData; }
+        VariableData* GetVariableData() override;
         const VariableData* GetVariableDataConst() const override { return const_cast<Graph*>(this)->GetVariableData(); }
 
         bool AddGraphData(const GraphData&) override;
@@ -137,6 +140,25 @@ namespace ScriptCanvas
 
         virtual void ReportError(const Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage);
 
+        // Finds and returns all nodes within the graph that are of the specified type
+        template <typename NodeType>
+        AZStd::vector<const NodeType*> GetNodesOfType() const
+        {
+            AZStd::vector<const NodeType*> nodes;
+            for (auto& nodeRef : m_graphData.m_nodes)
+            {
+                const NodeType* node = AZ::EntityUtils::FindFirstDerivedComponent<NodeType>(nodeRef);
+                if (node)
+                {
+                    nodes.push_back(node);
+                }
+            }
+            return nodes;
+        }
+
+        void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
+        ScriptCanvas::DataPtr GetOwnership() const;
+
     protected:
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
@@ -145,12 +167,12 @@ namespace ScriptCanvas
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ScriptCanvasRuntimeService", 0x776e1e3a));;
+            incompatible.push_back(AZ_CRC_CE("ScriptCanvasRuntimeService"));;
         }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasService"));
         }
 
         void PostActivate();
@@ -176,9 +198,9 @@ namespace ScriptCanvas
         VariableId FindAssetVariableIdByRuntimeVariableId(VariableId runtimeId) const override { return runtimeId; }
         AZ::EntityId FindAssetNodeIdByRuntimeNodeId(AZ::EntityId editorNode) const override { return editorNode; }
         AZ::EntityId FindRuntimeNodeIdByAssetNodeId(AZ::EntityId runtimeNode) const override { return runtimeNode; }
-        
-        VariableData* GetVariableData() override;
-        
+
+        void RefreshVariableReferences(const VariableId&) override {}
+
         const GraphVariableMapping* GetVariables() const override;
         GraphVariable* FindVariable(AZStd::string_view propName) override;
         GraphVariable* FindVariableById(const VariableId& variableId) override;
@@ -213,5 +235,17 @@ namespace ScriptCanvas
 
         void OnEntityActivated(const AZ::EntityId&) override;
         class GraphEventHandler;
+            
+    protected:
+        // temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
+        ScriptCanvas::ScriptCanvasData* m_owner;
+
+    public:
+        void ClearScriptEventExtension();
+        bool IsScriptEventExtension() const;
+        void MarkScriptEventExtension();
+
+    private:
+        bool m_isScriptEventExtension = false;
     };
 }

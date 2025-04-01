@@ -1,11 +1,12 @@
 {
     "gem_name": "SceneLoggingExample",
+    "version": "0.0.0",
     "display_name": "Scene Logging Example",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
-    "type": "Asset",
+    "type": "Code",
     "summary": "The Scene Logging Example Gem demonstrates the basics of extending the Open 3D Engine Scene API by adding additional logging to the pipeline.",
     "canonical_tags": [
         "Gem"

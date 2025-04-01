@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class PositionModifierNode : public BaseAreaModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(PositionModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PositionModifierNode, AZ::SystemAllocator);
         AZ_RTTI(PositionModifierNode, "{3613E5F4-BBFF-4FC5-90B5-902B3FFE7F8D}", BaseAreaModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,10 +33,10 @@ namespace LandscapeCanvas
         PositionModifierNode() = default;
         explicit PositionModifierNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override
         {
-            return TITLE.toUtf8().constData();
+            return TITLE;
         }
 
     protected:

@@ -1,0 +1,69 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{8E836C09-FA68-42B0-B302-CAC3FD6E4EA2}",
+        "category": "Vertex",
+        "title": "UV",
+        "titlePaletteName": "VertexNodeTitlePalette",
+        "description": "The texture coordinates of the current vertex or fragment",
+        "slotDataTypeGroups": [
+            "inIndex",
+            "outUV",
+            "outU|outV"
+        ],
+        "settings": {
+            "instructions": [
+                "float2 outUV = O3DE_MC_UV(inIndex);"
+            ]
+        },
+        "inputSlots": [
+            {
+                "name": "inIndex",
+                "displayName": "Index",
+                "description": "Index",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "uint",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outUV",
+                "displayName": "UV",
+                "description": "UV",
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2"
+            },
+            {
+                "name": "outU",
+                "displayName": "U",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outUV.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outV",
+                "displayName": "V",
+                "description": "V",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outUV.y;"
+                    ]
+                }
+            }
+        ]
+    }
+}

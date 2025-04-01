@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString InvertGradientModifierNode::TITLE = QObject::tr("Invert");
+    const char* InvertGradientModifierNode::TITLE = "Invert";
 
     InvertGradientModifierNode::InvertGradientModifierNode(GraphModel::GraphPtr graph)
         : BaseGradientModifierNode(graph)

@@ -10,16 +10,27 @@
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
+
 namespace AZ
 {
     class ReflectContext;
-    
+
     namespace Metal
     {
         using SlotToIndexTable = AZStd::array<uint8_t, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
         using IndexToSlotTable = AZStd::fixed_vector<uint8_t, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
 
-        
+
         //! This class describes the usage mask for an Shader Resource
         //! Group that is part of a Pipeline.
         //! Contains a mask that describes in which shader stage a resource
@@ -39,7 +50,7 @@ namespace AZ
             /// Shader usage mask for the constant data. All constants share the same usage mask.
             RHI::ShaderStageMask m_constantDataStageMask = RHI::ShaderStageMask::None;
         };
-    
+
         //! Describes root constant binding information.
         struct RootConstantBinding
         {
@@ -54,7 +65,7 @@ namespace AZ
             );
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
-            
+
             uint32_t m_constantRegister = 0;
             uint32_t m_constantRegisterSpace = 0;
         };
@@ -65,7 +76,7 @@ namespace AZ
             using Base = RHI::PipelineLayoutDescriptor;
         public:
             AZ_RTTI(PipelineLayoutDescriptor, "{BC89E796-AB67-40EA-BE56-9F4B5975E0C8}", Base);
-            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<PipelineLayoutDescriptor> Create();
@@ -82,14 +93,17 @@ namespace AZ
         private:
 
             PipelineLayoutDescriptor() = default;
-            
+
             //////////////////////////////////////////////////////////////////////////
             // RHI::PipelineLayoutDescriptor overrides
             void ResetInternal() override;
             HashValue64 GetHashInternal(HashValue64 seed) const override;
             //////////////////////////////////////////////////////////////////////////
 
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             // Binding slot to SRG index tables ...
             SlotToIndexTable m_slotToIndexTable;
@@ -97,7 +111,7 @@ namespace AZ
 
             /// Visibility info for each Shader Resource Group.
             AZStd::fixed_vector<ShaderResourceGroupVisibility, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroupVisibilities;
-            
+
             RootConstantBinding m_rootConstantBinding;
         };
     }

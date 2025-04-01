@@ -34,7 +34,7 @@ namespace AZ::IO::Requests
         u64 outputSize,
         u64 offset,
         u64 size,
-        AZStd::chrono::system_clock::time_point deadline,
+        AZStd::chrono::steady_clock::time_point deadline,
         IStreamerTypes::Priority priority)
         : m_path(AZStd::move(path))
         , m_allocator(nullptr)
@@ -53,7 +53,7 @@ namespace AZ::IO::Requests
         IStreamerTypes::RequestMemoryAllocator* allocator,
         u64 offset,
         u64 size,
-        AZStd::chrono::system_clock::time_point deadline,
+        AZStd::chrono::steady_clock::time_point deadline,
         IStreamerTypes::Priority priority)
         : m_path(AZStd::move(path))
         , m_allocator(allocator)
@@ -131,7 +131,7 @@ namespace AZ::IO::Requests
 
     RescheduleData::RescheduleData(
         FileRequestPtr target,
-        AZStd::chrono::system_clock::time_point newDeadline,
+        AZStd::chrono::steady_clock::time_point newDeadline,
         IStreamerTypes::Priority newPriority)
         : m_target(AZStd::move(target))
         , m_newDeadline(newDeadline)
@@ -139,8 +139,9 @@ namespace AZ::IO::Requests
     {
     }
 
-    ReportData::ReportData(ReportType reportType)
-        : m_reportType(reportType)
+    ReportData::ReportData(AZStd::vector<AZ::IO::Statistic>& output, IStreamerTypes::ReportType reportType)
+        : m_output(output)
+        , m_reportType(reportType)
     {
     }
 
@@ -187,7 +188,7 @@ namespace AZ::IO
     }
 
     void FileRequest::CreateReadRequest(RequestPath path, void* output, u64 outputSize, u64 offset, u64 size,
-        AZStd::chrono::system_clock::time_point deadline, IStreamerTypes::Priority priority)
+        AZStd::chrono::steady_clock::time_point deadline, IStreamerTypes::Priority priority)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'ReadRequest', but another task was already assigned.");
@@ -195,7 +196,7 @@ namespace AZ::IO
     }
 
     void FileRequest::CreateReadRequest(RequestPath path, IStreamerTypes::RequestMemoryAllocator* allocator, u64 offset, u64 size,
-        AZStd::chrono::system_clock::time_point deadline, IStreamerTypes::Priority priority)
+        AZStd::chrono::steady_clock::time_point deadline, IStreamerTypes::Priority priority)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'ReadRequest', but another task was already assigned.");
@@ -255,7 +256,7 @@ namespace AZ::IO
         m_command.emplace<Requests::CancelData>(AZStd::move(target));
     }
 
-    void FileRequest::CreateReschedule(FileRequestPtr target, AZStd::chrono::system_clock::time_point newDeadline,
+    void FileRequest::CreateReschedule(FileRequestPtr target, AZStd::chrono::steady_clock::time_point newDeadline,
         IStreamerTypes::Priority newPriority)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
@@ -293,11 +294,11 @@ namespace AZ::IO
         SetOptionalParent(parent);
     }
 
-    void FileRequest::CreateReport(Requests::ReportType reportType)
+    void FileRequest::CreateReport(AZStd::vector<AZ::IO::Statistic>& output, IStreamerTypes::ReportType reportType)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Report', but another task was already assigned.");
-        m_command.emplace<Requests::ReportData>(reportType);
+        m_command.emplace<Requests::ReportData>(output, reportType);
     }
 
     void FileRequest::CreateCustom(AZStd::any data, bool failWhenUnhandled, FileRequest* parent)
@@ -406,7 +407,7 @@ namespace AZ::IO
     {
         m_command = AZStd::monostate{};
         m_onCompletion = &OnCompletionPlaceholder;
-        m_estimatedCompletion = AZStd::chrono::system_clock::time_point();
+        m_estimatedCompletion = AZStd::chrono::steady_clock::time_point();
         m_parent = nullptr;
         m_status = IStreamerTypes::RequestStatus::Pending;
         m_dependencies = 0;
@@ -446,7 +447,7 @@ namespace AZ::IO
         return m_pendingId;
     }
 
-    void FileRequest::SetEstimatedCompletion(AZStd::chrono::system_clock::time_point time)
+    void FileRequest::SetEstimatedCompletion(AZStd::chrono::steady_clock::time_point time)
     {
         FileRequest* current = this;
         do
@@ -456,7 +457,7 @@ namespace AZ::IO
         } while (current);
     }
 
-    AZStd::chrono::system_clock::time_point FileRequest::GetEstimatedCompletion() const
+    AZStd::chrono::steady_clock::time_point FileRequest::GetEstimatedCompletion() const
     {
         return m_estimatedCompletion;
     }

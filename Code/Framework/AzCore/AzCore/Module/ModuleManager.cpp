@@ -104,7 +104,7 @@ namespace AZ
         // If module is from DLL, return DLL name.
         if (m_dynamicHandle)
         {
-            AZStd::string_view handleFilename(m_dynamicHandle->GetFilename().c_str());
+            AZStd::string_view handleFilename(m_dynamicHandle->GetFilename());
             AZStd::string_view::size_type lastSlash = handleFilename.find_last_of("\\/");
             if (lastSlash != AZStd::string_view::npos)
             {
@@ -136,7 +136,7 @@ namespace AZ
         {
             auto destroyFunc = m_dynamicHandle->GetFunction<DestroyModuleClassFunction>(DestroyModuleClassFunctionName);
             AZ_Assert(destroyFunc, "Unable to locate '%s' entry point in module at \"%s\".",
-                DestroyModuleClassFunctionName, m_dynamicHandle->GetFilename().c_str());
+                DestroyModuleClassFunctionName, m_dynamicHandle->GetFilename());
             if (destroyFunc)
             {
                 destroyFunc(m_module);
@@ -402,10 +402,10 @@ namespace AZ
                     }
 
                     // Load DLL from disk
-                    if (!moduleDataPtr->m_dynamicHandle->Load(true))
+                    if (!moduleDataPtr->m_dynamicHandle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired))
                     {
                         return AZ::Failure(AZStd::string::format("Failed to load dynamic library at path \"%s\".",
-                            moduleDataPtr->m_dynamicHandle->GetFilename().c_str()));
+                            moduleDataPtr->m_dynamicHandle->GetFilename()));
                     }
 
                     return AZ::Success();
@@ -737,7 +737,7 @@ namespace AZ
         for (auto componentIt = componentsToActivate.begin(); componentIt != componentsToActivate.end(); )
         {
             Component* component = *componentIt;
-        
+
             // Remove the system entity and already activated components, we don't need to activate or store those
             if (component->GetEntityId() == SystemEntityId ||
                 AZStd::find(m_systemComponents.begin(), m_systemComponents.end(), component) != m_systemComponents.end())

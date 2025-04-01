@@ -18,7 +18,6 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
@@ -39,7 +38,6 @@ namespace UnitTest
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<AZ::MemoryComponent>(),
                 azrtti_typeid<AZ::AssetManagerComponent>(),
                 azrtti_typeid<AZ::JobManagerComponent>(),
                 azrtti_typeid<AZ::StreamerComponent>(),
@@ -96,15 +94,13 @@ namespace UnitTest
     };
 
     class UiTextInputComponentTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
 
         void SetUp() override
         {
             // Start application
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
-
             AZ::ComponentApplication::Descriptor appDescriptor;
             appDescriptor.m_useExistingAllocator = true;
 
@@ -127,7 +123,6 @@ namespace UnitTest
             m_applicationPtr->Stop();
             delete m_applicationPtr;
             m_applicationPtr = nullptr;
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
     private:

@@ -18,8 +18,8 @@
 
 namespace AzPhysics::Automation
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyCollisionAutomationHandler, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyTriggerAutomationHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyCollisionAutomationHandler, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyTriggerAutomationHandler, AZ::SystemAllocator);
 
     /*static*/ void SimulatedBodyCollisionAutomationHandler::Reflect(AZ::ReflectContext* context)
     {
@@ -60,14 +60,14 @@ namespace AzPhysics::Automation
         SetEvent(&SimulatedBodyCollisionAutomationHandler::OnCollisionEnd, "OnCollisionEnd");
     }
 
-    void SimulatedBodyCollisionAutomationHandler::Disconnect()
+    void SimulatedBodyCollisionAutomationHandler::Disconnect(AZ::BehaviorArgument* id [[maybe_unused]])
     {
         m_collisionBeginHandler.Disconnect();
         m_collisionPersistHandler.Disconnect();
         m_collisionEndHandler.Disconnect();
     }
 
-    bool SimulatedBodyCollisionAutomationHandler::Connect(AZ::BehaviorValueParameter* id /*= nullptr*/)
+    bool SimulatedBodyCollisionAutomationHandler::Connect(AZ::BehaviorArgument* id /*= nullptr*/)
     {
         if (id && id->ConvertTo<typename AZ::EntityId>())
         {
@@ -108,7 +108,7 @@ namespace AzPhysics::Automation
         return m_collisionBeginHandler.IsConnected() || m_collisionPersistHandler.IsConnected() || m_collisionEndHandler.IsConnected();
     }
 
-    bool SimulatedBodyCollisionAutomationHandler::IsConnectedId(AZ::BehaviorValueParameter* id)
+    bool SimulatedBodyCollisionAutomationHandler::IsConnectedId(AZ::BehaviorArgument* id)
     {
         if (id && id->ConvertTo<typename AZ::EntityId>())
         {
@@ -181,13 +181,13 @@ namespace AzPhysics::Automation
         SetEvent(&SimulatedBodyTriggerAutomationHandler::OnTriggerExit, "OnTriggerExit");
     }
 
-    void SimulatedBodyTriggerAutomationHandler::Disconnect()
+    void SimulatedBodyTriggerAutomationHandler::Disconnect(AZ::BehaviorArgument* id [[maybe_unused]])
     {
         m_triggerEnterHandler.Disconnect();
         m_triggerExitHandler.Disconnect();
     }
 
-    bool SimulatedBodyTriggerAutomationHandler::Connect(AZ::BehaviorValueParameter* id /*= nullptr*/)
+    bool SimulatedBodyTriggerAutomationHandler::Connect(AZ::BehaviorArgument* id /*= nullptr*/)
     {
         if (id && id->ConvertTo<typename AZ::EntityId>())
         {
@@ -223,7 +223,7 @@ namespace AzPhysics::Automation
         return m_triggerEnterHandler.IsConnected() || m_triggerExitHandler.IsConnected();
     }
 
-    bool SimulatedBodyTriggerAutomationHandler::IsConnectedId(AZ::BehaviorValueParameter* id)
+    bool SimulatedBodyTriggerAutomationHandler::IsConnectedId(AZ::BehaviorArgument* id)
     {
         if (id && id->ConvertTo<typename AZ::EntityId>())
         {

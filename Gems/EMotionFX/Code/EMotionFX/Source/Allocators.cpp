@@ -9,42 +9,21 @@
 #include <EMotionFX/Source/Allocators.h>
 
 
+namespace AZ::Internal
+{
+    // Add implementation of PoolAllocatorHelper base class template RTTI functions
+    // needed by the derived EMotionFX Pool allocators
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "EMotionFX::PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
+    AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
+
+    // Explicitly instantite the PoolAllocator schemas for the EMotionFX Allocators
+    template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphConditionAllocator>>;
+    template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphObjectDataAllocator>>;
+    template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphObjectUniqueDataAllocator>>;
+}
+
 namespace EMotionFX
 {
-    // Create all allocators
-    void Allocators::Create()
-    {
-#define EMOTION_FX_ALLOCATOR_CREATE(ALLOCATOR_SEQUENCE) \
-    AZ::AllocatorInstance<EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE)>::Create();
-
-        // Here we call the "Create" to create the allocator for all the items in the header's table (Step 4)
-        AZ_SEQ_FOR_EACH(EMOTION_FX_ALLOCATOR_CREATE, EMOTIONFX_ALLOCATORS)
-
-#undef EMOTION_FX_ALLOCATOR_CREATE
-
-        // Create the pool allocators
-        AZ::AllocatorInstance<AnimGraphConditionAllocator>::Create();
-        AZ::AllocatorInstance<AnimGraphObjectDataAllocator>::Create();
-        AZ::AllocatorInstance<AnimGraphObjectUniqueDataAllocator>::Create();
-    }
-
-    // Destroy all allocators
-    void Allocators::Destroy()
-    {
-#define EMOTION_FX_ALLOCATOR_DESTROY(ALLOCATOR_SEQUENCE) \
-    AZ::AllocatorInstance<EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE)>::Destroy();
-
-        // Here we call the "Destroy" to destroy the allocator for all the items in the header's table (Step 5)
-        AZ_SEQ_FOR_EACH(EMOTION_FX_ALLOCATOR_DESTROY, EMOTIONFX_ALLOCATORS)
-
-#undef EMOTION_FX_ALLOCATOR_DESTROY
-
-        // Destroy the pool allocators
-        AZ::AllocatorInstance<AnimGraphConditionAllocator>::Destroy();
-        AZ::AllocatorInstance<AnimGraphObjectDataAllocator>::Destroy();
-        AZ::AllocatorInstance<AnimGraphObjectUniqueDataAllocator>::Destroy();
-    }
-
     void Allocators::ShrinkPools()
     {
         AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GarbageCollect();

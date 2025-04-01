@@ -11,7 +11,6 @@
 #include <Tests/SystemComponentFixture.h>
 #include <Tests/UI/UIFixture.h>
 
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>

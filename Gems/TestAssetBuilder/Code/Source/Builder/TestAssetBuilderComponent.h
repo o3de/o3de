@@ -19,7 +19,7 @@ namespace TestAssetBuilder
     struct TestDependentAsset
         : public AZ::Data::AssetData
     {
-        AZ_CLASS_ALLOCATOR(TestDependentAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestDependentAsset, AZ::SystemAllocator);
         AZ_RTTI(TestDependentAsset, "{B91BCEFE-1725-47E8-A762-C09F09425904}", AZ::Data::AssetData);
 
         TestDependentAsset() = default;
@@ -30,7 +30,7 @@ namespace TestAssetBuilder
         : public AZ::Data::AssetCatalog
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestDependentAssetCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestDependentAssetCatalog, AZ::SystemAllocator);
 
         TestDependentAssetCatalog() = default;
 

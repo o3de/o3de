@@ -669,7 +669,7 @@ bool AssetBuilderComponent::RunDebugTask(AZStd::string&& debugFile, bool runCrea
                     AssetBuilderSDK::JobDescriptor placeholder;
                     placeholder.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
                     placeholder.m_jobKey = AZStd::string::format("%s_DEBUG", builder->m_name.c_str());
-                    placeholder.m_jobParameters[AZ_CRC("Debug", 0x6ca547a7)] = "true";
+                    placeholder.m_jobParameters[AZ_CRC_CE("Debug")] = "true";
                     jobDescriptions.emplace_back(AZStd::move(placeholder));
                 }
             }
@@ -928,6 +928,12 @@ void AssetBuilderComponent::JobThread()
         AssetBuilderSDK::AssetBuilderTraceBus::Broadcast(&AssetBuilderSDK::AssetBuilderTraceBus::Events::ResetErrorCount);
         AssetBuilderSDK::AssetBuilderTraceBus::Broadcast(&AssetBuilderSDK::AssetBuilderTraceBus::Events::ResetWarningCount);
 
+        size_t allocatedBytesBefore = 0;
+        size_t capacityBytesBefore = 0;
+        AZ::AllocatorManager::Instance().GarbageCollect();
+        AZ::AllocatorManager::Instance().GetAllocatorStats(allocatedBytesBefore, capacityBytesBefore);
+        AZ_TracePrintf("AssetBuilder", "AllocatorManager before: allocatedBytes = %zu capacityBytes = %zu\n", allocatedBytesBefore, capacityBytesBefore);
+
         switch (job->m_jobType)
         {
             case JobType::Create:
@@ -954,6 +960,7 @@ void AssetBuilderComponent::JobThread()
                     AZ_Error("AssetBuilder", false, "Builder UUID [%s] does not exist in the AssetBuilderDescMap for source file %s",
                         netRequest->m_request.m_builderid.ToString<AZStd::fixed_string<64>>().c_str(), netRequest->m_request.m_sourceFile.c_str());
                 }
+
                 break;
             }
             case JobType::Process:
@@ -997,6 +1004,14 @@ void AssetBuilderComponent::JobThread()
                 continue;
         }
 
+        size_t allocatedBytesAfter = 0;
+        size_t capacityBytesAfter = 0;
+        AZ::AllocatorManager::Instance().GarbageCollect();
+        AZ_MALLOC_TRIM(0);
+        AZ::AllocatorManager::Instance().GetAllocatorStats(allocatedBytesAfter, capacityBytesAfter);
+        AZ_TracePrintf("AssetBuilder", "AllocatorManager after: allocatedBytes = %zu capacityBytes = %zu; allocated change = %zd\n",
+            allocatedBytesAfter, capacityBytesAfter, allocatedBytesAfter - allocatedBytesBefore);
+
         AZ::u32 warningCount, errorCount;
         AssetBuilderSDK::AssetBuilderTraceBus::BroadcastResult(warningCount, &AssetBuilderSDK::AssetBuilderTraceBus::Events::GetWarningCount);
         AssetBuilderSDK::AssetBuilderTraceBus::BroadcastResult(errorCount, &AssetBuilderSDK::AssetBuilderTraceBus::Events::GetErrorCount);
@@ -1008,7 +1023,7 @@ void AssetBuilderComponent::JobThread()
         std::fflush(stderr);
 
         AZ::SystemTickBus::Broadcast(&AZ::SystemTickBus::Events::OnSystemTick);
-        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.00f, AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.00f, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         AZ::AllocatorManager::Instance().GarbageCollect();
 
         AzFramework::AssetSystem::SendResponse(*(job->m_netResponse), job->m_requestSerial);

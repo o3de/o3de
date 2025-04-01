@@ -14,6 +14,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 
 namespace AzToolsFramework
 {
@@ -80,7 +81,7 @@ namespace AzToolsFramework
         *          If the operation could not be completed then the failed
         *          outcome contains a string describing what went wrong.
         */
-        virtual AddExistingComponentsOutcome AddExistingComponentsToEntityById(const AZ::EntityId& entityId, const AZStd::vector<AZ::Component*>& componentsToAdd) = 0;
+        virtual AddExistingComponentsOutcome AddExistingComponentsToEntityById(const AZ::EntityId& entityId, AZStd::span<AZ::Component* const> componentsToAdd) = 0;
 
         // Removing a component can only cause the following to occur:
         // 1) Invalidate other components by removing missing services
@@ -103,7 +104,7 @@ namespace AzToolsFramework
         * \param componentsToRemove List of component pointers to remove (from their respective entities).
         * \return true if the components were successfully removed or false otherwise.
         */
-        virtual RemoveComponentsOutcome RemoveComponents(const AZStd::vector<AZ::Component*>& componentsToRemove) = 0;
+        virtual RemoveComponentsOutcome RemoveComponents(AZStd::span<AZ::Component* const> componentsToRemove) = 0;
 
         using ScrubEntityResults = RemoveComponentsResults;
         using EntityToScrubEntityResultsMap = AZStd::unordered_map<AZ::EntityId, ScrubEntityResults>;
@@ -138,13 +139,13 @@ namespace AzToolsFramework
         * Removes the given components from their respective entities (currently only single entity is supported) and copies the data to the clipboard if successful
         * \param components vector of components to cut (this method will delete the components provided on successful removal)
         */
-        virtual void CutComponents(const AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void CutComponents(AZStd::span<AZ::Component* const> components) = 0;
 
         /*!
         * Copies the given components from their respective entities (multiple source entities are supported) into mime data on the clipboard for pasting elsewhere
         * \param components vector of components to copy
         */
-        virtual void CopyComponents(const AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void CopyComponents(AZStd::span<AZ::Component* const> components) = 0;
 
         /*!
         * Pastes components from the mime data on the clipboard (assuming it is component data) to the given entity
@@ -162,15 +163,14 @@ namespace AzToolsFramework
         * Enables the given components
         * \param components vector of components to enable
         */
-        virtual void EnableComponents(const AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void EnableComponents(AZStd::span<AZ::Component* const> components) = 0;
 
         /*!
         * Disables the given components
         * \param components vector of components to disable
         */
-        virtual void DisableComponents(const AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void DisableComponents(AZStd::span<AZ::Component* const> components) = 0;
 
-        using ComponentServicesList = AZStd::vector<AZ::ComponentServiceType>;
 
         /*!
          * Info detailing why a pending component cannot be activated.
@@ -179,9 +179,9 @@ namespace AzToolsFramework
         {
             AZ::Entity::ComponentArrayType m_validComponentsThatAreIncompatible;
             AZ::Entity::ComponentArrayType m_pendingComponentsWithRequiredServices;
-            AZ::Entity::StringWarningArray m_warnings;
-            ComponentServicesList m_missingRequiredServices;
-            ComponentServicesList m_incompatibleServices;
+            AZ::ComponentDescriptor::StringWarningArray m_warnings;
+            AZ::ComponentDescriptor::DependencyArrayType m_missingRequiredServices;
+            AZ::ComponentDescriptor::DependencyArrayType m_incompatibleServices;
         };
 
         /*
@@ -206,9 +206,6 @@ namespace AzToolsFramework
 
     //! ComponentFilter for components that users can add to game entities.
     static bool AppearsInGameComponentMenu(const AZ::SerializeContext::ClassData&);
-
-    //! ComponentFilter for components that can be added to system entities.
-    static bool AppearsInSystemComponentMenu(const AZ::SerializeContext::ClassData&);
 
     //
     // Implementation
@@ -267,14 +264,14 @@ namespace AzToolsFramework
                         AZStd::vector<AZ::Crc32> classEntityTypes;
                         if (reader.Read<AZ::Crc32>(classEntityType))
                         {
-                            if (classEntityType == AZ_CRC("Game", 0x232b318c))
+                            if (classEntityType == AZ_CRC_CE("Game"))
                             {
                                 return true;
                             }
                         }
                         else if (reader.Read<AZStd::vector<AZ::Crc32>>(classEntityTypes))
                         {
-                            if (AZStd::find(classEntityTypes.begin(), classEntityTypes.end(), AZ_CRC("Game", 0x232b318c)) != classEntityTypes.end())
+                            if (AZStd::find(classEntityTypes.begin(), classEntityTypes.end(), AZ_CRC_CE("Game")) != classEntityTypes.end())
                             {
                                 return true;
                             }
@@ -294,23 +291,18 @@ namespace AzToolsFramework
         return false;
     }
 
-    inline bool AppearsInSystemComponentMenu(const AZ::SerializeContext::ClassData& classData)
-    {
-        return AppearsInAddComponentMenu(classData, AZ_CRC("System", 0xc94d118b));
-    }
-
     inline bool AppearsInLayerComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
-        return AppearsInAddComponentMenu(classData, AZ_CRC("Layer", 0xe4db211a));
+        return AppearsInAddComponentMenu(classData, AZ_CRC_CE("Layer"));
     }
 
     inline bool AppearsInLevelComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
-        return AppearsInAddComponentMenu(classData, AZ_CRC("Level", 0x9aeacc13));
+        return AppearsInAddComponentMenu(classData, AZ_CRC_CE("Level"));
     }
 
     inline bool AppearsInAnyComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
-        return (AppearsInGameComponentMenu(classData) || AppearsInSystemComponentMenu(classData) || AppearsInLayerComponentMenu(classData) || AppearsInLevelComponentMenu(classData));
+        return (AppearsInGameComponentMenu(classData) || AppearsInLayerComponentMenu(classData) || AppearsInLevelComponentMenu(classData));
     }
 }

@@ -21,6 +21,10 @@ namespace AZ
 {
     namespace RPI
     {
+        AttachmentImagePool::AttachmentImagePool() = default;
+
+        AttachmentImagePool::~AttachmentImagePool() = default;
+
         Data::Instance<AttachmentImagePool> AttachmentImagePool::FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset)
         {
             return Data::InstanceDatabase<AttachmentImagePool>::Instance().FindOrCreate(
@@ -28,10 +32,10 @@ namespace AZ
                 resourcePoolAsset);
         }
 
-        Data::Instance<AttachmentImagePool> AttachmentImagePool::CreateInternal(RHI::Device& device, ResourcePoolAsset& poolAsset)
+        Data::Instance<AttachmentImagePool> AttachmentImagePool::CreateInternal(ResourcePoolAsset& poolAsset)
         {
             Data::Instance<AttachmentImagePool> imagePool = aznew AttachmentImagePool();
-            RHI::ResultCode resultCode = imagePool->Init(device, poolAsset);
+            RHI::ResultCode resultCode = imagePool->Init(poolAsset);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -41,9 +45,9 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode AttachmentImagePool::Init(RHI::Device& device, ResourcePoolAsset& poolAsset)
+        RHI::ResultCode AttachmentImagePool::Init(ResourcePoolAsset& poolAsset)
         {
-            RHI::Ptr<RHI::ImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
+            RHI::Ptr<RHI::ImagePool> imagePool = aznew RHI::ImagePool;
             if (!imagePool)
             {
                 AZ_Error("RPI::ImagePool", false, "Failed to create RHI::ImagePool");
@@ -57,11 +61,11 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::ResultCode resultCode = imagePool->Init(device, *desc);
+            imagePool->SetName(AZ::Name(poolAsset.GetPoolName()));
+            RHI::ResultCode resultCode = imagePool->Init(*desc);
             if (resultCode == RHI::ResultCode::Success)
             {
                 m_pool = imagePool;
-                m_pool->SetName(AZ::Name{ poolAsset.GetPoolName() });
             }
             return resultCode;
         }

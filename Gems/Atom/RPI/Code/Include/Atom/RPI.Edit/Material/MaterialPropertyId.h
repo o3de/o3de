@@ -8,8 +8,9 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <AzCore/Name/Name.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -20,12 +21,9 @@ namespace AZ
         //! Utility for building material property IDs.
         //! These IDs are represented like "groupA.groupB.[...].propertyName".
         //! The groups are optional, in which case the full property ID will just be like "propertyName".
-        class MaterialPropertyId
+        class ATOM_RPI_EDIT_API MaterialPropertyId
         {
-        public:                
-            static bool IsValidName(AZStd::string_view name);
-            static bool IsValidName(const AZ::Name& name);
-
+        public:
             //! Creates a MaterialPropertyId from a full name string like "groupA.groupB.[...].propertyName" or just "propertyName".
             //! Also checks the name for validity.
             static MaterialPropertyId Parse(AZStd::string_view fullPropertyId);
@@ -34,7 +32,8 @@ namespace AZ
             explicit MaterialPropertyId(AZStd::string_view propertyName);
             MaterialPropertyId(AZStd::string_view groupName, AZStd::string_view propertyName);
             MaterialPropertyId(const Name& groupName, const Name& propertyName);
-            explicit MaterialPropertyId(const AZStd::array_view<AZStd::string> names);
+            explicit MaterialPropertyId(const AZStd::span<AZStd::string> names);
+            MaterialPropertyId(const AZStd::span<AZStd::string> groupNames, AZStd::string_view propertyName);
 
             AZ_DEFAULT_COPY_MOVE(MaterialPropertyId);
 

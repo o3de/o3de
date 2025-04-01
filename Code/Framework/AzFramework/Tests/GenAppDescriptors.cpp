@@ -16,7 +16,7 @@
 namespace UnitTest
 {
     class GenAppDescriptors
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void FakePopulateModules(AZ::ComponentApplication::Descriptor& desc, const char* libSuffix)
@@ -30,8 +30,7 @@ namespace UnitTest
             {
                 for (const char* module : modules)
                 {
-                    desc.m_modules.push_back();
-                    desc.m_modules.back().m_dynamicLibraryPath = module;
+                    desc.m_modules.emplace_back().m_dynamicLibraryPath = module;
                     desc.m_modules.back().m_dynamicLibraryPath += libSuffix;
                 }
             }

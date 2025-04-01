@@ -18,6 +18,8 @@
 #include "ReflectedPropertyCtrl.h"
 #include "Undo/UndoVariableChange.h"
 
+#include <AzCore/Serialization/Locale.h>
+
 // default number of increments to cover the range of a property - determined experimentally by feel
 const float ReflectedPropertyItem::s_DefaultNumStepIncrements = 500.0f;
 
@@ -32,6 +34,16 @@ const float ReflectedPropertyItem::s_DefaultNumStepIncrements = 500.0f;
 
 static ColorF StringToColor(const QString &value)
 {
+    // note that converting back and forth between these values is happening in 2 cases
+    // one is when its being read from the UI and the other is when it is being read from XML
+    // XML is always in "C" locale, and the GUI is ultimately using @ref type_convertor in Variable.h
+    // which itself uses QString::number, which is always in the "C" locale (invariant culture).
+    // for example, color is converted using the following line
+    // void operator()(const Vec4& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(value.x).arg(value.y).arg(value.z).arg(value.w); }
+    // qstring::arg uses the "C" Locale unless explicitly using the notation %L1, %L2, etc, so the input will be invariant.
+
+    AZ::Locale::ScopedSerializationLocale localeScope;
+
     ColorF color;
     float r, g, b, a;
     int res = azsscanf(value.toUtf8().data(), "%f,%f,%f,%f", &r, &g, &b, &a);
@@ -229,34 +241,19 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         break;
     case ePropertyFloat:
     case ePropertyAngle:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal float editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarFloatAdapter;
+        m_reflectedVarAdapter = new ReflectedVarFloatAdapter;
         break;
     case ePropertyInt:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal int editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarIntAdapter;
+        m_reflectedVarAdapter = new ReflectedVarIntAdapter;
         break;
     case ePropertyBool:
         m_reflectedVarAdapter = new ReflectedVarBoolAdapter;
         break;
     case ePropertyString:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal string editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarStringAdapter;
+        m_reflectedVarAdapter = new ReflectedVarStringAdapter;
         break;
     case ePropertySelection:
         m_reflectedVarAdapter = new ReflectedVarEnumAdapter;
-        break;
-    case ePropertyColor:
-        m_reflectedVarAdapter = new ReflectedVarColorAdapter;
         break;
     case ePropertyUser:
         m_reflectedVarAdapter = new ReflectedVarUserAdapter;

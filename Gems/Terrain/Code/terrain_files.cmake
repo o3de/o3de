@@ -29,12 +29,22 @@ set(FILES
     Source/Components/TerrainWorldRendererComponent.h
     Source/TerrainRaycast/TerrainRaycastContext.cpp
     Source/TerrainRaycast/TerrainRaycastContext.h
+    Source/TerrainRenderer/Components/MacroMaterialImageModification.cpp
+    Source/TerrainRenderer/Components/MacroMaterialImageModification.h
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.cpp
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.cpp
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.h
     Source/TerrainRenderer/Aabb2i.cpp
     Source/TerrainRenderer/Aabb2i.h
+    Source/TerrainRenderer/ClipmapBounds.cpp
+    Source/TerrainRenderer/ClipmapBounds.h
+    Source/TerrainRenderer/Passes/TerrainClipmapComputePass.cpp
+    Source/TerrainRenderer/Passes/TerrainClipmapComputePass.h
+    Source/TerrainRenderer/Passes/TerrainClipmapDebugPass.cpp
+    Source/TerrainRenderer/Passes/TerrainClipmapDebugPass.h
+    Source/TerrainRenderer/TerrainClipmapManager.cpp
+    Source/TerrainRenderer/TerrainClipmapManager.h
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainRenderer/TerrainDetailMaterialManager.cpp
@@ -43,8 +53,6 @@ set(FILES
     Source/TerrainRenderer/TerrainMacroMaterialManager.h
     Source/TerrainRenderer/TerrainMeshManager.cpp
     Source/TerrainRenderer/TerrainMeshManager.h
-    Source/TerrainRenderer/BindlessImageArrayHandler.cpp
-    Source/TerrainRenderer/BindlessImageArrayHandler.h
     Source/TerrainRenderer/TerrainAreaMaterialRequestBus.h
     Source/TerrainRenderer/TerrainMacroMaterialBus.cpp
     Source/TerrainRenderer/TerrainMacroMaterialBus.h

@@ -58,7 +58,9 @@ namespace AzNetworking
     {
         if (m_state == ConnectionState::Connected)
         {
+            m_state = ConnectionState::Disconnecting;
             m_networkInterface.GetConnectionListener().OnDisconnect(this, DisconnectReason::ConnectionDeleted, TerminationEndpoint::Local);
+            m_state = ConnectionState::Disconnected;
         }
     }
 
@@ -86,12 +88,14 @@ namespace AzNetworking
 
     bool UdpConnection::SendReliablePacket(const IPacket& packet)
     {
+        AZStd::lock_guard lock(m_sendPacketMutex);
         const SequenceId reliableSequenceId = m_reliableQueue.GetNextSequenceId();
         return (m_networkInterface.SendPacket(*this, packet, reliableSequenceId) != InvalidPacketId);
     }
 
     PacketId UdpConnection::SendUnreliablePacket(const IPacket& packet)
     {
+        AZStd::lock_guard lock(m_sendPacketMutex);
         return m_networkInterface.SendPacket(*this, packet, InvalidSequenceId);
     }
 
@@ -118,8 +122,7 @@ namespace AzNetworking
         }
         if (m_state == ConnectionState::Disconnecting)
         {
-            AZStd::string reasonString = ToString(reason);
-            AZLOG_ERROR("Disconnecting an already disconnecting connection due to %s", reasonString.c_str());
+            AZLOG_WARN("Disconnecting an already disconnecting connection due to %s", ToString(reason).data());
             return false;
         }
         m_state = ConnectionState::Disconnecting;

@@ -27,6 +27,7 @@ namespace ScriptCanvas
         AddVisibility,
         MergeScriptFunctions,
         CorrectDynamicDataTypeForExecution,
+        AddCanHaveInputField,
         // Add your version above
         Current
     };
@@ -36,7 +37,7 @@ namespace ScriptCanvas
         // SlotName
         if (classElement.GetVersion() <= 6)
         {
-            auto slotNameElements = AZ::Utils::FindDescendantElements(context, classElement, AZStd::vector<AZ::Crc32>{AZ_CRC("id", 0xbf396750), AZ_CRC("m_name", 0xc08c4427)});
+            auto slotNameElements = AZ::Utils::FindDescendantElements(context, classElement, AZStd::vector<AZ::Crc32>{AZ_CRC_CE("id"), AZ_CRC_CE("m_name")});
             AZStd::string slotName;
             if (slotNameElements.empty() || !slotNameElements.front()->GetData(slotName))
             {
@@ -49,7 +50,7 @@ namespace ScriptCanvas
         // Index fields
         if (classElement.GetVersion() <= 8)
         {
-            classElement.RemoveElementByName(AZ_CRC("index", 0x80736701));
+            classElement.RemoveElementByName(AZ_CRC_CE("index"));
         }
 
         // Dynamic Type Fields
@@ -59,7 +60,7 @@ namespace ScriptCanvas
         }
         else if (classElement.GetVersion() < 11)
         {
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("dataTypeOverride", 0x7f1765d9));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("dataTypeOverride"));
 
             int enumValue = 0;
             if (subElement->GetData(enumValue))
@@ -74,7 +75,7 @@ namespace ScriptCanvas
                 }
             }
 
-            classElement.RemoveElementByName(AZ_CRC("dataTypeOverride", 0x7f1765d9));
+            classElement.RemoveElementByName(AZ_CRC_CE("dataTypeOverride"));
         }
         
         // DisplayDataType
@@ -86,7 +87,7 @@ namespace ScriptCanvas
         // Descriptor
         if (classElement.GetVersion() <= 13)
         {
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("type", 0x8cde5729));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("type"));
 
             int enumValue = 0;
             if (subElement && subElement->GetData(enumValue))
@@ -101,13 +102,13 @@ namespace ScriptCanvas
                 classElement.AddElementWithData(context, "IsLatent", isLatent);
             }
 
-            classElement.RemoveElementByName(AZ_CRC("type", 0x8cde5729));
+            classElement.RemoveElementByName(AZ_CRC_CE("type"));
         }
 
         // DataType
         if (classElement.GetVersion() <= 15)
         {
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("Descriptor", 0x03927602));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("Descriptor"));
 
             Slot::DataType dataType = Slot::DataType::NoData;
 
@@ -125,7 +126,7 @@ namespace ScriptCanvas
         // This data field wasn't actually being initalized correctly So need to re-version convert.
         else if (classElement.GetVersion() <= 17)
         {            
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("Descriptor", 0x03927602));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("Descriptor"));
 
             Slot::DataType dataType = Slot::DataType::NoData;
 
@@ -138,25 +139,25 @@ namespace ScriptCanvas
                 }
             }
 
-            classElement.RemoveElementByName(AZ_CRC("DataType", 0x8539af66));
+            classElement.RemoveElementByName(AZ_CRC_CE("DataType"));
             classElement.AddElementWithData(context, "DataType", dataType);
         }
 
         if (classElement.GetVersion() <= 17)
         {
-            classElement.RemoveElementByName(AZ_CRC("nodeId", 0x9ce63325));
+            classElement.RemoveElementByName(AZ_CRC_CE("nodeId"));
         }
 
         if (classElement.GetVersion() <= SlotVersion::CorrectDynamicDataTypeForExecution)
         {
-            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC("Descriptor", 0x03927602));
+            AZ::SerializeContext::DataElementNode* subElement = classElement.FindSubElement(AZ_CRC_CE("Descriptor"));
 
             SlotDescriptor slotDescriptor;
             if (subElement && subElement->GetData(slotDescriptor))
             {
                 if (slotDescriptor.IsExecution())
                 {
-                    classElement.RemoveElementByName(AZ_CRC("DynamicTypeOverride", 0x4652de8e));
+                    classElement.RemoveElementByName(AZ_CRC_CE("DynamicTypeOverride"));
                     classElement.AddElementWithData(context, "DynamicTypeOverride", DynamicDataType::None);
                 }
             }
@@ -209,6 +210,9 @@ namespace ScriptCanvas
                 ->Field("IsReference", &Slot::m_isVariableReference)
                 ->Field("VariableReference", &Slot::m_variableReference)
                 ->Field("IsUserAdded", &Slot::m_isUserAdded)
+                ->Field("CanHaveInputField", &Slot::m_canHaveInputField)
+                ->Field("CreatesImplicitConnections", &Slot::m_createsImplicitConnections)
+                ->Field("IsNameHidden", &Slot::m_isNameHidden)
                 ;
         }
 
@@ -223,6 +227,9 @@ namespace ScriptCanvas
         , m_dynamicDataType(DynamicDataType::None)
         , m_id(slotConfiguration.m_slotId)
         , m_isVisible(slotConfiguration.m_isVisible)
+        , m_canHaveInputField(slotConfiguration.m_canHaveInputField)
+        , m_createsImplicitConnections(slotConfiguration.m_createsImplicitConnections)
+        , m_isNameHidden(slotConfiguration.m_isNameHidden)
     {
         if (!slotConfiguration.m_displayGroup.empty())
         {
@@ -237,7 +244,7 @@ namespace ScriptCanvas
             AddContract(contractDesc);
         }
 
-        if (const DataSlotConfiguration* dataSlotConfiguration = azrtti_cast<const DataSlotConfiguration*>(&slotConfiguration))
+        if (azrtti_cast<const DataSlotConfiguration*>(&slotConfiguration))
         {
             m_dataType = DataType::Data;
         }
@@ -295,7 +302,7 @@ namespace ScriptCanvas
 
     Slot::~Slot()
     {
-        VariableNotificationBus::Handler::BusDisconnect();
+        VariableNotificationBus::MultiHandler::BusDisconnect();
     }
 
     Slot& Slot::operator=(const Slot& slot)
@@ -384,7 +391,9 @@ namespace ScriptCanvas
 
             if (m_variable)
             {
-                VariableNotificationBus::Handler::BusConnect(m_variable->GetGraphScopedId());
+                DisconnectVariableNotificationBus();
+
+                VariableNotificationBus::MultiHandler::BusConnect(m_variable->GetGraphScopedId());
             }
             else if (m_node)
             {
@@ -421,14 +430,29 @@ namespace ScriptCanvas
         return datum;
     }
 
-    void Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
+    bool Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
     {
-        m_node->FindModifiableDatumView(GetId(), datumView);
+        return m_node->FindModifiableDatumView(GetId(), datumView);
     }
 
     bool Slot::IsVariableReference() const
     {
         return m_isVariableReference || m_dataType == DataType::VariableReference;
+    }
+
+    bool Slot::CanHaveInputField() const
+    {
+        return m_canHaveInputField;
+    }
+
+    bool Slot::CreatesImplicitConnections() const
+    {
+        return m_createsImplicitConnections;
+    }
+
+    bool Slot::IsNameHidden() const
+    {
+        return m_isNameHidden;
     }
 
     bool Slot::CanConvertToValue() const
@@ -480,25 +504,24 @@ namespace ScriptCanvas
         return m_isVariableReference;
     }
 
-    void Slot::SetVariableReference(const VariableId& variableId)
+    void Slot::SetVariableReference(const VariableId& variableId, IsVariableTypeChange isTypeChange)
     {
         if (!IsVariableReference() && !ConvertToReference())
         {
             return;
         }
 
-        if (m_variableReference == variableId)
+        if ((m_variableReference == variableId) && (isTypeChange != IsVariableTypeChange::Yes))
         {
             return;
         }
 
         m_variableReference = variableId;
         m_variable = nullptr;
-        VariableNotificationBus::Handler::BusDisconnect();
 
         if (IsDynamicSlot())
         {
-            if (!HasDisplayType())
+            if (!HasDisplayType() || isTypeChange == IsVariableTypeChange::Yes)
             {
                 GraphVariable* variable = m_node->FindGraphVariable(m_variableReference);
 
@@ -776,7 +799,7 @@ namespace ScriptCanvas
             {
                 return AZ::Failure(AZStd::string::format("%s is a Container type and not a Value type.", ScriptCanvas::Data::GetName(otherType).c_str()));
             }
-        }        
+        }
 
         if (otherSlot.IsDynamicSlot())
         {
@@ -859,12 +882,29 @@ namespace ScriptCanvas
         }
 
         // At this point we need to confirm the types are a match.
-        const auto& thisType = GetDataType();
+        // Get the slot definition's data type so that we can verify that the new data type is a compatible type.
+        // We specifcally don't use GetSlotDataType() here, because that will return the data type for any currently-attached
+        // variable, which might have a subtype that's more restrictive that the slot's base type.
+        const auto& slotType = m_node->GetUnderlyingSlotDataType(GetId());
 
-        if (thisType.IS_A(dataType))
+        if (slotType.IsValid())
         {
-            return AZ::Success();
+            // As long as the data type is a type of slotType (actual type or subclass), it's a match.
+            if (dataType.IS_A(slotType))
+            {
+                return AZ::Success();
+            }
         }
+        else
+        {
+            // If the underlying slot type is invalid, but there's a display type set, then matching the display type is
+            // still a valid match.
+            if (HasDisplayType() && dataType.IS_A(GetDisplayType()))
+            {
+                return AZ::Success();
+            }
+        }
+
 
         return AZ::Failure(AZStd::string::format("%s is not a type match for %s", ScriptCanvas::Data::GetName(GetDataType()).c_str(), ScriptCanvas::Data::GetName(dataType).c_str()));
     }
@@ -919,6 +959,11 @@ namespace ScriptCanvas
         return m_node->ConstructTransientIdentifier((*this));
     }
 
+    void Slot::OnVariableRenamed(AZStd::string_view variableName)
+    {
+        Rename(variableName);
+    }
+
     void Slot::SetDynamicGroup(const AZ::Crc32& dynamicGroup)
     {
         m_dynamicGroup = dynamicGroup;
@@ -929,4 +974,12 @@ namespace ScriptCanvas
         m_isVisible = isVisible;
     }
 
+    void Slot::DisconnectVariableNotificationBus()
+    {
+        if (VariableNotificationBus::MultiHandler::BusIsConnectedId(m_variable->GetGraphScopedId()))
+        {
+            VariableNotificationBus::MultiHandler::BusDisconnect(m_variable->GetGraphScopedId());
+        }
+    }
 }
+

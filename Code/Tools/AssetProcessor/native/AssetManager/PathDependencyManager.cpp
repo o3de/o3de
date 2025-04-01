@@ -370,6 +370,7 @@ namespace AssetProcessor
                 entry.m_dependencySourceGuid = sourceEntry.m_sourceGuid;
                 entry.m_dependencySubID = matchedProduct.m_subID;
                 entry.m_platform = productDependencyDatabaseEntry.m_platform;
+                entry.m_dependencyFlags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad);
 
                 dependencyContainer.push_back(AZStd::move(entry));
 
@@ -412,6 +413,23 @@ namespace AssetProcessor
             SaveResolvedDependencies(
                 sourceEntry, exclusionMaps, sourceNameWithScanFolder, pair.second, searchEntry->m_path, isSourceDependency, matchedProducts,
                 dependencyVector);
+        }
+
+        AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer existingDependencies;
+        if (!m_stateData->GetDirectReverseProductDependenciesBySourceGuidAllPlatforms(sourceEntry.m_sourceGuid, existingDependencies))
+        {
+            AZ_Error("PathDependencyManager", false, "Failed to query existing product dependencies for source `%s` (%s)",
+                sourceEntry.m_sourceName.c_str(),
+                sourceEntry.m_sourceGuid.ToString<AZStd::string>().c_str());
+        }
+        else
+        {
+
+            // Remove any existing dependencies from the list of dependencies we're about to save
+            dependencyVector.erase(AZStd::remove_if(dependencyVector.begin(), dependencyVector.end(), [&existingDependencies](const auto& entry) -> bool
+            {
+                return AZStd::find(existingDependencies.begin(), existingDependencies.end(), entry) != existingDependencies.end();
+            }), dependencyVector.end());
         }
 
         // Save everything to the db, this will update matched non-wildcard dependencies and add new records for wildcard matches
@@ -493,11 +511,15 @@ namespace AssetProcessor
 
             bool isExcludedDependency = dependencyPathSearch.starts_with(ExcludedDependenciesSymbol);
             dependencyPathSearch = isExcludedDependency ? dependencyPathSearch.substr(1) : dependencyPathSearch;
+            // The database uses % for wildcards, both path based searching uses *, so keep a copy of the path with the * wildcard for later
+            // use.
+            AZStd::string pathWildcardSearchPath(dependencyPathSearch);
             bool isExactDependency = !AzFramework::StringFunc::Replace(dependencyPathSearch, '*', '%');
 
             if (cleanedupDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::ProductFile)
             {
                 SanitizeForDatabase(dependencyPathSearch);
+                SanitizeForDatabase(pathWildcardSearchPath);
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
                 QString productNameWithPlatform = QString("%1%2%3").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, dependencyPathSearch.c_str());
 
@@ -532,6 +554,24 @@ namespace AssetProcessor
                     {
                         if (m_stateData->GetSourceByJobID(productDatabaseEntry.m_jobPK, sourceDatabaseEntry))
                         {
+                            // The SQL wildcard search is greedy and doesn't match the path based, glob style wildcard search that is
+                            // expected in this case. This also matches the behavior of resolving unmet dependencies later. There are two
+                            // cases that wildcard dependencies resolve:
+                            //  1. When the product with the wildcard dependency is first created, it resolves those dependencies against
+                            //  what's already in the database. That's this case.
+                            //  2. When another product is created, all existing wildcard dependencies are compared against that product to
+                            //  see if it matches them.
+                            // This check here makes sure that the filter for 1 matches 2.
+                            if (!isExactDependency)
+                            {
+                                AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
+
+                                if (!searchPath.Match(pathWildcardSearchPath))
+                                {
+                                    continue;
+                                }
+                            }
+
                             AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencyList = isExcludedDependency ? excludedDeps : resolvedDeps;
                             productDependencyList.emplace_back(AZ::Data::AssetId(sourceDatabaseEntry.m_sourceGuid, productDatabaseEntry.m_subID), productDependencyFlags);
                         }
@@ -571,7 +611,11 @@ namespace AssetProcessor
 
                     if (ProcessInputPathToDatabasePathAndScanFolder(dependencyPathSearch.c_str(), databaseName, scanFolder))
                     {
-                        m_stateData->GetSourcesBySourceNameScanFolderId(databaseName, m_platformConfig->GetScanFolderByPath(scanFolder)->ScanFolderID(), sourceInfoContainer);
+                        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+                        if(m_stateData->GetSourceBySourceNameScanFolderId(databaseName, m_platformConfig->GetScanFolderByPath(scanFolder)->ScanFolderID(), source))
+                        {
+                            sourceInfoContainer.push_back(AZStd::move(source));
+                        }
                     }
                 }
                 else

@@ -28,6 +28,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Source/SimulatedObjectBus.h>
 #include <EMotionFX/Source/AnimGraphStateTransition.h>
 #include <EMotionFX/Source/AnimGraphTransitionCondition.h>
 #include <MCore/Source/Command.h>
@@ -37,16 +38,6 @@
 
 namespace CommandAdjustSimulatedObjectTests
 {
-    namespace AZStd
-    {
-        using namespace ::AZStd;
-    } // namespace AZStd
-    namespace AZ
-    {
-        using namespace ::AZ;
-    } // namespace AZ
-
-
     namespace EMotionFX
     {
         // Import real types from the production namespace
@@ -56,7 +47,9 @@ namespace CommandAdjustSimulatedObjectTests
         using ::EMotionFX::BlendTreeConnection;
         using ::EMotionFX::ValueParameter;
         using ::EMotionFX::CommandAllocator;
+        using ::EMotionFX::AnimGraphAllocator;
         using ::EMotionFX::PhysicsSetup;
+        using ::EMotionFX::SimulatedObjectNotificationBus;
 
         // Forward-declare types that will be mocked
         class Actor;
@@ -94,8 +87,10 @@ namespace EMotionFX
 #include <Tests/Mocks/SimulatedJoint.h>
 #include <Tests/Mocks/SimulatedObject.h>
 #include <Tests/Mocks/SimulatedObjectSetup.h>
-#include <EMotionFX/CommandSystem/Source/ParameterMixins.cpp>
-#include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands.cpp>
+#include <EMotionFX/CommandSystem/Source/ParameterMixins_Interface.inl>
+#include <EMotionFX/CommandSystem/Source/ParameterMixins_Impl.inl>
+#include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands_Interface.inl>
+#include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands_Impl.inl>
 } // namespace CommandAdjustSimulatedObjectTests
 
 namespace EMotionFX
@@ -120,7 +115,7 @@ namespace EMotionFX
     };
 
     class CommandAdjustSimulatedObjectTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<::testing::tuple<bool, bool, CommandAdjustSimulatedObjectTestsParam>>
     {
     public:
@@ -259,7 +254,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(TestCommandAdjustSimulatedObject, CommandAdjustSimulatedObjectTestsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestCommandAdjustSimulatedObject, CommandAdjustSimulatedObjectTestsFixture,
         ::testing::Combine(
             ::testing::Bool(), // Test execute or test undo
             ::testing::Bool(), // Use command strings or not
@@ -426,15 +421,10 @@ namespace EMotionFX
     };
 
     class CommandAdjustSimulatedJointTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<::testing::tuple<bool, bool, CommandAdjustSimulatedJointTestsParam>>
     {
     public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-        }
-
         static std::string buildCommandLineFromTestParam(const CommandAdjustSimulatedJointTestsParam& param)
         {
             std::string string;
@@ -628,7 +618,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(TestCommandAdjustSimulatedJoint, CommandAdjustSimulatedJointTestsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestCommandAdjustSimulatedJoint, CommandAdjustSimulatedJointTestsFixture,
         ::testing::Combine(
             ::testing::Bool(), // Test execute or test undo
             ::testing::Bool(), // Use command strings or not

@@ -1,0 +1,10 @@
+The meshoptimizer library is not included as part of the O3DE.
+When adding and compiling this Gem, compile the meshoptimizer 
+library and add it as part of Meshlets.Static project (for example, in 
+Visual Studio you simply add the library file to the project).
+Once this is done, the Gem should compile and link properly to allow you 
+to run the ASV sample 'Meshlets' (created with the MeshletsExampleComponent)
+
+
+The meshoptimizer library and source can be found in the following Github link:
+https://github.com/zeux/meshoptimizer

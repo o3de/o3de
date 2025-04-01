@@ -34,7 +34,7 @@ namespace GraphCanvas
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(FocusableLineEdit, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FocusableLineEdit, AZ::SystemAllocator);
             FocusableLineEdit() = default;
             ~FocusableLineEdit() = default;
 
@@ -63,7 +63,7 @@ namespace GraphCanvas
         , public AZ::SystemTickBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(StringNodePropertyDisplay, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StringNodePropertyDisplay, AZ::SystemAllocator);
         StringNodePropertyDisplay(StringDataInterface* dataInterface);
         virtual ~StringNodePropertyDisplay();
     
@@ -102,7 +102,6 @@ namespace GraphCanvas
         Internal::FocusableLineEdit*    m_lineEdit;
         QGraphicsProxyWidget*           m_proxyWidget;
 
-        bool m_valueDirty;
         bool m_isNudging;
     };
 }

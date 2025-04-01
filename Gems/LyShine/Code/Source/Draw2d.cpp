@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -102,6 +103,12 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     AZ::RPI::SceneId sceneId = scene->GetId();
     LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
 
+    if (!uiCanvasPass)
+    {
+        AZ_Error("Draw2d", false, "No UiCanvasPass found in Render-Pipeline.");
+        return;
+    }
+
     m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
     m_dynamicDraw->InitShader(shader);
     m_dynamicDraw->InitVertexFormat(
@@ -110,16 +117,11 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT} });
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
-    if (uiCanvasPass)
-    {
-        m_dynamicDraw->SetOutputScope(uiCanvasPass);
-    }
-    else
-    {
-        // Render target support is disabled
-        m_dynamicDraw->SetOutputScope(scene);
-    }
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
+    // Use scene as output scope (will render to the UiCanvas child pass of the LyShine pass)
+    m_dynamicDraw->SetOutputScope(scene);
+    m_dynamicDraw->InitDrawListTag(uiCanvasPass->GetDrawListTag());
     m_dynamicDraw->EndInit();
 
     // Check that the dynamic draw context has been initialized appropriately
@@ -755,7 +757,7 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
@@ -816,7 +818,7 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
@@ -892,7 +894,7 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture

@@ -1,0 +1,126 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the Surface class in this file without making it the final Surface
+// used in your shader. Simply #define Surface to your custom definition before including this file
+//
+#ifndef Surface
+#define Surface     SurfaceData_StandardPBR
+#endif
+
+#include "../BasePBR/BasePBR_SurfaceData.azsli"
+
+#include <Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli>
+
+// Class inheritance doesn't seem to be working
+#define DOES_CLASS_INHERITANCE_WORK_IN_ASZL 0
+#if DOES_CLASS_INHERITANCE_WORK_IN_ASZL
+
+    class SurfaceData_StandardPBR : SurfaceData_BasePBR
+    {
+    #if ENABLE_CLEAR_COAT
+        ClearCoatSurfaceData clearCoat;
+    #endif
+
+        float3 emissiveLighting;        //!< Emissive lighting
+        float diffuseAmbientOcclusion;  //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
+        float specularOcclusion;        //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
+        float alpha;
+
+        // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
+        // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface like
+        // glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor values
+        // close to 1.0, that indicates the absence of a surface entirely, so this effect should not apply.
+        float opacityAffectsSpecularFactor;
+    };
+
+#else
+
+    class SurfaceData_StandardPBR
+    {
+
+    #if ENABLE_CLEAR_COAT
+        ClearCoatSurfaceData clearCoat;
+    #endif
+
+        // ------- BasePbrSurfaceData -------
+    
+        precise float3 position;   //!< Position in world-space
+        real3 normal;              //!< Normal in world-space
+        real3 vertexNormal;        //!< Vertex normal in world-space
+        real3 baseColor;           //!< Surface base color
+        real metallic;             //!< Surface metallic property
+        real roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
+        real roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
+        float roughnessA2;         //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance. Float precision is needed as values can get very close to 0
+        real alpha;
+
+        // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
+        // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface like
+        // glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor values
+        // close to 1.0, that indicates the absence of a surface entirely, so this effect should not apply.
+        real opacityAffectsSpecularFactor;
+
+        //! Surface lighting data
+        real3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
+        real3 specularF0;          //!< Fresnel f0 spectral value of the surface
+        real3 emissiveLighting;    //!< Emissive lighting
+        real diffuseAmbientOcclusion; //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
+        real specularOcclusion;       //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
+
+        //! Calculates roughnessA and roughnessA2 after roughness has been set
+        void CalculateRoughnessA();
+
+        //! Sets albedo, base color, specularF0, and metallic properties using metallic workflow
+        void SetAlbedoAndSpecularF0(real3 baseColor, real specularF0Factor, real metallic);
+
+        real3 GetDiffuseNormal() { return normal; }
+        real3 GetSpecularNormal() { return normal; }
+        real3 GetDefaultNormal() { return normal; }
+        real3 GetVertexNormal() { return vertexNormal; }
+        real3 GetSpecularF0() { return specularF0; }
+    };
+
+    void SurfaceData_StandardPBR::CalculateRoughnessA()
+    {
+        CalculateRoughnessValues(normal, roughnessLinear, roughnessA, roughnessA2);
+    }
+
+    void SurfaceData_StandardPBR::SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF0Factor, real newMetallic)
+    {
+        baseColor = newBaseColor;
+        metallic = newMetallic;
+
+        albedo = GetAlbedo(baseColor, metallic);
+        specularF0 = CalculateSpecularF0(baseColor, metallic, specularF0Factor);
+    }
+    
+    SurfaceData_StandardPBR MakeDebugSurface(float3 position, real3 normal, real3 color)
+    {
+        SurfaceData_StandardPBR output;
+        output.position = position;
+        output.normal = normal;
+        output.vertexNormal = normal;
+        output.baseColor = real3(0,0,0);
+        output.metallic = 0;
+        output.roughnessLinear = 1;
+        output.roughnessA = 1;
+        output.roughnessA2 = 1;
+        output.alpha = 1;
+        output.opacityAffectsSpecularFactor = 0;
+        output.albedo = real3(0,0,0);
+        output.specularF0 = 0;
+        output.emissiveLighting = color;
+        output.diffuseAmbientOcclusion = 1;
+        output.specularOcclusion = 1;
+        return output;
+    }
+
+#endif

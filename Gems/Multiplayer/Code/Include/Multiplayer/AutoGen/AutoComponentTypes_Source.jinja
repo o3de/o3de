@@ -11,11 +11,20 @@
 {% endif %}
 {% endfor %}
 
+{% set ComponentNames = dict() %}
 {% set Namespace = dataFiles[0].attrib['Namespace'] %}
 {% for Component in dataFiles %}
+{%     set ComponentName = Component.attrib['Name'] %}
+{%     set Duplicates = ComponentNames.get(ComponentName, 0) %}
+{%     set _dummy = ComponentNames.update({ComponentName : Duplicates + 1}) %}
 {%     if Component.attrib['Namespace'] != Namespace %}
 #error "mismatched component namespaces detected in declared multiplayer components, expected {{ Namespace }} but {{ Component.attrib['Name'] }} is using {{ Component.attrib['Namespace'] }} namespace."
 {%     endif %}
+{% endfor %}
+{% for componentName, duplicateCount in ComponentNames.items() %}
+{%      if duplicateCount > 1 %}
+#error "Duplicate multiplayer component! {{componentName}} was registered {{ duplicateCount }} times. Please update the cmake file lists so that {{componentName}} is only registered once."
+{%      endif %}
 {% endfor %}
 namespace {{ Namespace }}
 {
@@ -36,9 +45,16 @@ namespace {{ Namespace }}
             Multiplayer::MultiplayerComponentRegistry::ComponentData componentData;
             componentData.m_gemName = AZ::Name("{{ Namespace }}");
             componentData.m_componentName = AZ::Name("{{ Component.attrib['Name'] }}");
+            componentData.m_versionHash = {{ Component.attrib['Name'] }}::GetVersionHash();
             componentData.m_componentPropertyNameLookupFunction = {{ ComponentBaseName }}::GetNetworkPropertyName;
             componentData.m_componentRpcNameLookupFunction = {{ ComponentBaseName }}::GetRpcName;
-            componentData.m_allocComponentInputFunction = {{ ComponentBaseName }}::AllocateComponentInput;
+            componentData.m_allocComponentInputFunction = {{ ComponentBaseName }}::AllocateComponentInput;            
+{% if ('OmitFromClientServerVersionHandshake' in Component.attrib) %}
+{%     set ComponentSkipsVersioning = Component.attrib['OmitFromClientServerVersionHandshake']|booleanTrue %}
+{%     if ComponentSkipsVersioning %}
+            componentData.m_includeInVersionCheck = false;
+{%     endif %}
+{% endif %}
             {{ ComponentBaseName }}::s_netComponentId = multiplayerComponentRegistry->RegisterMultiplayerComponent(componentData);
 {% if NetworkInputCount > 0 %}
             {{ ComponentName }}NetworkInput::s_netComponentId = {{ ComponentBaseName }}::s_netComponentId;

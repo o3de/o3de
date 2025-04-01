@@ -28,10 +28,13 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/ImageConvert.h>
 #include <Processing/ImageToProcess.h>
@@ -45,7 +48,6 @@
 
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <BuilderSettings/CubemapSettings.h>
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/PresetSettings.h>
 
 #include <Editor/EditorCommon.h>
@@ -72,6 +74,8 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <ImageBuilderComponent.h>
 
+extern "C" void CleanUpRpiPublicGenericClassInfo();
+
 using namespace ImageProcessingAtom;
 
 namespace UnitTest
@@ -88,8 +92,7 @@ namespace UnitTest
     };
 
     class ImageProcessingTest
-        : public ::testing::Test
-        , public AllocatorsBase
+        : public LeakDetectionFixture
         , public AZ::ComponentApplicationBus::Handler
     {
     public:
@@ -123,23 +126,18 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
         AZStd::unique_ptr<AZ::JsonSystemComponent> m_jsonSystemComponent;
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
-        AZStd::string m_gemFolder;
-        AZStd::string m_outputRootFolder;
-        AZStd::string m_outputFolder;
+        AZ::IO::Path m_gemFolder;
+        AZ::IO::Path m_outputRootFolder;
+        AZ::IO::Path m_outputFolder;
 
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
         AZStd::unique_ptr<AZ::JobContext> m_jobContext;
 
         void SetUp() override
         {
-            AllocatorsBase::SetupAllocator();
-
             // Adding this handler to allow utility functions access the serialize context
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
             // AssetManager required to generate image assets
             AZ::Data::AssetManager::Descriptor desc;
@@ -177,7 +175,7 @@ namespace UnitTest
             threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
 #endif 
 
-            uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
+            uint32_t numWorkerThreads = jobManagerDesc.GetWorkerThreadCount(AZStd::thread::hardware_concurrency());
 
             for (unsigned int i = 0; i < numWorkerThreads; ++i)
             {
@@ -200,11 +198,24 @@ namespace UnitTest
             //load qt plug-ins for some image file formats support
             AzQtComponents::PrepareQtPaths();
 
-            m_gemFolder = AZ::Test::GetEngineRootPath() + "/Gems/Atom/Asset/ImageProcessingAtom/";
-            m_outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            AZ::SettingsRegistryImpl localRegistry;
+            localRegistry.Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
 
-            m_defaultSettingFolder = m_gemFolder + AZStd::string("Assets/Config/");
-            m_testFileFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/");
+            // Merge in the o3de manifest files gem root paths to the Settings Registry
+            // and set the ImageProcessingAtom gem as an active gem which will add it to the active gem
+            // section of the Settings Registry as well as add a @gemroot@ alias for it
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(localRegistry);
+            AZ::Test::AddActiveGem("ImageProcessingAtom", localRegistry, AZ::IO::FileIOBase::GetInstance());
+
+            // Validate the path to the ImageProcessingAtom Gem root is registered in the Settings Registry
+            ASSERT_TRUE(localRegistry.Get(m_gemFolder.Native(), FixedValueString::format("%s/ImageProcessingAtom/Path",
+                AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey)));
+
+            m_outputFolder = m_gemFolder/ "Code/Tests/TestAssets/temp/";
+
+            m_defaultSettingFolder = m_gemFolder / "Assets/Config/";
+            m_testFileFolder = m_gemFolder  /"Code/Tests/TestAssets/";
 
             InitialImageFilenames();
 
@@ -213,10 +224,10 @@ namespace UnitTest
 
         void TearDown() override
         {
-            m_gemFolder = AZStd::string();
-            m_outputFolder = AZStd::string();
-            m_defaultSettingFolder = AZStd::string();
-            m_testFileFolder = AZStd::string();
+            m_gemFolder = AZ::IO::Path{};
+            m_outputFolder = AZ::IO::Path{};
+            m_defaultSettingFolder = AZ::IO::Path{};
+            m_testFileFolder = AZ::IO::Path{};
 
             m_imagFileNameMap = AZStd::map<ImageFeature, AZStd::string>();
             m_assetHandlers = AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>>();
@@ -245,12 +256,10 @@ namespace UnitTest
 
             AZ::Data::AssetManager::Destroy();
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
-            AllocatorsBase::TeardownAllocator();
+
+            CleanUpRpiPublicGenericClassInfo();
         }
 
         //enum names for Images with specific identification
@@ -259,11 +268,13 @@ namespace UnitTest
             Image_20X16_RGBA8_Png = 0,
             Image_32X32_16bit_F_Tif,
             Image_32X32_32bit_F_Tif,
+            Image_32X32_checkerboard_png,
+            Image_32X32_halfRedHalfTransparentGreen_png,
             Image_200X200_RGB8_Jpg,
             Image_512X288_RGB8_Tga,
             Image_1024X1024_RGB8_Tif,
             Image_UpperCase_Tga,
-            Image_1024x1024_normal_tiff,
+            Image_512x512_normal_tiff,
             Image_128x128_Transparent_Tga,
             Image_237x177_RGB_Jpg,
             Image_GreyScale_Png,
@@ -278,29 +289,31 @@ namespace UnitTest
         //image file names for testing
         AZStd::map<ImageFeature, AZStd::string> m_imagFileNameMap;
 
-        AZStd::string m_defaultSettingFolder;
-        AZStd::string m_testFileFolder;
+        AZ::IO::Path m_defaultSettingFolder;
+        AZ::IO::Path m_testFileFolder;
 
         //initialize image file names for testing
         void InitialImageFilenames()
         {
-            m_imagFileNameMap[Image_20X16_RGBA8_Png] = m_testFileFolder + "20x16_32bit.png";
-            m_imagFileNameMap[Image_32X32_16bit_F_Tif] = m_testFileFolder + "32x32_16bit_f.tif";
-            m_imagFileNameMap[Image_32X32_32bit_F_Tif] = m_testFileFolder + "32x32_32bit_f.tif";
-            m_imagFileNameMap[Image_200X200_RGB8_Jpg] = m_testFileFolder + "200x200_24bit.jpg";
-            m_imagFileNameMap[Image_512X288_RGB8_Tga] = m_testFileFolder + "512x288_24bit.tga";
-            m_imagFileNameMap[Image_1024X1024_RGB8_Tif] = m_testFileFolder + "1024x1024_24bit.tif";
-            m_imagFileNameMap[Image_UpperCase_Tga] = m_testFileFolder + "uppercase.TGA";
-            m_imagFileNameMap[Image_1024x1024_normal_tiff] = m_testFileFolder + "1024x1024_normal.tiff";
-            m_imagFileNameMap[Image_128x128_Transparent_Tga] = m_testFileFolder + "128x128_RGBA8.tga";
-            m_imagFileNameMap[Image_237x177_RGB_Jpg] = m_testFileFolder + "237x177_RGB.jpg";
-            m_imagFileNameMap[Image_GreyScale_Png] = m_testFileFolder + "greyscale.png";
-            m_imagFileNameMap[Image_Alpha8_64x64_Mip7_Dds] = m_testFileFolder + "Alpha8_64x64_Mip7.dds";
-            m_imagFileNameMap[Image_BGRA_64x64_Mip7_Dds] = m_testFileFolder + "BGRA_64x64_MIP7.dds";
-            m_imagFileNameMap[Image_Luminance8bpp_66x33_dds] = m_testFileFolder + "Luminance8bpp_66x33.dds";
-            m_imagFileNameMap[Image_BGR_64x64_dds] = m_testFileFolder + "RGBA_64x64.dds";
-            m_imagFileNameMap[Image_defaultprobe_cm_1536x256_64bits_tif] = m_testFileFolder + "defaultProbe_cm.tif";
-            m_imagFileNameMap[Image_workshop_iblskyboxcm_exr] = m_testFileFolder + "workshop_iblskyboxcm.exr";
+            m_imagFileNameMap[Image_20X16_RGBA8_Png] = (m_testFileFolder / "20x16_32bit.png").Native();
+            m_imagFileNameMap[Image_32X32_16bit_F_Tif] = (m_testFileFolder / "32x32_16bit_f.tif").Native();
+            m_imagFileNameMap[Image_32X32_32bit_F_Tif] = (m_testFileFolder / "32x32_32bit_f.tif").Native();
+            m_imagFileNameMap[Image_32X32_checkerboard_png] = (m_testFileFolder / "32x32_checkerboard.png").Native();
+            m_imagFileNameMap[Image_32X32_halfRedHalfTransparentGreen_png] = (m_testFileFolder / "32x32_halfRedHalfTransparentGreen.png").Native();
+            m_imagFileNameMap[Image_200X200_RGB8_Jpg] = (m_testFileFolder / "200x200_24bit.jpg").Native();
+            m_imagFileNameMap[Image_512X288_RGB8_Tga] = (m_testFileFolder / "512x288_24bit.tga").Native();
+            m_imagFileNameMap[Image_1024X1024_RGB8_Tif] = (m_testFileFolder / "1024x1024_24bit.tif").Native();
+            m_imagFileNameMap[Image_UpperCase_Tga] = (m_testFileFolder / "uppercase.TGA").Native();
+            m_imagFileNameMap[Image_512x512_normal_tiff] = (m_testFileFolder / "512x512_normal.tiff").Native();
+            m_imagFileNameMap[Image_128x128_Transparent_Tga] = (m_testFileFolder / "128x128_RGBA8.tga").Native();
+            m_imagFileNameMap[Image_237x177_RGB_Jpg] = (m_testFileFolder / "237x177_RGB.jpg").Native();
+            m_imagFileNameMap[Image_GreyScale_Png] = (m_testFileFolder / "greyscale.png").Native();
+            m_imagFileNameMap[Image_Alpha8_64x64_Mip7_Dds] = (m_testFileFolder / "Alpha8_64x64_Mip7.dds").Native();
+            m_imagFileNameMap[Image_BGRA_64x64_Mip7_Dds] = (m_testFileFolder / "BGRA_64x64_MIP7.dds").Native();
+            m_imagFileNameMap[Image_Luminance8bpp_66x33_dds] = (m_testFileFolder / "Luminance8bpp_66x33.dds").Native();
+            m_imagFileNameMap[Image_BGR_64x64_dds] = (m_testFileFolder / "RGBA_64x64.dds").Native();
+            m_imagFileNameMap[Image_defaultprobe_cm_1536x256_64bits_tif] = (m_testFileFolder / "defaultProbe_cm.tif").Native();
+            m_imagFileNameMap[Image_workshop_iblskyboxcm_exr] = (m_testFileFolder / "workshop_iblskyboxcm.exr").Native();
         }
 
     public:
@@ -308,7 +321,7 @@ namespace UnitTest
         {
             if (subFolderName)
             {
-                m_outputFolder = m_outputRootFolder + "/" + subFolderName;
+                m_outputFolder = m_outputRootFolder / subFolderName;
             }
             else
             {
@@ -555,12 +568,17 @@ namespace UnitTest
         ASSERT_TRUE(img->GetWidth(0) == 512);
         ASSERT_TRUE(img->GetHeight(0) == 288);
         ASSERT_TRUE(img->GetMipCount() == 1);
+        ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_R8G8B8);
+
+        // tga with transparency
+        img = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[Image_128x128_Transparent_Tga]));
+        ASSERT_TRUE(img != nullptr);
         ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_R8G8B8A8);
 
         //image with upper case extension
         img = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[Image_UpperCase_Tga]));
         ASSERT_TRUE(img != nullptr);
-        ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_R8G8B8A8);
+        ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_R8G8B8);
 
         //16bits float tif
         img = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[Image_32X32_16bit_F_Tif]));
@@ -865,16 +883,16 @@ namespace UnitTest
         // Normal.preset which uses ASTC as output format
         // This test compress a normal texture and its mipmaps
 
-        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native());
         ASSERT_TRUE(outcome.IsSuccess());
 
         AZStd::string inputFile;
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
-        inputFile = m_imagFileNameMap[Image_1024x1024_normal_tiff];
+        inputFile = m_imagFileNameMap[Image_512x512_normal_tiff];
         IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(inputFile));
 
-        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "ios", outProducts, m_context.get());
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder.Native(), "ios", outProducts, m_context.get());
 
         const PresetSettings* preset = &process->GetInputDesc()->m_presetSetting;
 
@@ -938,6 +956,34 @@ namespace UnitTest
         }
     }
 
+    TEST_F(ImageProcessingTest, TestAverageColor)
+    {
+        //load builder presets
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native());
+        ASSERT_TRUE(outcome.IsSuccess());
+
+        auto checkAverageColor = [&](ImageFeature figureKey, AZ::Color expectedAverage)
+        {
+            AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+
+            AZStd::string inputFile = m_imagFileNameMap[figureKey];
+            ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder.Native(), "pc", outProducts, m_context.get());
+            if (process != nullptr)
+            {
+                process->ProcessAll();
+
+                ASSERT_TRUE(process->IsSucceed());
+                ASSERT_TRUE(process->GetOutputImage());
+                ASSERT_TRUE(process->GetOutputImage()->GetAverageColor().IsClose(expectedAverage));
+
+                delete process;
+            }
+        };
+
+        checkAverageColor(Image_32X32_checkerboard_png, AZ::Color(0.5f, 0.5f, 0.5f, 1.0f));
+        checkAverageColor(Image_32X32_halfRedHalfTransparentGreen_png, AZ::Color(1.0f, 0.0f, 0.0f, 0.5f));
+    }
+
     TEST_F(ImageProcessingTest, TestColorSpaceConversion)
     {
         IImageObjectPtr srcImage(LoadImageFromFile(m_imagFileNameMap[Image_GreyScale_Png]));
@@ -951,7 +997,7 @@ namespace UnitTest
 
     TEST_F(ImageProcessingTest, VerifyRestrictedPlatform)
     {
-        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native());
         ASSERT_TRUE(outcome.IsSuccess());
         PlatformNameList platforms = BuilderSettingManager::Instance()->GetPlatformList();
 
@@ -964,23 +1010,21 @@ namespace UnitTest
     TEST_F(ImageProcessingTest, TestBuilderImageConvertor)
     {
         //load builder presets
-        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native());
         ASSERT_TRUE(outcome.IsSuccess());
 
         AZStd::string inputFile;
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
         inputFile = m_imagFileNameMap[Image_128x128_Transparent_Tga];
-        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "pc", outProducts, m_context.get());
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder.Native(), "pc", outProducts, m_context.get());
 
         if (process != nullptr)
         {
             //the process can be stopped if the job is canceled or the worker is shutting down
-            int step = 0;
             while (!process->IsFinished())
             {
                 process->UpdateProcess();
-                step++;
             }
 
             //get process result
@@ -997,14 +1041,14 @@ namespace UnitTest
     TEST_F(ImageProcessingTest, TestIblSkyboxPreset)
     {
         //load builder presets
-        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native());
         ASSERT_TRUE(outcome.IsSuccess());
 
         AZStd::string inputFile;
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
         inputFile = m_imagFileNameMap[Image_workshop_iblskyboxcm_exr];
-        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "pc", outProducts, m_context.get());
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder.Native(), "pc", outProducts, m_context.get());
 
         if (process != nullptr)
         {

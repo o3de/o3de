@@ -12,22 +12,22 @@
 namespace AZ
 {
     class ReflectContext;
+}
 
-    namespace RHI
+namespace AZ::RHI
+{
+    class StreamingImagePoolDescriptor
+        : public ResourcePoolDescriptor
     {
-        class StreamingImagePoolDescriptor
-            : public ResourcePoolDescriptor
-        {
-        public:
-            AZ_RTTI(StreamingImagePoolDescriptor, "{67F5A1DB-37B9-4959-A04F-4A7C939DD853}", ResourcePoolDescriptor);
-            AZ_CLASS_ALLOCATOR(StreamingImagePoolDescriptor, SystemAllocator, 0);
+    public:
+        AZ_RTTI(StreamingImagePoolDescriptor, "{67F5A1DB-37B9-4959-A04F-4A7C939DD853}", ResourcePoolDescriptor);
+        AZ_CLASS_ALLOCATOR(StreamingImagePoolDescriptor, SystemAllocator);
 
-            static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            StreamingImagePoolDescriptor() = default;
-            virtual ~StreamingImagePoolDescriptor() = default;
+        StreamingImagePoolDescriptor() = default;
+        virtual ~StreamingImagePoolDescriptor() = default;
 
-            // Currently empty.
-        };
-    }
+        // Currently empty.
+    };
 }

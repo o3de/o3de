@@ -55,15 +55,21 @@ namespace AZ::Dom
 
         size_t GetIndex() const;
         const AZ::Name& GetKey() const;
+        size_t GetHash() const;
 
     private:
         AZStd::variant<size_t, AZ::Name> m_value;
     };
+} // namespace AZ::Dom
 
+namespace AZ::Dom
+{
     //! Represents a path, represented as a series of PathEntry values, to a position in a Value.
     class Path final
     {
     public:
+        AZ_TYPE_INFO(AZ::Dom::Path, "{C0081C45-F15D-4F46-9680-19535D33C312}")
+
         using ContainerType = AZStd::vector<PathEntry>;
         static constexpr char PathSeparator = '/';
         static constexpr char EscapeCharacter = '~';
@@ -101,6 +107,10 @@ namespace AZ::Dom
         Path& operator/=(const Path&);
 
         bool operator==(const Path&) const;
+        bool operator!=(const Path& rhs) const
+        {
+            return !operator==(rhs);
+        }
 
         const ContainerType& GetEntries() const;
         void Push(PathEntry entry);
@@ -110,7 +120,9 @@ namespace AZ::Dom
         void Pop();
         void Clear();
         PathEntry At(size_t index) const;
+        PathEntry Back() const;
         size_t Size() const;
+        bool IsEmpty() const;
 
         PathEntry& operator[](size_t index);
         const PathEntry& operator[](size_t index) const;
@@ -128,17 +140,47 @@ namespace AZ::Dom
         size_t GetStringLength() const;
         //! Formats a JSON-pointer style path string into the target buffer.
         //! This operation will fail if bufferSize < GetStringLength() + 1
-        void FormatString(char* stringBuffer, size_t bufferSize) const;
+        //! \return The number of bytes written, excepting the null terminator.
+        size_t FormatString(char* stringBuffer, size_t bufferSize) const;
         //! Returns a JSON-pointer style path string for this path.
         AZStd::string ToString() const;
+
         void AppendToString(AZStd::string& output) const;
+        template<class T>
+        void AppendToString(T& output) const
+        {
+            const size_t startIndex = output.length();
+            output.resize_no_construct(startIndex + FormatString(output.data() + startIndex, output.capacity() - startIndex));
+        }
+
         //! Reads a JSON-pointer style path from pathString and replaces this path's contents.
         //! Paths are accepted in the following forms:
         //! "/path/to/foo/0"
         //! "path/to/foo/0"
         void FromString(AZStd::string_view pathString);
 
+        //! Returns true if this path contains any "EndOfArray" entries that require a target DOM to look up.
+        bool ContainsNormalizedEntries() const;
+
     private:
         ContainerType m_entries;
     };
 } // namespace AZ::Dom
+
+namespace AZStd
+{
+    template<>
+    struct hash<AZ::Dom::PathEntry>
+    {
+        size_t operator()(const AZ::Dom::PathEntry& entry) const;
+    };
+
+    template<>
+    struct hash<AZ::Dom::Path>
+    {
+        size_t operator()(const AZ::Dom::Path& path) const
+        {
+            return AZStd::hash_range(path.begin(), path.end());
+        }
+    };
+} // namespace AZStd

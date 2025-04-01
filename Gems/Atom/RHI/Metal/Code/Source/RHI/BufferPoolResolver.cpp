@@ -20,7 +20,7 @@ namespace AZ
         {
         }
 
-        void* BufferPoolResolver::MapBuffer(const RHI::BufferMapRequest& request)
+        void* BufferPoolResolver::MapBuffer(const RHI::DeviceBufferMapRequest& request)
         {
             AZ_Assert(request.m_byteCount > 0, "ByteCount of request is null");
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
@@ -50,7 +50,7 @@ namespace AZ
             {
                 Buffer* stagingBuffer = packet.m_stagingBuffer.get();
                 //Inform the GPU that the CPU has modified the staging buffer.
-                Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
+                Platform::PublishBufferCpuChangeOnGpu(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
             }
         }
 
@@ -64,14 +64,14 @@ namespace AZ
                 AZ_Assert(stagingBuffer, "Staging Buffer is null.");
                 AZ_Assert(destBuffer, "Attachment Buffer is null.");
                 
-                RHI::CopyBufferDescriptor copyDescriptor;
+                RHI::DeviceCopyBufferDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = stagingBuffer;
-                copyDescriptor.m_sourceOffset = stagingBuffer->GetMemoryView().GetOffset();
+                copyDescriptor.m_sourceOffset = static_cast<uint32_t>(stagingBuffer->GetMemoryView().GetOffset());
                 copyDescriptor.m_destinationBuffer = destBuffer;
-                copyDescriptor.m_destinationOffset = destBuffer->GetMemoryView().GetOffset() + static_cast<uint32_t>(packet.m_byteOffset);
-                copyDescriptor.m_size = stagingBuffer->GetMemoryView().GetSize();
+                copyDescriptor.m_destinationOffset = static_cast<uint32_t>(destBuffer->GetMemoryView().GetOffset() + packet.m_byteOffset);
+                copyDescriptor.m_size = static_cast<uint32_t>(stagingBuffer->GetMemoryView().GetSize());
 
-                commandList.Submit(RHI::CopyItem(copyDescriptor));
+                commandList.Submit(RHI::DeviceCopyItem(copyDescriptor));
                 device.QueueForRelease(stagingBuffer->GetMemoryView());
             }
         }
@@ -87,7 +87,7 @@ namespace AZ
             m_uploadPackets.clear();
         }
 
-        void BufferPoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void BufferPoolResolver::OnResourceShutdown(const RHI::DeviceResource& resource)
         {
             const Buffer& buffer = static_cast<const Buffer&>(resource);
             if (!buffer.m_pendingResolves)

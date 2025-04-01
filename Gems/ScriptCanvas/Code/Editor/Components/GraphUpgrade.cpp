@@ -9,7 +9,7 @@
 
 #include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
-
+#include <Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.h>
 #include <Editor/Nodes/NodeDisplayUtils.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -434,22 +434,33 @@ namespace ScriptCanvasEditor
 
         for (auto& node : sm->m_deprecatedNodes)
         {
-            ScriptCanvas::NodeConfiguration nodeConfig = node->GetReplacementNodeConfiguration();
+            ScriptCanvas::NodeReplacementConfiguration nodeConfig;
+            auto replacementId = ScriptCanvasEditor::NodeReplacementSystem::GenerateReplacementId(node);
+            ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(
+                nodeConfig, &ScriptCanvasEditor::NodeReplacementRequestBus::Events::GetNodeReplacementConfiguration, replacementId);
+
+            if (!nodeConfig.IsValid())
+            {
+                nodeConfig = node->GetReplacementNodeConfiguration();
+            }
+
             if (nodeConfig.IsValid())
             {
-                ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;
                 auto nodeEntity = node->GetEntityId();
-                auto nodeOutcome = graph->ReplaceNodeByConfig(node, nodeConfig, nodeUpdateSlotReport);
-                if (nodeOutcome.IsSuccess())
+                ScriptCanvas::NodeUpdateReport nodeUpdateReport;
+                ScriptCanvasEditor::NodeReplacementRequestBus::BroadcastResult(nodeUpdateReport,
+                    &ScriptCanvasEditor::NodeReplacementRequestBus::Events::ReplaceNodeByReplacementConfiguration,
+                    graph->GetScriptCanvasId(), node, nodeConfig);
+                if (!nodeUpdateReport.IsEmpty())
                 {
-                    ScriptCanvas::MergeUpdateSlotReport(nodeEntity, sm->m_updateReport, nodeUpdateSlotReport);
+                    ScriptCanvas::MergeUpdateSlotReport(nodeEntity, sm->m_updateReport, nodeUpdateReport);
 
                     sm->m_allNodes.erase(node);
                     sm->m_outOfDateNodes.erase(node);
                     sm->m_sanityCheckRequiredNodes.erase(node);
                     sm->m_graphNeedsDirtying = true;
 
-                    auto replacedNode = nodeOutcome.GetValue();
+                    auto replacedNode = nodeUpdateReport.m_newNode;
                     sm->m_allNodes.insert(replacedNode);
 
                     if (replacedNode->IsOutOfDate(graph->GetVersion()))
@@ -520,7 +531,10 @@ namespace ScriptCanvasEditor
 
         if (validationResults.HasErrors())
         {
-            sm->MarkError("Failed to Parse");
+            if (!sm->GetConfig().saveParseErrors)
+            {
+                sm->MarkError("Failed to Parse");
+            }
 
             for (auto& err : validationResults.GetEvents())
             {
@@ -681,7 +695,7 @@ namespace ScriptCanvasEditor
         if (m_asset != asset)
         {
             m_asset = asset;
-            SetDebugPrefix(asset.Path().c_str());
+            SetDebugPrefix(asset.RelativePath().c_str());
         }
     }
 
@@ -694,9 +708,9 @@ namespace ScriptCanvasEditor
 
     //////////////////////////////////////////////////////////////////////
     // State Machine Internals
-    bool StateMachine::GetVerbose() const
+    const UpgradeGraphConfig& StateMachine::GetConfig() const
     {
-        return m_isVerbose;
+        return m_config;
     }
 
     void StateMachine::OnSystemTick()
@@ -753,9 +767,9 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void StateMachine::SetVerbose(bool isVerbose)
+    void StateMachine::SetConfig(const UpgradeGraphConfig& config)
     {
-        m_isVerbose = isVerbose;
+        m_config = config;
     }
 
     const AZStd::string& StateMachine::GetDebugPrefix() const

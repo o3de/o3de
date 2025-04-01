@@ -14,17 +14,15 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
 
 namespace UnitTest
 {
-    class LockFreeQueue
-        : public AllocatorsFixture
-    {
-    public:
-        LockFreeQueue() : AllocatorsFixture() {}
+    using namespace AZStd;
+    using namespace UnitTestInternal;
 
+    class LockFreeQueue
+        : public LeakDetectionFixture
+    {
     protected:
 #ifdef _DEBUG
         static const int NUM_ITERATIONS = 5000;

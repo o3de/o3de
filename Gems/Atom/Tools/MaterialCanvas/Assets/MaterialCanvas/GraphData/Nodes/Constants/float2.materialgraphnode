@@ -1,0 +1,68 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{C451808F-3604-46A8-9014-2D51293EAD55}",
+        "category": "Constants",
+        "title": "Float2 Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "description": "Create a shader constant with the type and value defined by this node.",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outX|outY"
+        ],
+        "propertySlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.y;"
+                    ]
+                }
+            }
+        ]
+    }
+}

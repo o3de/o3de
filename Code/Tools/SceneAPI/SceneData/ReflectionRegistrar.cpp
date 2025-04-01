@@ -7,6 +7,7 @@
  */
 
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
+#include <SceneAPI/SceneData/Groups/ImportGroup.h>
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Groups/SkeletonGroup.h>
 #include <SceneAPI/SceneData/Groups/SkinGroup.h>
@@ -17,16 +18,20 @@
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
+#include <SceneAPI/SceneData/Rules/UnmodifiableRule.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
+#include <SceneAPI/SceneData/Rules/UVsRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Rules/TagRule.h>
 
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
 
 #include <SceneAPI/SceneData/GraphData/AnimationData.h>
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 #include <SceneAPI/SceneData/GraphData/BoneData.h>
+#include <SceneAPI/SceneData/GraphData/CustomPropertyData.h>
 #include <SceneAPI/SceneData/GraphData/MaterialData.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexColorData.h>
@@ -56,6 +61,7 @@ namespace AZ
             }
 
             // Groups
+            SceneData::ImportGroup::Reflect(context);
             SceneData::MeshGroup::Reflect(context);
             SceneData::SkeletonGroup::Reflect(context);
             SceneData::SkinGroup::Reflect(context);
@@ -67,11 +73,14 @@ namespace AZ
             SceneData::LodRule::Reflect(context);
             SceneData::StaticMeshAdvancedRule::Reflect(context);
             SceneData::MaterialRule::Reflect(context);
+            SceneData::UnmodifiableRule::Reflect(context);
             SceneData::ScriptProcessorRule::Reflect(context);
             SceneData::SkeletonProxyRule::Reflect(context);
             SceneData::SkinMeshAdvancedRule::Reflect(context);
             SceneData::TangentsRule::Reflect(context);
+            SceneData::UVsRule::Reflect(context);
             SceneData::CoordinateSystemRule::Reflect(context);
+            SceneData::TagRule::Reflect(context);
 
             // Utility
             SceneData::SceneNodeSelectionList::Reflect(context);
@@ -91,6 +100,7 @@ namespace AZ
             context->Class<AZ::SceneData::GraphData::SkinMeshData>()->Version(1);
             context->Class<AZ::SceneData::GraphData::SkinWeightData>()->Version(1);
             AZ::SceneData::GraphData::TransformData::Reflect(context);
+            AZ::SceneData::GraphData::CustomPropertyData::Reflect(context);
         }
 
         void RegisterDataTypeBehaviorReflection(AZ::BehaviorContext* context)
@@ -107,6 +117,7 @@ namespace AZ
             AZ::SceneData::GraphData::AnimationData::Reflect(context);
             AZ::SceneData::GraphData::BlendShapeAnimationData::Reflect(context);
             AZ::SceneData::GraphData::BlendShapeData::Reflect(context);
+            AZ::SceneData::GraphData::CustomPropertyData::Reflect(context);
         }
     } // namespace SceneAPI
 } // namespace AZ

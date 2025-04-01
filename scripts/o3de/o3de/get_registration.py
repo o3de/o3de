@@ -14,13 +14,16 @@ from o3de import manifest
 
 
 def _run_get_registered(args: argparse) -> int:
+    # If the --query-project-path option is provided,
+    # That is used to filter the query to a specific project
     registered_path = manifest.get_registered(args.engine_name,
                                               args.project_name,
                                               args.gem_name,
                                               args.template_name,
                                               args.default_folder,
                                               args.repo_name,
-                                              args.restricted_name)
+                                              args.restricted_name,
+                                              project_path=args.query_project_path)
     # If a path has been found return 0
     if registered_path:
         print(registered_path)
@@ -51,6 +54,10 @@ def add_parser_args(parser):
                        help='Repo name.')
     group.add_argument('-rsn', '--restricted-name', type=str, required=False,
                        help='Restricted name.')
+
+    project_group = parser.add_mutually_exclusive_group(required=False)
+    project_group.add_argument('-qpp', '--query-project-path', type=pathlib.Path,
+                       help='The path to a project. Can be used to query gems registered with a specific project')
 
     parser.set_defaults(func=_run_get_registered)
 

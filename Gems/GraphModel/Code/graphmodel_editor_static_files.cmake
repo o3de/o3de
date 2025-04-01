@@ -13,7 +13,7 @@ set(FILES
     Include/GraphModel/Model/DataType.h
     Include/GraphModel/Model/Graph.h
     Include/GraphModel/Model/GraphElement.h
-    Include/GraphModel/Model/IGraphContext.h
+    Include/GraphModel/Model/GraphContext.h
     Include/GraphModel/Model/Node.h
     Include/GraphModel/Model/Slot.h
     Include/GraphModel/Model/Module/InputOutputNodes.h
@@ -42,6 +42,7 @@ set(FILES
     Source/Model/Connection.cpp
     Source/Model/DataType.cpp
     Source/Model/Graph.cpp
+    Source/Model/GraphContext.cpp
     Source/Model/GraphElement.cpp
     Source/Model/Node.cpp
     Source/Model/Slot.cpp

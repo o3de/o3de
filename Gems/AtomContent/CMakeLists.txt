@@ -7,5 +7,5 @@
 #
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME AtomContent.Builders NAMESPACE Gem TARGETS Gem::AtomContent_ReferenceMaterials.Builders Gem::AtomContent_Sponza.Builders)
+    ly_create_alias(NAME AtomContent.Builders NAMESPACE Gem TARGETS Gem::ReferenceMaterials.Builders Gem::Sponza.Builders)
 endif()

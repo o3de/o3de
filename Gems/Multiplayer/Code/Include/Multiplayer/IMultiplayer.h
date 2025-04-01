@@ -11,6 +11,10 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <AzNetworking/Serialization/NetworkInputSerializer.h>
+#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzNetworking/Serialization/TrackChangedSerializer.h>
+#include <AzNetworking/Serialization/TypeValidatingSerializer.h>
 #include <Multiplayer/NetworkEntity/IFilterEntityManager.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
@@ -24,6 +28,19 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+#ifdef AZ_RELEASE_BUILD
+    // Disable serializer type validation in release
+    using InputSerializer = AzNetworking::NetworkInputSerializer;
+    using OutputSerializer = AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer>;
+    using RpcInputSerializer = AzNetworking::NetworkInputSerializer;
+    using RpcOutputSerializer = AzNetworking::NetworkOutputSerializer;
+#else
+    using InputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkInputSerializer>;
+    using OutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer>>;
+    using RpcInputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkInputSerializer>;
+    using RpcOutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkOutputSerializer>;
+#endif
+
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
@@ -44,13 +61,17 @@ namespace Multiplayer
 
     using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
     using ClientMigrationEndEvent = AZ::Event<>;
-    using ClientDisconnectedEvent = AZ::Event<>;
+    using EndpointDisconnectedEvent = AZ::Event<MultiplayerAgentType>;
+    using NetworkInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using NotifyClientMigrationEvent = AZ::Event<AzNetworking::ConnectionId, const HostId&, uint64_t, ClientInputId, NetEntityId>;
     using NotifyEntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using ServerAcceptanceReceivedEvent = AZ::Event<>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
+    using LevelLoadBlockedEvent = AZ::Event<>;
+    using NoServerLevelLoadedEvent = AZ::Event<>;
+    using VersionMismatchEvent = AZ::Event<>;
 
     //! @class IMultiplayer
     //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
@@ -84,16 +105,18 @@ namespace Multiplayer
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
         //! Starts hosting a server.
-        //! @param port The port to listen for connection on
+        //! @param port The port to listen for connection on, 0 means use the currently configured port value of sv_port
         //! @param isDedicated Whether the server is dedicated or client hosted
         //! @return if the application successfully started hosting
-        virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
+        static const uint16_t UseDefaultHostPort = 0;
+        virtual bool StartHosting(uint16_t port = UseDefaultHostPort, bool isDedicated = true) = 0;
 
         //! Connects to the specified IP as a Client.
         //! @param remoteAddress The domain or IP to connect to
         //! @param port The port to connect to
+        //! @param connectionTicket Some form of authentication to validate the connection (if required by the server)
         //! @result if a connection was successfully created
-        virtual bool Connect(const AZStd::string& remoteAddress, uint16_t port) = 0;
+        virtual bool Connect(const AZStd::string& remoteAddress, uint16_t port, const AZStd::string& connectionTicket = "") = 0;
 
         // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context.
         //! @param reason The reason for terminating connections
@@ -107,9 +130,9 @@ namespace Multiplayer
         //! @param handler The ClientMigrationEndEvent Handler to add
         virtual void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) = 0;
 
-        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs.
-        //! @param handler The ClientDisconnectedEvent Handler to add
-        virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
+        //! Adds a EndpointDisconnectedEvent Handler which is invoked on the client when a disconnection occurs.
+        //! @param handler The EndpointDisconnectedEvent Handler to add
+        virtual void AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler) = 0;
 
         //! Adds a NotifyClientMigrationEvent Handler which is invoked when a client migrates from one host to another.
         //! @param handler The NotifyClientMigrationEvent Handler to add
@@ -127,14 +150,29 @@ namespace Multiplayer
         //! @param handler The ServerAcceptanceReceived Handler to add
         virtual void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) = 0;
 
-        //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.
-        //! @param handler The SessionInitEvent Handler to add
+        //! Adds a NetworkInitEvent Handler which is invoked when the network is initialized on the dedicated server or client-server.
+        //! @param handler The NetworkInitEvent Handler to add
+        virtual void AddNetworkInitHandler(NetworkInitEvent::Handler& handler) = 0;
+
+        //! @deprecated If looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or SessionNotificationBus::OnCreateSessionEnd
         virtual void AddSessionInitHandler(SessionInitEvent::Handler& handler) = 0;
 
-        //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends.
-        //! @param handler The SessionShutdownEvent handler to add
+        //! @deprecated If looking for an event when a multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or SessionNotificationBus::OnDestroySessionEnd.
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
 
+        //! Adds a LevelLoadBlockedEvent Handler which is invoked whenever the multiplayer system blocks a level load.
+        //! @param handler The LevelLoadBlockedEvent handler to add
+        virtual void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) = 0;
+
+        //! Adds a NoServerLevelLoadedEvent Handler which is invoked whenever a client connects to a server that doesn't have any level loaded.
+        //! @param handler The NoServerLevelLoadedEvent handler to add
+        virtual void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) = 0;
+
+        //! Adds a VersionMismatchEvent Handler which is invoked whenever two multiplayer endpoints have a version mismatch.
+        //! For example, the provided handler will be triggered if a client tries connecting to a server that's using a different multiplayer version.
+        //! @param handler The VersionMismatchEvent handler to add
+        virtual void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) = 0;
+        
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
         //! @param connectionId       the connection id of the client that is migrating
         //! @param hostId             the host id of the host the client is migrating to
@@ -172,16 +210,6 @@ namespace Multiplayer
         //! Returns the network entity manager instance bound to this multiplayer instance.
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
-
-        //! Sets user-defined filtering manager for entities.
-        //! This allows selectively choosing which entities to replicate on a per client connection.
-        //! See IFilterEntityManager for details.
-        //! @param entityFilter non-owning pointer, the caller is responsible for memory management.
-        virtual void SetFilterEntityManager(IFilterEntityManager* entityFilter) = 0;
-
-        //! Returns a pointer to the user-defined filtering manager of entities.
-        //! @return pointer to the filtered entity manager, or nullptr if not set
-        virtual IFilterEntityManager* GetFilterEntityManager() = 0;
 
         //! Registers a temp userId to allow a host to look up a players controlled entity in the event of a rejoin or migration event.
         //! @param temporaryUserIdentifier the temporary user identifier used to identify a player across hosts

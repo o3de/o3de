@@ -19,130 +19,6 @@
 
 namespace AssetProcessor
 {
-    void SettingsRegistryBuilder::SettingsExporter::WriteName(AZStd::string_view name)
-    {
-        if (m_includeName)
-        {
-            m_writer.Key(name.data(), aznumeric_caster(name.length()));
-        }
-    }
-
-    SettingsRegistryBuilder::SettingsExporter::SettingsExporter(
-        rapidjson::StringBuffer& buffer, const AZStd::vector<AZStd::string>& excludes)
-        : m_writer(rapidjson::Writer<rapidjson::StringBuffer>(buffer))
-        , m_excludes(excludes)
-    {
-    }
-
-    AZ::SettingsRegistryInterface::VisitResponse SettingsRegistryBuilder::SettingsExporter::Traverse(
-        AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::VisitAction action,
-        AZ::SettingsRegistryInterface::Type type)
-    {
-        for (const AZStd::string& exclude : m_excludes)
-        {
-            if (exclude == path)
-            {
-                return AZ::SettingsRegistryInterface::VisitResponse::Skip;
-            }
-        }
-
-        if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
-        {
-            AZ_Assert(type == AZ::SettingsRegistryInterface::Type::Object || type == AZ::SettingsRegistryInterface::Type::Array,
-                "Unexpected type visited: %i.", type);
-            WriteName(valueName);
-            if (type == AZ::SettingsRegistryInterface::Type::Object)
-            {
-                m_result = m_result && m_writer.StartObject();
-                m_includeNameStack.push(true);
-                m_includeName = true;
-            }
-            else
-            {
-                m_result = m_result && m_writer.StartArray();
-                m_includeNameStack.push(false);
-                m_includeName = false;
-            }
-        }
-        else if (action == AZ::SettingsRegistryInterface::VisitAction::End)
-        {
-            if (type == AZ::SettingsRegistryInterface::Type::Object)
-            {
-                m_result = m_result && m_writer.EndObject();
-            }
-            else
-            {
-                m_result = m_result && m_writer.EndArray();
-            }
-            AZ_Assert(!m_includeNameStack.empty(), "Attempting to close a json array or object that wasn't started.");
-            m_includeNameStack.pop();
-            m_includeName = !m_includeNameStack.empty() ? m_includeNameStack.top() : true;
-        }
-        else if (type == AZ::SettingsRegistryInterface::Type::Null)
-        {
-            WriteName(valueName);
-            m_result = m_result && m_writer.Null();
-        }
-
-        return m_result ?
-            AZ::SettingsRegistryInterface::VisitResponse::Continue :
-            AZ::SettingsRegistryInterface::VisitResponse::Done;
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.Bool(value);
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.Int64(value);
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::u64 value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.Uint64(value);
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, double value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.Double(value);
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.String(value.data(), aznumeric_caster(value.length()));
-    }
-
-    bool SettingsRegistryBuilder::SettingsExporter::Finalize()
-    {
-        if (!m_includeNameStack.empty())
-        {
-            AZ_Assert(false, "m_includeNameStack is expected to be empty. This means that there was an object or array what wasn't closed.");
-            return false;
-        }
-        return m_result;
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Reset(rapidjson::StringBuffer& buffer)
-    {
-        m_writer.Reset(buffer);
-        m_includeName = false;
-        m_result = true;
-    }
-
-
-
     SettingsRegistryBuilder::SettingsRegistryBuilder()
         : m_builderId("{1BB18B28-2953-4922-A80B-E7375FCD7FC1}")
         , m_assetType("{FEBB3C7B-9C8B-46C3-8AAF-3D132D811087}")
@@ -159,10 +35,10 @@ namespace AssetProcessor
         builderDesc.m_busId = m_builderId;
         builderDesc.m_createJobFunction = AZStd::bind(&SettingsRegistryBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDesc.m_processJobFunction = AZStd::bind(&SettingsRegistryBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDesc.m_version = 1;
+        builderDesc.m_version = 3;
 
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDesc);
-        
+
         return true;
     }
 
@@ -253,35 +129,55 @@ namespace AssetProcessor
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
 
         AZStd::vector<AZStd::string> excludes = ReadExcludesFromRegistry();
-        // Exclude the AssetProcessor settings from the game regsitry
-        excludes.emplace_back(AssetProcessor::AssetProcessorSettingsKey); 
-        
+        // Exclude the AssetProcessor settings from the game registry
+        excludes.emplace_back(AssetProcessor::AssetProcessorSettingsKey);
+
         AZStd::vector<char> scratchBuffer;
         scratchBuffer.reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
         AZStd::fixed_vector<AZStd::string_view, AzFramework::MaxPlatformCodeNames> platformCodes;
         AzFramework::PlatformHelper::AppendPlatformCodeNames(platformCodes, request.m_platformInfo.m_identifier);
         AZ_Assert(platformCodes.size() <= 1, "A one-to-one mapping of asset type platform identifier"
             " to platform codename is required in the SettingsRegistryBuilder."
-            " The bootstrap.game is now only produced per build configuration and doesn't take into account"
+            " The bootstrap.<launcher-type>.<config>.setreg is now only produced per launcher type + build configuration and doesn't take into account"
             " different platforms names");
 
         const AZStd::string& assetPlatformIdentifier = request.m_jobDescription.GetPlatformIdentifier();
         // Determines the suffix that will be used for the launcher based on processing server vs non-server assets
         const char* launcherType = assetPlatformIdentifier != AzFramework::PlatformHelper::GetPlatformName(AzFramework::PlatformId::SERVER)
             ? "_GameLauncher" : "_ServerLauncher";
-        
-        AZ::SettingsRegistryInterface::Specializations specializations[] =
+
+        AZ::SettingsRegistryInterface::FilenameTags specializations[] =
         {
-            { AZStd::string_view{"release"}, AZStd::string_view{"game"} },
-            { AZStd::string_view{"profile"}, AZStd::string_view{"game"} },
-            { AZStd::string_view{"debug"}, AZStd::string_view{"game"} }
+            { AZStd::string_view{"client"}, AZStd::string_view{"release"} },
+            { AZStd::string_view{"client"} , AZStd::string_view{"profile"} },
+            { AZStd::string_view{"client"}, AZStd::string_view{"debug"} },
+            { AZStd::string_view{"server"}, AZStd::string_view{"release"} },
+            { AZStd::string_view{"server"} , AZStd::string_view{"profile"} },
+            { AZStd::string_view{"server"}, AZStd::string_view{"debug"} },
+            { AZStd::string_view{"unified"}, AZStd::string_view{"release"} },
+            { AZStd::string_view{"unified"} , AZStd::string_view{"profile"} },
+            { AZStd::string_view{"unified"}, AZStd::string_view{"debug"} }
         };
+
+        constexpr size_t LauncherTypeIndex = 0;
+        constexpr size_t BuildConfigIndex = 1;
+
+        // Append the specialization filename tag of "launcher" get all the `<filename>.*.launcher.*.setreg` files
+        // to be merged into the aggregate Settings Registry
+        constexpr AZStd::string_view LauncherFilenameTag = "launcher";
+        for (AZ::SettingsRegistryInterface::FilenameTags& specialization : specializations)
+        {
+            specialization.Append(LauncherFilenameTag);
+            // Also add the "game" tag for backwards compatibility with any existing
+            // `<filename>.*.game.*.setreg` files
+            specialization.Append("game");
+        }
 
         // Add the project specific specializations
         auto projectName = AZ::Utils::GetProjectName();
         if (!projectName.empty())
         {
-            for (AZ::SettingsRegistryInterface::Specializations& specialization : specializations)
+            for (AZ::SettingsRegistryInterface::FilenameTags& specialization : specializations)
             {
                 specialization.Append(projectName);
                 // The Game Launcher normally has a build target name of <ProjectName>Launcher
@@ -291,20 +187,29 @@ namespace AssetProcessor
             }
         }
 
-        AZStd::string outputPath;
-        AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), "bootstrap.game.", outputPath);
-        size_t extensionOffset = outputPath.length();
-
-        rapidjson::StringBuffer outputBuffer;
-        outputBuffer.Reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
-        SettingsExporter exporter(outputBuffer, excludes);
+        AZ::IO::Path outputPath = AZ::IO::Path(request.m_tempDirPath) / "bootstrap.";
+        size_t extensionOffset = outputPath.Native().size();
 
         if (!platformCodes.empty())
         {
+            // Setting up the Dumper settings for exporting the settings registry to a file
+            AZStd::string outputBuffer;
+            outputBuffer.reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
+            AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+            dumperSettings.m_includeFilter = [&excludes](AZStd::string_view jsonKeyPath)
+            {
+                auto ExcludeField = [&jsonKeyPath](AZStd::string_view excludePath)
+                {
+                    return AZ::SettingsRegistryMergeUtils::IsPathDescendantOrEqual(excludePath, jsonKeyPath);
+                };
+                // Include a path only if it is not equal or a suffix of any paths of the exclude vector
+                return AZStd::ranges::find_if(excludes, ExcludeField) == AZStd::ranges::end(excludes);
+            };
+
             AZStd::string_view platform = platformCodes.front();
             for (size_t i = 0; i < AZStd::size(specializations); ++i)
             {
-                const AZ::SettingsRegistryInterface::Specializations& specialization = specializations[i];
+                const AZ::SettingsRegistryInterface::FilenameTags& specialization = specializations[i];
                 if (m_isShuttingDown)
                 {
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
@@ -312,10 +217,6 @@ namespace AssetProcessor
                 }
 
                 using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-                // Placeholder Key used by the local Settings Registry for storing all Gems SourcePaths
-                // array entries.
-                constexpr auto PlaceholderGemKey = FixedValueString(AZ::SettingsRegistryMergeUtils::OrganizationRootKey)
-                    + "/Gems/__SettingsRegistryBuilderPlaceholder";
 
                 AZ::SettingsRegistryImpl registry;
 
@@ -340,82 +241,71 @@ namespace AssetProcessor
                             " to local settings registry", settingsKey.c_str());
                     }
 
-                    // The purpose of this section is to copy the Gem's SourcePaths from the Global Settings Registry
-                    // the local SettingsRegistry. The reason this is needed is so that the call to
-                    // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gem's "<gem-root>/Registry" folder
-                    // that will be merged into the bootstrap.game.<configuration>.setreg file
+                    // The purpose of this section is to copy the active gems entry and manifest gems entries
+                    // to a local SettingsRegistry.
+                    // The reason this is needed is so that the call to
+                    // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gems root directory
+                    // that will be merged into the bootstrap.<launcher-type>.<configuration>.setreg file
                     // This is used by the GameLauncher applications to read from a single merged .setreg file
                     // containing the settings needed to run a game/simulation without have access to the source code base registry
-                    AZStd::vector<AzFramework::GemInfo> gemInfos;
-                    size_t pathIndex{};
-                    if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
+                    auto CopySettingsToLocalRegistry = [&registry, settingsRegistry, copiedSettings = AZStd::string()]
+                    (AZStd::string_view copyFieldKey) mutable
                     {
-                        AZStd::vector<AZ::IO::PathView> sourcePaths;
-                        for (const AzFramework::GemInfo& gemInfo : gemInfos)
-                        {
-                            for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
-                            {
-                                if (auto foundIt = AZStd::find(sourcePaths.begin(), sourcePaths.end(), absoluteSourcePath);
-                                    foundIt == sourcePaths.end())
-                                {
-                                    sourcePaths.emplace_back(absoluteSourcePath);
-                                }
-                            }
-                        }
+                        // Copy Settings at the specified field key recursively to the local settings registry
+                        copiedSettings.clear();
+                        AZ::IO::ByteContainerStream copiedSettingsStream(&copiedSettings);
+                        AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+                        AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*settingsRegistry, copyFieldKey,
+                            copiedSettingsStream, dumperSettings);
+                        registry.MergeSettings(copiedSettings, AZ::SettingsRegistryInterface::Format::JsonMergePatch, copyFieldKey);
+                    };
 
-                        for (const AZ::IO::PathView& sourcePath : sourcePaths)
-                        {
-                            // Use JSON Pointer to append elements to the SourcePaths array
-                            registry.Set(FixedValueString::format("%s/SourcePaths/%zu", PlaceholderGemKey.c_str(), pathIndex++),
-                                sourcePath.Native());
-                        }
-                    }
+                    CopySettingsToLocalRegistry(AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
+                    CopySettingsToLocalRegistry(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
                 }
 
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer);
-                // This function iterates over each path for each the "/Amazon/Gems/<gem-name>/SourcePaths" key and attempts
-                // to merge the "Registry" directory in each path.
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
+                AZ::SettingsRegistryInterface::MergeSettingsResult mergeResult;
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer));
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer));
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer));
 
-                // The Placeholder Key is removed now that each gem's "<gem-root>/Registry" directory have been merged to
-                // the local Settings Registry instance via `MergeSettingsToRegistry_GemRegistries`
-                registry.Remove(PlaceholderGemKey);
+                // Output any Settings Registry Merge result messages using the info log level if not empty
+                if (auto& operationMessages = mergeResult.GetMessages();
+                    !operationMessages.empty())
+                {
+                    [[maybe_unused]] AZStd::string_view launcherString = specialization.GetSpecialization(LauncherTypeIndex);
+                    [[maybe_unused]] AZStd::string_view buildConfiguration = specialization.GetSpecialization(BuildConfigIndex);
+                    AZ_Info("Settings Registry Builder", R"(Launcher Type: "%.*s", Build configuration: "%.*s")" "\n"
+                        "Merging the Engine, Gem, Project Registry directories resulted in the following messages:\n%s\n",
+                        AZ_STRING_ARG(launcherString), AZ_STRING_ARG(buildConfiguration),
+                         operationMessages.c_str());
+                }
 
-                // Merge the Project User and User home settings registry only in non-release builds
-                constexpr bool executeRegDumpCommands = false;
+                // The Gem Root Key and Manifest Gems Root is removed now that each gems "<gem-root>/Registry" directory
+                // have been merged to the local Settings Registry
+                registry.Remove(AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
+                registry.Remove(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
+
                 AZ::CommandLine* commandLine{};
                 AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* appRequests)
                 {
                     commandLine = appRequests->GetAzCommandLine();
                 });
 
-                if (!specialization.Contains("release"))
-                {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, platform, specialization, &scratchBuffer);
-                    if (commandLine)
-                    {
-                        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
-                    }
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, platform, specialization, &scratchBuffer);
-                }
-
                 if (commandLine)
                 {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, {});
                 }
 
-
-                if (registry.Visit(exporter, ""))
+                if (AZ::IO::ByteContainerStream outputStream(&outputBuffer);
+                    AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(registry, "", outputStream, dumperSettings))
                 {
-                    if (!exporter.Finalize())
-                    {
-                        return;
-                    }
-
-                    AZStd::string_view specializationString(specialization.GetSpecialization(0));
-                    outputPath += specializationString; // Append configuration
-                    outputPath += ".setreg";
+                    AZStd::string_view specializationString(specialization.GetSpecialization(LauncherTypeIndex));
+                    outputPath.Native() += specializationString; // Append launcher type (client, server, or unified)
+                    specializationString = specialization.GetSpecialization(BuildConfigIndex);
+                    outputPath.Native() += '.';
+                    outputPath.Native() += specializationString; // Append configuration
+                    outputPath.Native() += ".setreg";
 
                     AZ::IO::SystemFile file;
                     if (!file.Open(outputPath.c_str(),
@@ -424,25 +314,32 @@ namespace AssetProcessor
                         AZ_Error("Settings Registry Builder", false, R"(Failed to open file "%s" for writing.)", outputPath.c_str());
                         return;
                     }
-                    if (file.Write(outputBuffer.GetString(), outputBuffer.GetSize()) != outputBuffer.GetSize())
+                    if (file.Write(outputBuffer.data(), outputBuffer.size()) != outputBuffer.size())
                     {
                         AZ_Error("Settings Registry Builder", false, R"(Failed to write settings registry to file "%s".)", outputPath.c_str());
                         return;
                     }
                     file.Close();
 
-                    const AZ::u32 hashedSpecialization = static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}(specializationString));
+                    // Hash only the launcher type and build config specializations tags
+                    size_t hashedSpecialization{};
+                    // Get the launcher type specialization tag
+                    AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(LauncherTypeIndex));
+                    // Get the build config specialization tag
+                    AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(BuildConfigIndex));
                     AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s."
                         " This can result in a product ID collision with other builders for this asset.",
                         AZ_STRING_ARG(specializationString));
-                    response.m_outputProducts.emplace_back(outputPath, m_assetType, hashedSpecialization);
+
+                    auto setregSubId = static_cast<AZ::u32>(hashedSpecialization);
+                    response.m_outputProducts.emplace_back(outputPath.Native(), m_assetType, setregSubId);
                     response.m_outputProducts.back().m_dependenciesHandled = true;
 
-                    outputPath.erase(extensionOffset);
+                    outputPath.Native().erase(extensionOffset);
                 }
 
-                outputBuffer.Clear();
-                exporter.Reset(outputBuffer);
+                // Clear the output buffer, to make sure previous loop iterations settings are not being appended
+                outputBuffer.clear();
             }
         }
 

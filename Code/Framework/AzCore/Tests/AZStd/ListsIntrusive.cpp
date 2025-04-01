@@ -12,9 +12,6 @@
 
 #include <AzCore/std/containers/array.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 #define AZ_TEST_VALIDATE_EMPTY_LIST(_List)        \
     EXPECT_TRUE(_List.validate());             \
     EXPECT_EQ(0, _List.size());            \
@@ -31,6 +28,9 @@ using namespace UnitTestInternal;
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     // IntrusiveListContainerTest-Begin
 
     // My intrusive list class.
@@ -54,7 +54,7 @@ namespace UnitTest
     AZ_FORCE_INLINE bool operator>(const MyListClass& a, const MyListClass& b)  { return a.m_data > b.m_data; }
 
     class IntrusiveListContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         template <class T>

@@ -11,8 +11,11 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/ImageView.h>
+
+
+#include <Atom/RPI.Reflect/Configuration.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -23,14 +26,16 @@ namespace AZ
         class ImageAsset;
 
         //! A base class for images providing access to common image information.
-        class Image
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API Image
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ImageSystem;
 
         public:
             AZ_INSTANCE_DATA(Image, "{4E4B1092-1BEE-4DC4-BE4B-8FBC83B0F48C}");
-            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
             virtual ~Image() = default;
 
@@ -54,7 +59,7 @@ namespace AZ
                         
             //! Updates content of a single sub-resource in the image from the CPU.
             virtual RHI::ResultCode UpdateImageContents(const RHI::ImageUpdateRequest& request);
-            
+
         protected:
             // This is a base class for a derived instance variant.
             Image();

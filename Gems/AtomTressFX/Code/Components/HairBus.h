@@ -21,7 +21,7 @@ namespace AZ
                 : public ComponentBus
             {
             public:
-                AZ_RTTI(AZ::Render::HairRequests, "{923D6B94-C6AD-4B03-B8CC-DB7E708FB9F4}");
+                AZ_RTTI(HairRequests, "{923D6B94-C6AD-4B03-B8CC-DB7E708FB9F4}");
 
                 /// Overrides the default AZ::EBusTraits handler policy to allow one listener only.
                 static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;

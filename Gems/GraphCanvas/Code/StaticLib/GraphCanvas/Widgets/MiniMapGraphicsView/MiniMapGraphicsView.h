@@ -9,6 +9,7 @@
 #pragma once
 
 #include <QGraphicsView>
+#include <QTimer>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
@@ -37,7 +38,7 @@ namespace GraphCanvas
 
     public:
         AZ_TYPE_INFO(MiniMapGraphicsView, "{DF03D03E-2048-43B2-8F01-897098D553F2}");
-        AZ_CLASS_ALLOCATOR(MiniMapGraphicsView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MiniMapGraphicsView, AZ::SystemAllocator);
 
         MiniMapGraphicsView(const AZ::Crc32& graphCanvasEditorNotificationBusId = 0,
             bool isStandAlone = true,
@@ -99,7 +100,7 @@ namespace GraphCanvas
         : public AzQtComponents::StyledDockWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(MiniMapDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MiniMapDockWidget, AZ::SystemAllocator);
 
         MiniMapDockWidget(const AZ::Crc32& graphCanvasEditorNotificationBusId, QWidget* parent = nullptr);
     };

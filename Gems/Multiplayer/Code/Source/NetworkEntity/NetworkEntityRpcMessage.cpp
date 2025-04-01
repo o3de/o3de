@@ -7,8 +7,7 @@
  */
 
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <AzNetworking/Serialization/NetworkInputSerializer.h>
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <Multiplayer/IMultiplayer.h>
 #include <AzCore/Console/ILogger.h>
 
 namespace Multiplayer
@@ -135,7 +134,7 @@ namespace Multiplayer
             m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
         }
 
-        AzNetworking::NetworkInputSerializer serializer(m_data->GetBuffer(), static_cast<uint32_t>(m_data->GetCapacity()));
+        RpcInputSerializer serializer(m_data->GetBuffer(), static_cast<uint32_t>(m_data->GetCapacity()));
         if (params.Serialize(serializer))
         {
             m_data->Resize(serializer.GetSize());
@@ -154,7 +153,7 @@ namespace Multiplayer
             return false;
         }
 
-        AzNetworking::NetworkOutputSerializer serializer(m_data->GetBuffer(), static_cast<uint32_t>(m_data->GetSize()));
+        RpcOutputSerializer serializer(m_data->GetBuffer(), static_cast<uint32_t>(m_data->GetSize()));
         return outParams.Serialize(serializer);
     }
 

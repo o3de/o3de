@@ -21,12 +21,13 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/UICore/SaveChangesDialog.hxx>
@@ -58,7 +59,7 @@ namespace LUAEditor
     {
     public:
         AZ_RTTI(BreakpointSavedState, "{EB3E0061-75AC-41F7-8631-6072F6C018EB}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(BreakpointSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BreakpointSavedState, AZ::SystemAllocator);
         BreakpointSavedState() {}
         BreakpointMap m_Breakpoints;
         static void Reflect(AZ::ReflectContext* reflection)
@@ -123,6 +124,26 @@ namespace LUAEditor
     {
         m_fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(m_fileIO, "FileIO system is not present, make sure a FileIO instance is set by the application.");
+
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
+        {
+            m_connectedEventHandler = AzFramework::RemoteToolsEndpointConnectedEvent::Handler(
+                [this](bool value)
+                {
+                    this->DesiredTargetConnected(value);
+                });
+            remoteToolsInterface->RegisterRemoteToolsEndpointConnectedHandler(
+                AzFramework::LuaToolsKey, m_connectedEventHandler);
+
+            m_changedEventHandler = AzFramework::RemoteToolsEndpointChangedEvent::Handler(
+                [this](AZ::u32 oldVal, AZ::u32 newVal)
+                {
+                    this->DesiredTargetChanged(oldVal, newVal);
+                });
+            remoteToolsInterface->RegisterRemoteToolsEndpointChangedHandler(
+                AzFramework::LuaToolsKey, m_changedEventHandler);
+        }
     }
 
     void Context::Activate()
@@ -135,7 +156,6 @@ namespace LUAEditor
         Context_DebuggerManagement::Handler::BusConnect();
         LUABreakpointRequestMessages::Handler::BusConnect();
         LUAStackRequestMessages::Handler::BusConnect();
-        AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
         LUAWatchesRequestMessages::Handler::BusConnect();
         LUATargetContextRequestMessages::Handler::BusConnect();
         HighlightedWords::Handler::BusConnect();
@@ -147,15 +167,19 @@ namespace LUAEditor
 
         //AzToolsFramework::RegisterAssetType(AzToolsFramework::RegisteredAssetType(ContextID, AZ::ScriptAsset::StaticAssetType(), "Script", ".lua", true, 0));
 
-        m_pBreakpointSavedState = AZ::UserSettings::CreateFind<BreakpointSavedState>(AZ_CRC("BreakpointSavedState", 0xbb65be3a), AZ::UserSettings::CT_LOCAL);
+        m_pBreakpointSavedState = AZ::UserSettings::CreateFind<BreakpointSavedState>(AZ_CRC_CE("BreakpointSavedState"), AZ::UserSettings::CT_LOCAL);
 
         AzToolsFramework::MainWindowDescription desc;
         desc.name = "LUA Editor";
         desc.ContextID = ContextID;
-        desc.hotkeyDesc = AzToolsFramework::HotkeyDescription(AZ_CRC("LUAOpenEditor", 0x5870cf6d), "Ctrl+Shift+L", "Open LUA Editor", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
-        EBUS_EVENT(AzToolsFramework::FrameworkMessages::Bus, AddComponentInfo, desc);
+        desc.hotkeyDesc = AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAOpenEditor"), "Ctrl+Shift+L", "Open LUA Editor", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
+        AzToolsFramework::FrameworkMessages::Bus::Broadcast(&AzToolsFramework::FrameworkMessages::Bus::Events::AddComponentInfo, desc);
 
-        EBUS_EVENT_RESULT(m_ipcOpenFilesHandle, LegacyFramework::IPCCommandBus, RegisterIPCHandler, "open_files", AZStd::bind(&Context::OnIPCOpenFiles, this, AZStd::placeholders::_1));
+        LegacyFramework::IPCCommandBus::BroadcastResult(
+            m_ipcOpenFilesHandle,
+            &LegacyFramework::IPCCommandBus::Events::RegisterIPCHandler,
+            "open_files",
+            AZStd::bind(&Context::OnIPCOpenFiles, this, AZStd::placeholders::_1));
 
         bool connectedToAssetProcessor = false;
 
@@ -179,7 +203,7 @@ namespace LUAEditor
 
     void Context::Deactivate()
     {
-        EBUS_EVENT(LegacyFramework::IPCCommandBus, UnregisterIPCHandler, m_ipcOpenFilesHandle);
+        LegacyFramework::IPCCommandBus::Broadcast(&LegacyFramework::IPCCommandBus::Events::UnregisterIPCHandler, m_ipcOpenFilesHandle);
 
         //AzToolsFramework::UnRegisterAssetType(AZ::ScriptAsset::StaticAssetType());
         LUATargetContextRequestMessages::Handler::BusDisconnect();
@@ -191,7 +215,6 @@ namespace LUAEditor
         Context_DebuggerManagement::Handler::BusDisconnect();
         LUAStackRequestMessages::Handler::BusDisconnect();
         LUABreakpointRequestMessages::Handler::BusDisconnect();
-        AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
         HighlightedWords::Handler::BusDisconnect();
         AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
 
@@ -199,7 +222,7 @@ namespace LUAEditor
 
     void Context::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetProcessorToolsConnection", 0x734669bc));
+        required.push_back(AZ_CRC_CE("AssetProcessorToolsConnection"));
     }
 
     void Context::ApplicationDeactivated()
@@ -244,7 +267,7 @@ namespace LUAEditor
         }
 
         AZStd::vector<AZStd::string> files;
-        AzFramework::StringFunc::Tokenize(parameters.c_str(), files, ";");
+        AZ::StringFunc::Tokenize(parameters.c_str(), files, ";");
         if (!files.empty())
         {
             for (const auto& file : files)
@@ -268,7 +291,8 @@ namespace LUAEditor
                 m_pLUAEditorMainWindow->setFocus();
 
 
-                EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+                LUABreakpointTrackerMessages::Bus::Broadcast(
+                    &LUABreakpointTrackerMessages::Bus::Events::BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
             }
 
             return true;
@@ -293,15 +317,16 @@ namespace LUAEditor
             if (allowed)
             {
                 m_pLUAEditorMainWindow->hide();
-                auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC("LUA EDITOR CONTEXT STATE", 0xc20c7427), AZ::UserSettings::CT_LOCAL);
+                auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC_CE("LUA EDITOR CONTEXT STATE"), AZ::UserSettings::CT_LOCAL);
                 newState->m_MainEditorWindowIsVisible = false;
             }
         }
     }
     void Context::ApplicationCensus()
     {
-        auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC("LUA EDITOR CONTEXT STATE", 0xc20c7427), AZ::UserSettings::CT_LOCAL);
-        EBUS_EVENT(AzToolsFramework::FrameworkMessages::Bus, ApplicationCensusReply, newState->m_MainEditorWindowIsVisible);
+        auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC_CE("LUA EDITOR CONTEXT STATE"), AZ::UserSettings::CT_LOCAL);
+        AzToolsFramework::FrameworkMessages::Bus::Broadcast(
+            &AzToolsFramework::FrameworkMessages::Bus::Events::ApplicationCensusReply, newState->m_MainEditorWindowIsVisible);
     }
 
     void Context::AddDefaultLUAKeywords()
@@ -383,7 +408,7 @@ namespace LUAEditor
                             if (!m_bReloadCheckQueued)
                             {
                                 m_bReloadCheckQueued = true;
-                                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::ProcessReloadCheck, this);
+                                AZ::SystemTickBus::QueueFunction(&Context::ProcessReloadCheck, this);
                             }
                         }
                     }
@@ -440,7 +465,7 @@ namespace LUAEditor
                 AZ_TracePrintf(LUAEditorDebugName, "ProcessReloadCheck inspecting assetId '%s' '%s'\n", info.m_assetId.c_str(), info.m_assetName.c_str());
             }
 
-            auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
+            auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC_CE("LUA EDITOR MAIN WINDOW STATE"), AZ::UserSettings::CT_LOCAL);
 
             // Check to see if it is unmodified and the setting is set to auto-reload unmodified files
             bool shouldAutoReload = newState->m_bAutoReloadUnmodifiedFiles && !info.m_bIsModified;
@@ -466,7 +491,7 @@ namespace LUAEditor
                 {
                     AZ_TracePrintf(LUAEditorDebugName, "ProcessReloadCheck user queueing reload for assetId '%s' '%s'\n", info.m_assetId.c_str(), info.m_assetName.c_str());
                 }
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::OnReloadDocument, this, info.m_assetId);
+                AZ::SystemTickBus::QueueFunction(&Context::OnReloadDocument, this, info.m_assetId);
             }
             else
             {
@@ -493,30 +518,31 @@ namespace LUAEditor
 
         if (connected)
         {
-            EBUS_EVENT(LUAEditorDebuggerMessages::Bus, EnumerateContexts);
-            EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnConnectedToTarget);
-            EBUS_EVENT(LUAEditor::Context_ControlManagement::Bus, OnTargetConnected);
+            LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::EnumerateContexts);
+            LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnConnectedToTarget);
+            LUAEditor::Context_ControlManagement::Bus::Broadcast(&LUAEditor::Context_ControlManagement::Bus::Events::OnTargetConnected);
             m_connectedState = true;
 
         }
         else
         {
-            EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnDisconnectedFromTarget);
-            EBUS_EVENT(LUAEditor::Context_ControlManagement::Bus, OnTargetDisconnected);
-            EBUS_EVENT(LUAEditor::Context_DebuggerManagement::Bus, OnDebuggerDetached);
+            LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnDisconnectedFromTarget);
+            LUAEditor::Context_ControlManagement::Bus::Broadcast(&LUAEditor::Context_ControlManagement::Bus::Events::OnTargetDisconnected);
+            LUAEditor::Context_DebuggerManagement::Bus::Broadcast(&LUAEditor::Context_DebuggerManagement::Bus::Events::OnDebuggerDetached);
             m_connectedState = false;
 
         }
     }
 
-    void Context::DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID)
+    void Context::DesiredTargetChanged([[maybe_unused]] AZ::u32 newTargetID, AZ::u32 oldTargetID)
     {
-        (void)oldTargetID;
-        (void)newTargetID;
-
         AZ_TracePrintf(LUAEditorDebugName, "Context::RemoteTargetChanged()\n");
 
-        RequestDetachDebugger();
+        // If there's no prior target, there's nothing to detach
+        if (oldTargetID != 0)
+        {
+            RequestDetachDebugger();
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -619,10 +645,11 @@ namespace LUAEditor
 
             if (bp.m_assetName == assetIdString)
             {
-                if (bp.m_documentLine == lineNumber - 1) // -1 offset is counter to the +1 line numbering scheme used by the LUA editor
+                if (bp.m_documentLine == lineNumber)
                 {
                     DeleteBreakpoint(bp.m_breakpointId);
-                    EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+                    LUABreakpointTrackerMessages::Bus::Broadcast(
+                        &LUABreakpointTrackerMessages::Bus::Events::BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
                     break;
                 }
             }
@@ -642,36 +669,40 @@ namespace LUAEditor
         typedef AzToolsFramework::FrameworkMessages::Bus HotkeyBus;
         // register our hotkeys so that they exist in the preferences panel even if we're not open:
 
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAFind", 0xc62d8078),                    "Ctrl+F",           "Find",                                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAQuickFindLocal", 0x115cbcda),          "Ctrl+F3",          "Quick Find Local",                     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAQuickFindLocalReverse", 0xdd8a0c22),   "Ctrl+Shift+F3",    "Quick Find Local (Reverse)",           "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAFindInFiles", 0xdaebdfdd),             "Ctrl+Shift+F",     "Find In Files",                        "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAReplace", 0x1fd5510c),                 "Ctrl+R",           "Replace",                              "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAReplaceInFiles", 0x38b609e0),          "Ctrl+Shift+R",     "Replace In Files",                     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAGoToLine", 0xb6603f27),                "Ctrl+G",           "Go to line number...",                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAFold", 0xf0969e48),                    "Alt+0",            "Fold Source Functions",                "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAUnfold", 0x36934ecd),                  "Alt+Shift+0",      "Unfold Source Functions",              "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUACloseAllExceptCurrent", 0x0076409a),   "Ctrl+Alt+F4",      "Close All Windows Except Current",     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUACloseAll", 0xf732678f),                "Ctrl+Shift+F4",    "Close All Windows",                    "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAComment", 0x873c2725),                 "Ctrl+K",           "Comment Selected Block",               "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAUncomment", 0x9190cf18),               "Ctrl+Shift+K",     "Uncomment Selected Block",             "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAFind"),                    "Ctrl+F",           "Find",                                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAQuickFindLocal"),          "Ctrl+F3",          "Quick Find Local",                     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAQuickFindLocalReverse"),   "Ctrl+Shift+F3",    "Quick Find Local (Reverse)",           "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAFindInFiles"),             "Ctrl+Shift+F",     "Find In Files",                        "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAReplace"),                 "Ctrl+R",           "Replace",                              "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAReplaceInFiles"),          "Ctrl+Shift+R",     "Replace In Files",                     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAGoToLine"),                "Ctrl+G",           "Go to line number...",                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAFold"),                    "Alt+0",            "Fold Source Functions",                "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAUnfold"),                  "Alt+Shift+0",      "Unfold Source Functions",              "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUACloseAllExceptCurrent"),   "Ctrl+Alt+F4",      "Close All Windows Except Current",     "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUACloseAll"),                "Ctrl+Shift+F4",    "Close All Windows",                    "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAComment"),                 "Ctrl+K",           "Comment Selected Block",               "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAUncomment"),               "Ctrl+Shift+K",     "Uncomment Selected Block",             "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
 
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUALinesUpTranspose", 0xafc899ef),        "Ctrl+Shift+Up",    "Transpose Lines Up",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUALinesDnTranspose", 0xf9d733bf),        "Ctrl+Shift+Down",  "Transpose Lines Down",                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUALinesUpTranspose"),        "Ctrl+Shift+Up",    "Transpose Lines Up",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUALinesDnTranspose"),        "Ctrl+Shift+Down",  "Transpose Lines Down",                 "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
 
-        EBUS_EVENT(HotkeyBus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("LUAResetZoom", 0xbe0787ad),               "Ctrl+0",           "Reset Default Zoom",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
+        HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC_CE("LUAResetZoom"),               "Ctrl+0",           "Reset Default Zoom",                   "LUA Editor", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW));
 
         bool GUIMode = true;
-        EBUS_EVENT_RESULT(GUIMode, LegacyFramework::FrameworkApplicationMessages::Bus, IsRunningInGUIMode);
+        LegacyFramework::FrameworkApplicationMessages::Bus::BroadcastResult(
+            GUIMode, &LegacyFramework::FrameworkApplicationMessages::Bus::Events::IsRunningInGUIMode);
         if (!GUIMode)
         {
             // do not auto create lua editor main window in batch mode.
             return;
         }
 
-        const AzFramework::CommandLine* commandLine = nullptr;
+        const AZ::CommandLine* commandLine = nullptr;
 
-        EBUS_EVENT_RESULT(commandLine, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
+        AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* requests)
+            {
+                commandLine = requests->GetAzCommandLine();
+            });
 
         bool forceShow = false;
         bool forceHide = false;
@@ -701,9 +732,6 @@ namespace LUAEditor
             for (size_t i = 0; i < numSwitchValues; ++i)
             {
                 AZStd::string inputValue = commandLine->GetSwitchValue(k_luaScriptFileString, i);
-
-                // Open the file(s)
-                AZStd::to_lower(const_cast<AZStd::string&>(inputValue).begin(), const_cast<AZStd::string&>(inputValue).end());
 
                 // Cache the files we want to open, we will open them when we activate the main window.
                 m_filesToOpen.push_back(inputValue);
@@ -796,7 +824,7 @@ namespace LUAEditor
     void Context::ProvisionalShowAndFocus(bool forcedShow, bool forcedHide)
     {
         // main view will auto persist (load)
-        auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC("LUA EDITOR CONTEXT STATE", 0xc20c7427), AZ::UserSettings::CT_LOCAL);
+        auto newState = AZ::UserSettings::CreateFind<LUAEditorContextSavedState>(AZ_CRC_CE("LUA EDITOR CONTEXT STATE"), AZ::UserSettings::CT_LOCAL);
 
         if (forcedShow)
         {
@@ -831,7 +859,8 @@ namespace LUAEditor
                 }
             }
 
-            EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+            LUABreakpointTrackerMessages::Bus::Broadcast(
+                &LUABreakpointTrackerMessages::Bus::Events::BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
         }
     }
 
@@ -850,7 +879,7 @@ namespace LUAEditor
         DocumentInfo& info = infoEntry.first->second;
         info.m_assetId = normalizedAssetId;
         info.m_assetName = assetId;
-        AzFramework::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
+        AZ::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
         info.m_bSourceControl_Ready = true;
         info.m_bSourceControl_CanWrite = true;
         info.m_bUntitledDocument = false;
@@ -874,24 +903,16 @@ namespace LUAEditor
     void Context::OnCloseDocument(const AZStd::string& id)
     {
         AZStd::string assetId = id; // as we might delete the reference
-
-        AZ_TracePrintf(LUAEditorDebugName, AZStd::string::format("LUAEditor OnCloseDocument" "%s\n", assetId.c_str()).c_str());
-
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
-        AZ_Assert(docInfoIter != m_documentInfoMap.end(), "LUAEditor OnCloseDocument() : Cant find Document Info.");
-
+        
         if (m_pLUAEditorMainWindow)
         {
             m_pLUAEditorMainWindow->OnCloseView(assetId);
         }
 
-        m_documentInfoMap.erase(docInfoIter);
-
-        docInfoIter = m_documentInfoMap.find(assetId);
-        if (docInfoIter != m_documentInfoMap.end())
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        if (documentInfoIter.has_value())
         {
-            //AZ_Assert(docInfoIter != m_documentInfoMap.end(), "LUAEditor OnCloseDocument() : Cant find Document Data.");
-            m_documentInfoMap.erase(docInfoIter);
+            m_documentInfoMap.erase(documentInfoIter.value());
         }
 
         CleanUpBreakpoints();
@@ -908,50 +929,55 @@ namespace LUAEditor
 
         // Make a copy because it may be modified behind our backs by later bus calls
         AZStd::string originalAssetId = assetId;
-
-        auto docInfoIter = m_documentInfoMap.find(originalAssetId);
-        if (docInfoIter == m_documentInfoMap.end())
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        if (!documentInfoIter.has_value())
         {
             AZ_TracePrintf(LUAEditorDebugName, "Context::OnSaveDocument - Document with ID is already closed - ignoring.\n");
             return;
         }
+        DocumentInfo& documentInfo = documentInfoIter.value()->second;
 
-        AZStd::string newAssetName(docInfoIter->second.m_assetName);
+        AZStd::string newAssetName(documentInfo.m_assetName);
 
         bool newFileCreated = false;
 
-        if (docInfoIter->second.m_bIsBeingSaved)
+        if (documentInfo.m_bIsBeingSaved)
         {
             return;
         }
 
-        bool trySaveAs = docInfoIter->second.m_bUntitledDocument || bSaveAs;
+        bool trySaveAs = documentInfo.m_bUntitledDocument || bSaveAs;
 
         while (trySaveAs)
         {
-            if (!m_pLUAEditorMainWindow->OnFileSaveDialog(docInfoIter->second.m_assetName, newAssetName))
+            if (!m_pLUAEditorMainWindow->OnFileSaveDialog(documentInfo.m_assetName, newAssetName))
             {
                 return;
             }
 
             // the file dialog lets us do silly things like choose the same name as the original
             // in which case we should treat it just like a regular save
-            if (newAssetName == docInfoIter->second.m_assetName)
+            if (newAssetName == documentInfo.m_assetName)
             {
-                docInfoIter->second.m_bUntitledDocument = false;
+                documentInfo.m_bUntitledDocument = false;
                 break;
             }
 
             // do not allow SaveAs onto an existing asset, even if it could be checked out and modified "safely."
             // end user must check out and modify contents directly if they want this
 
-            if (AzFramework::StringFunc::Find(newAssetName.c_str(), ".lua") == AZStd::string::npos)
+            if (AZ::StringFunc::Find(newAssetName.c_str(), ".lua") == AZStd::string::npos)
             {
                 newAssetName += ".lua";
             }
 
             AZ::Data::AssetId catalogAssetId;
-            EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, newAssetName.c_str(), AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(), false);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                catalogAssetId,
+                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                newAssetName.c_str(),
+                AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(),
+                false);
 
             if (catalogAssetId.IsValid() || m_fileIO->Exists(newAssetName.c_str()))
             {
@@ -960,26 +986,26 @@ namespace LUAEditor
             }
 
             trySaveAs = false;
-            docInfoIter->second.m_bUntitledDocument = false;
-            AzFramework::StringFunc::Path::GetFullFileName(newAssetName.c_str(), docInfoIter->second.m_displayName);
+            documentInfo.m_bUntitledDocument = false;
+            AZ::StringFunc::Path::GetFullFileName(newAssetName.c_str(), documentInfo.m_displayName);
 
             // when you 'save as' you can write to it, even if it started out not that way.
-            docInfoIter->second.m_bSourceControl_Ready = true;
-            docInfoIter->second.m_bSourceControl_CanWrite = true;
+            documentInfo.m_bSourceControl_Ready = true;
+            documentInfo.m_bSourceControl_CanWrite = true;
 
             newFileCreated = true;
         }
 
-        if (!docInfoIter->second.m_bSourceControl_CanWrite)
+        if (!documentInfo.m_bSourceControl_CanWrite)
         {
             AZ_Warning("LUA Editor Error", false, "<div severity=\"warning\">Unable to save document - the document is read-only.</div>");
         }
 
-        docInfoIter->second.m_bDataIsWritten = false;
-        docInfoIter->second.m_bCloseAfterSave = bCloseAfterSave;
-        docInfoIter->second.m_bIsBeingSaved = true;
+        documentInfo.m_bDataIsWritten = false;
+        documentInfo.m_bCloseAfterSave = bCloseAfterSave;
+        documentInfo.m_bIsBeingSaved = true;
 
-        //AZ_TracePrintf("Debug","    ++m_numOutstandingOperations %d\n",__LINE__);
+
         ++m_numOutstandingOperations;
 
         //////////////////////////////////////////////////////////////////////////
@@ -990,7 +1016,7 @@ namespace LUAEditor
         AZ::IO::SystemFile luaFile;
         if (luaFile.Open(newAssetName.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
         {
-            luaFile.Write(docInfoIter->second.m_scriptAsset.c_str(), docInfoIter->second.m_scriptAsset.size());
+            luaFile.Write(documentInfo.m_scriptAsset.c_str(), documentInfo.m_scriptAsset.size());
             isSaved = true;
             luaFile.Close();
         }
@@ -1000,12 +1026,13 @@ namespace LUAEditor
         {
             if (newFileCreated)
             {
-                docInfoIter->second.m_bCloseAfterSave = true;
+                documentInfo.m_bCloseAfterSave = true;
 
                 AZStd::string normalizedAssetId = newAssetName;
                 AZStd::to_lower(normalizedAssetId.begin(), normalizedAssetId.end());
 
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, normalizedAssetId, true);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::OnLoadDocument, normalizedAssetId, true);
                 DocumentCheckOutRequested(normalizedAssetId);
             }
         }
@@ -1013,25 +1040,24 @@ namespace LUAEditor
         DataSaveDoneCallback(isSaved, originalAssetId);
         //////////////////////////////////////////////////////////////////////////
 
-        m_pLUAEditorMainWindow->OnDocumentInfoUpdated(docInfoIter->second);
+        m_pLUAEditorMainWindow->OnDocumentInfoUpdated(documentInfo);
     }
 
     bool Context::OnSaveDocumentAs(const AZStd::string& assetId, bool bCloseAfterSave)
     {
         AZ_TracePrintf(LUAEditorDebugName, AZStd::string::format("LUAEditor OnSaveDocumentAs" "%s\n", assetId.c_str()).c_str());
 
-        [[maybe_unused]] DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
-        AZ_Assert(docInfoIter != m_documentInfoMap.end(), "LUAEditor OnSaveDocumentAs() : Cant find Document Info.");
+        [[maybe_unused]] auto documentInfoIter = FindDocumentInfo(assetId);
+        AZ_Assert(documentInfoIter.has_value(), "LUAEditor OnSaveDocumentAs() : Cant find Document Info.");
 
         OnSaveDocument(assetId, bCloseAfterSave, true);
-
         return true;
     }
 
     void Context::DocumentCheckOutRequested(const AZStd::string& assetId)
     {
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
-        AZ_Assert(docInfoIter != m_documentInfoMap.end(), "Invalid document lookup.");
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        AZ_Assert(documentInfoIter.has_value(), "Invalid document lookup.");
 
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO, "FileIO system is not present.");
@@ -1042,9 +1068,9 @@ namespace LUAEditor
             return;
         }
 
-        DocumentInfo& docInfo = docInfoIter->second;
-        AZ_TracePrintf(LUAEditorDebugName, "LUAEditor DocumentCheckOutRequested: %s\n", docInfo.m_assetName.c_str());
-        docInfo.m_bSourceControl_BusyRequestingEdit = true;
+        DocumentInfo& documentInfo = documentInfoIter.value()->second;
+        AZ_TracePrintf(LUAEditorDebugName, "LUAEditor DocumentCheckOutRequested: %s\n", documentInfo.m_assetName.c_str());
+        documentInfo.m_bSourceControl_BusyRequestingEdit = true;
 
         AZStd::string sourceFile;
         bool fileFound = false;
@@ -1057,7 +1083,7 @@ namespace LUAEditor
             AZ_Warning(LUAEditorInfoName, false, "The Lua IDE source control integration requires an active connection to the Asset Processor. Make sure Asset Processor is running.");
 
             // Reset BusyRequestingEdit or we'll be stuck with the "checking out" loading bar for forever
-            docInfo.m_bSourceControl_BusyRequestingEdit = false;
+            documentInfo.m_bSourceControl_BusyRequestingEdit = false;
             return;
         }
 
@@ -1075,7 +1101,17 @@ namespace LUAEditor
             );
     }
 
-    //////////////////////////////////////////////////////////////////////////
+    AZStd::optional<const Context::DocumentInfoMap::iterator> Context::FindDocumentInfo(const AZStd::string_view assetId) 
+    {
+        AZStd::string assetIdLower(assetId);
+        AZStd::to_lower(assetIdLower.begin(), assetIdLower.end());
+        DocumentInfoMap::iterator documentIter = m_documentInfoMap.find(assetIdLower);
+        if (documentIter == m_documentInfoMap.end())
+        {
+            return AZStd::nullopt;
+        }
+        return AZStd::optional<const Context::DocumentInfoMap::iterator>(documentIter);
+    }
 
     //////////////////////////////////////////////////////////////////////////
     //AssetManagementMessages
@@ -1091,18 +1127,17 @@ namespace LUAEditor
         // update data?
         if (success)
         {
-            DocumentInfoMap::iterator actualDocument = m_documentInfoMap.find(assetId);
-            AZ_Assert(actualDocument != m_documentInfoMap.end(), "Invalid document lookup.");
-            {
-                AZ_TracePrintf(LUAEditorDebugName, "DataLoadDoneCallback() sending OnDocumentInfoUpdated data for assetId '%s' '%s'\n", assetId.c_str(), actualDocument->second.m_assetName.c_str());
-            }
+            auto documentInfoIter = FindDocumentInfo(assetId);
+            AZ_Assert(documentInfoIter.has_value(), "Invalid document lookup.");
+            auto& documentInfo = documentInfoIter.value()->second;
+            AZ_TracePrintf(LUAEditorDebugName, "DataLoadDoneCallback() sending OnDocumentInfoUpdated data for assetId '%s' '%s'\n", assetId.c_str(), documentInfo.m_assetName.c_str());
 
-            actualDocument->second.m_bDataIsLoaded = true;
-            actualDocument->second.m_bIsModified = false;
+            documentInfo.m_bDataIsLoaded = true;
+            documentInfo.m_bIsModified = false;
 
             if (m_pLUAEditorMainWindow)
             {
-                m_pLUAEditorMainWindow->OnDocumentInfoUpdated(actualDocument->second);
+                m_pLUAEditorMainWindow->OnDocumentInfoUpdated(documentInfo);
             }
         }
 
@@ -1111,49 +1146,44 @@ namespace LUAEditor
 
     void Context::DataSaveDoneCallback(bool success, const AZStd::string& assetId)
     {
-        //AZ_TracePrintf("Debug","        --m_numOutstandingOperations %d\n",__LINE__);
         --m_numOutstandingOperations;
+        AZ_TracePrintf(LUAEditorDebugName, "DataSaveDoneCallback() ENTRY: data save returned for assetId %s (%s)\n", assetId.c_str(), success ? "TRUE" : "FALSE");
 
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        if (!documentInfoIter.has_value())
         {
-            // forensic logging
-            AZ_TracePrintf(LUAEditorDebugName, "DataSaveDoneCallback() ENTRY: data save returned for assetId %s (%s)\n", assetId.c_str(), success ? "TRUE" : "FALSE");
-        }
-
-        DocumentInfoMap::iterator actualDocument = m_documentInfoMap.find(assetId);
-        AZ_Assert(actualDocument != m_documentInfoMap.end(), "Invalid assetId lookup.");
-        if (actualDocument == m_documentInfoMap.end())
-        {
+            AZ_TracePrintf(LUAEditorDebugName, "DataSaveDoneCallback EXIT: no such assetId %s\n", assetId.c_str());
             return;
         }
-
-        actualDocument->second.m_bIsBeingSaved = false; // we are no longer saving - regardless of whether we succeeded or not!
+        auto& documentInfo = documentInfoIter.value()->second;
+        documentInfo.m_bIsBeingSaved = false; // we are no longer saving - regardless of whether we succeeded or not!
 
         // update data:
         if (success)
         {
-            actualDocument->second.m_bDataIsWritten = true;
+            documentInfo.m_bDataIsWritten = true;
 
             //update the mod time in the document info
             if (m_fileIO)
             {
                 uint64_t modTime = m_fileIO->ModificationTime(assetId.c_str());
 
-                actualDocument->second.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-                actualDocument->second.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
+                documentInfo.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
+                documentInfo.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
 
-                actualDocument->second.m_bDataIsLoaded = true;
-                actualDocument->second.m_bIsModified = false;
+                documentInfo.m_bDataIsLoaded = true;
+                documentInfo.m_bIsModified = false;
             }
 
             // refresh source info:
             if (m_pLUAEditorMainWindow)
             {
-                m_pLUAEditorMainWindow->OnDocumentInfoUpdated(actualDocument->second);
+                m_pLUAEditorMainWindow->OnDocumentInfoUpdated(documentInfo);
             }
 
-            if (actualDocument->second.m_bCloseAfterSave)
+            if (documentInfo.m_bCloseAfterSave)
             {
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnCloseDocument, assetId);
+                Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnCloseDocument, assetId);
             }
         }
     }
@@ -1161,155 +1191,146 @@ namespace LUAEditor
     void Context::NotifyDocumentModified(const AZStd::string& assetId, bool modified)
     {
         // the document was modified, note this down
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
-        AZ_Assert(docInfoIter != m_documentInfoMap.end(), "Invalid document lookup.");
-        docInfoIter->second.m_bIsModified = modified;
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        AZ_Assert(documentInfoIter.has_value(), "Invalid document lookup.");
+        DocumentInfo& documentInfo = documentInfoIter.value()->second;
+        documentInfo.m_bIsModified = modified;
     }
 
     void Context::UpdateDocumentData(const AZStd::string& assetId, const char* dataPtr, const AZStd::size_t dataLength)
     {
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
-        AZ_Assert(docInfoIter != m_documentInfoMap.end(), "Invalid document lookup.");
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        AZ_Assert(documentInfoIter.has_value(), "Invalid document lookup.");
 
-        DocumentInfo& docInfo = docInfoIter->second;
-        AZ_Assert(docInfo.m_bDataIsLoaded, "You may not retrieve data until it is loaded.");
+        DocumentInfo& documentInfo = documentInfoIter.value()->second;
+        AZ_Assert(documentInfo.m_bDataIsLoaded, "You may not retrieve data until it is loaded.");
 
-        //docInfo.m_scriptAsset.GetAssetData()->SetData(dataPtr, dataLength);
-        docInfo.m_scriptAsset = AZStd::string(dataPtr, dataLength);
+        documentInfo.m_scriptAsset = AZStd::string(dataPtr, dataLength);
     }
 
     void Context::GetDocumentData(const AZStd::string& assetId, const char** dataPtr, AZStd::size_t& dataLength)
     {
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
-        AZ_Assert(docInfoIter != m_documentInfoMap.end(), "Invalid document lookup.");
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        AZ_Assert(documentInfoIter.has_value(), "Invalid document lookup.");
 
-        DocumentInfo& docInfo = docInfoIter->second;
-        AZ_Assert(docInfo.m_bDataIsLoaded, "You may not retrieve data until it is loaded.");
-
-        *dataPtr = docInfo.m_scriptAsset.data();
-        dataLength = docInfo.m_scriptAsset.size();
+        DocumentInfo& documentInfo = documentInfoIter.value()->second;
+        AZ_Assert(documentInfo.m_bDataIsLoaded, "You may not retrieve data until it is loaded.");
+        *dataPtr = documentInfo.m_scriptAsset.data();
+        dataLength = documentInfo.m_scriptAsset.size();
     }
 
     void Context::PerforceStatResponseCallback(bool success, const AzToolsFramework::SourceControlFileInfo& fileInfo, const AZStd::string& assetId)
     {
-        {
-            AZ_TracePrintf("Debug", "PerforceStatResponseCallback() ENTRY: loaded assetId %s\n", assetId.c_str());
-        }
+        AZ_TracePrintf("Debug", "PerforceStatResponseCallback() ENTRY: loaded assetId %s\n", assetId.c_str());
 
         //AZ_TracePrintf("Debug","        --m_numOutstandingOperations %d\n",__LINE__);
         --m_numOutstandingOperations;
         // you got a callback from the perforce API, this is guaranteed to be on the main thread.
-        DocumentInfoMap::iterator actualDocument = m_documentInfoMap.find(assetId);
-
+        auto documentInfoIter = FindDocumentInfo(assetId);
         // the document may have already been closed.  this is fine.
-        if (actualDocument == m_documentInfoMap.end())
+        if (!documentInfoIter.has_value())
         {
-            {
-                AZ_TracePrintf("Debug", "PerforceStatResponseCallback() EXIT: no such assetId %s\n", assetId.c_str());
-            }
+            AZ_TracePrintf("Debug", "PerforceStatResponseCallback() EXIT: no such assetId %s\n", assetId.c_str());
             return;
         }
 
-        DocumentInfo& doc = actualDocument->second;
+        DocumentInfo& documentInfo = documentInfoIter.value()->second;
 
         //only means stats has been retrieved at least once
-        doc.m_bSourceControl_Ready = true;
+        documentInfo.m_bSourceControl_Ready = true;
 
         //this operation is now considered done
-        doc.m_bSourceControl_BusyGettingStats = false;
+        documentInfo.m_bSourceControl_BusyGettingStats = false;
 
         //check file info flags to see if we can write
-        doc.m_bSourceControl_CanWrite = (fileInfo.m_flags & AzToolsFramework::SCF_Writeable) != 0;
+        documentInfo.m_bSourceControl_CanWrite = (fileInfo.m_flags & AzToolsFramework::SCF_Writeable) != 0;
 
-        doc.m_sourceControlInfo = fileInfo;
+        documentInfo.m_sourceControlInfo = fileInfo;
 
         //if we can check out is slightly a little more complicated
             //if the stat operation failed then we cant check out
         //if the stat operation succeeded then we need to make sure that it is currently checked in and its not out of date
         if (success == false)
         {
-            doc.m_bSourceControl_CanCheckOut = false;
+            documentInfo.m_bSourceControl_CanCheckOut = false;
         }
         else
         {
-            doc.m_bSourceControl_CanCheckOut = (fileInfo.IsManaged() && !(fileInfo.m_flags & AzToolsFramework::SCF_OutOfDate));
-            doc.m_bSourceControl_CanCheckOut = fileInfo.m_flags & AzToolsFramework::SCF_MultiCheckOut || doc.m_bSourceControl_CanCheckOut;
+            documentInfo.m_bSourceControl_CanCheckOut = (fileInfo.IsManaged() && !(fileInfo.m_flags & AzToolsFramework::SCF_OutOfDate));
+            documentInfo.m_bSourceControl_CanCheckOut = fileInfo.m_flags & AzToolsFramework::SCF_MultiCheckOut || documentInfo.m_bSourceControl_CanCheckOut;
         }
 
         AZ_TracePrintf(LUAEditorDebugName, "PerforceStatResponseCallback() sending OnDocumentInfoUpdated\n");
 
         if (m_pLUAEditorMainWindow)
         {
-            m_pLUAEditorMainWindow->OnDocumentInfoUpdated(doc);
+            m_pLUAEditorMainWindow->OnDocumentInfoUpdated(documentInfo);
         }
 
-        {
-            AZ_TracePrintf("Debug", "PerforceStatResponseCallback() EXIT: OK %s\n", assetId.c_str());
-        }
+        AZ_TracePrintf("Debug", "PerforceStatResponseCallback() EXIT: OK %s\n", assetId.c_str());
     }
 
     void Context::PerforceRequestEditCallback(bool success, const AzToolsFramework::SourceControlFileInfo& fileInfo, const AZStd::string& assetId)
     {
-        //AZ_TracePrintf("Debug","        --m_numOutstandingOperations %d\n",__LINE__);
         --m_numOutstandingOperations;
         // you got a callback from the perforce API, this is guaranteed to be on the main thread.
-        DocumentInfoMap::iterator actualDocument = m_documentInfoMap.find(assetId);
 
-        if (actualDocument == m_documentInfoMap.end())
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        if (!documentInfoIter.has_value())
         {
+            AZ_TracePrintf(LUAEditorDebugName, "PerforceRequestEditCallback EXIT: no such assetId %s\n", assetId.c_str());
             return;
         }
-        
-        DocumentInfo& doc = actualDocument->second;
+        DocumentInfo& documentInfo = documentInfoIter.value()->second;
 
         //this operation is considered done
-        doc.m_bSourceControl_BusyRequestingEdit = false;
+        documentInfo.m_bSourceControl_BusyRequestingEdit = false;
 
         //check file info flags to see if we can write
-        doc.m_bSourceControl_CanWrite = !fileInfo.IsReadOnly();
+        documentInfo.m_bSourceControl_CanWrite = !fileInfo.IsReadOnly();
 
-        doc.m_sourceControlInfo = fileInfo;
+        documentInfo.m_sourceControlInfo = fileInfo;
 
         //if we can check out is slightly a little more complicated
         //if the stat operation failed then we cant check out
         //if the stat operation succeeded then we need to make sure that it is currently checked in and its not out of date
         if (success == false)
         {
-            doc.m_bSourceControl_CanCheckOut = false;
+            documentInfo.m_bSourceControl_CanCheckOut = false;
         }
         else
         {
-            doc.m_bSourceControl_CanCheckOut = fileInfo.IsManaged() && !fileInfo.HasFlag(AzToolsFramework::SCF_OutOfDate);
+            documentInfo.m_bSourceControl_CanCheckOut = fileInfo.IsManaged() && !fileInfo.HasFlag(AzToolsFramework::SCF_OutOfDate);
 
-            doc.m_bSourceControl_CanCheckOut = fileInfo.HasFlag(AzToolsFramework::SCF_MultiCheckOut) || doc.m_bSourceControl_CanCheckOut;
+            documentInfo.m_bSourceControl_CanCheckOut = fileInfo.HasFlag(AzToolsFramework::SCF_MultiCheckOut) || documentInfo.m_bSourceControl_CanCheckOut;
         }
 
-        if (!doc.m_bSourceControl_Ready)
+        if (!documentInfo.m_bSourceControl_Ready)
         {
             QMessageBox::warning(m_pLUAEditorMainWindow, "Warning", "Perforce shows that it's not ready.");
         }
-        if (!doc.m_bSourceControl_CanWrite)
+        if (!documentInfo.m_bSourceControl_CanWrite)
         {
-            if (!doc.m_sourceControlInfo.HasFlag(AzToolsFramework::SCF_OpenByUser))
+            if (!documentInfo.m_sourceControlInfo.HasFlag(AzToolsFramework::SCF_OpenByUser))
             {
                 QMessageBox::warning(m_pLUAEditorMainWindow, "Warning", "This file is ReadOnly you cannot write to this file.");
             }
         }
-        else if (!doc.m_bSourceControl_CanCheckOut)
+        else if (!documentInfo.m_bSourceControl_CanCheckOut)
         {
-            if (doc.m_sourceControlInfo.m_status == AzToolsFramework::SCS_ProviderIsDown)
+            if (documentInfo.m_sourceControlInfo.m_status == AzToolsFramework::SCS_ProviderIsDown)
             {
                 QMessageBox::warning(m_pLUAEditorMainWindow, "Warning", "Perforce Is Down.\nFile will be saved.\nYou must reconcile with Perforce later!");
             }
-            else if (doc.m_sourceControlInfo.m_status == AzToolsFramework::SCS_ProviderError)
+            else if (documentInfo.m_sourceControlInfo.m_status == AzToolsFramework::SCS_ProviderError)
             {
                 QMessageBox::warning(m_pLUAEditorMainWindow, "Warning", "Perforce encountered an error.\nFile will be saved.\nYou must reconcile with Perforce later!");
             }
-            else if (doc.m_sourceControlInfo.m_status == AzToolsFramework::SCS_CertificateInvalid)
+            else if (documentInfo.m_sourceControlInfo.m_status == AzToolsFramework::SCS_CertificateInvalid)
             {
                 QMessageBox::warning(m_pLUAEditorMainWindow, "Warning", "Perforce Connection is not trusted.\nFile will be saved.\nYou must reconcile with Perforce later!");
             }
-            else if (!doc.m_sourceControlInfo.HasFlag(AzToolsFramework::SCF_OpenByUser))
+            else if (!documentInfo.m_sourceControlInfo.HasFlag(AzToolsFramework::SCF_OpenByUser))
             {
                 QMessageBox::warning(m_pLUAEditorMainWindow, "Warning", "Perforce says that you cannot write to this file.");
             }
@@ -1317,27 +1338,25 @@ namespace LUAEditor
 
         if (m_pLUAEditorMainWindow)
         {
-            m_pLUAEditorMainWindow->OnDocumentInfoUpdated(doc);
+            m_pLUAEditorMainWindow->OnDocumentInfoUpdated(documentInfo);
         }
     }
 
 
     void Context::OnReloadDocument(const AZStd::string assetId)
     {
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(assetId);
-        {
-            AZ_TracePrintf(LUAEditorDebugName, "OnReloadDocument() ENTRY user queing reload for assetId '%s'\n", assetId.c_str());
-        }
-
-        AZ_Assert(docInfoIter != m_documentInfoMap.end(), "Invalid document lookup.");
-        docInfoIter->second.m_bDataIsLoaded = false;
+        auto documentInfoIter = FindDocumentInfo(assetId);
+        AZ_TracePrintf(LUAEditorDebugName, "OnReloadDocument() ENTRY user queing reload for assetId '%s'\n", assetId.c_str());
+        
+        AZ_Assert(documentInfoIter.has_value(), "Invalid document lookup.");
+        DocumentInfo& documentInfo = documentInfoIter.value()->second;
+        documentInfo.m_bDataIsLoaded = false;
         if (m_pLUAEditorMainWindow)
         {
-            m_pLUAEditorMainWindow->OnDocumentInfoUpdated(docInfoIter->second);
+            m_pLUAEditorMainWindow->OnDocumentInfoUpdated(documentInfo);
         }
 
         AZ_TracePrintf(LUAEditorDebugName, "OnReloadDocument() Beginning asset load.\n");
-        docInfoIter->second.m_assetId = assetId;
 
         // while we're reading it, fetch the perforce information for it:
         // AZ_TracePrintf("Debug","    ++m_numOutstandingOperations %d\n",__LINE__);
@@ -1360,13 +1379,13 @@ namespace LUAEditor
         AZ::IO::SystemFile luaFile;
         if (luaFile.Open(assetId.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
         {
-            docInfoIter->second.m_scriptAsset.resize(luaFile.Length());
-            luaFile.Read(docInfoIter->second.m_scriptAsset.size(), docInfoIter->second.m_scriptAsset.data());
+            documentInfo.m_scriptAsset.resize(luaFile.Length());
+            luaFile.Read(documentInfo.m_scriptAsset.size(), documentInfo.m_scriptAsset.data());
             isLoaded = true;
             luaFile.Close();
         }
 
-        Context::DataLoadDoneCallback(isLoaded, docInfoIter->second.m_assetId);
+        Context::DataLoadDoneCallback(isLoaded, documentInfo.m_assetId);
     }
 
 
@@ -1433,8 +1452,8 @@ namespace LUAEditor
             return;
         }
 
-        AZStd::string assetIdLower(assetId);
-        AZStd::to_lower(assetIdLower.begin(), assetIdLower.end());
+        AZStd::string normalizedAssetId = assetId;
+        AZStd::to_lower(normalizedAssetId.begin(), normalizedAssetId.end());
 
         ShowLUAEditorView();
 
@@ -1447,17 +1466,17 @@ namespace LUAEditor
         // * we need to load that lua panel with the document's data, initializing it.
 
         // are we already tracking it?
-        auto it = m_documentInfoMap.find(assetIdLower);
-        if (it != m_documentInfoMap.end())
+        auto document = FindDocumentInfo(assetId);
+        if (document.has_value())
         {
             // tell the view that it needs to focus that document!
-            mostRecentlyOpenedDocumentView = assetIdLower;
+            mostRecentlyOpenedDocumentView = normalizedAssetId;
             if (m_queuedOpenRecent)
             {
                 return;
             }
 
-            EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::OpenMostRecentDocumentView, this);
+            AZ::SystemTickBus::QueueFunction(&Context::OpenMostRecentDocumentView, this);
             return;
         }
 
@@ -1483,14 +1502,15 @@ namespace LUAEditor
         // Register the script into the asset catalog
         AZ::Data::AssetType assetType = AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid();
         AZ::Data::AssetId catalogAssetId;
-        EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, assetIdLower.c_str(), assetType, true);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            catalogAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, normalizedAssetId.c_str(), assetType, true);
 
         uint64_t modTime = m_fileIO->ModificationTime(assetId.c_str());
 
         DocumentInfo info;
-        info.m_assetName = assetIdLower;
-        AzFramework::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
-        info.m_assetId = assetIdLower;
+        info.m_assetName = assetId;
+        AZ::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
+        info.m_assetId = normalizedAssetId;
         info.m_bSourceControl_BusyGettingStats = true;
         info.m_bSourceControl_BusyGettingStats = false;
         info.m_bSourceControl_CanWrite = true;
@@ -1533,7 +1553,7 @@ namespace LUAEditor
             luaFile.Close();
         }
 
-        DataLoadDoneCallback(isLoaded, assetIdLower);
+        DataLoadDoneCallback(isLoaded, normalizedAssetId);
         //////////////////////////////////////////////////////////////////////////
 
         if (m_queuedOpenRecent)
@@ -1546,8 +1566,8 @@ namespace LUAEditor
             m_pLUAEditorMainWindow->IgnoreFocusEvents(false);
         }
 
-        mostRecentlyOpenedDocumentView = assetIdLower;
-        EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::OpenMostRecentDocumentView, this);
+        mostRecentlyOpenedDocumentView = normalizedAssetId;
+        AZ::SystemTickBus::QueueFunction(&Context::OpenMostRecentDocumentView, this);
     }
 
     void Context::RunAsAnotherInstance()
@@ -1555,7 +1575,10 @@ namespace LUAEditor
         const AZStd::string k_luaScriptFileString = "files";
 
         const AzFramework::CommandLine* commandLine = nullptr;
-        EBUS_EVENT_RESULT(commandLine, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
+        AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* requests)
+            {
+                commandLine = requests->GetAzCommandLine();
+            });
 
         AZStd::string parameters = "";
         size_t numSwitchValues = commandLine->GetNumSwitchValues(k_luaScriptFileString);
@@ -1573,7 +1596,8 @@ namespace LUAEditor
         }
 
         // Send the list of files to open to the running instance.
-        EBUS_EVENT(LegacyFramework::IPCCommandBus, SendIPCCommand, "open_files", parameters.c_str());
+        LegacyFramework::IPCCommandBus::Broadcast(
+            &LegacyFramework::IPCCommandBus::Events::SendIPCCommand, "open_files", parameters.c_str());
     }
 
     void Context::ShowLUAEditorView()
@@ -1588,36 +1612,32 @@ namespace LUAEditor
     // ExecuteScriptBlob - execute a script blob.
     void Context::ExecuteScriptBlob(const AZStd::string& fromAssetId, bool executeLocally)
     {
-        DocumentInfoMap::iterator docInfoIter = m_documentInfoMap.find(fromAssetId);
-        AZ_Assert(docInfoIter != m_documentInfoMap.end(), "Could not find data");
+        auto documentInfoIter = FindDocumentInfo(fromAssetId);
+       AZ_Assert(documentInfoIter.has_value(), "Could not find data");
 
-        if (docInfoIter->second.m_scriptAsset.empty())
+        auto& documentInfo = documentInfoIter.value()->second;
+        if (documentInfo.m_scriptAsset.empty())
         {
             AZ_Warning(LUAEditorDebugName, false, "Could not execute empty script document.");
             return;
         }
+        const char* scriptData = documentInfo.m_scriptAsset.c_str();
+        // the debug name is simply the name of the document.
+        // if its unnamed, it's synthesized
+        AZStd::string debugName = documentInfo.m_assetName;
 
-        const char* scriptData = docInfoIter->second.m_scriptAsset.c_str();
-        size_t scriptDataSize = docInfoIter->second.m_scriptAsset.size();
-
-        EBUS_EVENT(LUAEditor::LUAStackTrackerMessages::Bus, StackClear);
-
-        DocumentInfoMap::iterator actualDocument = m_documentInfoMap.find(fromAssetId);
-        AZ_Assert(actualDocument != m_documentInfoMap.end(), "Invalid document lookup.");
+        LUAEditor::LUAStackTrackerMessages::Bus::Broadcast(&LUAEditor::LUAStackTrackerMessages::Bus::Events::StackClear);
 
         SynchronizeBreakpoints();
 
-        // the debug name is simply the name of the document.
-        // if its unnamed, it's synthesized
-
-        AZStd::string debugName = actualDocument->second.m_assetName;
 
         // if we're executing it locally, we'll just execute it locally - do not involve the debugger.
 
         if (executeLocally)
         {
             AZ::ScriptContext* sc = nullptr;
-            EBUS_EVENT_RESULT(sc, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+            AZ::ScriptSystemRequestBus::BroadcastResult(
+                sc, &AZ::ScriptSystemRequestBus::Events::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
             if (sc)
             {
                 // we might want to bracket this with some sort of error or warning protection, to collect
@@ -1627,8 +1647,7 @@ namespace LUAEditor
             return;
         }
 
-        // otherwise we've been told to execute it on the debugger remotely:
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, ExecuteScript, debugName, scriptData, scriptDataSize);
+        // otherwise we've been told to execute it on the debugger remotely which is presently unsupported
     }
 
     void Context::SynchronizeBreakpoints()
@@ -1638,17 +1657,19 @@ namespace LUAEditor
         for (BreakpointMap::iterator it = m_pBreakpointSavedState->m_Breakpoints.begin(); it != m_pBreakpointSavedState->m_Breakpoints.end(); ++it)
         {
             Breakpoint& bp = it->second;
-            EBUS_EVENT(LUAEditorDebuggerMessages::Bus, CreateBreakpoint, bp.m_assetName, bp.m_documentLine);
+            LUAEditorDebuggerMessages::Bus::Broadcast(
+                &LUAEditorDebuggerMessages::Bus::Events::CreateBreakpoint, bp.m_assetName, bp.m_documentLine);
         }
 
-        EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+        LUABreakpointTrackerMessages::Bus::Broadcast(
+            &LUABreakpointTrackerMessages::Bus::Events::BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
     }
 
     void Context::CreateBreakpoint(const AZStd::string& fromAssetId, int lineNumber)
     {
-        DocumentInfoMap::iterator actualDocument = m_documentInfoMap.find(fromAssetId);
-        AZ_Assert(actualDocument != m_documentInfoMap.end(), "Invalid document lookup.");
-        DocumentInfo& doc = actualDocument->second;
+        auto info = FindDocumentInfo(fromAssetId);
+        AZ_Assert(info.has_value(), "Invalid document lookup.");
+        DocumentInfo& refInfo = info.value()->second;
 
         AZ::Uuid breakpointUID = AZ::Uuid::CreateRandom();
 
@@ -1656,7 +1677,7 @@ namespace LUAEditor
         // to patch over that line number in that document, and apply it to that blob.
 
         // first, let's find if we've patched or run any blobs.  By default, the doc name will be the asset name.
-        AZStd::string debugName = doc.m_assetName;
+        AZStd::string debugName = refInfo.m_assetName;
 
         AZ_TracePrintf(LUAEditorDebugName, "Context::CreateBreakpoint( %s )\n", debugName.c_str());
 
@@ -1665,17 +1686,18 @@ namespace LUAEditor
         Breakpoint& newBreakpoint = newInsertion.first->second;
         newBreakpoint.m_assetName = debugName;
         newBreakpoint.m_breakpointId = breakpointUID;
-        newBreakpoint.m_assetId = fromAssetId;
+        newBreakpoint.m_assetId = info.value()->first;
         newBreakpoint.m_documentLine = lineNumber;
 
         // we now know the 'debug name' (a string) that was submitted to the piece of code that this breakpoint is for, and we know the line number
         // inside that blob that the breakpoint wants to be set on.
 
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, CreateBreakpoint, debugName, lineNumber);
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::CreateBreakpoint, debugName, lineNumber);
 
         //AZ_TracePrintf(LUAEditorDebugName, "Setting breakpoint in '%s' on line %i (In document %s line %i)\n", debugName.c_str(), lineNumber, doc.m_displayName.c_str(), lineNumber);
 
-        EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+        LUABreakpointTrackerMessages::Bus::Broadcast(
+            &LUABreakpointTrackerMessages::Bus::Events::BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
     }
 
     void Context::DeleteBreakpoint(const AZ::Uuid& breakpointUID)
@@ -1692,11 +1714,13 @@ namespace LUAEditor
 
             AZ_TracePrintf(LUAEditorDebugName, "  -  Removed breakpoint in '%s' on line '%i'\n", bp.m_assetName.c_str(), bp.m_documentLine);
 
-            EBUS_EVENT(LUAEditorDebuggerMessages::Bus, RemoveBreakpoint, bp.m_assetName, bp.m_documentLine);
+            LUAEditorDebuggerMessages::Bus::Broadcast(
+                &LUAEditorDebuggerMessages::Bus::Events::RemoveBreakpoint, bp.m_assetName, bp.m_documentLine);
 
             m_pBreakpointSavedState->m_Breakpoints.erase(finder);
 
-            EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+            LUABreakpointTrackerMessages::Bus::Broadcast(
+                &LUABreakpointTrackerMessages::Bus::Events::BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
         }
     }
 
@@ -1719,7 +1743,8 @@ namespace LUAEditor
         }
 
         // submit the updated list
-        EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+        LUABreakpointTrackerMessages::Bus::Broadcast(
+            &LUABreakpointTrackerMessages::Bus::Events::BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
     }
 
     //TODO: add a valid-invalid state to local breakpoints
@@ -1738,8 +1763,8 @@ namespace LUAEditor
     void Context::MoveBreakpoint(const AZ::Uuid& breakpointUID, int lineNumber)
     {
         // moving a breakpoint will cause it to update where it is in the document in question
-        // however, we don't actually re-transmit the breakpoint to the gridmate core, because we haven't re-run the script
-        // this is just housekeeping so that when gridmate says a certain breakpoint came in at a certain place,
+        // however, we don't actually re-transmit the breakpoint over the wire, because we haven't re-run the script
+        // this is just housekeeping so that when the network says a certain breakpoint came in at a certain place,
         // we know what they're talking about.
 
         if (lineNumber >= 0)
@@ -1753,7 +1778,8 @@ namespace LUAEditor
             }
 
             // send out the update
-            EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
+            LUABreakpointTrackerMessages::Bus::Broadcast(
+                &LUABreakpointTrackerMessages::Bus::Events::BreakpointsUpdate, m_pBreakpointSavedState->m_Breakpoints);
         }
     }
 
@@ -1761,12 +1787,15 @@ namespace LUAEditor
     {
         //AZ_TracePrintf(LUAEditorDebugName, "Context::OnDebuggerAttached()\n");
 
-        EBUS_EVENT(Context_ControlManagement::Bus, OnDebuggerAttached);
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, EnumRegisteredClasses, m_currentTargetContext.c_str());
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, EnumRegisteredEBuses, m_currentTargetContext.c_str());
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, EnumRegisteredGlobals, m_currentTargetContext.c_str());
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnConnectedToDebugger);
-        EBUS_EVENT(LUAWatchesDebuggerMessages::Bus, OnDebuggerAttached);
+        Context_ControlManagement::Bus::Broadcast(&Context_ControlManagement::Bus::Events::OnDebuggerAttached);
+        LUAEditorDebuggerMessages::Bus::Broadcast(
+            &LUAEditorDebuggerMessages::Bus::Events::EnumRegisteredClasses, m_currentTargetContext.c_str());
+        LUAEditorDebuggerMessages::Bus::Broadcast(
+            &LUAEditorDebuggerMessages::Bus::Events::EnumRegisteredEBuses, m_currentTargetContext.c_str());
+        LUAEditorDebuggerMessages::Bus::Broadcast(
+            &LUAEditorDebuggerMessages::Bus::Events::EnumRegisteredGlobals, m_currentTargetContext.c_str());
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnConnectedToDebugger);
+        LUAWatchesDebuggerMessages::Bus::Broadcast(&LUAWatchesDebuggerMessages::Bus::Events::OnDebuggerAttached);
 
         SynchronizeBreakpoints();
     }
@@ -1775,45 +1804,60 @@ namespace LUAEditor
     {
         //AZ_TracePrintf(LUAEditorDebugName, "Context::OnDebuggerRefused()\n");
 
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnDisconnectedFromDebugger);
-        EBUS_EVENT(Context_ControlManagement::Bus, OnDebuggerDetached);
-        EBUS_EVENT(LUAWatchesDebuggerMessages::Bus, OnDebuggerDetached);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnDisconnectedFromDebugger);
+        Context_ControlManagement::Bus::Broadcast(&Context_ControlManagement::Bus::Events::OnDebuggerDetached);
+        LUAWatchesDebuggerMessages::Bus::Broadcast(&LUAWatchesDebuggerMessages::Bus::Events::OnDebuggerDetached);
     }
 
     void Context::OnDebuggerDetached()
     {
         //AZ_TracePrintf(LUAEditorDebugName, "Context::OnDebuggerDetached()\n");
 
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnDisconnectedFromDebugger);
-        EBUS_EVENT(Context_ControlManagement::Bus, OnDebuggerDetached);
-        EBUS_EVENT(LUAWatchesDebuggerMessages::Bus, OnDebuggerDetached);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnDisconnectedFromDebugger);
+        Context_ControlManagement::Bus::Broadcast(&Context_ControlManagement::Bus::Events::OnDebuggerDetached);
+        LUAWatchesDebuggerMessages::Bus::Broadcast(&LUAWatchesDebuggerMessages::Bus::Events::OnDebuggerDetached);
     }
 
     // this happens when a breakpoint is hit:
     void Context::OnBreakpointHit(const AZStd::string& relativePath, int lineNumber)
     {
         // Convert from debug path (relative) to absolute path (how the Lua IDE stores files)
-        AZStd::string absolutePath = relativePath.substr(1);
-        EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, absolutePath, absolutePath);
+        AZStd::string absolutePath;
+        AZStd::string formattedRelativePath = relativePath.substr(1);
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+            formattedRelativePath,
+            absolutePath);
+
+        // If finding a .lua fails, attempt the equivalent .luac
+        if (absolutePath.empty() && relativePath.ends_with(".lua"))
+        {
+            formattedRelativePath = relativePath.substr(1) + "c";
+            AzToolsFramework::AssetSystemRequestBus::Broadcast(
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                formattedRelativePath,
+                absolutePath); 
+        }
 
         //AZ_TracePrintf(LUAEditorDebugName, "Breakpoint '%s' was hit on line %i\n", assetIdString.c_str(), lineNumber);
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, GetCallstack);
-        EBUS_EVENT(LUAEditor::LUABreakpointRequestMessages::Bus, RequestEditorFocus, absolutePath, lineNumber);
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::GetCallstack);
+        LUAEditor::LUABreakpointRequestMessages::Bus::Broadcast(
+            &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestEditorFocus, absolutePath, lineNumber);
 
         AZStd::string assetId = absolutePath;
 
         // let's see if we can find an open document
-        DocumentInfoMap::iterator actualDocument = m_documentInfoMap.find(assetId.c_str());
-        if (actualDocument == m_documentInfoMap.end())
+        auto documentIterator = FindDocumentInfo(assetId);
+        if (!documentIterator.has_value())
         {
             // the document might have been closed
             AssetOpenRequested(assetId, true);
 
             // let's see if we can find an open document
-            DocumentInfoMap::iterator actualDocumentIterator = m_documentInfoMap.find(assetId.c_str());
-            if (actualDocumentIterator != m_documentInfoMap.end())
+            auto requestedDocumentIterator = FindDocumentInfo(assetId);
+            if (requestedDocumentIterator.has_value())
             {
-                actualDocumentIterator->second.m_PresetLineAtOpen = lineNumber;
+                requestedDocumentIterator.value()->second.m_PresetLineAtOpen = lineNumber;
             }
 
             // early out after requesting a background data load
@@ -1836,7 +1880,7 @@ namespace LUAEditor
                     {
                         // this is that breakpoint!
                         actualDocumentLineNumber = bp.m_documentLine; // bump it if its shifted:
-                        EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointHit, bp);
+                        LUABreakpointTrackerMessages::Bus::Broadcast(&LUABreakpointTrackerMessages::Bus::Events::BreakpointHit, bp);
                         break;
                     }
                 }
@@ -1851,7 +1895,7 @@ namespace LUAEditor
                 dbp.m_assetId = "";
                 dbp.m_documentLine = lineNumber;
 
-                EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointHit, dbp);
+                LUABreakpointTrackerMessages::Bus::Broadcast(&LUABreakpointTrackerMessages::Bus::Events::BreakpointHit, dbp);
             }
         }
 
@@ -1894,7 +1938,8 @@ namespace LUAEditor
             m_currentTargetContext = "Default";
         }
 
-        EBUS_EVENT(LUAEditor::Context_ControlManagement::Bus, OnTargetContextPrepared, m_currentTargetContext);
+        LUAEditor::Context_ControlManagement::Bus::Broadcast(
+            &LUAEditor::Context_ControlManagement::Bus::Events::OnTargetContextPrepared, m_currentTargetContext);
 
         RequestAttachDebugger();
     }
@@ -2097,19 +2142,19 @@ namespace LUAEditor
             Q_EMIT m_pLUAEditorMainWindow->OnReferenceDataChanged();
         }
 
-        EBUS_EVENT(HighlightedWordNotifications::Bus, LUALibraryFunctionsUpdated);
+        HighlightedWordNotifications::Bus::Broadcast(&HighlightedWordNotifications::Bus::Events::LUALibraryFunctionsUpdated);
     }
 
     void Context::OnReceivedLocalVariables(const AZStd::vector<AZStd::string>& vars)
     {
         //AZ_TracePrintf(LUAEditorDebugName, "Context::OnReceivedLocalVariables()\n");
 
-        EBUS_EVENT(LUALocalsTrackerMessages::Bus, LocalsUpdate, vars);
+        LUALocalsTrackerMessages::Bus::Broadcast(&LUALocalsTrackerMessages::Bus::Events::LocalsUpdate, vars);
 
         for (size_t i = 0; i < vars.size(); ++i)
         {
             //AZ_TracePrintf(LUAEditorDebugName, "\t%s\n", vars[i].c_str());
-            EBUS_EVENT(LUAEditorDebuggerMessages::Bus, GetValue, vars[i]);
+            LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::GetValue, vars[i]);
         }
     }
 
@@ -2215,21 +2260,21 @@ namespace LUAEditor
             }
         }
 
-        EBUS_EVENT(LUAEditor::LUAStackTrackerMessages::Bus, StackUpdate, sl);
+        LUAEditor::LUAStackTrackerMessages::Bus::Broadcast(&LUAEditor::LUAStackTrackerMessages::Bus::Events::StackUpdate, sl);
     }
 
     void Context::RequestWatchedVariable(const AZStd::string& varName)
     {
         //AZ_TracePrintf(LUAEditorDebugName, "RequestWatchedVariable: name=%s\n", varName.c_str());
 
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, GetValue, varName);
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::GetValue, varName);
     }
 
     void Context::OnReceivedValueState(const AZ::ScriptContextDebug::DebugValue& value)
     {
         //AZ_TracePrintf(LUAEditorDebugName, "Received LUA var: name=%s, val=%s, type=0x%x, flags=0x%x\n", value.m_name.c_str(), value.m_value.c_str(), (int)value.m_assetType, (int)value.m_flags);
 
-        EBUS_EVENT(LUAEditor::LUAWatchesDebuggerMessages::Bus, WatchesUpdate, value);
+        LUAEditor::LUAWatchesDebuggerMessages::Bus::Broadcast(&LUAEditor::LUAWatchesDebuggerMessages::Bus::Events::WatchesUpdate, value);
     }
 
     void Context::OnSetValueResult(const AZStd::string& /*name*/, bool /*success*/)
@@ -2246,15 +2291,15 @@ namespace LUAEditor
             m_pLUAEditorMainWindow->MoveProgramCursor("", -1);
         }
 
-        EBUS_EVENT(LUAEditor::LUAStackTrackerMessages::Bus, StackClear);
-        EBUS_EVENT(LUABreakpointTrackerMessages::Bus, BreakpointResume);
+        LUAEditor::LUAStackTrackerMessages::Bus::Broadcast(&LUAEditor::LUAStackTrackerMessages::Bus::Events::StackClear);
+        LUABreakpointTrackerMessages::Bus::Broadcast(&LUABreakpointTrackerMessages::Bus::Events::BreakpointResume);
     }
 
     void Context::OnExecuteScriptResult(bool success)
     {
         //AZ_TracePrintf(LUAEditorDebugName, "Context::OnExecutionScriptResult( %d )\n", success);
 
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnExecuteScriptResult, success);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnExecuteScriptResult, success);
     }
 
     void Context::ResetTargetContexts()
@@ -2262,7 +2307,8 @@ namespace LUAEditor
         m_targetContexts.clear();
         m_currentTargetContext = "Default";
 
-        EBUS_EVENT(LUAEditor::Context_ControlManagement::Bus, OnTargetContextPrepared, m_currentTargetContext);
+        LUAEditor::Context_ControlManagement::Bus::Broadcast(
+            &LUAEditor::Context_ControlManagement::Bus::Events::OnTargetContextPrepared, m_currentTargetContext);
     }
 
     void Context::SetCurrentTargetContext(AZStd::string& contextName)
@@ -2286,7 +2332,8 @@ namespace LUAEditor
             ResetTargetContexts();
         }
 
-        EBUS_EVENT(LUAEditor::Context_ControlManagement::Bus, OnTargetContextPrepared, m_currentTargetContext);
+        LUAEditor::Context_ControlManagement::Bus::Broadcast(
+            &LUAEditor::Context_ControlManagement::Bus::Events::OnTargetContextPrepared, m_currentTargetContext);
 
         UpdateReferenceWindow();
         RequestAttachDebugger();
@@ -2297,11 +2344,11 @@ namespace LUAEditor
     //////////////////////////////////////////////////////////////////////////
     void Context::RequestDetachDebugger()
     {
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, DetachDebugger);
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::DetachDebugger);
     }
     void Context::RequestAttachDebugger()
     {
-        EBUS_EVENT(LUAEditorDebuggerMessages::Bus, AttachDebugger, m_currentTargetContext.c_str());
+        LUAEditorDebuggerMessages::Bus::Broadcast(&LUAEditorDebuggerMessages::Bus::Events::AttachDebugger, m_currentTargetContext.c_str());
     }
 
     ReferenceItem::ReferenceItem(const QIcon& icon, const QString& text, size_t id)
@@ -2377,7 +2424,7 @@ namespace LUAEditor
             AZStd::lock_guard<AZStd::mutex> lock(m_failedAssetMessagesMutex);
             m_failedAssets.push(assetPath);
 
-            EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::ProcessFailedAssetMessages, this);
+            AZ::SystemTickBus::QueueFunction(&Context::ProcessFailedAssetMessages, this);
         }
     }
 
@@ -2448,7 +2495,7 @@ namespace LUAEditor
                                     if (matchFound)
                                     {
                                         int lineNumber = 0;
-                                        if (AzFramework::StringFunc::LooksLikeInt(match[1].str().c_str(), &lineNumber))
+                                        if (AZ::StringFunc::LooksLikeInt(match[1].str().c_str(), &lineNumber))
                                         {
                                             errorData->m_lineNumber = lineNumber;
                                             finalMessage = match[2].str().c_str();
@@ -2467,6 +2514,6 @@ namespace LUAEditor
 
     bool Context::IsLuaAsset(const AZStd::string& assetPath)
     {
-        return AzFramework::StringFunc::Path::IsExtension(assetPath.c_str(), ".lua");
+        return AZ::StringFunc::Path::IsExtension(assetPath.c_str(), ".lua");
     }
 }

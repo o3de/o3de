@@ -9,6 +9,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/Event.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionTypes.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 
@@ -16,7 +17,7 @@ namespace AZ
 {
     namespace RPI
     {
-        class ShaderSystemInterface
+        class ATOM_RPI_PUBLIC_API ShaderSystemInterface
         {
         public:
             AZ_RTTI(ShaderSystemInterface, "{D14E323A-2240-46DA-9126-6746D10A93F1}");

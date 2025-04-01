@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MatrixMxNFunctions_GetColumnCount",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Get Column Count"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MatrixMxNFunctions_GetColumnCount",
+                    "details": {
+                        "name": "Get Column Count"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B751D885-87D0-40BF-A6B3-48EFF0147AFA}",
+                            "details": {
+                                "name": "Column"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

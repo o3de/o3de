@@ -41,7 +41,7 @@ namespace AZ
     {
         friend class ModuleManager;
     public:
-        AZ_CLASS_ALLOCATOR(ModuleEntity, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ModuleEntity, SystemAllocator);
         AZ_RTTI(ModuleEntity, "{C5950488-35E0-4B55-B664-29A691A6482F}", Entity);
 
         static void Reflect(ReflectContext* context);
@@ -67,7 +67,7 @@ namespace AZ
     struct ModuleDataImpl
         : public ModuleData
     {
-        AZ_CLASS_ALLOCATOR(ModuleDataImpl, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModuleDataImpl, SystemAllocator);
 
         ModuleDataImpl() = default;
         ~ModuleDataImpl() override;
@@ -108,7 +108,7 @@ namespace AZ
         , protected EntityBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ModuleManager, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModuleManager, AZ::OSAllocator);
         static void Reflect(ReflectContext* context);
 
         ModuleManager();

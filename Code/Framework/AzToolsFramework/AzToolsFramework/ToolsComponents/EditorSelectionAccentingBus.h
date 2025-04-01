@@ -38,3 +38,5 @@ namespace AzToolsFramework
         using EditorSelectionAccentingRequestBus = AZ::EBus<EditorSelectionAccentingRequests>;
     } // namespace Components
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN(AzToolsFramework::Components::EditorSelectionAccentingRequests);

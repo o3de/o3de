@@ -18,7 +18,9 @@
 
 namespace WhiteBox
 {
-    //! Runtime White Box Collider.
+    //! Component that provides a White box Collider.
+    //! It covers the rigid body functionality as well, but it can be refactored out
+    //! once EditorStaticRigidBodyComponent handles the creation of the simulated body.
     class WhiteBoxColliderComponent
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler
@@ -36,6 +38,7 @@ namespace WhiteBox
         WhiteBoxColliderComponent& operator=(const WhiteBoxColliderComponent&) = delete;
 
     private:
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 

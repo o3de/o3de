@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/sort.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -67,12 +66,12 @@ namespace AzToolsFramework
 
         void EditorEntitySortComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorChildEntitySortService", 0x916caa82));
+            services.push_back(AZ_CRC_CE("EditorChildEntitySortService"));
         }
 
         void EditorEntitySortComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorChildEntitySortService", 0x916caa82));
+            services.push_back(AZ_CRC_CE("EditorChildEntitySortService"));
         }
 
         bool EditorEntitySortComponent::SerializationConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
@@ -81,7 +80,7 @@ namespace AzToolsFramework
             if (classElement.GetVersion() <= 1)
             {
                 // Convert the vector of entity ids to an array of order entries
-                auto entityOrderArrayElement = classElement.FindSubElement(AZ_CRC("ChildEntityOrderArray", 0xc37d344b));
+                auto entityOrderArrayElement = classElement.FindSubElement(AZ_CRC_CE("ChildEntityOrderArray"));
                 if (!entityOrderArrayElement)
                 {
                     return false;
@@ -103,7 +102,7 @@ namespace AzToolsFramework
                 AZ_Error("EditorEntitySortComponent", entityOrderArray.size() == entityOrderArrayElement->GetNumSubElements(), "Unable to get all the expected elements for the old entity order array");
 
                 // Get rid of the old array
-                classElement.RemoveElementByName(AZ_CRC("ChildEntityOrderArray", 0xc37d344b));
+                classElement.RemoveElementByName(AZ_CRC_CE("ChildEntityOrderArray"));
 
                 // Add a new empty array (unable to use AddElementWithData, fails stating that AZStd::vector is not registered)
                 int newArrayElementIndex = classElement.AddElement<EntityOrderEntryArray>(context, "ChildEntityOrderEntryArray");
@@ -244,6 +243,82 @@ namespace AzToolsFramework
             return entityItr != m_childEntityOrderCache.end() ? entityItr->second : std::numeric_limits<AZ::u64>::max();
         }
 
+        bool EditorEntitySortComponent::CanMoveChildEntityUp(const AZ::EntityId& entityId)
+        {
+            // Ensure the entityId is valid.
+            if (!entityId.IsValid())
+            {
+                return false;
+            }
+
+            // Only return true if the entityId is in the sort order array and isn't first.
+            auto entityIt = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.front() == entityId || entityIt == m_childEntityOrderArray.end())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        void EditorEntitySortComponent::MoveChildEntityUp(const AZ::EntityId& entityId)
+        {
+            // Ensure the entityId is valid.
+            if (!entityId.IsValid())
+            {
+                return;
+            }
+
+            // Only return true if the entityId is in the sort order array and isn't last.
+            auto entityItr = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.front() == entityId || entityItr == m_childEntityOrderArray.end())
+            {
+                return;
+            }
+
+            AZStd::swap(*entityItr, *(entityItr - 1));
+            RebuildEntityOrderCache();
+            MarkDirtyAndSendChangedEvent();
+        }
+
+        bool EditorEntitySortComponent::CanMoveChildEntityDown(const AZ::EntityId& entityId)
+        {
+            // Ensure the entityId is valid.
+            if (!entityId.IsValid())
+            {
+                return false;
+            }
+
+            // Only return true if the entityId is in the sort order array and isn't last.
+            auto entityItr = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.back() == entityId || entityItr == m_childEntityOrderArray.end())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        void EditorEntitySortComponent::MoveChildEntityDown(const AZ::EntityId& entityId)
+        {
+            // Ensure the entityId is valid.
+            if (!entityId.IsValid())
+            {
+                return;
+            }
+
+            // Only return true if the entityId is in the sort order array and isn't last.
+            auto entityItr = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.back() == entityId || entityItr == m_childEntityOrderArray.end())
+            {
+                return;
+            }
+
+            AZStd::swap(*entityItr, *(entityItr + 1));
+            RebuildEntityOrderCache();
+            MarkDirtyAndSendChangedEvent();
+        }
+
         void EditorEntitySortComponent::OnEntityStreamLoadSuccess()
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -312,14 +387,9 @@ namespace AzToolsFramework
 
         void EditorEntitySortComponent::Activate()
         {
-            // Run the post-serialize handler if prefabs are enabled because PostLoad won't be called automatically
-            bool isPrefabEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            if (isPrefabEnabled)
-            {
-                m_shouldSanityCheckStateAfterPropagation = true;
-            }
+            // Run the post-serialize handler because PostLoad won't be called automatically
+            m_shouldSanityCheckStateAfterPropagation = true;
+
             // Send out that the order for our entity is now updated
             EditorEntitySortNotificationBus::Event(GetEntityId(), &EditorEntitySortNotificationBus::Events::ChildEntityOrderArrayUpdated);
         }

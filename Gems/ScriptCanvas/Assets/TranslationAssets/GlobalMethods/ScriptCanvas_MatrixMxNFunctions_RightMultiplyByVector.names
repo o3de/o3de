@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MatrixMxNFunctions_RightMultiplyByVector",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Right Multiply By Vector"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MatrixMxNFunctions_RightMultiplyByVector",
+                    "details": {
+                        "name": "Right Multiply By Vector"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B751D885-87D0-40BF-A6B3-48EFF0147AFA}",
+                            "details": {
+                                "name": "Vector"
+                            }
+                        },
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "Matrix"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

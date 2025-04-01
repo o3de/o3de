@@ -31,7 +31,7 @@ namespace AZ
 
         bool Image::IsTiled() const
         {
-            return !m_tiles.empty();
+            return m_tileLayout.m_tileCount > 0;
         }
 
         void Image::SetNameInternal(const AZStd::string_view& name)
@@ -47,13 +47,35 @@ namespace AZ
             imageStats->m_name = GetName();
             imageStats->m_bindFlags = descriptor.m_bindFlags;
             imageStats->m_sizeInBytes = m_residentSizeInBytes;
+            imageStats->m_minimumSizeInBytes = m_minimumResidentSizeInBytes;
+        }
+
+        void Image::UpdateResidentTilesSizeInBytes(uint32_t sizePerTile)
+        {
+            if (IsTiled())
+            {
+                uint32_t tileCount = 0;
+                for (const auto& heapTilesGroups : m_heapTiles)
+                {
+                    for (const HeapTiles& heapTiles: heapTilesGroups.second)
+                    {
+                        tileCount += heapTiles.m_totalTileCount;
+                    }
+                }
+
+                m_residentSizeInBytes = tileCount * sizePerTile;
+            }
+            else
+            {
+                AZ_Assert(IsTiled(), "Size won't be updated for non-tiled image ");
+            }
         }
 
         void Image::GenerateSubresourceLayouts()
         {
             for (uint16_t mipSlice = 0; mipSlice < GetDescriptor().m_mipLevels; ++mipSlice)
             {
-                RHI::ImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
+                RHI::DeviceImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
 
                 RHI::ImageSubresource subresource;
                 subresource.m_mipSlice = mipSlice;
@@ -67,7 +89,7 @@ namespace AZ
 
         void Image::GetSubresourceLayoutsInternal(
             const RHI::ImageSubresourceRange& subresourceRange,
-            RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+            RHI::DeviceImageSubresourceLayout* subresourceLayouts,
             size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
@@ -80,9 +102,10 @@ namespace AZ
                 {
                     for (uint16_t mipSlice = subresourceRange.m_mipSliceMin; mipSlice <= subresourceRange.m_mipSliceMax; ++mipSlice)
                     {
-                        const RHI::ImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
+                        const RHI::DeviceImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        subresourceLayouts[subresourceIndex] = RHI::ImageSubresourceLayoutPlaced{subresourceLayout, byteOffset};
+                        subresourceLayouts[subresourceIndex] = subresourceLayout;
+                        subresourceLayouts[subresourceIndex].m_offset = byteOffset;
                         byteOffset = RHI::AlignUp(byteOffset + subresourceLayout.m_bytesPerImage * subresourceLayout.m_size.m_depth, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
                     }
                 }
@@ -93,7 +116,7 @@ namespace AZ
                 {
                     for (uint16_t mipSlice = subresourceRange.m_mipSliceMin; mipSlice <= subresourceRange.m_mipSliceMax; ++mipSlice)
                     {
-                        const RHI::ImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
+                        const RHI::DeviceImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
                         byteOffset = RHI::AlignUp(byteOffset + subresourceLayout.m_bytesPerImage * subresourceLayout.m_size.m_depth, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
                     }
                 }
@@ -104,10 +127,15 @@ namespace AZ
                 *totalSizeInBytes = byteOffset;
             }
         }
+
+        bool Image::IsStreamableInternal() const
+        {
+            return IsTiled();
+        }
         
         void Image::SetDescriptor(const RHI::ImageDescriptor& descriptor)
         {
-            RHI::Image::SetDescriptor(descriptor);
+            RHI::DeviceImage::SetDescriptor(descriptor);
 
             m_initialResourceState = D3D12_RESOURCE_STATE_COMMON;
 
@@ -116,14 +144,14 @@ namespace AZ
             // Write only states
             const bool renderTarget = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::Color);
             const bool copyDest = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyWrite);
+            const bool depthTarget = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::DepthStencil);
 
-            // Write Only States
+            // Read Only States
             const bool shaderResource = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderRead);
-            const bool depthRead = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::DepthStencil);
             const bool copySource = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyRead);
 
-            const bool writeState = renderTarget || copyDest;
-            const bool readState = shaderResource || depthRead || copySource;
+            const bool writeState = renderTarget || copyDest || depthTarget;
+            const bool readState = shaderResource || copySource;
 
             // If any write only state is set, only write only resource states can be applied
             if (writeState)
@@ -135,6 +163,10 @@ namespace AZ
                 else if (copyDest)
                 {
                     m_initialResourceState |= D3D12_RESOURCE_STATE_COPY_DEST;
+                }
+                else if (depthTarget)
+                {
+                    m_initialResourceState |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
                 }
             }
             // If any read only state is set, only read only resource states can be applied
@@ -150,11 +182,6 @@ namespace AZ
                     {
                         m_initialResourceState |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
                     }
-                }
-
-                if (depthRead)
-                {
-                    m_initialResourceState |= D3D12_RESOURCE_STATE_DEPTH_READ;
                 }
 
                 if (copySource)
@@ -192,7 +219,7 @@ namespace AZ
             m_uploadFenceValue = fenceValue;
         }
 
-        uint64_t Image::GetUploadFenceValue()
+        uint64_t Image::GetUploadFenceValue() const
         {
             return m_uploadFenceValue;
         }
@@ -204,12 +231,38 @@ namespace AZ
         
         void Image::SetStreamedMipLevel(uint32_t streamedMipLevel)
         {
-            m_streamedMipLevel = streamedMipLevel;
+            if (m_streamedMipLevel != streamedMipLevel)
+            {
+                m_streamedMipLevel = streamedMipLevel;
+                InvalidateViews();
+            }
         }
 
         void Image::SetAttachmentState(D3D12_RESOURCE_STATES state, const RHI::ImageSubresourceRange* range /*= nullptr*/)
         {
             m_attachmentState.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), state);
+        }
+
+        void Image::SetAttachmentState(D3D12_RESOURCE_STATES state, uint32_t subresourceIndex)
+        {
+            const auto& descriptor = GetDescriptor();
+            RHI::ImageSubresourceRange range;
+            if (subresourceIndex == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+            {
+                range = RHI::ImageSubresourceRange(descriptor);
+            }
+            else
+            {
+                uint16_t mipSlice;
+                uint16_t arraySlice;
+                uint16_t planeSlice;
+                D3D12DecomposeSubresource(
+                    subresourceIndex, descriptor.m_mipLevels, descriptor.m_arraySize, mipSlice, arraySlice, planeSlice);
+                range = RHI::ImageSubresourceRange(mipSlice, mipSlice, arraySlice, arraySlice);
+                range.m_aspectFlags = ConvertPlaneSliceToImageAspectFlags(planeSlice);
+            }
+
+            m_attachmentState.Set(range, state);
         }
 
         AZStd::vector<Image::SubresourceRangeAttachmentState> Image::GetAttachmentStateByRange(const RHI::ImageSubresourceRange* range /*= nullptr*/) const

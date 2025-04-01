@@ -43,7 +43,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(AndroidEnv, "{E51A8876-7A26-4CB1-BA88-394A128728C7}")
-            AZ_CLASS_ALLOCATOR(AndroidEnv, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AndroidEnv, AZ::OSAllocator);
 
 
             //! Creation POD for the AndroidEnv

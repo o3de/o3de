@@ -27,7 +27,7 @@ class FindEntityItemModel
     Q_OBJECT;
 
 public:
-    AZ_CLASS_ALLOCATOR(FindEntityItemModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(FindEntityItemModel, AZ::SystemAllocator);
 
     //! Columns of data to display about each Entity.
     enum Column

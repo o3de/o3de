@@ -13,6 +13,7 @@
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/containers/fixed_forward_list.h>
 #include <AzCore/std/containers/fixed_list.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/std/containers/fixed_unordered_set.h>
@@ -31,10 +32,64 @@
 #include <AzCore/std/tuple.h>
 #include <AzCore/std/utils.h>
 
-// Non intrusive typeinfo for external and intergral types
-struct ExternalClass
+ // Compile checks that a primitive type(int) and qualified types have AzTypeInfo
+static_assert(AZ::Internal::HasAzTypeInfo_v<int>, "int value type should is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int*>, "pointer to int type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int const>, "const int value type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int&>, "lvalue reference to non-const int type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int const&>, "lvalue reference to const int type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int&&>, "rvalue reference to non-const int type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int const&&>, "rvalue reference to const int type is missing GetO3deTypeName or GetO3deTypeId overload");
+
+// Check unique_ptr<T>
+static_assert(AZ::Internal::HasAzTypeInfo_v<AZStd::unique_ptr<int>>, "unique_ptr<T> is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZStd::is_same_v<decltype(GetO3deTemplateId(AZ::Adl{},
+    AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<std::unique_ptr>{})), AZ::TemplateId>,
+    "unique_ptr is missing GetO3deTemplateId overload");
+
+namespace UnitTest
 {
-};
+    template<class T>
+    struct AliasTest;
+}
+namespace UnitTestUsing
+{
+    using UnitTest::AliasTest;
+}
+namespace UnitTestAlias
+{
+    template<class T>
+    using AliasTest = UnitTest::AliasTest<T>;
+}
+
+// The `using` declaration brings the UnitTest::AliasTest type into the UnitTestUsing scope
+// So canonically they are treated as the same temp[late
+static_assert(AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTest::AliasTest>,
+    AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTestUsing::AliasTest>>);
+
+// An alias template are a separate template from any types it references
+// An alias template doesn't actually alias another template, but is its own construct.
+// For example `template<class T> void_t = void`, doesn't "reference" another template, it just maps
+// any instantiation of the template to void
+// Similarly `template<class T> unique_ptr = std::unique_ptr<T>`, is not an alias for the `std::unique_ptr`
+// template, the result of it's instantiation results in a class type of `std::unique_ptr<T>`
+#if !defined(AZ_COMPILER_GCC)
+    static_assert(!AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTest::AliasTest>,
+        AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTestAlias::AliasTest>>);
+#else
+    // On GCC the Alias template  matches actual template identifier
+    static_assert(AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTest::AliasTest>,
+        AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTestAlias::AliasTest>>);
+#endif
+
+namespace UnitTest
+{
+    // Non intrusive typeinfo for external and integral types
+    struct ExternalClass
+    {
+    };
+    AZ_TYPE_INFO_SPECIALIZE(ExternalClass, "{38380915-084B-4886-8D3D-B8439E9E987C}");
+}
 
 // These 2 types must only EVER be used by the MultiThreadedTypeInfo test, or else
 // that test is invalidated because the statics will have been initialized already
@@ -47,16 +102,13 @@ struct MTTI2
 namespace AZ
 {
     enum class PlatformID;
-    AZ_TYPE_INFO_SPECIALIZE(ExternalClass, "{38380915-084B-4886-8D3D-B8439E9E987C}");
     AZ_TYPE_INFO_SPECIALIZE(MTTI, "{4876C017-0C26-4D0D-9A1F-2A738BAE6449}");
 }
-
-using namespace AZ;
 
 namespace UnitTest
 {
     class Rtti
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -105,8 +157,8 @@ namespace UnitTest
         EXPECT_EQ(AZ::Uuid("{A0CA880C-AFE4-43cb-926C-59AC48496112}"), azrtti_typeid<bool>());
         EXPECT_EQ(AZ::Uuid("{E152C105-A133-4d03-BBF8-3D4B2FBA3E2A}"), azrtti_typeid<AZ::Uuid>());
         EXPECT_EQ(AZ::Uuid("{C0F1AFAD-5CB3-450E-B0F5-ADB5D46B0E22}"), azrtti_typeid<void>());
-        EXPECT_EQ(AZ::Uuid("{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}"), azrtti_typeid<Crc32>());
-        EXPECT_EQ(AZ::Uuid("{0635D08E-DDD2-48DE-A7AE-73CC563C57C3}"), azrtti_typeid<PlatformID>());
+        EXPECT_EQ(AZ::Uuid("{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}"), azrtti_typeid<AZ::Crc32>());
+        EXPECT_EQ(AZ::Uuid("{0635D08E-DDD2-48DE-A7AE-73CC563C57C3}"), azrtti_typeid<AZ::PlatformID>());
 
         EXPECT_EQ(AZ::Uuid("{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"), azrtti_typeid<int*>());
         EXPECT_EQ(AZ::Uuid("{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"), azrtti_typeid<int&>());
@@ -116,95 +168,162 @@ namespace UnitTest
         EXPECT_EQ(AZ::Uuid("{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"), azrtti_typeid<const int&&>());
         EXPECT_EQ(AZ::Uuid("{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"), azrtti_typeid<const int>());
 
+        // TypeId aggregation with template ID as prefix
+        // Aggregation uses right fold for addition (Id1 + (Id2 + (Id3 + (... + Idn))))
+        EXPECT_EQ(azrtti_typeid<int>() + azrtti_typeid<char>(), (AZ::Internal::AggregateTypes<int, char>::GetCanonicalTypeId()));
+        EXPECT_EQ(azrtti_typeid<AZStd::tuple>() + azrtti_typeid<int>(), azrtti_typeid<AZStd::tuple<int>>());
+        EXPECT_EQ(azrtti_typeid<AZStd::tuple>() + (azrtti_typeid<int>() + azrtti_typeid<char>()), (azrtti_typeid<AZStd::tuple<int, char>>()));
+        EXPECT_NE(azrtti_typeid<AZStd::tuple>() + azrtti_typeid<int>() + azrtti_typeid<char>(), (azrtti_typeid<AZStd::tuple<int, char>>()));
+
+
         EXPECT_EQ(AZ::Uuid("{B2F5707A-08FA-566A-BE44-226C634405BE}"), (azrtti_typeid<AZStd::less<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{6D2500BA-EE64-5288-9766-4C7CD8A10476}"), (azrtti_typeid<AZStd::less_equal<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{5959973B-2113-5789-BC8C-2F1E4A917953}"), (azrtti_typeid<AZStd::greater<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{7769141C-BF97-5E9B-B77F-F075FA915905}"), (azrtti_typeid<AZStd::greater_equal<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{39487937-0E1C-5F78-8A7E-B24EFE32F48F}"), (azrtti_typeid<AZStd::equal_to<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{AE785799-21A1-5D89-A083-E4441E1F81A8}"), (azrtti_typeid<AZStd::hash<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{64503325-ECF4-5F02-95F9-E37D00810E59}"), (azrtti_typeid<AZStd::pair<int, int>>()));
+
         EXPECT_EQ(AZ::Uuid("{853CDD8D-12FF-5619-9A42-10178785620A}"), (azrtti_typeid<AZStd::tuple<int, char, float, double>>()));
+
         EXPECT_EQ(AZ::Uuid("{85AFA5E8-AA5C-50A3-9CAB-B8C483DA88C5}"), (azrtti_typeid<AZStd::vector<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{09C2272F-2353-5337-BDCB-B1D0D6A2A778}"), (azrtti_typeid<AZStd::list<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{2D875DAD-A157-5792-AE25-96D909E1BE4C}"), (azrtti_typeid<AZStd::forward_list<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{9DF03CD1-931A-544D-A93B-0546907B70CA}"), (azrtti_typeid<AZStd::set<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{243A34FA-C6F6-51D1-8166-06DED5141370}"), (azrtti_typeid<AZStd::unordered_set<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{79F4B21A-02CD-58C1-9669-FA2E5E7A142A}"), (azrtti_typeid<AZStd::unordered_multiset<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{BB54671F-18E6-5F96-B659-FA236D1B7D31}"), (azrtti_typeid<AZStd::map<int, int>>()));
+
         EXPECT_EQ(AZ::Uuid("{C543E26A-7772-5511-8CE1-A8FA6441CAD3}"), (azrtti_typeid<AZStd::unordered_map<int, int>>()));
+
         EXPECT_EQ(AZ::Uuid("{FD30FBC0-B826-51CF-A75B-E00466FEB0F0}"), (azrtti_typeid<AZStd::unordered_map<AZStd::string, MyClass>>()));
+
         EXPECT_EQ(AZ::Uuid("{64E53B04-DD49-55DB-8299-5B4ED53A5F1C}"), (azrtti_typeid<AZStd::unordered_multimap<int, int>>()));
+
         EXPECT_EQ(AZ::Uuid("{1C213FE1-ED58-5889-8FC9-48D0E11D2E7E}"), (azrtti_typeid<AZStd::unordered_multimap<AZStd::string, MyClass>>()));
+
         EXPECT_EQ(AZ::Uuid("{0BF83553-00B0-5B7C-9BF3-A87C811F0752}"), (azrtti_typeid<AZStd::shared_ptr<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{E91D2018-767D-57D4-AF21-5CBEA51A15EC}"), (azrtti_typeid<AZStd::optional<int>>()));
+
         EXPECT_EQ(AZ::Uuid("{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"), (azrtti_typeid<AZStd::basic_string<char>>()));
+
         EXPECT_EQ(AZ::Uuid("{406E9B16-A89C-5289-B10E-17F338588559}"), (azrtti_typeid<AZStd::char_traits<char>>()));
+
         EXPECT_EQ(AZ::Uuid("{7114E998-A8B4-519B-9342-A86D1587B4F7}"), (azrtti_typeid<AZStd::basic_string_view<char>>()));
 
+
         EXPECT_EQ(AZ::Uuid("{A3C35B6E-E2DE-58F7-A897-06C64C5BC1E3}"), (azrtti_typeid<AZStd::fixed_vector<int, 4>>()));
+
+        EXPECT_EQ(AZ::Uuid("{A3C35B6E-E2DE-58F7-A897-06C64C5BC1E3}"), (azrtti_typeid<AZStd::fixed_vector<int, 4>>()));
+
         EXPECT_EQ(AZ::Uuid("{F670463F-FB3F-5CF3-A1FE-A7CC6DB312E8}"), (azrtti_typeid<AZStd::fixed_list<int, 4>>()));
+
         EXPECT_EQ(AZ::Uuid("{71C90433-74CE-5018-BEFD-FC98F4451AEF}"), (azrtti_typeid<AZStd::fixed_forward_list<int, 4>>()));
+
         EXPECT_EQ(AZ::Uuid("{DD9565F2-A80F-5DD3-B33F-0B0BF1C24A4F}"), (azrtti_typeid<AZStd::array<int, 4>>()));
+
         EXPECT_EQ(AZ::Uuid("{E5848517-FBDC-5D0F-9012-B16951027D9E}"), (azrtti_typeid<AZStd::bitset<8>>()));
-        EXPECT_EQ(AZ::Uuid("{537AD6E8-7443-5C1F-97FD-9284C41C13A4}"), (azrtti_typeid<AZStd::function<bool(int)>>()));
+
+        EXPECT_EQ(AZ::Uuid("{2962AD0B-AD39-5D19-9548-7AB0E68A1787}"), (azrtti_typeid<AZStd::function<bool(int)>>()));
+
 
         EXPECT_EQ(AZ::Uuid("{B1E9136B-D77A-4643-BE8E-2ABDA246AE0E}"), (azrtti_typeid<AZStd::monostate>()));
+
         EXPECT_EQ(AZ::Uuid("{7570E0E7-0BA8-5382-BB14-CEB7B1C0DBEB}"), (azrtti_typeid<AZStd::variant<int, char>>()));
+    }
+
+    TEST_F(Rtti, TypeInfoQualifierTest)
+    {
+        // The Uuid of a value type should result of a pointer type
+        EXPECT_EQ(azrtti_typeid<int>(), azrtti_typeid<int*>());
+        EXPECT_EQ(AZ::AzTypeInfo<int>::Uuid(), AZ::AzTypeInfo<int*>::Uuid());
+        EXPECT_EQ(AZ::AzTypeInfo<int>::GetCanonicalTypeId(), AZ::AzTypeInfo<int*>::GetPointeeTypeId());
+
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int>::Name() }, AZStd::string_view("int"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int const>::Name() }, AZStd::string_view("int const"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int const&>::Name() }, AZStd::string_view("int const&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int const&&>::Name() }, AZStd::string_view("int const&&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int&>::Name() }, AZStd::string_view("int&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int&&>::Name() }, AZStd::string_view("int&&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int*>::Name() }, AZStd::string_view("int const*"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* const>::Name() }, AZStd::string_view("int const* const"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* const&>::Name() }, AZStd::string_view("int const* const&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* const&&>::Name() }, AZStd::string_view("int const* const&&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* &>::Name() }, AZStd::string_view("int const*&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* &&>::Name() }, AZStd::string_view("int const*&&"));
+
+        EXPECT_EQ(AZ::AzTypeInfo<const int*>::Uuid(), AZ::AzTypeInfo<int*>::Uuid());
+
+        // Validate that a container of value tpyes have a different type id than a container of pointers
+        EXPECT_NE(azrtti_typeid<AZStd::vector<int>>(), azrtti_typeid<AZStd::vector<int*>>());
     }
 
     TEST_F(Rtti, TypeInfoTest)
     {
-        AZ_TEST_ASSERT(AzTypeInfo<MyClass>::Uuid() == Uuid("{CADA6BA7-D479-4C20-B7F0-121A1DF4E9CC}"));
-        AZ_TEST_ASSERT(strcmp(AzTypeInfo<MyClass>::Name(), "MyClass") == 0);
+        EXPECT_EQ(AZ::Uuid("{CADA6BA7-D479-4C20-B7F0-121A1DF4E9CC}"), AZ::AzTypeInfo<MyClass>::Uuid());
+        EXPECT_STREQ("MyClass", AZ::AzTypeInfo<MyClass>::Name());
 
-        AZ_TEST_ASSERT(AzTypeInfo<ExternalClass>::Uuid() == Uuid("{38380915-084B-4886-8D3D-B8439E9E987C}"));
-        AZ_TEST_ASSERT(strcmp(AzTypeInfo<ExternalClass>::Name(), "ExternalClass") == 0);
+        EXPECT_EQ(AZ::Uuid("{38380915-084B-4886-8D3D-B8439E9E987C}"), AZ::AzTypeInfo<ExternalClass>::Uuid());
+        EXPECT_STREQ("ExternalClass", AZ::AzTypeInfo<ExternalClass>::Name());
 
         // template templates
         {
             // Check if the correct type id is returned.
-            Uuid templateUuid = Uuid("{EBFE7ADF-1FCE-47F0-B417-14FE06BAF02D}");
-            AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<MyClassTemplate>() == templateUuid);
+            AZ::Uuid templateUuid = AZ::Uuid("{EBFE7ADF-1FCE-47F0-B417-14FE06BAF02D}");
+            EXPECT_EQ(templateUuid, AZ::AzGenericTypeInfo::Uuid<MyClassTemplate>());
 
             // Check that the uuid of the template is returned if AzGenericTypeInfo is used to return the uuid.
-            AZ_TEST_ASSERT((AzGenericTypeInfo::Uuid<MyClassTemplate<MyClass, int>>() == templateUuid));
-            typedef MyClassTemplate<MyClass, int> MyClassTemplateType;
-            AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<MyClassTemplateType>() == templateUuid);
+            EXPECT_EQ(templateUuid, (AZ::AzGenericTypeInfo::Uuid<MyClassTemplate<MyClass, int>>()));
+            using MyClassTemplateType = MyClassTemplate<MyClass, int>;
+            EXPECT_EQ(templateUuid, (AZ::AzGenericTypeInfo::Uuid<MyClassTemplateType>()));
 
             // Check all combinations return a valid id.
-            AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<AZStd::array>() == AZ::Uuid("{911B2EA8-CCB1-4F0C-A535-540AD00173AE}"));
-            AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<AZStd::bitset>() == AZ::Uuid("{6BAE9836-EC49-466A-85F2-F4B1B70839FB}"));
-            AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<AZStd::function>() == AZ::Uuid("{C9F9C644-CCC3-4F77-A792-F5B5DBCA746E}"));
-            AZ_TEST_ASSERT(AzGenericTypeInfo::Uuid<AZStd::vector>() == AZ::Uuid("{A60E3E61-1FF6-4982-B6B8-9E4350C4C679}"));
+            EXPECT_EQ(AZ::Uuid("{911B2EA8-CCB1-4F0C-A535-540AD00173AE}"), AZ::AzGenericTypeInfo::Uuid<AZStd::array>());
+            EXPECT_EQ(AZ::Uuid("{6BAE9836-EC49-466A-85F2-F4B1B70839FB}"), AZ::AzGenericTypeInfo::Uuid<AZStd::bitset>());
+            EXPECT_EQ(AZ::Uuid("{C9F9C644-CCC3-4F77-A792-F5B5DBCA746E}"), AZ::AzGenericTypeInfo::Uuid<AZStd::function>());
+            EXPECT_EQ(AZ::Uuid("{A60E3E61-1FF6-4982-B6B8-9E4350C4C679}"), AZ::AzGenericTypeInfo::Uuid<AZStd::vector>());
         }
-        
+
         // templates
         {
-            Uuid templateUuid = Uuid("{EBFE7ADF-1FCE-47F0-B417-14FE06BAF02D}") + AZ::Internal::AggregateTypes<MyClass, int>::Uuid();
+            AZ::Uuid templateUuid = AZ::Uuid("{EBFE7ADF-1FCE-47F0-B417-14FE06BAF02D}") + AZ::Internal::AggregateTypes<MyClass, int>::GetCanonicalTypeId();
 
             typedef MyClassTemplate<MyClass, int> MyClassTemplateType;
 
-            AZ_TEST_ASSERT(AzTypeInfo<MyClassTemplateType>::Uuid() == templateUuid);
-            const char* myClassTemplatename = AzTypeInfo<MyClassTemplateType>::Name();
+            EXPECT_EQ(templateUuid, AZ::AzTypeInfo<MyClassTemplateType>::Uuid());
+            const char* myClassTemplatename = AZ::AzTypeInfo<MyClassTemplateType>::Name();
 
-            AZ_TEST_ASSERT(strstr(myClassTemplatename, "MyClassTemplate"));
-            AZ_TEST_ASSERT(strstr(myClassTemplatename, "MyClass"));
-            AZ_TEST_ASSERT(strstr(myClassTemplatename, "int"));
+            EXPECT_NE(nullptr, strstr(myClassTemplatename, "MyClassTemplate"));
+            EXPECT_NE(nullptr, strstr(myClassTemplatename, "MyClass"));
+            EXPECT_NE(nullptr, strstr(myClassTemplatename, "int"));
         }
 
 
         // variadic templates
         {
-            Uuid templateUuid = Uuid("{60C1D809-09FA-48EB-A9B7-0BD8DBFF21C8}") + AZ::Internal::AggregateTypes<MyClass, int>::Uuid();
+            AZ::Uuid templateUuid = AZ::Uuid("{60C1D809-09FA-48EB-A9B7-0BD8DBFF21C8}") + AZ::Internal::AggregateTypes<MyClass, int>::GetCanonicalTypeId();
 
-            typedef MyClassVariadicTemplate<MyClass, int> MyClassVariadicTemplateType;
+            using MyClassVariadicTemplateType = MyClassVariadicTemplate<MyClass, int>;
 
-            AZ_TEST_ASSERT(AzTypeInfo<MyClassVariadicTemplateType>::Uuid() == templateUuid);
-            const char* myClassTemplatename = AzTypeInfo<MyClassVariadicTemplateType>::Name();
+            EXPECT_EQ(templateUuid, AZ::AzTypeInfo<MyClassVariadicTemplateType>::Uuid());
+            const char* myClassTemplatename = AZ::AzTypeInfo<MyClassVariadicTemplateType>::Name();
 
-            AZ_TEST_ASSERT(strstr(myClassTemplatename, "MyClassVariadicTemplate"));
-            AZ_TEST_ASSERT(strstr(myClassTemplatename, "MyClass"));
-            AZ_TEST_ASSERT(strstr(myClassTemplatename, "int"));
+            EXPECT_NE(nullptr, strstr(myClassTemplatename, "MyClassVariadicTemplate"));
+            EXPECT_NE(nullptr, strstr(myClassTemplatename, "MyClass"));
+            EXPECT_NE(nullptr, strstr(myClassTemplatename, "int"));
         }
     }
 
@@ -312,9 +431,9 @@ namespace UnitTest
 
     TEST_F(Rtti, IsTypeOfTest)
     {
-        typedef AZStd::vector<Uuid> TypeIdArray;
-    
-        auto EnumTypes = [](const Uuid& id, void* userData)
+        using TypeIdArray = AZStd::vector<AZ::Uuid>;
+
+        auto EnumTypes = [](const AZ::Uuid& id, void* userData)
         {
             TypeIdArray* idArray = reinterpret_cast<TypeIdArray*>(userData);
             idArray->push_back(id);
@@ -326,108 +445,119 @@ namespace UnitTest
         MyClassMix mcm;
         MyClassMaxMix mcmm;
 
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase>(mb1) == false);// MyBase has not RTTI enabled, even though it's a base class
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived>(mb1) == false);
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1>(md));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase>(md) == false);
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived2>(md) == false);
+        EXPECT_FALSE(azrtti_istypeof<MyBase>(mb1));// MyBase has not RTTI enabled, even though it's a base class
+        EXPECT_FALSE(azrtti_istypeof<MyDerived>(mb1));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1>(md));
+        EXPECT_FALSE(azrtti_istypeof<MyBase>(md));
+        EXPECT_FALSE(azrtti_istypeof<MyDerived2>(md));
 
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived>(md2));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1>(md2));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase>(md2) == false);
+        EXPECT_TRUE(azrtti_istypeof<MyDerived>(md2));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1>(md2));
+        EXPECT_FALSE(azrtti_istypeof<MyBase>(md2));
 
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived1>(mcm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived2>(mcm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived>(mcm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1>(mcm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase>(mcm) == false);
+        EXPECT_TRUE(azrtti_istypeof<MyDerived1>(mcm));
+        EXPECT_TRUE(azrtti_istypeof<MyDerived2>(mcm));
+        EXPECT_TRUE(azrtti_istypeof<MyDerived>(mcm));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1>(mcm));
+        EXPECT_FALSE(azrtti_istypeof<MyBase>(mcm));
 
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived1>(&mcmm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived2>(mcmm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyDerived>(mcmm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1>(mcmm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyClassA>(mcmm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyClassB>(mcmm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyClassC>(mcmm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyClassD>(mcmm));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase>(mcmm) == false);
+        EXPECT_TRUE(azrtti_istypeof<MyDerived1>(&mcmm));
+        EXPECT_TRUE(azrtti_istypeof<MyDerived2>(mcmm));
+        EXPECT_TRUE(azrtti_istypeof<MyDerived>(mcmm));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1>(mcmm));
+        EXPECT_TRUE(azrtti_istypeof<MyClassA>(mcmm));
+        EXPECT_TRUE(azrtti_istypeof<MyClassB>(mcmm));
+        EXPECT_TRUE(azrtti_istypeof<MyClassC>(mcmm));
+        EXPECT_TRUE(azrtti_istypeof<MyClassD>(mcmm));
+        EXPECT_FALSE(azrtti_istypeof<MyBase>(mcmm));
 
         // type checks
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1&>(md));
-        AZ_TEST_ASSERT(azrtti_istypeof<const MyBase1&>(md));
-        AZ_TEST_ASSERT(azrtti_istypeof<const MyBase1>(md));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1>(&md));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1&>(&md));
-        AZ_TEST_ASSERT(azrtti_istypeof<const MyBase1&>(&md));
-        AZ_TEST_ASSERT(azrtti_istypeof<const MyBase1>(&md));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1*>(&md));
-        AZ_TEST_ASSERT(azrtti_istypeof<MyBase1*>(md));
-        AZ_TEST_ASSERT(azrtti_istypeof<const MyBase1*>(md));
-        AZ_TEST_ASSERT(azrtti_istypeof<const MyBase1*>(&md));
-        AZ_TEST_ASSERT(azrtti_istypeof(AzTypeInfo<const MyBase1>::Uuid(), &md));
-        AZ_TEST_ASSERT(azrtti_istypeof(AzTypeInfo<MyBase1>::Uuid(), md));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1&>(md));
+        EXPECT_TRUE(azrtti_istypeof<const MyBase1&>(md));
+        EXPECT_TRUE(azrtti_istypeof<const MyBase1>(md));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1>(&md));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1&>(&md));
+        EXPECT_TRUE(azrtti_istypeof<const MyBase1&>(&md));
+        EXPECT_TRUE(azrtti_istypeof<const MyBase1>(&md));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1*>(&md));
+        EXPECT_TRUE(azrtti_istypeof<MyBase1*>(md));
+        EXPECT_TRUE(azrtti_istypeof<const MyBase1*>(md));
+        EXPECT_TRUE(azrtti_istypeof<const MyBase1*>(&md));
+        EXPECT_TRUE(azrtti_istypeof(AZ::AzTypeInfo<const MyBase1>::Uuid(), &md));
+        EXPECT_TRUE(azrtti_istypeof(AZ::AzTypeInfo<MyBase1>::Uuid(), md));
 
         // template templates
         AZStd::vector<int> vector;
         AZStd::array<int, 1> array;
         AZStd::bitset<8> bitset;
         AZStd::function<void()> function;
-        AZ_TEST_ASSERT(azrtti_istypeof<AZStd::vector>(vector));
-        AZ_TEST_ASSERT(azrtti_istypeof<AZStd::array>(array));
-        AZ_TEST_ASSERT(azrtti_istypeof<AZStd::bitset>(bitset));
-        AZ_TEST_ASSERT(!azrtti_istypeof<AZStd::vector>(mb1)); // MyBase has not RTTI enabled, even though it's a base class
-        AZ_TEST_ASSERT(!azrtti_istypeof<AZStd::vector>(md));
+        EXPECT_TRUE(azrtti_istypeof<AZStd::vector>(vector));
+        EXPECT_TRUE(azrtti_istypeof<AZStd::array>(array));
+        EXPECT_TRUE(azrtti_istypeof<AZStd::bitset>(bitset));
+        EXPECT_FALSE(azrtti_istypeof<AZStd::vector>(mb1)); // MyBase has not RTTI enabled, even though it's a base class
+        EXPECT_FALSE(azrtti_istypeof<AZStd::vector>(md));
 
         // check type enumeration
         TypeIdArray typeIds;
         // check a single type (no base types)
         MyDerived1::RTTI_EnumHierarchy(EnumTypes, &typeIds);
-        AZ_TEST_ASSERT(typeIds.size() == 1);
-        AZ_TEST_ASSERT(typeIds[0] == AzTypeInfo<MyDerived1>::Uuid());
+        EXPECT_EQ(1, typeIds.size());
+        EXPECT_EQ(AZ::AzTypeInfo<MyDerived1>::Uuid(), typeIds[0]);
         // check a simple inheritance
         typeIds.clear();
         MyDerived::RTTI_EnumHierarchy(EnumTypes, &typeIds);
-        AZ_TEST_ASSERT(typeIds.size() == 2);
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyBase1>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyDerived>::Uuid()) != typeIds.end());
+        EXPECT_EQ(2, typeIds.size());
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyBase1>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyDerived>::Uuid()));
         // check a little more complicated one
         typeIds.clear();
         MyClassMix::RTTI_EnumHierarchy(EnumTypes, &typeIds);
-        AZ_TEST_ASSERT(typeIds.size() == 5);
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyBase1>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyDerived>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyDerived1>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyDerived2>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyClassMix>::Uuid()) != typeIds.end());
+        EXPECT_EQ(5, typeIds.size());
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyBase1>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyDerived>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyDerived1>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyDerived2>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyClassMix>::Uuid()));
 
         // now check the virtual full time selection
         MyBase1* mb1Ptr = &mcm;
         typeIds.clear();
         mb1Ptr->RTTI_EnumTypes(EnumTypes, &typeIds);
-        AZ_TEST_ASSERT(typeIds.size() == 5);
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyBase1>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyDerived>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyDerived1>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyDerived2>::Uuid()) != typeIds.end());
-        AZ_TEST_ASSERT(AZStd::find(typeIds.begin(), typeIds.end(), AzTypeInfo<MyClassMix>::Uuid()) != typeIds.end());
+        EXPECT_EQ(5, typeIds.size());
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyBase1>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyDerived>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyDerived1>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyDerived2>::Uuid()));
+        EXPECT_NE(typeIds.end(), AZStd::find(typeIds.begin(), typeIds.end(), AZ::AzTypeInfo<MyClassMix>::Uuid()));
     }
 
     TEST_F(Rtti, GetGenericTypeIdTest)
     {
         using IntVector = AZStd::vector<int>;
-        IRttiHelper* helper = GetRttiHelper<IntVector>();
+        AZ::IRttiHelper* helper = AZ::GetRttiHelper<IntVector>();
         EXPECT_EQ(azrtti_typeid<IntVector>(), helper->GetTypeId());
         EXPECT_EQ(azrtti_typeid<AZStd::vector>(), helper->GetGenericTypeId());
-        EXPECT_EQ((azrtti_typeid<IntVector, GenericTypeIdTag>()), helper->GetGenericTypeId());
+        EXPECT_EQ(AZ::AzTypeInfo<IntVector>::GetTemplateId(), helper->GetGenericTypeId());
 
-        helper = GetRttiHelper<MyClassMix>();
+        helper = AZ::GetRttiHelper<MyClassMix>();
         EXPECT_EQ(azrtti_typeid<MyClassMix>(), helper->GetTypeId());
-        EXPECT_EQ(azrtti_typeid<MyClassMix>(), helper->GetGenericTypeId());
+        // MyClassMix isn't a template
+        EXPECT_TRUE(helper->GetGenericTypeId().IsNull());
+
+        // Validate that ADL lookup of Class Template Ids via the AzTypeInfo<T>::GetTemplateId() function
+        // will work
+        static_assert(AZ::HasGetO3deTypeName_v<IntVector>);
+        static_assert(AZ::HasGetO3deTypeId_v<IntVector>);
+
+        auto vectorTemplateId = GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<IntVector>{});
+        EXPECT_FALSE(vectorTemplateId.IsNull());
+
+        static_assert(AZ::HasGetO3deClassTemplateId_v<IntVector>);
     }
 
     class ExampleAbstractClass
     {
-    public: 
+    public:
         AZ_RTTI(ExampleAbstractClass, "{F99EC269-3077-4984-A1B6-FA5656A65AC9}")
         virtual void AbstractFunction1() = 0;
         virtual void AbstractFunction2() = 0;
@@ -437,11 +567,11 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(ExampleFullImplementationClass, "{81B043ED-3770-414E-8B54-0F623C035926}", ExampleAbstractClass)
-        void AbstractFunction1() override {} 
+        void AbstractFunction1() override {}
         void AbstractFunction2() override {}
     };
 
-    class ExamplePartialImplementationClass1 
+    class ExamplePartialImplementationClass1
         : public ExampleAbstractClass
     {
     public:
@@ -449,7 +579,7 @@ namespace UnitTest
         void AbstractFunction1() override {}
     };
 
-    class ExampleCombined 
+    class ExampleCombined
         : public ExamplePartialImplementationClass1
     {
     public:
@@ -463,15 +593,15 @@ namespace UnitTest
         [[maybe_unused]] ExampleFullImplementationClass one;
         [[maybe_unused]] ExampleCombined two;
 
-        ASSERT_NE(GetRttiHelper<ExampleAbstractClass>(), nullptr);
-        ASSERT_NE(GetRttiHelper<ExampleFullImplementationClass>(), nullptr);
-        ASSERT_NE(GetRttiHelper<ExamplePartialImplementationClass1>(), nullptr);
-        ASSERT_NE(GetRttiHelper<ExampleCombined>(), nullptr);
+        ASSERT_NE(AZ::GetRttiHelper<ExampleAbstractClass>(), nullptr);
+        ASSERT_NE(AZ::GetRttiHelper<ExampleFullImplementationClass>(), nullptr);
+        ASSERT_NE(AZ::GetRttiHelper<ExamplePartialImplementationClass1>(), nullptr);
+        ASSERT_NE(AZ::GetRttiHelper<ExampleCombined>(), nullptr);
 
-        EXPECT_TRUE(GetRttiHelper<ExampleAbstractClass>()->IsAbstract());
-        EXPECT_FALSE(GetRttiHelper<ExampleFullImplementationClass>()->IsAbstract());
-        EXPECT_TRUE(GetRttiHelper<ExamplePartialImplementationClass1>()->IsAbstract());
-        EXPECT_FALSE(GetRttiHelper<ExampleCombined>()->IsAbstract());
+        EXPECT_TRUE(AZ::GetRttiHelper<ExampleAbstractClass>()->IsAbstract());
+        EXPECT_FALSE(AZ::GetRttiHelper<ExampleFullImplementationClass>()->IsAbstract());
+        EXPECT_TRUE(AZ::GetRttiHelper<ExamplePartialImplementationClass1>()->IsAbstract());
+        EXPECT_FALSE(AZ::GetRttiHelper<ExampleCombined>()->IsAbstract());
     }
 
     TEST_F(Rtti, DynamicCastTest)
@@ -489,31 +619,31 @@ namespace UnitTest
         MyClassMaxMix* mcmm = &i_mcmm;
 
         // downcast
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase*>(mb1) == nullptr);// MyBase has not RTTI enabled, even though it's a base class
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived*>(mb1) == nullptr);
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase1*>(md));
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase*>(md) == nullptr);
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived2*>(md) == nullptr);
+        EXPECT_EQ(nullptr, azdynamic_cast<MyBase*>(mb1));// MyBase has not RTTI enabled, even though it's a base class
+        EXPECT_EQ(nullptr, azdynamic_cast<MyDerived*>(mb1));
+        EXPECT_NE(nullptr, azdynamic_cast<MyBase1*>(md));
+        EXPECT_EQ(nullptr, azdynamic_cast<MyBase*>(md));
+        EXPECT_EQ(nullptr, azdynamic_cast<MyDerived2*>(md));
 
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived*>(md2));
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase1*>(md2));
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase*>(md2) == nullptr);
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived*>(md2));
+        EXPECT_NE(nullptr, azdynamic_cast<MyBase1*>(md2));
+        EXPECT_EQ(nullptr, azdynamic_cast<MyBase*>(md2));
 
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived1*>(mcm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived2*>(mcm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived*>(mcm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase1*>(mcm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase*>(mcm) == nullptr);
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived1*>(mcm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived2*>(mcm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived*>(mcm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyBase1*>(mcm));
+        EXPECT_EQ(nullptr, azdynamic_cast<MyBase*>(mcm));
 
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived1*>(mcmm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived2*>(mcmm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived*>(mcmm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase1*>(mcmm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyClassA*>(mcmm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyClassB*>(mcmm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyClassC*>(mcmm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyClassD*>(mcmm));
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase*>(mcmm) == nullptr);
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived1*>(mcmm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived2*>(mcmm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived*>(mcmm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyBase1*>(mcmm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyClassA*>(mcmm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyClassB*>(mcmm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyClassC*>(mcmm));
+        EXPECT_NE(nullptr, azdynamic_cast<MyClassD*>(mcmm));
+        EXPECT_EQ(nullptr, azdynamic_cast<MyBase*>(mcmm));
 
         // up cast
         mb1 = mcmm;
@@ -521,50 +651,85 @@ namespace UnitTest
         int i_i;
         int* pi = &i_i;
 
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase*>(nullptr) == nullptr);
-        AZ_TEST_ASSERT(azdynamic_cast<MyBase*>(pi) == nullptr);
-        AZ_TEST_ASSERT(azdynamic_cast<int*>(pi) == pi);
+        EXPECT_EQ(nullptr, azdynamic_cast<MyBase*>(nullptr));
+        EXPECT_EQ(nullptr, azdynamic_cast<MyBase*>(pi));
+        EXPECT_EQ(pi, azdynamic_cast<int*>(pi));
 
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived*>(mb1) != nullptr);
-        AZ_TEST_ASSERT(azdynamic_cast<MyDerived2*>(mb1) != nullptr);
-        AZ_TEST_ASSERT(azdynamic_cast<MyClassMaxMix*>(mb1) != nullptr);
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived*>(mb1));
+        EXPECT_NE(nullptr, azdynamic_cast<MyDerived2*>(mb1));
+        EXPECT_NE(nullptr, azdynamic_cast<MyClassMaxMix*>(mb1));
 
-        AZ_TEST_ASSERT(azdynamic_cast<MyClassD*>(mca) != nullptr);
-        AZ_TEST_ASSERT(azdynamic_cast<MyClassMaxMix*>(mca) != nullptr);
+        EXPECT_NE(nullptr, azdynamic_cast<MyClassD*>(mca));
+        EXPECT_NE(nullptr, azdynamic_cast<MyClassMaxMix*>(mca));
 
         // type checks
         const MyDerived* cmd = md;
-        AZ_TEST_ASSERT(azdynamic_cast<const MyBase1*>(md));
-        AZ_TEST_ASSERT(azdynamic_cast<const volatile MyBase1*>(md));
-        AZ_TEST_ASSERT(azdynamic_cast<const MyBase1*>(cmd));
-        AZ_TEST_ASSERT(azdynamic_cast<const volatile MyBase1*>(cmd));
+        EXPECT_NE(nullptr, azdynamic_cast<const MyBase1*>(md));
+        EXPECT_NE(nullptr, azdynamic_cast<const volatile MyBase1*>(md));
+        EXPECT_NE(nullptr, azdynamic_cast<const MyBase1*>(cmd));
+        EXPECT_NE(nullptr, azdynamic_cast<const volatile MyBase1*>(cmd));
         // unrelated cast not supported (we can, but why)
         //AZ_TEST_ASSERT(azdynamic_cast<MyBase1*>(mca));
 
         md = mcmm;
 
         // serialization helpers
-        AZ_TEST_ASSERT(mca->RTTI_AddressOf(AzTypeInfo<MyClassMaxMix>::Uuid()) == mcmm);
-        AZ_TEST_ASSERT(mb1->RTTI_AddressOf(AzTypeInfo<MyClassMaxMix>::Uuid()) == mcmm);
-        AZ_TEST_ASSERT(mb1->RTTI_AddressOf(AzTypeInfo<MyClassA>::Uuid()) == mca);
-        AZ_TEST_ASSERT(mb1->RTTI_AddressOf(AzTypeInfo<MyDerived>::Uuid()) == md);
-        AZ_TEST_ASSERT(md2->RTTI_AddressOf(AzTypeInfo<MyClassA>::Uuid()) == nullptr);
-        AZ_TEST_ASSERT(mcmm->RTTI_AddressOf(AzTypeInfo<MyClassA>::Uuid()) == mca);
-        AZ_TEST_ASSERT(mcmm->RTTI_AddressOf(AzTypeInfo<MyBase1>::Uuid()) == mb1);
+        EXPECT_EQ(mcmm, mca->RTTI_AddressOf(AZ::AzTypeInfo<MyClassMaxMix>::Uuid()));
+        EXPECT_EQ(mcmm, mb1->RTTI_AddressOf(AZ::AzTypeInfo<MyClassMaxMix>::Uuid()));
+        EXPECT_EQ(mca, mb1->RTTI_AddressOf(AZ::AzTypeInfo<MyClassA>::Uuid()));
+        EXPECT_EQ(md, mb1->RTTI_AddressOf(AZ::AzTypeInfo<MyDerived>::Uuid()));
+        EXPECT_EQ(nullptr, md2->RTTI_AddressOf(AZ::AzTypeInfo<MyClassA>::Uuid()));
+        EXPECT_EQ(mca, mcmm->RTTI_AddressOf(AZ::AzTypeInfo<MyClassA>::Uuid()));
+        EXPECT_EQ(mb1, mcmm->RTTI_AddressOf(AZ::AzTypeInfo<MyBase1>::Uuid()));
 
         // typeid
-        AZ_TEST_ASSERT(azrtti_typeid<MyBase>() == AzTypeInfo<MyBase>::Uuid());
-        AZ_TEST_ASSERT(azrtti_typeid(i_mb1) == AzTypeInfo<MyBase1>::Uuid());
-        AZ_TEST_ASSERT(azrtti_typeid(md2) == AzTypeInfo<MyDerived2>::Uuid());
-        AZ_TEST_ASSERT(azrtti_typeid(mca) == AzTypeInfo<MyClassMaxMix>::Uuid());
+        EXPECT_EQ(AZ::AzTypeInfo<MyBase>::Uuid(), azrtti_typeid<MyBase>());
+        EXPECT_EQ(AZ::AzTypeInfo<MyBase1>::Uuid(), azrtti_typeid(i_mb1));
+        EXPECT_EQ(AZ::AzTypeInfo<MyDerived2>::Uuid(), azrtti_typeid(md2));
+        EXPECT_EQ(AZ::AzTypeInfo<MyClassMaxMix>::Uuid(), azrtti_typeid(mca));
         MyClassA& mcar = i_mcmm;
-        AZ_TEST_ASSERT(azrtti_typeid(mcar) == AzTypeInfo<MyClassMaxMix>::Uuid());
-        AZ_TEST_ASSERT(azrtti_typeid<int>() == AzTypeInfo<int>::Uuid());
+        EXPECT_EQ(AZ::AzTypeInfo<MyClassMaxMix>::Uuid(), azrtti_typeid(mcar));
+        EXPECT_EQ(AZ::AzTypeInfo<int>::Uuid(), azrtti_typeid<int>());
+    }
+
+    // Struct which uses the Curiously Recuring Template Pattern to provide static
+    // polymorphism
+    template <class Derived>
+    struct RttiVisitorCRTP
+    {
+        virtual ~RttiVisitorCRTP() = default;
+        AZ_RTTI((RttiVisitorCRTP, "{07750558-F992-4F19-A31F-8BF7A2B41AF0}", Derived));
+    };
+
+    template <class T>
+    struct RttiDerivedVisitor;
+    AZ_TYPE_INFO_TEMPLATE(RttiDerivedVisitor, "{484C63B4-A9AE-4E82-90A0-C863E9411604}", AZ_TYPE_INFO_CLASS);
+
+    template <class T>
+    struct RttiDerivedVisitor
+        : RttiVisitorCRTP<RttiDerivedVisitor<T>>
+    {
+        using BaseType = RttiVisitorCRTP<RttiDerivedVisitor<T>>;
+
+        // Provide declaration for RTTI functions
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+    };
+
+    // Provide the implemetnation for RTTI functions
+    AZ_RTTI_NO_TYPE_INFO_IMPL((RttiDerivedVisitor, AZ_TYPE_INFO_CLASS), (RttiVisitorCRTP<RttiDerivedVisitor<T1>>));
+
+    TEST_F(Rtti, Rtti_DeclAndImpl_CanWorkaroundCRTP_WithAzTypeInfo_Instantiation)
+    {
+        AZStd::unique_ptr<RttiVisitorCRTP<RttiDerivedVisitor<int>>> basePtr = AZStd::make_unique<RttiDerivedVisitor<int>>();
+        // Check if the instance is of the derived visitor type
+        EXPECT_TRUE(basePtr->RTTI_IsTypeOf(azrtti_typeid<RttiDerivedVisitor<int>>()));
+        // Check if the instance is also of the derived base class type
+        EXPECT_TRUE(basePtr->RTTI_IsTypeOf(azrtti_typeid<RttiVisitorCRTP<RttiDerivedVisitor<int>>>()));
     }
 
     TEST_F(Rtti, MultiThreadedTypeInfo)
     {
-        // These must be Uuids so that they don't engage the UuidHolder code
+        // These must be AZ::Uuids so that they don't engage the AZ::UuidHolder code
         const AZ::Uuid expectedMtti("{4876C017-0C26-4D0D-9A1F-2A738BAE6449}");
         const AZ::Uuid expectedMtti2("{CBC94693-5ECD-4CBF-A8DB-9B122E697E8D}");
 
@@ -1019,32 +1184,32 @@ namespace UnitTest
     }
 
     class ReflectionManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
-            m_reflection = AZStd::make_unique<ReflectionManager>();
+            m_reflection = AZStd::make_unique<AZ::ReflectionManager>();
         }
 
         void TearDown() override
         {
             m_reflection.reset();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:
-        AZStd::unique_ptr<ReflectionManager> m_reflection;
+        AZStd::unique_ptr<AZ::ReflectionManager> m_reflection;
     };
 
     class TestReflectedClass
     {
     public:
         static bool s_isReflected;
-        static void Reflect(ReflectContext* context)
+        static void Reflect(AZ::ReflectContext* context)
         {
             s_isReflected = !context->IsRemovingReflection();
         }
@@ -1053,12 +1218,12 @@ namespace UnitTest
 
     TEST_F(ReflectionManagerTest, AddContext_AddClass)
     {
-        m_reflection->AddReflectContext<SerializeContext>();
+        m_reflection->AddReflectContext<AZ::SerializeContext>();
 
         m_reflection->Reflect(&TestReflectedClass::Reflect);
         EXPECT_TRUE(TestReflectedClass::s_isReflected);
 
-        m_reflection->RemoveReflectContext<SerializeContext>();
+        m_reflection->RemoveReflectContext<AZ::SerializeContext>();
 
         EXPECT_FALSE(TestReflectedClass::s_isReflected);
     }
@@ -1067,7 +1232,7 @@ namespace UnitTest
     {
         m_reflection->Reflect(&TestReflectedClass::Reflect);
 
-        m_reflection->AddReflectContext<SerializeContext>();
+        m_reflection->AddReflectContext<AZ::SerializeContext>();
         EXPECT_TRUE(TestReflectedClass::s_isReflected);
 
         m_reflection->Unreflect(&TestReflectedClass::Reflect);
@@ -1079,7 +1244,7 @@ namespace UnitTest
     {
         m_reflection->Reflect(&TestReflectedClass::Reflect);
 
-        m_reflection->AddReflectContext<SerializeContext>();
+        m_reflection->AddReflectContext<AZ::SerializeContext>();
         EXPECT_TRUE(TestReflectedClass::s_isReflected);
 
         m_reflection.reset();
@@ -1089,7 +1254,7 @@ namespace UnitTest
 
     TEST_F(ReflectionManagerTest, UnreflectReReflect)
     {
-        m_reflection->AddReflectContext<SerializeContext>();
+        m_reflection->AddReflectContext<AZ::SerializeContext>();
 
         m_reflection->Reflect(&TestReflectedClass::Reflect);
         EXPECT_TRUE(TestReflectedClass::s_isReflected);
@@ -1100,10 +1265,10 @@ namespace UnitTest
         m_reflection->Reflect(&TestReflectedClass::Reflect);
         EXPECT_TRUE(TestReflectedClass::s_isReflected);
 
-        m_reflection->RemoveReflectContext<SerializeContext>();
+        m_reflection->RemoveReflectContext<AZ::SerializeContext>();
         EXPECT_FALSE(TestReflectedClass::s_isReflected);
 
-        m_reflection->AddReflectContext<SerializeContext>();
+        m_reflection->AddReflectContext<AZ::SerializeContext>();
         EXPECT_TRUE(TestReflectedClass::s_isReflected);
 
         m_reflection.reset();

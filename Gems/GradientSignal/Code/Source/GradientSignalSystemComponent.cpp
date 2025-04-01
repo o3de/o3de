@@ -11,51 +11,16 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <GradientSignal/ImageAsset.h>
-#include <AzFramework/Asset/GenericAssetHandler.h>
 #include <GradientSignal/GradientSampler.h>
 #include <GradientSignal/SmoothStep.h>
-#include <GradientSignal/ImageSettings.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 
 namespace GradientSignal
 {
-    namespace Details
-    {
-        AzFramework::GenericAssetHandler<GradientSignal::ImageSettings>* s_gradientImageSettingsAssetHandler = nullptr;
-        ImageAssetHandler* s_gradientImageAssetHandler = nullptr;
-        
-        void RegisterAssethandlers()
-        {
-            s_gradientImageSettingsAssetHandler = aznew AzFramework::GenericAssetHandler<GradientSignal::ImageSettings>("Gradient Image Settings", "Other", s_gradientImageSettingsExtension);
-            s_gradientImageSettingsAssetHandler->Register();
-            s_gradientImageAssetHandler = aznew ImageAssetHandler();
-            s_gradientImageAssetHandler->Register();
-        }
-
-        void UnregisterAssethandlers()
-        {
-            if (s_gradientImageSettingsAssetHandler)
-            {
-                s_gradientImageSettingsAssetHandler->Unregister();
-                delete s_gradientImageSettingsAssetHandler;
-                s_gradientImageSettingsAssetHandler = nullptr;
-            }
-
-            if (s_gradientImageAssetHandler)
-            {
-                s_gradientImageAssetHandler->Unregister();
-                delete s_gradientImageAssetHandler;
-                s_gradientImageAssetHandler = nullptr;
-            }
-        }
-    }
-
     void GradientSignalSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         GradientSampler::Reflect(context);
         SmoothStep::Reflect(context);
-        ImageAsset::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -67,7 +32,6 @@ namespace GradientSignal
             {
                 ec->Class<GradientSignalSystemComponent>("GradientSignal", "Manages registration of gradient image assets and reflection of required types")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -89,12 +53,12 @@ namespace GradientSignal
 
     void GradientSignalSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GradientSignalService", 0xa7a775e2));
+        provided.push_back(AZ_CRC_CE("GradientSignalService"));
     }
 
     void GradientSignalSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GradientSignalService", 0xa7a775e2));
+        incompatible.push_back(AZ_CRC_CE("GradientSignalService"));
     }
 
     void GradientSignalSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -113,11 +77,9 @@ namespace GradientSignal
 
     void GradientSignalSystemComponent::Activate()
     {
-        Details::RegisterAssethandlers();
     }
 
     void GradientSignalSystemComponent::Deactivate()
     {
-        Details::UnregisterAssethandlers();
     }
 }

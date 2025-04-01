@@ -10,30 +10,29 @@
 // Description : CTrackViewDialog Implementation file.
 
 
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWDIALOG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWDIALOG_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "IMovieSystem.h"
+#include <IMovieSystem.h>
 
-#include "TrackViewNodes.h"
-#include "TrackViewDopeSheetBase.h"
+#include "AnimationContext.h"
 #include "TrackViewCurveEditor.h"
+#include "TrackViewDopeSheetBase.h"
 #include "TrackViewKeyPropertiesDlg.h"
+#include "TrackViewNodes.h"
 #include "TrackViewSequence.h"
 #include "TrackViewSequenceManager.h"
-#include "AnimationContext.h"
 
 #include <AzCore/Component/EntityBus.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <QMainWindow>
 #endif
 
-class QSplitter;
 class QComboBox;
 class QLabel;
+class QSplitter;
 
 class CMovieCallback;
 class CTrackViewFindDlg;
@@ -98,11 +97,7 @@ protected slots:
     void OnMoveKey();
     void OnSlideKey();
     void OnScaleKey();
-    void OnSyncSelectedTracksToBase();
-    void OnSyncSelectedTracksFromBase();
     void OnAddSequence();
-    void OnExportFBXSequence();
-    void OnExportNodeKeysGlobalTime();
     void OnDelSequence();
     void OnEditSequence();
     void OnSequenceComboBox();
@@ -211,8 +206,6 @@ private:
 
     void BeginUndoTransaction() override;
     void EndUndoTransaction() override;
-    void SaveCurrentSequenceToFBX();
-    void SaveSequenceTimingToXML();
 
     // ToolsApplicationNotificationBus ...
     void AfterEntitySelectionChanged(
@@ -265,7 +258,7 @@ private:
     CTrackViewAnimNode* m_pNodeForTracksToolBar;
 
     int m_currentToolBarParamTypeId;
-    std::vector<CAnimParamType> m_toolBarParamTypes;
+    AZStd::vector<CAnimParamType> m_toolBarParamTypes;
 
     // Default tracks menu
     AZStd::vector<AnimParamType> m_defaultTracksForEntityNode;
@@ -273,5 +266,3 @@ private:
     QHash<int, QAction*> m_actions;
     ViewMode m_lastMode = ViewMode::TrackView;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWDIALOG_H

@@ -6,7 +6,7 @@
 #
 #
 
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_WHITEBOX Traits
 
@@ -22,5 +22,6 @@ if(PAL_TRAIT_WHITEBOX_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PA
             AutomatedTesting.Assets
         COMPONENT
             WhiteBox
+        LABELS REQUIRES_tiaf
     )
 endif()

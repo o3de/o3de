@@ -8,19 +8,14 @@
             "PassClass": "ReflectionScreenSpaceBlurPass",
             "Slots": [
                 {
-                    "Name": "DepthInput",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
                     "Name": "ScreenSpaceReflectionInputOutput",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "RenderTarget"
                 },
                 {
-                    "Name": "DownsampledDepthInputOutput",
+                    "Name": "DownsampledDepthLinear",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ScopeAttachmentUsage": "Shader"
                 }
             ]
         }

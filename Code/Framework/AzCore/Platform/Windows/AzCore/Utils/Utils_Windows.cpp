@@ -7,10 +7,12 @@
  */
 
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/string/conversions.h>
 
 #include <stdlib.h>
+#include <shlobj_core.h>
 
 namespace AZ::Utils
 {
@@ -23,17 +25,30 @@ namespace AZ::Utils
         ::MessageBoxW(0, wmessage.c_str(), wtitle.c_str(), MB_OK | MB_ICONERROR);
     }
 
-    AZ::IO::FixedMaxPathString GetHomeDirectory()
+    AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry)
     {
         constexpr AZStd::string_view overrideHomeDirKey = "/Amazon/Settings/override_home_dir";
         AZ::IO::FixedMaxPathString overrideHomeDir;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
         {
             if (settingsRegistry->Get(overrideHomeDir, overrideHomeDirKey))
             {
                 AZ::IO::FixedMaxPath path{overrideHomeDir};
                 return path.Native();
             }
+        }
+
+        wchar_t sysUserProfilePathW[MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPath(0, CSIDL_PROFILE, 0, SHGFP_TYPE_DEFAULT, sysUserProfilePathW)))
+        {
+            AZ::IO::FixedMaxPathString sysUserProfilePathStr;
+            AZStd::to_string(sysUserProfilePathStr, sysUserProfilePathW);
+            return sysUserProfilePathStr;
         }
 
         char userProfileBuffer[AZ::IO::MaxPathLength]{};

@@ -69,3 +69,5 @@ namespace AzToolsFramework
     using EditorVisibilityNotificationBus = EditorEntityVisibilityNotificationBus;
 
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityVisibilityNotifications);

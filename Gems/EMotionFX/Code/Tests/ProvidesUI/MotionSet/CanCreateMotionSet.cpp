@@ -47,16 +47,15 @@ namespace EMotionFX
         ASSERT_TRUE(model) << "Tree Widget's Data Model could not be found";
 
         // Validate state before creating a new motion set
-        ASSERT_EQ(GetMotionManager().GetNumMotionSets(), 0) << "Expected exactly zero motion sets";
-        ASSERT_EQ(treeWidget->topLevelItemCount(), 0) << "Expected exactly 0 TopLevelItems in TreeWidget";
-        ASSERT_FALSE(model->index(0, 0).isValid()) << "Tree Model index(0, 0) is expected to not exist yet";
+        const size_t oldNumMotionSets = GetMotionManager().GetNumMotionSets();
+        ASSERT_EQ(treeWidget->topLevelItemCount(), oldNumMotionSets) << "Expected exactly 0 TopLevelItems in TreeWidget";
 
         // Find and click the plus (+) icon on the toolbar (to create new motion set)
         // Found through the Manager Window's Toolbar's Actions
         QToolBar* toolBar = managerWindow->findChild<QToolBar*>("MotionSetManagementWindow.ToolBar");
         ASSERT_TRUE(toolBar) << "Motion Set Management ToolBar could not be found";
         QWidget* newMotionSetButton = GetWidgetFromToolbar(toolBar, "Add new motion set");
-        
+
         ASSERT_TRUE(newMotionSetButton) << "Could not find new motion set button. Did the text description change?";
         QTest::mouseClick(newMotionSetButton, Qt::LeftButton);
 
@@ -64,9 +63,7 @@ namespace EMotionFX
         managerWindow->ReInit();
 
         // Validate state after clicking "add motionset" button
-        ASSERT_EQ(GetMotionManager().GetNumMotionSets(), 1) << "Not exactly one motion set found";
-        ASSERT_EQ(treeWidget->topLevelItemCount(), 1) << "Not exacxtly one TopLevelItem in TreeWidget";
-        ASSERT_TRUE(model->index(0, 0).isValid()) << "Tree Model index(0, 0) is expected to be valid";
-
+        ASSERT_EQ(GetMotionManager().GetNumMotionSets(), oldNumMotionSets + 1) << "The default and the newly created motion set should be present.";
+        ASSERT_EQ(model->rowCount(), GetMotionManager().GetNumMotionSets());
     }
 }

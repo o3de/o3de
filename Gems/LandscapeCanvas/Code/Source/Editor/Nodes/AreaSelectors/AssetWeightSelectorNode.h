@@ -26,7 +26,7 @@ namespace LandscapeCanvas
         : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetWeightSelectorNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetWeightSelectorNode, AZ::SystemAllocator);
         AZ_RTTI(AssetWeightSelectorNode, "{083CA722-638B-4E14-836B-2614451C2A91}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -35,9 +35,8 @@ namespace LandscapeCanvas
         explicit AssetWeightSelectorNode(GraphModel::GraphPtr graph);
 
         const BaseNodeType GetBaseNodeType() const override;
-        const bool ShouldShowEntityName() const override;
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override;
 
     protected:

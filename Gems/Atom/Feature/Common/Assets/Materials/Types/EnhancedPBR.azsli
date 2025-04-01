@@ -1,0 +1,112 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#define ENABLE_VERTEX_COLOR 1
+
+//TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
+//TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
+#include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialSrg.azsli>
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+    // Subsurface
+    #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/SubsurfaceInput.azsli"
+
+    // Transmission
+    #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/TransmissionInput.azsli"
+
+    COMMON_OPTIONS_BASE_COLOR()
+    COMMON_OPTIONS_VERTEX_COLOR()
+    COMMON_OPTIONS_ROUGHNESS()
+    COMMON_OPTIONS_METALLIC()
+    COMMON_OPTIONS_SPECULAR_F0()
+    COMMON_OPTIONS_NORMAL()
+    COMMON_OPTIONS_CLEAR_COAT()
+    COMMON_OPTIONS_OCCLUSION()
+    COMMON_OPTIONS_EMISSIVE()
+    COMMON_OPTIONS_DETAIL_MAPS()
+    COMMON_OPTIONS_PARALLAX()
+    
+    bool ShouldHandleParallax()
+    {
+        // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+        return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
+    }
+
+    bool NeedsTangentFrame()
+    {
+        return ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture;
+    }
+    
+    // Callback function for ParallaxMapping.azsli
+    DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+    {
+        return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexEval.azsli>
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryEval.azsli>
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceEval.azsli>
+    
+#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+
+    COMMON_OPTIONS_PARALLAX()
+        
+    bool ShouldHandleParallax()
+    {
+        // TODO(MaterialPipeline): This is the same as the other ShouldHandleParallax() above, needs to be factored out
+        bool canHandleParallax = !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
+
+        // The depth pass shaders need to calculate parallax when the result could affect the depth buffer, or when
+        // parallax could affect texel clipping.
+        return canHandleParallax && (o_parallax_enablePixelDepthOffset || o_opacity_mode == OpacityMode::Cutout);
+    }
+
+    bool NeedsTangentFrame()
+    {
+        return ShouldHandleParallax();
+    }
+    
+    // Callback function for ParallaxMapping.azsli
+    DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+    {
+        return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+    }
+    
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
+    
+    // For cases where the pixel stage is only calculating geometry (like alpha clipping and parallax PDO), we can use StandardPBR_PixelGeometryData
+    // instead of EnhancedPBR_PixelGeometryData because the detail-layer UVS are the only difference and those aren't used for clipping or depth.
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryEval.azsli>
+    
+    #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
+
+    void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+    {
+        GetAlphaAndClip(geoData.uvs);
+    }
+
+#else
+
+    //TODO(MaterialPipeline): I think we should rename these to "PositionOnly_*"
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
+
+#endif

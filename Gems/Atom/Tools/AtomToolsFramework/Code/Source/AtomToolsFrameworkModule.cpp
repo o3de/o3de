@@ -8,7 +8,6 @@
 
 #include <AtomToolsFrameworkModule.h>
 #include <AtomToolsFrameworkSystemComponent.h>
-#include <Document/AtomToolsDocumentSystemComponent.h>
 #include <Window/AtomToolsMainWindowSystemComponent.h>
 #include <PerformanceMonitor/PerformanceMonitorSystemComponent.h>
 #include <PreviewRenderer/PreviewRendererSystemComponent.h>
@@ -19,7 +18,6 @@ namespace AtomToolsFramework
     {
         m_descriptors.insert(m_descriptors.end(), {
                 AtomToolsFrameworkSystemComponent::CreateDescriptor(),
-                AtomToolsDocumentSystemComponent::CreateDescriptor(),
                 AtomToolsMainWindowSystemComponent::CreateDescriptor(),
                 PerformanceMonitorSystemComponent::CreateDescriptor(),
                 PreviewRendererSystemComponent::CreateDescriptor(),
@@ -30,7 +28,6 @@ namespace AtomToolsFramework
     {
         return AZ::ComponentTypeList{
             azrtti_typeid<AtomToolsFrameworkSystemComponent>(),
-            azrtti_typeid<AtomToolsDocumentSystemComponent>(),
             azrtti_typeid<AtomToolsMainWindowSystemComponent>(),
             azrtti_typeid<PerformanceMonitorSystemComponent>(),
             azrtti_typeid<PreviewRendererSystemComponent>(),
@@ -39,8 +36,9 @@ namespace AtomToolsFramework
 }
 
 #if !defined(AtomToolsFramework_EDITOR)
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_AtomToolsFramework, AtomToolsFramework::AtomToolsFrameworkModule)
+    #if defined(O3DE_GEM_NAME)
+    AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AtomToolsFramework::AtomToolsFrameworkModule)
+    #else
+    AZ_DECLARE_MODULE_CLASS(Gem_AtomToolsFramework, AtomToolsFramework::AtomToolsFrameworkModule)
+    #endif
 #endif

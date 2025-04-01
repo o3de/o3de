@@ -79,11 +79,11 @@ def update_manifest(scene):
     # Add an EditorMeshComponent to the entity
     editor_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName", entity_id, "AZ::Render::EditorMeshComponent")
     # Set the ModelAsset assetHint to the relative path of the input asset + the name of the MeshGroup we just created + the azmodel extension
-    # The MeshGroup we created will be output as a product in the asset's path named mesh_group_name.azmodel
+    # The MeshGroup we created will be output as a product in the asset's path named mesh_group_name.fbx.azmodel
     # The assetHint will be converted to an AssetId later during prefab loading
     json_update = json.dumps({
         "Controller": { "Configuration": { "ModelAsset": {
-            "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel" }}}
+            "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".fbx.azmodel" }}}
         });
     # Apply the JSON above to the component we created
     result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_mesh_component, json_update)
@@ -109,16 +109,18 @@ def on_update_manifest(args):
         log_exception_traceback()
     except:
         log_exception_traceback()
-
-    global sceneJobHandler
-    sceneJobHandler = None
+    finally:
+        global sceneJobHandler
+        # do not delete or set sceneJobHandler to None, just disconnect from it.
+        # this call is occuring while the scene Job Handler itself is in the callstack, so deleting it here
+        # would cause a crash.
+        sceneJobHandler.disconnect()
 
 # try to create SceneAPI handler for processing
 try:
     import azlmbr.scene as sceneApi
-    if (sceneJobHandler == None):
-        sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
-        sceneJobHandler.connect()
-        sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
+    sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
+    sceneJobHandler.connect()
+    sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
 except:
     sceneJobHandler = None

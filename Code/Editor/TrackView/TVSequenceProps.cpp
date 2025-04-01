@@ -36,7 +36,8 @@ CTVSequenceProps::CTVSequenceProps(CTrackViewSequence* pSequence, float fps, QWi
     , ui(new Ui::CTVSequenceProps)
 {
     ui->setupUi(this);
-    assert(pSequence);
+
+    AZ_Assert(pSequence, "pSequence is null");
     m_pSequence = pSequence;
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &CTVSequenceProps::OnOK);
     connect(ui->CUT_SCENE, &QCheckBox::toggled, this, &CTVSequenceProps::ToggleCutsceneOptions);
@@ -74,12 +75,21 @@ bool CTVSequenceProps::OnInitDialog()
     Range timeRange = m_pSequence->GetTimeRange();
     float invFPS = 1.0f / m_FPS;
 
-    m_timeUnit = Seconds;
     ui->START_TIME->setValue(timeRange.start);
     ui->START_TIME->setSingleStep(invFPS);
     ui->END_TIME->setValue(timeRange.end);
     ui->END_TIME->setSingleStep(invFPS);
 
+    if (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_DisplayAsFramesOrSeconds)
+    {
+        m_timeUnit = Frames;
+        ui->TO_FRAMES->setChecked(true);
+    }
+    else
+    {
+        m_timeUnit = Seconds;
+        ui->TO_SECONDS->setChecked(true);
+    }
 
     m_outOfRange = 0;
     if (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_OutOfRangeConstant)
@@ -225,6 +235,15 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
         seqFlags &= (~IAnimSequence::eSeqFlags_EarlyMovieUpdate);
     }
 
+    if (ui->TO_FRAMES->isChecked())
+    {
+        seqFlags |= IAnimSequence::eSeqFlags_DisplayAsFramesOrSeconds;
+    }
+    else
+    {
+        seqFlags &= (~IAnimSequence::eSeqFlags_DisplayAsFramesOrSeconds);
+    }
+
     if (static_cast<IAnimSequence::EAnimSequenceFlags>(seqFlags) != m_pSequence->GetFlags())
     {
         AzToolsFramework::ScopedUndoBatch undoBatch("Change TrackView Sequence Flags");
@@ -241,7 +260,8 @@ void CTVSequenceProps::OnOK()
         QMessageBox::warning(this, "Sequence Properties", "A sequence name cannot be empty!");
         return;
     }
-    else if (name.contains('/'))
+
+    if (name.contains('/'))
     {
         QMessageBox::warning(this, "Sequence Properties", "A sequence name cannot contain a '/' character!");
         return;
@@ -281,8 +301,8 @@ void CTVSequenceProps::OnBnClickedToFrames(bool v)
     ui->START_TIME->setSingleStep(1.0f);
     ui->END_TIME->setSingleStep(1.0f);
 
-    ui->START_TIME->setValue(std::round(ui->START_TIME->value() * static_cast<double>(m_FPS)));
-    ui->END_TIME->setValue(std::round(ui->END_TIME->value() * static_cast<double>(m_FPS)));
+    ui->START_TIME->setValue(AZStd::round(ui->START_TIME->value() * static_cast<double>(m_FPS)));
+    ui->END_TIME->setValue(AZStd::round(ui->END_TIME->value() * static_cast<double>(m_FPS)));
 
     m_timeUnit = Frames;
 }

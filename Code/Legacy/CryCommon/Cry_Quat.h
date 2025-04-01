@@ -395,6 +395,30 @@ struct Quat_tpl
         return q;
     }
 
+    // creatr rotation quatation base on ZYX axis
+    ILINE void SetRotationZYX(const Ang3_tpl<F>& a)
+    {
+        assert(a.IsValid());
+        F sx, cx;
+        sincos_tpl(F(a.x * F(0.5)), &sx, &cx);
+        F sy, cy;
+        sincos_tpl(F(a.y * F(0.5)), &sy, &cy);
+        F sz, cz;
+        sincos_tpl(F(a.z * F(0.5)), &sz, &cz);
+        w = cx * cy * cz - sx * sy * sz;
+        v.x = cx * sy * sz + sx * cy * cz;
+        v.y = cx * sy * cz - sx * cy * sz;
+        v.z = cx * cy * sz + sx * sy * cz;
+    }
+
+    ILINE static Quat_tpl<F> CreateRotationZYX(const Ang3_tpl<F>& a)
+    {
+        assert(a.IsValid());
+        Quat_tpl<F> q;
+        q.SetRotationZYX(a);
+        return q;
+    }
+
     /*!
     * Create rotation-quaternion that about the x-axis.
     *

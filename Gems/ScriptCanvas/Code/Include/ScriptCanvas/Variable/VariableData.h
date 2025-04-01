@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(VariableData, "{4F80659A-CD11-424E-BF04-AF02ABAC06B0}");
-        AZ_CLASS_ALLOCATOR(VariableData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableData, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         enum Version : AZ::s32
@@ -78,7 +78,7 @@ namespace ScriptCanvas
 
     public:
         AZ_TYPE_INFO(EditableVariableConfiguration, "{96D2F031-DEA0-44DF-82FB-2612AFB1DACF}");
-        AZ_CLASS_ALLOCATOR(EditableVariableConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditableVariableConfiguration, AZ::SystemAllocator);
 
         static bool VersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElementNode);
         static void Reflect(AZ::ReflectContext* context);
@@ -93,7 +93,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(EditableVariableData, "{D335AEC5-D118-443D-B85C-FEB17C0B26D6}");
-        AZ_CLASS_ALLOCATOR(EditableVariableData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditableVariableData, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         EditableVariableData();

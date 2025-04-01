@@ -22,7 +22,7 @@ namespace Vegetation
     {
     public:
         AZ_RTTI(DescriptorListAsset, "{60961B36-E3CA-4877-B197-1462C1363F6E}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(DescriptorListAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DescriptorListAsset, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
     
         AZStd::vector<Descriptor> m_descriptors;

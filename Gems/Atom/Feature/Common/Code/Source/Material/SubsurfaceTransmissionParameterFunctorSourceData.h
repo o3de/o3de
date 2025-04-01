@@ -21,6 +21,7 @@ namespace AZ
             : public AZ::RPI::MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(SubsurfaceTransmissionParameterFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(SubsurfaceTransmissionParameterFunctorSourceData, "{FEDECF94-0351-4775-8AE4-2005171B5634}", RPI::MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -36,6 +37,9 @@ namespace AZ
             AZStd::string m_power;                      //!< material property for thick transmission power
             AZStd::string m_distortion;                 //!< material property for thick transmission distortion towards surface normal
             AZStd::string m_attenuation;                //!< material property for thick transmission volume absorption
+            AZStd::string m_shrinkFactor;               //!< material property for thin transmission position shrink factor towards surface normal
+            AZStd::string m_transmissionNdLBias;        //!< material property for thin transmission bias of the NdL value
+            AZStd::string m_distanceAttenuation;        //!< material property for thin transmission attenuation with distance 
             AZStd::string m_tintColor;                  //!< material property for transmission tint
             AZStd::string m_thickness;                  //!< material property for normalized object thickness
             AZStd::string m_enabled;                    //!< material property for subsurface scattering feature switch (enabled or disabled)

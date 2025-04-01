@@ -29,7 +29,7 @@ namespace Gestures
 
         struct Config
         {
-            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator);
             AZ_RTTI(Config, "{E1B99E50-605A-467E-B26E-B9F72A98A04F}");
             static void Reflect(AZ::ReflectContext* context);
 
@@ -56,7 +56,7 @@ namespace Gestures
         };
         static const Config& GetDefaultConfig() { static Config s_cfg; return s_cfg; }
 
-        AZ_CLASS_ALLOCATOR(RecognizerClickOrTap, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecognizerClickOrTap, AZ::SystemAllocator);
         AZ_RTTI(RecognizerClickOrTap, "{C401A49C-6D88-4268-8E2D-6BAECFD7146E}", RecognizerDiscrete);
 
         explicit RecognizerClickOrTap(const Config& config = GetDefaultConfig());

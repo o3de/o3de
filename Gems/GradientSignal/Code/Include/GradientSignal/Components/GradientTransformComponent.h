@@ -33,7 +33,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientTransformConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientTransformConfig, AZ::SystemAllocator);
         AZ_RTTI(GradientTransformConfig, "{1106FD53-8B3A-4F97-8051-E34AD70199A5}", AZ::ComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -55,6 +55,7 @@ namespace GradientSignal
 
         bool m_overrideBounds = false;
         AZ::Vector3 m_bounds = AZ::Vector3::CreateOne(); //1m sq default value chosen by design, to start small and expand as needed
+        AZ::Vector3 m_center = AZ::Vector3::CreateZero(); // to handle asymmetrical shapes such as polygon prism
 
         TransformType m_transformType = TransformType::World_ThisEntity;
         bool m_overrideTranslate = false;
@@ -70,7 +71,7 @@ namespace GradientSignal
         bool m_is3d = false;
     };
 
-    static const AZ::Uuid GradientTransformComponentTypeId = "{F0A8F968-F642-4982-8282-8FB8560FDB67}";
+    inline constexpr AZ::TypeId GradientTransformComponentTypeId{ "{F0A8F968-F642-4982-8282-8FB8560FDB67}" };
 
     class GradientTransformComponent
         : public AZ::Component
@@ -128,7 +129,10 @@ namespace GradientSignal
         void SetOverrideBounds(bool value) override;
 
         AZ::Vector3 GetBounds() const override;
-        void SetBounds(AZ::Vector3 bounds) override;
+        void SetBounds(const AZ::Vector3& bounds) override;
+
+        AZ::Vector3 GetCenter() const override;
+        void SetCenter(const AZ::Vector3& center) override;
 
         TransformType GetTransformType() const override;
         void SetTransformType(TransformType type) override;
@@ -137,19 +141,19 @@ namespace GradientSignal
         void SetOverrideTranslate(bool value) override;
 
         AZ::Vector3 GetTranslate() const override;
-        void SetTranslate(AZ::Vector3 translate) override;
+        void SetTranslate(const AZ::Vector3& translate) override;
 
         bool GetOverrideRotate() const override;
         void SetOverrideRotate(bool value) override;
 
         AZ::Vector3 GetRotate() const override;
-        void SetRotate(AZ::Vector3 rotate) override;
+        void SetRotate(const AZ::Vector3& rotate) override;
 
         bool GetOverrideScale() const override;
         void SetOverrideScale(bool value) override;
 
         AZ::Vector3 GetScale() const override;
-        void SetScale(AZ::Vector3 scale) override;
+        void SetScale(const AZ::Vector3& scale) override;
 
         float GetFrequencyZoom() const override;
         void SetFrequencyZoom(float frequencyZoom) override;

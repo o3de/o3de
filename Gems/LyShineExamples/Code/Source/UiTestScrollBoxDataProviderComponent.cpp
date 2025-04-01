@@ -38,7 +38,7 @@ namespace LyShineExamples
     int UiTestScrollBoxDataProviderComponent::GetNumElements()
     {
         UiDynamicContentDatabase *uiDynamicContentDB = nullptr;
-        EBUS_EVENT_RESULT(uiDynamicContentDB, LyShineExamplesInternalBus, GetUiDynamicContentDatabase);
+        LyShineExamplesInternalBus::BroadcastResult(uiDynamicContentDB, &LyShineExamplesInternalBus::Events::GetUiDynamicContentDatabase);
         if (uiDynamicContentDB)
         {
             return uiDynamicContentDB->GetNumColors(UiDynamicContentDatabaseInterface::ColorType::PaidColors);
@@ -51,34 +51,34 @@ namespace LyShineExamples
     void UiTestScrollBoxDataProviderComponent::OnElementBecomingVisible(AZ::EntityId entityId, int index)
     {
         UiDynamicContentDatabase *uiDynamicContentDB = nullptr;
-        EBUS_EVENT_RESULT(uiDynamicContentDB, LyShineExamplesInternalBus, GetUiDynamicContentDatabase);
+        LyShineExamplesInternalBus::BroadcastResult(uiDynamicContentDB, &LyShineExamplesInternalBus::Events::GetUiDynamicContentDatabase);
         if (uiDynamicContentDB)
         {
             if ((index >= 0) && (index < uiDynamicContentDB->GetNumColors(UiDynamicContentDatabaseInterface::ColorType::PaidColors)))
             {
                 AZ::Entity* entity = nullptr;
 
-                EBUS_EVENT_ID_RESULT(entity, entityId, UiElementBus, FindChildByName, "Name");
+                UiElementBus::EventResult(entity, entityId, &UiElementBus::Events::FindChildByName, "Name");
                 if (entity)
                 {
                     AZStd::string text = uiDynamicContentDB->GetColorName(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);
-                    EBUS_EVENT_ID(entity->GetId(), UiTextBus, SetText, text.c_str());
+                    UiTextBus::Event(entity->GetId(), &UiTextBus::Events::SetText, text.c_str());
                 }
 
                 entity = nullptr;
-                EBUS_EVENT_ID_RESULT(entity, entityId, UiElementBus, FindChildByName, "Price");
+                UiElementBus::EventResult(entity, entityId, &UiElementBus::Events::FindChildByName, "Price");
                 if (entity)
                 {
                     AZStd::string text = uiDynamicContentDB->GetColorPrice(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);
-                    EBUS_EVENT_ID(entity->GetId(), UiTextBus, SetText, text.c_str());
+                    UiTextBus::Event(entity->GetId(), &UiTextBus::Events::SetText, text.c_str());
                 }
 
                 entity = nullptr;
-                EBUS_EVENT_ID_RESULT(entity, entityId, UiElementBus, FindChildByName, "Icon");
+                UiElementBus::EventResult(entity, entityId, &UiElementBus::Events::FindChildByName, "Icon");
                 if (entity)
                 {
                     AZ::Color color = uiDynamicContentDB->GetColor(UiDynamicContentDatabaseInterface::ColorType::PaidColors, index);
-                    EBUS_EVENT_ID(entity->GetId(), UiImageBus, SetColor, color);
+                    UiImageBus::Event(entity->GetId(), &UiImageBus::Events::SetColor, color);
                 }
             }
         }
@@ -107,7 +107,7 @@ namespace LyShineExamples
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTestScrollBoxDataProvider.png")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiTestScrollBoxDataProvider.png")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0));
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"));
             }
         }
     }

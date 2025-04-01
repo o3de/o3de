@@ -35,7 +35,7 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::BloomSettings, "{9CDC625A-0545-494E-AB37-552A19741F6A}",
                 AZ::Render::BloomSettingsInterface, AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(BloomSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BloomSettings, SystemAllocator);
 
             BloomSettings(PostProcessFeatureProcessor* featureProcessor);
             ~BloomSettings() = default;

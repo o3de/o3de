@@ -10,6 +10,8 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 
@@ -23,12 +25,19 @@ namespace AZ
         //! Image assets are domain specific (e.g. streaming vs. attachments) so
         //! the details of how to source content for an image is defined by the specialized variant. The base
         //! class provides access to the RHI image and default image view.
-        class ImageAsset
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ImageAsset
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
+            static constexpr const char* DisplayName{ "ImageAsset" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "image" };
+
             AZ_RTTI(ImageAsset, "{C53AB73A-5BC9-462D-805B-43BAFA8C8167}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ImageAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageAsset, AZ::SystemAllocator);
 
             virtual ~ImageAsset();
 
@@ -48,7 +57,9 @@ namespace AZ
             RHI::ImageDescriptor m_imageDescriptor;
 
             // [Serialized] The descriptor used to initialize the RHI image view.
-            RHI::ImageViewDescriptor m_imageViewDescriptor;            
+            RHI::ImageViewDescriptor m_imageViewDescriptor;
         };
+
+        using ImageAssetHandler = AssetHandler<ImageAsset>;
     }
 }

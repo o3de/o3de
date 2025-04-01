@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the EvaluatePixelGeometry function in this file without making it the final EvaluatePixelGeometry
+// used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
+//
+#ifndef EvaluatePixelGeometry
+#define EvaluatePixelGeometry EvaluatePixelGeometry_Skin
+#endif
+
+#include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
+#include <Atom/Features/InstancedTransforms.azsli>
+
+PixelGeometryData EvaluatePixelGeometry_Skin(
+    float3 positionWS,
+    real3 normalWS,
+    real3 tangentWS,
+    real3 bitangentWS,
+    float2 uvs[UvSetCount],
+    float2 detailUv,
+    real4 wrinkleBlendFactors,
+    bool isFrontFace)
+{
+    // Base PBR Geo Data
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
+
+    // Skin specifics
+    geoData.detailUv = detailUv;
+    geoData.wrinkleBlendFactors = wrinkleBlendFactors;
+
+    return geoData;
+}
+
+PixelGeometryData EvaluatePixelGeometry_Skin(VsOutput IN, bool isFrontFace)
+{
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+
+    return EvaluatePixelGeometry_Skin(
+        IN.worldPosition,
+        normalWS,
+        tangentWS,
+        bitangentWS,
+        IN.uvs,
+        IN.detailUv,
+        real4(IN.wrinkleBlendFactors),
+        isFrontFace);
+}

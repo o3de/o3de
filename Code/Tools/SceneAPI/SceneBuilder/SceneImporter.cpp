@@ -10,6 +10,7 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
@@ -21,10 +22,13 @@
 #include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IImportGroup.h>
+#include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
+
 
 namespace AZ
 {
@@ -61,26 +65,58 @@ namespace AZ
                 }
             }
 
+            SceneAPI::SceneImportSettings SceneImporter::GetSceneImportSettings(const AZStd::string& sourceAssetPath) const
+            {
+                // Start with a default set of import settings.
+                SceneAPI::SceneImportSettings importSettings;
+
+                // Try to read in any global settings from the settings registry.
+                if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
+                {
+                    settingsRegistry->GetObject(importSettings, AZ::SceneAPI::DataTypes::IImportGroup::SceneImportSettingsRegistryKey);
+                }
+
+                // Try reading in the scene manifest (.assetinfo file), which contains the import settings if they've been
+                // changed from the defaults.
+                Containers::Scene scene;
+                Import::ManifestImportRequestHandler manifestHandler;
+                manifestHandler.LoadAsset(
+                    scene, sourceAssetPath,
+                    Uuid::CreateNull(),
+                    Events::AssetImportRequest::RequestingApplication::AssetProcessor);
+
+                // Search for the ImportGroup. If it's there, get the new import settings. If not, we'll just use the defaults.
+                size_t count = scene.GetManifest().GetEntryCount();
+                for (size_t index = 0; index < count; index++)
+                {
+                    if (auto* importGroup = azrtti_cast<DataTypes::IImportGroup*>(scene.GetManifest().GetValue(index).get()); importGroup)
+                    {
+                        importSettings = importGroup->GetImportSettings();
+                        break;
+                    }
+                }
+
+                return importSettings;
+            }
+
             Events::ProcessingResult SceneImporter::ImportProcessing(Events::ImportEventContext& context)
             {
+                SceneAPI::SceneImportSettings importSettings = GetSceneImportSettings(context.GetInputDirectory());
+
                 m_sceneWrapper->Clear();
 
-                if (!m_sceneWrapper->LoadSceneFromFile(context.GetInputDirectory().c_str()))
+                if (!m_sceneWrapper->LoadSceneFromFile(context.GetInputDirectory().c_str(), importSettings))
                 {
                     return Events::ProcessingResult::Failure;
                 }
 
-                typedef AZStd::function<bool(Containers::Scene & scene)> ConvertFunc;
-                ConvertFunc convertFunc;
                 m_sceneSystem->Set(m_sceneWrapper.get());
                 if (!azrtti_istypeof<AssImpSDKWrapper::AssImpSceneWrapper>(m_sceneWrapper.get()))
                 {
                     return Events::ProcessingResult::Failure;
                 }
 
-                convertFunc = AZStd::bind(&SceneImporter::ConvertScene, this, AZStd::placeholders::_1);
-                
-                if (convertFunc(context.GetScene()))
+                if (ConvertScene(context.GetScene()))
                 {
                     return Events::ProcessingResult::Success;
                 }
@@ -101,6 +137,12 @@ namespace AZ
                 const AssImpSDKWrapper::AssImpSceneWrapper* assImpSceneWrapper = azrtti_cast <AssImpSDKWrapper::AssImpSceneWrapper*>(m_sceneWrapper.get());
 
                 AZStd::pair<AssImpSDKWrapper::AssImpSceneWrapper::AxisVector, int32_t> upAxisAndSign = assImpSceneWrapper->GetUpVectorAndSign();
+
+                const aiAABB& aabb = assImpSceneWrapper->GetAABB();
+                aiVector3t dimension = aabb.mMax - aabb.mMin;
+                Vector3 t{ dimension.x, dimension.y, dimension.z };
+                scene.SetSceneDimension(t);
+                scene.SetSceneVertices(assImpSceneWrapper->GetVertices());
 
                 if (upAxisAndSign.second <= 0)
                 {

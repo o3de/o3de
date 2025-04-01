@@ -10,7 +10,6 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobCompletionSpin.h>
 #include <AzCore/Jobs/JobFunction.h>
-#include <AzCore/Jobs/LegacyJobExecutor.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/task_group.h>
 #include <AzCore/Jobs/Algorithms.h>
@@ -62,7 +61,7 @@ namespace UnitTest
     static AZStd::sys_time_t s_totalJobsTime = 0;
 
     class DefaultJobManagerSetupFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
 
     {
     protected:
@@ -77,10 +76,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
-
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             JobManagerDesc desc;
             JobManagerThreadDesc threadDesc;
@@ -92,6 +88,7 @@ namespace UnitTest
             {
                 m_numWorkerThreads = AZStd::thread::hardware_concurrency();
             }
+            m_numWorkerThreads = desc.GetWorkerThreadCount(m_numWorkerThreads);
 
             for (unsigned int i = 0; i < m_numWorkerThreads; ++i)
             {
@@ -114,10 +111,7 @@ namespace UnitTest
             delete m_jobContext;
             delete m_jobManager;
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -182,7 +176,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(Vector3SumJob, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(Vector3SumJob, ThreadPoolAllocator);
 
         Vector3SumJob(const Vector3* array, unsigned int size, Vector3* result, JobContext* context = nullptr)
             : Job(true, context)
@@ -282,7 +276,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(FibonacciJobJoin, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(FibonacciJobJoin, ThreadPoolAllocator);
 
         FibonacciJobJoin(int* result, JobContext* context = nullptr)
             : Job(true, context)
@@ -302,7 +296,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(FibonacciJobFork, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(FibonacciJobFork, ThreadPoolAllocator);
 
         FibonacciJobFork(int n, int* result, JobContext* context = nullptr)
             : Job(true, context)
@@ -343,7 +337,7 @@ namespace UnitTest
         : public DefaultJobManagerSetupFixture
     {
     public:
-        //AZ_CLASS_ALLOCATOR(JobFibonacciTest, ThreadPoolAllocator, 0)
+        //AZ_CLASS_ALLOCATOR(JobFibonacciTest, ThreadPoolAllocator);
 
         void run()
         {
@@ -372,7 +366,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(FibonacciJob2, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(FibonacciJob2, ThreadPoolAllocator);
 
         FibonacciJob2(int n, int* result, JobContext* context = nullptr)
             : Job(true, context)
@@ -439,7 +433,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(MergeSortJobJoin, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MergeSortJobJoin, ThreadPoolAllocator);
 
         MergeSortJobJoin(int* array, int* tempArray, int size1, int size2, JobContext* context = nullptr)
             : Job(true, context)
@@ -494,7 +488,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(MergeSortJobFork, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MergeSortJobFork, ThreadPoolAllocator);
 
         MergeSortJobFork(int* array, int* tempArray, int size, JobContext* context = nullptr)
             : Job(true, context)
@@ -583,7 +577,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(QuickSortJob, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(QuickSortJob, ThreadPoolAllocator);
 
         QuickSortJob(int* array, int left, int right, JobContext* context = nullptr)
             : Job(true, context)
@@ -1398,103 +1392,6 @@ namespace UnitTest
         run();
     }
 
-    using JobLegacyJobExecutorIsRunning = DefaultJobManagerSetupFixture;
-    TEST_F(JobLegacyJobExecutorIsRunning, Test)
-    {
-        // Note: Legacy JobExecutor exists as an adapter to Legacy CryEngine jobs.
-        // When writing new jobs instead favor direct use of the AZ::Job type family
-        AZ::LegacyJobExecutor jobExecutor;
-        EXPECT_FALSE(jobExecutor.IsRunning());
-
-        // Completion fences and IsRunning()
-        {
-            jobExecutor.PushCompletionFence();
-            EXPECT_TRUE(jobExecutor.IsRunning());
-            jobExecutor.PopCompletionFence();
-            EXPECT_FALSE(jobExecutor.IsRunning());
-        }
-
-        AZStd::atomic_bool jobExecuted{ false };
-        AZStd::binary_semaphore jobSemaphore;
-
-        jobExecutor.StartJob([&jobSemaphore, &jobExecuted]
-            {
-                // Wait until the test thread releases
-                jobExecuted = true;
-                jobSemaphore.acquire();
-            }
-        );
-        EXPECT_TRUE(jobExecutor.IsRunning());
-
-        // Allow the job to complete
-        jobSemaphore.release();
-
-        // Wait for completion
-        jobExecutor.WaitForCompletion();
-        EXPECT_FALSE(jobExecutor.IsRunning());
-        EXPECT_TRUE(jobExecuted);
-    }
-
-    using JobLegacyJobExecutorWaitForCompletion = DefaultJobManagerSetupFixture;
-    TEST_F(JobLegacyJobExecutorWaitForCompletion, Test)
-    {
-        // Note: Legacy JobExecutor exists as an adapter to Legacy CryEngine jobs.
-        // When writing new jobs instead favor direct use of the AZ::Job type family
-        AZ::LegacyJobExecutor jobExecutor;
-
-        // Semaphores used to park job threads until released
-        const AZ::u32 numParkJobs = AZ::JobContext::GetGlobalContext()->GetJobManager().GetNumWorkerThreads();
-        AZStd::vector<AZStd::binary_semaphore> jobSemaphores(numParkJobs);
-
-        // Data destination for workers
-        const AZ::u32 workJobCount = numParkJobs * 2;
-        AZStd::vector<AZ::u32> jobData(workJobCount, 0);
-
-        // Touch completion multiple times as a test of correctly transitioning in and out of the all jobs completed state
-        AZ::u32 NumCompletionCycles = 5;
-        for (AZ::u32 completionItrIdx = 0; completionItrIdx < NumCompletionCycles; ++completionItrIdx)
-        {
-            // Intentionally park every job thread
-            for (auto& jobSemaphore : jobSemaphores)
-            {
-                jobExecutor.StartJob([&jobSemaphore]
-                {
-                    jobSemaphore.acquire();
-                }
-                );
-            }
-            EXPECT_TRUE(jobExecutor.IsRunning());
-
-            // Kick off verifiable "work" jobs
-            for (AZ::u32 i = 0; i < workJobCount; ++i)
-            {
-                jobExecutor.StartJob([i, &jobData]
-                {
-                    jobData[i] = i + 1;
-                }
-                );
-            }
-            EXPECT_TRUE(jobExecutor.IsRunning());
-
-            // Now released our parked job threads
-            for (auto& jobSemaphore : jobSemaphores)
-            {
-                jobSemaphore.release();
-            }
-
-            // And wait for all jobs to finish
-            jobExecutor.WaitForCompletion();
-            EXPECT_FALSE(jobExecutor.IsRunning());
-
-            // Verify our workers ran and clear data
-            for (size_t i = 0; i < workJobCount; ++i)
-            {
-                EXPECT_EQ(jobData[i], i + 1);
-                jobData[i] = 0;
-            }
-        }
-    }
-
     class JobCompletionCompleteNotScheduled
         : public DefaultJobManagerSetupFixture
     {
@@ -1560,7 +1457,7 @@ namespace UnitTest
     public:
         static AZStd::atomic<AZ::s32> s_numIncompleteJobs;
 
-        AZ_CLASS_ALLOCATOR(TestJobWithPriority, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TestJobWithPriority, ThreadPoolAllocator);
 
         TestJobWithPriority(AZ::s8 priority, const char* name, JobContext* context, AZStd::binary_semaphore& binarySemaphore, AZStd::vector<AZStd::string>& namesOfProcessedJobs)
             : Job(true, context, false, priority)
@@ -1674,7 +1571,7 @@ namespace Benchmark
     public:
         static AZStd::atomic<AZ::s32> s_numIncompleteJobs;
 
-        AZ_CLASS_ALLOCATOR(TestJobCalculatePi, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TestJobCalculatePi, ThreadPoolAllocator);
 
         TestJobCalculatePi(AZ::u32 depth, AZ::s8 priority, JobContext* context)
             : Job(true, context, false, priority)
@@ -1706,16 +1603,13 @@ namespace Benchmark
 
         void internalSetUp()
         {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             JobManagerDesc desc;
             JobManagerThreadDesc threadDesc;
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
             threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
 #endif // AZ_TRAIT_SET_JOB_PROCESSOR_ID
 
-            const AZ::u32 numWorkerThreads = AZStd::thread::hardware_concurrency();
+            const AZ::u32 numWorkerThreads = desc.GetWorkerThreadCount(AZStd::thread::hardware_concurrency());
             for (AZ::u32 i = 0; i < numWorkerThreads; ++i)
             {
                 desc.m_workerThreads.push_back(threadDesc);
@@ -1767,9 +1661,6 @@ namespace Benchmark
             m_randomDepths = {};
             delete m_jobContext;
             delete m_jobManager;
-
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
         }
         void TearDown(::benchmark::State&) override
         {
@@ -1839,7 +1730,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunSmallNumberOfLightWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(SMALL_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1847,7 +1738,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunMediumNumberOfLightWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(MEDIUM_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1855,7 +1746,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunLargeNumberOfLightWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(LARGE_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1863,7 +1754,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunSmallNumberOfMediumWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(SMALL_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1871,7 +1762,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunMediumNumberOfMediumWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(MEDIUM_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1879,7 +1770,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunLargeNumberOfMediumWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(LARGE_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1887,7 +1778,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunSmallNumberOfHeavyWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(SMALL_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1895,7 +1786,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunMediumNumberOfHeavyWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(MEDIUM_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1903,7 +1794,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunLargeNumberOfHeavyWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithDefaultPriority(LARGE_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1911,7 +1802,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunSmallNumberOfRandomWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomDepthAndDefaultPriority(SMALL_NUMBER_OF_JOBS);
         }
@@ -1919,7 +1810,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunMediumNumberOfRandomWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomDepthAndDefaultPriority(MEDIUM_NUMBER_OF_JOBS);
         }
@@ -1927,7 +1818,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunLargeNumberOfRandomWeightJobsWithDefaultPriority)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomDepthAndDefaultPriority(LARGE_NUMBER_OF_JOBS);
         }
@@ -1935,7 +1826,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunSmallNumberOfLightWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(SMALL_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1943,7 +1834,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunMediumNumberOfLightWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(MEDIUM_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1951,7 +1842,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunLargeNumberOfLightWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(LARGE_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1959,7 +1850,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunSmallNumberOfMediumWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(SMALL_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1967,7 +1858,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunMediumNumberOfMediumWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(MEDIUM_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1975,7 +1866,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunLargeNumberOfMediumWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(LARGE_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1983,7 +1874,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunSmallNumberOfHeavyWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(SMALL_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1991,7 +1882,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunMediumNumberOfHeavyWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(MEDIUM_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -1999,7 +1890,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunLargeNumberOfHeavyWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomPriority(LARGE_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
         }
@@ -2007,7 +1898,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunSmallNumberOfRandomWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomDepthAndRandomPriority(SMALL_NUMBER_OF_JOBS);
         }
@@ -2015,7 +1906,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunMediumNumberOfRandomWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomDepthAndRandomPriority(MEDIUM_NUMBER_OF_JOBS);
         }
@@ -2023,7 +1914,7 @@ namespace Benchmark
 
     BENCHMARK_F(JobBenchmarkFixture, RunLargeNumberOfRandomWeightJobsWithRandomPriorities)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             RunMultipleCalculatePiJobsWithRandomDepthAndRandomPriority(LARGE_NUMBER_OF_JOBS);
         }

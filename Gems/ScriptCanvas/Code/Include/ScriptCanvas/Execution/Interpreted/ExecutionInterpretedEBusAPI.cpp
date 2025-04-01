@@ -18,7 +18,7 @@
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
-#include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
 #include "ExecutionInterpretedOut.h"
@@ -46,7 +46,7 @@ namespace ScriptCanvas
             auto& behaviorContext = *AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext();
 
             AZ::StackVariableAllocator tempData;
-            AZ::BehaviorValueParameter address = BehaviorValueParameterFromTypeIdString(aztypeidStr, behaviorContext);
+            AZ::BehaviorArgument address = BehaviorValueParameterFromTypeIdString(aztypeidStr, behaviorContext);
             // \todo check for nil if required...if the address is a BCO...and is NOT a pointer type...nil check is required
             // that will have to be checked at compile time actually.
             AZ_Verify(StackRead(lua, &behaviorContext, -1, address, &tempData), "Error in compiled lua file, failed to read 2nd argument to EBusHandlerConnectTo");
@@ -57,7 +57,7 @@ namespace ScriptCanvas
         int EBusHandlerCreate(lua_State* lua)
         {
             // Lua: executionState, (event name) string
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             auto ebusName = AZ::ScriptValue<const char*>::StackRead(lua, 2);
             EBusHandler* ebusHandler = aznew EBusHandler(executionState->WeakFromThis(), ebusName, AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext());
             AZ::Internal::LuaClassToStack(lua, ebusHandler, azrtti_typeid<EBusHandler>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::ScriptAcquire);
@@ -68,7 +68,7 @@ namespace ScriptCanvas
         int EBusHandlerCreateAndConnect(lua_State* lua)
         {
             // Lua: executionState, (event name) string,
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             auto ebusName = AZ::ScriptValue<const char*>::StackRead(lua, 2);
             EBusHandler* ebusHandler = aznew EBusHandler(executionState->WeakFromThis(), ebusName, AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext());
             ebusHandler->Connect();
@@ -80,14 +80,14 @@ namespace ScriptCanvas
         int EBusHandlerCreateAndConnectTo(lua_State* lua)
         {
             // Lua: executionState, (ebus name) string, (address aztypeid) string, (address) ?
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             auto ebusName = AZ::ScriptValue<const char*>::StackRead(lua, 2);
             EBusHandler* ebusHandler = aznew EBusHandler(executionState->WeakFromThis(), ebusName, AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext());
             const char* aztypeidStr = AZ::ScriptValue<const char*>::StackRead(lua, 3);
             AZ_Assert(aztypeidStr, "Error compiled lua file, 2nd argument to EBusHandlerCreateAndConnectTo is not a string");
             auto& behaviorContext = *AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext();
             AZ::StackVariableAllocator tempData;
-            AZ::BehaviorValueParameter address = BehaviorValueParameterFromTypeIdString(aztypeidStr, behaviorContext);
+            AZ::BehaviorArgument address = BehaviorValueParameterFromTypeIdString(aztypeidStr, behaviorContext);
             AZ_Verify(StackRead(lua, &behaviorContext, 4, address, &tempData), "Error in compiled lua file, failed to read 4th argument to EBusHandlerCreateAndConnectTo");
             ebusHandler->ConnectTo(address);
 
@@ -180,7 +180,7 @@ namespace ScriptCanvas
             auto& behaviorContext = *AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext();
 
             AZ::StackVariableAllocator tempData;
-            AZ::BehaviorValueParameter address = BehaviorValueParameterFromTypeIdString(aztypeidStr, behaviorContext);
+            AZ::BehaviorArgument address = BehaviorValueParameterFromTypeIdString(aztypeidStr, behaviorContext);
             AZ_Verify(StackRead(lua, &behaviorContext, -1, address, &tempData), "Error in compiled lua file, failed to read 2nd argument to EBusHandlerIsConnectedTo");
 
             lua_pushboolean(lua, ebusHandler->IsConnectedTo(address));

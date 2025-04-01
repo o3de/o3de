@@ -58,12 +58,17 @@ UiInteractableStateAction::EntityComboBoxVec UiInteractableStateAction::Populate
     EntityComboBoxVec result;
 
     // add a first entry for "None"
-    result.push_back(AZStd::make_pair(m_interactableEntity, "<This element>"));
+    result.emplace_back(m_interactableEntity, "<This element>");
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(m_interactableEntity, UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        m_interactableEntity,
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -106,7 +111,7 @@ void UiInteractableStateColor::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateColor::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideColor, m_color);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideColor, m_color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,7 +206,7 @@ void UiInteractableStateAlpha::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateAlpha::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideAlpha, m_alpha);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideAlpha, m_alpha);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -318,7 +323,7 @@ void UiInteractableStateSprite::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateSprite::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideSprite, m_sprite, m_spriteSheetCellIndex);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideSprite, m_sprite, m_spriteSheetCellIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -401,10 +406,10 @@ void UiInteractableStateSprite::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement("ComboBox", &UiInteractableStateSprite::m_targetEntity, "Target", "The target element.")
                 ->Attribute("EnumValues", &UiInteractableStateSprite::PopulateTargetEntityList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiInteractableStateSprite::OnTargetElementChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement("Sprite", &UiInteractableStateSprite::m_spritePathname, "Sprite", "The sprite.")
                 ->Attribute("ChangeNotify", &UiInteractableStateSprite::OnSpritePathnameChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiInteractableStateSprite::m_spriteSheetCellIndex, "Index", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiInteractableStateSprite::IsSpriteSheet)
                 ->Attribute("EnumValues", &UiInteractableStateSprite::PopulateIndexStringList);
@@ -439,7 +444,7 @@ void UiInteractableStateSprite::OnTargetElementChange()
 void UiInteractableStateSprite::LoadSpriteFromTargetElement()
 {
     AZStd::string spritePathname;
-    EBUS_EVENT_ID_RESULT(spritePathname, m_targetEntity, UiImageBus, GetSpritePathname);
+    UiImageBus::EventResult(spritePathname, m_targetEntity, &UiImageBus::Events::GetSpritePathname);
     m_spritePathname.SetAssetPath(spritePathname.c_str());
 
     OnSpritePathnameChange();
@@ -449,7 +454,7 @@ void UiInteractableStateSprite::LoadSpriteFromTargetElement()
 UiInteractableStateSprite::AZu32ComboBoxVec UiInteractableStateSprite::PopulateIndexStringList() const
 {
     int indexCount = 0;
-    EBUS_EVENT_ID_RESULT(indexCount, m_targetEntity, UiIndexableImageBus, GetImageIndexCount);
+    UiIndexableImageBus::EventResult(indexCount, m_targetEntity, &UiIndexableImageBus::Events::GetImageIndexCount);
 
     if (indexCount > 0)
     {
@@ -511,8 +516,8 @@ void UiInteractableStateFont::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateFont::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideFont, m_fontFamily);
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideFontEffect, m_fontEffectIndex);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideFont, m_fontFamily);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideFontEffect, m_fontEffectIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -554,7 +559,7 @@ void UiInteractableStateFont::SetFontPathname(const AZStd::string& pathname)
 {
     // Just to be safe we make sure is normalized
     AZStd::string fontPath = pathname;
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, fontPath);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, fontPath);
     m_fontFilename.SetAssetPath(fontPath.c_str());
 
     // We should minimize what is done in constructors and Init since components may be constructed
@@ -653,7 +658,7 @@ void UiInteractableStateFont::Reflect(AZ::ReflectContext* context)
                 ->Attribute("EnumValues", &UiInteractableStateFont::PopulateTargetEntityList);
             editInfo->DataElement("SimpleAssetRef", &UiInteractableStateFont::m_fontFilename, "Font path", "The font asset pathname.")
                 ->Attribute("ChangeNotify", &UiInteractableStateFont::OnFontPathnameChange)
-                ->Attribute("ChangeNotify", AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement("ComboBox", &UiInteractableStateFont::m_fontEffectIndex, "Font effect", "The font effect (from font file).")
                 ->Attribute("EnumValues", &UiInteractableStateFont::PopulateFontEffectList);
         }

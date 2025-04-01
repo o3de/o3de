@@ -32,7 +32,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Quad_Shape.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/quad-shape/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorQuadShapeComponent::m_quadShape, "Quad Shape", "Quad Shape Configuration")
@@ -47,7 +47,7 @@ namespace LmbrCentral
     void EditorQuadShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
-        provided.push_back(AZ_CRC("QuadShapeService", 0xe449b0fc));
+        provided.push_back(AZ_CRC_CE("QuadShapeService"));
     }
 
     void EditorQuadShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -85,7 +85,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawQuadShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_quadShape.GetQuadConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_quadShape.GetQuadConfiguration(), debugDisplay, m_quadShape.GetCurrentNonUniformScale());
             },
             m_quadShape.GetCurrentTransform());

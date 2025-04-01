@@ -21,6 +21,7 @@ namespace AZ
 namespace ScriptCanvas
 {
     class RuntimeAsset;
+    class SourceHandle;
     class SubgraphInterfaceAsset;
 }
 

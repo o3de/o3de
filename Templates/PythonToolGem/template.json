@@ -7,7 +7,7 @@
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "PythonToolGem",
+    "display_name": "PythonToolGem Template",
     "summary": "A gem template for a custom tool in Python that gets registered with the Editor.",
     "canonical_tags": [
         "Python",
@@ -27,7 +27,11 @@
             "isTemplated": true
         },
         {
-            "file": "Code/${NameLower}_editor_files.cmake",
+            "file": "Code/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -47,11 +51,19 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
+            "file": "Code/Include/${Name}/${Name}TypeIds.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_editor_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_editor_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -59,11 +71,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
+            "file": "Code/Platform/Mac/${NameLower}_editor_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "file": "Code/Platform/Mac/${NameLower}_editor_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_editor_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -71,11 +87,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "file": "Code/Platform/Windows/${NameLower}_editor_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
+            "file": "Code/Platform/Windows/${NameLower}_editor_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_editor_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -83,19 +103,7 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}.qrc",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorModule.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorSystemComponent.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorSystemComponent.h",
+            "file": "Code/Source/${Name}ModuleInterface.cpp",
             "isTemplated": true
         },
         {
@@ -103,11 +111,27 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Source/toolbar_icon.svg",
+            "file": "Code/Source/Tools/${Name}.qrc",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/toolbar_icon.svg",
             "isTemplated": false
         },
         {
-            "file": "Code/Tests/${Name}EditorTest.cpp",
+            "file": "Code/Tests/Tools/${Name}EditorTest.cpp",
             "isTemplated": true
         },
         {
@@ -119,7 +143,11 @@
             "isTemplated": true
         },
         {
-            "file": "Editor/Scripts/${NameLower}_dialog.py",
+            "file": "Editor/Scripts/${SanitizedNameLower}_dialog.py",
+            "isTemplated": true
+        },
+        {
+            "file": "Registry/assetprocessor_settings.setreg",
             "isTemplated": true
         },
         {
@@ -166,7 +194,16 @@
             "dir": "Code/Source"
         },
         {
+            "dir": "Code/Source/Tools"
+        },
+        {
             "dir": "Code/Tests"
+        },
+        {
+            "dir": "Code/Tests/Tools"
+        },
+        {
+            "dir": "Registry"
         }
     ]
 }

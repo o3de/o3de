@@ -29,7 +29,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:    
-        AZ_CLASS_ALLOCATOR(EditorContextMenu, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorContextMenu, AZ::SystemAllocator);
         
         EditorContextMenu(EditorId editorId, QWidget* parent = nullptr);
         virtual ~EditorContextMenu() = default;

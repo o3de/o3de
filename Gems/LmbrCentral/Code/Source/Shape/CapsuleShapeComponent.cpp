@@ -19,20 +19,20 @@ namespace LmbrCentral
 {
     void CapsuleShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        provided.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
+        provided.push_back(AZ_CRC_CE("ShapeService"));
+        provided.push_back(AZ_CRC_CE("CapsuleShapeService"));
     }
 
     void CapsuleShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        incompatible.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
+        incompatible.push_back(AZ_CRC_CE("ShapeService"));
+        incompatible.push_back(AZ_CRC_CE("CapsuleShapeService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void CapsuleShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void CapsuleShapeDebugDisplayComponent::Reflect(AZ::ReflectContext* context)
@@ -61,7 +61,7 @@ namespace LmbrCentral
 
     void CapsuleShapeDebugDisplayComponent::Draw(AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        DrawShape(debugDisplay, m_capsuleShapeConfig.GetDrawParams(), m_capsuleShapeMesh);
+        DrawShape(debugDisplay, m_capsuleShapeConfig.GetDrawParams(), m_capsuleShapeMesh, m_capsuleShapeConfig.m_translationOffset);
     }
 
     bool CapsuleShapeDebugDisplayComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -120,7 +120,7 @@ namespace LmbrCentral
             // Deprecate: CapsuleColliderConfiguration -> CapsuleShapeConfig
             serializeContext->ClassDeprecate(
                 "CapsuleColliderConfiguration",
-                "{902BCDA9-C9E5-429C-991B-74C241ED2889}",
+                AZ::Uuid("{902BCDA9-C9E5-429C-991B-74C241ED2889}"),
                 &ClassConverters::DeprecateCapsuleColliderConfiguration)
                 ;
 
@@ -128,22 +128,33 @@ namespace LmbrCentral
                 ->Version(2)
                 ->Field("Height", &CapsuleShapeConfig::m_height)
                 ->Field("Radius", &CapsuleShapeConfig::m_radius)
+                ->Field("TranslationOffset", &CapsuleShapeConfig::m_translationOffset)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<CapsuleShapeConfig>("Configuration", "Capsule shape configuration parameters")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShapeConfig::m_height, "Height", "End to end height of capsule, this includes the cylinder and both caps")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CapsuleShapeConfig::m_height,
+                        "Height",
+                        "End to end height of capsule, this includes the cylinder and both caps")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShapeConfig::m_radius, "Radius", "Radius of capsule")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                        ;
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CapsuleShapeConfig::m_translationOffset,
+                        "Translation Offset",
+                        "Translation offset of shape relative to its entity")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f);
             }
         }
 
@@ -165,7 +176,7 @@ namespace LmbrCentral
             // Deprecate: CapsuleColliderComponent -> CapsuleShapeComponent
             serializeContext->ClassDeprecate(
                 "CapsuleColliderComponent",
-                "{D1F746A9-FC24-48E4-88DE-5B3122CB6DE7}",
+                AZ::Uuid("{D1F746A9-FC24-48E4-88DE-5B3122CB6DE7}"),
                 &ClassConverters::DeprecateCapsuleColliderComponent
                 );
 
@@ -239,13 +250,13 @@ namespace LmbrCentral
             float oldHeight = 0.f;
             float oldRadius = 0.f;
 
-            int oldIndex = classElement.FindElement(AZ_CRC("Height", 0xf54de50f));
+            int oldIndex = classElement.FindElement(AZ_CRC_CE("Height"));
             if (oldIndex != -1)
             {
                 classElement.GetSubElement(oldIndex).GetData<float>(oldHeight);
             }
 
-            oldIndex = classElement.FindElement(AZ_CRC("Radius", 0x3b7c6e5a));
+            oldIndex = classElement.FindElement(AZ_CRC_CE("Radius"));
             if (oldIndex != -1)
             {
                 classElement.GetSubElement(oldIndex).GetData<float>(oldRadius);
@@ -298,7 +309,7 @@ namespace LmbrCentral
 
             // Cache the Configuration
             CapsuleShapeConfig configuration;
-            int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (configIndex != -1)
             {
                 classElement.GetSubElement(configIndex).GetData<CapsuleShapeConfig>(configuration);

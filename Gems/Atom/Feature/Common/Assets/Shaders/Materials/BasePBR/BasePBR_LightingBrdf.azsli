@@ -1,0 +1,48 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the GetDiffuseLighting & GetSpecularLighting functions in this file without making them the final functions
+// used in your shader. Simply #define GetDiffuseLighting & GetSpecularLighting to your custom definition before including this file
+//
+#ifndef GetDiffuseLighting
+#define GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight)       GetDiffuseLighting_BasePBR(surface, lightingData, lightIntensity, dirToLight)
+#endif
+
+#ifndef GetSpecularLighting
+#define GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight)      GetSpecularLighting_BasePBR(surface, lightingData, lightIntensity, dirToLight)
+#endif
+
+#include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+
+#ifndef LightingData
+#error LightingData must be defined before including this file.
+#endif
+
+#ifndef Surface
+#error Surface must be defined before including this file.
+#endif
+
+real3 GetDiffuseLighting_BasePBR(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
+{
+    real3 diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
+    diffuse *= lightIntensity;
+    return diffuse;
+}
+
+real3 GetSpecularLighting_BasePBR(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
+{
+#if ENABLE_MOBILEBRDF    
+    real3 specular = SpecularGGXMobile(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessA2, surface.roughnessA, surface.roughnessLinear); 
+#else
+    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
+#endif
+    specular *= lightIntensity;
+    return specular;
+}

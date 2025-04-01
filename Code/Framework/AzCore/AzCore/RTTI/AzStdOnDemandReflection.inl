@@ -13,6 +13,8 @@
 #include <AzCore/ScriptCanvas/ScriptCanvasOnDemandNames.h>
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflectionLuaFunctions.inl>
+#include <AzCore/std/optional.h>
+#include <AzCore/std/typetraits/has_member_function.h>
 
 #ifndef AZ_USE_CUSTOM_SCRIPT_BIND
 struct lua_State;
@@ -38,19 +40,11 @@ namespace AZStd
     class unordered_set;
     template<AZStd::size_t NumBits>
     class bitset;
-    template<class Element, class Traits, class Allocator>
-    class basic_string;
-    template<class Element>
-    struct char_traits;
 
     template<class T>
     class intrusive_ptr;
     template<class T>
     class shared_ptr;
-
-    // Wrapper types
-    template <typename T>
-    class optional;
 }
 
 namespace AZ
@@ -60,7 +54,7 @@ namespace AZ
 
     namespace OnDemandLuaFunctions
     {
-        inline void AnyToLua(lua_State* lua, BehaviorValueParameter& param);
+        inline void AnyToLua(lua_State* lua, BehaviorArgument& param);
     }
     namespace ScriptCanvasOnDemandReflection
     {
@@ -74,45 +68,11 @@ namespace AZ
     namespace CommonOnDemandReflections
     {
         void ReflectCommonString(ReflectContext* context);
+        void ReflectCommonFixedString(ReflectContext* context);
         void ReflectCommonStringView(ReflectContext* context);
         void ReflectStdAny(ReflectContext* context);
         void ReflectVoidOutcome(ReflectContext* context);
     }
-    /// OnDemand reflection for AZStd::basic_string
-    template<class Element, class Traits, class Allocator>
-    struct OnDemandReflection< AZStd::basic_string<Element, Traits, Allocator> >
-    {
-        using ContainerType = AZStd::basic_string<Element, Traits, Allocator>;
-        using SizeType = typename ContainerType::size_type;
-        using ValueType = typename ContainerType::value_type;
-
-        static void Reflect(ReflectContext* context)
-        {
-            constexpr bool is_string = AZStd::is_same_v<Element, char> && AZStd::is_same_v<Traits, AZStd::char_traits<char>>
-                    && AZStd::is_same_v<Allocator, AZStd::allocator>;
-            if constexpr(is_string)
-            {
-                CommonOnDemandReflections::ReflectCommonString(context);
-            }
-            static_assert (is_string, "Unspecialized basic_string<> template reflection requested.");
-        }
-    };
-
-    /// OnDemand reflection for AZStd::basic_string_view
-    template<class Element, class Traits>
-    struct OnDemandReflection< AZStd::basic_string_view<Element, Traits> >
-    {
-        using ContainerType = AZStd::basic_string_view<Element, Traits>;
-        using SizeType = typename ContainerType::size_type;
-        using ValueType = typename ContainerType::value_type;
-
-        static void Reflect(ReflectContext* context)
-        {
-            constexpr bool is_common = AZStd::is_same_v<Element,char> && AZStd::is_same_v<Traits,AZStd::char_traits<char>>;
-            static_assert (is_common, "Unspecialized basic_string_view<> template reflection requested.");
-            CommonOnDemandReflections::ReflectCommonStringView(context);
-        }
-    };
 
     /// OnDemand reflection for AZStd::intrusive_ptr
     template<class T>
@@ -146,6 +106,8 @@ namespace AZ
             if (behaviorContext)
             {
                 behaviorContext->Class<ContainerType>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))
@@ -157,6 +119,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CustomConstructor)
                     ->template WrappingMember<typename ContainerType::value_type>(&ContainerType::get)
                     ->Method("get", &ContainerType::get)
+                    ->Method("__bool__", [](ContainerType* self) { return static_cast<bool>(self); })
                     ;
             }
         }
@@ -193,6 +156,8 @@ namespace AZ
             if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
                 behaviorContext->Class<ContainerType>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))
@@ -204,6 +169,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CustomConstructor)
                     ->template WrappingMember<typename ContainerType::value_type>(&ContainerType::get)
                     ->Method("get", &ContainerType::get)
+                    ->Method("__bool__", [](ContainerType* self) { return static_cast<bool>(self); })
                     ;
             }
         }
@@ -259,10 +225,10 @@ namespace AZ
         auto behaviorForwardingFunction = [function](T... args)
         {
             AZStd::tuple<decay_array<T>...> lvalueWrapper(AZStd::forward<T>(args)...);
-            using BVPReserveArray = AZStd::array<AZ::BehaviorValueParameter, sizeof...(args)>;
+            using BVPReserveArray = AZStd::array<AZ::BehaviorArgument, sizeof...(args)>;
             auto MakeBVPArrayFunction = [](auto&&... element)
             {
-                return BVPReserveArray{ {AZ::BehaviorValueParameter{&element}...} };
+                return BVPReserveArray{ {AZ::BehaviorArgument{&element}...} };
             };
             BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
             function(nullptr, argsBVPs.data(), sizeof...(T));
@@ -405,7 +371,9 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, &IsScriptEventType)
                     ->Method("AssignAt", &AssignAt, { { {}, { "Index", "The index at which to assign the element to, resizes the container if necessary", nullptr, BehaviorParameter::Traits::TR_INDEX } } })
                         ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::IndexWrite)
-                    ->Method("Erase_VM", &ErasePost_VM, { { { "Container", "The container from which to delete", nullptr, {} }, { "Key", "The key to delete", nullptr, {} } } })
+                    ->Method("Erase_VM", &ErasePost_VM,
+                        { { { "Container", "The container from which to delete", nullptr, {} },
+                            { "Key", "The key to delete", nullptr, {} } } })
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Erase", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("EraseCheck_VM", {}, "Out", "Key Not Found", true))
@@ -415,46 +383,64 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->template Method<void(ContainerType::*)(typename ContainerType::const_reference)>("push_back", &ContainerType::push_back)
                         ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Method("PushBack_VM", &PushBack_VM, { { { "Container", "The container into which to add an element to", nullptr, {} }, { "Value", "The value to be added", nullptr, {} } } })
+                    ->Method("PushBack_VM", &PushBack_VM,
+                        { { { "Container", "The container into which to add an element to", nullptr, {} },
+                            { "Value", "The value to be added", nullptr, {} } } })
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Add Element at End", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "ContainerGroup", "" }, { "ContainerGroup" }))
                     ->Method("pop_back", &ContainerType::pop_back)
                         ->Attribute(AZ::Script::Attributes::Deprecated, true)
                     ->template Method<typename ContainerType::reference(ContainerType::*)(typename ContainerType::size_type)>
-                        ("at", &ContainerType::at, {{ { "Index", "The index to read from", nullptr, BehaviorParameter::Traits::TR_INDEX } }})->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::IndexRead)
+                        ("at", &ContainerType::at, {{ { "Index", "The index to read from", nullptr, BehaviorParameter::Traits::TR_INDEX } }})
+                        ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::IndexRead)
                         ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->template Method<typename ContainerType::reference(ContainerType::*)(typename ContainerType::size_type)>(k_accessElementNameUnchecked, &ContainerType::at, { { { "Index", "The index to read from", nullptr } } })
+                    ->template Method<typename ContainerType::reference (ContainerType::*)(typename ContainerType::size_type)>(
+                        k_accessElementNameUnchecked, &ContainerType::at,
+                        { "Container", "The container to get element from", nullptr, {} },
+                        { { { "Index", "The index to read from", nullptr, {} } } })
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Element", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("Has Key", {}, "Out", "Key Not Found"))
                     ->Method("size", [](ContainerType& thisPtr) { return aznumeric_cast<int>(thisPtr.size()); })
                         ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Length)
-                    ->Method("GetSize", [](ContainerType& thisPtr) { return aznumeric_cast<int>(thisPtr.size()); }, { { { "Container", "The container to get the size of", nullptr, {} } } })
+                    ->Method("GetSize", [](ContainerType& thisPtr) { return aznumeric_cast<int>(thisPtr.size()); },
+                        { { { "Container", "The container to get the size of", nullptr, {} } } })
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Size", "Containers"))
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                     ->Method("clear", &ContainerType::clear)
                     ->template Method<typename ContainerType::reference(ContainerType::*)(typename ContainerType::size_type)>(k_accessElementName, &ContainerType::at, { { { "Index", "The index to read from", nullptr, BehaviorParameter::Traits::TR_INDEX } } })
                     ->Method("Capacity", &ContainerType::capacity)
-                    ->Method("Clear", [](ContainerType& thisContainer)->ContainerType& { thisContainer.clear(); return thisContainer; }, { { { "Container", "The container to clear", nullptr, {} } } })
+                    ->Method("Clear", [](ContainerType& thisContainer)->ContainerType& { thisContainer.clear(); return thisContainer; },
+                        { { { "Container", "The container to clear", nullptr, {} } } })
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Clear All Elements", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "ContainerGroup" }, { "ContainerGroup" }))
-                    ->Method("Empty", &ContainerType::empty, { { { "Container", "The container to check if it is empty", nullptr, {} } } })
+                    ->Method("Empty", &ContainerType::empty,
+                        { "Container", "The container to check if it is empty", nullptr, {} }, {})
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Is Empty", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, emptyBranchInfo)
-                    ->Method("NotEmpty", [](ContainerType& thisPtr) { return !thisPtr.empty(); }, { { { "Container", "The container to check if it is not empty", nullptr, {} } } })
+                    ->Method("NotEmpty", [](ContainerType& thisPtr) { return !thisPtr.empty(); },
+                        { { { "Container", "The container to check if it is not empty", nullptr, {} } } })
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Has Elements", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, hasElementsBranchInfo)
-                    ->template Method<typename ContainerType::reference(ContainerType::*)()>("Back", &ContainerType::back, { { { "Container", "The container to get the last element from", nullptr, {} } } })
+                    ->template Method<typename ContainerType::reference(ContainerType::*)()>("Back", &ContainerType::back,
+                        { "Container", "The container to get the last element from", nullptr, {} }, {})
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Last Element", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("NotEmpty", {}, "Out", "Empty"))
-                    ->template Method<typename ContainerType::reference(ContainerType::*)()>("Front", &ContainerType::front, { { { "Container", "The container to get the first element from", nullptr, {} } } })
+                    ->template Method<typename ContainerType::reference(ContainerType::*)()>("Front", &ContainerType::front,
+                        { "Container", "The container to get the first element from", nullptr, {} }, {})
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get First Element", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("NotEmpty", {}, "Out", "Empty"))
-                    ->Method("Has Key", &HasKey, { { { "Container", "The container into which to check if the given key exists", nullptr, {} }, { "Key", "The key to check for", nullptr, {} } } })
+                    ->Method("Has Key", &HasKey,
+                        { { { "Container", "The container into which to check if the given key exists", nullptr, {} },
+                            { "Key", "The key to check for", nullptr, {} } } })
+                        ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Has Key", "Containers"))
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
-                    ->Method("Insert", &Insert, { { { "Container", "The container into which to insert the value", nullptr, {} }, { "Index", "The index at which to insert the value", nullptr, {} }, { "Value", "The value that is to be inserted", nullptr, {} } } })
+                    ->Method("Insert", &Insert,
+                        { { { "Container", "The container into which to insert the value", nullptr, {} },
+                            { "Index", "The index at which to insert the value", nullptr, {} },
+                            { "Value", "The value that is to be inserted", nullptr, {} } } })
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Insert", "Containers"))
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
@@ -722,12 +708,15 @@ namespace AZ
 
                 BehaviorContext::ClassBuilder<ContainerType> builder = behaviorContext->Class<ContainerType>();
                 builder->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AttributeIsValid::IfPresent)
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::ScriptCanvasAttributes::ReturnValueTypesFunction, unpackFunctionHolder)
                     ->Attribute(AZ::ScriptCanvasAttributes::TupleConstructorFunction, constructorHolder)
-                    ;
+                    ->template Constructor<T...>()
+                ;
 
                 ReflectUnpackMethods<T...>(builder, AZStd::make_index_sequence<sizeof...(T)>{});
 
@@ -1077,7 +1066,7 @@ namespace AZ
                     AZ_Assert(false, "Optional does not have a value, a default constructed value will be returned instead");
                     return typename OptionalType::value_type{};
                 };
-                auto valueOrFunc = [](OptionalType* optionalInst, const typename OptionalType::value_type& defaultValue) -> const typename OptionalType::value_type&
+                auto valueOrFunc = [](OptionalType* optionalInst, const typename OptionalType::value_type& defaultValue) -> typename OptionalType::value_type
                 {
                     return optionalInst->has_value() ? optionalInst->value() : defaultValue;
                 };

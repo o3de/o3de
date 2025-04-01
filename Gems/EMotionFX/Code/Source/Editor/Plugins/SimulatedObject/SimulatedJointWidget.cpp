@@ -21,7 +21,7 @@
 #include <Editor/ObjectEditor.h>
 #include <Editor/NotificationWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/SimulatedObjectHelpers.h>
 #include <Editor/SkeletonModel.h>
@@ -92,23 +92,23 @@ namespace EMotionFX
                 const void* instance = pNode->GetInstance(instanceIndex);
 
                 const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
-                if (elementData->m_nameCrc == AZ_CRC("objectName", 0xd403db79))
+                if (elementData->m_nameCrc == AZ_CRC_CE("objectName"))
                 {
                     command->SetOldObjectName(*static_cast<const AZStd::string*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("gravityFactor", 0x23584906))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("gravityFactor"))
                 {
                     command->SetOldGravityFactor(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("stiffnessFactor", 0xbf262b07))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("stiffnessFactor"))
                 {
                     command->SetOldStiffnessFactor(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("dampingFactor", 0x388a3234))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("dampingFactor"))
                 {
                     command->SetOldDampingFactor(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("colliderTags", 0xb337393d))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("colliderTags"))
                 {
                     command->SetOldColliderTags(*static_cast<const AZStd::vector<AZStd::string>*>(instance));
                 }
@@ -133,43 +133,43 @@ namespace EMotionFX
                 const void* instance = pNode->GetInstance(instanceIndex);
 
                 const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
-                if (elementData->m_nameCrc == AZ_CRC("coneAngleLimit", 0x355562ed))
+                if (elementData->m_nameCrc == AZ_CRC_CE("coneAngleLimit"))
                 {
                     command->SetOldConeAngleLimit(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("mass", 0x6c035b66))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("mass"))
                 {
                     command->SetOldMass(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("stiffness", 0x89379000))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("stiffness"))
                 {
                     command->SetOldStiffness(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("damping", 0x440e3a6a))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("damping"))
                 {
                     command->SetOldDamping(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("gravityFactor", 0x23584906))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("gravityFactor"))
                 {
                     command->SetOldGravityFactor(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("friction", 0x120c180b))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("friction"))
                 {
                     command->SetOldFriction(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("pinned", 0xe527e5e7))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("pinned"))
                 {
                     command->SetOldPinned(*static_cast<const bool*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("colliderExclusionTags", 0xdbaea6e9))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("colliderExclusionTags"))
                 {
                     command->SetOldColliderExclusionTags(*static_cast<const AZStd::vector<AZStd::string>*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("autoExcludeMode", 0x8e8f8066))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("autoExcludeMode"))
                 {
                     command->SetOldAutoExcludeMode(*static_cast<const SimulatedJoint::AutoExcludeMode*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("autoExcludeGeometric", 0x1aa4f9b6))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("autoExcludeGeometric"))
                 {
                     command->SetOldGeometricAutoExclusion(*static_cast<const bool*>(instance));
                 }
@@ -190,23 +190,23 @@ namespace EMotionFX
                 const void* instance = pNode->GetInstance(instanceIndex);
 
                 const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
-                if (elementData->m_nameCrc == AZ_CRC("objectName", 0xd403db79))
+                if (elementData->m_nameCrc == AZ_CRC_CE("objectName"))
                 {
                     command->SetObjectName(*static_cast<const AZStd::string*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("gravityFactor", 0x23584906))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("gravityFactor"))
                 {
                     command->SetGravityFactor(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("stiffnessFactor", 0xbf262b07))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("stiffnessFactor"))
                 {
                     command->SetStiffnessFactor(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("dampingFactor", 0x388a3234))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("dampingFactor"))
                 {
                     command->SetDampingFactor(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("colliderTags", 0xb337393d))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("colliderTags"))
                 {
                     AZStd::string commandString;
 
@@ -269,43 +269,43 @@ namespace EMotionFX
                 const void* instance = pNode->GetInstance(instanceIndex);
 
                 const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
-                if (elementData->m_nameCrc == AZ_CRC("coneAngleLimit", 0x355562ed))
+                if (elementData->m_nameCrc == AZ_CRC_CE("coneAngleLimit"))
                 {
                     command->SetConeAngleLimit(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("mass", 0x6c035b66))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("mass"))
                 {
                     command->SetMass(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("stiffness", 0x89379000))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("stiffness"))
                 {
                     command->SetStiffness(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("damping", 0x440e3a6a))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("damping"))
                 {
                     command->SetDamping(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("gravityFactor", 0x23584906))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("gravityFactor"))
                 {
                     command->SetGravityFactor(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("friction", 0x120c180b))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("friction"))
                 {
                     command->SetFriction(*static_cast<const float*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("pinned", 0xe527e5e7))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("pinned"))
                 {
                     command->SetPinned(*static_cast<const bool*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("colliderExclusionTags", 0xdbaea6e9))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("colliderExclusionTags"))
                 {
                     command->SetColliderExclusionTags(*static_cast<const AZStd::vector<AZStd::string>*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("autoExcludeMode", 0x8e8f8066))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("autoExcludeMode"))
                 {
                     command->SetAutoExcludeMode(*static_cast<const SimulatedJoint::AutoExcludeMode*>(instance));
                 }
-                else if (elementData->m_nameCrc == AZ_CRC("autoExcludeGeometric", 0x1aa4f9b6))
+                else if (elementData->m_nameCrc == AZ_CRC_CE("autoExcludeGeometric"))
                 {
                     command->SetGeometricAutoExclusion(*static_cast<const bool*>(instance));
                 }

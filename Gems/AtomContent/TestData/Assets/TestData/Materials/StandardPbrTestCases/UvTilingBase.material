@@ -1,0 +1,12 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "uv.offsetU": 0.10000000149011612,
+        "uv.offsetV": 0.15000000596046448,
+        "uv.rotateDegrees": 38.181819915771484,
+        "uv.scale": 1.5,
+        "uv.tileU": 0.5,
+        "uv.tileV": 2.0
+    }
+}

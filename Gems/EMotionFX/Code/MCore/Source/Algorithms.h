@@ -11,6 +11,8 @@
 // include required headers
 #include "StandardHeaders.h"
 #include "FastMath.h"
+#include <MCore/Source/CompressedQuaternion.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -62,6 +64,13 @@ namespace MCore
     float MCORE_API DistanceToEdge(const AZ::Vector2& edgePointA, const AZ::Vector2& edgePointB, const AZ::Vector2& testPoint);
     AZ::Vector2 MCORE_API ClosestPointToPoly(const AZ::Vector2* polyPoints, size_t numPoints, const AZ::Vector2& testPoint);
 
+    // @param data The original data that we want to apply moving-average smooth algorithm on
+    // @param sampleNum The sample number we will take from each data point.
+    // When sampleNum = 1, we are taking 1 sample before the data point, and 1 sample after the data point, 3 samples point in total (include the original data point).
+    // And calculate the average.
+    // When sampleNum = 2, we are taking 5 samples point in total and take the average (2 before, 1 original and 2 after).
+    void MCORE_API MovingAverageSmooth(AZStd::vector<AZ::Vector3>& data, size_t sampleNum);
+    void MCORE_API MovingAverageSmooth(AZStd::vector<MCore::Compressed16BitQuaternion>& data, size_t sampleNum);
 
     /**
      * Calculate the cube root, which basically is pow(x, 1/3).

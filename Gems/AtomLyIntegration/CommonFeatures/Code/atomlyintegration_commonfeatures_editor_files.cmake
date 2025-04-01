@@ -18,12 +18,16 @@ set(FILES
     Source/CoreLights/EditorAreaLightComponent.cpp
     Source/CoreLights/EditorDirectionalLightComponent.h
     Source/CoreLights/EditorDirectionalLightComponent.cpp
+    Source/CubeMapCapture/EditorCubeMapRenderer.h
+    Source/CubeMapCapture/EditorCubeMapRenderer.cpp
+    Source/CubeMapCapture/EditorCubeMapCaptureComponent.h
+    Source/CubeMapCapture/EditorCubeMapCaptureComponent.cpp
+    Source/Debug/RayTracingDebugEditorComponent.cpp
+    Source/Debug/RayTracingDebugEditorComponent.h
+    Source/Debug/RenderDebugEditorComponent.cpp
+    Source/Debug/RenderDebugEditorComponent.h
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
-    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h
-    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.cpp
-    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h
-    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.cpp
     Source/Grid/EditorGridComponent.h
     Source/Grid/EditorGridComponent.cpp
     Source/ImageBasedLights/EditorImageBasedLightComponent.h
@@ -60,6 +64,16 @@ set(FILES
     Source/PostProcess/EditorPostFxLayerComponent.h
     Source/PostProcess/Bloom/EditorBloomComponent.cpp
     Source/PostProcess/Bloom/EditorBloomComponent.h
+    Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.cpp
+    Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h
+    Source/PostProcess/PaniniProjection/EditorPaniniProjectionComponent.cpp
+    Source/PostProcess/PaniniProjection/EditorPaniniProjectionComponent.h
+    Source/PostProcess/FilmGrain/EditorFilmGrainComponent.cpp
+    Source/PostProcess/FilmGrain/EditorFilmGrainComponent.h
+    Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
+    Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h
+    Source/PostProcess/Vignette/EditorVignetteComponent.cpp
+    Source/PostProcess/Vignette/EditorVignetteComponent.h
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.cpp
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.h
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.cpp
@@ -86,8 +100,12 @@ set(FILES
     Source/ScreenSpace/EditorDeferredFogComponent.cpp
     Source/ReflectionProbe/EditorReflectionProbeComponent.h
     Source/ReflectionProbe/EditorReflectionProbeComponent.cpp
+    Source/SpecularReflections/EditorSpecularReflectionsComponent.h
+    Source/SpecularReflections/EditorSpecularReflectionsComponent.cpp
     Source/SkinnedMesh/SkinnedMeshDebugDisplay.h
     Source/SkinnedMesh/SkinnedMeshDebugDisplay.cpp
+    Source/SkyAtmosphere/EditorSkyAtmosphereComponent.cpp
+    Source/SkyAtmosphere/EditorSkyAtmosphereComponent.h
     Source/SkyBox/EditorHDRiSkyboxComponent.cpp
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp

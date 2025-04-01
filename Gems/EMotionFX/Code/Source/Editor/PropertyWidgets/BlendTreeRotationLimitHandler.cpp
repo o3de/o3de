@@ -13,10 +13,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitHandler, EditorAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitContainerHandler, EditorAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(RotationLimitWdget, EditorAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(RotationLimitContainerWdget, EditorAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitHandler, EditorAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitContainerHandler, EditorAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(RotationLimitWdget, EditorAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(RotationLimitContainerWdget, EditorAllocator);
 
     const int RotationLimitWdget::s_decimalPlaces = 1;
 
@@ -119,7 +119,7 @@ namespace EMotionFX
 
     AZ::u32 BlendTreeRotationLimitHandler::GetHandlerName() const
     {
-        return AZ_CRC("BlendTreeRotationLimitHandler", 0xc1af4ea8);
+        return AZ_CRC_CE("BlendTreeRotationLimitHandler");
     }
 
     void BlendTreeRotationLimitHandler::ConsumeAttribute(RotationLimitWdget* /*widget*/, AZ::u32 /*attrib*/, AzToolsFramework::PropertyAttributeReader* /*attrValue*/, const char* /*debugName*/)
@@ -165,7 +165,7 @@ namespace EMotionFX
 
     AZ::u32 BlendTreeRotationLimitContainerHandler::GetHandlerName() const
     {
-        return AZ_CRC("BlendTreeRotationLimitContainerHandler", 0xb2c775fb);
+        return AZ_CRC_CE("BlendTreeRotationLimitContainerHandler");
     }
 
     void BlendTreeRotationLimitContainerHandler::ConsumeAttribute(RotationLimitContainerWdget* /*widget*/, AZ::u32 /*attrib*/, AzToolsFramework::PropertyAttributeReader* /*attrValue*/, const char* /*debugName*/)

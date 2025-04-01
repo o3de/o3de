@@ -20,11 +20,12 @@ DECLARE_AZ_UNIT_TEST_MAIN();
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
+
 #if defined(AZ_TESTS_ENABLED)
     INVOKE_AZ_UNIT_TEST_MAIN();
 #endif
 
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     int runSuccess = 0;
 
     {
@@ -48,6 +49,5 @@ int main(int argc, char* argv[])
         }
     }
 
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     return runSuccess;
 }

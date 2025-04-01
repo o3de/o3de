@@ -1,0 +1,71 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+set(FILES
+    Include/Multiplayer/AutoGen/AutoComponentTypes_Header.jinja
+    Include/Multiplayer/AutoGen/AutoComponentTypes_Source.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Common.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Header.jinja
+    Include/Multiplayer/AutoGen/AutoComponent_Source.jinja
+    Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
+    Include/Multiplayer/Components/NetworkHierarchyChildComponent.h
+    Include/Multiplayer/Components/NetworkHierarchyRootComponent.h
+    Include/Multiplayer/Components/NetworkHierarchyBus.h
+    Include/Multiplayer/Components/NetworkCharacterComponent.h
+    Include/Multiplayer/Components/NetworkDebugPlayerIdComponent.h
+    Include/Multiplayer/Components/NetworkHitVolumesComponent.h
+    Include/Multiplayer/Components/NetworkRigidBodyComponent.h
+    Include/Multiplayer/Components/NetworkTransformComponent.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl
+    Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
+    Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml
+    Source/AutoGen/NetworkDebugPlayerIdComponent.AutoComponent.xml
+    Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml
+    Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml
+    Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
+    Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.xml
+    Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.xml
+    Source/Components/LocalPredictionPlayerInputComponent.cpp
+    Source/Components/NetworkHierarchyChildComponent.cpp
+    Source/Components/NetworkHierarchyRootComponent.cpp
+    Source/Components/NetworkCharacterComponent.cpp
+    Source/Components/NetworkDebugPlayerIdComponent.cpp
+    Source/Components/NetworkHitVolumesComponent.cpp
+    Source/Components/NetworkRigidBodyComponent.cpp
+    Source/Components/NetworkTransformComponent.cpp
+    Source/ConnectionData/ClientToServerConnectionData.cpp
+    Source/ConnectionData/ClientToServerConnectionData.h
+    Source/ConnectionData/ClientToServerConnectionData.inl
+    Source/ConnectionData/ServerToClientConnectionData.cpp
+    Source/ConnectionData/ServerToClientConnectionData.h
+    Source/ConnectionData/ServerToClientConnectionData.inl
+    Source/Editor/MultiplayerEditorConnection.cpp
+    Source/Editor/MultiplayerEditorConnection.h
+    Source/MultiplayerSystemComponent.cpp
+    Source/MultiplayerSystemComponent.h
+    Source/NetworkEntity/NetworkEntityAuthorityTracker.cpp
+    Source/NetworkEntity/NetworkEntityAuthorityTracker.h
+    Source/NetworkEntity/NetworkEntityManager.cpp
+    Source/NetworkEntity/NetworkEntityManager.h
+    Source/NetworkEntity/NetworkSpawnableLibrary.cpp
+    Source/NetworkEntity/NetworkSpawnableLibrary.h
+    Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
+    Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
+    Source/NetworkEntity/EntityReplication/PropertyPublisher.cpp
+    Source/NetworkEntity/EntityReplication/PropertyPublisher.h
+    Source/NetworkEntity/EntityReplication/PropertySubscriber.cpp
+    Source/NetworkEntity/EntityReplication/PropertySubscriber.h
+    Source/NetworkTime/NetworkTime.cpp
+    Source/NetworkTime/NetworkTime.h
+    Source/ReplicationWindows/NullReplicationWindow.cpp
+    Source/ReplicationWindows/NullReplicationWindow.h
+    Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
+    Source/ReplicationWindows/ServerToClientReplicationWindow.h
+)

@@ -18,7 +18,7 @@ namespace ImguiAtom
     {
     public:
         AZ_RTTI(ImguiAtomModule, "{E3CE5991-30B5-4B04-BF79-516DDBD4D233}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ImguiAtomModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImguiAtomModule, AZ::SystemAllocator);
 
         ImguiAtomModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace ImguiAtom
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ImguiAtom::ImguiAtomModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_ImguiAtom, ImguiAtom::ImguiAtomModule)
+#endif

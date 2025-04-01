@@ -6,9 +6,9 @@
  *
  */
 #include <Atom/RPI.Public/Shader/ShaderVariantAsyncLoader.h>
-#include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Console/IConsole.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -16,6 +16,51 @@ namespace AZ
 {
     namespace RPI
     {
+        AZ_CVAR(uint32_t, r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms, 0, nullptr, ConsoleFunctorFlags::Null,
+            "Override the delay between iterations of checking for shader variant assets. 0 means use the default value (1000ms).");
+
+        static Data::AssetId GetShaderVariantAssetUuidFromShaderVariantTreeId(const Data::AssetId& shaderVariantTreeAssetId, const AZ::Name& supervariantName, ShaderVariantStableId stableId)
+        {
+            AZStd::string variantTreeRelativePath;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(variantTreeRelativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, shaderVariantTreeAssetId);
+            if (variantTreeRelativePath.empty())
+            {
+                return {};
+            }
+
+            AZStd::string shaderName; // Just the file name, no extension, no parent directory.
+            if (!AZ::StringFunc::Path::GetFileName(variantTreeRelativePath.c_str(), shaderName))
+            {
+                return {};
+            }
+
+            AZStd::string folderPath;
+            if (!AZ::StringFunc::Path::GetFolderPath(variantTreeRelativePath.c_str(), folderPath))
+            {
+                return {};
+            }
+
+            AZStd::string shaderVariantProductPath;
+
+            if (supervariantName.IsEmpty())
+            {
+                shaderVariantProductPath = AZStd::string::format("%s%s%s_%s_%u.%s",
+                    folderPath.c_str(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING, shaderName.c_str(),
+                    RHI::Factory::Get().GetName().GetCStr(), stableId.GetIndex(), ShaderVariantAsset::Extension);
+            }
+            else
+            {
+                shaderVariantProductPath = AZStd::string::format("%s%s%s-%s_%s_%u.%s",
+                    folderPath.c_str(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING, shaderName.c_str(), supervariantName.GetCStr(),
+                    RHI::Factory::Get().GetName().GetCStr(), stableId.GetIndex(), ShaderVariantAsset::Extension);
+            }
+
+            Data::AssetId variantAssetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(variantAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, shaderVariantProductPath.c_str(), AZ::Uuid(), false);
+
+            return variantAssetId;
+        }
+
         void ShaderVariantAsyncLoader::Init()
         {
             m_isServiceShutdown.store(false);
@@ -35,7 +80,11 @@ namespace AZ
         {
             AZStd::unordered_set<ShaderVariantAsyncLoader::TupleShaderAssetAndShaderVariantId> newShaderVariantPendingRequests;
             AZStd::unordered_set<Data::AssetId> shaderVariantTreePendingRequests;
-            AZStd::unordered_set<Data::AssetId> shaderVariantPendingRequests;
+
+            // first: AssetId of a ShaderVariantAsset
+            // second: AssetId of its corresponding ShaderVariantTreeAsset 
+            AZStd::vector<AZStd::pair<Data::AssetId, Data::AssetId>> shaderVariantPendingRequests;
+
             while (true)
             {
                 //We'll wait here until there's work to do or this service has been shutdown.
@@ -77,19 +126,20 @@ namespace AZ
                         });
                     m_shaderVariantTreePendingRequests.clear();
 
-                    AZStd::for_each(m_shaderVariantPendingRequests.begin(), m_shaderVariantPendingRequests.end(),
-                        [&](const Data::AssetId& assetId)
-                        {
-                            shaderVariantPendingRequests.insert(assetId);
-                        });
-                    m_shaderVariantPendingRequests.clear();
+                    {
+                        shaderVariantPendingRequests.reserve(shaderVariantPendingRequests.size() + m_shaderVariantPendingRequests.size());
+                        AZStd::move(m_shaderVariantPendingRequests.begin(), m_shaderVariantPendingRequests.end(), AZStd::back_inserter(shaderVariantPendingRequests));
+                        m_shaderVariantPendingRequests.clear();
+                    }
+
                 }
 
                 // Time to work hard.
                 auto tupleItor = newShaderVariantPendingRequests.begin();
                 while (tupleItor != newShaderVariantPendingRequests.end())
                 {
-                    auto shaderVariantTreeAsset = GetShaderVariantTreeAsset(tupleItor->m_shaderAsset.GetId());
+                    const auto& shaderAsset = tupleItor->m_shaderAsset;
+                    auto shaderVariantTreeAsset = GetShaderVariantTreeAsset(shaderAsset.GetId());
                     if (shaderVariantTreeAsset)
                     {
                         AZ_Assert(shaderVariantTreeAsset.IsReady(), "shaderVariantTreeAsset is not ready!");
@@ -102,14 +152,14 @@ namespace AZ
                             continue;
                         }
 
-                        // Record the request for metrics.
-                        ShaderMetricsSystem::Get()->RequestShaderVariant(tupleItor->m_shaderAsset.Get(),  tupleItor->m_shaderVariantId, searchResult);
-
-                        uint32_t shaderVariantProductSubId = ShaderVariantAsset::MakeAssetProductSubId(
-                            RHI::Factory::Get().GetAPIUniqueIndex(), tupleItor->m_supervariantIndex.GetIndex(), searchResult.GetStableId());
-                        Data::AssetId shaderVariantAssetId(shaderVariantTreeAsset.GetId().m_guid, shaderVariantProductSubId);
-                        shaderVariantPendingRequests.insert(shaderVariantAssetId);
-                        tupleItor = newShaderVariantPendingRequests.erase(tupleItor);
+                        const auto& superVariantName = shaderAsset->GetSupervariantName(tupleItor->m_supervariantIndex);
+                        Data::AssetId shaderVariantAssetId = GetShaderVariantAssetUuidFromShaderVariantTreeId(shaderVariantTreeAsset.GetId(), superVariantName, searchResult.GetStableId());
+                        if (shaderVariantAssetId.IsValid())
+                        {
+                            AZStd::pair<Data::AssetId, Data::AssetId> pair(shaderVariantAssetId, shaderVariantTreeAsset.GetId());
+                            shaderVariantPendingRequests.emplace_back(AZStd::move(pair));
+                            tupleItor = newShaderVariantPendingRequests.erase(tupleItor);
+                        }
                         continue;
                     }
                     // If we are here the shaderVariantTreeAsset is not ready, but maybe it is already queued for loading,
@@ -132,20 +182,25 @@ namespace AZ
                     }
                 }
 
-                auto variantItor = shaderVariantPendingRequests.begin();
-                while (variantItor != shaderVariantPendingRequests.end())
+                auto assetIdTupleItor = shaderVariantPendingRequests.begin();
+                while (assetIdTupleItor != shaderVariantPendingRequests.end())
                 {
-                    if (TryToLoadShaderVariantAsset(*variantItor))
+                    if (TryToLoadShaderVariantAsset(assetIdTupleItor->first, assetIdTupleItor->second))
                     {
-                        variantItor = shaderVariantPendingRequests.erase(variantItor);
+                        assetIdTupleItor = shaderVariantPendingRequests.erase(assetIdTupleItor);
                     }
                     else
                     {
-                        variantItor++;
+                        assetIdTupleItor++;
                     }
                 }
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1000));
+                AZStd::chrono::milliseconds delay{1000};
+                if (r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms)
+                {
+                    delay = AZStd::chrono::milliseconds{r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms};
+                }
+                AZStd::this_thread::sleep_for(delay);
             }
         }
 
@@ -170,6 +225,7 @@ namespace AZ
             m_shaderVariantPendingRequests.clear();
             m_shaderVariantData.clear();
             m_shaderAssetIdToShaderVariantTreeAssetId.clear();
+            m_shaderVariantAssetIdToShaderVariantTreeAssetId.clear();
         }
 
 
@@ -193,7 +249,7 @@ namespace AZ
         }
 
         bool ShaderVariantAsyncLoader::QueueLoadShaderVariantAsset(
-            const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, SupervariantIndex supervariantIndex)
+            const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, const AZ::Name& supervariantName)
         {
             if (m_isServiceShutdown.load())
             {
@@ -202,12 +258,11 @@ namespace AZ
 
             AZ_Assert(variantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 
-            uint32_t shaderVariantProductSubId =
-                ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), supervariantIndex.GetIndex(), variantStableId);
-            Data::AssetId shaderVariantAssetId(shaderVariantTreeAssetId.m_guid, shaderVariantProductSubId);
+            Data::AssetId shaderVariantAssetId = GetShaderVariantAssetUuidFromShaderVariantTreeId(shaderVariantTreeAssetId, supervariantName, variantStableId);
             {
+                AZStd::pair<Data::AssetId, Data::AssetId> pair(shaderVariantAssetId, shaderVariantTreeAssetId);
                 AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
-                m_shaderVariantPendingRequests.push_back(shaderVariantAssetId);
+                m_shaderVariantPendingRequests.emplace_back(AZStd::move(pair));
             }
             m_workCondition.notify_one();
             return true;
@@ -242,11 +297,8 @@ namespace AZ
                 shaderVariantTreeAsset->FindVariantStableId(shaderAsset->GetShaderOptionGroupLayout(), shaderVariantId);
             if (searchResult.IsRoot())
             {
-                return shaderAsset->GetRootVariant();
+                return shaderAsset->GetRootVariantAsset();
             }
-
-            // Record the request for metrics.
-            ShaderMetricsSystem::Get()->RequestShaderVariant(shaderAsset.Get(), shaderVariantId, searchResult);
 
             return GetShaderVariantAsset(shaderVariantTreeAsset.GetId(), searchResult.GetStableId(), supervariantIndex);
         }
@@ -292,9 +344,8 @@ namespace AZ
         {
             AZ_Assert(variantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 
-            uint32_t shaderVariantProductSubId =
-                ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), supervariantIndex.GetIndex(), variantStableId);
-            Data::AssetId shaderVariantAssetId(shaderVariantTreeAssetId.m_guid, shaderVariantProductSubId);
+            uint32_t subId = ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), supervariantIndex.GetIndex(), variantStableId);
+            ShaderVariantProductSubId shaderVariantProductSubId(subId);
 
             AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
             auto findIt = m_shaderVariantData.find(shaderVariantTreeAssetId);
@@ -304,7 +355,7 @@ namespace AZ
             }
             ShaderVariantCollection& shaderVariantCollection = findIt->second;
             auto& shaderVariantsMap = shaderVariantCollection.m_shaderVariantsMap;
-            auto variantFindIt = shaderVariantsMap.find(shaderVariantAssetId);
+            auto variantFindIt = shaderVariantsMap.find(shaderVariantProductSubId);
             if (variantFindIt == shaderVariantsMap.end())
             {
                 return {};
@@ -312,6 +363,18 @@ namespace AZ
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = variantFindIt->second;
             if (shaderVariantAsset.IsReady())
             {
+                Data::Asset<ShaderVariantAsset> registeredShaderVariantAsset =
+                    AZ::Data::AssetManager::Instance().FindAsset<ShaderVariantAsset>(shaderVariantAsset.GetId(), AZ::Data::AssetLoadBehavior::NoLoad);
+                if (!registeredShaderVariantAsset.GetId().IsValid())
+                {
+                    // The shader variant was removed from the asset database, this would normally happen when the source .shadervariantlist file
+                    // is changed to remove a particular variant. Since it should no longer be available for use, remove it from the local map.
+                    // Note that if we don't handle this special case, the AssetManager will fail to report OnAssetReady if/when this asset appears
+                    // again, which might be a bug in the asset system.
+                    shaderVariantsMap.erase(variantFindIt);
+                    return {};
+                }
+
                 return shaderVariantAsset;
             }
             return {};
@@ -411,14 +474,28 @@ namespace AZ
 
             {
                 AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
-                Data::AssetId shaderVariantTreeAssetId(shaderVariantAsset.GetId().m_guid, 0);
+
+                Data::AssetId shaderVariantTreeAssetId;
+                auto findTreeItor = m_shaderVariantAssetIdToShaderVariantTreeAssetId.find(shaderVariantAsset.GetId());
+                if (findTreeItor != m_shaderVariantAssetIdToShaderVariantTreeAssetId.end())
+                {
+                    shaderVariantTreeAssetId = findTreeItor->second;
+                }
+                else
+                {
+                    AZ_Assert(false, "Was expecting to have a ShaderVariantTreeAsset Id for shader variant asset with id=%s and hint=%s",
+                        shaderVariantAsset.GetId().ToString<AZStd::string>().c_str(), shaderVariantAsset.GetHint().c_str());
+                    return;
+                }
+
                 auto findIt = m_shaderVariantData.find(shaderVariantTreeAssetId);
                 if (findIt != m_shaderVariantData.end())
                 {
                     ShaderVariantCollection& shaderVariantCollection = findIt->second;
                     shaderAssetId = shaderVariantCollection.m_shaderAssetId;
                     auto& shaderVariantMap = shaderVariantCollection.m_shaderVariantsMap;
-                    shaderVariantMap.emplace(shaderVariantAsset.GetId(), shaderVariantAsset);
+                    ShaderVariantProductSubId subId(shaderVariantAsset.GetId().m_subId);
+                    shaderVariantMap.emplace(subId, shaderVariantAsset);
                 }
                 else
                 {
@@ -473,14 +550,28 @@ namespace AZ
 
             {
                 AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
-                Data::AssetId shaderVariantTreeAssetId(shaderVariantAsset.GetId().m_guid, 0);
+                Data::AssetId shaderVariantTreeAssetId;
+                auto findTreeItor = m_shaderVariantAssetIdToShaderVariantTreeAssetId.find(shaderVariantAsset.GetId());
+                if (findTreeItor != m_shaderVariantAssetIdToShaderVariantTreeAssetId.end())
+                {
+                    shaderVariantTreeAssetId = findTreeItor->second;
+                }
+                else
+                {
+                    AZ_Assert(false, "Was expecting to have a ShaderVariantTreeAsset Id for shader variant asset with id=%s and hint=%s",
+                        shaderVariantAsset.GetId().ToString<AZStd::string>().c_str(), shaderVariantAsset.GetHint().c_str());
+                    return;
+                }
+
+                m_shaderVariantAssetIdToShaderVariantTreeAssetId.erase(findTreeItor);
                 auto findIt = m_shaderVariantData.find(shaderVariantTreeAssetId);
                 if (findIt != m_shaderVariantData.end())
                 {
                     ShaderVariantCollection& shaderVariantCollection = findIt->second;
                     shaderAssetId = shaderVariantCollection.m_shaderAssetId;
                     auto& shaderVariantMap = shaderVariantCollection.m_shaderVariantsMap;
-                    auto shaderVariantFindIt = shaderVariantMap.find(shaderVariantAsset.GetId());
+                    ShaderVariantProductSubId subId(shaderVariantAsset.GetId().m_subId);
+                    auto shaderVariantFindIt = shaderVariantMap.find(subId);
                     if (shaderVariantFindIt != shaderVariantMap.end())
                     {
                         shaderVariantMap.erase(shaderVariantFindIt);
@@ -592,14 +683,13 @@ namespace AZ
             return true;
         }
 
-        bool ShaderVariantAsyncLoader::TryToLoadShaderVariantAsset(const Data::AssetId& shaderVariantAssetId)
+        bool ShaderVariantAsyncLoader::TryToLoadShaderVariantAsset(const Data::AssetId& shaderVariantAssetId, const Data::AssetId& shaderVariantTreeAssetId)
         {
             // Will be used to address the notification bus.
             Data::AssetId shaderAssetId;
 
             //If we already loaded such asset let's simply dispatch the notification on the next tick.
             Data::Asset<ShaderVariantAsset> shaderVariantAsset;
-            Data::AssetId shaderVariantTreeAssetId(shaderVariantAssetId.m_guid, 0);
             {
                 AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
                 auto findIt = m_shaderVariantData.find(shaderVariantTreeAssetId);
@@ -608,7 +698,8 @@ namespace AZ
                     ShaderVariantCollection& shaderVariantCollection = findIt->second;
                     shaderAssetId = shaderVariantCollection.m_shaderAssetId;
                     auto& shaderVariantMap = shaderVariantCollection.m_shaderVariantsMap;
-                    auto variantFindIt = shaderVariantMap.find(shaderVariantAssetId);
+                    ShaderVariantProductSubId subId(shaderVariantAssetId.m_subId);
+                    auto variantFindIt = shaderVariantMap.find(subId);
                     if (variantFindIt != shaderVariantMap.end())
                     {
                         shaderVariantAsset = variantFindIt->second;
@@ -653,12 +744,18 @@ namespace AZ
             // We need to preserve a reference to shaderVariantAsset, otherwise the asset load will be cancelled.
             {
                 AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
+
+                // Keep a record. This will make it easy to find the ShaderVariantTreeAssset when OnAssetReady(), OnAssetReloaded(), etc
+                // are called on behalf the ShaderVariantAsset,
+                m_shaderVariantAssetIdToShaderVariantTreeAssetId.emplace(shaderVariantAssetId, shaderVariantTreeAssetId);
+
                 auto findIt = m_shaderVariantData.find(shaderVariantTreeAssetId);
                 if (findIt != m_shaderVariantData.end())
                 {
                     ShaderVariantCollection& shaderVariantCollection = findIt->second;
                     auto& shaderVariantMap = shaderVariantCollection.m_shaderVariantsMap;
-                    shaderVariantMap.emplace(shaderVariantAssetId, shaderVariantAsset);
+                    ShaderVariantProductSubId subId(shaderVariantAssetId.m_subId);
+                    shaderVariantMap.emplace(subId, shaderVariantAsset);
                 }
                 else
                 {

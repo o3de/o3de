@@ -14,7 +14,9 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -2298,10 +2300,9 @@ namespace AZ::StringFunc
 
         void ReplaceExtension(AZStd::string& inout, const char* newExtension /* = nullptr*/)
         {
-            //treat this as a strip
-            if (!newExtension || newExtension[0] == '\0')
+            if (!newExtension)
             {
-                return;
+                newExtension = "";
             }
             AZ::IO::Path path(AZStd::move(inout));
             path.ReplaceExtension(newExtension);
@@ -2320,6 +2321,26 @@ namespace AZ::StringFunc
             }
             return inout;
         }
+
+        AZ::IO::FixedMaxPath MakeUniqueFilenameWithSuffix(const AZ::IO::PathView& basePath, const AZStd::string_view& suffix)
+        {
+            AZ::IO::FixedMaxPath outFilePath(basePath);
+            if (AZ::IO::FileIOBase::GetInstance()->Exists(outFilePath.c_str()))
+            {
+                AZ::IO::PathView extension = basePath.Extension();
+                AZ::IO::PathView stem = basePath.Stem();
+                int value = 1;
+                AZStd::string originalFname;
+                do
+                {
+                    auto uniqueFilename = AZ::IO::FixedMaxPathString::format(
+                        "%.*s%.*s%d%.*s", AZ_STRING_ARG(stem.Native()), AZ_STRING_ARG(suffix), value++, AZ_STRING_ARG(extension.Native()));
+                    outFilePath.ReplaceFilename(AZ::IO::PathView(uniqueFilename));
+                } while (AZ::IO::FileIOBase::GetInstance()->Exists(outFilePath.c_str()));
+            }
+            return outFilePath;
+        }
+
     } // namespace Path
 
     namespace Json

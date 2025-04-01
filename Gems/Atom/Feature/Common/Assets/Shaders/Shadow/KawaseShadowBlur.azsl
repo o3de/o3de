@@ -30,7 +30,9 @@ ShaderResourceGroup FilterPassSrg : SRG_PerPass
 
     // This contains parameters related to filtering.
     StructuredBuffer<FilterParameter> m_filterParameters;
-       
+
+    float m_esmExponent;
+
     // x and y contain the inverse of the texture map resolution, z contains the kawase iteration
     // i.e. a two pass kawase blur passes in 0 for the 1st pass and 1 for the second pass
     float4 m_rcpResolutionAndIteration;

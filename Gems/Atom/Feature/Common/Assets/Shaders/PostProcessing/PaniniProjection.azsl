@@ -1,0 +1,56 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+
+    // Must match the struct in PaniniProjectionPass.cpp
+    struct Constants
+    {
+        uint2 m_outputSize; // texture size of output
+        float2 m_outputCenter; // center of image in pixel coords
+        float m_depth; // factor for modifying projection
+        [[pad_to(16)]]
+    };
+    Constants m_constants;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    if (dispatchThreadID.x >= PassSrg::m_constants.m_outputSize.x || dispatchThreadID.y >= PassSrg::m_constants.m_outputSize.y)
+    {
+        return;
+    }
+    
+    //Original paper: http://tksharpless.net/vedutismo/Pannini/panini.pdf
+    //Where o, p, s, q, l are the origin, new focal point, tangent point of view and panosphere,
+    //intersection of this pixels line of sight and panosphere, and q transformed onto ps parallel to the view, respectively
+    
+    float2 uv = (dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter) / PassSrg::m_constants.m_outputCenter;
+    float d = PassSrg::m_constants.m_depth;
+    
+    // Find ol/os ratio. This will be the same as oq/ox
+    // Note ol and ol/os are the same since os=1, so we will call it ol here since we will be using it below in that context
+    // Use complimentary uv.x^2 to facilitate cropping
+    float ol = 1 / sqrt(1 + (1 - abs(uv.x * uv.x)));
+    
+    // Find ps/pl ratio. This will be the same as pe/pq
+    float pspl = (d + 1) / (d + ol);
+    
+    // Transform coords
+    float2 coords = uv * (ol * pspl);
+    
+    coords = coords * PassSrg::m_constants.m_outputCenter + PassSrg::m_constants.m_outputCenter;
+
+    PassSrg::m_outputColor[dispatchThreadID.xy] = PassSrg::m_inputColor[coords];
+}

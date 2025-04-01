@@ -20,7 +20,7 @@ namespace Multiplayer
         AZ::Interface<INetworkSpawnableLibrary>::Register(this);
         if (auto settingsRegistry{ AZ::SettingsRegistry::Get() }; settingsRegistry != nullptr)
         {
-            auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+            auto LifecycleCallback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
             {
                 BuildSpawnablesList();
             };

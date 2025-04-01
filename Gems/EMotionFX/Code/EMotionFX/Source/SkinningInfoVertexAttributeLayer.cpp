@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SkinningInfoVertexAttributeLayer, MeshAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SkinningInfoVertexAttributeLayer, MeshAllocator)
 
 
     // constructor

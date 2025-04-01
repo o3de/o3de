@@ -39,7 +39,7 @@ namespace ScriptCanvas
                 && m_graphs == other.m_graphs;
         }
 
-        Target::Target(const AzFramework::TargetInfo& info)
+        Target::Target(const AzFramework::RemoteToolsEndpointInfo& info)
             : m_info(info)
         {}
 

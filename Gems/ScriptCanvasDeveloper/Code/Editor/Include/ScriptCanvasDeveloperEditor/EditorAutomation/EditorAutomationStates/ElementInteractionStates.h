@@ -12,7 +12,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/ElementInteractions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationState that will select the specified target
@@ -21,6 +21,7 @@ namespace ScriptCanvasDeveloper
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(SelectSceneElementState, AZ::SystemAllocator)
         SelectSceneElementState(AutomationStateModelId targetId);
         ~SelectSceneElementState() override = default;
 
@@ -41,6 +42,7 @@ namespace ScriptCanvasDeveloper
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(AltClickSceneElementState, AZ::SystemAllocator)
         AltClickSceneElementState(AutomationStateModelId targetId);
         ~AltClickSceneElementState() override = default;
 
@@ -61,6 +63,7 @@ namespace ScriptCanvasDeveloper
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(MouseToNodePropertyEditorState, AZ::SystemAllocator)
         MouseToNodePropertyEditorState(AutomationStateModelId slotId);
         ~MouseToNodePropertyEditorState() override = default;
 

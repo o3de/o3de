@@ -24,18 +24,24 @@ namespace AZ
             {
             public:
                 AZ_RTTI(ScriptProcessorRule, "{E61EDCBC-867A-4A6A-B49D-C87E60D3EC33}", DataTypes::IScriptProcessorRule);
-                AZ_CLASS_ALLOCATOR(ScriptProcessorRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(ScriptProcessorRule, AZ::SystemAllocator)
 
                 ~ScriptProcessorRule() override = default;
 
-                const AZStd::string& GetScriptFilename() const override;
+                inline const AZStd::string& GetScriptFilename() const override
+                {
+                    return m_scriptFilename;
+                }
 
                 inline void SetScriptFilename(AZStd::string scriptFilename)
                 {
                     m_scriptFilename = AZStd::move(scriptFilename);
                 }
 
-                DataTypes::ScriptProcessorFallbackLogic GetScriptProcessorFallbackLogic() const override;
+                inline DataTypes::ScriptProcessorFallbackLogic GetScriptProcessorFallbackLogic() const override
+                {
+                    return m_fallbackLogic;
+                }
 
                 static void Reflect(ReflectContext* context);
 

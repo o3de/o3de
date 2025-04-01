@@ -234,10 +234,9 @@ namespace UnitTest
             }
         }
 
-        void ValidateComponentsDomHasId(const PrefabDomValue& componentsDom, AZ::u64 componentId)
+        void ValidateComponentsDomHasId(const PrefabDomValue& componentsDom, const char* componentName, AZ::u64 componentId)
         {
-            AZStd::string componentValueName = AZStd::string::format("Component_[%llu]", componentId);
-            PrefabDomValueConstReference entityComponentValue = PrefabDomUtils::FindPrefabDomValue(componentsDom, componentValueName.c_str());
+            PrefabDomValueConstReference entityComponentValue = PrefabDomUtils::FindPrefabDomValue(componentsDom, componentName);
             ASSERT_TRUE(entityComponentValue);
 
             PrefabDomValueConstReference entityComponentIdValue =

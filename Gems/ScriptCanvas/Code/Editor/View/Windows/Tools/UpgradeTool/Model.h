@@ -39,9 +39,10 @@ namespace ScriptCanvasEditor
             : public ModelRequestsBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator);
 
             Model();
+            ~Model();
 
             const ModificationResults* GetResults() override;
 
@@ -50,7 +51,7 @@ namespace ScriptCanvasEditor
             void Scan(const ScanConfiguration& config) override;
 
         private:
-            enum class State 
+            enum class State
             {
                 Idle,
                 Scanning,
@@ -61,7 +62,7 @@ namespace ScriptCanvasEditor
             State m_state = State::Idle;
             Log m_log;
 
-            // these two are managed by the same class because the modifer will only operate on the results of the scanner
+            // these two are managed by the same class because the modifier will only operate on the results of the scanner
             AZStd::unique_ptr<Modifier> m_modifier;
             AZStd::unique_ptr<Scanner> m_scanner;
             AZStd::unique_ptr<ScriptCanvas::Grammar::SettingsCache> m_settingsCache;
@@ -77,5 +78,5 @@ namespace ScriptCanvasEditor
             void OnScanComplete();
             void RestoreSettings();
         };
-    }
-}
+    } // namespace VersionExplorer
+} // namespace ScriptCanvasEditor

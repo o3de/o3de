@@ -305,7 +305,7 @@ namespace AzNetworking
             for (int32_t i = 0; i < static_cast<int32_t>(NUM_ELEMENTS); ++i)
             {
                 const double quantized = static_cast<double>(quantizedValues.m_serializeValues[i]);
-                quantizedValues.m_quantizedValues[i] = static_cast<float>(minimumFloat + quantized * convertToFloat);
+                quantizedValues.m_quantizedValues[i] = static_cast<float>(minimumFloat + static_cast<float>(quantized * convertToFloat));
             }
         }
     };

@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/std/string/tokenize.h>
 
 extern "C" {
@@ -114,6 +115,9 @@ void ScriptContextDebug::DisconnectHook()
 void
 ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMethod, EnumProperty enumProperty, void* userData)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     AZ_Assert(enumClass && enumMethod && enumProperty, "Invalid input!");
 
     lua_State* l = m_context.NativeContext();
@@ -238,6 +242,9 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
 void
 ScriptContextDebug::EnumRegisteredGlobals(EnumMethod enumMethod, EnumProperty enumProperty, void* userData)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     lua_State* l = m_context.NativeContext();
     lua_rawgeti(l, LUA_REGISTRYINDEX, AZ_LUA_GLOBALS_TABLE_REF); // load the class table
 
@@ -319,6 +326,9 @@ bool EBusHasHandler(const AZ::BehaviorEBus* bus)
 
 void ScriptContextDebug::EnumRegisteredEBuses(EnumEBus enumEBus, EnumEBusSender enumEBusSender, void* userData)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     AZ::BehaviorContext* behaviorContext = m_context.GetBoundContext();
     if (!behaviorContext)
     {
@@ -510,8 +520,7 @@ ScriptContextDebug::PushCodeCallstack(int stackSuppressCount, int numStackLevels
     // TODO: Move this function to a common ScriptContextDebug.cpp there is no lua dependency here
     if (m_isRecordCallstack && numStackLevels > 0)
     {
-        m_callstack.push_back();
-        CallstackLine& cl = m_callstack.back();
+        CallstackLine& cl = m_callstack.emplace_back();
         cl.m_codeNumStackFrames = numStackLevels; // set non 0 number to indicate a C++ code on the callstack
         if (m_isRecordCodeCallstack)
         {
@@ -549,6 +558,9 @@ ScriptContextDebug::PopCallstack()
 OSString
 ScriptContextDebug::DbgValueToString(int valueIndex)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     lua_State* l = m_context.NativeContext();
     int type = lua_type(l, valueIndex);
     switch (type)
@@ -599,6 +611,9 @@ static ScriptContextDebug::BreakpointId MakeBreakpointId(const char* sourceName,
 //=========================================================================
 void LuaHook(lua_State* l, lua_Debug* ar)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     // Read contexts
     lua_rawgeti(l, LUA_REGISTRYINDEX, AZ_LUA_SCRIPT_CONTEXT_REF);
     ScriptContext* sc = reinterpret_cast<ScriptContext*>(lua_touserdata(l, -1));
@@ -616,8 +631,7 @@ void LuaHook(lua_State* l, lua_Debug* ar)
         // add to callstack
         if (context->m_isRecordCallstack)
         {
-            context->m_callstack.push_back();
-            ScriptContextDebug::CallstackLine& cl = context->m_callstack.back();
+            ScriptContextDebug::CallstackLine& cl = context->m_callstack.emplace_back();
             cl.m_sourceName = ar->source;
             cl.m_functionType = ar->what;
             if (strcmp(ar->what, "main") != 0)
@@ -751,6 +765,9 @@ void LuaHook(lua_State* l, lua_Debug* ar)
 void
 ScriptContextDebug::EnumLocals(EnumLocalCallback& cb)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     if (cb && m_luaDebug)
     {
         lua_State* l = m_context.NativeContext();
@@ -825,7 +842,11 @@ ScriptContextDebug::StepOut()
         }
         else
         {
-            m_stepStackLevel = 0;
+            // -1 forces to exit the current function at the top of the callstack.
+            // This is important, because if set to 0, StepOut would behave like a
+            // StepOver event and that's not the right user experience when using
+            // debuggers.
+            m_stepStackLevel = -1; 
         }
     }
     else
@@ -885,6 +906,9 @@ ScriptContextDebug::RemoveBreakpoint(Breakpoint& bp)
 void
 ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bool isReadOnly)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     lua_State* l = m_context.NativeContext();
     int valueType = lua_type(l, -1);
     value.m_type = static_cast<char>(valueType);
@@ -922,8 +946,7 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
             lua_pushnil(l);
             while (lua_next(l, -2))
             {
-                value.m_elements.push_back();
-                DebugValue& subValue = value.m_elements.back();
+                DebugValue& subValue = value.m_elements.emplace_back();
                 if (lua_type(l, -2) == LUA_TSTRING)
                 {
                     subValue.m_name = lua_tostring(l, -2);
@@ -999,8 +1022,7 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
                     const char* subValueName = lua_tostring(l, -2);
                     if (lua_tocfunction(l, -1) == &Internal::LuaPropertyTagHelper)     // if it's a property
                     {
-                        value.m_elements.push_back();
-                        DebugValue& subValue = value.m_elements.back();
+                        DebugValue& subValue = value.m_elements.emplace_back();
                         subValue.m_name = subValueName;
 
                         //bool isRead = true;
@@ -1032,13 +1054,6 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
                             subValue.m_flags |= DebugValue::FLAG_READ_ONLY;     // it's ready only
                         }
                     }
-                    /*else if (lua_iscfunction(l, -1) && strncmp(subValueName, "__", 2) != 0)
-                    {
-                        value.m_elements.push_back();
-                        DebugValue& subValue = value.m_elements.back();
-                        subValue.m_name = subValueName;
-                        ReadValue(subValue, tablesVisited, isReadOnly);
-                    }*/
                 }
                 lua_pop(l, 1);    // pop the value and leave the key for next iteration
             }
@@ -1064,8 +1079,7 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
     // add the metatable if we have one
     if (showMetatable && lua_getmetatable(l, -1))
     {
-        value.m_elements.push_back();
-        DebugValue& subValue = value.m_elements.back();
+        DebugValue& subValue = value.m_elements.emplace_back();
         subValue.m_flags = DebugValue::FLAG_READ_ONLY; // we should NOT allow any modification of the metatable field.
         subValue.m_name = "__metatable__";
         ReadValue(subValue, tablesVisited, true);
@@ -1080,6 +1094,9 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
 void
 ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, int localIndex, int tableIndex, int userDataStackIndex)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     lua_State* l = m_context.NativeContext();
     int valueTableIndex = -1;
     if (valueName[0] == '[')
@@ -1253,16 +1270,18 @@ ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, i
                                 }
                                 break;
                             case LUA_TNUMBER:
-                                lua_getupvalue(l, -1, 2);
-                                if (lua_isnil(l, -1))
                                 {
-                                    lua_pop(l, 1);
-                                }
-                                else
-                                {
-                                    lua_pushvalue(l, -5);    // copy the user data (this pointer)
-                                    lua_pushnumber(l, static_cast<lua_Number>(strtod(subElement.m_value.c_str(), nullptr)));
-                                    lua_call(l, 2, 0);   // call the setter
+                                    lua_getupvalue(l, -1, 2);
+                                    if (lua_isnil(l, -1))
+                                    {
+                                        lua_pop(l, 1);
+                                    }
+                                    else
+                                    {
+                                        lua_pushvalue(l, -5);    // copy the user data (this pointer)
+                                        lua_pushnumber(l, static_cast<lua_Number>(strtod(subElement.m_value.c_str(), nullptr)));
+                                        lua_call(l, 2, 0);   // call the setter
+                                    }
                                 }
                                 break;
                             case LUA_TBOOLEAN:
@@ -1350,6 +1369,9 @@ ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, i
 bool
 ScriptContextDebug::GetValue(DebugValue& value)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     value.m_elements.clear();
 
     AZStd::vector<AZ::OSString> tokens;
@@ -1454,6 +1476,9 @@ ScriptContextDebug::GetValue(DebugValue& value)
 bool
 ScriptContextDebug::SetValue(const DebugValue& sourceValue)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     AZStd::vector<AZ::OSString> tokens;
     AZStd::tokenize<AZ::OSString>(sourceValue.m_name, ".[] ", tokens);
 
@@ -1479,8 +1504,7 @@ ScriptContextDebug::SetValue(const DebugValue& sourceValue)
 
         for (AZ::OSString& token : tokens)
         {
-            current->m_elements.push_back();
-            current = &(current->m_elements.back());
+            current = &(current->m_elements.emplace_back());
             current->m_name = token;
             current->m_type = LUA_TTABLE;
         }

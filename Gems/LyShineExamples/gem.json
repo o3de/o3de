@@ -1,11 +1,12 @@
 {
     "gem_name": "LyShineExamples",
+    "version": "0.0.0",
     "display_name": "LyShine Examples",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
-    "type": "Asset",
+    "type": "Code",
     "summary": "The LyShine Examples Gem provides example code and assets for LyShine, the runtime UI system and editor for Open 3D Engine projects.",
     "canonical_tags": [
         "Gem"

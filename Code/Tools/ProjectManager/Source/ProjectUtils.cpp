@@ -8,28 +8,30 @@
 
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
+#include <ProjectManager_Traits_Platform.h>
 #include <PythonBindingsInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <QFileDialog>
 #include <QDir>
 #include <QtMath>
-#include <QMessageBox>
 #include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QGuiApplication>
 #include <QProgressDialog>
 #include <QSpacerItem>
+#include <QStandardPaths>
 #include <QGridLayout>
 #include <QTextEdit>
 #include <QByteArray>
 #include <QScrollBar>
 #include <QProgressBar>
 #include <QLabel>
+#include <QStandardPaths>
 
-#include <AzCore/std/chrono/chrono.h>
 
 namespace O3DE::ProjectManager
 {
@@ -150,7 +152,7 @@ namespace O3DE::ProjectManager
 
             for (const QString& directory : original.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
             {
-                if (progressDialog->wasCanceled())
+                if (progressDialog && progressDialog->wasCanceled())
                 {
                     return false;
                 }
@@ -172,10 +174,10 @@ namespace O3DE::ProjectManager
             }
 
             QLocale locale;
-            const float progressDialogRangeHalf = static_cast<float>(qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f);
+            const float progressDialogRangeHalf = progressDialog ? static_cast<float>(qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f) : 0.f;
             for (const QString& file : original.entryList(QDir::Files))
             {
-                if (progressDialog->wasCanceled())
+                if (progressDialog && progressDialog->wasCanceled())
                 {
                     return false;
                 }
@@ -188,6 +190,7 @@ namespace O3DE::ProjectManager
                 }
 
                 // Progress window update
+                if (progressDialog)
                 {
                     // Weight in the number of already copied files as well as the copied bytes to get a better progress indication
                     // for cases combining many small files and some really large files.
@@ -286,25 +289,69 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        bool AddProjectDialog(QWidget* parent)
+        bool RegisterProject(const QString& path, QWidget* parent)
         {
-            QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(parent, QObject::tr("Select Project Directory")));
-            if (!path.isEmpty())
+            auto incompatibleObjectsResult = PythonBindingsInterface::Get()->GetProjectEngineIncompatibleObjects(path);
+
+            AZStd::string errorTitle, generalError, detailedError;
+            if (!incompatibleObjectsResult)
             {
-                return RegisterProject(path);
+                errorTitle = "Failed to check project compatibility";
+                generalError = incompatibleObjectsResult.GetError().first;
+                generalError.append("\nDo you still want to add this project?");
+                detailedError = incompatibleObjectsResult.GetError().second;
+            }
+            else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
+            {
+                // provide a couple more user friendly error messages for uncommon cases
+                if (incompatibleObjects.at(0).contains(EngineJsonFilename.data(), Qt::CaseInsensitive))
+                {
+                    errorTitle = errorTitle.format("Failed to read %s", EngineJsonFilename.data());
+                    generalError = "The projects compatibility with this engine could not be checked because the engine.json could not be read";
+                }
+                else if (incompatibleObjects.at(0).contains(ProjectJsonFilename.data(), Qt::CaseInsensitive))
+                {
+                    errorTitle = errorTitle.format("Invalid project, failed to read %s", ProjectJsonFilename.data());
+                    generalError = "The projects compatibility with this engine could not be checked because the project.json could not be read.";
+                }
+                else
+                {
+                    // could be gems, apis or both
+                    errorTitle = "Project may not be compatible with this engine";
+                    generalError = incompatibleObjects.join("\n").toUtf8().constData();
+                    generalError.append("\nDo you still want to add this project?");
+                }
             }
 
-            return false;
+            if (!generalError.empty())
+            {
+                QMessageBox warningDialog(QMessageBox::Warning, errorTitle.c_str(), generalError.c_str(), QMessageBox::Yes | QMessageBox::No, parent);
+                warningDialog.setDetailedText(detailedError.c_str());
+                if(warningDialog.exec() == QMessageBox::No)
+                {
+                    return false;
+                }
+                AZ_Warning("ProjectManager", false, "Proceeding with project registration after compatibility check failed.");
+            }
+
+            if (auto addProjectResult = PythonBindingsInterface::Get()->AddProject(path, /*force=*/true); !addProjectResult)
+            {
+                DisplayDetailedError(QObject::tr("Failed to add project"), addProjectResult, parent);
+                AZ_Error("ProjectManager", false, "Failed to register project at path '%s'", path.toUtf8().constData());
+                return false;
+            }
+
+            return true;
         }
 
-        bool RegisterProject(const QString& path)
+        bool UnregisterProject(const QString& path, QWidget* parent)
         {
-            return PythonBindingsInterface::Get()->AddProject(path);
-        }
-
-        bool UnregisterProject(const QString& path)
-        {
-            return PythonBindingsInterface::Get()->RemoveProject(path);
+            if (auto result = PythonBindingsInterface::Get()->RemoveProject(path); !result)
+            {
+                DisplayDetailedError("Failed to unregister project", result, parent);
+                return false;
+            }
+            return true;
         }
 
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent)
@@ -330,7 +377,7 @@ namespace O3DE::ProjectManager
             return copyResult;
         }
 
-        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister)
+        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister, bool showProgress)
         {
             // Disallow copying from or into subdirectory
             if (IsDirectoryDescedent(origPath, newPath) || IsDirectoryDescedent(newPath, origPath))
@@ -346,28 +393,35 @@ namespace O3DE::ProjectManager
                 ProjectCacheDirectoryName
             };
 
-            QProgressDialog* progressDialog = new QProgressDialog(parent);
-            progressDialog->setAutoClose(true);
-            progressDialog->setValue(0);
-            progressDialog->setRange(0, 1000);
-            progressDialog->setModal(true);
-            progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
-            progressDialog->show();
+            QProgressDialog* progressDialog = nullptr;
+            if (showProgress)
+            {
+                progressDialog = new QProgressDialog(parent);
+                progressDialog->setAutoClose(true);
+                progressDialog->setValue(0);
+                progressDialog->setRange(0, 1000);
+                progressDialog->setModal(true);
+                progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
+                progressDialog->show();
+            }
 
             QLocale locale;
             QStringList getFilesSkippedPaths(skippedPaths);
             RecursiveGetAllFiles(origPath, getFilesSkippedPaths, filesToCopyCount, totalSizeInBytes, [=](int fileCount, int sizeInBytes)
                 {
-                    // Create a human-readable version of the file size.
-                    const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
+                    if (progressDialog)
+                    {
+                        // Create a human-readable version of the file size.
+                        const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
 
-                    progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
-                        .arg(QObject::tr("Indexing files"))
-                        .arg(QString::number(fileCount))
-                        .arg(QObject::tr("files found"))
-                        .arg(fileSizeString)
-                        .arg(QObject::tr("to copy")));
-                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                        progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
+                            .arg(QObject::tr("Indexing files"))
+                            .arg(QString::number(fileCount))
+                            .arg(QObject::tr("files found"))
+                            .arg(fileSizeString)
+                            .arg(QObject::tr("to copy")));
+                        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                    }
                 });
 
             int numFilesCopied = 0;
@@ -386,13 +440,19 @@ namespace O3DE::ProjectManager
 
             if (!success)
             {
-                progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
-                qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                if (progressDialog)
+                {
+                    progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
+                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                }
 
                 DeleteProjectFiles(newPath, true);
             }
 
-            progressDialog->deleteLater();
+            if (progressDialog)
+            {
+                progressDialog->deleteLater();
+            }
             return success;
         }
 
@@ -402,8 +462,36 @@ namespace O3DE::ProjectManager
             if (projectDirectory.exists())
             {
                 // Check if there is an actual project here or just force it
-                if (force || PythonBindingsInterface::Get()->GetProject(path).IsSuccess())
+                auto pythonBindingsPtr = PythonBindingsInterface::Get();
+                if (pythonBindingsPtr)
                 {
+                    // if we can obtain the python interface, then we will ONLY delete the folder
+                    // if its a real project, unless force is specified.
+
+                    AZ::Outcome<ProjectInfo> pInfo = pythonBindingsPtr->GetProject(path);
+                    if (force || pInfo.IsSuccess())
+                    {
+                        if (pInfo.IsSuccess())
+                        {
+                            //determine if we have a restricted directory to worry about
+                            if (!pInfo.GetValue().m_restricted.isEmpty())
+                            {
+                                QDir restrictedDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
+                        
+                                if (restrictedDirectory.cd("O3DE/Restricted/Projects") &&
+                                    restrictedDirectory.cd(pInfo.GetValue().m_restricted) &&
+                                    !restrictedDirectory.isEmpty())
+                                {
+                                    restrictedDirectory.removeRecursively();
+                                }
+                            }
+                        }
+                        return projectDirectory.removeRecursively();
+                    }
+                }
+                else
+                {
+                    // we don't have any python bindings available, we're likely in test mode.
                     return projectDirectory.removeRecursively();
                 }
             }
@@ -411,7 +499,7 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister)
+        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister, bool showProgress)
         {
             origPath = QDir::toNativeSeparators(origPath);
             newPath = QDir::toNativeSeparators(newPath);
@@ -429,7 +517,7 @@ namespace O3DE::ProjectManager
             if (!newDirectory.rename(origPath, newPath))
             {
                 // Likely failed because trying to move to another partition, try copying
-                if (!CopyProject(origPath, newPath, parent))
+                if (!CopyProject(origPath, newPath, parent, skipRegister, showProgress))
                 {
                     return false;
                 }
@@ -483,9 +571,9 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool FindSupportedCompiler(QWidget* parent)
+        bool FindSupportedCompiler(const ProjectInfo& projectInfo, QWidget* parent)
         {
-            auto findCompilerResult = FindSupportedCompilerForPlatform();
+            auto findCompilerResult = FindSupportedCompilerForPlatform(projectInfo);
 
             if (!findCompilerResult.IsSuccess())
             {
@@ -659,11 +747,58 @@ namespace O3DE::ProjectManager
             return AZ::Success(QString(projectBuildPath.c_str()));
         }
 
-        void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
+        QString GetPythonExecutablePath(const QString& enginePath)
         {
-            const AZStd::string& generalError = outcome.GetError().first;
-            const AZStd::string& detailedError = outcome.GetError().second;
+            // append lib path to Python paths
+            AZ::IO::FixedMaxPath libPath = enginePath.toUtf8().constData();
+            libPath /= AZ::IO::FixedMaxPathString(AZ_TRAIT_PROJECT_MANAGER_PYTHON_EXECUTABLE_SUBPATH);
+            libPath = libPath.LexicallyNormal();
+            return QString(libPath.String().c_str());
+        }
 
+        QString GetDefaultProjectPath()
+        {
+            QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+            AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+            if (engineInfoResult.IsSuccess())
+            {
+                QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+                if (path.exists())
+                {
+                    defaultPath = path.absolutePath();
+                }
+            }
+            return defaultPath;
+        }
+
+        QString GetDefaultTemplatePath()
+        {
+            QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+            AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+            if (engineInfoResult.IsSuccess())
+            {
+                QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultTemplatesFolder));
+                if (path.exists())
+                {
+                    defaultPath = path.absolutePath();
+                }
+            }
+            return defaultPath;
+        }
+
+        int DisplayDetailedError(
+            const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
+        {
+            return DisplayDetailedError(title, outcome.GetError().first, outcome.GetError().second, parent);
+        }
+
+        int DisplayDetailedError(
+            const QString& title,
+            const AZStd::string& generalError,
+            const AZStd::string& detailedError,
+            QWidget* parent,
+            QMessageBox::StandardButtons buttons)
+        {
             if (!detailedError.empty())
             {
                 QMessageBox errorDialog(parent);
@@ -671,12 +806,103 @@ namespace O3DE::ProjectManager
                 errorDialog.setWindowTitle(title);
                 errorDialog.setText(generalError.c_str());
                 errorDialog.setDetailedText(detailedError.c_str());
-                errorDialog.exec();
+                errorDialog.setStandardButtons(buttons);
+                return errorDialog.exec();
             }
             else
             {
-                QMessageBox::critical(parent, title, generalError.c_str());
+                return QMessageBox::critical(parent, title, generalError.c_str(), buttons);
             }
+        }
+
+        int VersionCompare(const QString& a, const QString&b)
+        {
+            auto outcomeA = AZ::SemanticVersion::ParseFromString(a.toUtf8().constData());
+            auto outcomeB = AZ::SemanticVersion::ParseFromString(b.toUtf8().constData());
+
+            auto versionA = outcomeA ? outcomeA.GetValue() : AZ::SemanticVersion(0, 0, 0);
+            auto versionB = outcomeB ? outcomeB.GetValue() : AZ::SemanticVersion(0, 0, 0);
+
+            return AZ::SemanticVersion::Compare(versionA, versionB);
+
+        }
+
+        QString GetDependencyString(const QString& dependencyString)
+        {
+            using Dependency = AZ::Dependency<AZ::SemanticVersion::parts_count>;
+            using Comparison = Dependency::Bound::Comparison;
+            Dependency dependency;
+
+            QString result;
+            if(auto parseOutcome = dependency.ParseVersions({ dependencyString.toUtf8().constData() }); parseOutcome)
+            {
+                // dependency name
+                result.append(dependency.GetName().c_str());
+
+                if (const auto& bounds = dependency.GetBounds(); !bounds.empty())
+                {
+                    // we only support a single specifier
+                    const auto& bound = bounds[0];
+                    Comparison comparison = bound.GetComparison();
+                    if (comparison == Comparison::GreaterThan)
+                    {
+                        result.append(QObject::tr(" versions greater than"));
+                    }
+                    else if (comparison == Comparison::LessThan)
+                    {
+                        result.append(QObject::tr(" versions less than"));
+                    }
+                    else if ((comparison& Comparison::TwiddleWakka) != Comparison::None)
+                    {
+                        // don't try to explain the twiddle wakka in short form
+                        result.append(QObject::tr(" versions ~="));
+                    }
+
+                    result.append(" ");
+                    result.append(bound.GetVersion().ToString().c_str());
+
+                    if ((comparison & Comparison::EqualTo) != Comparison::None)
+                    {
+                        if ((comparison & Comparison::GreaterThan) != Comparison::None)
+                        {
+                            result.append(QObject::tr(" or higher "));
+                        }
+                        else if ((comparison & Comparison::LessThan) != Comparison::None)
+                        {
+                            result.append(QObject::tr(" or lower "));
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+
+        void GetDependencyNameAndVersion(const QString& dependencyString, QString& objectName, Comparison& comparator, QString& version)
+        {
+            Dependency dependency;
+            if (auto parseOutcome = dependency.ParseVersions({ dependencyString.toUtf8().constData() }); parseOutcome)
+            {
+                objectName = dependency.GetName().c_str();
+                if (const auto& bounds = dependency.GetBounds(); !bounds.empty())
+                {
+                    comparator = dependency.GetBounds().at(0).GetComparison();
+                    version = dependency.GetBounds().at(0).GetVersion().ToString().c_str();
+                }
+            }
+            else
+            {
+                objectName = dependencyString;
+            }
+        }
+
+
+        QString GetDependencyName(const QString& dependency)
+        {
+            QString objectName, version;
+            ProjectUtils::Comparison comparator;
+            GetDependencyNameAndVersion(dependency, objectName, comparator, version);
+            return objectName; 
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

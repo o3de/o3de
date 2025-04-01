@@ -13,6 +13,8 @@
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
+#include <AzCore/Math/Vector2.h>
+
 #include <SandboxAPI.h>
 
 namespace SandboxEditor
@@ -46,5 +48,6 @@ namespace SandboxEditor
         AZStd::unordered_map<AzToolsFramework::ViewportInteraction::MouseButton, ClickEvent> m_pendingDoubleClicks;
 
         AZ::ScriptTimePoint m_currentTime;
+        
     };
 } // namespace SandboxEditor

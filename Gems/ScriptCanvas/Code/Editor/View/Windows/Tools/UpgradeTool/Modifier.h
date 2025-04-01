@@ -24,7 +24,7 @@ namespace ScriptCanvasEditor
             , public AzFramework::AssetSystemInfoBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Modifier, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Modifier, AZ::SystemAllocator);
 
             Modifier
                 ( const ModifyConfiguration& modification
@@ -92,8 +92,8 @@ namespace ScriptCanvasEditor
             AZStd::unordered_set<AZ::Uuid> m_attemptedAssets;
             AZStd::unordered_set<AZ::Uuid> m_assetsCompletedByAP;
             AZStd::unordered_set<AZ::Uuid> m_assetsFailedByAP;
-            AZStd::chrono::system_clock::time_point m_waitLogTimeStamp;
-            AZStd::chrono::system_clock::time_point m_waitTimeStamp;
+            AZStd::chrono::steady_clock::time_point m_waitLogTimeStamp;
+            AZStd::chrono::steady_clock::time_point m_waitTimeStamp;
             AZStd::unordered_set<AZStd::string> m_successNotifications;
             AZStd::unordered_set<AZStd::string> m_failureNotifications;
 

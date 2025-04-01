@@ -1,0 +1,88 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include "../MaterialInputs/BaseColorInput.azsli"
+#include "../MaterialInputs/DualSpecular.azsli"
+#include "../MaterialInputs/NormalInput.azsli"
+#include "../MaterialInputs/RoughnessInput.azsli"
+#include "../MaterialInputs/SpecularInput.azsli"
+#include "../MaterialInputs/UvSetCount.azsli"
+#include "../MaterialInputs/SubsurfaceInput.azsli"
+#include "../MaterialInputs/TransmissionInput.azsli"
+#include "../MaterialInputs/OcclusionInput.azsli"
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    // Auto-generate material SRG fields for common inputs
+    COMMON_SRG_INPUTS_BASE_COLOR(m_iris_)
+    COMMON_SRG_INPUTS_NORMAL(m_iris_)
+    COMMON_SRG_INPUTS_ROUGHNESS(m_iris_)
+    COMMON_SRG_INPUTS_BASE_COLOR(m_sclera_)
+    COMMON_SRG_INPUTS_NORMAL(m_sclera_)
+    COMMON_SRG_INPUTS_ROUGHNESS(m_sclera_)
+    COMMON_SRG_INPUTS_SPECULAR_F0()
+    COMMON_SRG_INPUTS_DUAL_SPECULAR()
+    COMMON_SRG_INPUTS_OCCLUSION()
+
+    Sampler m_sampler
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+
+    Texture2D m_brdfMap;
+
+    Sampler m_samplerBrdf
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+
+    // Parameters for subsurface scattering
+    float m_subsurfaceScatteringFactor;
+    float m_subsurfaceScatteringQuality;
+    float3 m_scatterDistance;
+    Texture2D m_subsurfaceScatteringInfluenceMap;
+    uint m_subsurfaceScatteringInfluenceMapUvIndex;
+
+    // Parameters for transmission
+
+    // Elements of m_transmissionParams:
+    // Thick object mode: (attenuation coefficient, power, distortion, scale)
+    // Thin  object mode:  (shrinkFactor, transmissionNdLBias, distanceAttenuation, scale)
+    float4 m_transmissionParams;
+
+    // (float3 TintColor, thickness)
+    float4 m_transmissionTintThickness;
+    Texture2D m_transmissionThicknessMap;
+    uint m_transmissionThicknessMapUvIndex;
+
+    // Normalized Eye parameters. The following three parameters
+    // are unitless and assume normalized Eye geometry, where the
+    // radius of the pseudo-sphere is 0.5.
+    float m_irisDepth; //Distance from the center of the Eye to the center of the Iris-XZ plane.
+    float m_eyeIrisRadius; // Radius of the Iris, measured from the center of the Pupil (imagine a Circle in the XZ plane).
+    float m_limbusSize;
+    float m_irisUvScale;
+
+    // Index of refraction of the Inner Eye. This is the sequence
+    // of mediums the light has to travel: Air -> Cornea -> Aqueus Humor -> Pupil/Iris Plane.
+    // The Inner Eye, refers to the combined "Cornea -> Aqueus Humor" layers because in real life
+    // their IORs are very similar.
+    float m_innerEyeIOR;
+}

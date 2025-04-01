@@ -12,14 +12,14 @@
 
 #include <AzCore/XML/rapidxml.h>
 #include <AzFramework/Asset/XmlSchemaAsset.h>
-#include <AzFramework/Dependency/Version.h>
+#include <AzCore/Dependency/Version.h>
 
 #include <Builders/CopyDependencyBuilder/CopyDependencyBuilderWorker.h>
 
 namespace CopyDependencyBuilder
 {
     const char SchemaNamePattern[] = "*.xmlschema";
-    const char VersionContraintRegexStr[] = "(?:(~>|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))";
+    const char VersionContraintRegexStr[] = "(?:(~>|~=|[>=<]{1,2}) *([0-9]+(?:\\.[0-9]+)*))";
     const char VersionRegexStr[] = "([0-9]+)(?:\\.(.*)){0,1}";
     const size_t MaxVersionPartsCount = 4;
 
@@ -81,14 +81,14 @@ namespace CopyDependencyBuilder
         AZ::Outcome <void, bool> SearchForMatchingRule(
             const AZStd::string& sourceFilePath, 
             const AZStd::string& schemaFilePath,
-            const AzFramework::Version<MaxVersionPartsCount>& version,
+            const AZ::Version<MaxVersionPartsCount>& version,
             const AZStd::vector<AzFramework::MatchingRule>& matchingRules,
             const AZStd::string& watchFolderPath) const;
 
         bool SearchForDependencySearchRule(
             AZ::rapidxml::xml_node<char>* xmlFileRootNode, 
             const AZStd::string& schemaFilePath,
-            const AzFramework::Version<MaxVersionPartsCount>& version,
+            const AZ::Version<MaxVersionPartsCount>& version,
             const AZStd::vector<AzFramework::DependencySearchRule>& matchingRules,
             AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencies,
             AssetBuilderSDK::ProductPathDependencySet& pathDependencies,

@@ -60,3 +60,5 @@ namespace AzToolsFramework
     using EditorLockComponentNotificationBus = EditorEntityLockComponentNotificationBus;
 
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityLockComponentNotifications);

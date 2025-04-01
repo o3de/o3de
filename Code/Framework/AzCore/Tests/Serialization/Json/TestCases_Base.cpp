@@ -27,6 +27,11 @@ namespace JsonSerializationTests
         }
     }
 
+    BaseClass* BaseClass::Clone() const
+    {
+        return aznew BaseClass(*this);
+    }
+
     bool BaseClass::Equals(const BaseClass& rhs, bool) const
     {
         return m_baseVar == rhs.m_baseVar;
@@ -51,6 +56,11 @@ namespace JsonSerializationTests
         {
             delete this;
         }
+    }
+
+    BaseClass2* BaseClass2::Clone() const
+    {
+        return aznew BaseClass2(*this);
     }
 
     bool BaseClass2::Equals(const BaseClass2& rhs, bool) const

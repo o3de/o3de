@@ -12,7 +12,7 @@
 #include "NewDepthOfFieldCommon.azsli"
 #include "DepthOfField.azsli"
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 #define COC_EPSILON 0.0001
 
@@ -46,7 +46,7 @@ PSOutput MainPS(VSOutput IN)
     float2 halfResUV = halfResPixelPos * PassSrg::m_halfResDimensions.zw;
 
     // Full res CoC (Circle of Confusion)
-    float depth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, fullResUV);
+    float depth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, fullResUV).x;
     float far = ViewSrg::m_dof.m_cameraParameters.x;
     float near = ViewSrg::m_dof.m_cameraParameters.y;
     float focusDistance = ViewSrg::m_dof.m_cameraParameters.z;

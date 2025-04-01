@@ -20,7 +20,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(SkeletonGroup, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SkeletonGroup, SystemAllocator);
 
             SkeletonGroup::SkeletonGroup()
                 : m_id(Uuid::CreateRandom())
@@ -93,13 +93,13 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute("AutoExpand", true)
                             ->Attribute(Edit::Attributes::NameLabelOverride, "")
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &SkeletonGroup::m_name, "Name skeleton",
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &SkeletonGroup::m_name, "Name skeleton",
                             "Name the skeleton as you want it to appear in the Open 3D Engine Asset Browser.")
                             ->Attribute("FilterType", DataTypes::ISkeletonGroup::TYPEINFO_Uuid())
                         ->DataElement("NodeListSelection", &SkeletonGroup::m_selectedRootBone, "Select root bone", "Select the root bone of the skeleton.")
                             ->Attribute("ClassTypeIdFilter", AZ::SceneData::GraphData::RootBoneData::TYPEINFO_Uuid())
                         ->DataElement(Edit::UIHandlers::Default, &SkeletonGroup::m_rules, "", "Add or remove rules to fine-tune the export process.")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20));
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"));
                 }
             }
 

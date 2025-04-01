@@ -10,23 +10,19 @@
 #include <AzCore/Utils/Utils.h>
 #include <dlfcn.h>
 
-namespace AZ
+namespace AZ::Platform
 {
-    namespace Platform
+    AZ::IO::FixedMaxPath GetModulePath()
     {
-        AZ::IO::FixedMaxPath GetModulePath()
-        {
-            return {};
-        }
-
-        void* OpenModule(const AZ::OSString& fileName, bool&)
-        {
-            // Android 19 does not have RTLD_NOLOAD but it should be OK since only the Editor expects to reopen modules
-            return dlopen(fileName.c_str(), RTLD_NOW);
-        }
-
-        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
-        {
-        }
+        return {};
     }
-}
+
+    void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
+    {
+    }
+
+    AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView&)
+    {
+        return {};
+    }
+} // namespace AZ::Platform

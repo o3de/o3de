@@ -12,12 +12,14 @@
 
 class QGraphicsLayout;
 class QGraphicsLayoutItem;
+class QGraphicsLinearLayout;
+class QGraphicsWidget;
 
 namespace GraphCanvas
 {
-    static const AZ::Crc32 NodeLayoutServiceCrc = AZ_CRC("GraphCanvas_NodeLayoutService", 0x3dc121b7);
-    static const AZ::Crc32 NodeSlotsServiceCrc = AZ_CRC("GraphCanvas_NodeSlotsService", 0x28f0a117);
-    static const AZ::Crc32 NodeLayoutSupportServiceCrc = AZ_CRC("GraphCanvas_NodeLayoutSupportService", 0xa8b639be);
+    static const AZ::Crc32 NodeLayoutServiceCrc = AZ_CRC_CE("GraphCanvas_NodeLayoutService");
+    static const AZ::Crc32 NodeSlotsServiceCrc = AZ_CRC_CE("GraphCanvas_NodeSlotsService");
+    static const AZ::Crc32 NodeLayoutSupportServiceCrc = AZ_CRC_CE("GraphCanvas_NodeLayoutSupportService");
 
     //! NodeLayoutRequests
     //! Requests that are serviced by a node layout implementation.
@@ -44,6 +46,11 @@ namespace GraphCanvas
         using BusIdType = AZ::EntityId;
 
         virtual QGraphicsLayoutItem* GetGraphicsLayoutItem() = 0;
+
+        virtual QGraphicsLinearLayout* GetLinearLayout(const SlotGroup& slotGroup) = 0;
+
+        virtual QGraphicsWidget* GetSpacer(const SlotGroup& slotGroup) = 0;
+
     };
 
     using NodeSlotsRequestBus = AZ::EBus<NodeSlotsRequests>;

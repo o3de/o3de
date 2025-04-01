@@ -1,6 +1,0 @@
-<download name="5959809_ForceRegion_RotationalOffset" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="9865" md5="b9588bb74553249311378f89bb689d64"/>
- </files>
-</download>

@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString FastNoiseGradientNode::TITLE = QObject::tr("FastNoise");
+    const char* FastNoiseGradientNode::TITLE = "FastNoise";
 
     FastNoiseGradientNode::FastNoiseGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)

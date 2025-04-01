@@ -17,7 +17,7 @@ namespace AtomToolsFramework
     class PreviewContent
     {
     public:
-        AZ_CLASS_ALLOCATOR(PreviewContent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PreviewContent, AZ::SystemAllocator);
 
         PreviewContent() = default;
         virtual ~PreviewContent() = default;
@@ -36,5 +36,9 @@ namespace AtomToolsFramework
 
         //! Prepare or pose content before rendering
         virtual void Update() = 0;
+
+        //! Returns true when it is guaranteed that the content is in GPU memory
+        //! and ready to render.
+        virtual bool IsReadyToRender() = 0;
     };
 } // namespace AtomToolsFramework

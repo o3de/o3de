@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
-#include <Source/Mesh/ModelReloaderSystem.h>
+#include <Mesh/ModelReloaderSystem.h>
 
 namespace AZ
 {
@@ -35,8 +35,7 @@ namespace AZ
 
             //! Reload a model asset
             //! @param modelAsset - the asset to be reloaded
-            //! @param removeReloaderFromSystemHandler - an event that will tell the ModelReloaderSystem when to remove the reloader because it is finished
-            ModelReloader(Data::Asset<RPI::ModelAsset> modelAsset, RemoveModelFromReloaderSystemEvent::Handler& removeReloaderFromSystemHandler);
+            ModelReloader(Data::Asset<RPI::ModelAsset> modelAsset);
 
             //! Connects a handler that will handle an event when the model is finished reloading
             void ConnectOnReloadedEventHandler(ModelReloadedEvent::Handler& onReloadedEventHandler);
@@ -59,7 +58,6 @@ namespace AZ
             DependencyList& GetPendingDependencyList();
 
             ModelReloadedEvent m_onModelReloaded;
-            RemoveModelFromReloaderSystemEvent m_onRemoveReloaderFromSystem;
 
             // Keep track of all the asset references for each level of the hierarchy
             DependencyList m_modelAsset;

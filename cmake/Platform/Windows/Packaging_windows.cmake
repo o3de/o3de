@@ -25,7 +25,7 @@ set(CPACK_GENERATOR WIX)
 
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
-set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103eef2b071be3112")
+set(CPACK_CMAKE_PACKAGE_HASH "fcce74d1d7eaf825234c036702df3f0874dcd3cee8fdf90b56d0c7bfedd29465")
 
 # workaround for shortening the path cpack installs to by stripping the platform directory
 set(CPACK_TOPLEVEL_TAG "")
@@ -46,7 +46,7 @@ function(generate_wix_guid out_value seed)
     set(${out_value} ${_guid} PARENT_SCOPE)
 endfunction()
 
-set(_guid_seed_base "${PROJECT_NAME}_${LY_VERSION_STRING}")
+set(_guid_seed_base "${PROJECT_NAME}_${O3DE_INSTALL_VERSION_STRING}")
 generate_wix_guid(_wix_default_product_guid "${_guid_seed_base}_ProductID" )
 generate_wix_guid(_wix_default_upgrade_guid "${_guid_seed_base}_UpgradeCode")
 
@@ -137,3 +137,8 @@ set(CPACK_WIX_CANDLE_EXTRA_FLAGS
     -dCPACK_EMBED_ARTIFACTS=${_embed_artifacts}
     -dCPACK_CMAKE_PACKAGE_NAME=${_cmake_package_name}
 )
+
+set(O3DE_INCLUDE_INSTALL_IN_PACKAGE FALSE CACHE BOOL "Option to copy the contents of the most recent install from CMAKE_INSTALL_PREFIX into the CORE package.  Useful for including a release build in a profile SDK.")
+if(O3DE_INCLUDE_INSTALL_IN_PACKAGE)
+    set(CPACK_INSTALLED_DIRECTORIES "${CMAKE_INSTALL_PREFIX};/CORE")
+endif()

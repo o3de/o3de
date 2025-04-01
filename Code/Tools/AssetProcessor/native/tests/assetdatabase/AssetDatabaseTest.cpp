@@ -8,17 +8,19 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
-
+#include <AzCore/std/sort.h>
 
 #include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/AssetDatabase/AssetDatabase.h>
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 namespace UnitTests
 {
     using namespace testing;
-    using ::testing::NiceMock;
     using namespace AssetProcessor;
-    
+    using namespace AzToolsFramework::AssetDatabase;
+
     using AzToolsFramework::AssetDatabase::ProductDatabaseEntry;
     using AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry;
     using AzToolsFramework::AssetDatabase::SourceDatabaseEntry;
@@ -30,12 +32,9 @@ namespace UnitTests
     using AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer;
     using AzToolsFramework::AssetDatabase::AssetDatabaseConnection;
     using AzToolsFramework::AssetDatabase::FileDatabaseEntry;
-    
-    class AssetDatabaseTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-    };
+    using AzToolsFramework::AssetDatabase::StatDatabaseEntry;
+    using AzToolsFramework::AssetDatabase::StatDatabaseEntryContainer;
+
 
     class AssetDatabaseTest : public AssetProcessorTest
     {
@@ -44,22 +43,13 @@ namespace UnitTests
         {
             AssetProcessorTest::SetUp();
             m_data.reset(new StaticData());
-            m_data->m_databaseLocation = ":memory:"; // this special string causes SQLITE to open the database in memory and not touch disk at all.
-            m_data->m_databaseLocationListener.BusConnect();
-            
-            ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
-                .WillByDefault( 
-                    DoAll( // set the 0th argument ref (string) to the database location and return true.
-                        SetArgReferee<0>(":memory:"), 
-                        Return(true)));
-
+            m_data->m_databaseLocationListener.m_assetDatabasePath = ":memory:"; // this special string causes SQLITE to open the database in memory and not touch disk at all.
             // Initialize the database:
             m_data->m_connection.ClearData(); // this is expected to reset/clear/reopen
         }
 
         void TearDown() override
         {
-            m_data->m_databaseLocationListener.BusDisconnect();
             m_data.reset();
             AssetProcessorTest::TearDown();
         }
@@ -79,12 +69,12 @@ namespace UnitTests
         {
             m_data->m_scanFolder = { "c:/O3DE/dev", "dev", "rootportkey" };
             ASSERT_TRUE(m_data->m_connection.SetScanFolder(m_data->m_scanFolder));
-            
+
             m_data->m_sourceFile1 = { m_data->m_scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint1"};
             m_data->m_sourceFile2 = { m_data->m_scanFolder.m_scanFolderID, "otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint2"};
             ASSERT_TRUE(m_data->m_connection.SetSource(m_data->m_sourceFile1));
             ASSERT_TRUE(m_data->m_connection.SetSource(m_data->m_sourceFile2));
-            
+
             m_data->m_job1 = { m_data->m_sourceFile1.m_sourceID, "some job key", 123, "pc", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Completed, 1 };
             m_data->m_job2 = { m_data->m_sourceFile2.m_sourceID, "some other job key", 345, "osx", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Failed, 2 };
             ASSERT_TRUE(m_data->m_connection.SetJob(m_data->m_job1));
@@ -101,6 +91,34 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection.SetProduct(m_data->m_product4));
         }
 
+        /******************************************** Create and insert Stat entry ********************************************/
+        //! Returns the first stat entry to be inserted into Stats table. Users can specify the prefix of the StatName
+        StatDatabaseEntry GetFirstStatEntry(const AZStd::string& namePrefix = "")
+        {
+            return StatDatabaseEntry{ namePrefix + "a", 10, 100 };
+        }
+
+        //! Step statEntry to the next inserted entry, which increments the name's last character by 1 in ASCII order, increment 20 in StatValue, and increment
+        //! 300 in LastLogTime. For example, if statEntry was passed in as (StatName=b, StatValue=30, LastLogTime=400), it will become
+        //! (StatName=c, StatValue=50, LastLogTime=700) after the invocation.
+        void StepStatEntry(StatDatabaseEntry& statEntry)
+        {
+            statEntry.m_statName.back()++;
+            statEntry.m_statValue = statEntry.m_statValue + 20;
+            statEntry.m_lastLogTime = statEntry.m_lastLogTime + 300;
+        }
+
+        //! Insert _StatCount_ stat entries into Stats table, starting with first entry given by GetFirstStatEntry().
+        void InsertStatsTestData(const unsigned int StatCount, const AZStd::string& namePrefix = "")
+        {
+            StatDatabaseEntry statEntry = GetFirstStatEntry(namePrefix);
+            for (unsigned int i = 0; i < StatCount; ++i)
+            {
+                ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+                StepStatEntry(statEntry);
+            }
+        }
+
     protected:
 
         void SetAndCheckMissingDependency(
@@ -111,7 +129,7 @@ namespace UnitTests
         {
             // these variables are created during SetUp() and destroyed during TearDown() and thus are always available during tests using this fixture:
             AZStd::string m_databaseLocation;
-            NiceMock<AssetDatabaseTestMockDatabaseLocationListener> m_databaseLocationListener;
+            AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
             AssetProcessor::AssetDatabaseConnection m_connection;
 
             // The following database entry variables are initialized only when you call coverage test data CreateCoverageTestData().
@@ -126,7 +144,7 @@ namespace UnitTests
             ProductDatabaseEntry m_product2;
             ProductDatabaseEntry m_product3;
             ProductDatabaseEntry m_product4;
-            
+
         };
 
         // we store the above data in a unique_ptr so that its memory can be cleared during TearDown() in one call, before we destroy the memory
@@ -169,13 +187,13 @@ namespace UnitTests
         ProductDatabaseEntryContainer products;
         EXPECT_FALSE(m_data->m_connection.GetProductsLikeProductName("none", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Raw, products));
         EXPECT_EQ(products.size(), 0);
-        
+
         EXPECT_FALSE(m_data->m_connection.GetProductsLikeProductName("none", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, products));
         EXPECT_EQ(products.size(), 0);
-        
+
         EXPECT_FALSE(m_data->m_connection.GetProductsLikeProductName("none", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::EndsWith, products));
         EXPECT_EQ(products.size(), 0);
-        
+
         EXPECT_FALSE(m_data->m_connection.GetProductsLikeProductName("none", AzToolsFramework::AssetDatabase::AssetDatabaseConnection::Matches, products));
         EXPECT_EQ(products.size(), 0);
     }
@@ -197,7 +215,7 @@ namespace UnitTests
         EXPECT_FALSE(m_data->m_connection.SetProduct(product));
         EXPECT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
-        
+
         // make sure it didn't actually touch the db as a side effect:
         ProductDatabaseEntryContainer products;
         EXPECT_FALSE(m_data->m_connection.GetProducts(products));
@@ -237,7 +255,7 @@ namespace UnitTests
         //add a scanfolder.  None of this has to exist in real disk, this is a db test only.
         ScanFolderDatabaseEntry scanFolder{ "c:/O3DE/dev", "dev", "rootportkey" };
         EXPECT_TRUE(m_data->m_connection.SetScanFolder(scanFolder));
-        ASSERT_NE(scanFolder.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId); 
+        ASSERT_NE(scanFolder.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         SourceDatabaseEntry sourceEntry {scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "fingerprint1"};
         EXPECT_TRUE(m_data->m_connection.SetSource(sourceEntry));
@@ -248,8 +266,11 @@ namespace UnitTests
         ASSERT_NE(jobEntry.m_jobID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         // --- set up complete --- perform the test!
+        AZStd::bitset<64> flags;
+        flags.set(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset | AssetBuilderSDK::ProductOutputFlags::ProductAsset));
 
-        ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1 };
+        ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1,
+            AZ::Uuid::CreateNull(), 0, flags};
 
         m_errorAbsorber->Clear();
         EXPECT_TRUE(m_data->m_connection.SetProduct(product));
@@ -276,7 +297,7 @@ namespace UnitTests
         // we'll create all of those first (except product) before starting the product test.
         ScanFolderDatabaseEntry scanFolder{ "c:/O3DE/dev", "dev", "rootportkey" };
         ASSERT_TRUE(m_data->m_connection.SetScanFolder(scanFolder));
-        
+
         SourceDatabaseEntry sourceEntry{ scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "fingerprint1" };
         ASSERT_TRUE(m_data->m_connection.SetSource(sourceEntry));
 
@@ -286,9 +307,12 @@ namespace UnitTests
         ASSERT_TRUE(m_data->m_connection.SetJob(jobEntry));
         ASSERT_TRUE(m_data->m_connection.SetJob(jobEntry2));
 
-        ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1 };
+        AZStd::bitset<64> flags;
+        flags.set(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::ProductAsset));
+        ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1,
+            AZ::Uuid::CreateNull(), 0, flags};
         ASSERT_TRUE(m_data->m_connection.SetProduct(product));
-        
+
         // --- set up complete --- perform the test!
         // update all the fields of that product and then write it to the db.
         ProductDatabaseEntry newProductData = product; // copy first
@@ -297,6 +321,7 @@ namespace UnitTests
         newProductData.m_productName = "different name.dds";
         newProductData.m_subID = 2;
         newProductData.m_jobPK = jobEntry2.m_jobID; // move it to the other job, too!
+        newProductData.m_flags.set(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset));
 
         // update the product
         EXPECT_TRUE(m_data->m_connection.SetProduct(newProductData));
@@ -378,7 +403,7 @@ namespace UnitTests
         // since there is no ordering, we just have to find both of them:
         EXPECT_NE(AZStd::find(resultProducts.begin(), resultProducts.end(), m_data->m_product1), resultProducts.end());
         EXPECT_NE(AZStd::find(resultProducts.begin(), resultProducts.end(), m_data->m_product2), resultProducts.end());
-        
+
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
     }
 
@@ -433,7 +458,7 @@ namespace UnitTests
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
     }
- 
+
     // --------------------------------------------------------------------------------------------------------------------
     // ------------------------------------------ GetProductsByProductName ------------------------------------------------
     // --------------------------------------------------------------------------------------------------------------------
@@ -471,14 +496,14 @@ namespace UnitTests
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
     }
-    
+
     // tests all of the filters (beside name) to make sure they all function as expected.
     TEST_F(AssetDatabaseTest, GetProductsByProductName_FilterTest_BuilderGUID)
     {
         CreateCoverageTestData();
 
         ProductDatabaseEntryContainer resultProducts;
-        
+
         // give it a random builder guid.  This should make it not match any products:
         EXPECT_FALSE(m_data->m_connection.GetProductsByProductName("someproduct4.dds", resultProducts, AZ::Uuid::CreateRandom()));
         EXPECT_EQ(resultProducts.size(), 0);
@@ -624,7 +649,7 @@ namespace UnitTests
         CreateCoverageTestData();
 
         ProductDatabaseEntryContainer resultProducts;
-        
+
         // a very broad search that matches all products.
         EXPECT_TRUE(m_data->m_connection.GetProductsLikeProductName("someproduct", AssetDatabaseConnection::StartsWith, resultProducts));
         EXPECT_EQ(resultProducts.size(), 4);
@@ -741,7 +766,7 @@ namespace UnitTests
         EXPECT_EQ(resultProducts.size(), 2);
         EXPECT_NE(AZStd::find(resultProducts.begin(), resultProducts.end(), m_data->m_product1), resultProducts.end());
         EXPECT_NE(AZStd::find(resultProducts.begin(), resultProducts.end(), m_data->m_product2), resultProducts.end());
-        
+
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
     }
 
@@ -1161,7 +1186,7 @@ namespace UnitTests
 
         EXPECT_NE(requestProducts[0].m_productID, AzToolsFramework::AssetDatabase::InvalidEntryId);
         EXPECT_NE(requestProducts[1].m_productID, AzToolsFramework::AssetDatabase::InvalidEntryId);
-        
+
         EXPECT_EQ(newProductCount, priorProductCount + 2);
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0); // not allowed to assert on this
     }
@@ -1178,9 +1203,9 @@ namespace UnitTests
         resultProducts.clear();
         EXPECT_TRUE(m_data->m_connection.GetProducts(resultProducts));
         size_t priorProductCount = resultProducts.size();
-        
+
         EXPECT_FALSE(m_data->m_connection.RemoveProduct(-1));
-       
+
         resultProducts.clear();
         EXPECT_TRUE(m_data->m_connection.GetProducts(resultProducts));
         size_t newProductCount = resultProducts.size();
@@ -1352,7 +1377,7 @@ namespace UnitTests
         size_t priorProductCount = resultProducts.size();
 
         EXPECT_FALSE(m_data->m_connection.RemoveProductsBySourceID(-1));
-        
+
         resultProducts.clear();
         EXPECT_TRUE(m_data->m_connection.GetProducts(resultProducts));
         size_t newProductCount = resultProducts.size();
@@ -1399,7 +1424,7 @@ namespace UnitTests
         resultProducts.clear();
         EXPECT_TRUE(m_data->m_connection.GetProducts(resultProducts));
         size_t newProductCount = resultProducts.size();
-        EXPECT_EQ(newProductCount, priorProductCount); 
+        EXPECT_EQ(newProductCount, priorProductCount);
 
         // give it a correct data but the wrong builder (a valid, but wrong one)
         EXPECT_FALSE(m_data->m_connection.RemoveProductsBySourceID(m_data->m_sourceFile1.m_sourceID, m_data->m_job2.m_builderGuid));
@@ -1554,7 +1579,7 @@ namespace UnitTests
             ProductDependencyDatabaseEntry entry(resultProducts[0].m_productID, m_data->m_sourceFile1.m_sourceGuid, productIndex, dependencyFlags, platform, true, pathDep);
             productDependencies.emplace_back(AZStd::move(entry));
         }
-        
+
         // make 100 product dependencies on the second productID
         for (AZ::u32 productIndex = 0; productIndex < 100; ++productIndex)
         {
@@ -1567,7 +1592,7 @@ namespace UnitTests
 
         // now, read all the data back and verify each field:
         productDependencies.clear();
-        
+
         // searching for the first product should only result in the first 100 results:
         EXPECT_TRUE(m_data->m_connection.GetProductDependenciesByProductID(resultProducts[0].m_productID, productDependencies));
         EXPECT_EQ(productDependencies.size(), 100);
@@ -1677,7 +1702,7 @@ namespace UnitTests
         EXPECT_TRUE(m_data->m_connection.GetMissingProductDependencyByMissingProductDependencyId(
             writeMissingDependency.m_missingProductDependencyId,
             readMissingDependency));
-        
+
         EXPECT_EQ(writeMissingDependency, readMissingDependency);
     }
 
@@ -2004,12 +2029,12 @@ namespace UnitTests
         AZ::Uuid builderGuid = AZ::Uuid::CreateRandom();
 
         // emit 20,000 source dependencies for the same origin file:
-        AZStd::string originFile("myfile.txt");
+        AZ::Uuid originUuid{ "{3C1C9062-7246-443A-A6DF-A001D31B941A}" };
 
         for (AZ::u32 sourceIndex = 0; sourceIndex < 20000; ++sourceIndex)
         {
             AZStd::string dependentFile = AZStd::string::format("otherfile%i.txt", sourceIndex);
-            SourceFileDependencyEntry entry(builderGuid, originFile.c_str(), dependentFile.c_str(), SourceFileDependencyEntry::DEP_SourceToSource, true);
+            SourceFileDependencyEntry entry(builderGuid, originUuid, PathOrUuid(dependentFile), SourceFileDependencyEntry::DEP_SourceToSource, true, "");
             resultSourceDependencies.emplace_back(AZStd::move(entry));
         }
 
@@ -2019,7 +2044,7 @@ namespace UnitTests
 
         // read them back
         resultSourceDependencies.clear();
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid, originFile.c_str(), SourceFileDependencyEntry::DEP_SourceToSource, resultSourceDependencies));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid, originUuid, SourceFileDependencyEntry::DEP_SourceToSource, resultSourceDependencies));
         EXPECT_EQ(resultSourceDependencies.size(), 20000);
     }
 
@@ -2028,49 +2053,54 @@ namespace UnitTests
         CreateCoverageTestData();
         AZ::Uuid builderGuid1 = AZ::Uuid::CreateRandom();
         AZ::Uuid builderGuid2 = AZ::Uuid::CreateRandom();
-        
+
+        AZ::Uuid file1Uuid{ "{5AA73EF6-5E14-41F3-B458-4FA19D495696}" };
+        AZ::Uuid file2Uuid{ "{A3FF1BD5-7D6F-4241-8398-1DC6239AD97A}" };
+        AZ::Uuid file1DependsOn1Uuid{ "{33338E41-985A-40DF-A1CC-87BDBC17EC7A}" };
+
         SourceFileDependencyEntryContainer entries;
 
         // add the two different kinds of dependencies.
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file1.txt", "file1dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, true));
-        entries.push_back(SourceFileDependencyEntry(builderGuid2, "file1.txt", "file1dependson2.txt", SourceFileDependencyEntry::DEP_SourceToSource, true));
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file1.txt", "file1dependson1job.txt", SourceFileDependencyEntry::DEP_JobToJob, true));
-        entries.push_back(SourceFileDependencyEntry(builderGuid2, "file1.txt", "file1dependson2job.txt", SourceFileDependencyEntry::DEP_JobToJob, true));
-        
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file2.txt", "file2dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, true));
-        entries.push_back(SourceFileDependencyEntry(builderGuid1, "file2.txt", "file2dependson1job.txt", SourceFileDependencyEntry::DEP_JobToJob, true));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, file1Uuid, PathOrUuid("file1dependson1.txt"), SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid2, file1Uuid, PathOrUuid("file1dependson2.txt"), SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, file1Uuid, PathOrUuid("file1dependson1job.txt"), SourceFileDependencyEntry::DEP_JobToJob, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid2, file1Uuid, PathOrUuid("file1dependson2job.txt"), SourceFileDependencyEntry::DEP_JobToJob, true, ""));
+
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, file2Uuid, PathOrUuid("file2dependson1.txt"), SourceFileDependencyEntry::DEP_SourceToSource, true, ""));
+        entries.push_back(SourceFileDependencyEntry(builderGuid1, file2Uuid, PathOrUuid("file2dependson1job.txt"), SourceFileDependencyEntry::DEP_JobToJob, true, ""));
 
         ASSERT_TRUE(m_data->m_connection.SetSourceFileDependencies(entries));
 
         SourceFileDependencyEntryContainer resultEntries;
-        
+
         AZStd::string searchFor;
         auto SearchPredicate = [&searchFor](const SourceFileDependencyEntry& element)
         {
-            return element.m_dependsOnSource == searchFor;
+            return element.m_dependsOnSource.GetPath() == searchFor;
         };
 
-        auto SearchPredicateReverse = [&searchFor](const SourceFileDependencyEntry& element)
+        AZ::Uuid searchUuid;
+        auto SearchPredicateReverse = [&searchUuid](const SourceFileDependencyEntry& element)
         {
-            return element.m_source == searchFor;
+            return element.m_sourceGuid == searchUuid;
         };
 
         // ask for only the source-to-source dependencies of file1.txt for builder1
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, "file1.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, file1Uuid, SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
         searchFor = "file1dependson1.txt";
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicate), resultEntries.end());
         resultEntries.clear();
 
         // ask for only the source-to-source dependencies of file1.txt for builder2
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid2, "file1.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid2, file1Uuid, SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
         searchFor = "file1dependson2.txt";
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicate), resultEntries.end());
         resultEntries.clear();
 
         // ask for the source-to-source dependencies of file1.txt for ANY builder, we shiould get both.
-        EXPECT_TRUE(m_data->m_connection.GetDependsOnSourceBySource("file1.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetDependsOnSourceBySource(file1Uuid, SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
         EXPECT_EQ(resultEntries.size(), 2);
         searchFor = "file1dependson1.txt";
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicate), resultEntries.end());
@@ -2079,21 +2109,21 @@ namespace UnitTests
         resultEntries.clear();
 
         // now ask for the job-to-job dependencies for builder 1
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, "file1.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, file1Uuid, SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
         searchFor = "file1dependson1job.txt";
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicate), resultEntries.end());
         resultEntries.clear();
 
         // now ask for the job-to-job dependencies for builder 2
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid2, "file1.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid2, file1Uuid, SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
         searchFor = "file1dependson2job.txt";
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicate), resultEntries.end());
         resultEntries.clear();
 
         // now ask for the job-to-job dependencies for any builder
-        EXPECT_TRUE(m_data->m_connection.GetDependsOnSourceBySource( "file1.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetDependsOnSourceBySource(file1Uuid, SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
         EXPECT_EQ(resultEntries.size(), 2);
         searchFor = "file1dependson1job.txt";
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicate), resultEntries.end());
@@ -2102,56 +2132,56 @@ namespace UnitTests
         resultEntries.clear();
 
         // now ask for the reverse dependencies - we should find one source-to-source
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource("file1dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource(file1DependsOn1Uuid, "file1dependson1.txt", "c:/root/file1dependson1.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
-        searchFor = "file1.txt";
+        searchUuid = file1Uuid;
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicateReverse), resultEntries.end());
         resultEntries.clear();
 
         // now ask for the reverse dependencies - we should find no job-to-job for this:
-        EXPECT_FALSE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource("file1dependson1.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
+        EXPECT_FALSE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource(file1DependsOn1Uuid, "file1dependson1.txt", "c:/root/file1dependson1.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
         EXPECT_EQ(resultEntries.size(), 0);
         resultEntries.clear();
 
         // now ask for the reverse dependencies - we should find one 'any' type.
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource("file1dependson1.txt", SourceFileDependencyEntry::DEP_Any, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByDependsOnSource(file1DependsOn1Uuid, "file1dependson1.txt", "c:/root/file1dependson1.txt", SourceFileDependencyEntry::DEP_Any, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
-        searchFor = "file1.txt";
+        searchUuid = file1Uuid;
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicateReverse), resultEntries.end());
         resultEntries.clear();
-        
+
         // now try the other file - remember the ID for later
-        ASSERT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, "file2.txt", SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
+        ASSERT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, file2Uuid, SourceFileDependencyEntry::DEP_SourceToSource, resultEntries));
         EXPECT_EQ(resultEntries.size(), 1);
         searchFor = "file2dependson1.txt";
         EXPECT_NE(AZStd::find_if(resultEntries.begin(), resultEntries.end(), SearchPredicate), resultEntries.end());
         AZ::s64 entryIdSource = resultEntries[0].m_sourceDependencyID;
         resultEntries.clear();
-        
+
         // and with Job-to-job dependencies
-        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, "file2.txt", SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
+        EXPECT_TRUE(m_data->m_connection.GetSourceFileDependenciesByBuilderGUIDAndSource(builderGuid1, file2Uuid, SourceFileDependencyEntry::DEP_JobToJob, resultEntries));
         ASSERT_EQ(resultEntries.size(), 1);
         EXPECT_EQ(resultEntries[0].m_builderGuid, builderGuid1);
-        EXPECT_STREQ(resultEntries[0].m_source.c_str(), "file2.txt");
+        EXPECT_EQ(resultEntries[0].m_sourceGuid, file2Uuid);
         EXPECT_NE(resultEntries[0].m_sourceDependencyID, AzToolsFramework::AssetDatabase::InvalidEntryId);
-        EXPECT_STREQ(resultEntries[0].m_dependsOnSource.c_str(), "file2dependson1job.txt");
+        EXPECT_STREQ(resultEntries[0].m_dependsOnSource.GetPath().c_str(), "file2dependson1job.txt");
         EXPECT_EQ(resultEntries[0].m_typeOfDependency,  SourceFileDependencyEntry::DEP_JobToJob);
         AZ::s64 entryIdJob = resultEntries[0].m_sourceDependencyID;
         resultEntries.clear();
-        
+
         SourceFileDependencyEntry resultValue;
         EXPECT_TRUE(m_data->m_connection.GetSourceFileDependencyBySourceDependencyId(entryIdSource, resultValue));
         EXPECT_EQ(resultValue.m_sourceDependencyID, entryIdSource);
         EXPECT_EQ(resultValue.m_typeOfDependency, SourceFileDependencyEntry::DEP_SourceToSource);
-        EXPECT_STREQ(resultValue.m_source.c_str(), "file2.txt");
-        EXPECT_STREQ(resultValue.m_dependsOnSource.c_str(), "file2dependson1.txt");
+        EXPECT_EQ(resultValue.m_sourceGuid, file2Uuid);
+        EXPECT_STREQ(resultValue.m_dependsOnSource.GetPath().c_str(), "file2dependson1.txt");
         EXPECT_EQ(resultValue.m_builderGuid, builderGuid1);
 
         EXPECT_TRUE(m_data->m_connection.GetSourceFileDependencyBySourceDependencyId(entryIdJob, resultValue));
         EXPECT_EQ(resultValue.m_sourceDependencyID, entryIdJob);
         EXPECT_EQ(resultValue.m_typeOfDependency, SourceFileDependencyEntry::DEP_JobToJob);
-        EXPECT_STREQ(resultValue.m_source.c_str(), "file2.txt");
-        EXPECT_STREQ(resultValue.m_dependsOnSource.c_str(), "file2dependson1job.txt");
+        EXPECT_EQ(resultValue.m_sourceGuid, file2Uuid);
+        EXPECT_STREQ(resultValue.m_dependsOnSource.GetPath().c_str(), "file2dependson1job.txt");
         EXPECT_EQ(resultValue.m_builderGuid, builderGuid1);
 
         // removal of source
@@ -2181,7 +2211,7 @@ namespace UnitTests
         FileDatabaseEntry entry;
         entry.m_fileName = "testfile.txt";
         entry.m_scanFolderPK = m_data->m_scanFolder.m_scanFolderID;
-        
+
         bool entryAlreadyExists;
         ASSERT_TRUE(m_data->m_connection.InsertFile(entry, entryAlreadyExists));
         ASSERT_FALSE(entryAlreadyExists);
@@ -2196,7 +2226,7 @@ namespace UnitTests
 
         SourceDatabaseEntry resultSource;
 
-        EXPECT_FALSE(m_data->m_connection.GetSourceBySourceName("non_existent", resultSource));
+        EXPECT_FALSE(m_data->m_connection.GetSourceBySourceNameScanFolderId("non_existent", m_data->m_scanFolder.m_scanFolderID, resultSource));
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
     }
@@ -2207,7 +2237,7 @@ namespace UnitTests
 
         SourceDatabaseEntry resultSource;
 
-        EXPECT_TRUE(m_data->m_connection.GetSourceBySourceName("somefile.tif", resultSource));
+        EXPECT_TRUE(m_data->m_connection.GetSourceBySourceNameScanFolderId("somefile.tif", m_data->m_scanFolder.m_scanFolderID, resultSource));
         EXPECT_EQ(resultSource.m_sourceGuid, m_data->m_sourceFile1.m_sourceGuid);
 
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
@@ -2384,6 +2414,206 @@ namespace UnitTests
         ASSERT_NE(fileEntry.m_fileID, InvalidEntryId);
         ASSERT_TRUE(m_data->m_connection.InsertFile(fileEntry, entryAlreadyExists));
         ASSERT_TRUE(entryAlreadyExists);
+    }
+
+    TEST_F(AssetDatabaseTest, StatDatabaseEntryEquality)
+    {
+        // two entries are the same if m_statName, m_statValue, and m_lastLogTime are same.
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry entry1, entry2;
+        entry1.m_statName = "EqTest";
+        entry1.m_statValue = 17632;
+        entry1.m_lastLogTime = 54689213;
+        entry2.m_statName = "EqTest";
+        entry2.m_statValue = 17632;
+        entry2.m_lastLogTime = 54689213;
+        EXPECT_EQ(entry1, entry2);
+        entry2.m_statName = "Helloworld";
+        EXPECT_NE(entry1, entry2);
+        entry2.m_statName = "EqTest";
+        entry2.m_statValue = 81245;
+        EXPECT_NE(entry1, entry2);
+        entry2.m_statValue = 17632;
+        entry2.m_lastLogTime = 12345678;
+        EXPECT_NE(entry1, entry2);
+    }
+
+    TEST_F(AssetDatabaseTest, ReplaceStat_CreateIfNotExist)
+    {
+        // create entry if StatName is not seen
+        CreateCoverageTestData();
+
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry statEntry;
+        StatDatabaseEntryContainer statContainer;
+        statEntry.m_statName = "testJob_createIfNotExist";
+        statEntry.m_statValue = 1853;
+        statEntry.m_lastLogTime = m_data->m_job1.m_lastLogTime;
+
+        //! Ensure the Stats table is empty
+        size_t entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 0);
+
+        //! Insert a stat and read the stat. Stat read and stat written should be the same.
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+        m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer);
+        EXPECT_EQ(statContainer.size(), 1);
+        EXPECT_EQ(statContainer.at(0), statEntry);
+        statContainer.clear();
+
+        //! Ensure one element is added.
+        entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 1);
+    }
+
+    TEST_F(AssetDatabaseTest, ReplaceStat_UpdateIfExist)
+    {
+        // replace the entry if the StatName is in the asset database
+        CreateCoverageTestData();
+
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry statEntry;
+        StatDatabaseEntryContainer statContainer;
+        statEntry.m_statName = "testJob_updateIfExist";
+        statEntry.m_statValue = 8432;
+        statEntry.m_lastLogTime = m_data->m_job1.m_lastLogTime;
+
+        //! Ensure the Stats table is empty
+        size_t entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 0);
+
+        //! Insert a stat
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+
+        //! Insert a stat with the same StatName. The old one should be replaced.
+        StatDatabaseEntry secondStatEntry;
+        secondStatEntry.m_statName = statEntry.m_statName;
+        secondStatEntry.m_statValue = 16384;
+        secondStatEntry.m_lastLogTime = 23570;
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(secondStatEntry));
+        m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer);
+        ASSERT_EQ(statContainer.size(), 1);
+        ASSERT_NE(statContainer.at(0), statEntry);
+        ASSERT_EQ(statContainer.at(0), secondStatEntry);
+
+        //! Ensure the element is replaced, not added.
+        entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        ASSERT_EQ(entryCount, 1);
+    }
+
+    TEST_F(AssetDatabaseTest, QueryStatsTable)
+    {
+        const unsigned int StatCount = 10;
+        InsertStatsTestData(StatCount);
+
+        StatDatabaseEntryContainer statContainer;
+        auto getAllStats = [&statContainer](StatDatabaseEntry& stat)
+        {
+            statContainer.push_back(stat);
+            return true;
+        };
+        ASSERT_TRUE(m_data->m_connection.QueryStatsTable(getAllStats));
+        ASSERT_TRUE(statContainer.size() == StatCount);
+
+        // check the items are identical to what we inserted
+        AZStd::sort(
+            statContainer.begin(),
+            statContainer.end(),
+            [](const StatDatabaseEntry& lhs, const StatDatabaseEntry& rhs)
+            {
+                return lhs.m_statName != rhs.m_statName  ? lhs.m_statName < rhs.m_statName
+                    : lhs.m_statValue != rhs.m_statValue ? lhs.m_statValue < rhs.m_statValue
+                                                         : lhs.m_lastLogTime < rhs.m_lastLogTime;
+            });
+
+        StatDatabaseEntry statEntry = GetFirstStatEntry();
+        for (unsigned int i = 0; i < StatCount; ++i)
+        {
+            EXPECT_EQ(statEntry, statContainer[i]);
+            StepStatEntry(statEntry);
+        }
+    }
+
+    TEST_F(AssetDatabaseTest, GetStatByStatName)
+    {
+        const unsigned int StatCount = 10;
+        InsertStatsTestData(StatCount);
+
+        StatDatabaseEntry statEntry = GetFirstStatEntry();
+        for (unsigned int i = 0; i < StatCount; ++i)
+        {
+            StatDatabaseEntryContainer statContainer;
+            ASSERT_TRUE(m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer));
+            ASSERT_EQ(statContainer.size(), 1);
+            EXPECT_EQ(statContainer[0], statEntry);
+            StepStatEntry(statEntry);
+        }
+    }
+
+    TEST_F(AssetDatabaseTest, GetStatLikeStatName)
+    {
+        const unsigned int StatCountPerPrefix = 5;
+        AZStd::array<AZStd::string, 4> prefixes{ "Apple_", "Banana_", "Orange_", "Grape_" };
+        for (const auto& prefix : prefixes)
+        {
+            InsertStatsTestData(StatCountPerPrefix, prefix);
+        }
+
+        //! Make sure we insert right number of entries
+        {
+            unsigned int entryCount{ 0 };
+            auto countAllStats = [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            };
+            ASSERT_TRUE(m_data->m_connection.QueryStatsTable(countAllStats));
+            ASSERT_EQ(entryCount, StatCountPerPrefix * prefixes.size());
+        }
+
+        //! Query StatName like prefixes
+        for (const auto& prefix : prefixes)
+        {
+            StatDatabaseEntryContainer container;
+            EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName((prefix + "%").c_str(), container));
+            EXPECT_EQ(container.size(), StatCountPerPrefix);
+        }
+
+        //! Query StatName like suffixes
+        char query[] = "%a";
+        for (unsigned int i = 0; i < StatCountPerPrefix; ++i, ++query[1])
+        {
+            StatDatabaseEntryContainer container;
+            EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName(query, container));
+            EXPECT_EQ(container.size(), prefixes.size());
+        }
     }
 
     class QueryLoggingTraceHandler : public AZ::Debug::TraceMessageBus::Handler

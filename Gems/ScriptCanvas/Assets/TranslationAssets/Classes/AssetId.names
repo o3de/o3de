@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "CreateString",
-                    "context": "AssetId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreateString"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "IsValid",
-                    "context": "AssetId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsValid"
@@ -73,7 +71,6 @@
                 },
                 {
                     "base": "ToString",
-                    "context": "AssetId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToString"
@@ -104,7 +101,6 @@
                 },
                 {
                     "base": "IsEqual",
-                    "context": "AssetId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsEqual"

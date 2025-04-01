@@ -49,9 +49,9 @@ namespace AZ
             }
 
             AssImpSceneDataPopulatedContext::AssImpSceneDataPopulatedContext(AssImpNodeEncounteredContext& parent,
-                const AZStd::shared_ptr<DataTypes::IGraphObject>& graphData, const AZStd::string& dataName)
+                AZStd::shared_ptr<DataTypes::IGraphObject> graphData, const AZStd::string& dataName)
                 : AssImpImportContext(parent.m_sourceScene, parent.m_sourceSceneSystem, parent.m_sourceNode)
-                , SceneDataPopulatedContextBase(parent, graphData, dataName)
+                , SceneDataPopulatedContextBase(parent, AZStd::move(graphData), dataName)
             {
             }
 
@@ -61,9 +61,9 @@ namespace AZ
                 const SceneSystem& sourceSceneSystem,
                 RenamedNodesMap& nodeNameMap,
                 AssImpSDKWrapper::AssImpNodeWrapper& sourceNode,
-                const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData, const AZStd::string& dataName)
+                AZStd::shared_ptr<DataTypes::IGraphObject> nodeData, const AZStd::string& dataName)
                 : AssImpImportContext(sourceScene, sourceSceneSystem, sourceNode)
-                , SceneDataPopulatedContextBase(scene, currentGraphPosition, nodeNameMap, nodeData, dataName)
+                , SceneDataPopulatedContextBase(scene, currentGraphPosition, nodeNameMap, AZStd::move(nodeData), dataName)
             {
             }
 
@@ -84,9 +84,9 @@ namespace AZ
             {
             }
 
-            AssImpSceneAttributeDataPopulatedContext::AssImpSceneAttributeDataPopulatedContext(AssImpSceneNodeAppendedContext& parent, const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData, const Containers::SceneGraph::NodeIndex attributeNodeIndex, const AZStd::string& dataName)
+            AssImpSceneAttributeDataPopulatedContext::AssImpSceneAttributeDataPopulatedContext(AssImpSceneNodeAppendedContext& parent, AZStd::shared_ptr<DataTypes::IGraphObject> nodeData, const Containers::SceneGraph::NodeIndex attributeNodeIndex, const AZStd::string& dataName)
                 : AssImpImportContext(parent.m_sourceScene, parent.m_sourceSceneSystem, parent.m_sourceNode)
-                , SceneAttributeDataPopulatedContextBase(parent, nodeData, attributeNodeIndex, dataName)
+                , SceneAttributeDataPopulatedContextBase(parent, AZStd::move(nodeData), attributeNodeIndex, dataName)
             {
             }
 

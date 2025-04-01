@@ -1,5 +1,6 @@
 {
     "gem_name": "AtomToolsFramework",
+    "version": "0.0.0",
     "display_name": "Atom Tools Framework",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -16,6 +17,8 @@
     "dependencies": [
         "Atom_RPI",
         "Atom_RHI",
-        "Atom_Bootstrap"
+        "Atom_Bootstrap",
+        "GraphCanvas",
+        "GraphModel"
     ]
 }

@@ -20,7 +20,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(BlendShapeRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(BlendShapeRule, AZ::SystemAllocator)
 
             SceneNodeSelectionList& BlendShapeRule::GetNodeSelectionList()
             {
@@ -55,7 +55,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &BlendShapeRule::m_blendShapes, "Select blend shapes", 
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &BlendShapeRule::m_blendShapes, "Select blend shapes",
                             "Select 1 or more meshes to include in the skin group for later use with the blend shape system.")
                             ->Attribute("FilterName", "blend shapes")
                             ->Attribute("FilterType", DataTypes::IBlendShapeData::TYPEINFO_Uuid())

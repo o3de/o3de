@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <AzCore/Component/EntityUtils.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -27,10 +28,17 @@
 #include <ScriptCanvas/Serialization/RuntimeVariableSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
+#include <ScriptCanvas/Core/Contracts/MathOperatorContract.h>
+
+#include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
+#include <ScriptCanvas/Libraries/Spawning/DespawnNodeable.h>
+#include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
+
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
+#include <AutoGen/ScriptCanvasAutoGenRegistry.h>
 
 namespace ScriptCanvasSystemComponentCpp
 {
@@ -57,10 +65,26 @@ namespace ScriptCanvasSystemComponentCpp
 
 namespace ScriptCanvas
 {
+    AZ_ENUM_CLASS(PerformanceReportFileStream,
+        None,
+        Stdout,
+        Stderr
+    );
+}
+
+namespace ScriptCanvas
+{
+    // Console Variable to determine where the scriptcanvas output performance report is sent
+    AZ_CVAR(PerformanceReportFileStream, sc_outputperformancereport, PerformanceReportFileStream::None, {}, AZ::ConsoleFunctorFlags::Null,
+        "Determines where the Script Canvas performance report should be output.");
+
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ScriptCanvasModel::Instance().Reflect(context);
+
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
+        SourceHandle::Reflect(context);
         ReflectLibraries(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -68,7 +92,7 @@ namespace ScriptCanvas
             serialize->Class<SystemComponent, AZ::Component>()
                 ->Version(1)
                 // ScriptCanvas avoids a use dependency on the AssetBuilderSDK. Therefore the Crc is used directly to register this component with the Gem builder
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ->Field("m_infiniteLoopDetectionMaxIterations", &SystemComponent::m_infiniteLoopDetectionMaxIterations)
                 ->Field("maxHandlerStackDepth", &SystemComponent::m_maxHandlerStackDepth)
                 ;
@@ -78,7 +102,6 @@ namespace ScriptCanvas
                 ec->Class<SystemComponent>("Script Canvas", "Script Canvas System Component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_infiniteLoopDetectionMaxIterations, "Infinite Loop Protection Max Iterations", "Script Canvas will avoid infinite loops by detecting potentially re-entrant conditions that execute up to this number of iterations.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_maxHandlerStackDepth, "Max Handler Stack Depth", "Script Canvas will avoid infinite loops at run-time by detecting sending Ebus Events while handling said Events. This limits the stack depth of the broadcast.")
@@ -102,7 +125,7 @@ namespace ScriptCanvas
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -113,8 +136,8 @@ namespace ScriptCanvas
     void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         // \todo configure the application to require these services
-        // required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-        // required.push_back(AZ_CRC("ScriptService", 0x787235ab));
+        // required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        // required.push_back(AZ_CRC_CE("ScriptService"));
     }
 
     void SystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -160,13 +183,39 @@ namespace ScriptCanvas
         const double latent = aznumeric_caster(report.timing.latentTime);
         const double total = aznumeric_caster(report.timing.totalTime);
 
-        std::cerr << "Global ScriptCanvas Performance Report:\n";
-        std::cerr << "[ INITIALIZE] " << AZStd::string::format("%7.3f ms \n", ready / 1000.0).c_str();
-        std::cerr << "[  EXECUTION] " << AZStd::string::format("%7.3f ms \n", instant / 1000.0).c_str();
-        std::cerr << "[     LATENT] " << AZStd::string::format("%7.3f ms \n", latent / 1000.0).c_str();
-        std::cerr << "[      TOTAL] " << AZStd::string::format("%7.3f ms \n", total / 1000.0).c_str();
-
+        FILE* performanceReportStream = nullptr;
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            if (PerformanceReportFileStream performanceOutputOption;
+                console->GetCvarValue("sc_outputperformancereport", performanceOutputOption) == AZ::GetValueResult::Success)
+            {
+                switch (performanceOutputOption)
+                {
+                case PerformanceReportFileStream::None:
+                    performanceReportStream = nullptr;
+                    break;
+                case PerformanceReportFileStream::Stdout:
+                    performanceReportStream = stdout;
+                    break;
+                case PerformanceReportFileStream::Stderr:
+                    performanceReportStream = stderr;
+                    break;
+                }
+            }
+        }
+        if (performanceReportStream != nullptr)
+        {
+            fprintf(performanceReportStream, "Global ScriptCanvas Performance Report:\n");
+            fprintf(performanceReportStream, "[ INITIALIZE] %s\n", AZStd::fixed_string<32>::format("%7.3f ms", ready / 1000.0).c_str());
+            fprintf(performanceReportStream, "[  EXECUTION] %s\n", AZStd::fixed_string<32>::format("%7.3f ms", instant / 1000.0).c_str());
+            fprintf(performanceReportStream, "[     LATENT] %s\n", AZStd::fixed_string<32>::format("%7.3f ms", latent / 1000.0).c_str());
+            fprintf(performanceReportStream, "[      TOTAL] %s\n", AZStd::fixed_string<32>::format("%7.3f ms", total / 1000.0).c_str());
+        }
         SafeUnregisterPerformanceTracker();
+
+        // We have to unregister this during Deactivate, so that the ScriptCanvasModuleCommon dll and any others that have
+        // on-demand reflection autogenerated can release while still alive.
+        ScriptCanvasModel::Instance().Release();
     }
 
     bool SystemComponent::IsScriptUnitTestingInProgress()

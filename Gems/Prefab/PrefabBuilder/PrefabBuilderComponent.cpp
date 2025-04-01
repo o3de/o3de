@@ -7,14 +7,21 @@
  */
 
 #include "PrefabBuilderComponent.h"
+#include <AzToolsFramework/Debug/TraceContext.h>
 
 namespace AZ::Prefab
 {
+    // This allows the component's serialization version, and the builder version, to remain in sync.
+    // Not strictly required, but it's useful to modify one when the other is modified, to keep data synchronized.
+    const int PrefabBuilderComponentVersion = 1;
+
     void PrefabBuilderComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<PrefabBuilderComponent, AZ::Component>()->Version(0)->Attribute(
+            serialize->Class<PrefabBuilderComponent, AZ::Component>()
+                ->Version(PrefabBuilderComponentVersion)
+                ->Attribute(
                 AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({AssetBuilderSDK::ComponentTags::AssetBuilder}));
         }
     }
@@ -32,7 +39,7 @@ namespace AZ::Prefab
     {
         AssetBuilderSDK::AssetBuilderCommandBus::Handler::BusConnect(m_builderId);
 
-        m_pipeline.LoadStackProfile("GameObjectCreation");
+        m_pipeline.LoadStackProfile(ConfigKey);
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -43,10 +50,12 @@ namespace AZ::Prefab
 
         AssetBuilderSDK::AssetBuilderDesc builderDesc;
         builderDesc.m_name = "Prefab Builder";
+        builderDesc.m_version = PrefabBuilderComponentVersion;
         builderDesc.m_patterns.emplace_back("*.prefab", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
         builderDesc.m_builderType = AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::External;
         builderDesc.m_busId = m_builderId;
         builderDesc.m_analysisFingerprint = AZStd::to_string(fingerprint);
+
         builderDesc.m_createJobFunction =
             [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) {
                 CreateJobs(request, response);
@@ -76,7 +85,7 @@ namespace AZ::Prefab
 
         // Deserialize all of the entities and their components (for this prefab only)
         auto newInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
-        AzToolsFramework::Prefab::Instance::EntityList entities;
+        AzToolsFramework::EntityList entities;
         if (AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, entities, genericDocument))
         {
             // Add the fingerprint of all the components and their types
@@ -239,6 +248,7 @@ namespace AZ::Prefab
         const AZ::PlatformTagSet& platformTags, const char* filePath, AZ::IO::PathView tempDirPath, const AZ::Uuid& sourceFileUuid,
         AzToolsFramework::Prefab::PrefabDom&& rootDom, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts)
     {
+        AZ_TraceContext("Stack config", ConfigKey);
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext context(sourceFileUuid);
         AZStd::string rootPrefabName;
         if (!StringFunc::Path::GetFileName(filePath, rootPrefabName))
@@ -304,7 +314,7 @@ namespace AZ::Prefab
         }
 
         AZ_TracePrintf("Prefab Builder", "Loading Prefab in '%s'.\n", request.m_fullPath.c_str());
-        TemplateId templateId = loader->LoadTemplateFromFile(AZStd::string_view(request.m_fullPath));
+        AzToolsFramework::Prefab::TemplateId templateId = loader->LoadTemplateFromFile(AZStd::string_view(request.m_fullPath));
         if (templateId == InvalidTemplateId)
         {
             AZ_Error("Prefab Builder", false, "Failed to load Prefab template.");

@@ -5,12 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <IAudioSystem.h>
+#include <AzCore/Component/Component.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Component/Component.h>
+#include <IAudioSystem.h>
 #include <LmbrCentral/Audio/AudioTriggerComponentBus.h>
 
 namespace LmbrCentral
@@ -36,7 +37,10 @@ namespace LmbrCentral
         void Deactivate() override;
 
         AudioTriggerComponent() = default;
-        AudioTriggerComponent(const AZStd::string& playTriggerName, const AZStd::string& stopTriggerName, Audio::ObstructionType obstructionType, bool playsImmediately, bool notifyFinished);
+        AudioTriggerComponent(const AZStd::string& playTriggerName, const AZStd::string& stopTriggerName,
+            Audio::ObstructionType obstructionType, bool playsImmediately);
+        ~AudioTriggerComponent() = default;
+        AZ_DISABLE_COPY(AudioTriggerComponent);
 
         /*!
          * AudioTriggerComponentRequestBus::Handler Interface
@@ -53,33 +57,29 @@ namespace LmbrCentral
 
         void SetObstructionType(Audio::ObstructionType obstructionType) override;
 
-        //! Used as a callback when a trigger instance is finished.
-        static void OnAudioEvent(const Audio::SAudioRequestInfo* const);
-
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AudioPreloadService", 0x20c917d8));
+            dependent.push_back(AZ_CRC_CE("AudioPreloadService"));
         }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AudioTriggerService", 0xeba17b52));
+            provided.push_back(AZ_CRC_CE("AudioTriggerService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("AudioProxyService", 0x7da4c79c));
+            required.push_back(AZ_CRC_CE("AudioProxyService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AudioTriggerService", 0xeba17b52));
+            incompatible.push_back(AZ_CRC_CE("AudioTriggerService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);
 
     private:
-        AudioTriggerComponent(const AudioTriggerComponent&) = delete;
         //! Editor callbacks
         void OnPlayTriggerChanged();
         void OnStopTriggerChanged();
@@ -88,14 +88,12 @@ namespace LmbrCentral
         //! Transient data
         Audio::TAudioControlID m_defaultPlayTriggerID = INVALID_AUDIO_CONTROL_ID;
         Audio::TAudioControlID m_defaultStopTriggerID = INVALID_AUDIO_CONTROL_ID;
-        AZStd::unique_ptr<Audio::SAudioCallBackInfos> m_callbackInfo;
 
         //! Serialized data
         AZStd::string m_defaultPlayTriggerName;
         AZStd::string m_defaultStopTriggerName;
         Audio::ObstructionType m_obstructionType = Audio::ObstructionType::Ignore;
         bool m_playsImmediately = false;
-        bool m_notifyWhenTriggerFinishes = false;
     };
 
 } // namespace LmbrCentral

@@ -10,14 +10,13 @@
 
 // AZ
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/parallel/condition_variable.h>
 
 // Qt
 #include <QImage>
-#include <QObject>
 #include <QSize>
 #include <QTimer>
 
@@ -56,7 +55,7 @@ namespace GradientSignal
         : public AZ::Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorGradientPreviewUpdateJob, AZ::ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorGradientPreviewUpdateJob, AZ::ThreadPoolAllocator);
 
         using SampleFilterFunc = AZStd::function<float(float, const GradientSampleParams&)>;
 
@@ -424,14 +423,12 @@ namespace GradientSignal
     };
 
     class EditorGradientPreviewRenderer
-        : public QObject
-        , private AZ::TickBus::Handler
+        : private AZ::TickBus::Handler
     {
     public:
         using SampleFilterFunc = AZStd::function<float(float, const GradientSampleParams&)>;
 
         EditorGradientPreviewRenderer()
-            : QObject()
         {
             m_updateJob = aznew EditorGradientPreviewUpdateJob();
             AZ::TickBus::Handler::BusConnect();

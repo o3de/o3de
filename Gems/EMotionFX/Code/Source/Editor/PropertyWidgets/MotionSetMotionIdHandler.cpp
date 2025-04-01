@@ -19,10 +19,10 @@ namespace EMotionFX
 {
     float MotionSelectionIdWidgetController::s_displayedRoundingError = 0.0f;
 
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSetMotionIdPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MotionIdRandomSelectionWeightsHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSetMultiMotionIdHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSelectionIdWidgetController, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSetMotionIdPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionIdRandomSelectionWeightsHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSetMultiMotionIdHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSelectionIdWidgetController, EditorAllocator)
 
     const float MotionSetMotionIdPicker::s_defaultWeight = 1.0f;
 
@@ -436,7 +436,7 @@ namespace EMotionFX
 
     AZ::u32 MotionIdRandomSelectionWeightsHandler::GetHandlerName() const
     {
-        return AZ_CRC("MotionSetMotionIdsRandomSelectionWeights", 0xc882da3c);
+        return AZ_CRC_CE("MotionSetMotionIdsRandomSelectionWeights");
     }
 
 
@@ -446,7 +446,8 @@ namespace EMotionFX
 
         connect(picker, &MotionSetMotionIdPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -496,7 +497,7 @@ namespace EMotionFX
 
     AZ::u32 MotionSetMultiMotionIdHandler::GetHandlerName() const
     {
-        return AZ_CRC("MotionSetMotionIds", 0x8695c0fa);
+        return AZ_CRC_CE("MotionSetMotionIds");
     }
 
 
@@ -506,7 +507,8 @@ namespace EMotionFX
 
         connect(picker, &MotionSetMotionIdPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;

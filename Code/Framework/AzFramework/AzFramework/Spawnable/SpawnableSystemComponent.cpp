@@ -9,10 +9,13 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 
 namespace AzFramework
 {
@@ -20,6 +23,8 @@ namespace AzFramework
     {
         Spawnable::Reflect(context);
         SpawnableMetaData::Reflect(context);
+        EntitySpawnTicket::Reflect(context);
+        Scripts::SpawnableScriptMediator::Reflect(context);
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
@@ -90,6 +95,12 @@ namespace AzFramework
                         &RootSpawnableNotificationBus::Events::OnRootSpawnableAssigned, AZStd::move(rootSpawnable), generation);
                 }, SpawnableEntitiesContainer::CheckIfSpawnableIsLoaded::Yes);
             m_rootSpawnableContainer.SpawnAllEntities();
+
+            #if defined(AZ_ENABLE_TRACING)
+                // Save the root spawnable's name before the compiler eats the rootSpawnable variable from AZStd::move(rootSpawnable)
+                AZStd::string rootSpawnableName = rootSpawnable.GetHint();
+            #endif
+
             m_rootSpawnableContainer.Alert(
                 [newSpawnable = AZStd::move(rootSpawnable)](uint32_t generation)
                 {
@@ -97,7 +108,7 @@ namespace AzFramework
                         &RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZStd::move(newSpawnable), generation);
                 });
 
-            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnable.GetHint().c_str(), generation);     
+            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnableName.c_str(), generation);     
         }
         else
         {
@@ -127,7 +138,18 @@ namespace AzFramework
             SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
 
-    void SpawnableSystemComponent::OnRootSpawnableAssigned([[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
+    void SpawnableSystemComponent::ProcessSpawnableQueueUntilEmpty()
+    {
+        SpawnableEntitiesManager::CommandQueueStatus queueStatus;
+        do
+        {
+            queueStatus = m_entitiesManager.ProcessQueue(
+                SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        } while (queueStatus == SpawnableEntitiesManager::CommandQueueStatus::HasCommandsLeft);
+    }
+
+    void SpawnableSystemComponent::OnRootSpawnableAssigned(
+        [[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
         [[maybe_unused]] uint32_t generation)
     {
         AZ_TracePrintf("Spawnables", "New root spawnable '%s' assigned (generation: %i).\n", rootSpawnable.GetHint().c_str(), generation);
@@ -160,7 +182,7 @@ namespace AzFramework
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         AZ_Assert(settingsRegistry, "Unable to change root spawnable callback because Settings Registry is not available.");
 
-        auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        auto LifecycleCallback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
         {
             LoadRootSpawnableFromSettingsRegistry();
         };
@@ -171,9 +193,9 @@ namespace AzFramework
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
+        m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
-                if (path.starts_with(RootSpawnableRegistryKey))
+                if (notifyEventArgs.m_jsonKeyPath.starts_with(RootSpawnableRegistryKey))
                 {
                     LoadRootSpawnableFromSettingsRegistry();
                 }
@@ -188,6 +210,7 @@ namespace AzFramework
 
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
+
         // Unregister Lifecycle event handler
         m_criticalAssetsHandler = {};
 
@@ -199,12 +222,7 @@ namespace AzFramework
             // entity manager before it can safely destroy it on shutdown, but also to make sure that are no
             // more calls to the callback registered to the root spawnable as that accesses this component.
             m_rootSpawnableContainer.Clear();
-            SpawnableEntitiesManager::CommandQueueStatus queueStatus;
-            do
-            {
-                queueStatus = m_entitiesManager.ProcessQueue(
-                    SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
-            } while (queueStatus == SpawnableEntitiesManager::CommandQueueStatus::HasCommandsLeft);
+            ProcessSpawnableQueueUntilEmpty();
         }
 
         AZ::Data::AssetManager::Instance().UnregisterHandler(&m_assetHandler);

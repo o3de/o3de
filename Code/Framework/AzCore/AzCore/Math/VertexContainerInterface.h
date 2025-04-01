@@ -11,7 +11,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ
@@ -155,7 +154,7 @@ namespace AZ
     inline AZ::Vector3 AdaptVertexIn<AZ::Vector3>(const AZ::Vector3& vector) { return vector; }
 
     template<>
-    inline AZ::Vector2 AdaptVertexIn<AZ::Vector2>(const AZ::Vector3& vector) { return Vector3ToVector2(vector); }
+    inline AZ::Vector2 AdaptVertexIn<AZ::Vector2>(const AZ::Vector3& vector) { return AZ::Vector2(vector); }
 
     // template helper to map a vertex (vector) from a vertex container to a local/world space position
     // depending on if the vertex container is storing Vector2s or Vector3s.
@@ -166,6 +165,6 @@ namespace AZ
     inline AZ::Vector3 AdaptVertexOut<AZ::Vector3>(const AZ::Vector3& vector) { return vector; }
 
     template<>
-    inline AZ::Vector3 AdaptVertexOut<AZ::Vector2>(const AZ::Vector2& vector) { return Vector2ToVector3(vector); }
+    inline AZ::Vector3 AdaptVertexOut<AZ::Vector2>(const AZ::Vector2& vector) { return AZ::Vector3(vector); }
 
 } // namespace AZ

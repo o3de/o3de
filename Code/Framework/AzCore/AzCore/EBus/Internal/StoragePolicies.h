@@ -38,7 +38,7 @@ namespace AZ
             struct hash_table_traits
             {
                 using key_type = IdType;
-                using key_eq = AZStd::equal_to<key_type>;
+                using key_equal = AZStd::equal_to<key_type>;
                 using value_type = HandlerStorage;
                 using allocator_type = typename Traits::AllocatorType;
                 enum
@@ -68,7 +68,7 @@ namespace AZ
                 using base_type = AZStd::hash_table<hash_table_traits>;
 
                 StorageType()
-                    : base_type(typename base_type::hasher(), typename base_type::key_eq(), typename base_type::allocator_type())
+                    : base_type(typename base_type::hasher(), typename base_type::key_equal(), typename base_type::allocator_type())
                 { }
 
                 // EBus extension: Assert on insert
@@ -101,7 +101,7 @@ namespace AZ
             struct rbtree_traits
             {
                 using key_type = IdType;
-                using key_eq = typename Traits::BusIdOrderCompare;
+                using key_equal = typename Traits::BusIdOrderCompare;
                 using value_type = HandlerStorage;
                 using allocator_type = typename Traits::AllocatorType;
                 static const key_type& key_from_value(const value_type& value) { return value.m_busId; }

@@ -53,14 +53,14 @@ namespace AZ
             }
         }
 
-        void ModelLodAssetCreator::SetMeshAabb(AZ::Aabb&& aabb)
+        void ModelLodAssetCreator::SetMeshAabb(const AZ::Aabb& aabb)
         {
             if (ValidateIsMeshReady())
             {
-                m_currentMesh.m_aabb = AZStd::move(aabb);
+                m_currentMesh.m_aabb = aabb;
             }
         }
-        
+                
         void ModelLodAssetCreator::SetMeshMaterialSlot(ModelMaterialSlot::StableId id)
         {
             if (!ValidateIsMeshReady())
@@ -243,7 +243,7 @@ namespace AZ
 
         bool ModelLodAssetCreator::Clone(const Data::Asset<ModelLodAsset>& sourceAsset, Data::Asset<ModelLodAsset>& clonedResult, Data::AssetId& inOutLastCreatedAssetId)
         {
-            AZStd::array_view<ModelLodAsset::Mesh> sourceMeshes = sourceAsset->GetMeshes();
+            AZStd::span<const ModelLodAsset::Mesh> sourceMeshes = sourceAsset->GetMeshes();
             if (sourceMeshes.empty())
             {
                 return true;
@@ -289,7 +289,7 @@ namespace AZ
                 creator.BeginMesh();
                 creator.SetMeshName(sourceMesh.GetName());
                 AZ::Aabb aabb = sourceMesh.GetAabb();
-                creator.SetMeshAabb(AZStd::move(aabb));
+                creator.SetMeshAabb(aabb);
 
                 creator.SetMeshMaterialSlot(sourceMesh.GetMaterialSlotId());
 

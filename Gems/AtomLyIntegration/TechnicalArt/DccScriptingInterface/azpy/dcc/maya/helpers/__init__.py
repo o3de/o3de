@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# -------------------------------------------------------------------------
 # The __init__.py files help guide import statements without automatically
 # importing all of the modules
 """azpy.dcc.maya.helpers.__init__"""
@@ -23,8 +23,8 @@ _DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.dcc.maya.callbacks'
+if _PACKAGENAME == '__main__':
+    _PACKAGENAME = 'azpy.dcc.maya.helpers'
 
 # set up module logging
 for handler in _logging.root.handlers[:]:

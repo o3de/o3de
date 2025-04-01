@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{4614DBDC-25EB-4C71-B5FB-26C072962DD1}",
+        "category": "Math Functions",
+        "title": "Transform2",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a float2 transformed by a matrix2",
+        "slotDataTypeGroups": [
+            "inVector|outVector",
+            "inMatrix"
+        ],
+        "inputSlots": [
+            {
+                "name": "inVector",
+                "displayName": "Vector",
+                "description": "Vector",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float2",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inMatrix",
+                "displayName": "Matrix",
+                "description": "Matrix",
+                "supportedDataTypeRegex": "(bool|int|uint|float)[2]x[1-4]",
+                "defaultDataType": "float2x2",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outVector",
+                "displayName": "Vector",
+                "description": "Vector",
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = mul((float2)inVector, inMatrix);"
+                    ]
+                }
+            }
+        ]
+    }
+}

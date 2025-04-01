@@ -52,12 +52,12 @@ namespace ScriptCanvas
 
     bool EBusHandler::Connect()
     {
-        AZ::BehaviorValueParameter noBusId;
+        AZ::BehaviorArgument noBusId;
         noBusId.m_typeId = AZ::AzTypeInfo<void>::Uuid();
         return ConnectTo(noBusId);
     }
 
-    bool EBusHandler::ConnectTo(AZ::BehaviorValueParameter& busId)
+    bool EBusHandler::ConnectTo(AZ::BehaviorArgument& busId)
     {
         m_handler->Disconnect();
         const bool isConnected = m_handler->Connect(&busId);
@@ -92,7 +92,7 @@ namespace ScriptCanvas
         return m_handler->IsConnected();
     }
 
-    bool EBusHandler::IsConnectedTo(AZ::BehaviorValueParameter& busId) const
+    bool EBusHandler::IsConnectedTo(AZ::BehaviorArgument& busId) const
     {
         return m_handler->IsConnectedId(&busId);
     }
@@ -112,16 +112,16 @@ namespace ScriptCanvas
         Disconnect();
     }
 
-    void EBusHandler::OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+    void EBusHandler::OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorArgument* result, int numParameters, AZ::BehaviorArgument* parameters)
     {
         AZ_UNUSED(eventName);
         AZ_PROFILE_SCOPE(ScriptCanvas, "EBusEventHandler::OnEvent %s", eventName);
         auto handler = reinterpret_cast<EBusHandler*>(userData);
-        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(handler->GetScriptCanvasId(), handler->GetAssetId());
+        SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(handler->GetExecutionState());
         handler->OnEvent(nullptr, eventIndex, result, numParameters, parameters);
     }
 
-    void EBusHandler::OnEvent(const char* /*eventName*/, const int eventIndex, AZ::BehaviorValueParameter* result, const int numParameters, AZ::BehaviorValueParameter* parameters)
+    void EBusHandler::OnEvent(const char* /*eventName*/, const int eventIndex, AZ::BehaviorArgument* result, const int numParameters, AZ::BehaviorArgument* parameters)
     {
         CallOut(eventIndex, result, parameters, numParameters);
     }

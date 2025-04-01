@@ -114,6 +114,9 @@ namespace AZ
 
         bool IsZero(float tolerance = Constants::FloatEpsilon) const;
 
+        //! Checks whether all components are finite.
+        bool IsFinite() const;
+
         bool operator==(const Color& rhs) const;
         bool operator!=(const Color& rhs) const;
 
@@ -133,6 +136,12 @@ namespace AZ
 
         //! Color from u32 => 0xAABBGGRR, RGB convert from Gamma corrected to Linear values.
         void FromU32GammaToLinear(u32 c);
+
+        //! Convert SRGB gamma space to linear space
+        static float ConvertSrgbGammaToLinear(float x);
+
+        //! Convert SRGB linear space to gamma space
+        static float ConvertSrgbLinearToGamma(float x);
 
         //! Convert color from linear to gamma corrected space.
         Color LinearToGamma() const;

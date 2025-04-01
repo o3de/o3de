@@ -9,7 +9,6 @@
 #include "EditorCompoundShapeComponent.h"
 #include <QMessageBox>
 
-#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -34,12 +33,12 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Compound_Shape.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Compound_Shape.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/compound-shape/")
                     ->DataElement(0, &EditorCompoundShapeComponent::m_configuration, "Configuration", "Compound Shape Configuration")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCompoundShapeComponent::ConfigurationChanged)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                     ;
             }
         }
@@ -95,7 +94,7 @@ namespace LmbrCentral
         CompoundShapeComponentHierarchyRequestsBus::Handler::BusDisconnect();
     }
 
-    bool EditorCompoundShapeComponent::HasChildId(const AZ::EntityId& entityId)
+    bool EditorCompoundShapeComponent::HasChildId(const AZ::EntityId& entityId) const
     {
         for (const AZ::EntityId& childEntityId : m_configuration.GetChildEntities())
         {

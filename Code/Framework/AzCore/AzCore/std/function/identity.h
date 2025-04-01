@@ -7,9 +7,13 @@
  */
 #pragma once
 
+#include <utility>
 
 namespace AZStd
 {
+    // Bring std::forward into the AZStd namespace
+    using std::forward;
+
     /// Implements the C++20 std::identity type trait
     /// Note: The member type is_transparent indicates to the caller that this function object is a transparent function object:
     /// it accepts arguments of arbitrary types and uses perfect forwarding, which avoids unnecessary copying and conversion
@@ -20,7 +24,7 @@ namespace AZStd
         using is_transparent = void;
 
         template <typename T>
-        T&& operator()(T&& t) const
+        constexpr T&& operator()(T&& t) const
         {
             return AZStd::forward<T>(t);
         }

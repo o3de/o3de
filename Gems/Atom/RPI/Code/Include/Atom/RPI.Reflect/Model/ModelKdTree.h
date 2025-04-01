@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
@@ -21,11 +22,11 @@ namespace AZ
 
         //! Spatial structure for a single model.
         //! May contain indices pointing to triangles from multiple meshes, if a model contains multiple meshes.
-        class ModelKdTree
+        class ATOM_RPI_REFLECT_API ModelKdTree
         {
         public:
 
-            using TriangleIndices = AZStd::tuple<uint32_t, uint32_t, uint32_t>;
+            struct TriangleIndices { uint32_t index1, index2, index3; };
             using ObjectIdTriangleIndices = AZStd::tuple<AZ::u8, TriangleIndices>;
 
             ModelKdTree() = default;
@@ -50,9 +51,9 @@ namespace AZ
                 eSA_Invalid
             };
 
-            static AZStd::array_view<float> GetPositionsBuffer(const ModelLodAsset::Mesh& mesh);
+            static AZStd::span<const float> GetPositionsBuffer(const ModelLodAsset::Mesh& mesh);
 
-            static AZStd::array_view<TriangleIndices> GetIndexBuffer(const ModelLodAsset::Mesh& mesh);
+            static AZStd::span<const TriangleIndices> GetIndexBuffer(const ModelLodAsset::Mesh& mesh);
 
         private:
 
@@ -67,7 +68,7 @@ namespace AZ
                 ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
             void ConstructMeshList(const ModelAsset* model, const AZ::Transform& matParent);
 
-            static const int s_MinimumVertexSizeInLeafNode = 3 * 10;
+            static constexpr int s_MinimumVertexSizeInLeafNode = 3 * 10;
             // Stop splitting the tree if more than 10% of the triangles are straddling the split axis
             static constexpr float s_MaximumSplitAxisStraddlingTriangles = 1.1;
             AZStd::unique_ptr<ModelKdTreeNode> m_pRootNode;
@@ -75,7 +76,7 @@ namespace AZ
             struct MeshData
             {
                 const ModelLodAsset::Mesh* m_mesh = nullptr;
-                AZStd::array_view<float> m_vertexData;
+                AZStd::span<const float> m_vertexData;
             };
 
             AZStd::vector<MeshData> m_meshes;
@@ -93,7 +94,7 @@ namespace AZ
             static AZStd::tuple<ESplitAxis, float> SearchForBestSplitAxis(const AZ::Aabb& aabb);
         };
 
-        class ModelKdTreeNode
+        class ATOM_RPI_REFLECT_API ModelKdTreeNode
         {
         public:
             AZ::u32 GetVertexBufferSize() const

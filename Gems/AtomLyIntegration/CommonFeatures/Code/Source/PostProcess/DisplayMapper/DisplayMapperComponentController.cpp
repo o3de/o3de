@@ -97,12 +97,12 @@ namespace AZ
 
         void DisplayMapperComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ToneMapperService", 0xb8f814e8));
+            provided.push_back(AZ_CRC_CE("ToneMapperService"));
         }
 
         void DisplayMapperComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ToneMapperService", 0xb8f814e8));
+            incompatible.push_back(AZ_CRC_CE("ToneMapperService"));
         }
 
         void DisplayMapperComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -120,10 +120,17 @@ namespace AZ
             m_entityId = entityId;
 
             DisplayMapperComponentRequestBus::Handler::BusConnect(m_entityId);
+            OnConfigChanged();
         }
 
         void DisplayMapperComponentController::Deactivate()
         {
+            DisplayMapperFeatureProcessorInterface* fp =
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<DisplayMapperFeatureProcessorInterface>(m_entityId);
+            if (fp)
+            {
+                fp->UnregisterDisplayMapperConfiguration();
+            }
             DisplayMapperComponentRequestBus::Handler::BusDisconnect(m_entityId);
 
             m_postProcessInterface = nullptr;

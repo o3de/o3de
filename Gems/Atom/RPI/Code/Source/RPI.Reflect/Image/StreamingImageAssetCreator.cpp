@@ -95,12 +95,32 @@ namespace AZ
                 m_asset->m_poolAssetId = poolAssetId;
             }
         }
-        
+
         void StreamingImageAssetCreator::SetFlags(StreamingImageFlags flag)
         {
             if (ValidateIsReady())
             {
                 m_asset->m_flags = flag;
+            }
+        }
+
+        void StreamingImageAssetCreator::SetAverageColor(Color avgColor)
+        {
+            if (ValidateIsReady())
+            {
+                m_asset->m_averageColor = avgColor;
+            }
+        }
+
+        void StreamingImageAssetCreator::AddTag(AZ::Name tag)
+        {
+            if (ValidateIsReady())
+            {
+                // add tag if it doesn't already exist
+                if (auto it = AZStd::find(m_asset->m_tags.begin(), m_asset->m_tags.end(), tag); it == m_asset->m_tags.end())
+                {
+                    m_asset->m_tags.push_back(AZStd::move(tag));
+                }
             }
         }
 
@@ -116,7 +136,7 @@ namespace AZ
 
             if (m_mipLevels != expectedMipLevels)
             {
-                ReportError("Expected %d mip levels, but %d were added through mip chains.", expectedMipLevels, m_mipLevels);
+                ReportError("Expected %u mip levels, but %u were added through mip chains.", expectedMipLevels, m_mipLevels);
                 return false;
             }
 

@@ -16,14 +16,12 @@
 #include <EMotionFX/Source/AnimGraphObject.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <Integration/Assets/MotionSetAsset.h>
 #include <Integration/Assets/AnimGraphAsset.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
-using namespace AZ::Data;
 using ::testing::Return;
 using ::testing::_;
 
@@ -31,9 +29,6 @@ namespace EMotionFX
 {
     void BuilderMockComponent::Activate()
     {
-        EMotionFX::Integration::EMotionFXAllocator::Descriptor allocatorDescriptor;
-        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Create(allocatorDescriptor);
-
         ASSERT_TRUE(MCore::Initializer::Init());
         ASSERT_TRUE(EMotionFX::Initializer::Init());
 
@@ -42,12 +37,12 @@ namespace EMotionFX
         m_assetHandlers.emplace_back(aznew EMotionFX::Integration::AnimGraphAssetBuilderHandler);
 
         // Initialize an AssetCatalog AssetStreamInfo that will appear valid.
-        AssetStreamInfo mockAssetStreamInfo;
+        AZ::Data::AssetStreamInfo mockAssetStreamInfo;
         mockAssetStreamInfo.m_streamFlags = AZ::IO::OpenMode::ModeRead;
         mockAssetStreamInfo.m_streamName = "test";
 
         m_assetCatalog.reset(aznew EMotionFXTest_MockCatalog());
-        EXPECT_CALL(*(m_assetCatalog.get()), GetAssetInfoById(_)).WillRepeatedly(Return(AssetInfo()));
+        EXPECT_CALL(*(m_assetCatalog.get()), GetAssetInfoById(_)).WillRepeatedly(Return(AZ::Data::AssetInfo()));
         EXPECT_CALL(*(m_assetCatalog.get()), GetStreamInfoForLoad(_, _)).WillRepeatedly(Return(mockAssetStreamInfo));
 
         AZ::Data::AssetManager::Instance().RegisterCatalog(m_assetCatalog.get(), azrtti_typeid<EMotionFX::Integration::MotionSetAsset>());
@@ -62,7 +57,6 @@ namespace EMotionFX
 
         EMotionFX::Initializer::Shutdown();
         MCore::Initializer::Shutdown();
-        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Destroy();
     }
 
     void BuilderMockComponent::ReflectAnimGraphAndMotionSet(AZ::ReflectContext* context)
@@ -75,7 +69,6 @@ namespace EMotionFX
         EMotionFX::AnimGraphObject::Reflect(context);
         EMotionFX::AnimGraph::Reflect(context);
         EMotionFX::AnimGraphNodeGroup::Reflect(context);
-        EMotionFX::AnimGraphGameControllerSettings::Reflect(context);
 
         // Anim graph objects
         EMotionFX::AnimGraphObjectFactory::ReflectTypes(context);

@@ -96,20 +96,28 @@ namespace AZ::IO
         return {};
     }
 
-    constexpr auto PathView::root_path_raw_view() const -> AZStd::string_view
+    constexpr auto PathView::root_path_view() const -> AZStd::string_view
     {
         auto pathParser = parser::PathParser::CreateBegin(m_path, m_preferred_separator);
+        AZStd::string_view rootNameView;
         if (pathParser.m_parser_state == parser::PS_InRootName)
         {
-            auto NextCh = pathParser.Peek();
-            if (NextCh && *NextCh == m_preferred_separator)
-            {
-                ++pathParser;
-                return AZStd::string_view{ m_path.begin(), pathParser.m_path_raw_entry.end() };
-            }
-            return pathParser.m_path_raw_entry;
+            rootNameView = *pathParser;
+            ++pathParser;
         }
-        return (pathParser.m_parser_state == parser::PS_InRootDir) ? *pathParser : AZStd::string_view{};
+        if (pathParser.m_parser_state == parser::PS_InRootDir)
+        {
+            // Return from the beginning of the path to the right after the root directory character
+            // This returns any RootName before the RootDir plus the RootDir
+            // psuedo regular expression wise it would look like: <RootName>?<RootDir>
+            return AZStd::string_view{ m_path.begin(), pathParser.m_path_raw_entry.end() };
+        }
+
+        // logic to take care of the case of a relative root path
+        // This can only occur on Windows with paths of the form "C:relative/path/to/file"
+        // In that the path has a RootName, but not a RootDir
+        // psuedo regular expression wise it would look like: <RootName>?
+        return rootNameView;
     }
 
     constexpr auto PathView::relative_path_view() const -> AZStd::string_view
@@ -211,48 +219,53 @@ namespace AZ::IO
     // decomposition
     constexpr auto PathView::RootName() const -> PathView
     {
-        return PathView(root_name_view());
+        return PathView(root_name_view(), m_preferred_separator);
     }
 
     constexpr auto PathView::RootDirectory() const -> PathView
     {
-        return PathView(root_directory_view());
+        return PathView(root_directory_view(), m_preferred_separator);
     }
 
     constexpr auto PathView::RootPath() const -> PathView
     {
-        return PathView(root_path_raw_view());
+        return PathView(root_path_view(), m_preferred_separator);
     }
 
     constexpr auto PathView::RelativePath() const -> PathView
     {
-        return PathView(relative_path_view());
+        return PathView(relative_path_view(), m_preferred_separator);
     }
 
     constexpr auto PathView::ParentPath() const -> PathView
     {
-        return PathView(parent_path_view());
+        return PathView(parent_path_view(), m_preferred_separator);
     }
 
     constexpr auto PathView::Filename() const -> PathView
     {
-        return PathView(filename_view());
+        return PathView(filename_view(), m_preferred_separator);
     }
 
     constexpr auto PathView::Stem() const -> PathView
     {
-        return PathView(stem_view());
+        return PathView(stem_view(), m_preferred_separator);
     }
 
     constexpr auto PathView::Extension() const -> PathView
     {
-        return PathView(extension_view());
+        return PathView(extension_view(), m_preferred_separator);
     }
 
     // query
     [[nodiscard]] constexpr bool PathView::empty() const noexcept
     {
         return m_path.empty();
+    }
+
+    constexpr const char PathView::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
     }
 
     [[nodiscard]] constexpr bool PathView::HasRootName() const
@@ -267,7 +280,7 @@ namespace AZ::IO
 
     [[nodiscard]] constexpr bool PathView::HasRootPath() const
     {
-        return !root_path_raw_view().empty();
+        return !root_path_view().empty();
     }
 
     [[nodiscard]] constexpr bool PathView::HasRelativePath() const
@@ -1148,6 +1161,12 @@ namespace AZ::IO
     }
 
     template <typename StringType>
+    constexpr const char BasicPath<StringType>::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
+    }
+
+    template <typename StringType>
     [[nodiscard]] constexpr bool BasicPath<StringType>::HasRootName() const
     {
         return static_cast<PathView>(*this).HasRootName();
@@ -1312,7 +1331,7 @@ namespace AZ::IO
     }
 
     template <typename StringType>
-    inline size_t hash_value(const BasicPath<StringType>& pathToHash)
+    constexpr size_t hash_value(const BasicPath<StringType>& pathToHash)
     {
         return AZStd::hash<BasicPath<StringType>>{}(pathToHash);
     }
@@ -1398,12 +1417,6 @@ namespace AZ::IO
     }
 
     template <typename PathType>
-    constexpr auto PathIterator<PathType>::operator->() const -> pointer
-    {
-        return &m_stashed_elem;
-    }
-
-    template <typename PathType>
     constexpr auto PathIterator<PathType>::operator++() -> PathIterator&
     {
         AZ_Assert(m_state != Singular, "attempting to increment a singular iterator (i.e a default constructed iterator)");
@@ -1477,7 +1490,7 @@ namespace AZStd
     template <>
     struct hash<AZ::IO::PathView>
     {
-        size_t operator()(const AZ::IO::PathView& pathToHash) noexcept
+        constexpr size_t operator()(const AZ::IO::PathView& pathToHash) const noexcept
         {
             auto pathParser = AZ::IO::parser::PathParser::CreateBegin(pathToHash.Native(), pathToHash.m_preferred_separator);
             return AZ::IO::parser::HashPath(pathParser);
@@ -1486,7 +1499,7 @@ namespace AZStd
     template <typename StringType>
     struct hash<AZ::IO::BasicPath<StringType>>
     {
-        size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) noexcept
+        constexpr size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) const noexcept
         {
             return AZStd::hash<AZ::IO::PathView>{}(pathToHash);
         }
@@ -1501,7 +1514,7 @@ namespace AZStd
 namespace AZ::IO
 {
     // PathView hash
-    inline size_t hash_value(const PathView& pathToHash) noexcept
+    constexpr size_t hash_value(const PathView& pathToHash) noexcept
     {
         return AZStd::hash<PathView>{}(pathToHash);
     }
@@ -1541,4 +1554,14 @@ namespace AZ::IO
         const PathIterator<const Path>& rhs);
     extern template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
+}
+
+namespace AZStd::ranges
+{
+    // A PathView is a borrowed range, it does not own the content of the Path it is viewing
+    template<>
+    inline constexpr bool enable_borrowed_range<AZ::IO::PathView> = true;
+
+    template<>
+    inline constexpr bool enable_view<AZ::IO::PathView> = true;
 }

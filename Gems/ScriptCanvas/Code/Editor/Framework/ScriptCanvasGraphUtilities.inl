@@ -74,7 +74,7 @@ namespace ScriptCanvasEditor
                 AZ_Assert(loadResult.m_runtimeAsset, "failed to load dependent asset");
 
                 AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> luaAssetOutcome = AZ::Failure(AZStd::string("lua asset creation for function failed"));
-                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_editorAsset.Path().c_str());
+                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_editorAsset.RelativePath().c_str());
                 AZ_Assert(luaAssetOutcome.IsSuccess(), "failed to create Lua asset");
 
                 AZStd::string modulePath = namespacePath[0].data();
@@ -111,10 +111,10 @@ namespace ScriptCanvasEditor
 
     AZ_INLINE LoadTestGraphResult LoadTestGraph(AZStd::string_view graphPath)
     {
-        if (auto loadFileOutcome = LoadFromFile(graphPath); loadFileOutcome.IsSuccess())
+        if (auto fileLoadResult = LoadFromFile(graphPath))
         {
-            auto& source = loadFileOutcome.GetValue();
-            auto testableSource = SourceHandle(source, AZ::Uuid::CreateRandom(), source.Path().c_str());
+            auto& source = fileLoadResult.m_handle;
+            auto testableSource = SourceHandle::FromRelativePath(source, AZ::Uuid::CreateRandom(), source.RelativePath().c_str());
 
             AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome(AZ::Failure(AZStd::string("asset create failed")));
             ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome
@@ -122,11 +122,11 @@ namespace ScriptCanvasEditor
 
             if (assetOutcome.IsSuccess())
             {
-                LoadTestGraphResult result;
-                result.m_editorAsset = AZStd::move(testableSource);
-                result.m_runtimeAsset = assetOutcome.GetValue();
-                result.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
-                return result;
+                LoadTestGraphResult loadTestGraphResult;
+                loadTestGraphResult.m_editorAsset = AZStd::move(testableSource);
+                loadTestGraphResult.m_runtimeAsset = assetOutcome.GetValue();
+                loadTestGraphResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
+                return loadTestGraphResult;
             }
         }
 
@@ -152,7 +152,7 @@ namespace ScriptCanvasEditor
     AZ_INLINE void RunEditorAsset(SourceHandle asset, Reporter& reporter, ScriptCanvas::ExecutionMode mode)
     {
         AZ::Data::AssetId assetId = asset.Id();
-        AZ::Data::AssetId runtimeAssetId(assetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
+        AZ::Data::AssetId runtimeAssetId(assetId.m_guid, RuntimeDataSubId);
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         if (!runtimeAsset.Create(runtimeAssetId, true))
         {
@@ -162,14 +162,14 @@ namespace ScriptCanvasEditor
         reporter.SetExecutionMode(mode);
 
         LoadTestGraphResult loadResult;
-        loadResult.m_editorAsset = SourceHandle(nullptr, assetId.m_guid, asset.Path());
+        loadResult.m_editorAsset = SourceHandle::FromRelativePath(nullptr, assetId.m_guid, asset.RelativePath());
         AZ::EntityId scriptCanvasId;
         loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
         loadResult.m_runtimeAsset = runtimeAsset;
 
         RunGraphSpec runGraphSpec;
         runGraphSpec.dirPath = "";
-        runGraphSpec.graphPath = asset.Path().c_str();
+        runGraphSpec.graphPath = asset.RelativePath().c_str();
         runGraphSpec.runSpec.duration.m_spec = eDuration::Ticks;
         runGraphSpec.runSpec.duration.m_ticks = 10;
         runGraphSpec.runSpec.execution = mode;
@@ -203,7 +203,7 @@ namespace ScriptCanvasEditor
                 ScopedOutputSuppression outputSuppressor;
                 AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> luaAssetOutcome = AZ::Failure(AZStd::string("lua asset creation failed"));
                 ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome
-                    , &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_editorAsset.Path().c_str());
+                    , &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_editorAsset.RelativePath().c_str());
                 reporter.MarkParseAttemptMade();
 
                 if (luaAssetOutcome.IsSuccess())
@@ -221,23 +221,16 @@ namespace ScriptCanvasEditor
                         runtimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint("original");
 
 #if defined(LINUX) //////////////////////////////////////////////////////////////////////////
-                        // Temporarily disable testing on the Linux build until the file name casing discrepancy
-                        // is sorted out through the SC build and testing pipeline.
                         if (!luaAssetResult.m_dependencies.source.userSubgraphs.empty())
                         {
-                            auto graphEntityId = AZ::Entity::MakeId();
-                            reporter.SetGraph(graphEntityId);
-                            loadResult.m_entity->Activate();
-                            ScriptCanvas::UnitTesting::EventSender::MarkComplete(graphEntityId, "");
-                            loadResult.m_entity->Deactivate();
-                            reporter.FinishReport();
+                            reporter.MarkLinuxDependencyTestBypass();
                             ScriptCanvas::SystemRequestBus::Broadcast(&ScriptCanvas::SystemRequests::MarkScriptUnitTestEnd);
                             return;
                         }
 #else ///////////////////////////////////////////////////////////////////////////////////////
 
                         dependencies = LoadInterpretedDepencies(luaAssetResult.m_dependencies.source.userSubgraphs);
-                        
+
                         if (!dependencies.empty())
                         {
                             // #functions2_recursive_unit_tests eventually, this will need to be recursive, or the full asset handling system will need to be integrated into the testing framework
@@ -274,7 +267,7 @@ namespace ScriptCanvasEditor
                                 dependencyData.m_input = depencyAssetResult.m_runtimeInputs;
                                 dependencyData.m_debugMap = depencyAssetResult.m_debugMap;
                                 dependencyData.m_script = depencyAssetResult.m_scriptAsset;
-                                Execution::Context::InitializeActivationData(dependencyData);
+                                Execution::Context::InitializeStaticActivationData(dependencyData);
                                 Execution::InitializeInterpretedStatics(dependencyData);
                             }
                         }
@@ -287,12 +280,8 @@ namespace ScriptCanvasEditor
                         loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>();
                         CopyAssetEntityIdsToOverrides(runtimeDataOverrides);
                         loadResult.m_runtimeComponent->TakeRuntimeDataOverrides(AZStd::move(runtimeDataOverrides));
-                        Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->m_runtimeData);
+                        Execution::Context::InitializeStaticActivationData(loadResult.m_runtimeAsset->m_runtimeData);
                         Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->m_runtimeData);
-                    }
-                    else
-                    {
-                        reporter.SetGraph(AZ::Entity::MakeId());
                     }
                 }
             }
@@ -306,7 +295,7 @@ namespace ScriptCanvasEditor
                 else
                 {
                     loadResult.m_entity->Init();
-                    reporter.SetGraph(loadResult.m_runtimeComponent->GetScriptCanvasId());
+                    reporter.SetGraph(loadResult.m_runtimeAsset.GetId());
 
                     {
                         ScopedOutputSuppression outputSuppressor;
@@ -372,6 +361,7 @@ namespace ScriptCanvasEditor
         if (runGraphSpec.runSpec.processOnly)
         {
             Reporter reporter;
+            reporter.SetFilePath(runGraphSpec.graphPath);
             reporter.SetProcessOnly(runGraphSpec.runSpec.processOnly);
             reporters.push_back(reporter);
         }
@@ -380,10 +370,12 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.release)
             {
                 Reporter reporterRelease;
+                reporterRelease.SetFilePath(runGraphSpec.graphPath);
                 reporterRelease.SetExecutionConfiguration(ExecutionConfiguration::Release);
                 reporters.push_back(reporterRelease);
 
                 Reporter reporterPeformance;
+                reporterPeformance.SetFilePath(runGraphSpec.graphPath);
                 reporterPeformance.SetExecutionConfiguration(ExecutionConfiguration::Performance);
                 reporters.push_back(reporterPeformance);
             }
@@ -391,6 +383,7 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.debug)
             {
                 Reporter reporterDebug;
+                reporterDebug.SetFilePath(runGraphSpec.graphPath);
                 reporterDebug.SetExecutionConfiguration(ExecutionConfiguration::Debug);
                 reporters.push_back(reporterDebug);
             }
@@ -398,6 +391,7 @@ namespace ScriptCanvasEditor
             if (runGraphSpec.runSpec.traced)
             {
                 Reporter reporterTraced;
+                reporterTraced.SetFilePath(runGraphSpec.graphPath);
                 reporterTraced.SetExecutionConfiguration(ExecutionConfiguration::Traced);
                 reporters.push_back(reporterTraced);
             }
@@ -412,7 +406,7 @@ namespace ScriptCanvasEditor
         AZ::SystemTickBus::Broadcast(&AZ::SystemTickBus::Events::OnSystemTick);
         AZ::SystemTickBus::ExecuteQueuedEvents();
 
-        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, duration.m_timeStep, AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, duration.m_timeStep, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         AZ::TickBus::ExecuteQueuedEvents();
     }
 

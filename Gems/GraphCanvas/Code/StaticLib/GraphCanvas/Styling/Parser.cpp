@@ -18,6 +18,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QFile>
+#include <QFontDatabase>
 #include <QByteArray>
 #include <QColor>
 #include <QFont>
@@ -47,7 +48,7 @@ namespace
     const QRegularExpression invalidStart(R"_(^\s*>\s*)_");
     const QRegularExpression invalidEnd(R"_(\s*>\s*$)_");
     const QRegularExpression splitNesting(R"_(\s*>\s*)_");
-    const QRegularExpression selector(R"_(^(?:(?:(\w+)?(\.\w+)?)|(#\w+)?)(:\w+)?$)_");
+    const QRegularExpression s_selectorRegex(R"_(^(?:(?:(\w+)?(\.\w+)?)|(#\w+)?)(:\w+)?$)_");
 
     AZStd::string QtToAz(const QString& source)
     {
@@ -196,6 +197,10 @@ namespace
         else if (attribute == Styling::Attributes::Spacing)
         {
             return Styling::Attribute::Spacing;
+        }
+        else if (attribute == Styling::Attributes::LayoutOrientation)
+        {
+            return Styling::Attribute::LayoutOrientation;
         }
         else if (attribute == Styling::Attributes::Selectors)
         {
@@ -367,6 +372,20 @@ namespace
         else if (QString::compare(value, QLatin1String("center"), Qt::CaseInsensitive) == 0)
         {
             return Qt::AlignVCenter;
+        }
+
+        return {};
+    }
+
+    Qt::Orientation ParseOrientation(const QString& value)
+    {
+        if (QString::compare(value, QLatin1String("vertical"), Qt::CaseInsensitive) == 0)
+        {
+            return Qt::Vertical;
+        }
+        else if (QString::compare(value, QLatin1String("horizontal"), Qt::CaseInsensitive) == 0)
+        {
+            return Qt::Horizontal;
         }
 
         return {};
@@ -841,9 +860,9 @@ namespace GraphCanvas
                     }
                     else
                     {
-                        QFont font(valueStr);
-                        QFontInfo info(font);
-                        if (!info.exactMatch())
+                        // Check all available font families (from both the system and explicitly registered with the application)
+                        QFontDatabase fontDatabase;
+                        if (!fontDatabase.families().contains(valueStr))
                         {
                             qWarning() << "Invalid font-family:" << valueStr;
                         }
@@ -914,6 +933,14 @@ namespace GraphCanvas
                     if (Qt::AlignmentFlag flag = ParseTextVerticalAlignment(member->value.GetString()))
                     {
                         style->SetAttribute(attribute, QVariant::fromValue(flag));
+                    }
+                    break;
+                }
+                case Attribute::LayoutOrientation:
+                {
+                    if (Qt::Orientation orientation = ParseOrientation(member->value.GetString()))
+                    {
+                        style->SetAttribute(attribute, orientation);
                     }
                     break;
                 }
@@ -1013,7 +1040,7 @@ namespace GraphCanvas
                 nestedSelectors.reserve(parts.size());
                 for (const QString& part : parts)
                 {
-                    auto matches = selector.match(part);
+                    auto matches = s_selectorRegex.match(part);
                     if (!matches.hasMatch())
                     {
                         qWarning() << "Invalid selector:" << part << "in" << candidate;

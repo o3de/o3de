@@ -6,13 +6,13 @@
  *
  */
 
-#include "EditorCapsuleShapeComponent.h"
+#include <Shape/EditorCapsuleShapeComponent.h>
 
 #include <AzCore/Serialization/EditContext.h>
-#include "CapsuleShapeComponent.h"
-#include "EditorShapeComponentConverters.h"
-#include "ShapeDisplay.h"
+#include <AzToolsFramework/ComponentModes/CapsuleComponentMode.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
+#include <Shape/EditorShapeComponentConverters.h>
+#include <Shape/ShapeDisplay.h>
 
 namespace LmbrCentral
 {
@@ -23,29 +23,42 @@ namespace LmbrCentral
             // Deprecate: EditorCapsuleColliderComponent -> EditorCapsuleShapeComponent
             serializeContext->ClassDeprecate(
                 "EditorCapsuleColliderComponent",
-                "{63247EE1-B081-40D9-8AE2-98E5C738EBD8}",
+                AZ::Uuid("{63247EE1-B081-40D9-8AE2-98E5C738EBD8}"),
                 &ClassConverters::DeprecateEditorCapsuleColliderComponent)
                 ;
 
             serializeContext->Class<EditorCapsuleShapeComponent, EditorBaseShapeComponent>()
                 ->Version(3, &ClassConverters::UpgradeEditorCapsuleShapeComponent)
                 ->Field("CapsuleShape", &EditorCapsuleShapeComponent::m_capsuleShape)
+                ->Field("ComponentMode", &EditorCapsuleShapeComponent::m_componentModeDelegate)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorCapsuleShapeComponent>("Capsule Shape", "The Capsule Shape component creates a capsule around the associated entity")
+                editContext
+                    ->Class<EditorCapsuleShapeComponent>(
+                        "Capsule Shape", "The Capsule Shape component creates a capsule around the associated entity")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "Shape")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Capsule_Shape.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Capsule_Shape.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/capsule-shape/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCapsuleShapeComponent::m_capsuleShape, "Capsule Shape", "Capsule Shape Configuration")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCapsuleShapeComponent::ConfigurationChanged)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ;
+                    ->Attribute(AZ::Edit::Attributes::Category, "Shape")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Capsule_Shape.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Capsule_Shape.svg")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(
+                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/capsule-shape/")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorCapsuleShapeComponent::m_capsuleShape,
+                        "Capsule Shape",
+                        "Capsule Shape Configuration")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCapsuleShapeComponent::ConfigurationChanged)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorCapsuleShapeComponent::m_componentModeDelegate,
+                        "Component Mode",
+                        "Capsule Shape Component Mode")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
     }
@@ -62,12 +75,25 @@ namespace LmbrCentral
         EditorBaseShapeComponent::Activate();
         m_capsuleShape.Activate(GetEntityId());
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
+        const AZ::EntityComponentIdPair entityComponentIdPair(GetEntityId(), GetId());
+        AzToolsFramework::CapsuleManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
+        AzToolsFramework::RadiusManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
 
         GenerateVertices();
+
+        const bool allowAsymmetricalEditing = true;
+        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorCapsuleShapeComponent, AzToolsFramework::CapsuleComponentMode>(
+            entityComponentIdPair, this, allowAsymmetricalEditing);
     }
 
     void EditorCapsuleShapeComponent::Deactivate()
     {
+        m_componentModeDelegate.Disconnect();
+
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::RadiusManipulatorRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::CapsuleManipulatorRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         m_capsuleShape.Deactivate();
         EditorBaseShapeComponent::Deactivate();
@@ -84,10 +110,18 @@ namespace LmbrCentral
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
         DisplayShape(
-            debugDisplay, [this]() { return CanDraw(); },
+            debugDisplay,
+            [this]()
+            {
+                return CanDraw();
+            },
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
-                DrawShape(debugDisplay, { m_shapeColor, m_shapeWireColor, m_displayFilled }, m_capsuleShapeMesh);
+                DrawShape(
+                    debugDisplay,
+                    ShapeDrawParams{ m_capsuleShape.GetCapsuleConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
+                    m_capsuleShapeMesh,
+                    m_capsuleShape.GetTranslationOffset());
             },
             m_capsuleShape.GetCurrentTransform());
     }
@@ -108,7 +142,19 @@ namespace LmbrCentral
         ShapeComponentNotificationsBus::Event(
             GetEntityId(), &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::Refresh,
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    void EditorCapsuleShapeComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform&)
+    {
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::Refresh,
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()));
     }
 
     void EditorCapsuleShapeComponent::BuildGameEntity(AZ::Entity* gameEntity)
@@ -138,5 +184,48 @@ namespace LmbrCentral
             m_capsuleShapeMesh.m_vertexBuffer,
             m_capsuleShapeMesh.m_indexBuffer,
             m_capsuleShapeMesh.m_lineBuffer);
+    }
+
+    float EditorCapsuleShapeComponent::GetHeight() const
+    {
+        return m_capsuleShape.GetCapsuleConfiguration().m_height;
+    }
+
+    void EditorCapsuleShapeComponent::SetHeight(float height)
+    {
+        m_capsuleShape.SetHeight(height);
+        GenerateVertices();
+    }
+
+    float EditorCapsuleShapeComponent::GetRadius() const
+    {
+        return m_capsuleShape.GetCapsuleConfiguration().m_radius;
+    }
+
+    void EditorCapsuleShapeComponent::SetRadius(float radius)
+    {
+        m_capsuleShape.SetRadius(radius);
+        GenerateVertices();
+    }
+
+    AZ::Vector3 EditorCapsuleShapeComponent::GetTranslationOffset() const
+    {
+        return m_capsuleShape.GetTranslationOffset();
+    }
+
+    void EditorCapsuleShapeComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
+    {
+        m_capsuleShape.SetTranslationOffset(translationOffset);
+        GenerateVertices();
+    }
+
+    AZ::Transform EditorCapsuleShapeComponent::GetManipulatorSpace() const
+    {
+        return GetWorldTM();
+    }
+
+    AZ::Quaternion EditorCapsuleShapeComponent::GetRotationOffset() const
+    {
+        return AZ::Quaternion::CreateIdentity();
     }
 } // namespace LmbrCentral

@@ -67,7 +67,7 @@ namespace AZ::IO
         : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(FindData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindData, AZ::SystemAllocator);
         FindData() = default;
         ArchiveFileIterator Fetch();
         void Scan(IArchive* archive, AZStd::string_view path, bool bAllowUseFS = false, bool bScanZips = true);

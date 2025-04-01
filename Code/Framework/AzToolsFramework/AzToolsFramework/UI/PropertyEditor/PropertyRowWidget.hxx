@@ -44,7 +44,7 @@ namespace AzToolsFramework
         Q_PROPERTY(bool canBeReordered READ CanBeReordered);
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
-        AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator)
 
         enum class DragImageType
         {
@@ -236,7 +236,7 @@ namespace AzToolsFramework
         bool m_isMultiSizeContainer = false;
         bool m_isFixedSizeOrSmartPtrContainer = false;
         bool m_custom = false;
-        bool m_canChildrenBeReordered = false;
+        bool m_isSceneSetting = false;
 
         bool m_isSelected = false;
         bool m_selectionEnabled = false;
@@ -260,6 +260,8 @@ namespace AzToolsFramework
 
         QIcon m_iconOpen;
         QIcon m_iconClosed;
+
+        bool m_reorderAllow = false;
 
         /// Marks the field to be visualized as "overridden".
         void SetOverridden(bool overridden);

@@ -7,6 +7,8 @@
  */
 #include "SequenceComponent.h"
 
+#include <IMovieSystem.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Maestro/Bus/SequenceAgentComponentBus.h>
@@ -29,6 +31,7 @@
 #include <Cinematics/SelectTrack.h>
 #include <Cinematics/SequenceTrack.h>
 #include <Cinematics/SoundTrack.h>
+#include <Cinematics/StringTrack.h>
 #include <Cinematics/TimeRangesTrack.h>
 #include <Cinematics/TrackEventTrack.h>
 
@@ -45,7 +48,6 @@
 #include <Cinematics/AnimPostFXNode.h>
 #include <Cinematics/EventNode.h>
 #include <Cinematics/LayerNode.h>
-#include <Cinematics/MaterialNode.h>
 #include <Cinematics/ShadowsSetupNode.h>
 
 namespace Maestro
@@ -98,6 +100,12 @@ namespace Maestro
 
     SequenceComponent::SequenceComponent()
     {
+        AZ_Trace("SequenceComponent", "SequenceComponent");
+    }
+
+    SequenceComponent::~SequenceComponent()
+    {
+        AZ_Trace("SequenceComponent", "~SequenceComponent");
     }
 
     void SequenceComponent::Reflect(AZ::ReflectContext* context)
@@ -160,6 +168,7 @@ namespace Maestro
         CSelectTrack::Reflect(context);
         CSequenceTrack::Reflect(context);
         CSoundTrack::Reflect(context);
+        CStringTrack::Reflect(context);
         CTrackEventTrack::Reflect(context);
         CAssetBlendTrack::Reflect(context);
         CTimeRangesTrack::Reflect(context);
@@ -180,7 +189,6 @@ namespace Maestro
         CAnimPostFXNode::Reflect(context);
         CAnimEventNode::Reflect(context);
         CLayerNode::Reflect(context);
-        CAnimMaterialNode::Reflect(context);
         CShadowsSetupNode::Reflect(context);
     }
 
@@ -188,7 +196,9 @@ namespace Maestro
     {
         Component::Init();
 
-        if (gEnv && gEnv->pMovieSystem)
+        m_movieSystem = AZ::Interface<IMovieSystem>::Get();
+
+        if (m_movieSystem)
         {
             if (m_sequence)
             {
@@ -196,104 +206,111 @@ namespace Maestro
                 m_sequence->InitPostLoad();
 
                 // Register our deserialized sequence with the MovieSystem
-                gEnv->pMovieSystem->AddSequence(m_sequence.get());
+                m_movieSystem->AddSequence(m_sequence.get());
             }
         }
         else
         {
-            AZ_Warning("TrackView", false, "SequenceComponent::Init() called without gEnv->pMovieSystem initialized yet, skipping creation of %s sequence.", m_entity->GetName().c_str());
+            AZ_Warning("TrackView", false, "SequenceComponent::Init() called without m_movieSystem initialized yet, skipping creation of %s sequence.", m_entity->GetName().c_str());
         }
     }
 
     void SequenceComponent::Activate()
     {
-        Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
+        SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
-        if (m_sequence != nullptr && m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
+        AZ_Trace("SequenceComponent::Activate", "SequenceComponentRequestBus connected to %s", GetEntityId().ToString().c_str())
+
+        if (m_movieSystem)
         {
-            if (gEnv != nullptr && gEnv->pMovieSystem != nullptr && m_sequence.get() != nullptr)
+            if (m_sequence && (m_sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset))
             {
-                gEnv->pMovieSystem->OnSequenceActivated(m_sequence.get());
+                m_movieSystem->OnSequenceActivated(m_sequence.get());
             }
         }
     }
 
     void SequenceComponent::Deactivate()
     {
-        Maestro::SequenceComponentRequestBus::Handler::BusDisconnect();
+        SequenceComponentRequestBus::Handler::BusDisconnect();
+
+        AZ_Trace(
+            "SequenceComponent::Deactivate",
+            "SequenceComponentRequestBus disconnected from %s",
+            GetEntityId().ToString().c_str());
 
         // Remove this sequence from the game movie system.
-        if (nullptr != gEnv->pMovieSystem)
+        if (nullptr != m_movieSystem)
         {
             if (m_sequence)
             {
-                gEnv->pMovieSystem->RemoveSequence(m_sequence.get());
+                m_movieSystem->RemoveSequence(m_sequence.get());
             }
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     bool SequenceComponent::SetAnimatedPropertyValue(const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress, const AnimatedValue& value)
     {
-        const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
+        const SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
         bool changed = false;
         
-        EBUS_EVENT_ID_RESULT(changed, ebusId, Maestro::SequenceAgentComponentRequestBus, SetAnimatedPropertyValue, animatableAddress, value);
+        SequenceAgentComponentRequestBus::EventResult(
+            changed, ebusId, &SequenceAgentComponentRequestBus::Events::SetAnimatedPropertyValue, animatableAddress, value);
         
         return changed;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    void SequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress)
+    bool SequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress)
     {
-        const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
+        const SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
 
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAnimatedPropertyValue, returnValue, animatableAddress);
+        SequenceAgentComponentRequestBus::Event(
+            ebusId, &SequenceAgentComponentRequestBus::Events::GetAnimatedPropertyValue, returnValue, animatableAddress);
+
+        return true;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::Uuid SequenceComponent::GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
+    AZ::Uuid SequenceComponent::GetAnimatedAddressTypeId(const AZ::EntityId& animatedEntityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
     {
         AZ::Uuid typeId = AZ::Uuid::CreateNull();
-        const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
+        const SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
 
-        Maestro::SequenceAgentComponentRequestBus::EventResult(typeId, ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAnimatedAddressTypeId, animatableAddress);
+        SequenceAgentComponentRequestBus::EventResult(typeId, ebusId, &SequenceAgentComponentRequestBus::Events::GetAnimatedAddressTypeId, animatableAddress);
 
         return typeId;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceComponent::GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
     {
-        const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAssetDuration, returnValue, componentId, assetId);
+        const SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
+        SequenceAgentComponentRequestBus::Event(
+            ebusId, &SequenceAgentComponentRequestBus::Events::GetAssetDuration, returnValue, componentId, assetId);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceComponent::Play()
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, /*float startTime =*/ -FLT_MAX, /*float endTime =*/ -FLT_MAX);
+            m_movieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, /*float startTime =*/ -FLT_MAX, /*float endTime =*/ -FLT_MAX);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::PlayBetweenTimes(float startTime, float endTime)
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, startTime, endTime);
+            m_movieSystem->PlaySequence(m_sequence.get(), /*parentSeq =*/ nullptr, /*bResetFX =*/ true,/*bTrackedSequence =*/ false, startTime, endTime);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::Stop()
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->StopSequence(m_sequence.get());
+            m_movieSystem->StopSequence(m_sequence.get());
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::Pause()
     {
         if (m_sequence)
@@ -301,7 +318,7 @@ namespace Maestro
             m_sequence.get()->Pause();
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::Resume()
     {
         if (m_sequence)
@@ -309,55 +326,56 @@ namespace Maestro
             m_sequence.get()->Resume();
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::SetPlaySpeed(float newSpeed)
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->SetPlayingSpeed(m_sequence.get(), newSpeed);
+            m_movieSystem->SetPlayingSpeed(m_sequence.get(), newSpeed);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::JumpToTime(float newTime)
     {
         if (m_sequence)
         {
             newTime = clamp_tpl(newTime, m_sequence.get()->GetTimeRange().start, m_sequence.get()->GetTimeRange().end);
-            gEnv->pMovieSystem->SetPlayingTime(m_sequence.get(), newTime);
+            m_movieSystem->SetPlayingTime(m_sequence.get(), newTime);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::JumpToEnd()
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().end);
+            m_movieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().end);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void SequenceComponent::JumpToBeginning()
     {
         if (m_sequence)
         {
-            gEnv->pMovieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().start);
+            m_movieSystem->SetPlayingTime(m_sequence.get(), m_sequence.get()->GetTimeRange().start);
         }
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     float SequenceComponent::GetCurrentPlayTime()
     {
         if (m_sequence)
         {
-            return gEnv->pMovieSystem->GetPlayingTime(m_sequence.get());
+            return m_movieSystem->GetPlayingTime(m_sequence.get());
         }
         return .0f;
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
     float SequenceComponent::GetPlaySpeed()
     {
         if (m_sequence)
         {
-            return gEnv->pMovieSystem->GetPlayingSpeed(m_sequence.get());
+            return m_movieSystem->GetPlayingSpeed(m_sequence.get());
         }
         return 1.0f;
     }
-}// namespace Maestro
+
+} // namespace Maestro

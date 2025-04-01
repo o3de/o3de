@@ -40,7 +40,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasTreeModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasTreeModel, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         GraphCanvasTreeModel(GraphCanvasTreeItem* treeRoot, QObject* parent = nullptr);

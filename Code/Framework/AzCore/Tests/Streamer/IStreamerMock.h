@@ -37,6 +37,8 @@ public:
     MOCK_METHOD2(FlushCache, FileRequestPtr& (FileRequestPtr&, AZStd::string_view));
     MOCK_METHOD0(FlushCaches, FileRequestPtr());
     MOCK_METHOD1(FlushCaches, FileRequestPtr& (FileRequestPtr&));
+    MOCK_METHOD2(Report, FileRequestPtr(AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType));
+    MOCK_METHOD3(Report, FileRequestPtr&(FileRequestPtr& request, AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType));
     MOCK_METHOD1(Custom, FileRequestPtr(AZStd::any));
     MOCK_METHOD2(Custom, FileRequestPtr& (FileRequestPtr&, AZStd::any));
     MOCK_METHOD2(SetRequestCompleteCallback, FileRequestPtr&(FileRequestPtr&, OnCompleteCallback));
@@ -47,10 +49,11 @@ public:
     MOCK_METHOD1(QueueRequestBatch, void(AZStd::vector<FileRequestPtr>&&));
     MOCK_CONST_METHOD1(HasRequestCompleted, bool(FileRequestHandle));
     MOCK_CONST_METHOD1(GetRequestStatus, IStreamerTypes::RequestStatus(FileRequestHandle));
-    MOCK_CONST_METHOD1(GetEstimatedRequestCompletionTime, AZStd::chrono::system_clock::time_point(FileRequestHandle));
+    MOCK_CONST_METHOD1(GetEstimatedRequestCompletionTime, AZStd::chrono::steady_clock::time_point(FileRequestHandle));
     MOCK_CONST_METHOD4(GetReadRequestResult, bool(FileRequestHandle, void*&, AZ::u64&, IStreamerTypes::ClaimMemory));
     MOCK_METHOD1(CollectStatistics, void(AZStd::vector<Statistic>&));
     MOCK_CONST_METHOD0(GetRecommendations, const IStreamerTypes::Recommendations&());
     MOCK_METHOD0(SuspendProcessing, void());
     MOCK_METHOD0(ResumeProcessing, void());
+    MOCK_CONST_METHOD0(IsSuspended, bool());
 };

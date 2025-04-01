@@ -9,7 +9,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Slice/SliceAsset.h>
 
@@ -17,6 +16,11 @@
 
 #include <AzCore/Math/Random.h>
 #include <random>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace LmbrCentral
 {
@@ -31,7 +35,7 @@ namespace LmbrCentral
         static void Reflect(AZ::ReflectContext* context);
 
         bool m_enabled = true;
-        
+
         AZ::RandomDistributionType m_randomDistribution = AZ::RandomDistributionType::UniformReal;
 
         double m_spawnDelay = 5.0;
@@ -39,7 +43,7 @@ namespace LmbrCentral
     };
 
     /**
-    * A component to spawn slices at regular intervals 
+    * A component to spawn slices at regular intervals
     * at random points inside of a volume.
     */
     class RandomTimedSpawnerComponent
@@ -84,7 +88,7 @@ namespace LmbrCentral
 
         void SetSpawnDelayVariation(double spawnDelayVariation) override { m_config.m_spawnDelayVariation = spawnDelayVariation; }
         double GetSpawnDelayVariation() override { return m_config.m_spawnDelayVariation; }
-        
+
     private:
         //Reflected members
         RandomTimedSpawnerConfiguration m_config;

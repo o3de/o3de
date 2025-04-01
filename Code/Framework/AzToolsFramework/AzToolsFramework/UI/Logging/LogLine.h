@@ -29,7 +29,7 @@ namespace AzToolsFramework
         class LogLine
         {
         public:
-            AZ_CLASS_ALLOCATOR(LogLine, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogLine, AZ::SystemAllocator);
 
             enum LogType
             {

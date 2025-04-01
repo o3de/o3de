@@ -6,34 +6,45 @@
  *
  */
 
+#include <AzCore/Component/Component.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzTest/AzTest.h>
+#include <AzTest/GemTestEnvironment.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
-#include <QApplication>
+#include <CoreLights/EditorAreaLightComponent.h>
 
-class AtomLyIntegrationHook : public AZ::Test::ITestEnvironment
+class AtomLyIntegrationHook : public AZ::Test::GemTestEnvironment
 {
-public:
-    void SetupEnvironment() override
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-    }
+    // AZ::Test::GemTestEnvironment overrides ...
+    void AddGemsAndComponents() override;
+    AZ::ComponentApplication* CreateApplicationInstance() override;
+    void PostSystemEntityActivate() override;
 
-    void TeardownEnvironment() override
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
+public:
+    AtomLyIntegrationHook() = default;
+    ~AtomLyIntegrationHook() override = default;
 };
 
-// required to support running integration tests with Qt
-AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
+void AtomLyIntegrationHook::AddGemsAndComponents()
 {
-    ::testing::InitGoogleMock(&argc, argv);
-    QApplication app(argc, argv);
-    AZ::Test::printUnusedParametersWarning(argc, argv);
-    AZ::Test::addTestEnvironments({ DEFAULT_UNIT_TEST_ENV, new AtomLyIntegrationHook });
-    int result = RUN_ALL_TESTS();
-    return result;
+    AddDynamicModulePaths({ "LmbrCentral.Editor" });
+    AddComponentDescriptors(AZStd::initializer_list<AZ::ComponentDescriptor*>{
+        AZ::Render::AreaLightComponent::CreateDescriptor(),
+        AZ::Render::EditorAreaLightComponent::CreateDescriptor()});
 }
 
-IMPLEMENT_TEST_EXECUTABLE_MAIN();
+AZ::ComponentApplication* AtomLyIntegrationHook::CreateApplicationInstance()
+{
+    // Using ToolsTestApplication to have AzFramework and AzToolsFramework components.
+    return aznew UnitTest::ToolsTestApplication("EditorAtomLyIntegration");
+}
+
+void AtomLyIntegrationHook::PostSystemEntityActivate()
+{
+    AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequestBus::Events::DisableSaveOnFinalize);
+}
+
+AZ_TOOLS_UNIT_TEST_HOOK(new AtomLyIntegrationHook)

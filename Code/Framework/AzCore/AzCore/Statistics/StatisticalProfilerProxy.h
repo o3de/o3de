@@ -10,7 +10,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Statistics/StatisticalProfiler.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/parallel/shared_spin_mutex.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 
 
 namespace AZ::Statistics
@@ -50,7 +50,7 @@ namespace AZ::Statistics
         AZ_TYPE_INFO(StatisticalProfilerProxy, "{1103D0EB-1C32-4854-B9D9-40A2D65BDBD2}");
 
         using StatIdType = AZ::Crc32;
-        using StatisticalProfilerType = StatisticalProfiler<StatIdType, AZStd::shared_spin_mutex>;
+        using StatisticalProfilerType = StatisticalProfiler<StatIdType, AZStd::shared_mutex>;
 
         //! A Convenience class used to measure time performance of scopes of code
         //! with constructor/destructor. Suitable to be used as part of a macro
@@ -76,7 +76,7 @@ namespace AZ::Statistics
                 {
                     return;
                 }
-                m_startTime = AZStd::chrono::high_resolution_clock::now();
+                m_startTime = AZStd::chrono::steady_clock::now();
             }
 
             ~TimedScope()
@@ -85,8 +85,8 @@ namespace AZ::Statistics
                 {
                     return;
                 }
-                AZStd::chrono::system_clock::time_point stopTime = AZStd::chrono::high_resolution_clock::now();
-                AZStd::chrono::microseconds duration = stopTime - m_startTime;
+                auto stopTime = AZStd::chrono::steady_clock::now();
+                auto duration = stopTime - m_startTime;
                 m_profilerProxy->PushSample(m_profilerId, m_statId, static_cast<double>(duration.count()));
             }
 
@@ -100,7 +100,7 @@ namespace AZ::Statistics
             static StatisticalProfilerProxy* m_profilerProxy;
             const StatisticalProfilerId m_profilerId;
             const StatIdType& m_statId;
-            AZStd::chrono::system_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
         }; // class TimedScope
 
         friend class TimedScope;
@@ -170,6 +170,14 @@ namespace AZ::Statistics
             for (auto& iter : m_profilers)
             {
                 iter.second.m_profiler.GetStatsManager().GetAllStatisticsOfUnits(stats, units);
+            }
+        }
+        
+        void ResetAllStatistics()
+        {
+            for (auto& iter : m_profilers)
+            {
+                iter.second.m_profiler.GetStatsManager().ResetAllStatistics();
             }
         }
 

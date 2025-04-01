@@ -34,16 +34,16 @@ namespace ScriptCanvas
 
     enum class BuildConfiguration
     {
-        Debug,          // C++ -> all others, debug information is available on request, no performance markers
-        Performance,    // C++ -> PERFORMANCE_BUILD, no debug information, performance markers in place
         Release,        // C++ -> _RELEASE, no debug information, no performance markers
+        Performance,    // C++ -> PERFORMANCE_BUILD, no debug information, performance markers in place
+        Debug,          // C++ -> all others, debug information is available on request, no performance markers
     };
 
     enum class ExecutionConfiguration
     {
-        Debug,          // debug information is available, no performance marking
-        Performance,    // no debug information, performance markers active
         Release,        // no debug information, no performance marking
+        Performance,    // no debug information, performance markers active
+        Debug,          // debug information is available, no performance marking
         Traced          // debug information active, no performance marking
     };
 
@@ -101,22 +101,26 @@ namespace ScriptCanvas
         constexpr const char* k_ebusHandlerThisPointerName = "ebusHandlerThis";
 
         constexpr const char* k_InitializeStaticsName = "InitializeStatics";
-        constexpr const char* k_InitializeNodeableOutKeys = "InitializeNodeableOutKeys";
+        constexpr const char* k_InitializeExecutionOutsName = "InitializeExecutionOuts";
         constexpr const char* k_InitializeExecutionOutByRequiredCountName = "InitializeExecutionOutByRequiredCount";
         constexpr const char* k_InterpretedConfigurationPerformance = "SCRIPT_CANVAS_GLOBAL_PERFORMANCE";
         constexpr const char* k_InterpretedConfigurationRelease = "SCRIPT_CANVAS_GLOBAL_RELEASE";
 
-        constexpr const char* k_NodeableCallInterpretedOut = "ExecutionOut";
-        constexpr const char* k_NodeableUserBaseClassName = "Nodeable";
-        constexpr const char* k_NodeableSetExecutionOutName = "SetExecutionOut";
-        constexpr const char* k_NodeableSetExecutionOutResultName = "SetExecutionOutResult";
-        constexpr const char* k_NodeableSetExecutionOutUserSubgraphName = "SetExecutionOutUserSubgraph";
+        constexpr const char* k_SetExecutionOutNameNodeable = "SetExecutionOutNodeable";
+        constexpr const char* k_SetExecutionOutResultNameNodeable = "SetExecutionOutResultNodeable";
+
+        // #scriptcanvas_component_extension
+        constexpr const char* k_GetSelfEntityId = "GetSelfEntityId_SCVM";
+        constexpr const char* k_GetSelfEntityIdCall = "GetSelfEntityId_SCVM(executionState)";
+
+        constexpr const char* k_GetExecutionOutNameInterpretedClass = "GetExecutionOutClass_SCVM";
+        constexpr const char* k_InitializeExecutionOutsNameInterpretedClass = "InitializeExecutionOutsClass_SCVM";
+        constexpr const char* k_SetExecutionOutNameInterpretedClass = "SetExecutionOutClass_SCVM";
 
         constexpr const char* k_TypeSafeEBusResultName = "TypeSafeEBusResult";
         constexpr const char* k_TypeSafeEBusMultipleResultsName = "TypeSafeEBusMultipleResults";
 
         constexpr const char* k_OnGraphStartFunctionName = "OnGraphStart";
-        constexpr const char* k_OverrideNodeableMetatableName = "OverrideNodeableMetatable";
 
         constexpr const char* k_stringFormatLexicalScopeName = "string";
         constexpr const char* k_stringFormatName = "format";
@@ -128,6 +132,7 @@ namespace ScriptCanvas
 
         constexpr const char* k_internalRuntimeSuffix = "_VM";
         constexpr const char* k_internalRuntimeSuffixLC = "_vm";
+        constexpr const char* k_internalClassName = "className_SCVM";
         constexpr const char* k_reservedWordProtection = "_scvm";
 
         constexpr const char* k_memberNamePrefix = "m_";
@@ -158,6 +163,7 @@ namespace ScriptCanvas
             InputNodeable,
             InputVariable,
             None,
+            SelfEntityId,
             Static,
         };
 
@@ -172,7 +178,7 @@ namespace ScriptCanvas
 
         // create the Symbol strings
 #define REGISTER_ENUM(x) #x,
-        static const char* g_SymbolNames[] =
+        static constexpr const char* g_SymbolNames[] =
         {
 #include    "SymbolNames.h"
             "<ERROR>"
@@ -252,7 +258,7 @@ namespace ScriptCanvas
         class SettingsCache
         {
         public:
-            AZ_CLASS_ALLOCATOR(SettingsCache, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SettingsCache, AZ::SystemAllocator);
 
             SettingsCache();
             ~SettingsCache();
@@ -288,7 +294,7 @@ namespace ScriptCanvas
         struct Source
         {
             AZ_TYPE_INFO(Source, "{116D1E9E-11F5-4610-95AD-42BF2C32E530}");
-            AZ_CLASS_ALLOCATOR(Source, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Source, AZ::SystemAllocator);
 
             static AZ::Outcome<Source, AZStd::string> Construct(const Request& reqeust);
 

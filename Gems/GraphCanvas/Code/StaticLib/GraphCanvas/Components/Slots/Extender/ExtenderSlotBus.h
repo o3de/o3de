@@ -23,7 +23,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(ExtenderSlotConfiguration, "{E60B3B88-6D9E-497D-8F78-9280BCF289F9}", SlotConfiguration);
-        AZ_CLASS_ALLOCATOR(ExtenderSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExtenderSlotConfiguration, AZ::SystemAllocator);
 
         ExtenderId m_extenderId;
     };

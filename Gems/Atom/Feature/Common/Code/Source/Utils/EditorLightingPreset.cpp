@@ -43,15 +43,15 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Min, -16.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 16.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureMax, "Maxmum Exposure", "Maximum exposure value for the auto exposure.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureMax, "Maximum Exposure", "Maximum exposure value for the auto exposure.")
                             ->Attribute(AZ::Edit::Attributes::Min, -16.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 16.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedUp, "Speed Up", "The speed at which auto exposure adapates to bright scenes.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedUp, "Speed Up", "The speed at which auto exposure adapts to bright scenes.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.01)
                             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedDown, "Speed Down", "The speed at which auto exposure adapates to dark scenes.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedDown, "Speed Down", "The speed at which auto exposure adapts to dark scenes.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.01)
                             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
 
@@ -72,12 +72,12 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightConfig::m_direction, "Direction", "")
                         ->DataElement(Edit::UIHandlers::Color, &LightConfig::m_color, "Color", "Color of the light")
-                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_intensity, "Intensity", "Intensity of the light in the set photometric unit.")
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_shadowFarClipDistance, "Shadow Far Clip", "Shadow sepcific far clip distance.")
+                        ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_shadowFarClipDistance, "Shadow Far Clip", "Shadow specific far clip distance.")
                         ->DataElement(Edit::UIHandlers::ComboBox, &LightConfig::m_shadowmapSize, "Shadowmap Size", "Width/Height of shadowmap")
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
                             ->EnumAttribute(ShadowmapSize::Size512, " 512")
@@ -107,7 +107,6 @@ namespace AZ
                         "LightingPreset", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_displayName, "Display Name", "Identifier used for display and selection")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_iblDiffuseImageAsset, "IBL Diffuse Image Asset", "IBL diffuse image asset reference")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_iblSpecularImageAsset, "IBL Specular Image Asset", "IBL specular image asset reference")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &LightingPreset::m_iblExposure, "IBL exposure", "IBL exposure")
@@ -127,6 +126,9 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_exposure, "Exposure", "Exposure")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_lights, "Lights", "Lights")
+                            ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ;
                 }
             }

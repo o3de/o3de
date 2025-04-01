@@ -1,0 +1,50 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{AA144B9D-68F6-5191-9DD1-211B8D72802C}",
+                "subId": 3000
+            },
+            "assetHint": "materialeditor/lightingpresets/konzerthaus_latlong_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{AA144B9D-68F6-5191-9DD1-211B8D72802C}",
+                "subId": 2000
+            },
+            "assetHint": "materialeditor/lightingpresets/konzerthaus_latlong_iblskyboxcm_iblspecular.exr.streamingimage"
+        },
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{AA144B9D-68F6-5191-9DD1-211B8D72802C}",
+                "subId": 3000
+            },
+            "assetHint": "materialeditor/lightingpresets/konzerthaus_latlong_iblskyboxcm_ibldiffuse.exr.streamingimage"
+        },
+        "alternateSkyboxImageAsset": {
+            "assetId": {
+                "guid": "{AA144B9D-68F6-5191-9DD1-211B8D72802C}",
+                "subId": 1000
+            },
+            "assetHint": "materialeditor/lightingpresets/konzerthaus_latlong_iblskyboxcm.exr.streamingimage"
+        },
+        "iblExposure": -3.0,
+        "skyboxExposure": -2.0,
+        "lights": [
+            {
+                "direction": [
+                    0.20000000298023225,
+                    -0.20000000298023225,
+                    -1.0
+                ],
+                "intensity": 10.0,
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowmapSize": "Size2048"
+            }
+        ]
+    }
+}

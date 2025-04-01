@@ -10,14 +10,14 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
+#include <Atom/RHI/ImagePool.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RHI/ImagePool.h>
 
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
@@ -40,7 +40,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BlendColorGradingLutsPass, "{F1E7ED65-27B1-4AF3-AF8D-C29C2BF31EE7}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(BlendColorGradingLutsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BlendColorGradingLutsPass, SystemAllocator);
             virtual ~BlendColorGradingLutsPass();
 
             /// Creates a DisplayMapperPass

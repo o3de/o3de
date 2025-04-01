@@ -10,7 +10,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_SHADER_MANAGEMENT_CONSOLE_APPLICATION_SUPPORTED
 
@@ -19,7 +19,7 @@ if(NOT PAL_TRAIT_ATOM_SHADER_MANAGEMENT_CONSOLE_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME ShaderManagementConsole EXECUTABLE
+    NAME ShaderManagementConsole APPLICATION
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
@@ -39,15 +39,16 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
             Gem::AtomToolsFramework.Editor
-            Gem::Atom_RPI.Edit
-            Gem::Atom_RPI.Public
-            Gem::Atom_RHI.Reflect
+            Gem::AtomShader.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
-        Gem::EditorPythonBindings.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS ShaderManagementConsole VARIANTS Tools)
+
+# Add a 'builders' alias to allow the ShaderManagementConsole root gem path to be added to the generated
+# cmake_dependencies.<project>.assetprocessor.setreg to allow the asset scan folder for it to be added
+ly_create_alias(NAME ShaderManagementConsole.Builders NAMESPACE Gem)
 
 # Add build dependency to Editor for the ShaderManagementConsole application since
 # Editor opens up the ShaderManagementConsole

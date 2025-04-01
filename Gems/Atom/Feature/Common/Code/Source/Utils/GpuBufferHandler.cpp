@@ -22,7 +22,8 @@ namespace AZ
 
         GpuBufferHandler::GpuBufferHandler(const Descriptor& descriptor)
         {
-            m_elementSize = descriptor.m_elementSize;
+            m_elementSize = descriptor.m_elementFormat == RHI::Format::Unknown ? descriptor.m_elementSize
+                                                                               : RHI::GetFormatSize(descriptor.m_elementFormat);
             m_elementCount = 0;
             
             m_bufferIndex = descriptor.m_srgLayout->FindShaderInputBufferIndex(Name(descriptor.m_bufferSrgName));
@@ -42,7 +43,8 @@ namespace AZ
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
                 desc.m_bufferName = descriptor.m_bufferName;
                 desc.m_byteCount = byteCount;
-                desc.m_elementSize = descriptor.m_elementSize;
+                desc.m_elementSize = m_elementSize;
+                desc.m_elementFormat = descriptor.m_elementFormat;
 
                 m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
             }
@@ -62,6 +64,31 @@ namespace AZ
         }
 
         bool GpuBufferHandler::UpdateBuffer(uint32_t elementCount, const void* data)
+        {
+            if (!IsValid())
+            {
+                return false;
+            }
+
+            m_elementCount = elementCount;
+
+            AZ::u64 currentByteCount = m_buffer->GetBufferSize();
+            uint32_t dataSize = elementCount * m_elementSize;
+
+            if (dataSize > currentByteCount)
+            {
+                uint32_t byteCount = RHI::NextPowerOfTwo(GetMax<uint32_t>(BufferMinSize, dataSize));
+                m_buffer->Resize(byteCount);
+            }
+
+            if (dataSize > 0)
+            {
+                return m_buffer->UpdateData(data, dataSize, 0);
+            }
+            return true;
+        }
+
+        bool GpuBufferHandler::UpdateBuffer(const AZStd::unordered_map<int, const void*>& data, uint32_t elementCount)
         {
             if (!IsValid())
             {

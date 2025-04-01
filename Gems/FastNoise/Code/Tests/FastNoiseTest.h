@@ -22,8 +22,7 @@ namespace UnitTest
     public:
         void AddGemsAndComponents() override
         {
-            AddDynamicModulePaths({ "GradientSignal" });
-            AddDynamicModulePaths({ "LmbrCentral" });
+            AddDynamicModulePaths({ "GradientSignal", "LmbrCentral" });
 
             AddComponentDescriptors({
                 AzFramework::TransformComponent::CreateDescriptor(),

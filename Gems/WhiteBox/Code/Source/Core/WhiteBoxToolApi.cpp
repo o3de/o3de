@@ -14,7 +14,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix3x4.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -71,6 +71,7 @@ namespace OpenMesh
 
 // OpenMesh includes
 AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils\Property.hh has unreachable code
+AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // Conditional expression is constant.
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/IO/SR_binary.hh>
 #include <OpenMesh/Core/IO/importer/ImporterT.hh>
@@ -78,6 +79,7 @@ AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Utils/GenProg.hh>
 #include <OpenMesh/Core/Utils/vector_traits.hh>
+AZ_POP_DISABLE_WARNING
 AZ_POP_DISABLE_WARNING
 
 AZ_DECLARE_BUDGET(AzToolsFramework);
@@ -326,6 +328,8 @@ namespace OpenMesh::IO
         using value_type = WhiteBox::FaceHandlePolygonMapping;
         static const bool is_streamable = true;
 
+        static std::string type_identifier(void) { return "WhiteBox::FaceHandlePolygonMapping"; }
+
         // return generic binary size of self, if known
         static size_t size_of()
         {
@@ -405,7 +409,7 @@ namespace WhiteBox
     // A wrapper for the OpenMesh source data.
     struct WhiteBoxMesh
     {
-        AZ_CLASS_ALLOCATOR(WhiteBoxMesh, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WhiteBoxMesh, AZ::SystemAllocator);
 
         WhiteBoxMesh() = default;
         WhiteBoxMesh(WhiteBoxMesh&&) = default;
@@ -1433,8 +1437,7 @@ namespace WhiteBox
         void TranslateEdge(WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, const AZ::Vector3& displacement)
         {
             WHITEBOX_LOG(
-                "White Box", "TranslateEdge eh(%s) %s", ToString(edgeHandle).c_str(),
-                AZ::ToString(displacement).c_str());
+                "White Box", "TranslateEdge eh(%s) %s", ToString(edgeHandle).c_str(), AZStd::to_string(displacement).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto vertexHandles = EdgeVertexHandles(whiteBox, edgeHandle);
@@ -1674,8 +1677,7 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, const AZ::Vector3& displacement)
         {
             WHITEBOX_LOG(
-                "White Box", "TranslateEdgeAppend eh(%s) %s", ToString(edgeHandle).c_str(),
-                AZ::ToString(displacement).c_str());
+                "White Box", "TranslateEdgeAppend eh(%s) %s", ToString(edgeHandle).c_str(), AZStd::to_string(displacement).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // the new and existing handles required for an edge append
@@ -1952,19 +1954,19 @@ namespace WhiteBox
         // each face/vertex removal. If garbage_collection is deferred, the faces()/vertices()/halfedges()
         // range must be used to count iterations via skipping iterator to ignore deleted faces
 
-        size_t MeshFaceCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshFaceCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_faces();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_faces());
         }
 
-        size_t MeshHalfedgeCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshHalfedgeCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_halfedges();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_halfedges());
         }
 
-        size_t MeshVertexCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshVertexCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_vertices();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_vertices());
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2605,8 +2607,7 @@ namespace WhiteBox
         void SetVertexPosition(WhiteBoxMesh& whiteBox, const VertexHandle vertexHandle, const AZ::Vector3& position)
         {
             WHITEBOX_LOG(
-                "White Box", "SetVertexPosition vh(%s) %s", ToString(vertexHandle).c_str(),
-                AZ::ToString(position).c_str());
+                "White Box", "SetVertexPosition vh(%s) %s", ToString(vertexHandle).c_str(), AZStd::to_string(position).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             whiteBox.mesh.set_point(om_vh(vertexHandle), position);
@@ -2616,8 +2617,7 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const VertexHandle vertexHandle, const AZ::Vector3& position)
         {
             WHITEBOX_LOG(
-                "White Box", "SetVertexPositionAndUpdateUVs vh(%s) %s", ToString(vertexHandle).c_str(),
-                AZ::ToString(position).c_str());
+                "White Box", "SetVertexPositionAndUpdateUVs vh(%s) %s", ToString(vertexHandle).c_str(), AZStd::to_string(position).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             SetVertexPosition(whiteBox, vertexHandle, position);
@@ -2626,7 +2626,7 @@ namespace WhiteBox
 
         VertexHandle AddVertex(WhiteBoxMesh& whiteBox, const AZ::Vector3& vertex)
         {
-            WHITEBOX_LOG("White Box", "AddVertex %s", AZ::ToString(vertex).c_str());
+            WHITEBOX_LOG("White Box", "AddVertex %s", AZStd::to_string(vertex).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return wb_vh(whiteBox.mesh.add_vertex(vertex));
@@ -3362,7 +3362,7 @@ namespace WhiteBox
         {
             WHITEBOX_LOG(
                 "White Box", "ScalePolygonRelative ph(%s) pivot %s scale: %f", ToString(polygonHandle).c_str(),
-                AZ::ToString(pivot).c_str(), scaleDelta);
+                AZStd::to_string(pivot).c_str(), scaleDelta);
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const AZ::Transform polygonSpace = PolygonSpace(whiteBox, polygonHandle, pivot);
@@ -3384,10 +3384,10 @@ namespace WhiteBox
             AZStd::lock_guard lg(g_omSerializationLock);
 
             std::stringstream whiteBoxStream;
+            // OpenMesh 11.x + requires you to specify "Custom" options to write custom properties such as our polygons or those will be skipped
             if (OpenMesh::IO::write_mesh(
                     whiteBox.mesh, whiteBoxStream, ".om",
-                    OpenMesh::IO::Options::Binary | OpenMesh::IO::Options::FaceTexCoord |
-                        OpenMesh::IO::Options::FaceNormal))
+                    OpenMesh::IO::Options::Binary | OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal | OpenMesh::IO::Options::Custom))
             {
                 const std::string outputStr = whiteBoxStream.str();
                 output.clear();
@@ -3431,8 +3431,9 @@ namespace WhiteBox
                 return ReadResult::Error;
             }
 
+            // OpenMesh 11.x + requires you to specify "Custom" options to read custom properties such as our polygons or those will be skipped
             AZStd::lock_guard lg(g_omSerializationLock);
-            OpenMesh::IO::Options options{OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal};
+            OpenMesh::IO::Options options{OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal | OpenMesh::IO::Options::Custom};
             return OpenMesh::IO::read_mesh(whiteBox.mesh, input, ".om", options) ? ReadResult::Full : ReadResult::Error;
         }
 

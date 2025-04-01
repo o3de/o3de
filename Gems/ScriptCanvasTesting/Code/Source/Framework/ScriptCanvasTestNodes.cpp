@@ -329,6 +329,16 @@ namespace TestNodes
     bool ConfigurableUnitTestNode::TestIsSlotConnectedToConcreteDisplayType(const ScriptCanvas::Slot& slot, ExploredDynamicGroupCache& exploredGroupCache) const
     {
         return FindConnectedConcreteDisplayType(slot, exploredGroupCache).IsValid();
-    }    
+    }
+
+    void ConfigurableUnitTestNode::SetSlotExecutionMap(ScriptCanvas::SlotExecution::Map* executionMap)
+    {
+        m_slotExecutionMap = executionMap;
+    }
+
+    const ScriptCanvas::SlotExecution::Map* ConfigurableUnitTestNode::GetSlotExecutionMap() const
+    {
+        return m_slotExecutionMap;
+    }
 }
 

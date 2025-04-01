@@ -35,7 +35,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/EditorViewActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/WidgetActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ////////////////////////////////
     // CreateNodeFromPaletteAction
@@ -153,7 +153,7 @@ namespace ScriptCanvasDeveloper
                 GraphCanvas::AssetEditorSettingsRequestBus::EventResult(connectionDelay, ScriptCanvasEditor::AssetEditorId, &GraphCanvas::AssetEditorSettingsRequests::GetDropConnectionSpliceTime);
 
                 // Give it some buffer room on the delay before we release.
-                connectionDelay = connectionDelay + connectionDelay * 0.5f;
+                connectionDelay = connectionDelay + connectionDelay / 2;
 
                 AddAction(aznew ProcessUserEventsAction(connectionDelay));
             }

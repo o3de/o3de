@@ -1,0 +1,67 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsParentPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "MeshletsComputePass",
+                    "TemplateName": "MeshletsComputePassTemplate",
+                    "Connections": [
+                    ],
+                    "PassData": {
+                        "$type": "ComputePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/MeshletsCompute.shader"
+                        }
+                    }
+                },
+                {
+                    "Name": "MeshletsRenderPass",
+                    "TemplateName": "MeshletsRenderPassTemplate",
+                    "Connections": [
+                        // Input/Outputs...
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "MeshletsDrawList",
+                        "BindViewSrg": true,
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/MeshletsDebugRenderShader.shader"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
+ 

@@ -25,6 +25,8 @@ namespace ScriptCanvasTesting
         {
             SCRIPTCANVAS_NODE(ReturnTypeExample);
 
+        public:
+            AZ_CLASS_ALLOCATOR(ReturnTypeExample, AZ::SystemAllocator)
         private:
             AZStd::vector<ScriptCanvas::Data::NumberType> m_internalVector{ 1.0, 2.0, 3.0 };
         };
@@ -34,6 +36,8 @@ namespace ScriptCanvasTesting
         {
             SCRIPTCANVAS_NODE(BranchInputTypeExample);
 
+        public:
+            AZ_CLASS_ALLOCATOR(BranchInputTypeExample, AZ::SystemAllocator)
         private:
             AZStd::vector<ScriptCanvas::Data::NumberType> m_internalVector{ 1.0, 2.0, 3.0 };
         };
@@ -43,12 +47,6 @@ namespace ScriptCanvasTesting
             : public ScriptCanvas::Nodeable
         {
             SCRIPTCANVAS_NODE(InputTypeExample);
-        };
-
-        class PropertyExample
-            : public ScriptCanvas::Nodeable
-        {
-            SCRIPTCANVAS_NODE(PropertyExample);
         };
     }
 }

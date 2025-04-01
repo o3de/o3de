@@ -358,10 +358,6 @@ void CErrorReportDialog::CopyToClipboard()
         if (pRecord)
         {
             str += pRecord->GetErrorText();
-            if (pRecord->pObject)
-            {
-                str += QString::fromLatin1(" [Object: %1]").arg(pRecord->pObject->GetName());
-            }
             str += QString::fromLatin1("\r\n");
         }
     }
@@ -494,25 +490,8 @@ void CErrorReportDialog::keyPressEvent(QKeyEvent* event)
 //////////////////////////////////////////////////////////////////////////
 void CErrorReportDialog::OnReportItemDblClick(const QModelIndex& index)
 {
-    bool bDone = false;
     const CErrorRecord* pError = index.data(Qt::UserRole).value<const CErrorRecord*>();
-    if (pError && pError->pObject != nullptr)
-    {
-        CUndo undo("Select Object(s)");
-        // Clear other selection.
-        GetIEditor()->ClearSelection();
-        // Select this object.
-        GetIEditor()->SelectObject(pError->pObject);
-
-        CViewport* vp = GetIEditor()->GetActiveView();
-        if (vp)
-        {
-            vp->CenterOnSelection();
-        }
-        bDone = true;
-    }
-
-    if (!bDone && pError && GetIEditor()->GetActiveView())
+    if (pError && GetIEditor()->GetActiveView())
     {
         float x, y, z;
         if (GetPositionFromString(pError->error, &x, &y, &z))
@@ -523,22 +502,6 @@ void CErrorReportDialog::OnReportItemDblClick(const QModelIndex& index)
             vp->SetViewTM(tm);
         }
     }
-
-    /*
-    if (index.isValid())
-    {
-        TRACE(_T("Double Click on row %d\n"),
-            index.row());
-
-        CErrorMessageRecord* pRecord = DYNAMIC_DOWNCAST(CErrorMessageRecord, pItemNotify->pRow->GetRecord());
-        if (pRecord)
-        {
-            {
-                m_wndReport.Populate();
-            }
-        }
-    }
-    */
 }
 
 void CErrorReportDialog::OnSortIndicatorChanged(int logicalIndex, Qt::SortOrder order)
@@ -558,18 +521,7 @@ void CErrorReportDialog::OnSortIndicatorChanged(int logicalIndex, Qt::SortOrder 
 void CErrorReportDialog::OnReportHyperlink(const QModelIndex& index)
 {
     const CErrorRecord* pError = index.data(Qt::UserRole).value<const CErrorRecord*>();
-    bool bDone = false;
-    if (pError && pError->pObject != nullptr)
-    {
-        CUndo undo("Select Object(s)");
-        // Clear other selection.
-        GetIEditor()->ClearSelection();
-        // Select this object.
-        GetIEditor()->SelectObject(pError->pObject);
-        bDone = true;
-    }
-
-    if (!bDone && pError && GetIEditor()->GetActiveView())
+    if (pError && GetIEditor()->GetActiveView())
     {
         float x, y, z;
         if (GetPositionFromString(pError->error, &x, &y, &z))

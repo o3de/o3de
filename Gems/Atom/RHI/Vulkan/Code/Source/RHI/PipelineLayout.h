@@ -33,7 +33,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(PipelineLayout, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLayout, AZ::ThreadPoolAllocator);
             AZ_RTTI(PipelineLayout, "3791D9FB-1CD6-4A8A-80B7-717962ECDC28", Base);
 
             struct Descriptor 

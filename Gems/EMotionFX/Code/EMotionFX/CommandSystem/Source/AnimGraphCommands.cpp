@@ -24,7 +24,6 @@
 #include <EMotionFX/Source/MotionSystem.h>
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/Importer/Importer.h>
-#include <EMotionFX/Exporters/ExporterLib/Exporter/ExporterFileProcessor.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 
@@ -69,7 +68,8 @@ namespace CommandSystem
         {
             m_relocateFilenameFunction(filename);
         }
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {

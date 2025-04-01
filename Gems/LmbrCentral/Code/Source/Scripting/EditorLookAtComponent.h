@@ -12,9 +12,13 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace LmbrCentral
 {
@@ -62,17 +66,17 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("LookAtService", 0x34230406));
+            provided.push_back(AZ_CRC_CE("LookAtService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("LookAtService", 0x34230406));
+            incompatible.push_back(AZ_CRC_CE("LookAtService"));
         }
 
     private:

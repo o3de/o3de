@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <AzCore/Math/Color.h>
 #include <AzFramework/Components/CameraBus.h>
@@ -72,6 +73,8 @@ namespace AZ
             virtual void SetAngularDiameter(LightHandle handle, float angularDiameter) = 0;
 
             ////////// shadow specific
+            //! Sets wheter or not enabling shadow
+            virtual void SetShadowEnabled(LightHandle handle, bool enable) = 0;
 
             //! This sets the shadowmap size (width and height) of the light.
             //! @param handle the light handle.
@@ -166,6 +169,30 @@ namespace AZ
 
             //! Sets whether or not blending between shadow map cascades is enabled.
             virtual void SetCascadeBlendingEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Sets whether or not to apply fullscreen blur after fullscreen shadow pass
+            virtual void SetFullscreenBlurEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Sets the amount of constant falloff on the fullscreen shadow blur
+            virtual void SetFullscreenBlurConstFalloff(LightHandle handle, float blurConstFalloff) = 0;
+
+            //! Sets the strength of the depth falloff on the fullscreen shadow blur
+            virtual void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) = 0;
+
+            //! Specifies if this light affects the diffuse global illumination in the scene.
+            virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
+
+            //! Specifies the contribution of this light to the diffuse global illumination in the scene.
+            virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
+
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
+
+            //! Returns the buffer containing the light data for all directional lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+
+            //! Returns the number of directional lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

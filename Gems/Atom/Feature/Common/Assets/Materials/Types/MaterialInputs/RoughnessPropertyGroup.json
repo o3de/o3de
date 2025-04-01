@@ -1,0 +1,86 @@
+{
+    "name": "roughness",
+    "displayName": "Roughness",
+    "description": "Properties for configuring how rough the surface appears.",
+    "properties": [
+        {
+            "name": "textureMap",
+            "displayName": "Texture",
+            "description": "Texture for defining surface roughness.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_roughnessMap"
+            }
+        },
+        {
+            "name": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to use the texture, or just default to the Factor value.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "textureMapUv",
+            "displayName": "UV",
+            "description": "Roughness map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_roughnessMapUvIndex"
+            }
+        },
+        {
+            // Note that "factor" is mutually exclusive with "lowerBound"/"upperBound". These are swapped by a lua functor.
+            "name": "lowerBound",
+            "displayName": "Lower Bound",
+            "description": "The roughness value that corresponds to black in the texture.",
+            "type": "Float",
+            "defaultValue": 0.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_roughnessLowerBound"
+            }
+        },
+        {
+            // Note that "factor" is mutually exclusive with "lowerBound"/"upperBound". These are swapped by a lua functor.
+            "name": "upperBound",
+            "displayName": "Upper Bound",
+            "description": "The roughness value that corresponds to white in the texture.",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_roughnessUpperBound"
+            }
+        },
+        {
+            // Note that "factor" is mutually exclusive with "lowerBound"/"upperBound". These are swapped by a lua functor.
+            "name": "factor",
+            "displayName": "Factor",
+            "description": "Controls the roughness value",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_roughnessFactor"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/StandardPBR_Roughness.lua"
+            }
+        }
+    ]
+}

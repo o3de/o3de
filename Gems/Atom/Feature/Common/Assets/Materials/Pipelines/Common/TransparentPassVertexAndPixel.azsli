@@ -1,0 +1,93 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#pragma once
+
+struct ForwardPassOutput
+{
+    [[vk::location(0), vk::index(0)]]
+    float4 m_color1 : SV_Target0;
+    [[vk::location(0), vk::index(1)]]
+    float4 m_color2 : SV_Target1;  // Used as the alternate blend source when dual-source blending is enabled for TintedTransparent
+};
+
+// --- Vertex Shader ---
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
+{
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    return OUT;
+}
+
+// --- Pixel Shader ---
+
+ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    // ------- Geometry -> Surface -> Lighting -------
+
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
+
+    Surface surface = EvaluateSurface(IN, geoData);
+
+    LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
+
+    // ------- Output -------
+
+    ForwardPassOutput OUT;
+    
+    // For blended mode, we do (dest * alpha) + (source * 1.0). This allows the specular
+    // to be added on top of the diffuse, but then the diffuse must be pre-multiplied.
+    // It's done this way because surface transparency doesn't really change specular response (eg, glass).
+
+    float3 diffuse = lightingData.diffuseLighting.rgb;
+    diffuse *= surface.alpha;
+    
+    diffuse += lightingData.emissiveLighting;
+
+    // m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+    float3 specular = lightingData.specularLighting.rgb;
+    specular = lerp(specular, specular * surface.alpha, surface.opacityAffectsSpecularFactor);
+
+    OUT.m_color1.rgb = diffuse + specular;
+
+    // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
+    // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
+    // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
+    // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
+    // not apply.
+    float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.alpha, surface.roughnessLinear).x;
+    float alpha = lerp(fresnelAlpha, surface.alpha, surface.opacityAffectsSpecularFactor);
+
+    if (o_opacity_mode == OpacityMode::Blended)
+    {
+        OUT.m_color1.a = alpha;
+    }
+    else if (o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        // See OpacityMode::Blended above for the basic method. TintedTransparent adds onto the above concept by supporting
+        // colored alpha. This is currently a very basic calculation that uses the baseColor as a multiplier with strength
+        // determined by the alpha. We'll modify this later to be more physically accurate and allow surface depth,
+        // absorption, and interior color to be specified.
+        //
+        // The technique uses dual source blending to allow two separate sources to be part of the blending equation
+        // even though ultimately only a single render target is being written to. m_diffuseColor is render target 0 and
+        // m_specularColor render target 1, and the blend mode is (dest * source1color) + (source * 1.0).
+        //
+        // This means that m_specularColor.rgb (source 1) is multiplied against the destination, then
+        // m_diffuseColor.rgb (source) is added to that, and the final result is stored in render target 0.
+
+        OUT.m_color2 = float4((surface.baseColor * (1.0 - alpha)), 0);
+        
+        // the output alpha doesn't matter in this case because it's not used in the shader's BlendState function.
+        // Everything is pre-multiplied.
+        OUT.m_color1.a = 0;
+    }
+
+    return OUT;
+}

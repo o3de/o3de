@@ -32,15 +32,6 @@
 #include "Settings.h"
 #include "CryEdit.h"
 
-enum
-{
-    // in milliseconds
-    GameModeIdleFrequency = 0,
-    EditorModeIdleFrequency = 1,
-    InactiveModeFrequency = 10,
-    UninitializedFrequency = 9999,
-};
-
 Q_LOGGING_CATEGORY(InputDebugging, "o3de.editor.input")
 
 // internal, private namespace:
@@ -199,7 +190,7 @@ namespace
     static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
     {
         AZ::Debug::Platform::OutputToDebugger("Qt", message.toUtf8().data());
-        AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
+        AZ::Debug::Platform::OutputToDebugger("", "\n");
     }
 }
 
@@ -234,18 +225,12 @@ namespace Editor
     EditorQtApplication::EditorQtApplication(int& argc, char** argv)
         : AzQtApplication(argc, argv)
         , m_stylesheet(new AzQtComponents::O3DEStylesheet(this))
-        , m_idleTimer(new QTimer(this))
     {
-        m_idleTimer->setInterval(UninitializedFrequency);
-
         setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"));
 
         // set the default key store for our preferences:
         setApplicationName("O3DE Editor");
 
-        connect(m_idleTimer, &QTimer::timeout, this, &EditorQtApplication::maybeProcessIdle);
-
-        connect(this, &QGuiApplication::applicationStateChanged, this, [this] { ResetIdleTimerInterval(PollState); });
         installEventFilter(this);
 
         // Disable our debugging input helpers by default
@@ -254,10 +239,17 @@ namespace Editor
         // Initialize our stylesheet here to allow Gems to register stylesheets when their system components activate.
         AZ::IO::FixedMaxPath engineRootPath;
         {
-            // Create a ComponentApplication to initialize the AZ::SystemAllocator and initialize the SettingsRegistry
-            AZ::ComponentApplication application(argc, argv);
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            using namespace AZ::SettingsRegistryMergeUtils;
+            AZ::SettingsRegistryImpl settingsRegistry;
+            AZ::CommandLine commandLine;
+            commandLine.Parse(argc, argv);
+
+            ParseCommandLine(commandLine);
+            StoreCommandLineToRegistry(settingsRegistry, commandLine);
+            MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, {});
+            MergeSettingsToRegistry_AddRuntimeFilePaths(settingsRegistry);
+
+            settingsRegistry.Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         }
         m_stylesheet->initialize(this, engineRootPath);
     }
@@ -279,8 +271,8 @@ namespace Editor
 
     void EditorQtApplication::LoadSettings()
     {
-        AZ::SerializeContext* context;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::SerializeContext* context = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialize context");
         char resolvedPath[AZ_MAX_PATH_LEN];
         AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/EditorUserSettings.xml", resolvedPath, AZ_MAX_PATH_LEN);
@@ -305,8 +297,8 @@ namespace Editor
     {
         if (m_activatedLocalUserSettings)
         {
-            AZ::SerializeContext* context;
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::SerializeContext* context = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialize context");
 
             char resolvedPath[AZ_MAX_PATH_LEN];
@@ -323,6 +315,10 @@ namespace Editor
             {
                 winapp->OnIdle(0);
             }
+        }
+        if (m_applicationActive)
+        {
+            QTimer::singleShot(1, this, &EditorQtApplication::maybeProcessIdle);
         }
     }
 
@@ -375,14 +371,6 @@ namespace Editor
 
             case eNotify_OnQuit:
                 GetIEditor()->UnregisterNotifyListener(this);
-            break;
-
-            case eNotify_OnBeginGameMode:
-                // GetIEditor()->IsInGameMode() Isn't reliable when called from within the notification handler
-                ResetIdleTimerInterval(GameMode);
-            break;
-            case eNotify_OnEndGameMode:
-                ResetIdleTimerInterval(EditorMode);
             break;
         }
     }
@@ -456,55 +444,16 @@ namespace Editor
 
     void EditorQtApplication::EnableOnIdle(bool enable)
     {
+        m_applicationActive = enable;
         if (enable)
         {
-            if (m_idleTimer->interval() == UninitializedFrequency)
-            {
-                ResetIdleTimerInterval();
-            }
-
-            m_idleTimer->start();
-        }
-        else
-        {
-            m_idleTimer->stop();
+            QTimer::singleShot(0, this, &EditorQtApplication::maybeProcessIdle);
         }
     }
 
     bool EditorQtApplication::OnIdleEnabled() const
     {
-        if (m_idleTimer->interval() == UninitializedFrequency)
-        {
-            return false;
-        }
-
-        return m_idleTimer->isActive();
-    }
-
-    void EditorQtApplication::ResetIdleTimerInterval(TimerResetFlag flag)
-    {
-        bool isInGameMode = flag == GameMode;
-        if (flag == PollState)
-        {
-            isInGameMode = GetIEditor() ? GetIEditor()->IsInGameMode() : false;
-        }
-
-        // Game mode takes precedence over anything else
-        if (isInGameMode)
-        {
-            m_idleTimer->setInterval(GameModeIdleFrequency);
-        }
-        else
-        {
-            if (applicationState() & Qt::ApplicationActive)
-            {
-                m_idleTimer->setInterval(EditorModeIdleFrequency);
-            }
-            else
-            {
-                m_idleTimer->setInterval(InactiveModeFrequency);
-            }
-        }
+        return m_applicationActive;
     }
 
     bool EditorQtApplication::eventFilter(QObject* object, QEvent* event)

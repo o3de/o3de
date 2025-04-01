@@ -20,7 +20,7 @@
 namespace UnitTest
 {
     class PythonBuilderRegisterJobsTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;
@@ -30,7 +30,9 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor appDesc;
             m_app = AZStd::make_unique<AZ::ComponentApplication>();
-            m_systemEntity = m_app->Create(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_systemEntity = m_app->Create(appDesc, startupParameters);
         }
 
         void TearDown() override

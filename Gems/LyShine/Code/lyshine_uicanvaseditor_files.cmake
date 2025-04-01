@@ -50,14 +50,10 @@ set(FILES
     Editor/CommandHierarchyItemToggleIsExpanded.h
     Editor/CommandHierarchyItemToggleIsSelectable.cpp
     Editor/CommandHierarchyItemToggleIsSelectable.h
-    Editor/CommandHierarchyItemToggleIsSelected.cpp
-    Editor/CommandHierarchyItemToggleIsSelected.h
     Editor/CommandHierarchyItemToggleIsVisible.cpp
     Editor/CommandHierarchyItemToggleIsVisible.h
     Editor/CommandPropertiesChange.cpp
     Editor/CommandPropertiesChange.h
-    Editor/CommandViewportInteractionMode.cpp
-    Editor/CommandViewportInteractionMode.h
     Editor/ComponentAssetHelpers.h
     Editor/ComponentButton.cpp
     Editor/ComponentButton.h
@@ -74,8 +70,6 @@ set(FILES
     Editor/EnterPreviewToolbar.h
     Editor/EntityHelpers.cpp
     Editor/EntityHelpers.h
-    Editor/FeedbackDialog.cpp
-    Editor/FeedbackDialog.h
     Editor/FileHelpers.cpp
     Editor/FileHelpers.h
     Editor/FindEntityItemModel.cpp
@@ -124,6 +118,8 @@ set(FILES
     Editor/PropertiesWrapper.h
     Editor/PropertyHandlerAnchor.cpp
     Editor/PropertyHandlerAnchor.h
+    Editor/PropertyHandlerCanvasAsset.cpp
+    Editor/PropertyHandlerCanvasAsset.h
     Editor/PropertyHandlerChar.cpp
     Editor/PropertyHandlerChar.h
     Editor/PropertyHandlerDirectory.cpp

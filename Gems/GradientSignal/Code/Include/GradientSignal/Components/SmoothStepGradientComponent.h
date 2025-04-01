@@ -8,14 +8,19 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
-#include <GradientSignal/GradientSampler.h>
-#include <GradientSignal/SmoothStep.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SmoothStepGradientRequestBus.h>
 #include <GradientSignal/Ebuses/SmoothStepRequestBus.h>
+#include <GradientSignal/GradientSampler.h>
+#include <GradientSignal/SmoothStep.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace LmbrCentral
 {
@@ -29,16 +34,14 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SmoothStepGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SmoothStepGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SmoothStepGradientConfig, "{A53D2A38-FFE1-4828-B91E-4D5A8B712BB2}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         GradientSampler m_gradientSampler;
         SmoothStep m_smoothStep;
-    private:
-        static bool UpdateVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
     };
 
-    static const AZ::Uuid SmoothStepGradientComponentTypeId = "{404BD2B5-6229-4C60-998E-77F394FF27A8}";
+    inline constexpr AZ::TypeId SmoothStepGradientComponentTypeId{ "{404BD2B5-6229-4C60-998E-77F394FF27A8}" };
 
     /**
     * Component implementing GradientRequestBus based on smooth step
@@ -94,5 +97,6 @@ namespace GradientSignal
     private:
         SmoothStepGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

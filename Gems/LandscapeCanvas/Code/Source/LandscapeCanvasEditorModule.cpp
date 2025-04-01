@@ -33,7 +33,8 @@ namespace LandscapeCanvas
 
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(LandscapeCanvas_19c2b2d5018940108baf252934b8e6bf, LandscapeCanvas::LandscapeCanvasEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), LandscapeCanvas::LandscapeCanvasEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_LandscapeCanvas, LandscapeCanvas::LandscapeCanvasEditorModule)
+#endif

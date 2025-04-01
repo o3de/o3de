@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzCore/std/string/string_view.h>
-
 namespace O3DELauncher
 {
     bool WaitForAssetProcessorConnect()
@@ -23,5 +21,10 @@ namespace O3DELauncher
     const char* GetLogFilename()
     {
         return "@log@/Game.log";
+    }
+
+    const char* GetLauncherTypeSpecialization()
+    {
+        return "client";
     }
 }

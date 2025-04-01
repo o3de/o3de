@@ -54,7 +54,7 @@ namespace AzFramework
     RemoteStorageDrive::RemoteStorageDrive(AZ::u32 maxFileHandles)
         : StreamStackEntry("Storage drive(VFS)")
     {
-        m_fileLastUsed.resize(maxFileHandles, AZStd::chrono::system_clock::time_point::min());
+        m_fileLastUsed.resize(maxFileHandles, AZStd::chrono::steady_clock::time_point::min());
         m_filePaths.resize(maxFileHandles);
         m_fileHandles.resize(maxFileHandles, AZ::IO::InvalidHandle);
 
@@ -186,7 +186,7 @@ namespace AzFramework
         }
     }
 
-    void RemoteStorageDrive::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now,
+    void RemoteStorageDrive::UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now,
         AZStd::vector<AZ::IO::FileRequest*>& internalPending, AZ::IO::StreamerContext::PreparedQueue::iterator pendingBegin,
         AZ::IO::StreamerContext::PreparedQueue::iterator pendingEnd)
     {
@@ -221,7 +221,7 @@ namespace AzFramework
     }
 
     void RemoteStorageDrive::EstimateCompletionTimeForRequest(AZ::IO::FileRequest* request,
-        AZStd::chrono::system_clock::time_point& startTime, const AZ::IO::RequestPath*& activeFile) const
+        AZStd::chrono::steady_clock::time_point& startTime, const AZ::IO::RequestPath*& activeFile) const
     {
         using namespace AZ::IO;
 
@@ -268,8 +268,9 @@ namespace AzFramework
             }
 
             AZ::u64 totalBytesRead = m_readSizeAverage.GetTotal();
-            double totalReadTimeUSec = aznumeric_caster(m_readTimeAverage.GetTotal().count());
-            startTime += AZStd::chrono::microseconds(aznumeric_cast<AZ::u64>((readSize * totalReadTimeUSec) / totalBytesRead));
+            double totalReadTime =
+                aznumeric_caster(m_readTimeAverage.GetTotal().count());
+            startTime += Statistic::TimeValue(aznumeric_cast<AZ::u64>((readSize * totalReadTime) / totalBytesRead));
         }
         request->SetEstimatedCompletion(startTime);
     }
@@ -290,13 +291,13 @@ namespace AzFramework
         if (cacheIndex != s_fileNotFound)
         {
             file = m_fileHandles[cacheIndex];
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
+            m_fileLastUsed[cacheIndex] = AZStd::chrono::steady_clock::now();
         }
 
         // If the file is not open, eject the oldest entry from the cache and open the file for reading.
         if (file == InvalidHandle)
         {
-            AZStd::chrono::system_clock::time_point oldest = m_fileLastUsed[0];
+            AZStd::chrono::steady_clock::time_point oldest = m_fileLastUsed[0];
             cacheIndex = 0;
             size_t numFiles = m_filePaths.size();
             for (size_t i = 1; i < numFiles; ++i)
@@ -309,13 +310,13 @@ namespace AzFramework
             }
 
             TIMED_AVERAGE_WINDOW_SCOPE(m_fileOpenCloseTimeAverage);
-            if (!m_fileIO.Open(data->m_path.GetRelativePath(), OpenMode::ModeRead, file))
+            if (!m_fileIO.Open(data->m_path.GetRelativePathCStr(), OpenMode::ModeRead, file))
             {
                 StreamStackEntry::QueueRequest(request);
                 return;
             }
 
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::high_resolution_clock::now();
+            m_fileLastUsed[cacheIndex] = AZStd::chrono::steady_clock::now();
             if (m_fileHandles[cacheIndex] != InvalidHandle)
             {
                 m_fileIO.Close(m_fileHandles[cacheIndex]);
@@ -325,14 +326,18 @@ namespace AzFramework
         }
         m_activeCacheSlot = cacheIndex;
 
-        AZ_Assert(file != InvalidHandle,
-            "While searching for file '%s' RemoteStorageDevice::ReadFile encountered a problem that wasn't reported.", data->m_path.GetRelativePath());
+        AZ_Assert(
+            file != InvalidHandle,
+            "While searching for file '%s' RemoteStorageDevice::ReadFile encountered a problem that wasn't reported.",
+            data->m_path.GetRelativePathCStr());
         {
             TIMED_AVERAGE_WINDOW_SCOPE(m_readTimeAverage);
             AZ::u64 currentOffset = 0;
             if (!m_fileIO.Tell(file, currentOffset))
             {
-                AZ_Warning("IO", false, "RemoteIO failed to tell the offset for a valid file handle for file '%s'.", data->m_path.GetRelativePath());
+                AZ_Warning(
+                    "IO", false, "RemoteIO failed to tell the offset for a valid file handle for file '%s'.",
+                    data->m_path.GetRelativePathCStr());
                 m_readSizeAverage.PushEntry(0);
                 request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                 m_context->MarkRequestAsCompleted(request);
@@ -341,7 +346,9 @@ namespace AzFramework
             {
                 if (!m_fileIO.Seek(file, data->m_offset, SeekType::SeekFromStart))
                 {
-                    AZ_Warning("IO", false, "RemoteIO failed to tell to seek to %" PRIu64 " in '%s'.", data->m_offset, data->m_path.GetRelativePath());
+                    AZ_Warning(
+                        "IO", false, "RemoteIO failed to tell to seek to %" PRIu64 " in '%s'.", data->m_offset,
+                        data->m_path.GetRelativePathCStr());
                     m_readSizeAverage.PushEntry(0);
                     request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                     m_context->MarkRequestAsCompleted(request);
@@ -350,7 +357,7 @@ namespace AzFramework
             if (!m_fileIO.Read(file, data->m_output, data->m_size, true))
             {
                 AZ_Warning("IO", false, "RemoteIO failed to read %i bytes at offset %" PRIu64 " from '%s'.",
-                    data->m_size, data->m_offset, data->m_path.GetRelativePath());
+                    data->m_size, data->m_offset, data->m_path.GetRelativePathCStr());
                 m_readSizeAverage.PushEntry(0);
                 request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                 m_context->MarkRequestAsCompleted(request);
@@ -406,7 +413,7 @@ namespace AzFramework
         }
         else
         {
-            if (m_fileIO.Exists(fileExists.m_path.GetAbsolutePath()))
+            if (m_fileIO.Exists(fileExists.m_path.GetAbsolutePathCStr()))
             {
                 fileExists.m_found = true;
                 request->SetStatus(IStreamerTypes::RequestStatus::Completed);
@@ -435,14 +442,15 @@ namespace AzFramework
         size_t cacheIndex = FindFileInCache(command.m_path);
         if (cacheIndex != s_fileNotFound)
         {
-            AZ_Assert(m_fileHandles[cacheIndex] != InvalidHandle,
-                "File path '%s' doesn't have an associated file handle.", m_filePaths[cacheIndex].GetRelativePath());
+            AZ_Assert(
+                m_fileHandles[cacheIndex] != InvalidHandle, "File path '%s' doesn't have an associated file handle.",
+                m_filePaths[cacheIndex].GetRelativePathCStr());
             found = m_fileIO.Size(m_fileHandles[cacheIndex], fileSize);
         }
         else
         {
             // The file is not open yet, so try to get the file size by name.
-            m_fileIO.Size(command.m_path.GetAbsolutePath(), fileSize);
+            m_fileIO.Size(command.m_path.GetAbsolutePathCStr(), fileSize);
         }
 
         if (found)
@@ -465,10 +473,11 @@ namespace AzFramework
         size_t cacheIndex = FindFileInCache(filePath);
         if (cacheIndex != s_fileNotFound)
         {
-            m_fileLastUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
+            m_fileLastUsed[cacheIndex] = AZStd::chrono::steady_clock::time_point();
             m_filePaths[cacheIndex].Clear();
-            AZ_Assert(m_fileHandles[cacheIndex] != AZ::IO::InvalidHandle,
-                "File path '%s' doesn't have an associated file handle.", m_filePaths[cacheIndex].GetRelativePath());
+            AZ_Assert(
+                m_fileHandles[cacheIndex] != AZ::IO::InvalidHandle, "File path '%s' doesn't have an associated file handle.",
+                m_filePaths[cacheIndex].GetRelativePathCStr());
             m_fileIO.Close(m_fileHandles[cacheIndex]);
             m_fileHandles[cacheIndex] = InvalidHandle;
         }
@@ -479,7 +488,7 @@ namespace AzFramework
         size_t numFiles = m_filePaths.size();
         for (size_t i = 0; i < numFiles; ++i)
         {
-            m_fileLastUsed[i] = AZStd::chrono::system_clock::time_point();
+            m_fileLastUsed[i] = AZStd::chrono::steady_clock::time_point();
             m_filePaths[i].Clear();
             if (m_fileHandles[i] != AZ::IO::InvalidHandle)
             {
@@ -508,19 +517,37 @@ namespace AzFramework
 
         using DoubleSeconds = AZStd::chrono::duration<double>;
 
-        double totalBytesReadMB = m_readSizeAverage.GetTotal() / (1024.0 * 1024.0);
+        AZ::u64 totalBytesRead = m_readSizeAverage.GetTotal();
         double totalReadTimeSec = AZStd::chrono::duration_cast<DoubleSeconds>(m_readTimeAverage.GetTotal()).count();
         if (m_readSizeAverage.GetTotal() > 1) // A default is always added.
         {
-            statistics.push_back(Statistic::CreateFloat(m_name, "Read Speed (avg. mbps)", totalBytesReadMB / totalReadTimeSec));
+            statistics.push_back(Statistic::CreateBytesPerSecond(m_name, "Read Speed", totalBytesRead / totalReadTimeSec,
+                "The average read speed this node achieved. This is the maximum achievable speed for reading through "
+                "the network. If this is lower than expected it may indicate that there's an overhead from the operating system, poor network "
+                "connection or poor drive performance on the host."));
         }
 
         if (m_fileOpenCloseTimeAverage.GetNumRecorded() > 0)
         {
-            statistics.push_back(Statistic::CreateInteger(m_name, "File Open & Close (avg. us)", m_fileOpenCloseTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Get file exists (avg. us)", m_getFileExistsTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Get file meta data (avg. us)", m_getFileMetaDataTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", AZ::s64{ s_maxRequests } - m_pendingRequests.size()));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "File Open & Close", m_fileOpenCloseTimeAverage.CalculateAverage(), m_fileOpenCloseTimeAverage.GetMinimum(),
+                m_fileOpenCloseTimeAverage.GetMaximum(),
+                "The average amount of time needed to open and close file handles. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "Get file exists (avg. us)", m_getFileExistsTimeAverage.CalculateAverage(),
+                m_getFileExistsTimeAverage.GetMinimum(), m_getFileExistsTimeAverage.GetMaximum(),
+                "The average amount of time needed to check if a file exists. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "Get file meta data", m_getFileMetaDataTimeAverage.CalculateAverage(), m_getFileMetaDataTimeAverage.GetMinimum(),
+                m_getFileMetaDataTimeAverage.GetMaximum(),
+                "The average amount of time needed to retrieve file information. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", AZ::s64{ s_maxRequests } - m_pendingRequests.size(),
+                "The total number of available slots to queue requests on. The lower this number, the more active this node is. A small "
+                "negative number is ideal as it means there are a few requests available for immediate processing next once a request "
+                "completes."));
         }
 
         StreamStackEntry::CollectStatistics(statistics);
@@ -532,12 +559,23 @@ namespace AzFramework
 
         switch (data.m_reportType)
         {
-        case Requests::ReportType::FileLocks:
+        case IStreamerTypes::ReportType::Config:
+            data.m_output.push_back(Statistic::CreateInteger(
+                m_name, "Max file handles", m_fileHandles.size(),
+                "The maximum number of file handles this drive node will cache. Increasing this will allow files that are read "
+                "multiple times to be processed faster. It's recommended to have this set to at least the largest number of archives "
+                "that can be in use at the same time."));
+            data.m_output.push_back(Statistic::CreateReferenceString(
+                m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                "The name of the node that follows this node or none."));
+            break;
+        case IStreamerTypes::ReportType::FileLocks:
             for (AZ::u32 i = 0; i < m_fileHandles.size(); ++i)
             {
                 if (m_fileHandles[i] != InvalidHandle)
                 {
-                    AZ_Printf("Streamer", "File lock in %s : '%s'.\n", m_name.c_str(), m_filePaths[i].GetRelativePath());
+                    data.m_output.push_back(
+                        Statistic::CreatePersistentString(m_name, "File lock", m_filePaths[i].GetRelativePath().Native()));
                 }
             }
             break;

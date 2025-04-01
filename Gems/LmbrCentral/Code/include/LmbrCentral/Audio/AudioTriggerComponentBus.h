@@ -45,18 +45,4 @@ namespace LmbrCentral
 
     using AudioTriggerComponentRequestBus = AZ::EBus<AudioTriggerComponentRequests>;
 
-    /*!
-     * AudioTriggerComponentNotifications EBus Interface
-     * Messages broadcasted from AudioTriggerComponents.
-     */
-    class AudioTriggerComponentNotifications
-        : public AZ::ComponentBus
-    {
-    public:
-        //! Notification when a trigger instance has finished.
-        virtual void OnTriggerFinished(const Audio::TAudioControlID triggerID) = 0;
-    };
-
-    using AudioTriggerComponentNotificationBus = AZ::EBus<AudioTriggerComponentNotifications>;
-
 } // namespace LmbrCentral

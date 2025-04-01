@@ -6,11 +6,10 @@
  *
  */
 
-#include "RenderOptions.h"
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
-#include <EMotionFX/Rendering/Common/OrbitCamera.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <MysticQt/Source/MysticQtConfig.h>
@@ -80,6 +79,9 @@ namespace EMStudio
         , m_tangentsScale(1.0f)
         , m_nodeOrientationScale(1.0f)
         , m_scaleBonesOnLength(true)
+        , m_nearClipPlaneDistance(0.1f)
+        , m_farClipPlaneDistance(200.0f)
+        , m_fov(55.0f)
         , m_mainLightIntensity(1.0f)
         , m_mainLightAngleA(0.0f)
         , m_mainLightAngleB(0.0f)
@@ -125,10 +127,6 @@ namespace EMStudio
         , m_lastUsedLayout("Single")
         , m_renderSelectionBox(true)
     {
-        MCommon::OrbitCamera tempCam;
-        m_nearClipPlaneDistance = tempCam.GetNearClipDistance();
-        m_farClipPlaneDistance = tempCam.GetFarClipDistance();
-        m_fov = tempCam.GetFOV();
     }
 
     RenderOptions& RenderOptions::operator=(const RenderOptions& other)
@@ -255,12 +253,7 @@ namespace EMStudio
         settings->setValue("cameraFollowUp", m_cameraFollowUp);
 
         // Save render flags
-        settings->beginGroup("renderFlags");
-        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
-        {
-            settings->setValue(QString(i), (bool)m_renderFlags[i]);
-        }
-        settings->endGroup();
+        settings->setValue("renderFlags", static_cast<AZ::u32>(m_renderFlags));
     }
 
     RenderOptions RenderOptions::Load(QSettings* settings)
@@ -333,14 +326,8 @@ namespace EMStudio
         options.m_cameraFollowUp = settings->value("CameraFollowUp", options.m_cameraFollowUp).toBool();
 
         // Read render flags
-        settings->beginGroup("renderFlags");
-        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
-        {
-            const bool defaultValue = (i == EMotionFX::ActorRenderFlag::RENDER_SOLID);
-            const bool isEnabled = settings->value(QString(i), defaultValue).toBool();
-            options.m_renderFlags[i] = isEnabled;
-        }
-        settings->endGroup();
+        options.m_renderFlags =
+            EMotionFX::ActorRenderFlags(settings->value("RenderFlags", static_cast<int>(EMotionFX::ActorRenderFlags::Default)).toInt());
 
         options.CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
 
@@ -571,7 +558,7 @@ namespace EMStudio
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnLineSkeletonColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_skeletonColor, "Solid skeleton color",
                 "Solid skeleton color.")
-            ->Attribute(AZ_CRC("AlphaChannel", 0xa0cab5cf), true)
+            ->Attribute(AZ_CRC_CE("AlphaChannel"), true)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnSkeletonColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_selectionColor, "Selection gizmo color",
                 "Selection gizmo color")
@@ -1104,17 +1091,17 @@ namespace EMStudio
         return m_cameraFollowUp;
     }
 
-    void RenderOptions::ToggerRenderFlag(int index)
+    void RenderOptions::ToggerRenderFlag(uint8 index)
     {
-        m_renderFlags[index] = !m_renderFlags[index];
+        m_renderFlags ^= EMotionFX::ActorRenderFlags(AZ_BIT(index));
     }
 
-    void RenderOptions::SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void RenderOptions::SetRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
     {
         m_renderFlags = renderFlags;
     }
 
-    EMotionFX::ActorRenderFlagBitset RenderOptions::GetRenderFlags() const
+    EMotionFX::ActorRenderFlags RenderOptions::GetRenderFlags() const
     {
         return m_renderFlags;
     }
@@ -1148,6 +1135,7 @@ namespace EMStudio
         settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
         settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
         settings.m_jointNameColor = m_nodeNameColor;
+        settings.m_trajectoryPathColor = m_trajectoryArrowInnerColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const

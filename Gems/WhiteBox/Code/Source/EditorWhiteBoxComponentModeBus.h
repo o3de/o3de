@@ -20,7 +20,8 @@ namespace WhiteBox
     enum class SubMode
     {
         Default,
-        EdgeRestore
+        EdgeRestore,
+        Transform
     };
 
     using KeyboardModifierQueryFn = AZStd::function<AzToolsFramework::ViewportInteraction::KeyboardModifiers()>;

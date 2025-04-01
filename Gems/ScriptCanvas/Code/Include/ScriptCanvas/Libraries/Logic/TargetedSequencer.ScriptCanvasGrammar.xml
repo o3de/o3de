@@ -2,19 +2,18 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/TargetedSequencer.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="TargetedSequencer"
-	       QualifiedName="ScriptCanvas::Nodes::Logic::TargetedSequencer"
-	       PreferredClassName="Switch"
-           Uuid="{E1B5F3F8-AFEE-42C9-A22C-CB93F8281CC4}"
-           Base="ScriptCanvas::Node"
-           GeneratePropertyFriend="True"
-           Description="Triggers the specified output when triggered.">
+        QualifiedName="ScriptCanvas::Nodes::Logic::TargetedSequencer"
+        PreferredClassName="Switch"
+        Uuid="{E1B5F3F8-AFEE-42C9-A22C-CB93F8281CC4}"
+        Category="Logic"
+        Description="Triggers the specified output when triggered.">
         <In Name="In" Description=""/>
         <Out Name="Out 0" Description="Output 0"/>
         <Property Name="Index"
-                  Description="Select which [Out#] to trigger."
-                  Type="int"
-                  DisplayGroup="OutputGroup"
-                  IsInput="True"
-                  IsOutput="False" />
+            Description="Select which [Out#] to trigger."
+            Type="int"
+            DisplayGroup="OutputGroup"
+            IsInput="True"
+            IsOutput="False" />
     </Class>
 </ScriptCanvas>

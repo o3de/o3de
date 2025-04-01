@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"opacity.mode", "opacity.alphaSource", "opacity.textureMap"}
+    return {"mode", "alphaSource", "textureMap"}
 end
  
 OpacityMode_Opaque = 0
@@ -22,53 +22,20 @@ AlphaSource_Packed = 0
 AlphaSource_Split = 1
 AlphaSource_None = 2
 
-function ConfigureAlphaBlending(shaderItem) 
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
-end
-
-function ConfigureDualSourceBlending(shaderItem)
-    -- This blend multiplies the dest against color source 1, then adds color source 0.
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_ColorSource1)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
-end
-
-function ResetAlphaBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():ClearDepthEnabled()
-    shaderItem:GetRenderStatesOverride():ClearDepthWriteMask()
-    shaderItem:GetRenderStatesOverride():ClearBlendEnabled(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendSource(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendDest(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendOp(0)
-end
-
 function Process(context)
-    local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
 
-    local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
-
-    if(opacityMode == OpacityMode_Blended) then
-        ConfigureAlphaBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("transparent")
-    elseif(opacityMode == OpacityMode_TintedTransparent) then
-        ConfigureDualSourceBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("transparent")
-    else
-        ResetAlphaBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
+    local opacityMode = OpacityMode_Opaque
+    if context:HasMaterialProperty("mode") then
+        opacityMode = context:GetMaterialPropertyValue_enum("mode")
     end
+    
+    context:SetInternalMaterialPropertyValue_bool("hasPerPixelClip", opacityMode == OpacityMode_Cutout)
+    context:SetInternalMaterialPropertyValue_bool("isTransparent", opacityMode == OpacityMode_Blended)
+    context:SetInternalMaterialPropertyValue_bool("isTintedTransparent", opacityMode == OpacityMode_TintedTransparent)
 end
 
 function ProcessEditor(context)
-    local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
+    local opacityMode = context:GetMaterialPropertyValue_enum("mode")
     
     local mainVisibility
     if(opacityMode == OpacityMode_Opaque) then
@@ -77,33 +44,33 @@ function ProcessEditor(context)
         mainVisibility = MaterialPropertyVisibility_Enabled
     end
     
-    context:SetMaterialPropertyVisibility("opacity.alphaSource", mainVisibility)
-    context:SetMaterialPropertyVisibility("opacity.textureMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("opacity.textureMapUv", mainVisibility)
-    context:SetMaterialPropertyVisibility("opacity.factor", mainVisibility)
+    context:SetMaterialPropertyVisibility("alphaSource", mainVisibility)
+    context:SetMaterialPropertyVisibility("textureMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("textureMapUv", mainVisibility)
+    context:SetMaterialPropertyVisibility("factor", mainVisibility)
 
     if(opacityMode == OpacityMode_Blended or opacityMode == OpacityMode_TintedTransparent) then
-        context:SetMaterialPropertyVisibility("opacity.alphaAffectsSpecular", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("alphaAffectsSpecular", MaterialPropertyVisibility_Enabled)
     else
-        context:SetMaterialPropertyVisibility("opacity.alphaAffectsSpecular", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("alphaAffectsSpecular", MaterialPropertyVisibility_Hidden)
     end
 
     if(mainVisibility == MaterialPropertyVisibility_Enabled) then
-        local alphaSource = context:GetMaterialPropertyValue_enum("opacity.alphaSource")
+        local alphaSource = context:GetMaterialPropertyValue_enum("alphaSource")
 
         if (opacityMode == OpacityMode_Cutout and alphaSource == AlphaSource_None) then
-            context:SetMaterialPropertyVisibility("opacity.factor", MaterialPropertyVisibility_Hidden)
+            context:SetMaterialPropertyVisibility("factor", MaterialPropertyVisibility_Hidden)
         end
 
         if(alphaSource ~= AlphaSource_Split) then
-            context:SetMaterialPropertyVisibility("opacity.textureMap", MaterialPropertyVisibility_Hidden)
-            context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Hidden)
+            context:SetMaterialPropertyVisibility("textureMap", MaterialPropertyVisibility_Hidden)
+            context:SetMaterialPropertyVisibility("textureMapUv", MaterialPropertyVisibility_Hidden)
         else
-            local textureMap = context:GetMaterialPropertyValue_Image("opacity.textureMap")
+            local textureMap = context:GetMaterialPropertyValue_Image("textureMap")
 
             if(nil == textureMap) then
-                context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Disabled)
-                context:SetMaterialPropertyVisibility("opacity.factor", MaterialPropertyVisibility_Disabled)
+                context:SetMaterialPropertyVisibility("textureMapUv", MaterialPropertyVisibility_Disabled)
+                context:SetMaterialPropertyVisibility("factor", MaterialPropertyVisibility_Disabled)
             end
         end
     end

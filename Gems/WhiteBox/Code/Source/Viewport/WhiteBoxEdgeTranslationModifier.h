@@ -69,8 +69,8 @@ namespace WhiteBox
         AZStd::shared_ptr<AzToolsFramework::PlanarManipulator> m_translationManipulator;
         //! Manipulator views used to represent mesh edges for translation.
         AZStd::vector<AZStd::shared_ptr<ManipulatorViewEdge>> m_edgeViews;
-        AZ::Color m_color = cl_whiteBoxEdgeUserColor; //!< The color to use for the regular edge.
-        AZ::Color m_hoverColor = cl_whiteBoxEdgeHoveredColor; //!< The color to use for the selected/highlighted edge.
+        AZ::Color m_color = ed_whiteBoxEdgeDefault; //!< The color to use for the regular edge.
+        AZ::Color m_hoverColor = ed_whiteBoxOutlineHover; //!< The color to use for the selected/highlighted edge.
         float m_width = cl_whiteBoxEdgeVisualWidth; //!< The width to use for the regular edge.
         //! The visible width to use for the selected/highlighted edge.
         float m_hoverWidth = cl_whiteBoxSelectedEdgeVisualWidth;

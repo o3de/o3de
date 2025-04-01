@@ -9,27 +9,29 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void ImageScopeAttachmentDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void ImageScopeAttachmentDescriptor::Reflect(AZ::ReflectContext* context)
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ImageScopeAttachmentDescriptor, ScopeAttachmentDescriptor>()
-                    ->Version(3)
-                    ->Field("ImageViewDescriptor", &ImageScopeAttachmentDescriptor::m_imageViewDescriptor)
-                    ;
-            }
+            serializeContext->Class<ImageScopeAttachmentDescriptor, ScopeAttachmentDescriptor>()
+                ->Version(3)
+                ->Field("ImageViewDescriptor", &ImageScopeAttachmentDescriptor::m_imageViewDescriptor)
+                ;
         }
+    }
 
-        ImageScopeAttachmentDescriptor::ImageScopeAttachmentDescriptor(
-            const AttachmentId& attachmentId,
-            const ImageViewDescriptor& imageViewDescriptor,
-            const AttachmentLoadStoreAction& imageScopeLoadStoreAction)
-            : ScopeAttachmentDescriptor(attachmentId, imageScopeLoadStoreAction)
-            , m_imageViewDescriptor{ imageViewDescriptor }
-        {}
+    ImageScopeAttachmentDescriptor::ImageScopeAttachmentDescriptor(
+        const AttachmentId& attachmentId,
+        const ImageViewDescriptor& imageViewDescriptor,
+        const AttachmentLoadStoreAction& imageScopeLoadStoreAction)
+        : ScopeAttachmentDescriptor(attachmentId, imageScopeLoadStoreAction)
+        , m_imageViewDescriptor{ imageViewDescriptor }
+    {}
+
+    const ImageViewDescriptor& ImageScopeAttachmentDescriptor::GetViewDescriptor() const
+    {
+        return m_imageViewDescriptor;
     }
 }

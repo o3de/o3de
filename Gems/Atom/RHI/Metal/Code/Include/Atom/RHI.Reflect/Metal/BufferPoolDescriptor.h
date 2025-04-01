@@ -18,6 +18,7 @@ namespace AZ
             : public RHI::BufferPoolDescriptor
         {
         public:
+            AZ_CLASS_ALLOCATOR(BufferPoolDescriptor, SystemAllocator)
             AZ_RTTI(BufferPoolDescriptor, "{037845EE-53E4-4FC9-A264-10E9C449A071}", RHI::BufferPoolDescriptor);
             static void Reflect(AZ::ReflectContext* context);
 

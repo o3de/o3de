@@ -47,15 +47,23 @@ namespace AZ
             AttachBufferToSlot(Name{ "MorphTargetDeltaOutput" }, SkinnedMeshOutputStreamManagerInterface::Get()->GetBuffer());
         }
 
+        void MorphTargetComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+        {
+            if (m_skinnedMeshFeatureProcessor)
+            {
+                m_skinnedMeshFeatureProcessor->SetupMorphTargetScope(frameGraph);
+            }
+
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
+        }
+
         void MorphTargetComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             if (m_skinnedMeshFeatureProcessor)
             {
-                RHI::CommandList* commandList = context.GetCommandList();
+                SetSrgsForDispatch(context);
 
-                SetSrgsForDispatch(commandList);
-
-                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(commandList);
+                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
             }
         }
     }   // namespace Render

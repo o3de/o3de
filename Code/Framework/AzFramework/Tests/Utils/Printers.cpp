@@ -8,6 +8,7 @@
 
 #include "Printers.h"
 
+#include <AzFramework/Input/Channels/InputChannelId.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
 #include <ostream>
@@ -28,5 +29,10 @@ namespace AzFramework
     void PrintTo(const ScreenSize& screenSize, std::ostream* os)
     {
         *os << "(width: " << screenSize.m_width << ", height: " << screenSize.m_height << ")";
+    }
+
+    void PrintTo(const InputChannelId& inputChannelId, std::ostream* os)
+    {
+        *os << "(input channel id name: " << inputChannelId.GetName() << ")";
     }
 } // namespace AzFramework

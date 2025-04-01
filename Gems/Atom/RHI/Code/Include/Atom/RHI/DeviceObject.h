@@ -9,41 +9,34 @@
 
 #include <Atom/RHI/Device.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! A variant of Object associated with a Device instance. It holds a strong reference to
+    //! the device and provides a simple accessor API.
+    class DeviceObject
+        : public Object
     {
-        /**
-         * A variant of Object associated with a Device instance. It holds a strong reference to
-         * the device and provides a simple accessor API.
-         */
-        class DeviceObject
-            : public Object
-        {
-        public:
-            AZ_RTTI(DeviceObject, "{17D34F71-944C-4AF5-9823-627474C4C0A6}", Object);
-            virtual ~DeviceObject() = default;
+    public:
+        AZ_RTTI(DeviceObject, "{17D34F71-944C-4AF5-9823-627474C4C0A6}", Object);
+        virtual ~DeviceObject() = default;
 
-            /// Returns whether the device object is initialized.
-            bool IsInitialized() const;
+        /// Returns whether the device object is initialized.
+        bool IsInitialized() const;
 
-            /**
-             * Returns the device this object is associated with. It is only permitted to call
-             * this method when the object is initialized.
-             */
-            Device& GetDevice() const;
+        //! Returns the device this object is associated with. It is only permitted to call
+        //! this method when the object is initialized.
+        Device& GetDevice() const;
 
-        protected:
-            DeviceObject() = default;
+    protected:
+        DeviceObject() = default;
 
-            /// The derived class should call this method to assign the device.
-            void Init(Device& device);
+        /// The derived class should call this method to assign the device.
+        void Init(Device& device);
 
-            /// Clears the current bound device to null.
-            void Shutdown() override;
+        /// Clears the current bound device to null.
+        void Shutdown() override;
 
-        private:
-            Ptr<Device> m_device;
-        };
-    }
+    private:
+        Ptr<Device> m_device = nullptr;
+    };
 }

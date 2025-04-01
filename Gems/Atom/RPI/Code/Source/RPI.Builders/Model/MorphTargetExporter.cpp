@@ -49,7 +49,7 @@ namespace AZ::RPI
         {
             const Containers::SceneGraph::NodeIndex blendShapeNodeIndex = sceneGraph.ConvertToNodeIndex(it.GetBaseIterator().GetBaseIterator().GetHierarchyIterator());
 
-            AZStd::set<AZ::Crc32> types;
+            Events::GraphMetaInfo::VirtualTypesSet types;
             Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfo::GetVirtualTypes, types, scene, blendShapeNodeIndex);
             if (!types.contains(Events::GraphMetaInfo::GetIgnoreVirtualType()))
             {
@@ -61,8 +61,11 @@ namespace AZ::RPI
         return result;
     }
 
-    void MorphTargetExporter::ProduceMorphTargets(const Containers::Scene& scene,
-        uint32_t vertexOffset,
+    void MorphTargetExporter::ProduceMorphTargets(
+        uint32_t productMeshIndex,
+        uint32_t startVertex,
+        const AZStd::map<uint32_t, uint32_t>& oldToNewIndicesMap,
+        const Containers::Scene& scene,
         const ModelAssetBuilderComponent::SourceMeshContent& sourceMesh,
         ModelAssetBuilderComponent::ProductMeshContent& productMesh,
         MorphTargetMetaAssetCreator& metaAssetCreator,
@@ -96,7 +99,9 @@ namespace AZ::RPI
                         AZ_STRING_ARG(sourceMeshName), AZ_STRING_ARG(baseMeshName));
 
                     const DataTypes::MatrixType globalTransform = Utilities::BuildWorldTransform(sceneGraph, sceneNodeIndex);
-                    BuildMorphTargetMesh(vertexOffset, sourceMesh, productMesh, metaAssetCreator, blendShapeName, blendShapeData, globalTransform, coordSysConverter, scene.GetSourceFilename());
+                    BuildMorphTargetMesh(
+                        productMeshIndex, startVertex, oldToNewIndicesMap, sourceMesh, productMesh, metaAssetCreator, blendShapeName, blendShapeData, globalTransform,
+                        coordSysConverter, scene.GetSourceFilename());
                 }
             }
         }
@@ -132,7 +137,10 @@ namespace AZ::RPI
         return static_cast<StorageType>((value - minValue) * f);
     };
 
-    void MorphTargetExporter::BuildMorphTargetMesh(uint32_t vertexOffset,
+    void MorphTargetExporter::BuildMorphTargetMesh(
+        uint32_t productMeshIndex,
+        uint32_t startVertex,
+        const AZStd::map<uint32_t, uint32_t>& oldToNewIndicesMap,
         const ModelAssetBuilderComponent::SourceMeshContent& sourceMesh,
         ModelAssetBuilderComponent::ProductMeshContent& productMesh,
         MorphTargetMetaAssetCreator& metaAssetCreator,
@@ -150,10 +158,18 @@ namespace AZ::RPI
         MorphTargetMetaAsset::MorphTarget metaData;
         metaData.m_meshNodeName = sourceMesh.m_name.GetStringView();
         metaData.m_morphTargetName = blendShapeName;
+        metaData.m_meshIndex = productMeshIndex;
+        // The start index is after any previously added deltas from other morph targets
+        // that are part of the same product mesh
+        metaData.m_startIndex = aznumeric_cast<uint32_t>(packedCompressedMorphTargetVertexData.size());
 
         // Determine the vertex index range for the morph target.
-        const uint32_t numVertices = blendShapeData->GetVertexCount();
-        if (blendShapeData->GetVertexCount() != sourceMesh.m_meshData->GetVertexCount())
+        // Ignore any vertices that are associated with a later product mesh
+        uint32_t numVertices = aznumeric_cast<uint32_t>(productMesh.m_positions.size() / 3);
+        uint32_t endVertex = startVertex + numVertices;
+
+        if (blendShapeData->GetVertexCount() != sourceMesh.m_meshData->GetVertexCount()
+            || blendShapeData->GetVertexCount() < endVertex)
         {
             AZ_Error(ModelAssetBuilderComponent::s_builderName, false,
                 "Skipping blend shape (%s) as it contains more/less vertices (%d) than the neutral mesh (%d). "
@@ -161,10 +177,6 @@ namespace AZ::RPI
                 blendShapeName.c_str(), numVertices, sourceMesh.m_meshData->GetVertexCount());
             return;
         }
-
-        // The start index is after any previously added deltas
-        metaData.m_startIndex = aznumeric_cast<uint32_t>(packedCompressedMorphTargetVertexData.size());
-
 
         // Multiply normal by inverse transpose to avoid incorrect values produced by non-uniformly scaled transforms.
         DataTypes::MatrixType globalTransformN = globalTransform.GetInverseFull().GetTranspose();
@@ -177,7 +189,8 @@ namespace AZ::RPI
         compressedDeltas.reserve(numVertices);
 
         uint32_t numMorphedVertices = 0;
-        for (uint32_t vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
+
+        for (uint32_t vertexIndex = startVertex; vertexIndex < endVertex; ++vertexIndex)
         {
             AZ::Vector3 targetPosition = blendShapeData->GetPosition(vertexIndex);
             targetPosition = globalTransform * targetPosition;
@@ -196,7 +209,15 @@ namespace AZ::RPI
                 RPI::CompressedMorphTargetDelta& currentDelta = compressedDeltas.back();
 
                 // Set the morphed index
-                currentDelta.m_morphedVertexIndex = vertexIndex + vertexOffset;
+                const auto& iter = oldToNewIndicesMap.find(vertexIndex);
+                if (iter != oldToNewIndicesMap.end())
+                {
+                    currentDelta.m_morphedVertexIndex = iter->second;
+                }
+                else
+                {
+                    AZ_Assert(false, "%s: Attempting to add a morph target that influences a vertex that is not part of the current mesh.", ModelAssetBuilderComponent::s_builderName);
+                }
 
                 const AZ::Vector3 deltaPosition = targetPosition - neutralPosition;
                 deltaPositionAabb.AddPoint(deltaPosition);
@@ -238,67 +259,77 @@ namespace AZ::RPI
                     currentDelta.m_bitangentY = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
                     currentDelta.m_bitangentZ = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
                 }
-
-                // Color
-                {
-                    metaData.m_hasColorDeltas = true;
-                    productMesh.m_hasMorphedColors = true;
-                    currentDelta.m_colorR = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
-                    currentDelta.m_colorG = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
-                    currentDelta.m_colorB = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
-                    currentDelta.m_colorA = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
-                }
             }
         }
 
         metaData.m_numVertices = numMorphedVertices;
 
         const float morphedVerticesRatio = numMorphedVertices / static_cast<float>(numVertices);
-        AZ_Printf(ModelAssetBuilderComponent::s_builderName, "'%s' morphs %.1f%% of the vertices.", blendShapeName.c_str(), morphedVerticesRatio * 100.0f);
+        
 
-        // Calculate the minimum and maximum position compression values.
+        if (numMorphedVertices > 0)
         {
-            const AZ::Vector3& boxMin = deltaPositionAabb.GetMin();
-            const AZ::Vector3& boxMax = deltaPositionAabb.GetMax();
-            auto [minValue, maxValue] = AZStd::minmax({boxMin.GetX(), boxMin.GetY(), boxMin.GetZ(),
-                boxMax.GetX(), boxMax.GetY(), boxMax.GetZ()});
+            AZ_Printf(
+                ModelAssetBuilderComponent::s_builderName,
+                "Blend shape named '%s' morphs %.1f%%  (%" PRIu32 " / % " PRIu32 ") of the vertices of mesh %s ",
+                blendShapeName.c_str(),
+                morphedVerticesRatio * 100.0f,
+                numMorphedVertices,
+                numVertices,
+                productMesh.m_name.GetCStr());
 
-            // Make sure the diff between min and max isn't too small.
-            if (maxValue - minValue < 1.0f)
+            // Calculate the minimum and maximum position compression values.
             {
-                minValue -= 0.5f; // TODO: Value needs further consideration but is proven to work for EMotion FX.
-                maxValue += 0.5f;
+                const AZ::Vector3& boxMin = deltaPositionAabb.GetMin();
+                const AZ::Vector3& boxMax = deltaPositionAabb.GetMax();
+                auto [minValue, maxValue] =
+                    AZStd::minmax({ boxMin.GetX(), boxMin.GetY(), boxMin.GetZ(), boxMax.GetX(), boxMax.GetY(), boxMax.GetZ() });
+
+                // Make sure the diff between min and max isn't too small.
+                if (maxValue - minValue < 1.0f)
+                {
+                    minValue -= 0.5f; // TODO: Value needs further consideration but is proven to work for EMotion FX.
+                    maxValue += 0.5f;
+                }
+
+                metaData.m_minPositionDelta = minValue;
+                metaData.m_maxPositionDelta = maxValue;
             }
 
-            metaData.m_minPositionDelta = minValue;
-            metaData.m_maxPositionDelta = maxValue;
+            metaData.m_wrinkleMask = GetWrinkleMask(sourceSceneFilename, blendShapeName);
+
+            metaAssetCreator.AddMorphTarget(metaData);
+
+            AZ_Assert(uncompressedPositionDeltas.size() == compressedDeltas.size(), "Number of uncompressed (%d) and compressed position delta components (%d) do not match.",
+                uncompressedPositionDeltas.size(), compressedDeltas.size());
+
+            // Compress the position deltas. (Only the newly added ones from this morph target)
+            for (size_t i = 0; i < uncompressedPositionDeltas.size(); i++)
+            {
+                compressedDeltas[i].m_positionX = Compress<uint16_t>(uncompressedPositionDeltas[i].GetX(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
+                compressedDeltas[i].m_positionY = Compress<uint16_t>(uncompressedPositionDeltas[i].GetY(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
+                compressedDeltas[i].m_positionZ = Compress<uint16_t>(uncompressedPositionDeltas[i].GetZ(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
+            }
+
+            // Now that we have all our compressed deltas, they need to be packed
+            // the way the shader expects to read them and added to the product mesh
+            packedCompressedMorphTargetVertexData.reserve(packedCompressedMorphTargetVertexData.size() + compressedDeltas.size());
+            for (size_t i = 0; i < compressedDeltas.size(); ++i)
+            {
+                packedCompressedMorphTargetVertexData.emplace_back(RPI::PackMorphTargetDelta(compressedDeltas[i]));
+            }
+
+            AZ_Assert((packedCompressedMorphTargetVertexData.size() - metaData.m_startIndex) == numMorphedVertices, "Vertex index range (%d) in morph target meta data does not match number of morphed vertices (%d).",
+                packedCompressedMorphTargetVertexData.size() - metaData.m_startIndex, numMorphedVertices);
         }
-
-        metaData.m_wrinkleMask = GetWrinkleMask(sourceSceneFilename, blendShapeName);
-
-        metaAssetCreator.AddMorphTarget(metaData);
-
-        AZ_Assert(uncompressedPositionDeltas.size() == compressedDeltas.size(), "Number of uncompressed (%d) and compressed position delta components (%d) do not match.",
-            uncompressedPositionDeltas.size(), compressedDeltas.size());
-
-        // Compress the position deltas. (Only the newly added ones from this morph target)
-        for (size_t i = 0; i < uncompressedPositionDeltas.size(); i++)
+        else
         {
-            compressedDeltas[i].m_positionX = Compress<uint16_t>(uncompressedPositionDeltas[i].GetX(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
-            compressedDeltas[i].m_positionY = Compress<uint16_t>(uncompressedPositionDeltas[i].GetY(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
-            compressedDeltas[i].m_positionZ = Compress<uint16_t>(uncompressedPositionDeltas[i].GetZ(), metaData.m_minPositionDelta, metaData.m_maxPositionDelta);
+            AZ_Info(
+                ModelAssetBuilderComponent::s_builderName,
+                "Blend shape named '%s' does not affect mesh %s",
+                blendShapeName.c_str(),
+                productMesh.m_name.GetCStr());
         }
-
-        // Now that we have all our compressed deltas, they need to be packed
-        // the way the shader expects to read them and added to the product mesh
-        packedCompressedMorphTargetVertexData.reserve(packedCompressedMorphTargetVertexData.size() + compressedDeltas.size());
-        for (size_t i = 0; i < compressedDeltas.size(); ++i)
-        {
-            packedCompressedMorphTargetVertexData.emplace_back(RPI::PackMorphTargetDelta(compressedDeltas[i]));
-        }
-
-        AZ_Assert((packedCompressedMorphTargetVertexData.size() - metaData.m_startIndex) == numMorphedVertices, "Vertex index range (%d) in morph target meta data does not match number of morphed vertices (%d).",
-            packedCompressedMorphTargetVertexData.size() - metaData.m_startIndex, numMorphedVertices);
     }
 
     Data::Asset<RPI::StreamingImageAsset> MorphTargetExporter::GetWrinkleMask(const AZStd::string& sourceSceneFullFilePath, const AZStd::string& blendShapeName) const

@@ -14,9 +14,9 @@
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/rapidjson.h>
+#include <AzCore/JSON/stringbuffer.h>
+#include <AzCore/JSON/prettywriter.h>
+#include <AzCore/JSON/rapidjson.h>
 
 namespace GraphCanvas
 {

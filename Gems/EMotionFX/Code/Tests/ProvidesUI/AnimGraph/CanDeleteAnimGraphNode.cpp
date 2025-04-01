@@ -24,11 +24,7 @@
 
 namespace EMotionFX {
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(AnimGraphUIFixture, DISABLED_CanDeleteAnimGraphNode)
-#else
     TEST_F(AnimGraphUIFixture, CanDeleteAnimGraphNode)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         /*
         Test Case: C22083484

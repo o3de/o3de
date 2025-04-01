@@ -96,7 +96,9 @@ def ShapeNodes_EntityCreatedOnNodeAdd():
         'PolygonPrismShapeNode': 'Polygon Prism Shape',
         'SphereShapeNode': 'Sphere Shape',
         'TubeShapeNode': 'Tube Shape',
-        'DiskShapeNode': 'Disk Shape'
+        'DiskShapeNode': 'Disk Shape',
+        'ReferenceShapeNode': 'Shape Reference',
+        'AxisAlignedBoxShapeNode': 'Axis Aligned Box Shape'
     }
 
     # Retrieve a mapping of the TypeIds for all the components

@@ -8,11 +8,19 @@
             "PassClass": "ParentPass",
             "Slots": [
                 {
-                    "Name": "Output",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
                 }
             ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "PipelineOutput",
+                        "Slot": "PipelineOutput"
+                    }
+                ]
+            },
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",
@@ -32,78 +40,8 @@
                     ]
                 },
                 {
-                    "Name": "CascadedShadowmapsPass",
-                    "TemplateName": "CascadedShadowmapsTemplate",
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "shadow",
-                        "PipelineViewTag": "DirectionalLightView"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "SkinnedMeshes",
-                            "AttachmentRef": {
-                                "Pass": "SkinningPass",
-                                "Attachment": "SkinnedMeshOutputStream"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "ProjectedShadowmapsPass",
-                    "TemplateName": "ProjectedShadowmapsTemplate",
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "shadow",
-                        "PipelineViewTag": "ProjectedShadowView"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "SkinnedMeshes",
-                            "AttachmentRef": {
-                                "Pass": "SkinningPass",
-                                "Attachment": "SkinnedMeshOutputStream"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "EsmShadowmapsPassDirectional",
-                    "TemplateName": "EsmShadowmapsTemplate",
-                    "PassData": {
-                        "$type": "EsmShadowmapsPassData",
-                        "LightType": "directional"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "DepthShadowmaps",
-                            "AttachmentRef": {
-                                "Pass": "CascadedShadowmapsPass",
-                                "Attachment": "Shadowmap"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "EsmShadowmapsPassProjected",
-                    "TemplateName": "EsmShadowmapsTemplate",
-                    "PassData": {
-                        "$type": "EsmShadowmapsPassData",
-                        "LightType": "projected"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "DepthShadowmaps",
-                            "AttachmentRef": {
-                                "Pass": "ProjectedShadowmapsPass",
-                                "Attachment": "Shadowmap"
-                            }
-                        }
-                    ]
-                },
-                {
                     "Name": "DepthPrePass",
-                    "TemplateName": "DepthMSAAParentTemplate",
+                    "TemplateName": "DepthParentTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "SkinnedMeshes",
@@ -113,10 +51,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "Output"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -140,107 +78,71 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "Output"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
                 },
                 {
-                    "Name": "ForwardMSAAPass",
-                    "TemplateName": "EnvironmentCubeMapForwardMSAAPassTemplate",
+                    "Name": "Shadows",
+                    "TemplateName": "ShadowParentTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "DirectionalLightShadowmap",
+                            "LocalSlot": "SkinnedMeshes",
                             "AttachmentRef": {
-                                "Pass": "CascadedShadowmapsPass",
-                                "Attachment": "Shadowmap"
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
                             }
                         },
                         {
-                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassDirectional",
-                                "Attachment": "EsmShadowmaps"
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
                             }
                         },
                         {
-                            "LocalSlot": "ProjectedShadowmap",
-                            "AttachmentRef": {
-                                "Pass": "ProjectedShadowmapsPass",
-                                "Attachment": "Shadowmap"
-                            }
-                        },
-                        {
-                            "LocalSlot": "ExponentialShadowmapProjected",
-                            "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassProjected",
-                                "Attachment": "EsmShadowmaps"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DepthStencilInputOutput",
+                            "LocalSlot": "Depth",
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
                                 "Attachment": "DepthMSAA"
                             }
-                        },
-                        {
-                            "LocalSlot": "TileLightData",
-                            "AttachmentRef": {
-                                "Pass": "LightCullingPass",
-                                "Attachment": "TileLightData"
-                            }
-                        },
-                        {
-                            "LocalSlot": "LightListRemapped",
-                            "AttachmentRef": {
-                                "Pass": "LightCullingPass",
-                                "Attachment": "LightListRemapped"
-                            }
                         }
-                    ],
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "forward",
-                        "PipelineViewTag": "MainCamera",
-                        "PassSrgShaderAsset": {
-                            "FilePath": "Shaders/ForwardPassSrg.shader"
-                        }
-                    }
+                    ]
                 },
                 {
-                    "Name": "ForwardSubsurfaceMSAAPass",
-                    "TemplateName": "EnvironmentCubeMapForwardSubsurfaceMSAAPassTemplate",
+                    "Name": "OpaquePass",
+                    "TemplateName": "OpaqueParentTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "DirectionalLightShadowmap",
+                            "LocalSlot": "DirectionalShadowmap",
                             "AttachmentRef": {
-                                "Pass": "CascadedShadowmapsPass",
-                                "Attachment": "Shadowmap"
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalShadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "LocalSlot": "DirectionalESM",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassDirectional",
-                                "Attachment": "EsmShadowmaps"
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalESM"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ProjectedShadowmapsPass",
-                                "Attachment": "Shadowmap"
+                                "Pass": "Shadows",
+                                "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "ExponentialShadowmapProjected",
+                            "LocalSlot": "ProjectedESM",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassProjected",
-                                "Attachment": "EsmShadowmaps"
+                                "Pass": "Shadows",
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {
@@ -257,258 +159,25 @@
                                 "Attachment": "LightListRemapped"
                             }
                         },
-                        // Input/Outputs...
                         {
-                            "LocalSlot": "DepthStencilInputOutput",
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
                                 "Attachment": "DepthMSAA"
                             }
                         },
                         {
-                            "LocalSlot": "DiffuseOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "DiffuseOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "SpecularOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "SpecularOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "AlbedoOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "AlbedoOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "SpecularF0Output",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "SpecularF0Output"
-                            }
-                        },
-                        {
-                            "LocalSlot": "NormalOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "NormalOutput"
-                            }
-                        }
-                    ],
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "forwardWithSubsurfaceOutput",
-                        "PipelineViewTag": "MainCamera",
-                        "PassSrgShaderAsset": {
-                            "FilePath": "Shaders/ForwardPassSrg.shader"
-                        }
-                    }
-                },
-                {
-                    "Name": "SkyBoxPass",
-                    "TemplateName": "EnvironmentCubeMapSkyBoxPassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "SpecularInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "SpecularOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "SkyBoxDepth",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "DepthStencilInputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "DiffuseGlobalIlluminationPass",
-                    "TemplateName": "DiffuseGlobalIlluminationPassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "DiffuseInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "DiffuseOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "AlbedoInput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "AlbedoOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "NormalInput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "NormalOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DepthStencilInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "DepthStencilInputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "ReflectionCompositePass",
-                    "TemplateName": "ReflectionCompositePassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "ReflectionInput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "SpecularF0Output"
-                            }
-                        },
-                        {
-                            "LocalSlot": "SpecularInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "SkyBoxPass",
-                                "Attachment": "SpecularInputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DepthStencilInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "SkyBoxPass",
-                                "Attachment": "SkyBoxDepth"
-                            }
-                        }
-                    ],
-                    "PassData": {
-                        "$type": "FullscreenTrianglePassData",
-                        "ShaderAsset": {
-                            "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
-                        },
-                        "StencilRef": 1 // See RenderCommon.h and ReflectionComposite.shader
-                    }
-                },
-                {
-                    "Name": "MSAAResolveDiffusePass",
-                    "TemplateName": "MSAAResolveColorTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "DiffuseGlobalIlluminationPass",
-                                "Attachment": "DiffuseInputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "MSAAResolveSpecularPass",
-                    "TemplateName": "MSAAResolveColorTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "ReflectionCompositePass",
-                                "Attachment": "SpecularInputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "MSAAResolveScatterDistancePass",
-                    "TemplateName": "MSAAResolveColorTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "ForwardSubsurfaceMSAAPass",
-                                "Attachment": "ScatterDistanceOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "SubsurfaceScatteringPass",
-                    "TemplateName": "SubsurfaceScatteringPassTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputDiffuse",
-                            "AttachmentRef": {
-                                "Pass": "MSAAResolveDiffusePass",
-                                "Attachment": "Output"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputLinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "DepthPrePass",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputScatterDistance",
-                            "AttachmentRef": {
-                                "Pass": "MSAAResolveScatterDistancePass",
-                                "Attachment": "Output"
-                            }
-                        }
-                    ],
-                    "PassData": {
-                        "$type": "ComputePassData",
-                        "ShaderAsset": {
-                            "FilePath": "Shaders/PostProcessing/ScreenSpaceSubsurfaceScatteringCS.shader"
-                        },
-                        "Make Fullscreen Pass": true,
-                        "PipelineViewTag": "MainCamera"
-                    }
-                },
-                {
-                    "Name": "Ssao",
-                    "TemplateName": "SsaoParentTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "LinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "DepthPrePass",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Modulate",
-                            "AttachmentRef": {
-                                "Pass": "SubsurfaceScatteringPass",
-                                "Attachment": "Output"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "DiffuseSpecularMergePass",
-                    "TemplateName": "DiffuseSpecularMergeTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputDiffuse",
-                            "AttachmentRef": {
-                                "Pass": "Ssao",
-                                "Attachment": "Output"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputSpecular",
-                            "AttachmentRef": {
-                                "Pass": "MSAAResolveSpecularPass",
-                                "Attachment": "Output"
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -520,7 +189,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "DiffuseSpecularMergePass",
+                                "Pass": "OpaquePass",
                                 "Attachment": "Output"
                             }
                         },
@@ -528,7 +197,7 @@
                             "LocalSlot": "Output",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "Output"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]

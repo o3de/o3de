@@ -86,7 +86,7 @@ namespace AZ
     class ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ComponentConfig, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentConfig, SystemAllocator);
         AZ_RTTI(ComponentConfig, "{0A7929DF-2932-40EA-B2B3-79BC1C3490D0}");
 
         virtual ~ComponentConfig() = default;
@@ -104,7 +104,7 @@ namespace AZ
          * Specifies that this class should use AZ::SystemAllocator for memory
          * management by default.
          */
-        AZ_CLASS_ALLOCATOR(EntityComponentIdPair, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityComponentIdPair, AZ::SystemAllocator);
 
         /**
          * Adds run-time type information to this class.

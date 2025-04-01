@@ -118,6 +118,7 @@ set(FILES
     Tests/PhysicsSetupUtils.cpp
     Tests/MCore/CommandManagerTests.cpp
     Tests/MCore/CommandLineTests.cpp
+    Tests/MCore/AlgorithmsTests.cpp
     Tests/Prefabs/LeftArmSkeleton.h
     Tests/TestAssetCode/MotionEvent.h
     Tests/TestAssetCode/MotionEvent.cpp
@@ -132,7 +133,6 @@ set(FILES
     Tests/Mocks/AnimGraphManager.h
     Tests/Mocks/AnimGraphNode.h
     Tests/Mocks/AnimGraphObject.h
-    Tests/Mocks/AnimGraphObjectData.h
     Tests/Mocks/AnimGraphStateTransition.h
     Tests/Mocks/BlendTreeParameterNode.h
     Tests/Mocks/Command.h

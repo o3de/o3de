@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_TransformFunctions_FromTranslation",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Translation",
+                "category": "Math/Transform"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_TransformFunctions_FromTranslation",
+                    "details": {
+                        "name": "From Translation",
+                        "tooltip": "Returns a transform from translation and the rotation set to zero."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Translation"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

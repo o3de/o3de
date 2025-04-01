@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const GridComponentTypeId = "{27ACB2B3-C889-4DA5-BD27-E8C45CFBCFD6}";
-        static constexpr const char* const EditorGridComponentTypeId = "{DF2D071A-EC31-428A-9FD0-2B8A59945417}";
+        inline constexpr AZ::TypeId GridComponentTypeId{ "{27ACB2B3-C889-4DA5-BD27-E8C45CFBCFD6}" };
+        inline constexpr AZ::TypeId EditorGridComponentTypeId{ "{DF2D071A-EC31-428A-9FD0-2B8A59945417}" };
     } // namespace Render
 } // namespace AZ

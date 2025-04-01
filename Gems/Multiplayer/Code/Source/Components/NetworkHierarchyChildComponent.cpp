@@ -138,12 +138,8 @@ namespace Multiplayer
             {
                 m_rootEntity = newHierarchyRoot;
 
-                if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
-                {
-                    NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
-                    const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
-                    controller->SetHierarchyRoot(netRootId);
-                }
+                const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
+                TrySetControllerRoot(netRootId);
 
                 GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
                 m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
@@ -153,17 +149,24 @@ namespace Multiplayer
         {
             m_rootEntity = nullptr;
 
-            if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
-            {
-                NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
-                controller->SetHierarchyRoot(InvalidNetEntityId);
-            }
+            TrySetControllerRoot(InvalidNetEntityId);
 
             GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
             m_networkHierarchyLeaveEvent.Signal();
 
             NotifyChildrenHierarchyDisbanded();
         }
+    }
+
+    void NetworkHierarchyChildComponent::TrySetControllerRoot([[maybe_unused]] const NetEntityId rootNetId)
+    {
+#if AZ_TRAIT_SERVER
+        if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+        {
+            NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
+            controller->SetHierarchyRoot(rootNetId);
+        }
+#endif
     }
 
     void NetworkHierarchyChildComponent::SetOwningConnectionId(AzNetworking::ConnectionId connectionId)

@@ -9,8 +9,10 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/PackedVector3.h>
+#include <AzCore/Math/PackedVector4.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
 #include <Atom/RHI/RHIUtils.h>
 
 #include <NvCloth/IClothSystem.h>
@@ -50,14 +52,14 @@ namespace NvCloth
             const AZ::RHI::Format expectedElementFormat);
         ~MappedBuffer();
 
-        T* GetBuffer()
+        const AZStd::unordered_map<int, T*>& GetBuffer()
         {
             return m_buffer;
         }
 
     private:
         AZ::Data::Instance<AZ::RPI::Buffer> m_rpiBuffer;
-        T* m_buffer = nullptr;
+        AZStd::unordered_map<int, T*> m_buffer;
     };
 
     template<typename T>
@@ -91,13 +93,17 @@ namespace NvCloth
         const uint64_t byteCount = aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementCount) * aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementSize);
         const uint64_t byteOffset = aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementSize);
 
-        m_buffer = static_cast<T*>(m_rpiBuffer->Map(byteCount, byteOffset));
+        auto data = m_rpiBuffer->Map(byteCount, byteOffset);
+        for(auto [deviceIndex, buffer] : data)
+        {
+            m_buffer[deviceIndex] = static_cast<T*>(buffer);
+        }
     }
 
     template<typename T>
     MappedBuffer<T>::~MappedBuffer()
     {
-        if (m_buffer)
+        if (!m_buffer.empty())
         {
             m_rpiBuffer->Unmap();
         }
@@ -195,6 +201,9 @@ namespace NvCloth
             m_meshRemappedVertices);
         m_timeClothSkinningUpdates = 0.0f;
 
+        // Turn off GPU skinning for any sub-meshes simulated by the cloth component
+        DisableSkinning();
+
         m_clothConstraints = ClothConstraints::Create(
             m_meshClothInfo.m_motionConstraints,
             m_config.m_motionConstraintsMaxDistance,
@@ -235,6 +244,9 @@ namespace NvCloth
 
             AZ::Interface<IClothSystem>::Get()->RemoveCloth(m_cloth);
             AZ::Interface<IClothSystem>::Get()->DestroyCloth(m_cloth);
+
+            // Re-enable skinning for any sub-meshes that were previously skinned by the cloth component
+            EnableSkinning();
         }
         m_entityId.SetInvalid();
         m_renderDataBuffer = {};
@@ -496,7 +508,8 @@ namespace NvCloth
             return;
         }
 
-        const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[m_meshNodeInfo.m_lodLevel];
+        const auto modelLodAssets = modelAsset->GetLodAssets();
+        const AZ::Data::Asset<AZ::RPI::ModelLodAsset> modelLodAsset = modelLodAssets[m_meshNodeInfo.m_lodLevel];
         if (!modelLodAsset.GetId().IsValid())
         {
             AZ_Error("ClothComponentMesh", false,
@@ -524,7 +537,9 @@ namespace NvCloth
                     modelLodAsset->GetMeshes().size());
                 continue;
             }
-            const AZ::RPI::ModelLodAsset::Mesh& subMesh = modelLodAsset->GetMeshes()[subMeshInfo.m_primitiveIndex];
+            
+            const auto subMeshes = modelLodAsset->GetMeshes();
+            const AZ::RPI::ModelLodAsset::Mesh& subMesh = subMeshes[subMeshInfo.m_primitiveIndex];
 
             const int numVertices = subMeshInfo.m_numVertices;
             const int firstVertex = subMeshInfo.m_verticesFirstIndex;
@@ -542,17 +557,17 @@ namespace NvCloth
 
             MappedBuffer<AZ::PackedVector3f> destVertices(subMesh.GetSemanticBufferAssetView(positionSemantic), numVertices, AZ::RHI::Format::R32G32B32_FLOAT);
             MappedBuffer<AZ::PackedVector3f> destNormals(subMesh.GetSemanticBufferAssetView(normalSemantic), numVertices, AZ::RHI::Format::R32G32B32_FLOAT);
-            MappedBuffer<AZ::Vector4> destTangents(subMesh.GetSemanticBufferAssetView(tangentSemantic), numVertices, AZ::RHI::Format::R32G32B32A32_FLOAT);
+            MappedBuffer<AZ::PackedVector4f> destTangents(subMesh.GetSemanticBufferAssetView(tangentSemantic), numVertices, AZ::RHI::Format::R32G32B32A32_FLOAT);
             MappedBuffer<AZ::PackedVector3f> destBitangents(subMesh.GetSemanticBufferAssetView(bitangentSemantic), numVertices, AZ::RHI::Format::R32G32B32_FLOAT);
 
-            auto* destVerticesBuffer = destVertices.GetBuffer();
-            auto* destNormalsBuffer = destNormals.GetBuffer();
-            auto* destTangentsBuffer = destTangents.GetBuffer();
-            auto* destBitangentsBuffer = destBitangents.GetBuffer();
+            const auto& destVerticesData = destVertices.GetBuffer();
+            const auto& destNormalsData = destNormals.GetBuffer();
+            const auto& destTangentsData = destTangents.GetBuffer();
+            const auto& destBitangentsData = destBitangents.GetBuffer();
 
-            if (!destVerticesBuffer)
+            if (!destVerticesData.empty())
             {
-                AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRenderer(),
+                AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRHI(),
                     "Invalid vertex position buffer obtained from the render mesh to be modified.");
                 continue;
             }
@@ -562,35 +577,50 @@ namespace NvCloth
                 const int renderVertexIndex = static_cast<int>(firstVertex + index);
 
                 const SimParticleFormat& renderParticle = renderParticles[renderVertexIndex];
-                destVerticesBuffer[index].Set(
-                    renderParticle.GetX(),
-                    renderParticle.GetY(),
-                    renderParticle.GetZ());
 
-                if (destNormalsBuffer)
+                for(auto& [deviceIndex, destVerticesBuffer] : destVerticesData)
+                {
+                    destVerticesBuffer[index].Set(
+                        renderParticle.GetX(),
+                        renderParticle.GetY(),
+                        renderParticle.GetZ());
+                }
+
+                if (!destNormalsData.empty())
                 {
                     const AZ::Vector3& renderNormal = renderNormals[renderVertexIndex];
-                    destNormalsBuffer[index].Set(
-                        renderNormal.GetX(),
-                        renderNormal.GetY(),
-                        renderNormal.GetZ());
+                    for(auto& [deviceIndex, destNormalsBuffer] : destNormalsData)
+                    {
+                        destNormalsBuffer[index].Set(
+                            renderNormal.GetX(),
+                            renderNormal.GetY(),
+                            renderNormal.GetZ());
+                    }
                 }
 
-                if (destTangentsBuffer)
+                if (!destTangentsData.empty())
                 {
                     const AZ::Vector3& renderTangent = renderTangents[renderVertexIndex];
-                    destTangentsBuffer[index].Set(
-                        renderTangent,
-                        -1.0f); // Shader function ConstructTBN inverts w to change bitangent sign, but the bitangents passed are already corrected, so passing -1.0 to counteract.
+                    for(auto& [deviceIndex, destTangentsBuffer] : destTangentsData)
+                    {
+                        destTangentsBuffer[index].Set(
+                            renderTangent.GetX(),
+                            renderTangent.GetY(),
+                            renderTangent.GetZ(),
+                            -1.0f); // Shader function ConstructTBN inverts w to change bitangent sign, but the bitangents passed are already corrected, so passing -1.0 to counteract.
+                    }
                 }
 
-                if (destBitangentsBuffer)
+                if (!destBitangentsData.empty())
                 {
                     const AZ::Vector3& renderBitangent = renderBitangents[renderVertexIndex];
-                    destBitangentsBuffer[index].Set(
-                        renderBitangent.GetX(),
-                        renderBitangent.GetY(),
-                        renderBitangent.GetZ());
+                    for(auto& [deviceIndex, destBitangentsBuffer] : destBitangentsData)
+                    {
+                        destBitangentsBuffer[index].Set(
+                            renderBitangent.GetX(),
+                            renderBitangent.GetY(),
+                            renderBitangent.GetZ());
+                    }
                 }
             }
         }
@@ -783,5 +813,33 @@ namespace NvCloth
             return globalWind + localWind;
         }
         return AZ::Vector3::CreateZero();
+    }
+
+    void ClothComponentMesh::EnableSkinning() const
+    {
+        if (m_actorClothSkinning)
+        {
+            for (const auto& subMeshInfo : m_meshNodeInfo.m_subMeshes)
+            {
+                AZ::Render::SkinnedMeshOverrideRequestBus::Event(
+                    m_entityId,
+                    &AZ::Render::SkinnedMeshOverrideRequestBus::Events::EnableSkinning,
+                        aznumeric_cast<uint32_t>(m_meshNodeInfo.m_lodLevel), aznumeric_cast<uint32_t>(subMeshInfo.m_primitiveIndex));
+            }
+        }
+    }
+
+    void ClothComponentMesh::DisableSkinning() const
+    {
+        if (m_actorClothSkinning)
+        {
+            for (const auto& subMeshInfo : m_meshNodeInfo.m_subMeshes)
+            {
+                AZ::Render::SkinnedMeshOverrideRequestBus::Event(
+                    m_entityId,
+                    &AZ::Render::SkinnedMeshOverrideRequestBus::Events::DisableSkinning,
+                        aznumeric_cast<uint32_t>(m_meshNodeInfo.m_lodLevel), aznumeric_cast<uint32_t>(subMeshInfo.m_primitiveIndex));
+            }
+        }
     }
 } // namespace NvCloth

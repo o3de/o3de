@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "ComparisonFunctions.h"
 #include <Libraries/Core/BinaryOperator.h>
 
 namespace ScriptCanvas
@@ -35,6 +34,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<LessEqual>("Less Than or Equal To (<=)", "Checks if Value A is less than or equal to Value B")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                                    ->Attribute(AZ::Edit::Attributes::Category, "Math/Comparisons")
                                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Placeholder.png")
                                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                                 ;

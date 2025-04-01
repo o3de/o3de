@@ -24,8 +24,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphReferenceNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphReferenceNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphReferenceNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphReferenceNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     static const char* sMaskedParameterNamesMember = "maskedParameterNames";
 
@@ -614,11 +614,11 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphReferenceNode::m_motionSetAsset, "Motion set asset", "Motion set asset to be used for this reference.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphReferenceNode::OnMotionSetAssetChanged)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("MotionSetName", 0xcf534ea6), &AnimGraphReferenceNode::m_activeMotionSetName, "Active motion set", "Motion set to use for this anim graph instance")
-                ->Attribute(AZ_CRC("MotionSetAsset", 0xd4e88984), &AnimGraphReferenceNode::GetMotionSetAsset)
+            ->DataElement(AZ_CRC_CE("MotionSetName"), &AnimGraphReferenceNode::m_activeMotionSetName, "Active motion set", "Motion set to use for this anim graph instance")
+                ->Attribute(AZ_CRC_CE("MotionSetAsset"), &AnimGraphReferenceNode::GetMotionSetAsset)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphReferenceNode::OnMotionSetChanged)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphReferenceNode::HasMotionSetAsset)
-            ->DataElement(AZ_CRC("AnimGraphParameterMask", 0x67dd0993), &AnimGraphReferenceNode::m_maskedParameterNames, "Parameter mask", "Parameters to be used as inputs. Parameters not selected as inputs are mapped.")
+            ->DataElement(AZ_CRC_CE("AnimGraphParameterMask"), &AnimGraphReferenceNode::m_maskedParameterNames, "Parameter mask", "Parameters to be used as inputs. Parameters not selected as inputs are mapped.")
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
             ;

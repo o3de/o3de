@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
+
 #include <Atom/RHI/BufferPool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -23,14 +25,16 @@ namespace AZ
     {
         class ResourcePoolAsset;
 
-        class BufferPool final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API BufferPool final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class BufferSystem;
 
         public:
             AZ_INSTANCE_DATA(BufferPool, "{1EBB16AD-AC85-4560-BAC4-133D43826566}");
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
 
             /// Instantiates or returns an existing buffer pool using a paired resource pool asset.
             static Data::Instance<BufferPool> FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset);
@@ -45,8 +49,8 @@ namespace AZ
             BufferPool() = default;
 
             // Standard asset creation path.
-            static Data::Instance<BufferPool> CreateInternal(RHI::Device& device, ResourcePoolAsset& poolAsset);
-            RHI::ResultCode Init(RHI::Device& device, ResourcePoolAsset& poolAsset);
+            static Data::Instance<BufferPool> CreateInternal(ResourcePoolAsset& poolAsset);
+            RHI::ResultCode Init(ResourcePoolAsset& poolAsset);
 
             RHI::Ptr<RHI::BufferPool> m_pool;
         };

@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
-#include <GradientSignal/GradientSampler.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/ThresholdGradientRequestBus.h>
+#include <GradientSignal/GradientSampler.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
 
 namespace LmbrCentral
 {
@@ -26,14 +27,14 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ThresholdGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ThresholdGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(ThresholdGradientConfig, "{E9E2D5B3-66F1-494D-91D2-1E83D36A1AC1}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         GradientSampler m_gradientSampler;
         float m_threshold = 0.5f;
     };
 
-    static const AZ::Uuid ThresholdGradientComponentTypeId = "{CCE70521-E2D8-4304-B748-1E37A6DC57BF}";
+    inline constexpr AZ::TypeId ThresholdGradientComponentTypeId{ "{CCE70521-E2D8-4304-B748-1E37A6DC57BF}" };
 
     /**
     * calculates a gradient value by converting values from another gradient to 0 or 1
@@ -79,5 +80,6 @@ namespace GradientSignal
     private:
         ThresholdGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

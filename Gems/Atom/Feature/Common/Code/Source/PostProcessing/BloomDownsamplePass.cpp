@@ -46,8 +46,20 @@ namespace AZ
         void BloomDownsamplePass::BuildOutAttachmentBinding()
         {
             RPI::Ptr<RPI::PassAttachment> outAttachment = m_ownedAttachments[0];
+            RPI::PassAttachmentBinding* outAttachmentBinding = FindAttachmentBinding(AZ::Name("Output"));
+            if (outAttachmentBinding)
+            {
+                // We use the owned attachment as mip level 0, because we can't have overlapping attachments
+                // with write access.
+                RHI::ImageViewDescriptor attachmentViewDesc;
+                attachmentViewDesc.m_mipSliceMin = 0;
+                attachmentViewDesc.m_mipSliceMax = 0;
+                outAttachmentBinding->m_shaderInputName = Name{ "m_targetMipLevel0" };
+                outAttachmentBinding->m_unifiedScopeDesc.SetAsImage(attachmentViewDesc);
+            }
 
-            for (uint16_t i = 0; i < Render::Bloom::MaxStageCount; ++i)
+            // Create the rest of mip level attachments
+            for (uint16_t i = 1; i < Render::Bloom::MaxStageCount; ++i)
             {
                 // Create bindings
 
@@ -57,15 +69,13 @@ namespace AZ
                 outBinding.m_shaderInputName = Name{ AZStd::string::format("m_targetMipLevel%d", i) };
                 outBinding.m_slotType = RPI::PassSlotType::Output;
                 outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-
-                outBinding.m_attachment = outAttachment;
                 
                 // Set image view descriptor
                 RHI::ImageViewDescriptor outViewDesc;
                 outViewDesc.m_mipSliceMin = i;
                 outViewDesc.m_mipSliceMax = i;
                 outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
-                outBinding.m_unifiedScopeDesc.m_attachmentId = outAttachment->GetAttachmentId();
+                outBinding.SetAttachment(outAttachment);
 
                 AddAttachmentBinding(outBinding);
             }
@@ -94,7 +104,7 @@ namespace AZ
         {
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+            RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
             if (fp)
             {
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -110,23 +120,14 @@ namespace AZ
                 }
             }
 
-            RHI::Size targetImageSize;
-            if (m_isFullscreenPass)
-            {
-                RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
-
-                targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
-                SetTargetThreadCounts(targetImageSize.m_width, targetImageSize.m_height, targetImageSize.m_depth);
-            }
-
             RHI::Size sourceImageSize;
-            RPI::PassAttachment* inputAttachment = GetInputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inputAttachment = GetInputBinding(0).GetAttachment().get();
             sourceImageSize = inputAttachment->m_descriptor.m_image.m_size;
 
             // Update shader constant
             m_shaderResourceGroup->SetConstant(m_sourceImageTexelSizeInputIndex, AZ::Vector2(1.0f / static_cast<float>(sourceImageSize.m_width), 1.0f / static_cast<float>(sourceImageSize.m_height)));
 
-            RenderPass::FrameBeginInternal(params);
+            ComputePass::FrameBeginInternal(params);
         }
     }   // namespace RPI
 }   // namespace AZ

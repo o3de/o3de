@@ -7,29 +7,18 @@
  */
 
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
-#include <AzCore/std/string/regex.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        bool MaterialPropertyId::IsValidName(AZStd::string_view name)
-        {
-            // Checks for a c++ style identifier
-            return AZStd::regex_match(name.begin(), name.end(), AZStd::regex("^[a-zA-Z_][a-zA-Z0-9_]*$"));
-        }
-
-        bool MaterialPropertyId::IsValidName(const AZ::Name& name)
-        {
-            return IsValidName(name.GetStringView());
-        }
-
         bool MaterialPropertyId::IsValid() const
         {
             return !m_fullName.IsEmpty();
         }
-
+        
         MaterialPropertyId MaterialPropertyId::Parse(AZStd::string_view fullPropertyId)
         {
             AZStd::vector<AZStd::string> tokens;
@@ -43,7 +32,7 @@ namespace AZ
 
             for (const auto& token : tokens)
             {
-                if (!IsValidName(token))
+                if (!MaterialUtils::IsValidName(token))
                 {
                     AZ_Error("MaterialPropertyId", false, "Property ID '%.*s' is not a valid identifier.", AZ_STRING_ARG(fullPropertyId));
                     return MaterialPropertyId{};
@@ -57,11 +46,7 @@ namespace AZ
         
         MaterialPropertyId::MaterialPropertyId(AZStd::string_view propertyName)
         {
-            if (!IsValidName(propertyName))
-            {
-                AZ_Error("MaterialPropertyId", false, "Property name '%.*s' is not a valid identifier.", AZ_STRING_ARG(propertyName));
-            }
-            else
+            if (MaterialUtils::CheckIsValidPropertyName(propertyName))
             {
                 m_fullName = propertyName;
             }
@@ -69,15 +54,7 @@ namespace AZ
 
         MaterialPropertyId::MaterialPropertyId(AZStd::string_view groupName, AZStd::string_view propertyName)
         {
-            if (!IsValidName(groupName))
-            {
-                AZ_Error("MaterialPropertyId", false, "Group name '%.*s' is not a valid identifier.", AZ_STRING_ARG(groupName));
-            }
-            else if (!IsValidName(propertyName))
-            {
-                AZ_Error("MaterialPropertyId", false, "Property name '%.*s' is not a valid identifier.", AZ_STRING_ARG(propertyName));
-            }
-            else
+            if (MaterialUtils::CheckIsValidGroupName(groupName) && MaterialUtils::CheckIsValidPropertyName(propertyName))
             {
                 m_fullName = AZStd::string::format("%.*s.%.*s", AZ_STRING_ARG(groupName), AZ_STRING_ARG(propertyName));
             }
@@ -88,14 +65,51 @@ namespace AZ
         {
         }
         
-        MaterialPropertyId::MaterialPropertyId(const AZStd::array_view<AZStd::string> names)
+        MaterialPropertyId::MaterialPropertyId(const AZStd::span<AZStd::string> groupNames, AZStd::string_view propertyName)
         {
-            for (const auto& name : names)
+            for (const auto& name : groupNames)
             {
-                if (!IsValidName(name))
+                if (!MaterialUtils::CheckIsValidGroupName(name))
                 {
-                    AZ_Error("MaterialPropertyId", false, "'%s' is not a valid identifier.", name.c_str());
                     return;
+                }
+            }
+            
+            if (!MaterialUtils::CheckIsValidPropertyName(propertyName))
+            {
+                return;
+            }
+
+            if (groupNames.empty())
+            {
+                m_fullName = propertyName;
+            }
+            else
+            {
+                AZStd::string fullName;
+                AzFramework::StringFunc::Join(fullName, groupNames.begin(), groupNames.end(), ".");
+                fullName = AZStd::string::format("%s.%.*s", fullName.c_str(), AZ_STRING_ARG(propertyName));
+                m_fullName = fullName;
+            }
+        }
+
+        MaterialPropertyId::MaterialPropertyId(const AZStd::span<AZStd::string> names)
+        {
+            for (size_t i = 0; i < names.size(); ++i)
+            {
+                if (i == names.size() - 1)
+                {
+                    if (!MaterialUtils::CheckIsValidPropertyName(names[i]))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    if (!MaterialUtils::CheckIsValidGroupName(names[i]))
+                    {
+                        return;
+                    }
                 }
             }
 

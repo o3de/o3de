@@ -32,7 +32,7 @@ namespace GraphCanvas
         : public SceneEventFilter
     {
     public:
-        AZ_CLASS_ALLOCATOR(DataSlotGraphicsEventFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotGraphicsEventFilter, AZ::SystemAllocator);
 
         DataSlotGraphicsEventFilter(DataSlotLayout* dataSlotLayout)
             : SceneEventFilter(nullptr)
@@ -159,7 +159,7 @@ namespace GraphCanvas
                                     anchorPoint = QPointF(1.0f, 0.5f);
                                 }
                                 
-                                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, "Unable to drop onto to slot", error.c_str());
+                                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, "Unable to drop onto slot", error.c_str());
                                 toastConfiguration.m_closeOnClick = false;
 
                                 m_toastId = viewHandler->ShowToastAtPoint(globalConnectionPoint.toPoint(), anchorPoint, toastConfiguration);
@@ -277,6 +277,14 @@ namespace GraphCanvas
         m_nodePropertyDisplay = aznew NodePropertyDisplayWidget();
         m_slotConnectionPin = aznew DataSlotConnectionPin(owner.GetEntityId());
         m_slotText = aznew GraphCanvasLabel();
+
+        if (const AZ::Entity* ownerEntity = owner.GetEntity())
+        {
+            if (const SlotComponent* slotComponent = ownerEntity->FindComponent<DataSlotComponent>())
+            {
+                m_isNameHidden = slotComponent->IsNameHidden();
+            }
+        }
     }
 
     DataSlotLayout::~DataSlotLayout()
@@ -337,7 +345,7 @@ namespace GraphCanvas
         {
             m_connectionType = slotRequests->GetConnectionType();
 
-            m_slotText->SetLabel(slotRequests->GetName());
+            OnNameChanged(slotRequests->GetName());
 
             OnTooltipChanged(slotRequests->GetTooltip());
 
@@ -392,7 +400,7 @@ namespace GraphCanvas
 
     void DataSlotLayout::OnNameChanged(const AZStd::string& name)
     {
-        m_slotText->SetLabel(name);
+        m_slotText->SetLabel(m_isNameHidden ? "" : name);
     }
 
     void DataSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)

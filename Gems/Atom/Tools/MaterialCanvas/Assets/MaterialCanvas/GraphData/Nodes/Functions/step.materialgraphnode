@@ -1,0 +1,55 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{5A76042C-CDD1-44E2-A87A-52A1B440BA11}",
+        "category": "Math Functions",
+        "title": "Step",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns 1 if the x parameter is greater than or equal to the y parameter; otherwise, 0 (per component)",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue1",
+                "displayName": "Value1",
+                "description": "Value1",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inValue2",
+                "displayName": "Value2",
+                "description": "Value2",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = step(inValue1, inValue2);"
+                    ]
+                }
+            }
+        ]
+    }
+}

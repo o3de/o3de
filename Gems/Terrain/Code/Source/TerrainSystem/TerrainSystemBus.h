@@ -15,6 +15,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 #include <AzCore/Component/ComponentBus.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -23,7 +24,6 @@ namespace Terrain
 {
     /**
     * A bus to signal the life times of terrain areas
-    * Note: all the API are meant to be queued events
     */
     class TerrainSystemServiceRequests
         : public AZ::EBusTraits
@@ -46,22 +46,25 @@ namespace Terrain
         virtual void RegisterArea(AZ::EntityId areaId) = 0;
         virtual void UnregisterArea(AZ::EntityId areaId) = 0;
         virtual void RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) = 0;
+        virtual void RefreshRegion(
+            const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) = 0;
     };
 
     using TerrainSystemServiceRequestBus = AZ::EBus<TerrainSystemServiceRequests>;
 
 
     /**
-    * A bus to signal the life times of terrain areas
-    * Note: all the API are meant to be queued events
-    */
-    class TerrainAreaHeightRequests
-        : public AZ::ComponentBus
+    * A bus to signal the life times of terrain areas.
+     * This bus uses shared dispatches, which means that all requests on the bus can run in parallel, but will NOT run in parallel
+     * with bus connections / disconnections.
+     */
+    class TerrainAreaHeightRequests : public AZ::EBusSharedDispatchTraits<TerrainAreaHeightRequests>
     {
     public:
         ////////////////////////////////////////////////////////////////////////
         // EBusTraits
-        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::EntityId BusIdType;
         ////////////////////////////////////////////////////////////////////////
 
         virtual ~TerrainAreaHeightRequests() = default;
@@ -94,7 +97,7 @@ namespace Terrain
 
         virtual ~TerrainSpawnerRequests() = default;
 
-        virtual void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) = 0;
+        virtual void GetPriority(uint32_t& outLayer, int32_t& outPriority) = 0;
         virtual bool GetUseGroundPlane() = 0;
 
     };

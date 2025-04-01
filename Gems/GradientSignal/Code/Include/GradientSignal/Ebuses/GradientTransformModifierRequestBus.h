@@ -49,7 +49,10 @@ namespace GradientSignal
         virtual void SetOverrideBounds(bool value) = 0;
 
         virtual AZ::Vector3 GetBounds() const = 0;
-        virtual void SetBounds(AZ::Vector3 bounds) = 0;
+        virtual void SetBounds(const AZ::Vector3& bounds) = 0;
+
+        virtual AZ::Vector3 GetCenter() const = 0;
+        virtual void SetCenter(const AZ::Vector3& center) = 0;
 
         virtual TransformType GetTransformType() const = 0;
         virtual void SetTransformType(TransformType type) = 0;
@@ -58,19 +61,19 @@ namespace GradientSignal
         virtual void SetOverrideTranslate(bool value) = 0;
 
         virtual AZ::Vector3 GetTranslate() const = 0;
-        virtual void SetTranslate(AZ::Vector3 translate) = 0;
+        virtual void SetTranslate(const AZ::Vector3& translate) = 0;
 
         virtual bool GetOverrideRotate() const = 0;
         virtual void SetOverrideRotate(bool value) = 0;
 
         virtual AZ::Vector3 GetRotate() const = 0;
-        virtual void SetRotate(AZ::Vector3 rotate) = 0;
+        virtual void SetRotate(const AZ::Vector3& rotate) = 0;
 
         virtual bool GetOverrideScale() const = 0;
         virtual void SetOverrideScale(bool value) = 0;
 
         virtual AZ::Vector3 GetScale() const = 0;
-        virtual void SetScale(AZ::Vector3 scale) = 0;
+        virtual void SetScale(const AZ::Vector3& scale) = 0;
 
         virtual float GetFrequencyZoom() const = 0;
         virtual void SetFrequencyZoom(float frequencyZoom) = 0;

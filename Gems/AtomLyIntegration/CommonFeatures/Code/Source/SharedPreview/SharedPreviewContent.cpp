@@ -33,14 +33,19 @@ namespace AZ
             RPI::ScenePtr scene,
             RPI::ViewPtr view,
             AZ::Uuid entityContextId,
-            const Data::AssetId& modelAssetId,
-            const Data::AssetId& materialAssetId,
-            const Data::AssetId& lightingPresetAssetId,
+            const Data::Asset<RPI::ModelAsset>& modelAsset,
+            const Data::Asset<RPI::MaterialAsset>& materialAsset,
+            const Data::Asset<RPI::AnyAsset>& lightingPresetAsset,
             const Render::MaterialPropertyOverrideMap& materialPropertyOverrides)
             : m_scene(scene)
             , m_view(view)
             , m_entityContextId(entityContextId)
+            , m_modelAsset(modelAsset)
+            , m_materialAsset(materialAsset)
+            , m_lightingPresetAsset(lightingPresetAsset)
             , m_materialPropertyOverrides(materialPropertyOverrides)
+            , m_meshHandle(nullptr)
+            , m_meshDrawPacketUpdateCount(0)
         {
             // Create preview model
             AzFramework::EntityContextRequestBus::EventResult(
@@ -51,15 +56,25 @@ namespace AZ
             m_modelEntity->Init();
             m_modelEntity->Activate();
 
-            m_modelAsset.Create(modelAssetId);
-            m_materialAsset.Create(materialAssetId);
-            m_lightingPresetAsset.Create(lightingPresetAssetId);
+            // Create the mesh update handler, this handler will become active once @m_meshHandle becomes valid.
+            m_meshUpdatedHandler = AZ::Render::ModelDataInstanceInterface::MeshDrawPacketUpdatedEvent::Handler{
+                [this](
+                    const AZ::Render::ModelDataInstanceInterface& meshHandleIface,
+                    uint32_t lodIndex,
+                    uint32_t meshIndex,
+                    const AZ::RPI::MeshDrawPacket& meshDrawPacket)
+                {
+                    OnMeshDrawPacketUpdated(meshHandleIface, lodIndex, meshIndex, meshDrawPacket);
+                }
+            };
         }
 
         SharedPreviewContent::~SharedPreviewContent()
         {
             if (m_modelEntity)
             {
+                AZ::Render::MeshHandleStateNotificationBus::Handler::BusDisconnect();
+
                 m_modelEntity->Deactivate();
                 AzFramework::EntityContextRequestBus::Event(
                     m_entityContextId, &AzFramework::EntityContextRequestBus::Events::DestroyEntity, m_modelEntity);
@@ -110,13 +125,18 @@ namespace AZ
         {
             Render::MeshComponentRequestBus::Event(
                 m_modelEntity->GetId(), &Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
+            
+            // This Ebus will give us the @m_meshHandle created by the mesh feature processor on behalf of
+            // m_modelEntity->GetId(). With @m_meshHandle we can get accurate updates from the MeshFeatureProcessor
+            // and know exactly when the MeshDrawPackets have been updated, which means we are ready to render the scene.
+            AZ::Render::MeshHandleStateNotificationBus::Handler::BusConnect(m_modelEntity->GetId());
 
             Render::MaterialComponentRequestBus::Event(
-                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetMaterialOverride,
+                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,
                 Render::DefaultMaterialAssignmentId, m_materialAsset.GetId());
 
             Render::MaterialComponentRequestBus::Event(
-                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetPropertyOverrides,
+                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetPropertyValues,
                 Render::DefaultMaterialAssignmentId, m_materialPropertyOverrides);
         }
 
@@ -148,7 +168,7 @@ namespace AZ
 
                     preset->ApplyLightingPreset(
                         iblFeatureProcessor, skyboxFeatureProcessor, exposureControlSettingInterface, directionalLightFeatureProcessor,
-                        cameraConfig, lightHandles);
+                        cameraConfig, lightHandles, false);
                 }
             }
         }
@@ -168,6 +188,35 @@ namespace AZ
             const auto cameraPosition = center + cameraRotation.TransformVector(-Vector3::CreateAxisY() * distance);
             const auto cameraTransform = Transform::CreateLookAt(cameraPosition, center);
             m_view->SetCameraTransform(Matrix3x4::CreateFromTransform(cameraTransform));
+        }
+
+        ////////////////////////////////////////////////////////////////
+        // AZ::Render::MeshHandleStateNotificationBus::Handler overrides
+        void SharedPreviewContent::OnMeshHandleSet(const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle)
+        {
+            m_meshHandle = meshHandle;
+            (*m_meshHandle)->ConnectMeshDrawPacketUpdatedHandler(m_meshUpdatedHandler);
+        }
+        /////////////////////////////////////////////////////////////////
+
+        // Function called by the callback defined in @m_meshUpdatedHandler
+        void SharedPreviewContent::OnMeshDrawPacketUpdated(
+            [[maybe_unused]] const AZ::Render::ModelDataInstanceInterface& meshHandleIface,
+            [[maybe_unused]] uint32_t lodIndex,
+            [[maybe_unused]] uint32_t meshIndex,
+            [[maybe_unused]] const AZ::RPI::MeshDrawPacket& meshDrawPacket)
+        {
+            // Typically we only get two updates.
+            // The first update is triggered by the creation of the Mesh with all its defaults.
+            // The second update is triggered by setting m_materialAsset.
+            m_meshDrawPacketUpdateCount++;
+        }
+
+        bool SharedPreviewContent::IsReadyToRender()
+        {
+            // We need at least two updates to have assurance that m_materialAsset
+            // have applied to the mesh and it is fully loaded in GPU.
+            return (m_meshDrawPacketUpdateCount > 1);
         }
     } // namespace LyIntegration
 } // namespace AZ

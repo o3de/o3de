@@ -20,7 +20,7 @@
 class ClassReferenceFilterModel : public QSortFilterProxyModel
 {
 public:
-    AZ_CLASS_ALLOCATOR(ClassReferenceFilterModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(ClassReferenceFilterModel, AZ::SystemAllocator);
     ClassReferenceFilterModel( QObject *pParent );
 
     void SetFilter( QString newFilter );

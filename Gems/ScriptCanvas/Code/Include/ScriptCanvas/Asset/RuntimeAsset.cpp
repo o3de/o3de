@@ -6,10 +6,10 @@
  *
  */
 
-#include "RuntimeAsset.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptEvents/ScriptEventsAsset.h>
 
 namespace DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead
 {
@@ -30,17 +30,6 @@ namespace DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead
         // add description above
         Current,
     };
-
-    enum class FunctionRuntimeDataVersion
-    {
-        MergeBackEnd2dotZero,
-        AddSubgraphInterface,
-        RemoveLegacyData,
-        RemoveConnectionToRuntimeData,
-
-        // add description above
-        Current
-    };
 }
 
 namespace ScriptCanvas
@@ -59,7 +48,7 @@ namespace ScriptCanvas
             m_script = AZStd::move(other.m_script);
             m_requiredAssets = AZStd::move(other.m_requiredAssets);
             m_requiredScriptEvents = AZStd::move(other.m_requiredScriptEvents);
-            m_areStaticsInitialized = AZStd::move(other.m_areStaticsInitialized);
+            m_areScriptLocalStaticsInitialized = AZStd::move(other.m_areScriptLocalStaticsInitialized);
         }
 
         return *this;
@@ -67,7 +56,7 @@ namespace ScriptCanvas
 
     void RuntimeData::Reflect(AZ::ReflectContext* reflectContext)
     {
-        Translation::RuntimeInputs::Reflect(reflectContext);
+        RuntimeInputs::Reflect(reflectContext);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
@@ -111,22 +100,92 @@ namespace ScriptCanvas
         return !m_cloneSources.empty();
     }
 
-    bool RuntimeDataOverrides::IsPreloadBehaviorEnforced(const RuntimeDataOverrides& overrides)
+    RuntimeAssetDescription::RuntimeAssetDescription()
+        : AssetDescription(
+            azrtti_typeid<RuntimeAsset>(),
+            "Script Canvas Runtime",
+            "Script Canvas Runtime Graph",
+            "@projectroot@/scriptcanvas",
+            ".scriptcanvas_compiled",
+            "Script Canvas Runtime",
+            "Untitled-%i",
+            "Script Canvas Files (*.scriptcanvas_compiled)",
+            "Script Canvas Runtime",
+            "Script Canvas Runtime",
+            "Icons/ScriptCanvas/Viewport/ScriptCanvas.png",
+            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f),
+            false
+        )
+    {}
+
+    IsPreloadedResult IsPreloaded(const RuntimeDataOverrides& overrides)
     {
-        if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+        if (!overrides.m_runtimeAsset.Get())
         {
-            return false;
+            if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
+            return IsPreloadedResult::DataNotLoaded;
         }
+
+//         const auto runtimeData = overrides.m_runtimeAsset.Get()->m_runtimeData;
+// 
+//         if (!runtimeData.m_script.Get())
+//         {
+//             if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+//             {
+//                 return IsPreloadedResult::PreloadBehaviorNotEnforced;
+//             }
+// 
+//             return IsPreloadedResult::DataNotLoaded;
+//         }
 
         for (auto& dependency : overrides.m_dependencies)
         {
-            if (!IsPreloadBehaviorEnforced(dependency))
+            if (const auto dependencyResult = IsPreloaded(dependency); dependencyResult != IsPreloadedResult::Yes)
             {
-                return false;
+                return dependencyResult;
             }
         }
 
-        return true;
+        return IsPreloadedResult::Yes;
+    }
+
+    IsPreloadedResult IsPreloaded(RuntimeAssetPtr asset)
+    {
+        if (!asset.Get())
+        {
+            if (asset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
+            return IsPreloadedResult::DataNotLoaded;
+        }
+
+        const auto runtimeData = asset.Get()->m_runtimeData;
+
+        if (!runtimeData.m_script.Get())
+        {
+            if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
+            return IsPreloadedResult::DataNotLoaded;
+        }
+
+        for (auto& dependency : runtimeData.m_requiredAssets)
+        {
+            if (const auto dependencyResult = IsPreloaded(dependency); dependencyResult != IsPreloadedResult::Yes)
+            {
+                return dependencyResult;
+            }
+        }
+
+        return IsPreloadedResult::Yes;
     }
 
     void RuntimeDataOverrides::EnforcePreloadBehavior()
@@ -184,37 +243,5 @@ namespace ScriptCanvas
                     ;
             }
         }
-    }
-
-    ////////////////////////
-    // SubgraphInterfaceData
-    ////////////////////////
-
-    void SubgraphInterfaceData::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
-        {
-            serializeContext->Class<SubgraphInterfaceData>()
-                ->Version(static_cast<int>(DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead::FunctionRuntimeDataVersion::Current))
-                ->Field("name", &SubgraphInterfaceData::m_name)
-                ->Field("interface", &SubgraphInterfaceData::m_interface)
-                ;
-        }
-    }
-
-    SubgraphInterfaceData::SubgraphInterfaceData(SubgraphInterfaceData&& other)
-    {
-        *this = AZStd::move(other);
-    }
-
-    SubgraphInterfaceData& SubgraphInterfaceData::operator=(SubgraphInterfaceData&& other)
-    {
-        if (this != &other)
-        {
-            m_name = AZStd::move(other.m_name);
-            m_interface = AZStd::move(other.m_interface);
-        }
-
-        return *this;
     }
 }

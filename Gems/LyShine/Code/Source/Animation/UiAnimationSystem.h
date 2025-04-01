@@ -40,12 +40,10 @@ class UiAnimationSystem
     typedef AZStd::vector<PlayingUIAnimSequence> PlayingSequences;
 
 public:
-    AZ_CLASS_ALLOCATOR(UiAnimationSystem, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(UiAnimationSystem, AZ::SystemAllocator)
     AZ_RTTI(UiAnimationSystem, "{2592269B-EF74-4409-B29F-682DC0B45DAF}", IUiAnimationSystem)
 
     UiAnimationSystem();
-
-    ~UiAnimationSystem();
 
     void Release() override { delete this; };
 
@@ -153,7 +151,6 @@ private:
     bool FindSequence(IUiAnimSequence* sequence, PlayingSequences::const_iterator& sequenceIteratorOut) const;
     bool FindSequence(IUiAnimSequence* sequence, PlayingSequences::iterator& sequenceIteratorOut);
 
-    static void DoNodeStaticInitialisation();
     void UpdateInternal(const float dt, const bool bPreUpdate);
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING

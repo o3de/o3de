@@ -27,7 +27,7 @@ namespace ProjectSettingsTool
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(PropertyFuncValBrowseEditCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyFuncValBrowseEditCtrl, AZ::SystemAllocator);
 
         PropertyFuncValBrowseEditCtrl(QWidget* pParent = nullptr);
 
@@ -65,7 +65,7 @@ namespace ProjectSettingsTool
     class PropertyFuncValBrowseEditHandler
         : public AzToolsFramework::PropertyHandler <AZStd::string, PropertyFuncValBrowseEditCtrl>
     {
-        AZ_CLASS_ALLOCATOR(PropertyFuncValBrowseEditHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyFuncValBrowseEditHandler, AZ::SystemAllocator);
 
     public:
         PropertyFuncValBrowseEditHandler(ValidationHandler* valHdlr);

@@ -1,0 +1,32 @@
+{
+    "Shader": "Shaders/SkyAtmosphere/SkyRayMarching.shader",
+    "Variants" : [
+        {
+            "StableId": 1,
+            "Options" : 
+            {
+                "o_enableFastSky": "true",
+                "o_enableShadows": "false",
+                "o_enableSun": "true" 
+            }
+        },
+        {
+            "StableId": 2,
+            "Options" : 
+            {
+                "o_enableFastSky": "false",
+                "o_enableShadows": "false",
+                "o_enableSun": "true" 
+            }
+        },
+        {
+            "StableId": 3,
+            "Options" : 
+            {
+                "o_enableFastSky": "true",
+                "o_enableShadows": "false",
+                "o_enableSun": "false" 
+            }
+        }
+    ]
+}

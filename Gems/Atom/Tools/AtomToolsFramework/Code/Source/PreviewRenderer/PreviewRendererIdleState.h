@@ -8,22 +8,16 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
 #include <PreviewRenderer/PreviewRendererState.h>
 
 namespace AtomToolsFramework
 {
     //! PreviewRendererIdleState checks whether there are any new thumbnails that need to be rendered every tick
-    class PreviewRendererIdleState final
-        : public PreviewRendererState
-        , public AZ::TickBus::Handler
+    class PreviewRendererIdleState final : public PreviewRendererState
     {
     public:
         PreviewRendererIdleState(PreviewRenderer* renderer);
         ~PreviewRendererIdleState();
-
-    private:
-        //! AZ::TickBus::Handler interface overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        void Update() override;
     };
 } // namespace AtomToolsFramework

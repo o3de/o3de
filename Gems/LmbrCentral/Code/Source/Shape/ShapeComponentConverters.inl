@@ -15,7 +15,7 @@ namespace LmbrCentral
         {
             if (version <= 2)
             {
-                const int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+                const int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
                 if (configIndex != -1)
                 {
                     // cache shape config

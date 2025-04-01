@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/Json/CastingHelpers.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
@@ -20,8 +21,8 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonDoubleSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonFloatSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonDoubleSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonFloatSerializer, SystemAllocator);
 
     namespace SerializerFloatingPointInternal
     {
@@ -33,6 +34,8 @@ namespace AZ
             static_assert(AZStd::is_floating_point<T>(), "Expected T to be a floating point type");
 
             char* parseEnd = nullptr;
+
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for strtod
 
             errno = 0;
             double parsedDouble = strtod(text, &parseEnd);

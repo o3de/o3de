@@ -13,7 +13,7 @@
 namespace UnitTest
 {
     class RangesTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     struct RangeLikeCustomizationPoint {};
@@ -26,11 +26,11 @@ namespace UnitTest
     {
         return &rangeLike;
     }
-    const RangeLikeCustomizationPoint* cbegin(const RangeLikeCustomizationPoint& rangeLike)
+    const RangeLikeCustomizationPoint* begin(const RangeLikeCustomizationPoint& rangeLike)
     {
         return &rangeLike;
     }
-    const RangeLikeCustomizationPoint* cend(const RangeLikeCustomizationPoint& rangeLike)
+    const RangeLikeCustomizationPoint* end(const RangeLikeCustomizationPoint& rangeLike)
     {
         return &rangeLike;
     }
@@ -42,11 +42,11 @@ namespace UnitTest
     {
         return &rangeLike;
     }
-    const RangeLikeCustomizationPoint* crbegin(const RangeLikeCustomizationPoint& rangeLike)
+    const RangeLikeCustomizationPoint* rbegin(const RangeLikeCustomizationPoint& rangeLike)
     {
         return &rangeLike;
     }
-    const RangeLikeCustomizationPoint* crend(const RangeLikeCustomizationPoint& rangeLike)
+    const RangeLikeCustomizationPoint* rend(const RangeLikeCustomizationPoint& rangeLike)
     {
         return &rangeLike;
     }

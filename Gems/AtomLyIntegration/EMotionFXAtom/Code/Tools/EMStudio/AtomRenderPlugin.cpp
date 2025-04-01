@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
 
 #include <EMStudio/AtomRenderPlugin.h>
 #include <EMStudio/AnimViewportRenderer.h>
@@ -27,9 +28,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator, 0);
-    const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId =
-        AzToolsFramework::ManipulatorManagerId(AZ::Crc32("AnimManipulatorManagerId"));
+    AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator);
 
     AtomRenderPlugin::AtomRenderPlugin()
         : DockWidgetPlugin()
@@ -42,33 +41,26 @@ namespace EMStudio
 
     AtomRenderPlugin::~AtomRenderPlugin()
     {
+        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
+        delete m_animViewportWidget;
+
         SaveRenderOptions();
         GetCommandManager()->RemoveCommandCallback(m_importActorCallback, false);
         GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
         delete m_importActorCallback;
         delete m_removeActorCallback;
 
-        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
+        m_picking.reset();
     }
 
     const char* AtomRenderPlugin::GetName() const
     {
-        return "Atom Render Window (Preview)";
+        return "Atom Render Window";
     }
 
     uint32 AtomRenderPlugin::GetClassID() const
     {
         return static_cast<uint32>(AtomRenderPlugin::CLASS_ID);
-    }
-
-    const char* AtomRenderPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-    float AtomRenderPlugin::GetVersion() const
-    {
-        return 1.0f;
     }
 
     bool AtomRenderPlugin::GetIsClosable() const
@@ -84,11 +76,6 @@ namespace EMStudio
     bool AtomRenderPlugin::GetIsVertical() const
     {
         return false;
-    }
-
-    EMStudioPlugin* AtomRenderPlugin::Clone()
-    {
-        return new AtomRenderPlugin();
     }
 
     EMStudioPlugin::EPluginType AtomRenderPlugin::GetPluginType() const
@@ -131,6 +118,11 @@ namespace EMStudio
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(g_animManipulatorManagerId);
         SetupManipulators();
 
+        m_picking = AZStd::make_unique<EMotionFX::Picking>();
+        m_picking->SetRenderFlags(GetRenderOptions()->GetRenderFlags());
+
+        SetupMetrics();
+
         // Register command callbacks.
         m_importActorCallback = new ImportActorCallback(false);
         m_removeActorCallback = new RemoveActorCallback(false);
@@ -141,6 +133,27 @@ namespace EMStudio
             m_animViewportWidget->GetViewportContext()->GetId());
 
         return true;
+    }
+
+    void AtomRenderPlugin::SetupMetrics()
+    {
+        static constexpr int UpdateIntervalMs = 1000;
+        m_metricsTimer.setInterval(UpdateIntervalMs);
+        m_metricsTimer.start();
+        connect(&m_metricsTimer, &QTimer::timeout, this, &AtomRenderPlugin::UpdateMetrics);
+
+        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
+            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, true);
+    }
+
+    void AtomRenderPlugin::UpdateMetrics()
+    {
+        AtomToolsFramework::PerformanceMetrics metrics = {};
+        AtomToolsFramework::PerformanceMonitorRequestBus::BroadcastResult(
+            metrics, &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::GetMetrics);
+
+        int frameRate = metrics.m_cpuFrameTimeMs > 0 ? aznumeric_cast<int>(1000 / metrics.m_cpuFrameTimeMs) : 0;
+        m_fpsStr = AZStd::string::format("%d FPS", frameRate);
     }
 
     void AtomRenderPlugin::SetupManipulators()
@@ -179,10 +192,21 @@ namespace EMStudio
         m_rotateManipulators.ConfigureView(
             AzToolsFramework::RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
+        m_rotateManipulators.InstallLeftMouseDownCallback(
+            [this]([[maybe_unused]]const AzToolsFramework::AngularManipulator::Action& action)
+            {
+                const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+                AZ::TransformBus::EventResult(m_mouseDownStartTransform, entityId, &AZ::TransformBus::Events::GetLocalTM);
+                m_rotateManipulators.SetLocalOrientation(m_mouseDownStartTransform.GetRotation());
+            });
+
         m_rotateManipulators.InstallMouseMoveCallback(
             [this](const AzToolsFramework::AngularManipulator::Action& action)
             {
-                OnManipulatorRotated(action.LocalOrientation());
+                const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+                AZ::Quaternion localRotation = m_mouseDownStartTransform.GetRotation() * action.m_current.m_delta;
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, localRotation);
+                m_rotateManipulators.SetLocalOrientation(localRotation);
             });
 
         // Setup the scale manipulator
@@ -191,10 +215,21 @@ namespace EMStudio
         m_scaleManipulators.ConfigureView(
             AzToolsFramework::LinearManipulatorAxisLength(), AzFramework::ViewportColors::XAxisColor,
             AzFramework::ViewportColors::YAxisColor, AzFramework::ViewportColors::ZAxisColor);
+        m_scaleManipulators.InstallAxisLeftMouseDownCallback(
+            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+            {
+                const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+                AZ::TransformBus::EventResult(m_mouseDownStartTransform, entityId, &AZ::TransformBus::Events::GetLocalTM);
+            });
         m_scaleManipulators.InstallAxisMouseMoveCallback(
             [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
-                OnManipulatorScaled(action.LocalScale(), action.LocalScaleOffset());
+                // Since we are compulting a uniform scale, the delta scale should be the none-zero value from one of the three axis.
+                const float deltaScale = action.m_current.m_localPositionOffset.GetMaxElement()
+                    + action.m_current.m_localPositionOffset.GetMinElement();
+                const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalUniformScale,
+                    m_mouseDownStartTransform.GetUniformScale() + deltaScale);
             });
     }
 
@@ -261,33 +296,6 @@ namespace EMStudio
         AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalTranslation, position);
     }
 
-    void AtomRenderPlugin::OnManipulatorRotated(const AZ::Quaternion& rotation)
-    {
-        const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
-        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);
-    }
-
-    void AtomRenderPlugin::OnManipulatorScaled(
-        const AZ::Vector3& scale, const AZ::Vector3& scaleOffset)
-    {
-        // Use the scaleOffset to determine which axis to use on the uniform scale.
-        float localScale = 1.0f;
-        if (scaleOffset.GetX() != 0.0f)
-        {
-            localScale = scale.GetX();
-        }
-        else if (scaleOffset.GetY() != 0.0f)
-        {
-            localScale = scale.GetY();
-        }
-        else if (scaleOffset.GetZ() != 0.0f)
-        {
-            localScale = scale.GetZ();
-        }
-        const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
-        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalUniformScale, localScale);
-    }
-
     void AtomRenderPlugin::LoadRenderOptions()
     {
         AZStd::string renderOptionsFilename(GetManager()->GetAppDataFolder());
@@ -309,7 +317,12 @@ namespace EMStudio
         return &m_renderOptions;
     }
 
-    void AtomRenderPlugin::Render([[maybe_unused]]EMotionFX::ActorRenderFlagBitset renderFlags)
+    PluginOptions* AtomRenderPlugin::GetOptions()
+    {
+        return &m_renderOptions;
+    }
+
+    void AtomRenderPlugin::Render([[maybe_unused]]EMotionFX::ActorRenderFlags renderFlags)
     {
         if (!m_animViewportWidget)
         {
@@ -333,39 +346,63 @@ namespace EMStudio
                 AztfVi::BuildMousePick(m_animViewportWidget->GetCameraState(), screenPoint),
                 AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())),
                 AztfVi::InteractionId(AZ::EntityId(), m_animViewportWidget->GetViewportContext()->GetId()), keyboardModifiers ));
+
+        if (GetRenderOptions()->GetShowFPS())
+        {
+            debugDisplay->SetColor(AZ::Colors::Chocolate);
+            debugDisplay->Draw2dTextLabel(40.0f, 20.0f, 1.0f, m_fpsStr.c_str(), false);
+        }
         debugDisplay->DepthTestOn();
     }
 
     bool AtomRenderPlugin::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent)
     {
-        if (!m_manipulatorManager)
+        bool eventHandled = false;
+        if (m_manipulatorManager)
         {
-            return false;
-        }
-
-        using AzToolsFramework::ViewportInteraction::MouseEvent;
-        const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
-
-        switch (mouseInteractionEvent.m_mouseEvent)
-        {
-        case MouseEvent::Down:
-            return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
-        case MouseEvent::DoubleClick:
-            return false;
-        case MouseEvent::Move:
+            auto eventHandledByManipulators = [&mouseInteractionEvent, this]()
             {
-                const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
-                    m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
-                return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
-            }
-        case MouseEvent::Up:
-            return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
-        case MouseEvent::Wheel:
-            return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
-        default:
-            return false;
+                using AzToolsFramework::ViewportInteraction::MouseEvent;
+                const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
+
+                switch (mouseInteractionEvent.m_mouseEvent)
+                {
+                case MouseEvent::Down:
+                    return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
+                case MouseEvent::DoubleClick:
+                    return false;
+                case MouseEvent::Move:
+                {
+                    const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
+                        m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
+                    return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
+                }
+                case MouseEvent::Up:
+                    return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
+                case MouseEvent::Wheel:
+                    return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
+                default:
+                    return false;
+                }
+            };
+            eventHandled = eventHandledByManipulators();
         }
+
+        if (!eventHandled)
+        {
+            if (m_picking)
+            {
+                eventHandled = m_picking->HandleMouseInteraction(mouseInteractionEvent);
+            }
+        }
+
+        return eventHandled;
+    }
+
+    void AtomRenderPlugin::UpdatePickingRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
+    {
+        m_picking->SetRenderFlags(renderFlags);
     }
 
     // Command callbacks

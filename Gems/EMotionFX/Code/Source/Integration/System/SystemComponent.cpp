@@ -10,6 +10,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -27,14 +28,15 @@
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/TwoStringEventData.h>
 #include <EMotionFX/Source/EventDataFootIK.h>
+#include <EMotionFX/Source/EventDataFloatArray.h>
 #include <EMotionFX/Source/MotionEvent.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 #include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Source/ObjectId.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
@@ -68,33 +70,21 @@
 #include <QtGui/QSurfaceFormat>
 // EMStudio tools and main window registration
 #include <LyViewPaneNames.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzQtComponents/Components/FancyDocking.h>
 #include <AzCore/std/string/wildcard.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <QApplication>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
-// EMStudio plugins
-#include <EMotionStudio/Plugins/StandardPlugins/Source/LogWindow/LogWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/CommandBar/CommandBarPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/ActionHistory/ActionHistoryPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/MorphTargetsWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/Attachments/AttachmentsPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/SceneManagerPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventsPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
-#include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
-#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Source/Editor/PropertyWidgets/PropertyTypes.h>
 #include <EMotionFX_Traits_Platform.h>
+#include <EMotionFX/Source/AnimGraphStateMachine.h>
+
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 
 #include <IEditor.h>
 #endif // EMOTIONFXANIMATION_EDITOR
@@ -115,7 +105,7 @@ namespace EMotionFX
             : public EMotionFX::EventHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator);
 
             const AZStd::vector<EventTypes> GetHandledEventTypes() const override
             {
@@ -152,6 +142,15 @@ namespace EMotionFX
                         {
                             motionEvent.m_eventTypeName = twoStringEventData->GetSubject().c_str();
                             motionEvent.SetParameterString(twoStringEventData->GetParameters().c_str(), twoStringEventData->GetParameters().size());
+                            break;
+                        }
+
+                        if (const EMotionFX::EventDataFloatArray* floatArrayEventData =
+                                azrtti_cast<const EMotionFX::EventDataFloatArray*>(eventData.get()))
+                        {
+                            motionEvent.m_eventTypeName = floatArrayEventData->GetSubject().c_str();
+                            const AZStd::string parameterString = floatArrayEventData->DataToString();
+                            motionEvent.SetParameterString(parameterString.c_str(), parameterString.size());
                             break;
                         }
                     }
@@ -304,6 +303,8 @@ namespace EMotionFX
             MCore::StringIdPoolIndex::Reflect(context);
             EMotionFX::ConstraintTransformRotationAngles::Reflect(context);
 
+            EMotionFX::ObjectId::Reflect(context);
+
             // Actor
             EMotionFX::PhysicsSetup::Reflect(context);
             EMotionFX::SimulatedObjectSetup::Reflect(context);
@@ -319,7 +320,6 @@ namespace EMotionFX
             EMotionFX::AnimGraphObject::Reflect(context);
             EMotionFX::AnimGraph::Reflect(context);
             EMotionFX::AnimGraphNodeGroup::Reflect(context);
-            EMotionFX::AnimGraphGameControllerSettings::Reflect(context);
 
             // Anim graph objects
             EMotionFX::AnimGraphObjectFactory::ReflectTypes(context);
@@ -336,6 +336,7 @@ namespace EMotionFX
             EMotionFX::EventDataSyncable::Reflect(context);
             EMotionFX::TwoStringEventData::Reflect(context);
             EMotionFX::EventDataFootIK::Reflect(context);
+            EMotionFX::EventDataFloatArray::Reflect(context);
 
             EMotionFX::Recorder::Reflect(context);
 
@@ -383,7 +384,6 @@ namespace EMotionFX
                 {
                     ec->Class<SystemComponent>("EMotion FX Animation", "Enables the EMotion FX animation solution")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_numThreads, "Number of threads", "Number of threads used internally by EMotion FX")
                     ;
@@ -429,26 +429,26 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
+            provided.push_back(AZ_CRC_CE("EMotionFXAnimationService"));
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
+            incompatible.push_back(AZ_CRC_CE("EMotionFXAnimationService"));
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+            required.push_back(AZ_CRC_CE("AssetDatabaseService"));
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
-            dependent.push_back(AZ_CRC("JobsService", 0xd5ab5a50));
+            dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
+            dependent.push_back(AZ_CRC_CE("JobsService"));
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -465,9 +465,6 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::Activate()
         {
-            // Start EMotionFX allocator.
-            AZ::AllocatorInstance<EMotionFXAllocator>::Create();
-
             // Initialize MCore, which is EMotionFX's standard library of containers and systems.
             MCore::Initializer::InitSettings coreSettings;
             coreSettings.m_memAllocFunction = &EMotionFXAlloc;
@@ -513,6 +510,7 @@ namespace EMotionFX
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
             // Register custom property handlers for the reflected property editor.
             m_propertyHandlers = RegisterPropertyTypes();
@@ -538,6 +536,7 @@ namespace EMotionFX
                 EditorRequests::Bus::Broadcast(&EditorRequests::UnregisterViewPane, EMStudio::MainWindow::GetEMotionFXPaneName());
             }
 
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -562,21 +561,18 @@ namespace EMotionFX
                 EMotionFX::Initializer::Shutdown();
                 MCore::Initializer::Shutdown();
             }
-
-            // Memory leaks will be reported.
-            AZ::AllocatorInstance<EMotionFXAllocator>::Destroy();
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::EnableRayRequests()
         {
-            RaycastRequestBus::Handler::BusDisconnect();
-            RaycastRequestBus::Handler::BusConnect();
+            AZ::Interface<IRaycastRequests>::Unregister(this);
+            AZ::Interface<IRaycastRequests>::Register(this);
         }
 
         void SystemComponent::DisableRayRequests()
         {
-            RaycastRequestBus::Handler::BusDisconnect();
+            AZ::Interface<IRaycastRequests>::Unregister(this);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -589,12 +585,16 @@ namespace EMotionFX
 #endif
 
             REGISTER_CVAR2("emfx_updateEnabled", &CVars::emfx_updateEnabled, 1, VF_DEV_ONLY, "Enable main EMFX update");
+            REGISTER_CVAR2(
+                "emfx_ragdollManipulatorsEnabled", &CVars::emfx_ragdollManipulatorsEnabled, 1, VF_DEV_ONLY,
+                "Feature flag for in development ragdoll manipulators");
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::OnCrySystemShutdown(ISystem&)
         {
             gEnv->pConsole->UnregisterVariable("emfx_updateEnabled");
+            gEnv->pConsole->UnregisterVariable("emfx_ragdollManipulatorsEnabled");
 
 #if !defined(AZ_MONOLITHIC_BUILD)
             gEnv = nullptr;
@@ -682,7 +682,7 @@ namespace EMotionFX
                 if (hasPhysicsController)
                 {
                     Physics::CharacterRequestBus::Event(
-                        entityId, &Physics::CharacterRequests::AddVelocity, positionDelta * deltaTimeInv);
+                        entityId, &Physics::CharacterRequests::AddVelocityForTick, positionDelta * deltaTimeInv);
                 }
                 else if (hasCustomMotionExtractionController)
                 {
@@ -750,7 +750,7 @@ namespace EMotionFX
             if (rootPath)
             {
                 AZStd::string mediaRootPath = rootPath;
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, mediaRootPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, mediaRootPath);
                 EMotionFX::GetEMotionFX().SetMediaRootFolder(mediaRootPath.c_str());
             }
             else
@@ -761,9 +761,10 @@ namespace EMotionFX
 
 
         //////////////////////////////////////////////////////////////////////////
-        RaycastRequests::RaycastResult SystemComponent::Raycast([[maybe_unused]] AZ::EntityId entityId, const RaycastRequests::RaycastRequest& rayRequest)
+        IRaycastRequests::RaycastResult SystemComponent::Raycast(
+            [[maybe_unused]] AZ::EntityId entityId, const IRaycastRequests::RaycastRequest& rayRequest)
         {
-            RaycastRequests::RaycastResult rayResult;
+            IRaycastRequests::RaycastResult rayResult;
 
             // Build the ray request in the physics system.
             AzPhysics::RayCastRequest physicsRayRequest;
@@ -790,36 +791,7 @@ namespace EMotionFX
             return rayResult;
         }
 
-
 #if defined (EMOTIONFXANIMATION_EDITOR)
-
-        //////////////////////////////////////////////////////////////////////////
-        void InitializeEMStudioPlugins()
-        {
-            // Register EMFX plugins.
-            EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-            pluginManager->RegisterPlugin(new EMStudio::LogWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::CommandBarPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::ActionHistoryPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::MotionWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::MorphTargetsWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::TimeViewPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::AttachmentsPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::SceneManagerPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::NodeWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::MotionEventsPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::MotionSetsWindowPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::NodeGroupsPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::AnimGraphPlugin());
-            pluginManager->RegisterPlugin(new EMStudio::OpenGLRenderPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::HitDetectionJointInspectorPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::ClothJointInspectorPlugin());
-            pluginManager->RegisterPlugin(new EMotionFX::SimulatedObjectWidget());
-
-            SystemNotificationBus::Broadcast(&SystemNotificationBus::Events::OnRegisterPlugin);
-        }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::NotifyRegisterViews()
@@ -827,7 +799,15 @@ namespace EMotionFX
             using namespace AzToolsFramework;
 
             // Construct data folder that is used by the tool for loading assets (images etc.).
-            auto editorAssetsPath = (AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Gems/EMotionFX/Assets/Editor").LexicallyNormal();
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            AZ::IO::FixedMaxPath editorAssetsPath;
+            if (settingsRegistry && settingsRegistry->Get(editorAssetsPath.Native(),
+                FixedValueString::format("%s/EMotionFX/Path",AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey)))
+            {
+                editorAssetsPath /= "Assets/Editor";
+                editorAssetsPath = editorAssetsPath.LexicallyNormal();
+            }
 
             // Re-initialize EMStudio.
             int argc = 0;
@@ -836,7 +816,13 @@ namespace EMotionFX
             MysticQt::Initializer::Init("", editorAssetsPath.c_str());
             m_emstudioManager = AZStd::make_unique<EMStudio::EMStudioManager>(qApp, argc, argv);
 
-            InitializeEMStudioPlugins();
+            // Register default plugins
+            EMStudio::PluginManager* pluginManager = EMStudio::GetManager()->GetPluginManager();
+            AZ_Assert(pluginManager, "The plugin manager should be initialized at the time the plugins get registered.");
+            pluginManager->RegisterDefaultPlugins();
+
+            // Let external gems register their plugins
+            SystemNotificationBus::Broadcast(&SystemNotificationBus::Events::OnRegisterPlugin);
 
             // Get the MainWindow the first time so it is constructed
             EMStudio::GetManager()->GetMainWindow();
@@ -875,15 +861,168 @@ namespace EMotionFX
             using namespace AzToolsFramework::AssetBrowser;
             if (AZStd::wildcard_match("*.motionset", fullSourceFileName))
             {
-                return SourceFileDetails("Editor/Images/AssetBrowser/MotionSet_16.svg");
+                return SourceFileDetails("Editor/Images/AssetBrowser/MotionSet_80.svg");
             }
             else if (AZStd::wildcard_match("*.animgraph", fullSourceFileName))
             {
-                return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_16.svg");
+                return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_80.svg");
             }
             return SourceFileDetails(); // no result
         }
 
+        void SystemComponent::AddSourceFileOpeners(const char* fullSourceFileName, [[maybe_unused]] const AZ::Uuid& sourceUUID, [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
+        {
+            using namespace AzToolsFramework::AssetBrowser;
+
+            if (HandlesSource(fullSourceFileName))
+            {
+                auto animationEditorCallback =
+                    []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+                {
+                    AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
+                    const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);
+                    if (fullDetails)
+                    {
+                        AzToolsFramework::OpenViewPane(LyViewPane::AnimationEditor);
+
+                        EMStudio::GetMainWindow()->ApplicationModeChanged("AnimGraph");
+
+                        if (AZStd::wildcard_match("*.motionset", fullSourceFileNameInCall))
+                        {
+                            EMStudio::EMStudioPlugin* plugin =
+                                EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::MotionSetsWindowPlugin::CLASS_ID);
+                            EMStudio::MotionSetsWindowPlugin* motionSetPlugin = (EMStudio::MotionSetsWindowPlugin*)plugin;
+                            if (plugin)
+                            {
+                                // We need to wait for the end of frame otherwise setting the current widget fails
+                                QTimer::singleShot(
+                                    0,
+                                    [motionSetPlugin, fullSourceFileNameInCall]()
+                                    {
+                                        motionSetPlugin->LoadMotionSet(AZStd::string(fullSourceFileNameInCall));
+                                        QDockWidget* dockWidget = motionSetPlugin->GetDockWidget();
+                                        AzQtComponents::DockTabWidget* tabWidget =
+                                            AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget);
+                                        tabWidget->setCurrentWidget(dockWidget);
+                                    });
+                            }
+                        }
+                        else
+                        {
+                            EMStudio::EMStudioPlugin* plugin =
+                                EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID);
+                            EMStudio::AnimGraphPlugin* animGraphPlugin = (EMStudio::AnimGraphPlugin*)plugin;
+                            if (plugin)
+                            {
+                                animGraphPlugin->FileOpen(AZStd::string(fullSourceFileNameInCall));
+                            }
+                        }
+
+                    }
+                };
+                openers.push_back({ "Animation Editor", "Open In Animation Editor...",
+                                    QIcon(), animationEditorCallback });
+            }
+        }
+
+        void SystemComponent::AddSourceFileCreators(
+            [[maybe_unused]] const char* fullSourceFolderName,
+            [[maybe_unused]] const AZ::Uuid& sourceUUID,
+            AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
+        {
+            using namespace AzToolsFramework;
+
+            creators.push_back(
+                { "AnimGraph_Creator",
+                  "AnimGraph",
+                  QIcon(),
+                  [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                  {
+                      AZ::IO::FixedMaxPath outFilePath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          AZ::IO::PathView(fullSourceFolderNameInCallback + "/NewAnimGraph.animgraph"));
+
+                      EMotionFX::AnimGraph* animGraph = aznew EMotionFX::AnimGraph();
+                      // create the root state machine object
+                      EMotionFX::AnimGraphObject* rootSMObject =
+                          EMotionFX::AnimGraphObjectFactory::Create(azrtti_typeid<EMotionFX::AnimGraphStateMachine>(), animGraph);
+                      if (rootSMObject)
+                      {
+                         // type-cast the object to a state machine and set it as root state machine
+                          EMotionFX::AnimGraphStateMachine* rootSM = reinterpret_cast<EMotionFX::AnimGraphStateMachine*>(rootSMObject);
+                          animGraph->SetRootStateMachine(rootSM);
+                          animGraph->RecursiveReinit();
+                          animGraph->RecursiveInvalidateUniqueDatas();
+                          AZ::SerializeContext* serializeContext = nullptr;
+                          AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+                          animGraph->SaveToFile(outFilePath.Native().c_str(), serializeContext);
+                          delete animGraph;
+                      }
+                      AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                          &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                          outFilePath.Native().c_str(),
+                          AZ::Crc32(),
+                          true);
+                  } });
+
+            creators.push_back(
+                { "MotionSet_Creator",
+                  "MotionSet",
+                  QIcon(),
+                  [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                  {
+                      AZ::IO::FixedMaxPath outFilePath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          AZ::IO::PathView(fullSourceFolderNameInCallback + "/NewMotionSet.motionset"));
+
+                      AZ::IO::PathView filePath = outFilePath.c_str();
+                      AZStd::string motionSetName = filePath.Stem().Native();
+                      EMotionFX::MotionSet* motionSet = aznew EMotionFX::MotionSet(motionSetName.c_str(), /*parentSet=*/nullptr);
+                      motionSet->SetFilename(outFilePath.c_str());
+                      AZ::SerializeContext* serializeContext = nullptr;
+                      AZ::ComponentApplicationBus::BroadcastResult(
+                          serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+                      motionSet->SaveToFile(outFilePath.Native().c_str(), serializeContext);
+                      delete motionSet;
+
+                      AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                          &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                          outFilePath.Native().c_str(),
+                          AZ::Crc32(),
+                          true);
+                  } });
+        }
+
+        void SystemComponent::OnActionContextRegistrationHook()
+        {
+            constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+            constexpr AZStd::string_view AnimationEditorAnimGraphActionContextIdentifier = "o3de.context.animationEditor.animGraph";
+
+            if(auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+            {
+                // EMFX Main Window
+                {
+                    AzToolsFramework::ActionContextProperties contextProperties;
+                    contextProperties.m_name = "O3DE Animation Editor";
+
+                    actionManagerInterface->RegisterActionContext(AnimationEditorActionContextIdentifier, contextProperties);
+                }
+
+                // AnimGraph
+                {
+                    AzToolsFramework::ActionContextProperties contextProperties;
+                    contextProperties.m_name = "O3DE Animation Editor - Anim Graph";
+
+                    actionManagerInterface->RegisterActionContext(AnimationEditorAnimGraphActionContextIdentifier, contextProperties);
+                }
+            }
+        }
+
+        bool SystemComponent::HandlesSource(AZStd::string_view fileName) const
+        {
+            return AZStd::wildcard_match("*.animgraph", fileName.data()) || AZStd::wildcard_match("*.motionset", fileName.data());
+        }
+
 #endif // EMOTIONFXANIMATION_EDITOR
     }
-}
+} // namespace EMotionFX

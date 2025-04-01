@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_QuaternionFunctions_IsFinite",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Is Finite",
+                "category": "Math/Quaternion"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_QuaternionFunctions_IsFinite",
+                    "details": {
+                        "name": "Is Finite",
+                        "tooltip": "Returns true if every element in Source is finite"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

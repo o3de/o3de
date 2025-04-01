@@ -16,7 +16,6 @@ namespace AZ
         return planeId;
     }
 
-
     AZ_MATH_INLINE Frustum::Frustum()
     {
 #ifdef AZ_DEBUG_BUILD
@@ -27,12 +26,10 @@ namespace AZ
 #endif
     }
 
-
     AZ_MATH_INLINE Plane Frustum::GetPlane(PlaneId planeId) const
     {
         return Plane(m_planes[planeId]);
     }
-
 
     AZ_MATH_INLINE void Frustum::SetPlane(PlaneId planeId, const Plane& plane)
     {
@@ -45,14 +42,13 @@ namespace AZ
         m_planes[planeId] = Vec4::Div(plane.GetSimdValue(), length);
     }
 
-
     AZ_MATH_INLINE IntersectResult Frustum::IntersectSphere(const Vector3& center, float radius) const
     {
         bool intersect = false;
 
         for (PlaneId i = PlaneId::Near; i < PlaneId::MAX; ++i)
         {
-            const float distance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], center.GetSimdValue()));
+            const float distance = Simd::Vec1::SelectIndex0(Simd::Vec4::PlaneDistance(m_planes[i], center.GetSimdValue()));
 
             if (distance < -radius)
             {
@@ -65,18 +61,15 @@ namespace AZ
         return intersect ? IntersectResult::Overlaps : IntersectResult::Interior;
     }
 
-
     AZ_MATH_INLINE IntersectResult Frustum::IntersectSphere(const Sphere& sphere) const
     {
         return IntersectSphere(sphere.GetCenter(), sphere.GetRadius());
     }
 
-
     AZ_MATH_INLINE IntersectResult Frustum::IntersectAabb(const Vector3& minimum, const Vector3& maximum) const
     {
         return IntersectAabb(Aabb::CreateFromMinMax(minimum, maximum));
     }
-
 
     AZ_MATH_INLINE IntersectResult Frustum::IntersectAabb(const Aabb& aabb) const
     {
@@ -86,7 +79,7 @@ namespace AZ
         for (PlaneId i = PlaneId::Near; i < PlaneId::MAX; ++i)
         {
             const Vector3 disjointSupport = aabb.GetSupport(-Vector3(Simd::Vec4::ToVec3(m_planes[i])));
-            const float   disjointDistance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], disjointSupport.GetSimdValue()));
+            const float   disjointDistance = Simd::Vec1::SelectIndex0(Simd::Vec4::PlaneDistance(m_planes[i], disjointSupport.GetSimdValue()));
 
             if (disjointDistance < 0.0f)
             {
@@ -96,7 +89,7 @@ namespace AZ
             // We now know the interior point we just checked passes the plane check..
             // Check an exterior support point to determine whether or not the whole AABB is contained or if this is an intersection
             const Vector3 intersectSupport = aabb.GetSupport(Vector3(Simd::Vec4::ToVec3(m_planes[i])));
-            const float   intersectDistance = Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_planes[i], intersectSupport.GetSimdValue()));
+            const float   intersectDistance = Simd::Vec1::SelectIndex0(Simd::Vec4::PlaneDistance(m_planes[i], intersectSupport.GetSimdValue()));
 
             if (intersectDistance >= 0.0f)
             {
@@ -109,7 +102,6 @@ namespace AZ
         return (numInterior < PlaneId::MAX) ? IntersectResult::Overlaps : IntersectResult::Interior;
     }
 
-
     AZ_MATH_INLINE bool Frustum::IsClose(const Frustum& rhs, float tolerance) const
     {
         return Vector4(m_planes[PlaneId::Near  ]).IsClose(Vector4(rhs.m_planes[PlaneId::Near  ]), tolerance)
@@ -119,4 +111,5 @@ namespace AZ
             && Vector4(m_planes[PlaneId::Top   ]).IsClose(Vector4(rhs.m_planes[PlaneId::Top   ]), tolerance)
             && Vector4(m_planes[PlaneId::Bottom]).IsClose(Vector4(rhs.m_planes[PlaneId::Bottom]), tolerance);
     }
+
 } // namespace AZ

@@ -102,18 +102,23 @@ namespace AtomToolsFramework
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler overrides ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
+        void SetCursorMode(AzToolsFramework::CursorInputMode mode) override;
         bool IsMouseOver() const override;
         void SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride) override;
         void ClearOverrideCursor() override;
+        AZStd::optional<AzFramework::ScreenPoint> MousePosition() const override;
 
         // AzFramework::WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
         AzFramework::WindowSize GetClientAreaSize() const override;
-        void ResizeClientArea(AzFramework::WindowSize clientAreaSize) override;
+        void ResizeClientArea(AzFramework::WindowSize clientAreaSize, const AzFramework::WindowPosOptions& options) override;
+        bool SupportsClientAreaResize() const override;
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override;
         void ToggleFullScreenState() override;
+        AzFramework::WindowSize GetRenderResolution() const override;
+        void SetRenderResolution(AzFramework::WindowSize resolution) override;
         float GetDpiScaleFactor() const override;
         uint32_t GetSyncInterval() const override;
         bool SetSyncInterval(uint32_t newSyncInterval) override;
@@ -130,21 +135,24 @@ namespace AtomToolsFramework
         bool event(QEvent* event) override;
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 
     private:
         void SendWindowResizeEvent();
+        void SendWindowCloseEvent();
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;
         // Rather than handling input and supplemental rendering within the viewport or a subclass,
         // we provide this controller list to allow handlers to listen for input and update events.
         AzFramework::ViewportControllerListPtr m_controllerList;
-        // The default camera for our viewport i.e. the one used when a camera entity hasn't been activated.
-        AZ::RPI::ViewPtr m_defaultCamera;
+        // The default camera group for our viewport i.e. the one used when a camera entity hasn't been activated.
+        // The group contains stereoscopic and non-stereoscopic views.
+        AZ::RPI::ViewGroupPtr m_defaultCameraGroup;
         // Our viewport-local aux geom pipeline for supplemental rendering.
         AZ::RPI::AuxGeomDrawPtr m_auxGeom;
         // Tracks whether the cursor is currently over our viewport, used for mouse input event book-keeping.
-        bool m_mouseOver = false;
+        AZStd::optional<AzFramework::ScreenPoint> m_mousePosition;
         // Captures the time between our render events to give controllers a time delta.
         QElapsedTimer m_renderTimer;
         // The time of the last recorded tick event from the system tick bus.

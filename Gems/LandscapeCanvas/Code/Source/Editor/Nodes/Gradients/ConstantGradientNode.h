@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class ConstantGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConstantGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConstantGradientNode, AZ::SystemAllocator);
         AZ_RTTI(ConstantGradientNode, "{3D45B989-815F-461E-943D-F5139C1C6F06}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -34,8 +34,8 @@ namespace LandscapeCanvas
         ConstantGradientNode() = default;
         explicit ConstantGradientNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
-        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
+        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_TITLE; }
     };
 }

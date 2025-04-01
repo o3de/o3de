@@ -8,25 +8,16 @@
 
 #include <AzTest/AzTest.h>
 
-#include <SceneAPI/SceneCore/SceneCoreStandaloneAllocator.h>
-
 class SceneCoreTestEnvironment
     : public AZ::Test::ITestEnvironment
 {
-public:
-    virtual ~SceneCoreTestEnvironment() {}
-
 protected:
     void SetupEnvironment() override
     {
-        AZ::Environment::Create(nullptr);
-        AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize(AZ::Environment::GetInstance());
     }
 
     void TeardownEnvironment() override
     {
-        AZ::SceneAPI::SceneCoreStandaloneAllocator::TearDown();
-        AZ::Environment::Destroy();
     }
 };
 

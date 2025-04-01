@@ -17,7 +17,7 @@ namespace ExpressionEvaluation
         : public ExpressionElementParser
     {
     public:
-        AZ_CLASS_ALLOCATOR(MathExpressionOperators, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MathExpressionOperators, AZ::SystemAllocator);
 
         enum MathExpressionOperatorPriority
         {

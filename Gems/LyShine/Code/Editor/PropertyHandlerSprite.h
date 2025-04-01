@@ -23,7 +23,7 @@ class PropertySpriteCtrl
 
 public:
 
-    AZ_CLASS_ALLOCATOR(PropertySpriteCtrl, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertySpriteCtrl, AZ::SystemAllocator);
 
     PropertySpriteCtrl(QWidget* parent = nullptr);
 
@@ -44,9 +44,9 @@ class PropertyHandlerSprite
     : public AzToolsFramework::PropertyHandler<AzFramework::SimpleAssetReferenceBase, PropertySpriteCtrl>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerSprite, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerSprite, AZ::SystemAllocator);
     
-    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("Sprite", 0x351d8f9e); }
+    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC_CE("Sprite"); }
 
     QWidget* CreateGUI(QWidget* pParent) override;
     void ConsumeAttribute(PropertySpriteCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;

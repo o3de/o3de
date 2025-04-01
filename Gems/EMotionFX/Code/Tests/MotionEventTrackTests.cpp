@@ -115,7 +115,7 @@ namespace EMotionFX
             : public EMotionFX::EventHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(TestProcessEventsEventHandler, Integration::EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TestProcessEventsEventHandler, Integration::EMotionFXAllocator);
 
             TestProcessEventsEventHandler(AnimGraphEventBuffer* buffer)
                 : m_buffer(buffer)
@@ -170,6 +170,7 @@ namespace EMotionFX
             m_motionInstance->Destroy();
             m_motion->Destroy();
             m_actorInstance->Destroy();
+            m_actor.reset();
             SystemComponentFixture::TearDown();
         }
 
@@ -883,6 +884,6 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(TestExtractProcessEvents, TestExtractProcessEventsFixture,
+    INSTANTIATE_TEST_SUITE_P(TestExtractProcessEvents, TestExtractProcessEventsFixture,
         ::testing::ValuesIn(extractEventTestData));
 } // end namespace EMotionFX

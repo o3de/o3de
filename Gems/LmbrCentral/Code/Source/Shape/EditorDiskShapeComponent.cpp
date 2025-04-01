@@ -32,7 +32,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Disk_Shape.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Disk_Shape.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/disk-shape/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiskShapeComponent::m_diskShape, "Disk Shape", "Disk Shape Configuration")
@@ -47,7 +47,7 @@ namespace LmbrCentral
     void EditorDiskShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
-        provided.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
+        provided.push_back(AZ_CRC_CE("DiskShapeService"));
     }
 
     void EditorDiskShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -86,7 +86,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawDiskShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_diskShape.GetDiskConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_diskShape.GetDiskConfiguration(), debugDisplay);
             },
             m_diskShape.GetCurrentTransform());

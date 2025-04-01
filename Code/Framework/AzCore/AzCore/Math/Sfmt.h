@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/typetraits/static_storage.h>
 #include <AzCore/Math/Internal/MathTypes.h>
@@ -60,12 +59,12 @@ namespace AZ
         /// By default we seed with Seed()
         Sfmt();
         /// Seed the generator with user defined seed Seed(AZ::u32* keys, int numKeys)
-        Sfmt(AZ::u32* keys, int numKeys);
+        Sfmt(const AZ::u32* keys, int numKeys);
 
         /// Seed the generator, with the best pseudo-random number the system can generate \ref BetterPseudoRandom
         void Seed();
         /// Seed the generator with user defined seed.
-        void Seed(AZ::u32* keys, int numKeys);
+        void Seed(const AZ::u32* keys, int numKeys);
 
         /// Return u32 pseudo random integer
         AZ::u32 Rand32();
@@ -106,10 +105,10 @@ namespace AZ
         void    PeriodCertification();
 
         SfmtInternal::w128_t        m_sfmt[SfmtInternal::N];
-        AZStd::atomic_int           m_index;   ///  Index into the pre-generated tables
-        AZ::u32*                    m_psfmt32; ///  Read only tables of pre-generated random numbers
-        AZ::u64*                    m_psfmt64;
+        size_t                      m_index = 0;         ///  Index into the pre-generated tables
+        AZ::u32*                    m_psfmt32 = nullptr; ///  Read only tables of pre-generated random numbers
+        AZ::u64*                    m_psfmt64 = nullptr;
 
-        AZStd::recursive_mutex      m_generationMutex;
+        AZStd::mutex                m_sfmtMutex;         /// Guards access to m_index and m_sfmt
     };
 }

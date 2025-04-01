@@ -75,6 +75,9 @@ namespace AzFramework
         //! This is useful when loading a different level while SpawnableEntitiesManager still has
         //! pending requests
         virtual void ProcessSpawnableQueue() = 0;
+        //! Force processing all SpawnableEntitiesManager requests immediately and keep reprocessing until the queue is empty
+        //! This is useful when unloading and shutting down to ensure that all pending requests are cleared.
+        virtual void ProcessSpawnableQueueUntilEmpty() = 0;
     };
 
     using RootSpawnableInterface = AZ::Interface<RootSpawnableDefinition>;

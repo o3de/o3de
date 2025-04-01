@@ -18,12 +18,11 @@
 namespace UnitTest
 {
     class ScheduledEventTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_loggerComponent = AZStd::make_unique<AZ::LoggerSystemComponent>();
@@ -44,7 +43,6 @@ namespace UnitTest
             m_loggerComponent.reset();
 
             AZ::NameDictionary::Destroy();
-            TeardownAllocator();
         }
 
         void TestBasicEvent()
@@ -75,7 +73,7 @@ namespace UnitTest
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
         for (;;)
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
             m_eventSchedulerComponent->OnTick(0.0f, AZ::ScriptTimePoint());
             if (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs)
             {
@@ -92,7 +90,7 @@ namespace UnitTest
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
         for (;;)
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
             m_eventSchedulerComponent->OnTick(0.0f, AZ::ScriptTimePoint());
             if (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs)
             {

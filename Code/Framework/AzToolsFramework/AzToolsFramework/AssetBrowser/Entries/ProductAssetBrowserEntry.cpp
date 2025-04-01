@@ -56,25 +56,11 @@ namespace AzToolsFramework
             }
         }
 
-        void ProductAssetBrowserEntry::Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
-            {
-                serializeContext->Class<ProductAssetBrowserEntry, AssetBrowserEntry>()
-                    ->Field("m_productId", &ProductAssetBrowserEntry::m_productId)
-                    ->Field("m_jobId", &ProductAssetBrowserEntry::m_jobId)
-                    ->Field("m_assetId", &ProductAssetBrowserEntry::m_assetId)
-                    ->Field("m_assetType", &ProductAssetBrowserEntry::m_assetType)
-                    ->Version(1);
-            }
-        }
-
         AssetBrowserEntry::AssetEntryType ProductAssetBrowserEntry::GetEntryType() const
         {
             return AssetEntryType::Product;
         }
-        
+
         AZ::s64 ProductAssetBrowserEntry::GetProductID() const
         {
             return m_productId;
@@ -114,11 +100,11 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        void ProductAssetBrowserEntry::ThumbnailUpdated()
+        void ProductAssetBrowserEntry::SetThumbnailDirty()
         {
             if (EntryCache* cache = EntryCache::GetInstance())
             {
-                // if source is displaying product's thumbnail, then it needs to also listen to its ThumbnailUpdated
+                // if source is displaying product's thumbnail, then it needs to also SetThumbnailDirty
                 if (m_parentAssetEntry)
                 {
                     cache->m_dirtyThumbnailsSet.insert(m_parentAssetEntry);

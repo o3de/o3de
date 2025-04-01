@@ -74,7 +74,7 @@ namespace AZ
             //! Configuration name
             AZStd::string m_name;
 
-            DisplayMapperOperationType m_operationType;
+            DisplayMapperOperationType m_operationType = DisplayMapperOperationType::Aces;
 
             bool m_ldrGradingLutEnabled = false;
             Data::Asset<RPI::AnyAsset> m_ldrColorGradingLut;
@@ -88,7 +88,7 @@ namespace AZ
         {
             using Base = RPI::PassData;
             AZ_RTTI(DisplayMapperPassData, "{2F7576F1-41C1-408A-96BF-F4B8ED280CBC}", Base);
-            AZ_CLASS_ALLOCATOR(DisplayMapperPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DisplayMapperPassData, SystemAllocator);
 
             DisplayMapperPassData() = default;
             virtual ~DisplayMapperPassData() = default;
@@ -96,6 +96,8 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             DisplayMapperConfigurationDescriptor m_config;
+            bool m_mergeLdrGradingLut = false;
+            RPI::AssetReference m_outputTransformOverride;
         };
     } // namespace Render
 } // namespace AZ

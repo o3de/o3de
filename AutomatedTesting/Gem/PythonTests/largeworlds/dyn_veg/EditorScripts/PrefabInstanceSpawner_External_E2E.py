@@ -29,18 +29,18 @@ class Tests:
     )
 
 
-def DynamicSliceInstanceSpawner_External_E2E():
+def PrefabInstanceSpawner_External_E2E():
     """
     Summary:
     A new temporary level is created. Surface for planting is created. Simple vegetation area is created using
-    Dynamic Slice Instance Spawner type using external assets.
+    Prefab Instance Spawner type using external assets.
 
     Expected Behavior:
     Instances plant as expected in the assigned area.
 
     Test Steps:
      1) Create level
-     2) Create a Vegetation Layer Spawner setup using Dynamic Slice Instance Spawner type assets
+     2) Create a Vegetation Layer Spawner setup using Prefab Instance Spawner type assets
      3) Create a surface to plant on
      4) Verify expected instance counts
      5) Add a camera component looking at the planting area for visual debugging
@@ -131,11 +131,11 @@ def DynamicSliceInstanceSpawner_External_E2E():
     # 6) Save the created level
     general.save_level()
     level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
-    success = helper.wait_for_condition(lambda: os.path.exists(level_prefab_path), 5.0)
+    success = helper.wait_for_condition(lambda: os.path.exists(level_prefab_path), 10.0)
     Report.result(Tests.saved_and_exported, success)
 
 
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
-    Report.start_test(DynamicSliceInstanceSpawner_External_E2E)
+    Report.start_test(PrefabInstanceSpawner_External_E2E)

@@ -50,7 +50,7 @@ namespace LandscapeCanvas
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/LandscapeCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "Opens the Landscape Canvas for the current entity")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLandscapeCanvasComponent::OnOpenGraphButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorLandscapeCanvasComponent::GetOpenGraphButtonText);
@@ -81,12 +81,12 @@ namespace LandscapeCanvas
 
     void EditorLandscapeCanvasComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LandscapeGraphService", 0x22fb2cc5));
+        provided.push_back(AZ_CRC_CE("LandscapeGraphService"));
     }
 
     void EditorLandscapeCanvasComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LandscapeGraphService", 0x22fb2cc5));
+        incompatible.push_back(AZ_CRC_CE("LandscapeGraphService"));
     }
 
     void EditorLandscapeCanvasComponent::BuildGameEntity([[maybe_unused]] AZ::Entity* gameEntity)

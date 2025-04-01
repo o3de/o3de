@@ -14,9 +14,8 @@
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
-
-using namespace AZStd;
-using namespace UnitTestInternal;
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/ranges/transform_view.h>
 
 #define AZ_TEST_VALIDATE_EMPTY_TREE(_Tree_) \
     EXPECT_EQ(0, _Tree_.size());     \
@@ -31,6 +30,9 @@ using namespace UnitTestInternal;
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     /**
      * Setup the red-black tree. To achieve fixed_rbtree all you need is to use \ref AZStd::static_pool_allocator with
      * the node (Internal::rb_tree_node<T>).
@@ -39,17 +41,17 @@ namespace UnitTest
     struct RedBlackTree_SetTestTraits
     {
         typedef T                   key_type;
-        typedef KeyEq               key_eq;
+        typedef KeyEq               key_equal;
         typedef T                   value_type;
         typedef Allocator           allocator_type;
         static AZ_FORCE_INLINE const key_type& key_from_value(const value_type& value)  { return value; }
     };
 
     class Tree_RedBlack
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
-    
+
     TEST_F(Tree_RedBlack, Test)
     {
         array<int, 5> elements = {
@@ -166,7 +168,7 @@ namespace UnitTest
     }
 
     class Tree_IntrusiveMultiSet
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         struct Node
@@ -277,7 +279,7 @@ namespace UnitTest
 
     // SetContainerTest-Begin
     class Tree_Set
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -406,7 +408,7 @@ namespace UnitTest
     }
 
     class Tree_MultiSet
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -528,7 +530,7 @@ namespace UnitTest
     }
 
     class Tree_Map
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -686,7 +688,7 @@ namespace UnitTest
     }
 
     class Tree_MultiMap
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -831,18 +833,8 @@ namespace UnitTest
 
     template<typename ContainerType>
     class TreeSetContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
 
@@ -913,7 +905,7 @@ namespace UnitTest
         , TreeSetConfig<AZStd::set<MoveOnlyIntType, MoveOnlyIntTypeCompare>>
         , TreeSetConfig<AZStd::multiset<MoveOnlyIntType, MoveOnlyIntTypeCompare>>
     >;
-    TYPED_TEST_CASE(TreeSetContainers, SetContainerConfigs);
+    TYPED_TEST_SUITE(TreeSetContainers, SetContainerConfigs);
 
     TYPED_TEST(TreeSetContainers, ExtractNodeHandleByKeySucceeds)
     {
@@ -952,6 +944,23 @@ namespace UnitTest
         EXPECT_EQ(7, testContainer.size());
         EXPECT_FALSE(extractedNode.empty());
         EXPECT_EQ(-73, static_cast<int32_t>(extractedNode.value()));
+    }
+
+    TYPED_TEST(TreeSetContainers, ExtractAndReinsertNodeHandleByIteratorSucceeds)
+    {
+        using SetType = typename TypeParam::SetType;
+        using node_type = typename SetType::node_type;
+
+        SetType testContainer = TypeParam::Create();
+        auto foundIter = testContainer.find(-73);
+        auto nextIter = AZStd::next(foundIter);
+        node_type extractedNode = testContainer.extract(foundIter);
+        extractedNode.value() = static_cast<int32_t>(extractedNode.value()) + 1;
+        testContainer.insert(nextIter, AZStd::move(extractedNode));
+
+        // Lookup reinserted node
+        foundIter = testContainer.find(-72);
+        ASSERT_NE(testContainer.end(), foundIter);
     }
 
     TYPED_TEST(TreeSetContainers, InsertNodeHandleSucceeds)
@@ -1071,9 +1080,69 @@ namespace UnitTest
         EXPECT_EQ(1, uniqueSet.count(4));
     }
 
+    template<template<class...> class SetTemplate>
+    static void TreeSetRangeConstructorSucceeds()
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        SetTemplate testSet(AZStd::from_range, testView);
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        testSet = SetTemplate(AZStd::from_range, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        AZStd::fixed_string<8> testValue(testView);
+        testSet = SetTemplate(AZStd::from_range, testValue);
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::string(testView));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c'));
+
+        // Test Range views
+        testSet = SetTemplate(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('b', 'c', 'd'));
+    }
+
+    TEST_F(Tree_Set, RangeConstructor_Succeeds)
+    {
+        TreeSetRangeConstructorSucceeds<AZStd::set>();
+        TreeSetRangeConstructorSucceeds<AZStd::multiset>();
+    }
+
+    template<template<class...> class SetTemplate>
+    static void TreeSetInsertRangeSucceeds()
+    {
+        constexpr AZStd::string_view testView = "abc";
+        SetTemplate testSet{ 'd', 'e', 'f' };
+        testSet.insert_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testSet.insert_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_THAT(testSet, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    TEST_F(Tree_Set, InsertRange_Succeeds)
+    {
+        TreeSetInsertRangeSucceeds<AZStd::set>();
+        TreeSetInsertRangeSucceeds<AZStd::multiset>();
+    }
+
     template <typename ContainerType>
     class TreeSetDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1082,7 +1151,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, AZStd::less<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorSet(intList, AZStd::less<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
@@ -1093,10 +1162,14 @@ namespace UnitTest
         TreeSetWithCustomAllocatorConfig<AZStd::set>
         , TreeSetWithCustomAllocatorConfig<AZStd::multiset>
     >;
-    TYPED_TEST_CASE(TreeSetDifferentAllocatorFixture, SetTemplateConfigs);
+    TYPED_TEST_SUITE(TreeSetDifferentAllocatorFixture, SetTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(TreeSetDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(TreeSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1113,7 +1186,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1141,18 +1214,8 @@ namespace UnitTest
 
     template<typename ContainerType>
     class TreeMapContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     template<typename ContainerType>
@@ -1180,7 +1243,7 @@ namespace UnitTest
         , TreeMapConfig<AZStd::map<MoveOnlyIntType, int32_t, MoveOnlyIntTypeCompare>>
         , TreeMapConfig<AZStd::multimap<MoveOnlyIntType, int32_t, MoveOnlyIntTypeCompare>>
     >;
-    TYPED_TEST_CASE(TreeMapContainers, MapContainerConfigs);
+    TYPED_TEST_SUITE(TreeMapContainers, MapContainerConfigs);
 
     TYPED_TEST(TreeMapContainers, ExtractNodeHandleByKeySucceeds)
     {
@@ -1221,6 +1284,22 @@ namespace UnitTest
         EXPECT_FALSE(extractedNode.empty());
         EXPECT_EQ(73, static_cast<int32_t>(extractedNode.key()));
         EXPECT_EQ(0xfee1badd, extractedNode.mapped());
+    }
+
+    TYPED_TEST(TreeMapContainers, ExtractAndReinsertNodeHandleByIteratorSucceeds)
+    {
+        using MapType = typename TypeParam::MapType;
+        using node_type = typename MapType::node_type;
+
+        MapType testContainer = TypeParam::Create();
+        auto foundIter = testContainer.find(73);
+        auto nextIter = AZStd::next(foundIter);
+        node_type extractedNode = testContainer.extract(foundIter);
+        extractedNode.key() = static_cast<int32_t>(extractedNode.key()) + 1;
+        testContainer.insert(nextIter, AZStd::move(extractedNode));
+
+        foundIter = testContainer.find(74);
+        ASSERT_NE(testContainer.end(), foundIter);
     }
 
     TYPED_TEST(TreeMapContainers, InsertNodeHandleSucceeds)
@@ -1492,9 +1571,59 @@ namespace UnitTest
         EXPECT_EQ(-6354, insertOrAssignPairIter.first->second.m_value);
     }
 
+    template<template<class...> class MapTemplate>
+    static void TreeMapRangeConstructorSucceeds()
+    {
+        using ValueType = AZStd::pair<char, int>;
+        constexpr AZStd::array testArray{ ValueType{'a', 1}, ValueType{'b', 2}, ValueType{'c', 3} };
+
+        MapTemplate testMap(AZStd::from_range, testArray);
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+
+        testMap = MapTemplate(AZStd::from_range, AZStd::vector<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::list<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::deque<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::set<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::unordered_set<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::fixed_vector<ValueType, 8>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::span(testArray));
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+    }
+
+    TEST_F(Tree_Map, RangeConstructor_Succeeds)
+    {
+        TreeMapRangeConstructorSucceeds<AZStd::map>();
+        TreeMapRangeConstructorSucceeds<AZStd::multimap>();
+    }
+
+    template<template<class...> class MapTemplate>
+    static void TreeMapInsertRangeSucceeds()
+    {
+        using ValueType = AZStd::pair<char, int>;
+        constexpr AZStd::array testArray{ ValueType{'a', 1}, ValueType{'b', 2}, ValueType{'c', 3} };
+
+        MapTemplate testMap(AZStd::from_range, testArray);
+
+        testMap.insert_range(AZStd::vector<ValueType>{ValueType{ 'd', 4 }, ValueType{ 'e', 5 }, ValueType{ 'f', 6 }});
+        EXPECT_THAT(testMap, ::testing::ElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 },
+            ValueType{ 'd', 4 }, ValueType{ 'e', 5 }, ValueType{ 'f', 6 }));
+    }
+
+    TEST_F(Tree_Map, InsertRange_Succeeds)
+    {
+        TreeMapInsertRangeSucceeds<AZStd::map>();
+        TreeMapInsertRangeSucceeds<AZStd::multimap>();
+    }
+
     template <typename ContainerType>
     class TreeMapDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1503,7 +1632,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::less<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorMap(intList, AZStd::less<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;
@@ -1514,10 +1643,14 @@ namespace UnitTest
         TreeMapWithCustomAllocatorConfig<AZStd::map>
         , TreeMapWithCustomAllocatorConfig<AZStd::multimap>
     >;
-    TYPED_TEST_CASE(TreeMapDifferentAllocatorFixture, MapTemplateConfigs);
+    TYPED_TEST_SUITE(TreeMapDifferentAllocatorFixture, MapTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(TreeMapDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(TreeMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1534,7 +1667,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1618,7 +1751,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeContainerTransparentFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
@@ -1640,7 +1773,7 @@ namespace UnitTest
         , TreeContainerTransparentConfig<AZStd::multimap<TreeContainerTransparentTestInternal::TrackConstructorCalls, int, AZStd::less<>>>
     >;
 
-    TYPED_TEST_CASE(TreeContainerTransparentFixture, TreeContainerConfigs);
+    TYPED_TEST_SUITE(TreeContainerTransparentFixture, TreeContainerConfigs);
 
     TYPED_TEST(TreeContainerTransparentFixture, FindDoesNotConstructKeyForTransparentHashEqual_NoKeyConstructed_Succeeds)
     {

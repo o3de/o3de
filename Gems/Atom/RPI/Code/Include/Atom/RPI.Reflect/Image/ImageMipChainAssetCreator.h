@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 
@@ -22,7 +23,7 @@ namespace AZ
         //! The builder also does extensive validation to ensure that data is packed properly.
         //! (Note this class generally follows the builder design pattern, but is called a "creator" rather 
         //! than a "builder" to avoid confusion with the AssetBuilderSDK).
-        class ImageMipChainAssetCreator
+        class ATOM_RPI_REFLECT_API ImageMipChainAssetCreator
             : public AssetCreator<ImageMipChainAsset>
         {
         public:
@@ -35,7 +36,7 @@ namespace AZ
 
             //! Begins construction of a new mip level in the group. The number of mips in the chain must
             //! exactly match mipLevels passed to Begin().
-            void BeginMip(const RHI::ImageSubresourceLayout& layout);
+            void BeginMip(const RHI::DeviceImageSubresourceLayout& layout);
 
             //! Inserts a sub-image into the current mip level. You must call this method for each array element in the mip.
             //! Every mip level must have the same number of array elements matching arraySize passed in Begin().

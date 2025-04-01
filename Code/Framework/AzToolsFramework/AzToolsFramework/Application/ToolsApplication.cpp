@@ -13,67 +13,80 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
+#include <AzFramework/AzFrameworkNativeUIModule.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/AzToolsFrameworkModule.h>
-#include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
-#include <AzToolsFramework/Commands/EntityStateCommand.h>
-#include <AzToolsFramework/Commands/SelectionCommand.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
-#include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
-#include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
-#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
-#include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
-#include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
-#include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
-#include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
-#include <AzToolsFramework/Component/EditorLevelComponentAPIComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityFixupComponent.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/Archive/ArchiveComponent.h>
-#include <AzToolsFramework/Asset/AssetSystemComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
-#include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
-#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-#include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+#include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/AzToolsFrameworkModule.h>
+#include <AzToolsFramework/Archive/ArchiveComponent.h>
+#include <AzToolsFramework/Asset/AssetSystemComponent.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorWidget.h>
+#include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
+#include <AzToolsFramework/Component/EditorLevelComponentAPIComponent.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
+#include <AzToolsFramework/ComponentModes/CapsuleComponentMode.h>
+#include <AzToolsFramework/ComponentModes/CylinderComponentMode.h>
+#include <AzToolsFramework/ComponentModes/SphereComponentMode.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityFixupComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
-#include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntitySystemComponent.h>
+#include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
+#include <AzToolsFramework/Render/EditorIntersectorComponent.h>
+#include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
+#include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
+#include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Slice/SliceRequestComponent.h>
+#include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzToolsFramework/SourceControl/PerforceComponent.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
+#include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
+#include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
+#include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
-#include <AzToolsFramework/AssetEditor/AssetEditorWidget.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
+#include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
+#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
+#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Undo/UndoCacheInterface.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
-#include <AzToolsFramework/Render/EditorIntersectorComponent.h>
-#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
-#include <AzToolsFramework/Undo/UndoCacheInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+
 #include <Entity/EntityUtilityComponent.h>
-#include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
+#include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -83,6 +96,7 @@ AZ_POP_DISABLE_WARNING
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMap>
+
 
 // Not possible to use AZCore's operator new overrides until we address the overall problems
 // with allocators, or more likely convert AzToolsFramework to a DLL and restrict overloading to
@@ -95,85 +109,6 @@ namespace AzToolsFramework
 {
     namespace Internal
     {
-        template<typename IdContainerType>
-        void DeleteEntities(const IdContainerType& entityIds)
-        {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-            if (entityIds.empty())
-            {
-                return;
-            }
-
-            UndoSystem::URSequencePoint* currentUndoBatch = nullptr;
-            ToolsApplicationRequests::Bus::BroadcastResult(
-                currentUndoBatch, &ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
-
-            bool createdUndo = false;
-            if (!currentUndoBatch)
-            {
-                createdUndo = true;
-                ToolsApplicationRequests::Bus::BroadcastResult(
-                    currentUndoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Delete Selected");
-                AZ_Assert(currentUndoBatch, "Failed to create new undo batch.");
-            }
-
-            UndoSystem::UndoStack* undoStack = nullptr;
-            PreemptiveUndoCache* preemptiveUndoCache = nullptr;
-            EBUS_EVENT_RESULT(undoStack, ToolsApplicationRequests::Bus, GetUndoStack);
-            EBUS_EVENT_RESULT(preemptiveUndoCache, ToolsApplicationRequests::Bus, GetUndoCache);
-            AZ_Assert(undoStack, "Failed to retrieve undo stack.");
-            AZ_Assert(preemptiveUndoCache, "Failed to retrieve preemptive undo cache.");
-            if (undoStack && preemptiveUndoCache)
-            {
-                // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
-                // and then add the deletion as children.
-                // Commands always execute themselves first and then their children (when going forwards)
-                // and do the opposite when going backwards.
-                AzToolsFramework::EntityIdList selection;
-                EBUS_EVENT_RESULT(selection, ToolsApplicationRequests::Bus, GetSelectedEntities);
-                AzToolsFramework::SelectionCommand* selCommand = aznew AzToolsFramework::SelectionCommand(selection, "Delete Entities");
-
-                // We insert a "deselect all" command before we delete the entities. This ensures the delete operations aren't changing
-                // selection state, which triggers expensive UI updates. By deselecting up front, we are able to do those expensive
-                // UI updates once at the start instead of once for each entity.
-                {
-                    AzToolsFramework::EntityIdList deselection;
-                    AzToolsFramework::SelectionCommand* deselectAllCommand = aznew AzToolsFramework::SelectionCommand(deselection, "Deselect Entities");
-                    deselectAllCommand->SetParent(selCommand);
-                }
-
-                {
-                    AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
-                    for (const auto& entityId : entityIds)
-                    {
-                        AZ::Entity* entity = nullptr;
-                        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
-
-                        if (entity)
-                        {
-                            EntityDeleteCommand* command = aznew EntityDeleteCommand(static_cast<AZ::u64>(entityId));
-                            command->Capture(entity);
-                            command->SetParent(selCommand);
-                        }
-
-                        preemptiveUndoCache->PurgeCache(entityId);
-                    }
-                }
-
-                selCommand->SetParent(currentUndoBatch);
-                {
-                    AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:RunRedo");
-                    selCommand->RunRedo();
-                }
-            }
-
-            if (createdUndo)
-            {
-                EBUS_EVENT(ToolsApplicationRequests::Bus, EndUndoBatch);
-            }
-        }
-
         struct ToolsApplicationNotificationBusHandler final
             : public ToolsApplicationNotificationBus::Handler
             , public AZ::BehaviorEBusHandler
@@ -233,8 +168,16 @@ namespace AzToolsFramework
 
     } // Internal
 
+    ToolsApplication::ToolsApplication(AZ::ComponentApplicationSettings componentAppSettings)
+        : ToolsApplication(nullptr, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
     ToolsApplication::ToolsApplication(int* argc, char*** argv)
-        : AzFramework::Application(argc, argv)
+        : ToolsApplication(argc, argv, {})
+    {
+    }
+    ToolsApplication::ToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : AzFramework::Application(argc, argv, AZStd::move(componentAppSettings))
         , m_selectionBounds(AZ::Aabb())
         , m_undoStack(nullptr)
         , m_currentBatchUndo(nullptr)
@@ -243,8 +186,6 @@ namespace AzToolsFramework
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
-
-        m_undoCache.RegisterToUndoCacheInterface();
     }
 
     ToolsApplication::~ToolsApplication()
@@ -257,7 +198,7 @@ namespace AzToolsFramework
     void ToolsApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
         AzFramework::Application::CreateStaticModules(outModules);
-
+        outModules.emplace_back(aznew AzFramework::AzFrameworkNativeUIModule());
         outModules.emplace_back(aznew AzToolsFrameworkModule);
     }
 
@@ -266,6 +207,7 @@ namespace AzToolsFramework
         AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
 
         components.insert(components.end(), {
+                azrtti_typeid<ActionManagerSystemComponent>(),
                 azrtti_typeid<EditorEntityContextComponent>(),
                 azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
                 azrtti_typeid<FocusModeSystemComponent>(),
@@ -275,11 +217,11 @@ namespace AzToolsFramework
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<Prefab::ProceduralPrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),
+                azrtti_typeid<AzToolsFramework::ViewBookmarkSystemComponent>(),
                 azrtti_typeid<Components::EditorComponentAPIComponent>(),
                 azrtti_typeid<Components::EditorLevelComponentAPIComponent>(),
                 azrtti_typeid<Components::EditorEntityActionComponent>(),
                 azrtti_typeid<Components::PropertyManagerComponent>(),
-                azrtti_typeid<AzFramework::TargetManagementComponent>(),
                 azrtti_typeid<AssetSystem::AssetSystemComponent>(),
                 azrtti_typeid<PerforceComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetBundleComponent>(),
@@ -293,6 +235,11 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::GlobalPaintBrushSettingsSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::MetadataManager>(),
+                azrtti_typeid<AzToolsFramework::UuidUtilComponent>(),
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
 
         return components;
@@ -300,6 +247,15 @@ namespace AzToolsFramework
 
     void ToolsApplication::Start(const Descriptor& descriptor, const StartupParameters& startupParameters/* = StartupParameters()*/)
     {
+        // GameApplications can run without an engine, but ToolsApplications need an engine
+        // NOTE: we do not check 'FilePathKey_EngineRootFolder' because that might have been
+        // set to the project's path which is not enough for ToolsApplications
+        if (AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_settingsRegistry).empty())
+        {
+            ReportBadEngineRoot();
+            return;
+        }
+
         Application::Start(descriptor, startupParameters);
         if (!m_isStarted)
         {
@@ -339,18 +295,11 @@ namespace AzToolsFramework
             m_highlightedEntities.set_capacity(0);
             m_dirtyEntities = {};
 
-            bool isPrefabSystemEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-            if (isPrefabSystemEnabled)
-            {
-                // This resets the editor context thereby asking the systems that own the entities to destroy them. By doing this, we are
-                // duly giving the authority to delete the entities to the systems that owns them, rather than leaving it to the
-                // ComponentApplication to do the cleanup.
-                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                    &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
-            }
+            // This resets the editor context thereby asking the systems that own the entities to destroy them. By doing this, we are
+            // duly giving the authority to delete the entities to the systems that owns them, rather than leaving it to the
+            // ComponentApplication to do the cleanup.
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
             GetSerializeContext()->DestroyEditContext();
 
@@ -373,12 +322,6 @@ namespace AzToolsFramework
         EditorAssetMimeDataContainer::Reflect(context);
         ComponentAssetMimeDataContainer::Reflect(context);
 
-        AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
-
         AssetEditor::AssetEditorWindowSettings::Reflect(context);
         AssetEditor::AssetEditorWidgetUserSettings::Reflect(context);
 
@@ -388,6 +331,12 @@ namespace AzToolsFramework
         Prefab::PrefabIntegrationManager::Reflect(context);
 
         ComponentModeFramework::ComponentModeDelegate::Reflect(context);
+        ComponentModeFramework::EditorBaseComponentMode::Reflect(context);
+
+        BoxComponentMode::Reflect(context);
+        CapsuleComponentMode::Reflect(context);
+        SphereComponentMode::Reflect(context);
+        CylinderComponentMode::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);
@@ -397,6 +346,13 @@ namespace AzToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            // wrap BeginUndoBatch so we do not have to return a pointer to URSequencePoint which is not currently exposed to Python
+            // note: This could be added as a 'handle' that could then be resolved as a pointer but this functionality is not needed yet
+            auto BeginUndoBatchWrapper = [](ToolsApplicationRequests*, const char* name) {
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::BeginUndoBatch, name);
+            };
+
             behaviorContext->EBus<ToolsApplicationRequestBus>("ToolsApplicationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
@@ -419,6 +375,9 @@ namespace AzToolsFramework
                 ->Event("IsSelected", &ToolsApplicationRequests::IsSelected)
                 ->Event("AreAnyEntitiesSelected", &ToolsApplicationRequests::AreAnyEntitiesSelected)
                 ->Event("GetSelectedEntitiesCount", &ToolsApplicationRequests::GetSelectedEntitiesCount)
+                ->Event("BeginUndoBatch", BeginUndoBatchWrapper)
+                ->Event("EndUndoBatch", &ToolsApplicationRequests::EndUndoBatch)
+                ->Event("AddDirtyEntity", &ToolsApplicationRequests::AddDirtyEntity)
                 ;
 
             behaviorContext->EBus<ToolsApplicationNotificationBus>("ToolsApplicationNotificationBus")
@@ -450,6 +409,8 @@ namespace AzToolsFramework
                 ->Event("RegisterCustomViewPane", &EditorRequests::RegisterCustomViewPane)
                 ->Event("UnregisterViewPane", &EditorRequests::UnregisterViewPane)
                 ->Event("GetComponentTypeEditorIcon", &EditorRequests::GetComponentTypeEditorIcon)
+                ->Event("IsLevelDocumentOpen", &EditorRequests::IsLevelDocumentOpen)
+                ->Event("GetLevelName", &EditorRequests::GetLevelName)
                 ;
 
             behaviorContext->EBus<EditorEventsBus>("EditorEventBus")
@@ -478,7 +439,7 @@ namespace AzToolsFramework
 
         if (result)
         {
-            EBUS_EVENT(ToolsApplicationEvents::Bus, EntityRegistered, entity->GetId());
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityRegistered, entity->GetId());
         }
 
         return result;
@@ -497,7 +458,7 @@ namespace AzToolsFramework
         MarkEntityDeselected(entity->GetId());
         SetEntityHighlighted(entity->GetId(), false);
 
-        EBUS_EVENT(ToolsApplicationEvents::Bus, EntityDeregistered, entity->GetId());
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityDeregistered, entity->GetId());
 
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "ToolsApplication::RemoveEntity:CallApplicationRemoveEntity");
@@ -513,7 +474,7 @@ namespace AzToolsFramework
     void ToolsApplication::PreExportEntity(AZ::Entity& source, AZ::Entity& target)
     {
         AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "No serialization context found");
 
         const AZ::Entity::ComponentArrayType& editorComponents = source.GetComponents();
@@ -800,7 +761,7 @@ namespace AzToolsFramework
             output.insert(id);
 
             tempList.clear();
-            EBUS_EVENT_ID_RESULT(tempList, id, AZ::TransformBus, GetAllDescendants);
+            AZ::TransformBus::EventResult(tempList, id, &AZ::TransformBus::Events::GetAllDescendants);
             output.insert(tempList.begin(), tempList.end());
         }
 
@@ -850,180 +811,17 @@ namespace AzToolsFramework
 
     void ToolsApplication::DeleteSelected()
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteSelected();
-            return;
-        }
-
-        Internal::DeleteEntities(m_selectedEntities);
+        m_editorEntityAPI->DeleteSelected();
     }
 
     void ToolsApplication::DeleteEntityAndAllDescendants(AZ::EntityId entityId)
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteEntityAndAllDescendants(entityId);
-            return;
-        }
-
-        DeleteEntitiesAndAllDescendants({ entityId });
+        m_editorEntityAPI->DeleteEntityAndAllDescendants(entityId);
     }
 
     void ToolsApplication::DeleteEntitiesAndAllDescendants(const EntityIdList& entities)
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteEntitiesAndAllDescendants(entities);
-            return;
-        }
-
-        const EntityIdSet entitiesAndDescendants = GatherEntitiesAndAllDescendents(entities);
-        Internal::DeleteEntities(entitiesAndDescendants);
-    }
-
-    bool ToolsApplication::DetachEntities(const AZStd::vector<AZ::EntityId>& entitiesToDetach, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos)
-    {
-        AZStd::vector<AZStd::pair<AZ::Entity*, AZ::SliceComponent::SliceReference*>> pendingSliceChanges;
-
-        AZ::SliceComponent* editorRootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(editorRootSlice,
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-        AZ_Assert(editorRootSlice, "Failed to retrieve editor root slice.");
-
-        // Gather desired changes without modifying slices or entities 
-        for (const AZ::EntityId& entityId : entitiesToDetach)
-        {
-            AZ::SliceComponent::SliceInstanceAddress sliceAddress(nullptr, nullptr);
-            AzFramework::SliceEntityRequestBus::EventResult(sliceAddress, entityId,
-                &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-            AZ::SliceComponent::SliceReference* sliceReference = sliceAddress.first;
-            AZ::SliceComponent::SliceInstance* sliceInstance = sliceAddress.second;
-            if (!sliceReference || !sliceInstance)
-            {
-                AZ_Error("DetachSliceEntity", false, "Entity with Id %s is not part of a slice. \"Detach\" action cancelled. No slices or entities were modified.", entityId.ToString().c_str());
-                return false;
-            }
-
-            AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-            AZ_Error("DetachSliceEntity", entity, "Unable to find entity for Entity Id %s. \"Detach\" action cancelled. No slices or entities were modified.", entityId.ToString().c_str());
-            if (!entity)
-            {
-                return false;
-            }
-
-            AZ::SliceComponent::EntityRestoreInfo restoreInfo;
-            if (editorRootSlice->GetEntityRestoreInfo(entityId, restoreInfo))
-            {
-                restoreInfos.emplace_back(entityId, restoreInfo);
-                pendingSliceChanges.emplace_back(entity, sliceReference);
-            }
-            else
-            {
-                AZ_Error("DetachSliceEntity", entity, "Failed to prepare restore information for entity of Id %s. \"Detach\" action cancelled. No slices or entities were modified.", entityId.ToString().c_str());
-                return false;
-            }
-        }
-
-        // Apply pending changes
-        for (AZStd::pair<AZ::Entity*, AZ::SliceComponent::SliceReference*>& pendingSliceChange : pendingSliceChanges)
-        {
-            // Remove entity from current slice instance without deleting the entity. Delete slice instance if the detached entity is the last one 
-            // in the slice instance. The slice instance will be reconstructed upon undo.
-            bool success = pendingSliceChange.second->GetSliceComponent()->RemoveEntity(pendingSliceChange.first->GetId(), false, true);
-            if (success)
-            {
-                editorRootSlice->AddEntity(pendingSliceChange.first); // Add back as loose entity
-            }
-            else
-            {
-                AZ_Error("DetachSliceEntity", success, "Entity with Id %s could not be removed from the slice. The Slice Instance is now in an unknown state, and saving it may result in data loss.", pendingSliceChange.first->GetId().ToString().c_str());
-            }
-        }
-
-        SliceEditorEntityOwnershipServiceNotificationBus::Broadcast(
-            &SliceEditorEntityOwnershipServiceNotifications::OnEditorEntitiesSliceOwnershipChanged, entitiesToDetach);
-        return true;
-    }
-
-    bool ToolsApplication::DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos)
-    {
-        AZ::SliceComponent* editorRootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(editorRootSlice,
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-
-        if (!editorRootSlice)
-        {
-            AZ_Assert(false,
-                "ToolsApplication::DetachSubsliceInstances: Failed to retrieve editor root slice");
-
-            return false;
-        }
-
-        AZStd::vector<AZ::EntityId> entitiesToUpdate;
-        for (const auto& subsliceRoot : subsliceRootList)
-        {
-            if (!subsliceRoot.first.IsValid())
-            {
-                AZ_Assert(false,
-                    "ToolsApplication::DetachSubsliceInstances: Invalid subslice root was passed in. Unable to proceed");
-
-                return false;
-            }
-
-            // Gather EntityRestoreInfo for all entities in the subslice about to be detached
-            for (const AZStd::pair<AZ::EntityId, AZ::EntityId>& liveToSubsliceEntityIdMapping : subsliceRoot.second)
-            {
-                const AZ::EntityId& liveEntityId = liveToSubsliceEntityIdMapping.first;
-
-                bool isMetaDataEntity = false;
-                AzToolsFramework::SliceMetadataEntityContextRequestBus::BroadcastResult(isMetaDataEntity, &AzToolsFramework::SliceMetadataEntityContextRequestBus::Events::IsSliceMetadataEntity, liveEntityId);
-
-                // Skip gathering restore info for meta data entities
-                if (isMetaDataEntity)
-                {
-                    continue;
-                }
-
-                AZ::SliceComponent::EntityRestoreInfo restoreInfo;
-                if (editorRootSlice->GetEntityRestoreInfo(liveEntityId, restoreInfo))
-                {
-                    restoreInfos.emplace_back(liveEntityId, restoreInfo);
-                    entitiesToUpdate.emplace_back(liveEntityId);
-                }
-                else
-                {
-                    AZ_Error("ToolsApplication::DetachSubsliceInstances",
-                        false,
-                        "Failed to prepare restore information for entity of Id %s. \"DetachSubsliceInstance\" action cancelled. No slices or entities were modified.",
-                        liveEntityId.ToString().c_str());
-
-                    return false;
-                }
-            }
-        }
-
-        // Perform the detach operation by extracting each subslice from its current slice and adding it as a standalone instance owned by the root slice
-        for (const auto& subsliceRoot : subsliceRootList)
-        {
-            const AZ::Data::Asset<AZ::SliceAsset>& subsliceAsset = subsliceRoot.first.GetReference()->GetSliceAsset();
-
-            if (!editorRootSlice->AddSliceUsingExistingEntities(subsliceAsset, subsliceRoot.second).IsValid())
-            {
-                AZ_Error("ToolsApplication::DetachSubsliceInstances",
-                    false,
-                    "Subslice Instance of Asset with Id %s could not be detached from source slice. The Slice instance is now in an unknown state, and saving it may result in data loss.",
-                    subsliceAsset.ToString<AZStd::string>().c_str());
-
-                return false;
-            }
-        }
-
-        SliceEditorEntityOwnershipServiceNotificationBus::Broadcast(
-            &SliceEditorEntityOwnershipServiceNotificationBus::Events::OnEditorEntitiesSliceOwnershipChanged, entitiesToUpdate);
-        return true;
+        m_editorEntityAPI->DeleteEntitiesAndAllDescendants(entities);
     }
 
     bool ToolsApplication::FindCommonRoot(const AzToolsFramework::EntityIdSet& entitiesToBeChecked, AZ::EntityId& commonRootEntityId
@@ -1187,7 +985,7 @@ namespace AzToolsFramework
             &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
 
         for (int index = 1; index < entityIds.size(); index++)
-        {   
+        {
             AZ::SliceComponent::SliceInstanceAddress sliceAddressTemp;
             AzFramework::SliceEntityRequestBus::EventResult(sliceAddressTemp, entityIds[index],
                 &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
@@ -1233,25 +1031,9 @@ namespace AzToolsFramework
 
     AZ::EntityId ToolsApplication::GetCurrentLevelEntityId()
     {
-        if (IsPrefabSystemEnabled())
+        if (auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get())
         {
-            if (auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get())
-            {
-                return prefabPublicInterface->GetLevelInstanceContainerEntityId();
-            }
-        }
-        else
-        {
-            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-            AZ::SliceComponent* rootSliceComponent = nullptr;
-            AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(
-                rootSliceComponent, editorEntityContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
-            if (rootSliceComponent && rootSliceComponent->GetMetadataEntity())
-            {
-                return rootSliceComponent->GetMetadataEntity()->GetId();
-            }
+            return prefabPublicInterface->GetLevelInstanceContainerEntityId();
         }
 
         return AZ::EntityId();
@@ -1353,24 +1135,12 @@ namespace AzToolsFramework
 
     void ToolsApplication::DeleteEntityById(AZ::EntityId entityId)
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteEntityById(entityId);
-            return;
-        }
-
-        DeleteEntities({ entityId });
+        m_editorEntityAPI->DeleteEntityById(entityId);
     }
 
     void ToolsApplication::DeleteEntities(const EntityIdList& entities)
     {
-        if (IsPrefabSystemEnabled())
-        {
-            m_editorEntityAPI->DeleteEntities(entities);
-            return;
-        }
-
-        Internal::DeleteEntities(entities);
+        m_editorEntityAPI->DeleteEntities(entities);
     }
 
     void ToolsApplication::AddDirtyEntity(AZ::EntityId entityId)
@@ -1381,39 +1151,24 @@ namespace AzToolsFramework
             return;
         }
 
-        m_dirtyEntities.insert(entityId);
-
-        // Check if this dirty entity is in a layer by walking up its parenting hierarchy.
-        // If it's in a layer, mark that layer as having unsaved changes.
-        do
+        // Only accept entities as dirty between a begin/end undo batch. This filters out entities
+        // that have been marked dirty by a non-user operation such as entity activation. This can
+        // occur if SetDirty is called from a common function used in both user and non-user actions
+        if (!m_currentBatchUndo)
         {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                isLayerEntity,
-                entityId,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-            if (isLayerEntity)
-            {
-                AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                    entityId,
-                    &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::MarkLayerWithUnsavedChanges);
-                break;
-            }
-            AZ::EntityId parentId;
-            AZ::TransformBus::EventResult(
-                parentId,
-                entityId,
-                &AZ::TransformBus::Events::GetParentId);
-            if (entityId == parentId)
-            {
-                // Stop when the first parent layer is found.
-                // If this layer is nested in another layer, only the most immediate
-                // layer should be marked as dirty. Layer hierarchy and parenting is
-                // mostly for visual organization, entities only exist in one layer on disk.
-                break;
-            }
-            entityId = parentId;
-        } while (entityId.IsValid());
+            return;
+        }
+
+        // Only accept entities as dirty if these were not added to the ignored list.
+        // This filters out entities that have been marked as ignored by a non-user operation
+        // such as specific controller destruction when such controller was added in a specific pipeline.
+        if (m_ignoredEntities.contains(entityId))
+        {
+            AZ_Trace("ToolsApplication", "AddDirtyEntity(%s) exits as the entity was added to the ignored list.", entityId.ToString().c_str())
+            return;
+        }
+
+        m_dirtyEntities.insert(entityId);
     }
 
     int ToolsApplication::RemoveDirtyEntity(AZ::EntityId entityId)
@@ -1426,6 +1181,21 @@ namespace AzToolsFramework
         m_dirtyEntities.clear();
     }
 
+    void ToolsApplication::AddIgnoredEntity(AZ::EntityId entityId)
+    {
+        m_ignoredEntities.insert(entityId);
+    }
+
+    int ToolsApplication::RemoveIgnoredEntity(AZ::EntityId entityId)
+    {
+        return static_cast<int>(m_ignoredEntities.erase(entityId));
+    }
+
+    void ToolsApplication::ClearIgnoredEntities()
+    {
+        m_ignoredEntities.clear();
+    }
+
     void ToolsApplication::UndoPressed()
     {
         if (m_undoStack)
@@ -1433,9 +1203,9 @@ namespace AzToolsFramework
             if (m_undoStack->CanUndo())
             {
                 m_isDuringUndoRedo = true;
-                EBUS_EVENT(ToolsApplicationEvents::Bus, BeforeUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
                 m_undoStack->Undo();
-                EBUS_EVENT(ToolsApplicationEvents::Bus, AfterUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
 #if defined(ENABLE_UNDOCACHE_CONSISTENCY_CHECKS)
@@ -1452,9 +1222,9 @@ namespace AzToolsFramework
             if (m_undoStack->CanRedo())
             {
                 m_isDuringUndoRedo = true;
-                EBUS_EVENT(ToolsApplicationEvents::Bus, BeforeUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
                 m_undoStack->Redo();
-                EBUS_EVENT(ToolsApplicationEvents::Bus, AfterUndoRedo);
+                ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
 #if defined(ENABLE_UNDOCACHE_CONSISTENCY_CHECKS)
@@ -1500,7 +1270,7 @@ namespace AzToolsFramework
             // notify Cry undo has started (SandboxIntegrationManager)
             // Only do this at the root level. OnEndUndo will be called at the root
             // level when EndUndoBatch is called.
-            EBUS_EVENT(ToolsApplicationEvents::Bus, OnBeginUndo, label);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::OnBeginUndo, label);
         }
         else
         {
@@ -1515,7 +1285,13 @@ namespace AzToolsFramework
 
     UndoSystem::URSequencePoint* ToolsApplication::ResumeUndoBatch(UndoSystem::URSequencePoint* expected, const char* label)
     {
-        if (m_currentBatchUndo)
+        if ((!m_undoStack) || (!expected))
+        {
+            return BeginUndoBatch(label);
+        }
+
+        // if we are in an undo already, and its already the expected one, just return it.
+        if ((m_currentBatchUndo) && (m_currentBatchUndo == expected))
         {
             if (m_undoStack->GetTop() == m_currentBatchUndo)
             {
@@ -1525,16 +1301,13 @@ namespace AzToolsFramework
             return m_currentBatchUndo;
         }
 
-        if (m_undoStack)
+        const auto ptr = m_undoStack->GetTop();
+        if (ptr && ptr == expected)
         {
-            const auto ptr = m_undoStack->GetTop();
-            if (ptr && ptr == expected)
-            {
-                m_currentBatchUndo = ptr;
-                m_undoStack->PopTop();
+            m_currentBatchUndo = ptr;
+            m_undoStack->PopTop();
 
-                return m_currentBatchUndo;
-            }
+            return m_currentBatchUndo;
         }
 
         return BeginUndoBatch(label);
@@ -1563,9 +1336,14 @@ namespace AzToolsFramework
         return root->Changed() || changed;
     }
 
-    void ToolsApplication::EndUndoBatch()
+    bool ToolsApplication::EndUndoBatch()
     {
+        bool resultValue = true;
         AZ_Assert(m_currentBatchUndo, "Cannot end batch - no batch current");
+        if (!m_currentBatchUndo)
+        {
+            return false; // let's not crash just becuase there's a programmer error.
+        }
 
         if (m_currentBatchUndo->GetParent())
         {
@@ -1594,6 +1372,7 @@ namespace AzToolsFramework
             }
             else
             {
+                resultValue = false; // we discarded it because it was empty
                 delete m_currentBatchUndo;
             }
 
@@ -1602,6 +1381,7 @@ namespace AzToolsFramework
 #endif
             m_currentBatchUndo = nullptr;
         }
+        return resultValue;
     }
 
     void ToolsApplication::OnPrefabInstancePropagationBegin()
@@ -1624,60 +1404,17 @@ namespace AzToolsFramework
             return;
         }
 
-        if (!IsPrefabSystemEnabled())
+        auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+        if (prefabPublicInterface)
         {
-            // If the current undo batch has commands in it, then we have to check that we do not add duplicates
-            // However if it starts out empty, we can just add things straight from the Set to the undo batch
-            bool mustCheckDuplicates = !m_currentBatchUndo->GetChildren().empty();
-
             for (AZ::EntityId entityId : m_dirtyEntities)
             {
-                AZ::Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+                auto outcome = prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
 
-                if (entity)
+                if (!outcome.IsSuccess())
                 {
-                    EntityStateCommand* state = nullptr;
-
-                    if (mustCheckDuplicates)
-                    {
-                        // Check if this entity is already in the current undo batch
-                        state = azdynamic_cast<EntityStateCommand*>(
-                            m_currentBatchUndo->Find(static_cast<AZ::u64>(entityId), AZ::AzTypeInfo<EntityStateCommand>::Uuid()));
-                    }
-
-                    if (!state)
-                    {
-                        state = aznew EntityStateCommand(static_cast<AZ::u64>(entityId));
-                        state->SetParent(m_currentBatchUndo);
-
-                        // capture initial state of entity (before undo)
-                        state->Capture(entity, true);
-                    }
-
-                    // capture last state of entity (after undo) - for redo
-                    state->Capture(entity, false);
-                }
-
-                m_undoCache.UpdateCache(entityId);
-            }
-        }
-        else
-        {
-            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-            if (prefabPublicInterface)
-            {
-                // Compared to the preemptive undo cache, we can avoid the duplicate check.
-                // Multiple changes to the same entity are just split between different undo nodes.
-                for (AZ::EntityId entityId : m_dirtyEntities)
-                {
-                    auto outcome = prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
-
-                    if (!outcome.IsSuccess())
-                    {
-                        QMessageBox::warning(
-                            AzToolsFramework::GetActiveWindow(), QString("Error"), QString(outcome.GetError().c_str()), QMessageBox::Ok, QMessageBox::Ok);
-                    }
+                    QMessageBox::warning(
+                        AzToolsFramework::GetActiveWindow(), QString("Error"), QString(outcome.GetError().c_str()), QMessageBox::Ok, QMessageBox::Ok);
                 }
             }
         }
@@ -1859,7 +1596,7 @@ namespace AzToolsFramework
     }
 
     void ToolsApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
-    { 
+    {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
     };
 } // namespace AzToolsFramework

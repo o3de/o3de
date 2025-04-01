@@ -5,40 +5,33 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Terrain Data"
+                "name": "Terrain Data Request Bus"
             },
             "methods": [
                 {
-                    "base": "GetIsHoleFromFloats",
+                    "base": "GetClosestIntersection",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Is Hole From Floats"
+                        "tooltip": "When signaled, this will invoke Get Closest Intersection"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Is Hole From Floats is invoked"
+                        "tooltip": "Signaled after Get Closest Intersection is invoked"
                     },
                     "details": {
-                        "name": "Get Is Hole From Floats"
+                        "name": "Get Closest Intersection"
                     },
                     "params": [
                         {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "X"
+                                "name": "Start Position"
                             }
                         },
                         {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Y"
-                            }
-                        },
-                        {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
-                            "details": {
-                                "name": "Sample Filter",
-                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+                                "name": "End Position"
                             }
                         }
                     ],
@@ -46,48 +39,19 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Terrain Exists"
+                                "name": "Intersection Found"
                             }
-                        }
-                    ]
-                },
-                {
-                    "base": "GetSurfaceWeightsFromVector2",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Surface Weights From Vector2"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get Surface Weights From Vector2 is invoked"
-                    },
-                    "details": {
-                        "name": "Get Surface Weights From Vector2"
-                    },
-                    "params": [
+                        },
                         {
-                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
                                 "name": "Position"
                             }
                         },
                         {
-                            "typeid": "{8F60B4D4-06F0-577C-AFB9-ECBFA7B66D4E}",
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Surface Weights"
-                            }
-                        },
-                        {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
-                            "details": {
-                                "name": "Sample Filter",
-                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
-                            }
-                        },
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "Terrain Exists"
+                                "name": "Normal"
                             }
                         }
                     ]
@@ -96,14 +60,14 @@
                     "base": "GetSurfaceWeights",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSurfaceWeights"
+                        "tooltip": "When signaled, this will invoke Get Surface Weights"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSurfaceWeights is invoked"
+                        "tooltip": "Signaled after Get Surface Weights is invoked"
                     },
                     "details": {
-                        "name": "GetSurfaceWeights"
+                        "name": "Get Surface Weights"
                     },
                     "params": [
                         {
@@ -113,19 +77,21 @@
                             }
                         },
                         {
-                            "typeid": "{8F60B4D4-06F0-577C-AFB9-ECBFA7B66D4E}",
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+							}
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{1C87CFB4-62E2-54D9-BB46-9990AA224D9A}",
                             "details": {
                                 "name": "Surface Weights"
                             }
                         },
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
-                            "details": {
-                                "name": "Sample Filter",
-                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
-                            }
-                        },
-                        {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
                                 "name": "Terrain Exists"
@@ -134,107 +100,23 @@
                     ]
                 },
                 {
-                    "base": "GetMaxSurfaceWeight",
+                    "base": "GetTerrainAabb",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Max Surface Weight"
+                        "tooltip": "When signaled, this will invoke Get Terrain Aabb"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Max Surface Weight is invoked"
+                        "tooltip": "Signaled after Get Terrain Aabb is invoked"
                     },
                     "details": {
-                        "name": "Get Max Surface Weight"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Position"
-                            }
-                        },
-                        {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
-                            "details": {
-                                "name": "Sample Filter",
-                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
-                            }
-                        },
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "Terrain Exists"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
-                            "details": {
-                                "name": "Surface Tag Weight"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "GetSurfacePointFromVector2",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Surface Point From Vector2"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get Surface Point From Vector2 is invoked"
-                    },
-                    "details": {
-                        "name": "Get Surface Point From Vector2"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
-                            "details": {
-                                "name": "Position"
-                            }
-                        },
-                        {
-                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
-                            "details": {
-                                "name": "Surface Point"
-                            }
-                        },
-                        {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
-                            "details": {
-                                "name": "Sample Filter",
-                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
-                            }
-                        },
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "Terrain Exists"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "GetTerrainHeightQueryResolution",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Terrain Height Query Resolution"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get Terrain Height Query Resolution is invoked"
-                    },
-                    "details": {
-                        "name": "Get Terrain Height Query Resolution"
+                        "name": "Get Terrain Aabb"
                     },
                     "results": [
                         {
-                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Position"
+                                "name": "Aabb"
                             }
                         }
                     ]
@@ -264,13 +146,7 @@
                             "details": {
                                 "name": "Sample Filter",
                                 "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
-                            }
-                        },
-                        {
-                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
-                            "details": {
-                                "name": "Terrain Exists"
-                            }
+							}
                         }
                     ],
                     "results": [
@@ -279,35 +155,6 @@
                             "details": {
                                 "name": "Normal"
                             }
-                        }
-                    ]
-                },
-                {
-                    "base": "GetMaxSurfaceWeightFromVector2",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Max Surface Weight From Vector2"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get Max Surface Weight From Vector2 is invoked"
-                    },
-                    "details": {
-                        "name": "Get Max Surface Weight From Vector2"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
-                            "details": {
-                                "name": "Position"
-                            }
-                        },
-                        {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
-                            "details": {
-                                "name": "Sample Filter",
-                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
-                            }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -315,34 +162,26 @@
                                 "name": "Terrain Exists"
                             }
                         }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
-                            "details": {
-                                "name": "Surface Tag Weight"
-                            }
-                        }
                     ]
                 },
                 {
-                    "base": "GetTerrainAabb",
+                    "base": "GetTerrainSurfaceDataQueryResolution",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Terrain AABB"
+                        "tooltip": "When signaled, this will invoke Get Terrain Surface Data Query Resolution"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Terrain AABB is invoked"
+                        "tooltip": "Signaled after Get Terrain Surface Data Query Resolution is invoked"
                     },
                     "details": {
-                        "name": "Get Terrain AABB"
+                        "name": "Get Terrain Surface Data Query Resolution"
                     },
                     "results": [
                         {
-                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "AABB"
+                                "name": "Query Resolution (m)"
                             }
                         }
                     ]
@@ -372,6 +211,14 @@
                             "details": {
                                 "name": "Sample Filter",
                                 "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+							}
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height"
                             }
                         },
                         {
@@ -380,12 +227,41 @@
                                 "name": "Terrain Exists"
                             }
                         }
+                    ]
+                },
+                {
+                    "base": "GetIsHole",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Is Hole"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Is Hole is invoked"
+                    },
+                    "details": {
+                        "name": "Get Is Hole"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+							}
+                        }
                     ],
                     "results": [
                         {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Height"
+                                "name": "Is Hole"
                             }
                         }
                     ]
@@ -411,9 +287,106 @@
                             }
                         },
                         {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Sample Filter",
+                                "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+							}
+                        }
+                    ],
+                    "results": [
+                        {
                             "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
                             "details": {
                                 "name": "Surface Point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTerrainHeightQueryResolution",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Terrain Height Query Resolution"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Terrain Height Query Resolution is invoked"
+                    },
+                    "details": {
+                        "name": "Get Terrain Height Query Resolution"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Query Resolution (m)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTerrainHeightQueryResolution",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Terrain Height Query Resolution"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Terrain Height Query Resolution is invoked"
+                    },
+                    "details": {
+                        "name": "Set Terrain Height Query Resolution"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Query Resolution (m)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTerrainSurfaceDataQueryResolution",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Terrain Surface Data Query Resolution"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Terrain Surface Data Query Resolution is invoked"
+                    },
+                    "details": {
+                        "name": "Set Terrain Surface Data Query Resolution"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Query Resolution (m)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaxSurfaceWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Max Surface Weight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Max Surface Weight is invoked"
+                    },
+                    "details": {
+                        "name": "Get Max Surface Weight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
                             }
                         },
                         {
@@ -421,6 +394,14 @@
                             "details": {
                                 "name": "Sample Filter",
                                 "tooltip": "0: Bilinear, 1: Clamp, 2: Exact"
+							}
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
+                            "details": {
+                                "name": "Surface Tag Weight"
                             }
                         },
                         {

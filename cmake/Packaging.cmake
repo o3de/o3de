@@ -34,8 +34,12 @@ set(CPACK_AWS_PROFILE "" CACHE STRING
 "AWS CLI profile for uploading artifacts."
 )
 
+set(CPACK_SNAP_DISTRO "" CACHE STRING
+  "Sets the base snap OS distro (core20, 22, etc) for the snap build"
+)
+
 set(CPACK_THREADS 0)
-set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
+set(CPACK_DESIRED_CMAKE_VERSION 3.22.0)
 if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
     message(FATAL_ERROR
         "The desired version of CMake to be included in the package is "
@@ -50,7 +54,14 @@ set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_FULL_NAME "Open3D Engine")
 set(CPACK_PACKAGE_VENDOR "O3DE Binary Project a Series of LF Projects, LLC")
 set(CPACK_PACKAGE_CONTACT "info@o3debinaries.org")
-set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
+# prefer the display engine version if available.
+# during development, the display version will be "00.00" or "" in which case we want
+# to use the actual engine version  
+if(NOT ((${O3DE_INSTALL_DISPLAY_VERSION_STRING} STREQUAL "00.00") OR (${O3DE_INSTALL_DISPLAY_VERSION_STRING} STREQUAL "")))
+    set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_DISPLAY_VERSION_STRING}")
+else()
+    set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_VERSION_STRING}")
+endif()
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 
 string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}" CPACK_PACKAGE_FILE_NAME)

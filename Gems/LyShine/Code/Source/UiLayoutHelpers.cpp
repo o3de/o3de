@@ -34,7 +34,7 @@ namespace
     float GetElementDefaultMinWidth(AZ::EntityId elementId, float defaultValue)
     {
         AZ::EBusAggregateResults<float> results;
-        EBUS_EVENT_ID_RESULT(results, elementId, UiLayoutCellDefaultBus, GetMinWidth);
+        UiLayoutCellDefaultBus::EventResult(results, elementId, &UiLayoutCellDefaultBus::Events::GetMinWidth);
 
         if (results.values.empty())
         {
@@ -47,7 +47,7 @@ namespace
     float GetElementDefaultTargetWidth(AZ::EntityId elementId, float defaultValue, float maxValue)
     {
         AZ::EBusAggregateResults<float> results;
-        EBUS_EVENT_ID_RESULT(results, elementId, UiLayoutCellDefaultBus, GetTargetWidth, maxValue);
+        UiLayoutCellDefaultBus::EventResult(results, elementId, &UiLayoutCellDefaultBus::Events::GetTargetWidth, maxValue);
 
         if (results.values.empty())
         {
@@ -60,7 +60,7 @@ namespace
     float GetElementDefaultExtraWidthRatio(AZ::EntityId elementId, float defaultValue)
     {
         AZ::EBusAggregateResults<float> results;
-        EBUS_EVENT_ID_RESULT(results, elementId, UiLayoutCellDefaultBus, GetExtraWidthRatio);
+        UiLayoutCellDefaultBus::EventResult(results, elementId, &UiLayoutCellDefaultBus::Events::GetExtraWidthRatio);
 
         if (results.values.empty())
         {
@@ -73,7 +73,7 @@ namespace
     float GetElementDefaultMinHeight(AZ::EntityId elementId, float defaultValue)
     {
         AZ::EBusAggregateResults<float> results;
-        EBUS_EVENT_ID_RESULT(results, elementId, UiLayoutCellDefaultBus, GetMinHeight);
+        UiLayoutCellDefaultBus::EventResult(results, elementId, &UiLayoutCellDefaultBus::Events::GetMinHeight);
 
         if (results.values.empty())
         {
@@ -86,7 +86,7 @@ namespace
     float GetElementDefaultTargetHeight(AZ::EntityId elementId, float defaultValue, float maxValue)
     {
         AZ::EBusAggregateResults<float> results;
-        EBUS_EVENT_ID_RESULT(results, elementId, UiLayoutCellDefaultBus, GetTargetHeight, maxValue);
+        UiLayoutCellDefaultBus::EventResult(results, elementId, &UiLayoutCellDefaultBus::Events::GetTargetHeight, maxValue);
 
         if (results.values.empty())
         {
@@ -99,7 +99,7 @@ namespace
     float GetElementDefaultExtraHeightRatio(AZ::EntityId elementId, float defaultValue)
     {
         AZ::EBusAggregateResults<float> results;
-        EBUS_EVENT_ID_RESULT(results, elementId, UiLayoutCellDefaultBus, GetExtraHeightRatio);
+        UiLayoutCellDefaultBus::EventResult(results, elementId, &UiLayoutCellDefaultBus::Events::GetExtraHeightRatio);
 
         if (results.values.empty())
         {
@@ -114,11 +114,11 @@ namespace
         float value = LyShine::UiLayoutCellUnspecifiedSize;
 
         // First check for overridden cell values
-        EBUS_EVENT_ID_RESULT(value, elementId, UiLayoutCellBus, GetTargetWidth);
+        UiLayoutCellBus::EventResult(value, elementId, &UiLayoutCellBus::Events::GetTargetWidth);
 
         // Get max value
         float maxValue = LyShine::UiLayoutCellUnspecifiedSize;
-        EBUS_EVENT_ID_RESULT(maxValue, elementId, UiLayoutCellBus, GetMaxWidth);
+        UiLayoutCellBus::EventResult(maxValue, elementId, &UiLayoutCellBus::Events::GetMaxWidth);
 
         // If not overridden, get the default cell values
         if (!LyShine::IsUiLayoutCellSizeSpecified(value))
@@ -132,7 +132,7 @@ namespace
 
         // Make sure that min width isn't greater than target width
         float minValue = LyShine::UiLayoutCellUnspecifiedSize;
-        EBUS_EVENT_ID_RESULT(minValue, elementId, UiLayoutCellBus, GetMinWidth);
+        UiLayoutCellBus::EventResult(minValue, elementId, &UiLayoutCellBus::Events::GetMinWidth);
         if (!LyShine::IsUiLayoutCellSizeSpecified(minValue))
         {
             minValue = 0.0f;
@@ -157,11 +157,11 @@ namespace
         float value = LyShine::UiLayoutCellUnspecifiedSize;
 
         // First check for overridden cell values
-        EBUS_EVENT_ID_RESULT(value, elementId, UiLayoutCellBus, GetTargetHeight);
+        UiLayoutCellBus::EventResult(value, elementId, &UiLayoutCellBus::Events::GetTargetHeight);
 
         // Get max value
         float maxValue = LyShine::UiLayoutCellUnspecifiedSize;
-        EBUS_EVENT_ID_RESULT(maxValue, elementId, UiLayoutCellBus, GetMaxHeight);
+        UiLayoutCellBus::EventResult(maxValue, elementId, &UiLayoutCellBus::Events::GetMaxHeight);
 
         // If not overridden, get the default cell values
         if (!LyShine::IsUiLayoutCellSizeSpecified(value))
@@ -175,7 +175,7 @@ namespace
 
         // Make sure that min height isn't greater than target height
         float minValue = LyShine::UiLayoutCellUnspecifiedSize;
-        EBUS_EVENT_ID_RESULT(minValue, elementId, UiLayoutCellBus, GetMinHeight);
+        UiLayoutCellBus::EventResult(minValue, elementId, &UiLayoutCellBus::Events::GetMinHeight);
         if (!LyShine::IsUiLayoutCellSizeSpecified(minValue))
         {
             minValue = 0.0f;
@@ -213,7 +213,7 @@ namespace UiLayoutHelpers
         // Helper for ApplyLayoutWidth handler in LayoutRow and LayoutColumn components
 
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, elementId, UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, elementId, &UiElementBus::Events::GetChildEntityIds);
 
         layoutCellsOut.reserve(childEntityIds.size());
 
@@ -224,10 +224,10 @@ namespace UiLayoutHelpers
             // First check for overridden cell values
             if (UiLayoutCellBus::FindFirstHandler(childEntityId))
             {
-                EBUS_EVENT_ID_RESULT(layoutCell.m_minSize, childEntityId, UiLayoutCellBus, GetMinWidth);
-                EBUS_EVENT_ID_RESULT(layoutCell.m_targetSize, childEntityId, UiLayoutCellBus, GetTargetWidth);
-                EBUS_EVENT_ID_RESULT(layoutCell.m_maxSize, childEntityId, UiLayoutCellBus, GetMaxWidth);
-                EBUS_EVENT_ID_RESULT(layoutCell.m_extraSizeRatio, childEntityId, UiLayoutCellBus, GetExtraWidthRatio);
+                UiLayoutCellBus::EventResult(layoutCell.m_minSize, childEntityId, &UiLayoutCellBus::Events::GetMinWidth);
+                UiLayoutCellBus::EventResult(layoutCell.m_targetSize, childEntityId, &UiLayoutCellBus::Events::GetTargetWidth);
+                UiLayoutCellBus::EventResult(layoutCell.m_maxSize, childEntityId, &UiLayoutCellBus::Events::GetMaxWidth);
+                UiLayoutCellBus::EventResult(layoutCell.m_extraSizeRatio, childEntityId, &UiLayoutCellBus::Events::GetExtraWidthRatio);
             }
 
             // If not overridden, get the default cell values
@@ -272,7 +272,7 @@ namespace UiLayoutHelpers
         // Helper for ApplyLayoutHeight handler in LayoutRow and LayoutColumn components
 
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, elementId, UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, elementId, &UiElementBus::Events::GetChildEntityIds);
 
         layoutCellsOut.reserve(childEntityIds.size());
 
@@ -283,10 +283,10 @@ namespace UiLayoutHelpers
             // First check for overridden cell values
             if (UiLayoutCellBus::FindFirstHandler(childEntityId))
             {
-                EBUS_EVENT_ID_RESULT(layoutCell.m_minSize, childEntityId, UiLayoutCellBus, GetMinHeight);
-                EBUS_EVENT_ID_RESULT(layoutCell.m_targetSize, childEntityId, UiLayoutCellBus, GetTargetHeight);
-                EBUS_EVENT_ID_RESULT(layoutCell.m_maxSize, childEntityId, UiLayoutCellBus, GetMaxHeight);
-                EBUS_EVENT_ID_RESULT(layoutCell.m_extraSizeRatio, childEntityId, UiLayoutCellBus, GetExtraHeightRatio);
+                UiLayoutCellBus::EventResult(layoutCell.m_minSize, childEntityId, &UiLayoutCellBus::Events::GetMinHeight);
+                UiLayoutCellBus::EventResult(layoutCell.m_targetSize, childEntityId, &UiLayoutCellBus::Events::GetTargetHeight);
+                UiLayoutCellBus::EventResult(layoutCell.m_maxSize, childEntityId, &UiLayoutCellBus::Events::GetMaxHeight);
+                UiLayoutCellBus::EventResult(layoutCell.m_extraSizeRatio, childEntityId, &UiLayoutCellBus::Events::GetExtraHeightRatio);
             }
 
             // If not overridden, get the default cell values
@@ -328,7 +328,7 @@ namespace UiLayoutHelpers
     AZStd::vector<float> GetLayoutCellMinWidths(AZ::EntityId elementId, bool ignoreDefaultLayoutCells)
     {
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, elementId, UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, elementId, &UiElementBus::Events::GetChildEntityIds);
 
         AZStd::vector<float> values(childEntityIds.size(), 0.0f);
 
@@ -338,7 +338,7 @@ namespace UiLayoutHelpers
             float value = LyShine::UiLayoutCellUnspecifiedSize;
 
             // First check for overridden cell values
-            EBUS_EVENT_ID_RESULT(value, childEntityId, UiLayoutCellBus, GetMinWidth);
+            UiLayoutCellBus::EventResult(value, childEntityId, &UiLayoutCellBus::Events::GetMinWidth);
 
             // If not overridden, get the default cell values
             if (!LyShine::IsUiLayoutCellSizeSpecified(value))
@@ -363,7 +363,7 @@ namespace UiLayoutHelpers
         // Used when a LayoutRow/Column wants to know its target size (ex. when a layout element has a LayoutFitterComponent or when layouts are nested)
 
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, elementId, UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, elementId, &UiElementBus::Events::GetChildEntityIds);
 
         AZStd::vector<float> values(childEntityIds.size(), 0.0f);
 
@@ -381,7 +381,7 @@ namespace UiLayoutHelpers
     AZStd::vector<float> GetLayoutCellMinHeights(AZ::EntityId elementId, bool ignoreDefaultLayoutCells)
     {
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, elementId, UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, elementId, &UiElementBus::Events::GetChildEntityIds);
 
         AZStd::vector<float> values(childEntityIds.size(), 0.0f);
 
@@ -391,7 +391,7 @@ namespace UiLayoutHelpers
             float value = LyShine::UiLayoutCellUnspecifiedSize;
 
             // First check for overridden cell values
-            EBUS_EVENT_ID_RESULT(value, childEntityId, UiLayoutCellBus, GetMinHeight);
+            UiLayoutCellBus::EventResult(value, childEntityId, &UiLayoutCellBus::Events::GetMinHeight);
 
             // If not overridden, get the default cell values
             if (!LyShine::IsUiLayoutCellSizeSpecified(value))
@@ -416,7 +416,7 @@ namespace UiLayoutHelpers
         // Used when a LayoutRow/Column wants to know its target size (ex. when a layout element has a LayoutFitterComponent or when layouts are nested)
 
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, elementId, UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, elementId, &UiElementBus::Events::GetChildEntityIds);
 
         AZStd::vector<float> values(childEntityIds.size(), 0.0f);
 
@@ -684,7 +684,7 @@ namespace UiLayoutHelpers
     bool IsControllingChild(AZ::EntityId parentId, AZ::EntityId childId)
     {
         AZ::Entity* element = nullptr;
-        EBUS_EVENT_ID_RESULT(element, parentId, UiElementBus, FindChildByEntityId, childId);
+        UiElementBus::EventResult(element, parentId, &UiElementBus::Events::FindChildByEntityId, childId);
 
         if (element == nullptr)
         {
@@ -697,7 +697,7 @@ namespace UiLayoutHelpers
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void GetSizeInsidePadding(AZ::EntityId elementId, const UiLayoutInterface::Padding& padding, AZ::Vector2& size)
     {
-        EBUS_EVENT_ID_RESULT(size, elementId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+        UiTransformBus::EventResult(size, elementId, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
         float width = size.GetX() - (padding.m_left + padding.m_right);
         float height = size.GetY() - (padding.m_top + padding.m_bottom);
@@ -726,23 +726,24 @@ namespace UiLayoutHelpers
     void InvalidateLayout(AZ::EntityId elementId)
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, elementId, UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayout, elementId);
+        UiElementBus::EventResult(canvasEntityId, elementId, &UiElementBus::Events::GetCanvasEntityId);
+        UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayout, elementId);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void InvalidateParentLayout(AZ::EntityId elementId)
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, elementId, UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayoutsAffectedByLayoutCellChange, elementId, true);
+        UiElementBus::EventResult(canvasEntityId, elementId, &UiElementBus::Events::GetCanvasEntityId);
+        UiLayoutManagerBus::Event(
+            canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, elementId, true);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     bool IsControlledByHorizontalFit(AZ::EntityId elementId)
     {
         bool isHorizontallyFit = false;
-        EBUS_EVENT_ID_RESULT(isHorizontallyFit, elementId, UiLayoutFitterBus, GetHorizontalFit);
+        UiLayoutFitterBus::EventResult(isHorizontallyFit, elementId, &UiLayoutFitterBus::Events::GetHorizontalFit);
         return isHorizontallyFit;
     }
 
@@ -750,7 +751,7 @@ namespace UiLayoutHelpers
     bool IsControlledByVerticalFit(AZ::EntityId elementId)
     {
         bool isVerticallyFit = false;
-        EBUS_EVENT_ID_RESULT(isVerticallyFit, elementId, UiLayoutFitterBus, GetVerticalFit);
+        UiLayoutFitterBus::EventResult(isVerticallyFit, elementId, &UiLayoutFitterBus::Events::GetVerticalFit);
         return isVerticallyFit;
     }
 
@@ -759,7 +760,7 @@ namespace UiLayoutHelpers
     {
         if (IsControlledByHorizontalFit(elementId) || (IsControlledByVerticalFit(elementId)))
         {
-            EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorTransformPropertiesNeedRefresh);
+            UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorTransformPropertiesNeedRefresh);
         }
     }
 } // namespace UiLayoutHelpers

@@ -13,7 +13,6 @@
 #include <QMap>
 #include <QTranslator>
 #include <QSet>
-#include "IEventLoopHook.h"
 #include <unordered_map>
 
 #include <AzCore/PlatformDef.h>
@@ -103,13 +102,6 @@ namespace Editor
         bool m_isMovingOrResizing = false;
 
     private:
-        enum TimerResetFlag
-        {
-            PollState,
-            GameMode,
-            EditorMode
-        };
-        void ResetIdleTimerInterval(TimerResetFlag = PollState);
         static QColor InterpolateColors(QColor a, QColor b, float factor);
         void RefreshStyleSheet();
         void InstallFilters();
@@ -126,7 +118,6 @@ namespace Editor
 
         QTranslator* m_editorTranslator = nullptr;
         QTranslator* m_assetBrowserTranslator = nullptr;
-        QTimer* const m_idleTimer = nullptr;
 
         AZ::UserSettingsProvider m_localUserSettings;
 
@@ -134,5 +125,6 @@ namespace Editor
         QSet<int> m_pressedKeys;
 
         bool m_activatedLocalUserSettings = false;
+        bool m_applicationActive = false;
     };
 } // namespace editor

@@ -15,7 +15,5 @@ namespace ScriptCanvas
     namespace Execution
     {
         void RegisterCloningAPI(lua_State* lua);
-
     } 
-
 } 

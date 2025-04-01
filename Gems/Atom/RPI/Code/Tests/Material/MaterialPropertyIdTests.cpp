@@ -10,6 +10,7 @@
 #include <Common/RPITestFixture.h>
 #include <Common/ErrorMessageFinder.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 namespace UnitTest
 {
@@ -94,6 +95,40 @@ namespace UnitTest
         errorMessageFinder.CheckExpectedErrorsFound();
     }
     
+    TEST_F(MaterialPropertyIdTests, TestConstructWithMultipleParentNamesSeparateFromPropertyName)
+    {
+        AZStd::vector<AZStd::string> names{"layer1", "clearCoat", "normal"};
+        MaterialPropertyId id{names, "factor"};
+        EXPECT_TRUE(id.IsValid());
+        EXPECT_STREQ(id.GetCStr(), "layer1.clearCoat.normal.factor");
+        AZ::Name idCastedToName = id;
+        EXPECT_EQ(idCastedToName, AZ::Name{"layer1.clearCoat.normal.factor"});
+    }
+
+    TEST_F(MaterialPropertyIdTests, TestConstructWithMultipleParentNamesSeparateFromPropertyName_BadParentName)
+    {
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("not a valid identifier");
+        
+        AZStd::vector<AZStd::string> names{"layer1", "clear-coat", "normal"};
+        MaterialPropertyId id{names, "factor"};
+        EXPECT_FALSE(id.IsValid());
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+    
+    TEST_F(MaterialPropertyIdTests, TestConstructWithMultipleParentNamesSeparateFromPropertyName_BadPropertyName)
+    {
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("not a valid identifier");
+        
+        AZStd::vector<AZStd::string> names{"layer1", "clearCoat", "normal"};
+        MaterialPropertyId id{names, "#factor"};
+        EXPECT_FALSE(id.IsValid());
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+
     TEST_F(MaterialPropertyIdTests, TestParse)
     {
         MaterialPropertyId id = MaterialPropertyId::Parse("layer1.clearCoat.normal.factor");
@@ -116,16 +151,16 @@ namespace UnitTest
     
     TEST_F(MaterialPropertyIdTests, TestNameValidity)
     {
-        EXPECT_TRUE(MaterialPropertyId::IsValidName("a"));
-        EXPECT_TRUE(MaterialPropertyId::IsValidName("z"));
-        EXPECT_TRUE(MaterialPropertyId::IsValidName("A"));
-        EXPECT_TRUE(MaterialPropertyId::IsValidName("Z"));
-        EXPECT_TRUE(MaterialPropertyId::IsValidName("_"));
-        EXPECT_TRUE(MaterialPropertyId::IsValidName("m_layer10bazBAZ"));
-        EXPECT_FALSE(MaterialPropertyId::IsValidName(""));
-        EXPECT_FALSE(MaterialPropertyId::IsValidName("1layer"));
-        EXPECT_FALSE(MaterialPropertyId::IsValidName("base-color"));
-        EXPECT_FALSE(MaterialPropertyId::IsValidName("base.color"));
-        EXPECT_FALSE(MaterialPropertyId::IsValidName("base/color"));
+        EXPECT_TRUE(MaterialUtils::IsValidName("a"));
+        EXPECT_TRUE(MaterialUtils::IsValidName("z"));
+        EXPECT_TRUE(MaterialUtils::IsValidName("A"));
+        EXPECT_TRUE(MaterialUtils::IsValidName("Z"));
+        EXPECT_TRUE(MaterialUtils::IsValidName("_"));
+        EXPECT_TRUE(MaterialUtils::IsValidName("m_layer10bazBAZ"));
+        EXPECT_FALSE(MaterialUtils::IsValidName(""));
+        EXPECT_FALSE(MaterialUtils::IsValidName("1layer"));
+        EXPECT_FALSE(MaterialUtils::IsValidName("base-color"));
+        EXPECT_FALSE(MaterialUtils::IsValidName("base.color"));
+        EXPECT_FALSE(MaterialUtils::IsValidName("base/color"));
     }
 }

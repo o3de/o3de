@@ -13,8 +13,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
-#include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
+#include <Vegetation/PrefabInstanceSpawner.h>
 
 //////////////////////////////////////////////////////////////////////
 // #pragma inline_depth(0)
@@ -28,36 +28,36 @@ namespace Vegetation
             if (classElement.GetVersion() < 4)
             {
                 AZ::Vector3 positionMin(-0.3f, -0.3f, 0.0f);
-                if (classElement.GetChildData(AZ_CRC("PositionMin", 0x1abef6a6), positionMin))
+                if (classElement.GetChildData(AZ_CRC_CE("PositionMin"), positionMin))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("PositionMin", 0x1abef6a6));
+                    classElement.RemoveElementByName(AZ_CRC_CE("PositionMin"));
                     classElement.AddElementWithData(context, "PositionMinX", (float)positionMin.GetX());
                     classElement.AddElementWithData(context, "PositionMinY", (float)positionMin.GetY());
                     classElement.AddElementWithData(context, "PositionMinZ", (float)positionMin.GetZ());
                 }
 
                 AZ::Vector3 positionMax(0.3f, 0.3f, 0.0f);
-                if (classElement.GetChildData(AZ_CRC("PositionMax", 0x26b3c9ff), positionMax))
+                if (classElement.GetChildData(AZ_CRC_CE("PositionMax"), positionMax))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("PositionMax", 0x26b3c9ff));
+                    classElement.RemoveElementByName(AZ_CRC_CE("PositionMax"));
                     classElement.AddElementWithData(context, "PositionMaxX", (float)positionMax.GetX());
                     classElement.AddElementWithData(context, "PositionMaxY", (float)positionMax.GetY());
                     classElement.AddElementWithData(context, "PositionMaxZ", (float)positionMax.GetZ());
                 }
 
                 AZ::Vector3 rotationMin(0.0f, 0.0f, -180.0f);
-                if (classElement.GetChildData(AZ_CRC("RotationMin", 0xf556391b), rotationMin))
+                if (classElement.GetChildData(AZ_CRC_CE("RotationMin"), rotationMin))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("RotationMin", 0xf556391b));
+                    classElement.RemoveElementByName(AZ_CRC_CE("RotationMin"));
                     classElement.AddElementWithData(context, "RotationMinX", (float)rotationMin.GetX());
                     classElement.AddElementWithData(context, "RotationMinY", (float)rotationMin.GetY());
                     classElement.AddElementWithData(context, "RotationMinZ", (float)rotationMin.GetZ());
                 }
 
                 AZ::Vector3 rotationMax(0.0f, 0.0f, 180.0f);
-                if (classElement.GetChildData(AZ_CRC("RotationMax", 0xc95b0642), rotationMax))
+                if (classElement.GetChildData(AZ_CRC_CE("RotationMax"), rotationMax))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("RotationMax", 0xc95b0642));
+                    classElement.RemoveElementByName(AZ_CRC_CE("RotationMax"));
                     classElement.AddElementWithData(context, "RotationMaxX", (float)rotationMax.GetX());
                     classElement.AddElementWithData(context, "RotationMaxY", (float)rotationMax.GetY());
                     classElement.AddElementWithData(context, "RotationMaxZ", (float)rotationMax.GetZ());
@@ -65,7 +65,7 @@ namespace Vegetation
             }
             if (classElement.GetVersion() < 5)
             {
-                classElement.RemoveElementByName(AZ_CRC("RadiusMax", 0x5e90f2ea));
+                classElement.RemoveElementByName(AZ_CRC_CE("RadiusMax"));
             }
             if (classElement.GetVersion() < 7)
             {
@@ -78,19 +78,15 @@ namespace Vegetation
             {
                 // Spawner type was briefly stored as a display string instead of a TypeId.
                 AZStd::string spawnerType;
-                if (classElement.GetChildData(AZ_CRC("SpawnerType", 0xbabb9f23), spawnerType))
+                if (classElement.GetChildData(AZ_CRC_CE("SpawnerType"), spawnerType))
                 {
                     AZ::TypeId newSpawnerType = azrtti_typeid<EmptyInstanceSpawner>();
                     if (spawnerType == "Legacy Vegetation")
                     {
                         AZ_Error("Dynamic Vegetation", false, "Replacing legacy vegetation spawner with an empty instance spawner");
                     }
-                    else if (spawnerType == "Dynamic Slice")
-                    {
-                        newSpawnerType = azrtti_typeid<DynamicSliceInstanceSpawner>();
-                    }
 
-                    classElement.RemoveElementByName(AZ_CRC("SpawnerType", 0xbabb9f23));
+                    classElement.RemoveElementByName(AZ_CRC_CE("SpawnerType"));
                     classElement.AddElementWithData(context, "SpawnerType", newSpawnerType);
                 }
             }
@@ -174,6 +170,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Position Modifier")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_positionOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Position Modifier has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -222,6 +219,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Rotation Modifier")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_rotationOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Rotation Modifier has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -270,6 +268,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Scale Modifier")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_scaleOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Scale Modifier has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -290,6 +289,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Altitude Filter")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_altitudeFilterOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Altitude Filter has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -302,6 +302,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Distance Between Filter (Radius)")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_radiusOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Distance Between Filter has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -320,6 +321,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Surface Slope Alignment")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_surfaceAlignmentOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Surface Slope Alignment Modifier has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -336,6 +338,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Slope Filter")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_slopeFilterOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Slope Filter has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -352,6 +355,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Surface Mask Filter")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Descriptor::m_surfaceFilterOverrideMode, "Override Mode", "Enable per-item override settings for this item when the Surface Mask Filter has 'Allow Per-Item Overrides' enabled.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->EnumAttribute(OverrideMode::Disable, "Disable")
@@ -364,10 +368,10 @@ namespace Vegetation
                         ->DataElement(0, &Descriptor::m_exclusiveSurfaceFilterTags, "Exclusion Tags", "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &Descriptor::IsSurfaceTagFilterReadOnly)
+                    ->EndGroup()
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                        ->DataElement(0, &Descriptor::m_surfaceTagDistance, "Surface Mask Depth Filter", "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
+                    ->DataElement(0, &Descriptor::m_surfaceTagDistance, "Surface Mask Depth Filter", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
 
                     ;
             }
@@ -504,7 +508,7 @@ namespace Vegetation
 
     Descriptor::Descriptor()
     {
-        m_instanceSpawner = AZStd::make_shared<DynamicSliceInstanceSpawner>();
+        m_instanceSpawner = AZStd::make_shared<PrefabInstanceSpawner>();
         m_spawnerType = azrtti_typeid(*m_instanceSpawner);
     }
 

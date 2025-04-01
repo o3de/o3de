@@ -14,6 +14,7 @@
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
+#include <TerrainProfiler.h>
 
 namespace Terrain
 {
@@ -26,26 +27,6 @@ namespace Terrain
                 ->Field("Gradient Entity", &TerrainSurfaceGradientMapping::m_gradientEntityId)
                 ->Field("Surface Tag", &TerrainSurfaceGradientMapping::m_surfaceTag)
             ;
-
-            if (auto edit = serialize->GetEditContext())
-            {
-                edit->Class<TerrainSurfaceGradientMapping>("Terrain Surface Gradient Mapping", "Mapping between a gradient and a surface.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientMapping::m_gradientEntityId,
-                        "Gradient Entity", "ID of Entity providing a gradient.")
-                       ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->UIElement("GradientPreviewer", "Previewer")
-                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC_CE("GradientEntity"), &TerrainSurfaceGradientMapping::m_gradientEntityId)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientMapping::m_surfaceTag, "Surface Tag",
-                        "Surface type to map to this gradient.")
-                ;
-            }
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -55,8 +36,8 @@ namespace Terrain
                 ->Attribute(AZ::Script::Attributes::Category, "Terrain")
                 ->Attribute(AZ::Script::Attributes::Module, "terrain")
                 ->Constructor()
-                ->Property("gradientEntityId", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_gradientEntityId))
-                ->Property("surfaceTag", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_surfaceTag));
+                ->Property("GradientEntityId", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_gradientEntityId))
+                ->Property("SurfaceTag", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_surfaceTag));
         }
     }
 
@@ -71,21 +52,6 @@ namespace Terrain
                 ->Version(1)
                 ->Field("Mappings", &TerrainSurfaceGradientListConfig::m_gradientSurfaceMappings)
             ;
-
-            AZ::EditContext* edit = serialize->GetEditContext();
-            if (edit)
-            {
-                edit->Class<TerrainSurfaceGradientListConfig>(
-                    "Terrain Surface Gradient List Component", "Provide mapping between gradients and surfaces.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientListConfig::m_gradientSurfaceMappings,
-                        "Gradient to Surface Mappings", "Maps Gradient Entities to Surfaces.")
-                    ;
-            }
         }
     }
 
@@ -101,7 +67,7 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainAreaService"));
+        services.push_back(AZ_CRC_CE("TerrainAreaService"));
     }
 
     void TerrainSurfaceGradientListComponent::Reflect(AZ::ReflectContext* context)
@@ -125,11 +91,11 @@ namespace Terrain
     void TerrainSurfaceGradientListComponent::Activate()
     {
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        Terrain::TerrainAreaSurfaceRequestBus::Handler::BusConnect(GetEntityId());
 
         // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
         // We'll use that to notify the terrain system that the surface information needs to be refreshed.
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetEntityId());
 
@@ -141,19 +107,24 @@ namespace Terrain
             }
         }
 
+        Terrain::TerrainAreaSurfaceRequestBus::Handler::BusConnect(GetEntityId());
+
         // Notify that the area has changed.
         OnCompositionChanged();
     }
 
     void TerrainSurfaceGradientListComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
-
+        // Disconnect before doing any other teardown. This will guarantee that any active queries have finished before we proceed.
         Terrain::TerrainAreaSurfaceRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         // Since this surface data will no longer exist, notify the terrain system to refresh the area.
-        OnCompositionChanged();
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
     }
 
     bool TerrainSurfaceGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -182,6 +153,13 @@ namespace Terrain
     {
         outSurfaceWeights.clear();
 
+        if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("Terrain", false, "Detected cyclic dependencies with terrain surface entity references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
+
         const GradientSignal::GradientSampleParams params(inPosition);
 
         for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
@@ -198,13 +176,28 @@ namespace Terrain
         AZStd::span<const AZ::Vector3> inPositionList,
         AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const
     {
+        TERRAIN_PROFILE_FUNCTION_VERBOSE
+
         AZ_Assert(
             inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
 
-        AZStd::vector<float> gradientValues(inPositionList.size());
+        if (Terrain::TerrainAreaSurfaceRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce(
+                "Terrain", false, "Detected cyclic dependencies with terrain surface entity references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
+
+        AZStd::vector<float> gradientValues;
+
+        gradientValues.resize_no_construct(inPositionList.size());
 
         for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
         {
+            // Clear out the gradient values before every GetValues call to ensure we don't accidentally end up with stale data.
+            AZStd::fill(gradientValues.begin(), gradientValues.end(), 0.0f);
+
             GradientSignal::GradientRequestBus::Event(
                 mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValues, inPositionList, gradientValues);
 
@@ -217,9 +210,25 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        OnCompositionRegionChanged(AZ::Aabb::CreateNull());
+    }
+
+    void TerrainSurfaceGradientListComponent::OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion)
+    {
+        if (dirtyRegion.IsValid())
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshRegion,
+                dirtyRegion,
+                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
+        }
+        else
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshArea,
+                GetEntityId(),
+                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
+        }
     }
 
 } // namespace Terrain

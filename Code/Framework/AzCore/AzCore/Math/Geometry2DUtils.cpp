@@ -74,7 +74,7 @@ namespace AZ::Geometry2DUtils
         );
     }
 
-    bool IsSimplePolygon(const AZStd::vector<AZ::Vector2>& vertices, float epsilon)
+    bool IsSimplePolygon(AZStd::span<const AZ::Vector2> vertices, float epsilon)
     {
         // note that this implementation is quadratic in the number of vertices
         // if it becomes a bottleneck, there are approaches which are O(n log n), e.g. the Bentley-Ottmann algorithm
@@ -120,7 +120,7 @@ namespace AZ::Geometry2DUtils
         return true;
     }
 
-    bool IsConvex(const AZStd::vector<AZ::Vector2>& vertices)
+    bool IsConvex(AZStd::span<const AZ::Vector2> vertices)
     {
         const size_t vertexCount = vertices.size();
 

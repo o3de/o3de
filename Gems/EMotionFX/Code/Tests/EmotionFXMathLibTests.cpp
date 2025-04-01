@@ -11,143 +11,13 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/AzCoreConversions.h>
 
-class EmotionFXMathLibTests
-    : public ::testing::Test
-{
-protected:
-
-    void SetUp() override
-    {
-        m_azNormalizedVector3A = AZ::Vector3(s_x1, s_y1, s_z1);
-        m_azNormalizedVector3A.Normalize();
-        m_azQuaternionA = AZ::Quaternion::CreateFromAxisAngle(m_azNormalizedVector3A, s_angle_a);
-    }
-
-    void TearDown() override
-    {
-    }
-
-
-    bool AZQuaternionCompareExact(AZ::Quaternion& quaternion, float x, float y, float z, float w)
-    {
-        if (quaternion.GetX() != x)
-        {
-            return false;
-        }
-        if (quaternion.GetY() != y)
-        {
-            return false;
-        }
-        if (quaternion.GetZ() != z)
-        {
-            return false;
-        }
-        if (quaternion.GetW() != w)
-        {
-            return false;
-        }
-        return true;
-    }
-
-
-    bool AZQuaternionCompareClose(AZ::Quaternion& quaternion, float x, float y, float z, float w, float tolerance)
-    {
-        if (!AZ::IsClose(quaternion.GetX(), x, tolerance))
-        {
-            return false;
-        }
-        if (!AZ::IsClose(quaternion.GetY(), y, tolerance))
-        {
-            return false;
-        }
-        if (!AZ::IsClose(quaternion.GetZ(), z, tolerance))
-        {
-            return false;
-        }
-        if (!AZ::IsClose(quaternion.GetW(), w, tolerance))
-        {
-            return false;
-        }
-        return true;
-    }
-
-    bool AZVector3CompareClose(const AZ::Vector3& vector, const AZ::Vector3& vector2, float tolerance)
-    {
-        if (!AZ::IsClose(vector.GetX(), vector2.GetX(), tolerance))
-        {
-            return false;
-        }
-        if (!AZ::IsClose(vector.GetY(), vector2.GetY(), tolerance))
-        {
-            return false;
-        }
-        if (!AZ::IsClose(vector.GetZ(), vector2.GetZ(), tolerance))
-        {
-            return false;
-        }
-        return true;
-    }
-
-    bool AZVector3CompareClose(const AZ::Vector3& vector, float x, float y, float z, float tolerance)
-    {
-        if (!AZ::IsClose(vector.GetX(), x, tolerance))
-        {
-            return false;
-        }
-        if (!AZ::IsClose(vector.GetY(), y, tolerance))
-        {
-            return false;
-        }
-        if (!AZ::IsClose(vector.GetZ(), z, tolerance))
-        {
-            return false;
-        }
-        return true;
-    }
-
-    static const float  s_toleranceHigh;
-    static const float  s_toleranceMedium;
-    static const float  s_toleranceLow;
-    static const float  s_toleranceReallyLow;
-    static const float  s_x1;
-    static const float  s_y1;
-    static const float  s_z1;
-    static const float  s_angle_a;
-    AZ::Vector3         m_azNormalizedVector3A;
-    AZ::Quaternion      m_azQuaternionA;
-};
-
-const float EmotionFXMathLibTests::s_toleranceHigh = 0.00001f;
-const float EmotionFXMathLibTests::s_toleranceMedium = 0.0001f;
-const float EmotionFXMathLibTests::s_toleranceLow = 0.001f;
-const float EmotionFXMathLibTests::s_toleranceReallyLow = 0.02f;
-
-const float EmotionFXMathLibTests::s_x1 = 0.2f;
-const float EmotionFXMathLibTests::s_y1 = 0.3f;
-const float EmotionFXMathLibTests::s_z1 = 0.4f;
-const float EmotionFXMathLibTests::s_angle_a = 0.5f;
-
-//////////////////////////////////////////////////////////////////
-//Getting and setting of Quaternions
-//////////////////////////////////////////////////////////////////
-
-TEST_F(EmotionFXMathLibTests, AZQuaternionGet_Elements_Success)
-{
-    AZ::Quaternion test(0.1f, 0.2f, 0.3f, 0.4f);
-    ASSERT_TRUE(AZQuaternionCompareExact(test, 0.1f, 0.2f, 0.3f, 0.4f));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//Basic rotations
-///////////////////////////////////////////////////////////////////////////////
-
 //Right Hand - counterclockwise looking down axis from positive side
-
-TEST_F(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisX_Success)
+TEST(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisX_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(1.0f, 0.0f, 0.0f);
     axis.Normalize();
@@ -156,11 +26,10 @@ TEST_F(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisX_Success)
     AZ::Vector3 vertexOut;
     vertexOut = azQuaternion1.TransformVector(vertexIn);
 
-    bool same = AZVector3CompareClose(vertexOut, AZ::Vector3(0.0f, -0.1f, 0.0f), s_toleranceLow);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(vertexOut, UnitTest::IsClose(AZ::Vector3(0.0f, -0.1f, 0.0f)));
 }
 
-TEST_F(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisY_Success)
+TEST(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisY_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(0.0f, 1.0f, 0.0f);
     axis.Normalize();
@@ -169,11 +38,10 @@ TEST_F(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisY_Success)
     AZ::Vector3 vertexOut;
     vertexOut = azQuaternion1.TransformVector(vertexIn);
 
-    bool same = AZVector3CompareClose(vertexOut, AZ::Vector3(0.0f, 0.0f, -0.1f), s_toleranceLow);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(vertexOut, UnitTest::IsClose(AZ::Vector3(0.0f, 0.0f, -0.1f)));
 }
 
-TEST_F(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisZ_Success)
+TEST(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisZ_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(0.0f, 0.0f, 1.0f);
     axis.Normalize();
@@ -182,12 +50,11 @@ TEST_F(EmotionFXMathLibTests, AZQuaternion_Rotation1ComponentAxisZ_Success)
     AZ::Vector3 vertexOut;
     vertexOut = azQuaternion1.TransformVector(vertexIn);
 
-    bool same = AZVector3CompareClose(vertexOut, AZ::Vector3(0.0f, 0.1f, 0.0f), s_toleranceLow);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(vertexOut, UnitTest::IsClose(AZ::Vector3(0.0f, 0.1f, 0.0f)));
 }
 
 //AZ Quaternion Normalize Vertex test
-TEST_F(EmotionFXMathLibTests, AZazQuaternion_NormalizedQuaternionRotationTest3DAxis_Success)
+TEST(EmotionFXMathLibTests, AZazQuaternion_NormalizedQuaternionRotationTest3DAxis_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(1.0f, 0.7f, 0.3f);
     axis.Normalize();
@@ -202,8 +69,7 @@ TEST_F(EmotionFXMathLibTests, AZazQuaternion_NormalizedQuaternionRotationTest3DA
 
     vertexOut1FromNormalizedQuaternion = azQuaternion1Normalized.TransformVector(vertexIn);
 
-    bool same = AZVector3CompareClose(vertexOut1, vertexOut1FromNormalizedQuaternion, s_toleranceLow);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(vertexOut1, UnitTest::IsClose(vertexOut1FromNormalizedQuaternion));
 }
 
 
@@ -212,7 +78,7 @@ TEST_F(EmotionFXMathLibTests, AZazQuaternion_NormalizedQuaternionRotationTest3DA
 ///////////////////////////////////////////////////////////////////////////////
 
 // AZ Quaternion <-> euler conversion Vertex test 1 component axis
-TEST_F(EmotionFXMathLibTests, AZQuaternion_EulerGetSet1ComponentAxis_Success)
+TEST(EmotionFXMathLibTests, AZQuaternion_EulerGetSet1ComponentAxis_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(0.0f, 0.0f, 1.0f);
     axis.Normalize();
@@ -231,12 +97,11 @@ TEST_F(EmotionFXMathLibTests, AZQuaternion_EulerGetSet1ComponentAxis_Success)
     //generate vertex value 2
     vertexOut2 = test1.TransformVector(vertexIn);
 
-    bool same = AZVector3CompareClose(vertexOut1, vertexOut2, s_toleranceReallyLow);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(vertexOut1, UnitTest::IsClose(vertexOut2));
 }
 
 // AZ Quaternion <-> euler conversion Vertex test 2 component axis
-TEST_F(EmotionFXMathLibTests, AZQuaternion_EulerGetSet2ComponentAxis_Success)
+TEST(EmotionFXMathLibTests, AZQuaternion_EulerGetSet2ComponentAxis_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(0.0f, 0.7f, 0.3f);
     axis.Normalize();
@@ -256,12 +121,11 @@ TEST_F(EmotionFXMathLibTests, AZQuaternion_EulerGetSet2ComponentAxis_Success)
     //generate vertex value 2
     vertexOut2 = test1.TransformVector(vertexIn);
 
-    bool same = AZVector3CompareClose(vertexOut1, vertexOut2, s_toleranceReallyLow);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(vertexOut1, UnitTest::IsClose(vertexOut2));
 }
 
 // AZ Quaternion <-> euler conversion Vertex test 3 component axis
-TEST_F(EmotionFXMathLibTests, AZQuaternion_EulerInOutRotationTest3DAxis_Success)
+TEST(EmotionFXMathLibTests, AZQuaternion_EulerInOutRotationTest3DAxis_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(1.0f, 0.7f, 0.3f);
     axis.Normalize();
@@ -281,13 +145,12 @@ TEST_F(EmotionFXMathLibTests, AZQuaternion_EulerInOutRotationTest3DAxis_Success)
     //generate vertex value 2
     vertexOut2 = test1.TransformVector(vertexIn);
 
-    bool same = AZVector3CompareClose(vertexOut1, vertexOut2, s_toleranceReallyLow);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(vertexOut1, UnitTest::IsClose(vertexOut2));
 }
 
 // Quaternion -> Transform -> Euler conversion is same as Quaternion -> Euler
 // AZ Euler get set Transform Compare test 3 dim axis
-TEST_F(EmotionFXMathLibTests, AZQuaternion_EulerGetSet3ComponentAxisCompareTransform_Success)
+TEST(EmotionFXMathLibTests, AZQuaternion_EulerGetSet3ComponentAxisCompareTransform_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(1.0f, 0.7f, 0.3f);
     axis.Normalize();
@@ -313,15 +176,14 @@ TEST_F(EmotionFXMathLibTests, AZQuaternion_EulerGetSet3ComponentAxisCompareTrans
     //generate vertex value 2
     vertexOut2 = test1.TransformVector(vertexIn);
 
-    bool same = AZVector3CompareClose(vertexOut1, vertexTransform, s_toleranceReallyLow)
-        && AZVector3CompareClose(vertexOut1, vertexOut2, s_toleranceReallyLow)
-        && AZVector3CompareClose(vertexOut2, vertexTransform, s_toleranceHigh);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(vertexOut1, UnitTest::IsClose(vertexTransform));
+    EXPECT_THAT(vertexOut1, UnitTest::IsClose(vertexOut2));
+    EXPECT_THAT(vertexOut2, UnitTest::IsClose(vertexTransform));
 }
 
 // AZ Quaternion to Euler test
 //only way to test Quaternions sameness is to apply it to a vector and measure result
-TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_ToEulerEquivalent_Success)
+TEST(EmotionFXMathLibTests, AZQuaternionConversion_ToEulerEquivalent_Success)
 {
     AZ::Vector3 eulerIn(0.1f, 0.2f, 0.3f);
     AZ::Vector3 testVertex(0.1f, 0.2f, 0.3f);
@@ -340,7 +202,7 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_ToEulerEquivalent_Success)
     outVertex2 = test2.TransformVector(testVertex);
 
     eulerOut2 = AZ::ConvertQuaternionToEulerRadians(test2);
-    ASSERT_TRUE(AZVector3CompareClose(eulerOut1, eulerOut2, s_toleranceReallyLow));
+    EXPECT_THAT(eulerOut1, UnitTest::IsClose(eulerOut2));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,7 +210,7 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_ToEulerEquivalent_Success)
 ///////////////////////////////////////////////////////////////////////////////
 
 // Test EM Quaternion made from Matrix X
-TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromAZTransformXRot_Success)
+TEST(EmotionFXMathLibTests, AZQuaternionConversion_FromAZTransformXRot_Success)
 {
     AZ::Transform azTransform = AZ::Transform::CreateRotationX(AZ::Constants::HalfPi);
     AZ::Quaternion azQuaternion = azTransform.GetRotation();
@@ -356,12 +218,11 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromAZTransformXRot_Success
     AZ::Vector3 emVertexIn(0.0f, 0.1f, 0.0f);
     AZ::Vector3 emVertexOut = azQuaternion.TransformVector(emVertexIn);
 
-    bool same = AZVector3CompareClose(emVertexOut, 0.0f, 0.0f, 0.1f, s_toleranceMedium);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(emVertexOut, UnitTest::IsClose(AZ::Vector3(0.0f, 0.0f, 0.1f)));
 }
 
 // Test EM Quaternion made from Matrix Y
-TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromAZTransformYRot_Success)
+TEST(EmotionFXMathLibTests, AZQuaternionConversion_FromAZTransformYRot_Success)
 {
     AZ::Transform azTransform = AZ::Transform::CreateRotationY(AZ::Constants::HalfPi);
     AZ::Quaternion azQuaternion = azTransform.GetRotation();
@@ -369,12 +230,11 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromAZTransformYRot_Success
     AZ::Vector3 emVertexIn(0.0f, 0.0f, 0.1f);
     AZ::Vector3 emVertexOut = azQuaternion.TransformVector(emVertexIn);
 
-    bool same = AZVector3CompareClose(emVertexOut, 0.1f, 0.0f, 0.0f, s_toleranceMedium);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(emVertexOut, UnitTest::IsClose(AZ::Vector3(0.1f, 0.0f, 0.0f)));
 }
 
 // Compare Quaternion made from Matrix X
-TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixXRot_Success)
+TEST(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixXRot_Success)
 {
     AZ::Matrix4x4 azMatrix = AZ::Matrix4x4::CreateRotationX(AZ::Constants::HalfPi);
     AZ::Quaternion azQuaternion = AZ::Quaternion::CreateFromMatrix4x4(azMatrix);
@@ -387,12 +247,11 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixXRot_Success)
     AZ::Vector3 azVertexOut = azQuaternion.TransformVector(azVertexIn);
     AZ::Vector3 emVertexOut = azQuaternionFromTransform.TransformVector(azVertexIn);
 
-    bool same = AZVector3CompareClose(azVertexOut, emVertexOut, s_toleranceMedium);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(azVertexOut, UnitTest::IsClose(emVertexOut));
 }
 
 // Compare Quaternion made from Matrix Y
-TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixYRot_Success)
+TEST(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixYRot_Success)
 {
     AZ::Matrix4x4 azMatrix = AZ::Matrix4x4::CreateRotationY(AZ::Constants::HalfPi);
     AZ::Quaternion azQuaternion = AZ::Quaternion::CreateFromMatrix4x4(azMatrix);
@@ -404,12 +263,11 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixYRot_Success)
     AZ::Vector3 azVertexOut = azQuaternion.TransformVector(azVertexIn);
     AZ::Vector3 emVertexOut = azQuaternionFromTransform.TransformVector(azVertexIn);
 
-    bool same = AZVector3CompareClose(azVertexOut, emVertexOut, s_toleranceMedium);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(azVertexOut, UnitTest::IsClose(emVertexOut));
 }
 
 // Compare Quaternion made from Matrix Z
-TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixZRot_Success)
+TEST(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixZRot_Success)
 {
     AZ::Matrix4x4 azMatrix = AZ::Matrix4x4::CreateRotationZ(AZ::Constants::HalfPi);
     AZ::Quaternion azQuaternion = AZ::Quaternion::CreateFromMatrix4x4(azMatrix);
@@ -422,14 +280,13 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_FromMatrixZRot_Success)
     AZ::Vector3 azVertexOut = azQuaternion.TransformVector(azVertexIn);
     AZ::Vector3 emVertexOut = azQuaternionFromTransform.TransformVector(azVertexIn);
 
-    bool same = AZVector3CompareClose(azVertexOut, emVertexOut, s_toleranceMedium);
-    ASSERT_TRUE(same);
+    EXPECT_THAT(azVertexOut, UnitTest::IsClose(emVertexOut));
 }
 
 // Compare Quaternion -> Matrix conversion
 // AZ - column major
 // Emfx - row major
-TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_ToMatrix_Success)
+TEST(EmotionFXMathLibTests, AZQuaternionConversion_ToMatrix_Success)
 {
     AZ::Vector3 axis = AZ::Vector3(1.0f, 0.7f, 0.3f);
     axis.Normalize();
@@ -449,7 +306,7 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_ToMatrix_Success)
         {
             float emValue = azTransformBasis[j].GetElement(i);
             float azValue = azMatrix.GetElement(i, j);
-            if (!AZ::IsClose(emValue, azValue, s_toleranceReallyLow))
+            if (!AZ::IsClose(emValue, azValue, 0.001f))
             {
                 same = false;
                 break;
@@ -462,17 +319,17 @@ TEST_F(EmotionFXMathLibTests, AZQuaternionConversion_ToMatrix_Success)
         }
     }
     ASSERT_TRUE(same);
-    ASSERT_TRUE(AZ::IsClose(azMatrix.GetElement(3, 0), 0.0f, s_toleranceReallyLow));
-    ASSERT_TRUE(AZ::IsClose(azMatrix.GetElement(3, 1), 0.0f, s_toleranceReallyLow));
-    ASSERT_TRUE(AZ::IsClose(azMatrix.GetElement(3, 2), 0.0f, s_toleranceReallyLow));
-    ASSERT_TRUE(AZ::IsClose(azMatrix.GetElement(3, 3), 1.0f, s_toleranceReallyLow));
+    EXPECT_NEAR(azMatrix.GetElement(3, 0), 0.0f, 0.001f);
+    EXPECT_NEAR(azMatrix.GetElement(3, 1), 0.0f, 0.001f);
+    EXPECT_NEAR(azMatrix.GetElement(3, 2), 0.0f, 0.001f);
+    EXPECT_NEAR(azMatrix.GetElement(3, 3), 1.0f, 0.001f);
 }
 
 //////////////////////////////////////////////////////////////////
 // Skinning
 //////////////////////////////////////////////////////////////////
 
-TEST_F(EmotionFXMathLibTests, AZTransform_Skin_Success)
+TEST(EmotionFXMathLibTests, AZTransform_Skin_Success)
 {
     const AZ::Quaternion rotation(0.40f, 0.08f, 0.44f, 0.80f);
     const AZ::Vector3 translation(0.2f, 0.1f, -0.1f);
@@ -485,11 +342,11 @@ TEST_F(EmotionFXMathLibTests, AZTransform_Skin_Success)
 
     MCore::Skin(inMat, &inPos, &inNormal, &outPos, &outNormal, weight);
 
-    EXPECT_TRUE(AZVector3CompareClose(outPos, 0.055596f, 0.032098f, 0.111349f, s_toleranceHigh));
-    EXPECT_TRUE(AZVector3CompareClose(outNormal, 0.105288f, -0.039203f, 0.050066f, s_toleranceHigh));
+    EXPECT_THAT(outPos, UnitTest::IsCloseTolerance(AZ::Vector3(0.055596f, 0.032098f, 0.111349f), 0.00001f));
+    EXPECT_THAT(outNormal, UnitTest::IsCloseTolerance(AZ::Vector3(0.105288f, -0.039203f, 0.050066f), 0.00001f));
 }
 
-TEST_F(EmotionFXMathLibTests, AZTransform_SkinWithTangent_Success)
+TEST(EmotionFXMathLibTests, AZTransform_SkinWithTangent_Success)
 {
     const AZ::Quaternion rotation(0.72f, 0.48f, 0.24f, 0.44f);
     const AZ::Vector3 translation(0.3f, -0.2f, 0.2f);
@@ -504,13 +361,13 @@ TEST_F(EmotionFXMathLibTests, AZTransform_SkinWithTangent_Success)
 
     MCore::Skin(inMat, &inPos, &inNormal, &inTangent, &outPos, &outNormal, &outTangent, weight);
 
-    EXPECT_TRUE(AZVector3CompareClose(outPos, 0.260395f, -0.024972f, 0.134559f, s_toleranceHigh));
-    EXPECT_TRUE(AZVector3CompareClose(outNormal, 0.216733f, -0.080089f, -0.036997f, s_toleranceHigh));
-    EXPECT_TRUE(AZVector3CompareClose(outTangent.GetAsVector3(), -0.039720f, -0.000963f, -0.230602f, s_toleranceHigh));
-    EXPECT_NEAR(outTangent.GetW(), inTangent.GetW(), s_toleranceHigh);
+    EXPECT_THAT(outPos, UnitTest::IsCloseTolerance(AZ::Vector3(0.260395f, -0.024972f, 0.134559f), 0.00001f));
+    EXPECT_THAT(outNormal, UnitTest::IsCloseTolerance(AZ::Vector3(0.216733f, -0.080089f, -0.036997f), 0.00001f));
+    EXPECT_THAT(outTangent.GetAsVector3(), UnitTest::IsCloseTolerance(AZ::Vector3(-0.039720f, -0.000963f, -0.230602f), 0.00001f));
+    EXPECT_NEAR(outTangent.GetW(), inTangent.GetW(), 0.00001f);
 }
 
-TEST_F(EmotionFXMathLibTests, AZTransform_SkinWithTangentAndBitangent_Success)
+TEST(EmotionFXMathLibTests, AZTransform_SkinWithTangentAndBitangent_Success)
 {
     const AZ::Quaternion rotation(0.72f, 0.64f, 0.12f, 0.24f);
     const AZ::Vector3 translation(0.1f, 0.2f, -0.1f);
@@ -527,15 +384,10 @@ TEST_F(EmotionFXMathLibTests, AZTransform_SkinWithTangentAndBitangent_Success)
 
     MCore::Skin(inMat, &inPos, &inNormal, &inTangent, &inBitangent, &outPos, &outNormal, &outTangent, &outBitangent, weight);
 
-    EXPECT_TRUE(AZVector3CompareClose(outPos, 0.038364f, 0.110234f, -0.243101f, s_toleranceHigh));
-    EXPECT_TRUE(AZVector3CompareClose(outNormal, 0.153412f, 0.216512f, -0.220482f, s_toleranceHigh));
-    EXPECT_TRUE(AZVector3CompareClose(outTangent.GetAsVector3(), -0.291665f, 0.020134f, -0.183170f, s_toleranceHigh));
-    EXPECT_NEAR(outTangent.GetW(), inTangent.GetW(), s_toleranceHigh);
-    EXPECT_TRUE(AZVector3CompareClose(outBitangent, -0.102085f, 0.267847f, 0.191994f, s_toleranceHigh));
+    EXPECT_THAT(outPos, UnitTest::IsCloseTolerance(AZ::Vector3(0.038364f, 0.110234f, -0.243101f), 0.00001f));
+    EXPECT_THAT(outNormal, UnitTest::IsCloseTolerance(AZ::Vector3(0.153412f, 0.216512f, -0.220482f), 0.00001f));
+    EXPECT_THAT(outTangent.GetAsVector3(), UnitTest::IsCloseTolerance(AZ::Vector3(-0.291665f, 0.020134f, -0.183170f), 0.00001f));
+    EXPECT_NEAR(outTangent.GetW(), inTangent.GetW(), 0.00001f);
+    EXPECT_THAT(outBitangent, UnitTest::IsCloseTolerance(AZ::Vector3(-0.102085f, 0.267847f, 0.191994f), 0.00001f));
 }
 
-// Last test
-TEST_F(EmotionFXMathLibTests, LastTest)
-{
-    ASSERT_TRUE(true);
-}

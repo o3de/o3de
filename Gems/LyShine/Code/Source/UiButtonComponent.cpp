@@ -60,13 +60,18 @@ UiButtonComponent::~UiButtonComponent()
 bool UiButtonComponent::HandleReleased(AZ::Vector2 point)
 {
     bool isInRect = false;
-    EBUS_EVENT_ID_RESULT(isInRect, GetEntityId(), UiTransformBus, IsPointInRect, point);
+    UiTransformBus::EventResult(isInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, point);
     if (isInRect)
     {
         return HandleReleasedCommon(point);
     }
     else
     {
+        if (m_isHandlingEvents)
+        {
+            UiInteractableComponent::TriggerReleasedAction(true);
+        }
+
         m_isPressed = false;
 
         return m_isHandlingEvents;
@@ -146,7 +151,7 @@ void UiButtonComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiButton.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiButton.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Actions group
@@ -194,13 +199,13 @@ bool UiButtonComponent::HandleReleasedCommon(const AZ::Vector2& point)
         if (!m_actionName.empty())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             // Queue the event to prevent deletions during the input event
-            EBUS_QUEUE_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_actionName);
+            UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_actionName);
         }
 
         // Queue the event to prevent deletions during the input event
-        EBUS_QUEUE_EVENT_ID(GetEntityId(), UiButtonNotificationBus, OnButtonClick);
+        UiButtonNotificationBus::QueueEvent(GetEntityId(), &UiButtonNotificationBus::Events::OnButtonClick);
     }
 
     m_isPressed = false;
@@ -248,7 +253,7 @@ bool UiButtonComponent::VersionConverter(AZ::SerializeContext& context,
     {
         // find the base class (AZ::Component)
         // NOTE: in very old versions there may not be a base class because the base class was not serialized
-        int componentBaseClassIndex = classElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+        int componentBaseClassIndex = classElement.FindElement(AZ_CRC_CE("BaseClass1"));
 
         // If there was a base class, make a copy and remove it
         AZ::SerializeContext::DataElementNode componentBaseClassNode;

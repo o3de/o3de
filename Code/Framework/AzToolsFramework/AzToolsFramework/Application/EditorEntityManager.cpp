@@ -52,7 +52,7 @@ namespace AzToolsFramework
     {
         EntityIdList selectedEntities;
         ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
-        m_prefabPublicInterface->DeleteEntitiesInInstance(selectedEntities);
+        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(selectedEntities);
     }
 
     void EditorEntityManager::DeleteEntityById(AZ::EntityId entityId)
@@ -62,7 +62,7 @@ namespace AzToolsFramework
 
     void EditorEntityManager::DeleteEntities(const EntityIdList& entities)
     {
-        m_prefabPublicInterface->DeleteEntitiesInInstance(entities);
+        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entities);
     }
 
     void EditorEntityManager::DeleteEntityAndAllDescendants(AZ::EntityId entityId)

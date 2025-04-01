@@ -19,11 +19,11 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EventManager, MotionEventManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EventManager, MotionEventManagerAllocator)
 
     // the constructor
     EventManager::EventManager()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_eventHandlersByEventType.resize(EVENT_TYPE_COUNT);
     }
@@ -72,7 +72,7 @@ namespace EMotionFX
         AZ_Assert(eventHandler, "Expected non-null event handler");
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
         {
-            AZ_Assert(AZStd::find(m_eventHandlersByEventType[eventType].begin(), m_eventHandlersByEventType[eventType].end(), eventHandler) == m_eventHandlersByEventType[eventType].end(), 
+            AZ_Assert(AZStd::find(m_eventHandlersByEventType[eventType].begin(), m_eventHandlersByEventType[eventType].end(), eventHandler) == m_eventHandlersByEventType[eventType].end(),
                 "Event handler already added to manager");
             m_eventHandlersByEventType[eventType].emplace_back(eventHandler);
         }

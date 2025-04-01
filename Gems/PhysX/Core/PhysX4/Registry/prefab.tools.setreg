@@ -1,0 +1,33 @@
+{
+    "Amazon":
+    {
+        "Tools":
+        {
+            "Prefab":
+            {
+                "Processing":
+                {
+                    "Stack":
+                    {
+                        "PlayInEditor":
+                        {
+                            "PhysX": 
+                            { 
+                                "$type": "PhysX::PhysicsPrefabProcessor",
+                                "$stack_before": "Prefab catchment"
+                            }
+                        },
+                        "GameObjectCreation":
+                        {
+                            "PhysX": 
+                            { 
+                                "$type": "PhysX::PhysicsPrefabProcessor",
+                                "$stack_before": "Prefab catchment"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

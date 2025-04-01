@@ -8,8 +8,9 @@
 
 #include "SetVariable.h"
 
+#include <AzCore/std/sort.h>
+
 #include <Core/ExecutionNotificationsBus.h>
-#include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
@@ -70,6 +71,11 @@ namespace ScriptCanvas
                 return m_variableId;
             }
 
+            const Slot* SetVariableNode::GetVariableInputSlot() const
+            {
+                return GetSlot(m_variableDataInSlotId);
+            }
+
             const Slot* SetVariableNode::GetVariableOutputSlot() const
             {
                 return GetSlot(m_variableDataOutSlotId);
@@ -128,7 +134,7 @@ namespace ScriptCanvas
 
                     if (oldType != newType)
                     {
-                        ScopedBatchOperation scopedBatchOperation(AZ_CRC("SetVariableIdChanged", 0xc072e633));
+                        ScopedBatchOperation scopedBatchOperation(AZ_CRC_CE("SetVariableIdChanged"));
                         RemoveSlots();
                         AddSlots();
                     }
@@ -274,7 +280,7 @@ namespace ScriptCanvas
                 VariableId removedVariableId;
                 AZStd::swap(removedVariableId, m_variableId);
                 {
-                    ScopedBatchOperation scopedBatchOperation(AZ_CRC("SetVariableRemoved", 0xd7da59f5));
+                    ScopedBatchOperation scopedBatchOperation(AZ_CRC_CE("SetVariableRemoved"));
                     RemoveSlots();
                 }
                 VariableNodeNotificationBus::Event(GetEntityId(), &VariableNodeNotifications::OnVariableRemovedFromNode, removedVariableId);

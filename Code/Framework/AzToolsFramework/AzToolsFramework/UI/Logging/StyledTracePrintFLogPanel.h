@@ -25,7 +25,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(StyledTracePrintFLogPanel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StyledTracePrintFLogPanel, AZ::SystemAllocator);
 
             StyledTracePrintFLogPanel(QWidget* pParent = nullptr);
 
@@ -39,7 +39,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(StyledTracePrintFLogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StyledTracePrintFLogTab, AZ::SystemAllocator);
             StyledTracePrintFLogTab(const TabSettings& in_settings, QWidget* parent = nullptr);
             virtual ~StyledTracePrintFLogTab();
 
@@ -65,6 +65,7 @@ namespace AzToolsFramework
 
         private Q_SLOTS:
             void DrainMessages();
+            void ScheduleDrainMessages();
 
         public slots:
             virtual void Clear();

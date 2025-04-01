@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 from PySide2 import QtWidgets
 
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
 

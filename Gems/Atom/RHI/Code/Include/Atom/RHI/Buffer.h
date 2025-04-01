@@ -8,54 +8,55 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
+#include <Atom/RHI.Reflect/BufferViewDescriptor.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/Resource.h>
-#include <Atom/RHI/BufferView.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class BufferFrameAttachment;
+    struct BufferViewDescriptor;
+    class BufferView;
+
+    //! A Buffer holds all Buffers across multiple devices.
+    //! The buffer descriptor will be shared across all the buffers.
+    //! The user manages the lifecycle of a Buffer through a BufferPool
+    class Buffer : public Resource
     {
-        class MemoryStatisticsBuilder;
-        class BufferFrameAttachment;
-        struct BufferViewDescriptor;
-    
-        //! A buffer corresponds to a region of linear memory and used for rendering operations. The user
-        //! manages the lifecycle of a buffer through a BufferPool.
-        class Buffer
-            : public Resource
-        {
-            using Base = Resource;
-            friend class BufferPoolBase;
-        public:
-            AZ_RTTI(Buffer, "{3C918323-F39C-4DC6-BEE9-BC220DBA9414}", Resource);
-            virtual ~Buffer() = default;
+        using Base = Resource;
+        friend class BufferPoolBase;
+        friend class BufferPool;
+        friend class RayTracingTlas;
+        friend class TransientAttachmentPool;
 
-            const BufferDescriptor& GetDescriptor() const;
-            
-            //! This implementation estimates memory usage using the descriptor. Platforms may
-            //! override to report more accurate usage metrics.
-            void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const override;
+    public:
+        AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator, 0);
+        AZ_RTTI(Buffer, "{8B8A544D-7819-4677-9C47-943B821DE619}", Resource);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Buffer);
+        Buffer() = default;
+        virtual ~Buffer() = default;
 
-            /// Returns the buffer frame attachment if the buffer is currently attached.
-            const BufferFrameAttachment* GetFrameAttachment() const;
+        const BufferDescriptor& GetDescriptor() const;
 
-            Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
-            
-        protected:
-            Buffer() = default;
+        //! Returns the buffer frame attachment if the buffer is currently attached.
+        const BufferFrameAttachment* GetFrameAttachment() const;
 
-            void SetDescriptor(const BufferDescriptor& descriptor);
+        Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
 
-        private:
-            
-            // Get the hash associated with the passed view descriptor
-            const size_t GetHash(const BufferViewDescriptor& bufferViewDescriptor) const;
-            
-            // The RHI descriptor for this buffer.
-            BufferDescriptor m_descriptor;
+        //! Get the hash associated with the Buffer
+        const HashValue64 GetHash() const;
 
-            // A debug reference count to track use of map / unmap operations.
-            AZStd::atomic_int m_mapRefCount = {0};
-        };
-    }
-}
+        //! Shuts down the resource by detaching it from its parent pool.
+        void Shutdown() override final;
+
+    protected:
+        void SetDescriptor(const BufferDescriptor& descriptor);
+
+    private:
+        void Invalidate();
+
+        //! The RHI descriptor for this Buffer.
+        BufferDescriptor m_descriptor;
+    };
+} // namespace AZ::RHI

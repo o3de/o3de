@@ -153,24 +153,5 @@ namespace AZ
         {
             // Not currently supported
         }
-
-        AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()
-        {
-            AZ::EnvironmentInstance inst = nullptr;
-            void* handle = dlopen("libAzTestRunner.so", RTLD_NOW);
-            using Fn = AZ::EnvironmentInstance();
-            Fn* fn = nullptr;
-            if (handle)
-            {
-                fn = reinterpret_cast<Fn*>(dlsym(handle, "GetTestRunnerEnvironment"));
-            }
-            if (fn)
-            {
-                inst = fn();
-            }
-            dlclose(handle);
-
-            return inst;
-        }
     } // Test
 } // AZ

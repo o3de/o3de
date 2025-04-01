@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
-#include <GradientSignal/GradientSampler.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/LevelsGradientRequestBus.h>
+#include <GradientSignal/GradientSampler.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
 
 namespace LmbrCentral
 {
@@ -26,7 +27,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(LevelsGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LevelsGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(LevelsGradientConfig, "{02F01CCC-CA6F-462F-BDEC-9A7EAC730D33}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         GradientSampler m_gradientSampler;
@@ -37,7 +38,7 @@ namespace GradientSignal
         float m_outputMax = 1.0f;
     };
 
-    static const AZ::Uuid LevelsGradientComponentTypeId = "{F8EF5F6E-6D4A-441B-A5C2-DE1775918C24}";
+    inline constexpr AZ::TypeId LevelsGradientComponentTypeId{ "{F8EF5F6E-6D4A-441B-A5C2-DE1775918C24}" };
 
     /**
     * calculates a gradient value by converting values from another gradient to another's range
@@ -95,5 +96,6 @@ namespace GradientSignal
     private:
         LevelsGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

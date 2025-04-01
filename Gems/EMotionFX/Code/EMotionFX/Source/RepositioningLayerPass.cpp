@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RepositioningLayerPass, LayerPassAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(RepositioningLayerPass, LayerPassAllocator)
 
     // the constructor
     RepositioningLayerPass::RepositioningLayerPass(MotionLayerSystem* motionLayerSystem)

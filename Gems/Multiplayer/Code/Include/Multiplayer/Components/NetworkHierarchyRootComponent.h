@@ -69,6 +69,8 @@ namespace Multiplayer
         void OnChildChanged(AZ::ChildChangeType type, AZ::EntityId child);
         void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId parent);
 
+        void TrySetControllerRoot(const NetEntityId rootNetId);
+
         NetworkHierarchyChangedEvent m_networkHierarchyChangedEvent;
         NetworkHierarchyLeaveEvent m_networkHierarchyLeaveEvent;
 

@@ -196,8 +196,7 @@ namespace EMotionFX
         AZ::Transform result;
 
     #ifndef EMFX_SCALE_DISABLED
-        result = MCore::CreateFromQuaternionAndTranslationAndScale(m_rotation, m_position, m_scale);
-
+        result = AZ::Transform(m_position, m_rotation, m_scale.GetMaxElement());
     #else
         result = AZ::Transform::CreateFromQuaternionAndTranslation(m_rotation, m_position);
     #endif
@@ -528,12 +527,11 @@ namespace EMotionFX
     // blend into another transform
     Transform& Transform::Blend(const Transform& dest, float weight)
     {
-        m_position = MCore::LinearInterpolate<AZ::Vector3>(m_position, dest.m_position, weight);
-        m_rotation = MCore::NLerp(m_rotation, dest.m_rotation, weight);
-
+        m_position = m_position.Lerp(dest.m_position, weight);
+        m_rotation = m_rotation.NLerp(dest.m_rotation, weight);
         EMFX_SCALECODE
         (
-            m_scale          = MCore::LinearInterpolate<AZ::Vector3>(m_scale, dest.m_scale, weight);
+            m_scale = m_scale.Lerp(dest.m_scale, weight);
         )
 
         return *this;
@@ -545,7 +543,7 @@ namespace EMotionFX
     {
         const AZ::Vector3    relPos      = dest.m_position - orgTransform.m_position;
         const AZ::Quaternion& orgRot     = orgTransform.m_rotation;
-        const AZ::Quaternion rot         = MCore::NLerp(orgRot, dest.m_rotation, weight);
+        const AZ::Quaternion rot         = orgRot.NLerp(dest.m_rotation, weight);
 
         // apply the relative changes
         m_rotation = m_rotation * (orgRot.GetConjugate() * rot);
@@ -578,7 +576,7 @@ namespace EMotionFX
     Transform& Transform::ApplyAdditive(const Transform& additive, float weight)
     {
         m_position += additive.m_position * weight;
-        m_rotation = MCore::NLerp(m_rotation, m_rotation * additive.m_rotation, weight);
+        m_rotation = m_rotation.NLerp(m_rotation * additive.m_rotation, weight);
         EMFX_SCALECODE
         (
             m_scale *= AZ::Vector3::CreateOne().Lerp(additive.m_scale, weight);

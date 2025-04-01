@@ -19,7 +19,6 @@
 #include "TrackViewKeyPropertiesDlg.h"  // for CTrackViewKeyUIControls
 
 
-//////////////////////////////////////////////////////////////////////////
 class CCharacterKeyUIControls
     : public CTrackViewKeyUIControls
 {
@@ -68,7 +67,6 @@ protected:
     void ResetStartEndLimits(float characterKeyDuration);
 };
 
-//////////////////////////////////////////////////////////////////////////
 void CCharacterKeyUIControls::ResetStartEndLimits(float characterKeyDuration)
 {
     const float time_zero = .0f;

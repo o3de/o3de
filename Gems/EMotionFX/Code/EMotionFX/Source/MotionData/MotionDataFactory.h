@@ -23,7 +23,7 @@ namespace EMotionFX
     class EMFX_API MotionDataFactory
     {
     public:
-        AZ_CLASS_ALLOCATOR(MotionDataFactory, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionDataFactory, MotionAllocator)
         AZ_RTTI(MotionDataFactory, "{9A8C3075-788F-4BA0-A60E-ABC13E753C65}")
 
         MotionDataFactory() = default;

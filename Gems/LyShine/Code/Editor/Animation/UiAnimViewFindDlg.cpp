@@ -50,7 +50,7 @@ CUiAnimViewFindDlg::~CUiAnimViewFindDlg()
 void CUiAnimViewFindDlg::FillData()
 {
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     m_numSeqs = 0;
     m_objs.resize(0);
@@ -142,7 +142,7 @@ void CUiAnimViewFindDlg::ProcessSel()
         if (pSequence)
         {
             CUiAnimationContext* pAnimationContext = nullptr;
-            EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+            UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
             pAnimationContext->SetSequence(pSequence, false, false, true);
 
             CUiAnimViewAnimNode* pParentDirector = pSequence;

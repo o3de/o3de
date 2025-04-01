@@ -8,9 +8,9 @@
 #pragma once
 
 #include <Atom/RHI/AsyncWorkQueue.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/DeviceImagePool.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/parallel/atomic.h>
@@ -23,11 +23,11 @@ namespace AZ
         class Device;
                 
         class Image final
-            : public RHI::Image
+            : public RHI::DeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::DeviceImage;
         public:
-            AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator);
             AZ_RTTI(Image, "{F9F25704-F885-4CBD-BC96-D8D1E89F95EA}", Base);
             ~Image() = default;
             
@@ -69,10 +69,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Image
+            // RHI::DeviceImage
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                RHI::DeviceImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
             //////////////////////////////////////////////////////////////////////////
             

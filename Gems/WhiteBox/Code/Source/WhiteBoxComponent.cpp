@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Rendering/WhiteBoxMaterial.h>
 #include <Rendering/WhiteBoxRenderData.h>
+#include <Rendering/WhiteBoxRenderDataUtil.h>
 #include <Rendering/WhiteBoxRenderMeshInterface.h>
 #include <WhiteBox/WhiteBoxBus.h>
 
@@ -33,7 +34,7 @@ namespace WhiteBox
 
     void WhiteBoxComponent::Activate()
     {
-        WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface);
+        WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface, GetEntityId());
 
         const AZ::EntityId entityId = GetEntityId();
 
@@ -41,10 +42,11 @@ namespace WhiteBox
         AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         // generate the mesh
-        // TODO: LYN-786
-        m_renderMesh->BuildMesh(m_whiteBoxRenderData, worldFromLocal, GetEntityId());
+        m_renderMesh->BuildMesh(m_whiteBoxRenderData, worldFromLocal);
+        m_renderMesh->UpdateMaterial(m_whiteBoxRenderData.m_material);
         m_renderMesh->SetVisiblity(m_whiteBoxRenderData.m_material.m_visible);
 
+        AzFramework::VisibleGeometryRequestBus::Handler::BusConnect(entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
         WhiteBoxComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, GetId()));
     }
@@ -53,6 +55,7 @@ namespace WhiteBox
     {
         WhiteBoxComponentRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
+        AzFramework::VisibleGeometryRequestBus::Handler::BusDisconnect();
 
         m_renderMesh.reset();
     }
@@ -65,6 +68,18 @@ namespace WhiteBox
     void WhiteBoxComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
         m_renderMesh->UpdateTransform(world);
+    }
+
+    void WhiteBoxComponent::BuildVisibleGeometry(
+        [[maybe_unused]] const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
+    {
+        // Convert the white box render data into visible geometry data
+        const AzFramework::VisibleGeometry geometry = BuildVisibleGeometryFromWhiteBoxRenderData(GetEntityId(), m_whiteBoxRenderData);
+
+        if (!geometry.m_indices.empty() && !geometry.m_vertices.empty())
+        {
+            geometryContainer.push_back(geometry);
+        }
     }
 
     bool WhiteBoxComponent::WhiteBoxIsVisible() const

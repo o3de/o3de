@@ -25,7 +25,7 @@ namespace UnitTest
         , public AZ::Data::AssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MockLoadAssetCatalogAndHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MockLoadAssetCatalogAndHandler, AZ::SystemAllocator);
 
         /**
          * Create the mock AssetCatalog / AssetHandler

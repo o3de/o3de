@@ -7,6 +7,7 @@
  */
 
 #include <ScriptCanvas/SystemComponent.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 
 namespace ScriptCanvasEditor
 {
@@ -62,7 +63,7 @@ namespace ScriptCanvasEditor
         }
 
         m_isReportFinished = true;
-        Bus::Handler::BusDisconnect(m_scriptCanvasId);
+        Bus::Handler::BusDisconnect(m_graph);
         AZ::EntityBus::Handler::BusDisconnect(m_entityId);
     }
 
@@ -96,9 +97,9 @@ namespace ScriptCanvasEditor
         return m_failures;
     }
 
-    AZ_INLINE const ScriptCanvasId& Reporter::GetScriptCanvasId() const
+    AZ_INLINE const AZ::Data::AssetId& Reporter::GetGraph() const
     {
-        return m_scriptCanvasId;
+        return m_graph;
     }
 
     AZ_INLINE AZStd::sys_time_t Reporter::GetParseDuration() const
@@ -124,6 +125,11 @@ namespace ScriptCanvasEditor
     AZ_INLINE AZStd::sys_time_t Reporter::GetTranslateDuration() const
     {
         return m_translationDuration;
+    }
+
+    AZ_INLINE const AZ::IO::Path& Reporter::GetFilePath() const
+    {
+        return m_filePath;
     }
 
     AZ_INLINE bool Reporter::IsActivated() const
@@ -166,12 +172,12 @@ namespace ScriptCanvasEditor
         return m_isGraphLoaded;
     }
 
-    AZ_INLINE bool Reporter::IsGraphObserved(const AZ::EntityId& entityId, [[maybe_unused]] const GraphIdentifier& identifier)
+    AZ_INLINE bool Reporter::IsGraphObserved([[maybe_unused]] const AZ::EntityId& entityId, const GraphIdentifier& identifier)
     {
-        return m_scriptCanvasId == entityId && m_configuration == ExecutionConfiguration::Traced;
+        return m_configuration == ExecutionConfiguration::Traced && identifier.m_assetId == m_graph;
     }
 
-    AZ_INLINE void Reporter::RuntimeError([[maybe_unused]] const AZ::EntityId& entityId, [[maybe_unused]] const GraphIdentifier& identifier, const AZStd::string_view& description)
+    AZ_INLINE void Reporter::RuntimeError([[maybe_unused]] const ExecutionState& executionState, const AZStd::string_view& description)
     {
         m_failures.push_back(AZStd::string::format("ScriptCanvas runtime error: %s", description.data()));
     }
@@ -278,15 +284,20 @@ namespace ScriptCanvasEditor
         AZ::EntityBus::Handler::BusConnect(m_entityId);
     }
 
-    AZ_INLINE void Reporter::SetGraph(const ScriptCanvasId& scriptCanvasId)
+    AZ_INLINE void Reporter::SetGraph(const AZ::Data::AssetId& graph)
     {
-        m_scriptCanvasId = scriptCanvasId;
-        Bus::Handler::BusConnect(m_scriptCanvasId);
+        m_graph = graph;
+        Bus::Handler::BusConnect(graph);
     }
 
     AZ_INLINE void Reporter::SetProcessOnly(bool processOnly)
     {
         m_processOnly = processOnly;
+    }
+
+    AZ_INLINE void Reporter::SetFilePath(const AZ::IO::PathView& filePath)
+    {
+        m_filePath = filePath;
     }
 
     // Handler

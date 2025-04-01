@@ -27,7 +27,7 @@ namespace Camera
         if (serializeContext)
         {
             // Deprecating the CameraTargetComponent.  This acquire behavior makes it obsolete
-            serializeContext->ClassDeprecate("CameraTargetComponentAcquirer", "{CF1C04E4-1195-42DD-AF0B-C9F94E80B35D}", &ClassConverters::DeprecateCameraTargetComponentAcquirer);
+            serializeContext->ClassDeprecate("CameraTargetComponentAcquirer", AZ::Uuid("{CF1C04E4-1195-42DD-AF0B-C9F94E80B35D}"), &ClassConverters::DeprecateCameraTargetComponentAcquirer);
 
             serializeContext->Class<AcquireByTag>()
                 ->Version(1)

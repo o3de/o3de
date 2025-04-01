@@ -1,0 +1,32 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "RC physxconfiguration": {
+                    "pattern": "(.*\\.physicsconfiguration|.*\\.physxconfiguration)",
+                    "params": "copy"
+                },
+                "RC PhysX HeightField": {
+                    "glob": "*.pxheightfield",
+                    "params": "copy",
+                    "productAssetType": "{B61189FE-B2D7-4AF1-8951-CB5C0F7834FC}"
+                },
+                "RC PhysXMeshAsset": {
+                    "glob": "*.pxmesh",
+                    "params": "copy",
+                    "productAssetType": "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}"
+                },
+                // Copying *.physxmaterial files to cache folder is only necessary
+                // because Asset Editor works with assets in cache folder and not 
+                // from the source folder directly. Ideally the authoring tool used
+                // could work directly with source files and this copy could be avoided.
+                "RC physxmaterial": {
+                    "glob": "*.physxmaterial",
+                    "params": "copy",
+                    "critical": true,
+                    "productAssetType": "{BC7B88B9-EE31-4FBF-A01E-2A93624C49D3}"
+                }
+            }
+        }
+    }
+}

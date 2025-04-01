@@ -6,7 +6,12 @@
 #
 #
 
-set(LY_COMPILE_OPTIONS
+# QtForPythonSystemComponent uses a try catch block
+if(MSVC)
+    set(LY_COMPILE_OPTIONS PRIVATE /EHsc)
+else()
+    set(LY_COMPILE_OPTIONS
     PRIVATE
-        -fexceptions # QtForPythonSystemComponent uses a try catch block
-)
+        -fexceptions
+    )
+endif()

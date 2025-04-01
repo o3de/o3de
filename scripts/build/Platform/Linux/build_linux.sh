@@ -65,8 +65,10 @@ else
     CORE_COUNT=$TOTAL_CORE_COUNT
 fi
 
-
-eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
-eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
-
+# Split the configuration on semi-colon and use the cmake --build wrapper to run the underlying build command for each
+for config in $(echo $CONFIGURATION | sed "s/;/ /g")
+do
+    eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
+    eval cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
+done
 popd

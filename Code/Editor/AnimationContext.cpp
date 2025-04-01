@@ -17,11 +17,13 @@
 // Editor
 #include "TrackView/TrackViewDialog.h"
 #include "ViewManager.h"
-#include "Objects/SelectionGroup.h"
-#include "Include/IObjectManager.h"
-#include "Objects/EntityObject.h"
 
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Time/ITime.h>
+
+#include <AzToolsFramework/API/EditorCameraBus.h>
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Types/AnimNodeType.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Movie Callback.
@@ -49,27 +51,6 @@ protected:
         break;
         }
     }
-
-    void OnSetCamera(const SCameraParams& Params) override
-    {
-        // Only switch camera when in Play mode.
-        GUID camObjId = GUID_NULL;
-        if (Params.cameraEntityId.IsValid())
-        {
-            // Find owner editor entity.
-            CEntityObject* pEditorEntity = CEntityObject::FindFromEntityId(Params.cameraEntityId);
-            if (pEditorEntity)
-            {
-                camObjId = pEditorEntity->GetId();
-            }
-        }
-
-        // Switch camera in active rendering view.
-        if (GetIEditor()->GetViewManager())
-        {
-            GetIEditor()->GetViewManager()->SetCameraObjectId(camObjId);
-        }
-    };
 
     bool IsSequenceCamUsed() const override
     {
@@ -113,6 +94,7 @@ protected:
 
 //////////////////////////////////////////////////////////////////////////
 CAnimationContext::CAnimationContext()
+    : m_movieSystem(AZ::Interface<IMovieSystem>::Get())
 {
     m_paused = 0;
     m_playing = false;
@@ -136,11 +118,17 @@ CAnimationContext::CAnimationContext()
     GetIEditor()->GetUndoManager()->AddListener(this);
     GetIEditor()->GetSequenceManager()->AddListener(this);
     GetIEditor()->RegisterNotifyListener(this);
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimationContext::~CAnimationContext()
 {
+    if (Maestro::SequenceComponentNotificationBus::Handler::BusIsConnected())
+    {
+        Maestro::SequenceComponentNotificationBus::Handler::BusDisconnect();
+    }
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
     GetIEditor()->GetSequenceManager()->RemoveListener(this);
     GetIEditor()->GetUndoManager()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
@@ -149,7 +137,10 @@ CAnimationContext::~CAnimationContext()
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::Init()
 {
-    gEnv->pMovieSystem->SetCallback(&s_movieCallback);
+    if (m_movieSystem)
+    {
+        m_movieSystem->SetCallback(&s_movieCallback);
+    }
 
     REGISTER_COMMAND("mov_goToFrameEditor", (ConsoleCommandFunc)GoToFrameCmd, 0, "Make a specified sequence go to a given frame time in the editor.");
 }
@@ -178,12 +169,15 @@ void CAnimationContext::NotifyTimeChangedListenersUsingCurrTime() const
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bool noNotify, bool user)
 {
-    float newSeqStartTime = .0f;
-    CTrackViewSequence* pCurrentSequence = m_pSequence;
-
-    if (!force && sequence == pCurrentSequence)
+    if (!force && sequence == m_pSequence)
     {
         return;
+    }
+
+    if (!m_bIsInGameMode) // In Editor Play Game mode switching Editor Viewport cameras is currently not supported.
+    {
+        // Restore camera in the active Editor Viewport Widget to the value saved while a sequence was activated.
+        SwitchEditorViewportCamera(m_defaulViewCameraEntityId);
     }
 
     // Prevent keys being created from time change
@@ -191,10 +185,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     m_recording = false;
     SetRecordingInternal(false);
 
-    if (sequence)
-    {
-        newSeqStartTime = sequence->GetTimeRange().start;
-    }
+    const float newSeqStartTime = sequence ? sequence->GetTimeRange().start : 0.f;
 
     m_currTime = newSeqStartTime;
     m_fRecordingCurrTime = newSeqStartTime;
@@ -214,6 +205,12 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
 
     if (m_pSequence)
     {
+        const auto oldSequenceEntityId = m_pSequence->GetSequenceComponentEntityId();
+        if (Maestro::SequenceComponentNotificationBus::Handler::BusIsConnectedId(oldSequenceEntityId))
+        {
+            Maestro::SequenceComponentNotificationBus::Handler::BusDisconnect(oldSequenceEntityId);
+        }
+
         m_pSequence->Deactivate();
         if (m_playing)
         {
@@ -231,6 +228,14 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     {
         // Set the last valid sequence that was selected.
         m_mostRecentSequenceId = m_pSequence->GetSequenceComponentEntityId();
+        if (!m_mostRecentSequenceId.IsValid())
+        {
+            m_pSequence = nullptr;
+            return;
+        }
+
+        // Get ready to handle camera switching in this sequence, if ever, in order to switch camera in Editor Viewport Widget
+        Maestro::SequenceComponentNotificationBus::Handler::BusConnect(m_mostRecentSequenceId);
 
         if (m_playing)
         {
@@ -249,7 +254,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     {
         // If this was a sequence that was selected by the user in Track View
         // and it was "No Sequence" clear the m_mostRecentSequenceId so the sequence
-        // will not be reselected at unwanted events like a slice reload or an undo operation.
+        // will not be reselected at unwanted events like an undo operation.
         m_mostRecentSequenceId.SetInvalid();
     }
 
@@ -268,6 +273,76 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
 
     m_recording = bRecording;
     SetRecordingInternal(bRecording);
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool CAnimationContext::IsInGameMode() const
+{
+    const auto editor = GetIEditor();
+    const bool isInGame = editor && editor->IsInGameMode();
+    return m_bIsInGameMode || isInGame;
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool CAnimationContext::IsInEditingMode() const
+{
+    const auto editor = GetIEditor();
+    const bool isNotEditing = !editor || editor->IsInConsolewMode() || editor->IsInTestMode() || editor->IsInLevelLoadTestMode() || editor->IsInPreviewMode();
+    return !m_bIsInGameMode && !isNotEditing;
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool CAnimationContext::IsSequenceAutostartFlagOn() const
+{
+    const auto sequence = GetSequence();
+    return sequence && ((sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset) != 0);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAnimationContext::SwitchEditorViewportCamera(const AZ::EntityId& newCameraEntityId)
+{
+    if (!IsInEditingMode())
+    {
+        return; // Camera switching is currently supported in editing mode only.
+    }
+
+    AZ::EntityId currentEditorViewportCamId;
+    Camera::EditorCameraRequestBus::BroadcastResult(currentEditorViewportCamId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+    if (currentEditorViewportCamId == newCameraEntityId)
+    {
+        return; // Camera in Editor Viewport Widget is already set to the requested value, avoid unneeded actions.
+    }
+
+    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, newCameraEntityId);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAnimationContext::OnCameraChanged([[maybe_unused]] const AZ::EntityId&, const AZ::EntityId& newCameraEntityId)
+{
+
+    if (!newCameraEntityId.IsValid())
+    {
+        return; // Only valid camera Ids are sent to the active editor viewport
+    }
+
+    if (!IsInEditingMode())
+    {
+        return; // Camera switching is currently supported in editing mode only.
+    }
+
+    if (!IsSequenceAutostartFlagOn())
+    {
+        return; // The "Autostart" flag is not set for the active sequence.
+    }
+
+    AZ::EntityId currentEditorViewportCamId;
+    Camera::EditorCameraRequestBus::BroadcastResult( currentEditorViewportCamId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+    if (currentEditorViewportCamId == newCameraEntityId)
+    {
+        return; // Camera in Editor Viewport Widget is already set to the requested value, avoid unneeded actions.
+    }
+
+    Camera::EditorCameraRequestBus::Broadcast(&Camera::EditorCameraRequestBus::Events::SetViewFromEntityPerspective, newCameraEntityId);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -304,7 +379,6 @@ void CAnimationContext::SetTime(float t)
     m_currTime = t;
     m_fRecordingCurrTime = t;
     ForceAnimation();
-    UpdateAnimatedLights();
 
     NotifyTimeChangedListenersUsingCurrTime();
 }
@@ -321,34 +395,88 @@ void CAnimationContext::TimeChanged(float newTime)
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
 {
+    if (!entityId.IsValid())
+    {
+        AZ_Assert(false, "Expected valid sequence EntityId.");
+        return;
+    }
+
+    const auto editor = GetIEditor();
+    if (!editor)
+    {
+        AZ_Assert(false, "No Editor.");
+        return;
+    }
+    const auto manager = editor->GetSequenceManager();
+    if (!manager)
+    {
+        AZ_Assert(false, "No SequenceManager.");
+        return;
+    }
+    const auto sequence = manager->GetSequenceByEntityId(entityId);
+    if (!sequence)
+    {
+        AZ_Assert(false, "No sequence with EntityId=%s.", entityId.ToString().c_str());
+        return;
+    }
+
+    // Store initial Editor Viewport camera EntityId
+    Camera::EditorCameraRequestBus::BroadcastResult(m_defaulViewCameraEntityId, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+
     // If nothing is selected and there is a valid most recent selected
     // try to find that sequence by id and select it. This is useful
     // for restoring the selected sequence during undo and redo.
-    if (m_pSequence == nullptr && m_mostRecentSequenceId.IsValid())
+    if (m_pSequence == nullptr && m_mostRecentSequenceId.IsValid() && entityId == m_mostRecentSequenceId)
     {
-        if (entityId == m_mostRecentSequenceId)
+        // Hang onto this because SetSequence() will reset it.
+        float lastTime = m_mostRecentSequenceTime;
+
+        SetSequence(sequence, false, false);
+
+        // Restore the current time.
+        SetTime(lastTime);
+
+        // Notify time may have changed, use m_currTime in case it was clamped by SetTime()
+        TimeChanged(m_currTime);
+
+        return;
+    }
+
+    // This method could be invoked after Undoing a sequence deletion, so try to find this sequence and reconnect it
+    const auto entityNodes = sequence->GetAnimNodesByType(AnimNodeType::AzEntity);
+    const auto numNodes = entityNodes.GetCount();
+    for (unsigned int i = 0; i < numNodes; ++i)
+    {
+        const auto animatedEntityId = entityNodes.GetNode(i)->GetAzEntityId();
+        if (!animatedEntityId.IsValid())
         {
-            auto editor = GetIEditor();
-            if (editor != nullptr)
+            AZ_Error("AnimationContext", false, "OnSequenceActivated('%s' %s): AzEntityNode has invalid EntityId %s.",
+                sequence->GetName().c_str(), entityId.ToString().c_str(), animatedEntityId.ToString().c_str());
+            continue;
+        }
+        bool wasInvoked = false;
+        Maestro::EditorSequenceComponentRequestBus::EventResult(
+            wasInvoked, entityId, &Maestro::EditorSequenceComponentRequestBus::Events::AddEntityToAnimate, animatedEntityId);
+        if (!wasInvoked)
+        {
+            AZ_Error("AnimationContext", false, "OnSequenceActivated('%s' %s): Failed to connect to animated EntityId %s.",
+                sequence->GetName().c_str(), entityId.ToString().c_str(), animatedEntityId.ToString().c_str());
+        }
+    }
+}
+
+void CAnimationContext::OnSequenceDeactivated(AZ::EntityId entityId)
+{
+    auto editor = GetIEditor();
+    if (editor != nullptr)
+    {
+        auto manager = editor->GetSequenceManager();
+        if (manager != nullptr)
+        {
+            auto sequence = manager->GetSequenceByEntityId(entityId);
+            if (sequence != nullptr && sequence == m_pSequence)
             {
-                auto manager = editor->GetSequenceManager();
-                if (manager != nullptr)
-                {
-                    auto sequence = manager->GetSequenceByEntityId(m_mostRecentSequenceId);
-                    if (sequence != nullptr)
-                    {
-                        // Hang onto this because SetSequence() will reset it.
-                        float lastTime = m_mostRecentSequenceTime;
-
-                        SetSequence(sequence, false, false);
-
-                        // Restore the current time.
-                        SetTime(lastTime);
-
-                        // Notify time may have changed, use m_currTime incase it was clamped by SetTime()
-                        TimeChanged(m_currTime);
-                    }
-                }
+                SetSequence(nullptr, true, false);
             }
         }
     }
@@ -365,7 +493,11 @@ void CAnimationContext::Pause()
         SetRecordingInternal(false);
     }
 
-    GetIEditor()->GetMovieSystem()->Pause();
+    if (m_movieSystem)
+    {
+        m_movieSystem->Pause();
+    }
+
     if (m_pSequence)
     {
         m_pSequence->Pause();
@@ -381,7 +513,11 @@ void CAnimationContext::Resume()
     {
         SetRecordingInternal(true);
     }
-    GetIEditor()->GetMovieSystem()->Resume();
+
+    if (m_movieSystem)
+    {
+        m_movieSystem->Resume();
+    }
 
     if (m_pSequence)
     {
@@ -425,43 +561,43 @@ void CAnimationContext::SetPlaying(bool playing)
     m_recording = false;
     SetRecordingInternal(false);
 
-    if (playing)
+    if (m_movieSystem)
     {
-        IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-
-        pMovieSystem->Resume();
-        if (m_pSequence)
+        if (playing)
         {
-            m_pSequence->Resume();
+            m_movieSystem->Resume();
 
-            IMovieUser* pMovieUser = pMovieSystem->GetUser();
-
-            if (pMovieUser)
+            if (m_pSequence)
             {
-                m_pSequence->BeginCutScene(true);
+                m_pSequence->Resume();
+
+                IMovieUser* pMovieUser = m_movieSystem->GetUser();
+
+                if (pMovieUser)
+                {
+                    m_pSequence->BeginCutScene(true);
+                }
             }
+            m_movieSystem->ResumeCutScenes();
         }
-        pMovieSystem->ResumeCutScenes();
-    }
-    else
-    {
-        IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-
-        pMovieSystem->Pause();
-
-        if (m_pSequence)
+        else
         {
-            m_pSequence->Pause();
-        }
+            m_movieSystem->Pause();
 
-        pMovieSystem->PauseCutScenes();
-        if (m_pSequence)
-        {
-            IMovieUser* pMovieUser = pMovieSystem->GetUser();
-
-            if (pMovieUser)
+            if (m_pSequence)
             {
-                m_pSequence->EndCutScene();
+                m_pSequence->Pause();
+            }
+
+            m_movieSystem->PauseCutScenes();
+            if (m_pSequence)
+            {
+                IMovieUser* pMovieUser = m_movieSystem->GetUser();
+
+                if (pMovieUser)
+                {
+                    m_pSequence->EndCutScene();
+                }
             }
         }
     }
@@ -470,20 +606,23 @@ void CAnimationContext::SetPlaying(bool playing)
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::Update()
 {
+    if (m_countWaitingForExitingGameMode > 0) // Waiting while Editor is exiting Play Game mode ?
+    {
+        if (--m_countWaitingForExitingGameMode == 0)  // The 2nd frame after StopPlayInEditor event sent ?
+        {
+            m_bIsInGameMode = false; // Now Editor Viewport Widget is in the "Editor" state,
+            RestoreSequenceOnEnteringEditMode(); // So restore previously active sequence and camera in Editor Viewport.
+        }
+        else
+        {
+            return; // while the Editor Viewport state goes from "Started" to "Stopping" and finally back to "Editor".
+        }
+    }
+
     if (m_bForceUpdateInNextFrame)
     {
         ForceAnimation();
         m_bForceUpdateInNextFrame = false;
-    }
-
-    // If looking through camera object and recording animation, do not allow camera shake
-    if ((GetIEditor()->GetViewManager()->GetCameraObjectId() != GUID_NULL) && GetIEditor()->GetAnimation()->IsRecording())
-    {
-        GetIEditor()->GetMovieSystem()->EnableCameraShake(false);
-    }
-    else
-    {
-        GetIEditor()->GetMovieSystem()->EnableCameraShake(true);
     }
 
     if (m_paused > 0 || !(m_playing || m_bAutoRecording))
@@ -495,7 +634,10 @@ void CAnimationContext::Update()
 
         if (!m_recording)
         {
-            GetIEditor()->GetMovieSystem()->StillUpdate();
+            if (m_movieSystem)
+            {
+                m_movieSystem->StillUpdate();
+            }
         }
 
         return;
@@ -512,8 +654,11 @@ void CAnimationContext::Update()
 
         if (!m_recording)
         {
-            GetIEditor()->GetMovieSystem()->PreUpdate(frameDeltaTime);
-            GetIEditor()->GetMovieSystem()->PostUpdate(frameDeltaTime);
+            if (m_movieSystem)
+            {
+                m_movieSystem->PreUpdate(frameDeltaTime);
+                m_movieSystem->PostUpdate(frameDeltaTime);
+            }
         }
     }
     else
@@ -549,19 +694,11 @@ void CAnimationContext::Update()
         }
     }
 
-    if (m_bAutoRecording)
-    {
-        // This is auto recording mode.
-        // Send sync with physics event to all selected entities.
-        GetIEditor()->GetSelection()->SendEvent(EVENT_PHYSICS_GETSTATE);
-    }
-
     if (fabs(m_lastTimeChangedNotificationTime - m_currTime) > 0.001f)
     {
         NotifyTimeChangedListenersUsingCurrTime();
     }
 
-    UpdateAnimatedLights();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -626,7 +763,11 @@ void CAnimationContext::GoToFrameCmd(IConsoleCmdArgs* pArgs)
         return;
     }
 
+    // console commands are in the invariant locale, for atof()
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
     float targetFrame = (float)atof(pArgs->GetArg(1));
+    scopedLocale.Deactivate();
+
     if (pSeq->GetTimeRange().start > targetFrame || targetFrame > pSeq->GetTimeRange().end)
     {
         gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName().c_str(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
@@ -655,34 +796,6 @@ void CAnimationContext::OnPostRender()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CAnimationContext::UpdateAnimatedLights()
-{
-    bool bLightAnimationSetActive = m_pSequence && (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet);
-    if (bLightAnimationSetActive == false)
-    {
-        return;
-    }
-
-    std::vector<CBaseObject*> entityObjects;
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-    std::for_each(std::begin(entityObjects), std::end(entityObjects),
-        [this](CBaseObject* pBaseObject)
-        {
-            CEntityObject* pEntityObject = static_cast<CEntityObject*>(pBaseObject);
-            bool bLight = pEntityObject && pEntityObject->GetEntityClass().compare("Light") == 0;
-            if (bLight)
-            {
-                bool bTimeScrubbing = pEntityObject->GetEntityPropertyBool("bTimeScrubbingInTrackView");
-                if (bTimeScrubbing)
-                {
-                    pEntityObject->SetEntityPropertyFloat("_fTimeScrubbed", m_currTime);
-                }
-            }
-        });
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CAnimationContext::BeginUndoTransaction()
 {
     m_bSavedRecordingState = m_recording;
@@ -698,6 +811,14 @@ void CAnimationContext::EndUndoTransaction()
     }
 
     SetRecordingInternal(m_bSavedRecordingState);
+}
+
+void CAnimationContext::OnPrefabInstancePropagationEnd()
+{
+    if (m_pSequence)
+    {
+        m_pSequence->BindToEditorObjects();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -721,6 +842,48 @@ void CAnimationContext::OnSequenceRemoved(CTrackViewSequence* pSequence)
         SetSequence(nullptr, true, false);
     }
 }
+
+//////////////////////////////////////////////////////////////////////////
+void CAnimationContext::StoreSequenceOnExitingEditMode(bool isSwitchingToGameMode)
+{
+    // Store currently active Editor Viewport camera EntityId
+    Camera::EditorCameraRequestBus::BroadcastResult(
+        m_viewCameraEntityIdToRestore, &Camera::EditorCameraRequestBus::Events::GetCurrentViewEntityId);
+
+    if (isSwitchingToGameMode)
+    {
+        SwitchEditorViewportCamera(AZ::EntityId()); // Switch Editor Viewport back to the default Editor camera
+        m_bIsInGameMode = true; // and set the flag of Editor being switched into Play Game mode.
+    }
+
+    if (m_pSequence)
+    {
+        m_sequenceToRestore = m_pSequence->GetSequenceComponentEntityId();
+    }
+    else
+    {
+        m_sequenceToRestore.SetInvalid();
+    }
+
+    m_sequenceRestoreTime = GetTime();
+
+    m_bSavedRecordingState = m_recording;
+    SetRecordingInternal(false);
+    SetSequence(nullptr, true, true);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CAnimationContext::RestoreSequenceOnEnteringEditMode()
+{
+    m_currTime = m_sequenceRestoreTime;
+    SetSequence(GetIEditor()->GetSequenceManager()->GetSequenceByEntityId(m_sequenceToRestore), true, true);
+    SetTime(m_sequenceRestoreTime);
+
+    SetRecordingInternal(m_bSavedRecordingState);
+
+    SwitchEditorViewportCamera(m_viewCameraEntityIdToRestore); // Switch Editor Viewport back to the stored camera, which was active prior to switching to Play Game mode.
+}
+
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
@@ -729,34 +892,53 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnBeginGameMode:
         if (m_pSequence)
         {
-            m_pSequence->Resume();
+            // Reset the sequence, so that changed camera positions are restored
+            m_pSequence->Reset(false);
+
+            // Force recent changes made in TrackView, updating in-memory prefab using Undo/Redo framework
+            AzToolsFramework::ScopedUndoBatch undoBatch("Update TrackView Sequence Before Playing Game");
+            undoBatch.MarkEntityDirty(m_pSequence->GetSequenceComponentEntityId());
         }
+        {
+            // This notification arrives before even the OnStartPlayInEditorBegin and later OnStartPlayInEditor events
+            // arrive to Editor Views, and thus switching cameras is still available.
+            // So, after storing an active camera Id, rollback the Editor Viewport to default "Editor camera" in order
+            // to help Editor correctly restore viewport state after switching back to Editing mode,
+            // then set the 'm_bIsInGameMode' flag, store an active sequence and drop it.
+            constexpr const bool isSwitchingToGameMode = true;
+            StoreSequenceOnExitingEditMode(isSwitchingToGameMode);
+        }
+        break;
+
     case eNotify_OnBeginSceneSave:
     case eNotify_OnBeginLayerExport:
         if (m_pSequence)
         {
-            m_sequenceToRestore = m_pSequence->GetSequenceComponentEntityId();
+            // Reset the sequence, so that changed camera positions are restored
+            m_pSequence->Reset(false);
+
+            // Force recent changes made in TrackView, updating in-memory prefab using Undo/Redo framework
+            AzToolsFramework::ScopedUndoBatch undoBatch("Update TrackView Sequence Before Saving");
+            undoBatch.MarkEntityDirty(m_pSequence->GetSequenceComponentEntityId());
         }
-        else
         {
-            m_sequenceToRestore.SetInvalid();
+            // Store active sequence and camera Ids and drop this sequence.
+            constexpr const bool isSwitchingToGameMode = false;
+            StoreSequenceOnExitingEditMode(isSwitchingToGameMode);
         }
-
-        m_sequenceRestoreTime = GetTime();
-
-        m_bSavedRecordingState = m_recording;
-        SetRecordingInternal(false);
-        SetSequence(nullptr, true, true);
         break;
 
     case eNotify_OnEndGameMode:
+        // Delay restoring previously active sequence and Editor Viewport camera, and clearing 'm_bIsInGameMode' flag,
+        // for 2 frames, while Editor Viewport state goes from "Started" to "Stopping" and finally back to "Editor",
+        // and switching cameras is not supported.
+        m_countWaitingForExitingGameMode = 2;
+        break;
+
     case eNotify_OnEndSceneSave:
     case eNotify_OnEndLayerExport:
-        m_currTime = m_sequenceRestoreTime;
-        SetSequence(GetIEditor()->GetSequenceManager()->GetSequenceByEntityId(m_sequenceToRestore), true, true);
-        SetTime(m_sequenceRestoreTime);
-
-        SetRecordingInternal(m_bSavedRecordingState);
+        // Restore previously active sequence and camera in Editor Viewport.
+        RestoreSequenceOnEnteringEditMode();
         break;
 
     case eNotify_OnQuit:
@@ -773,7 +955,7 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_mostRecentSequenceTime = 0.0f;
         m_bSavedRecordingState = m_recording;
         SetRecordingInternal(false);
-        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
+        SetSequence(nullptr, false, false);
         break;
 
     case eNotify_OnEndLoad:
@@ -784,7 +966,11 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void CAnimationContext::SetRecordingInternal(bool enableRecording)
 {
-    GetIEditor()->GetMovieSystem()->SetRecording(enableRecording);
+    if (m_movieSystem)
+    {
+        m_movieSystem->SetRecording(enableRecording);
+    }
+
     if (m_pSequence)
     {
         m_pSequence->SetRecording(enableRecording);

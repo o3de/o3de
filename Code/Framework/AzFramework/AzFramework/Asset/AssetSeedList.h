@@ -35,7 +35,7 @@ namespace AzFramework
     public:
 
         AZ_TYPE_INFO(AssetSeedListReflector, "{26E389E4-087B-4C79-883F-7216181189BF}");
-        AZ_CLASS_ALLOCATOR(AssetSeedListReflector, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetSeedListReflector, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         AssetSeedList m_fileInfoList;

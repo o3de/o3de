@@ -13,7 +13,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxEditorModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxEditorModule, AZ::SystemAllocator)
 
     WhiteBoxEditorModule::WhiteBoxEditorModule()
         : WhiteBoxModule()
@@ -37,4 +37,8 @@ namespace WhiteBox
     }
 } // namespace WhiteBox
 
-AZ_DECLARE_MODULE_CLASS(Gem_WhiteBoxEditor, WhiteBox::WhiteBoxEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), WhiteBox::WhiteBoxEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_WhiteBox_Editor, WhiteBox::WhiteBoxEditorModule)
+#endif

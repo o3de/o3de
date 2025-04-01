@@ -1,0 +1,147 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#pragma once
+
+#ifndef ENABLE_TRANSMISSION
+#define ENABLE_TRANSMISSION 0
+#endif
+
+#ifndef ENABLE_PARALLAX
+// Disabled until parallax depth functions can be rewritten to not pass in the heightmap or sampler from the material SRG
+#define ENABLE_PARALLAX 0
+#endif
+
+#ifndef ENABLE_VERTEX_COLOR
+#define ENABLE_VERTEX_COLOR 1
+#endif
+
+#ifndef UvSetCount
+#define UvSetCount 2
+#endif
+
+#include <Atom/Features/ShaderQualityOptions.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli>
+
+#if ENABLE_PARALLAX
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli>
+COMMON_OPTIONS_PARALLAX()
+#endif
+ 
+// O3DE_GENERATED_INCLUDES_BEGIN
+// O3DE_GENERATED_INCLUDES_END
+
+option bool o_normal_override_enabled = false;
+option bool o_opacity_affects_specular_factor = true;
+option bool o_clearCoat_enabled = false;
+option bool o_clearCoat_normal_override_enabled = false;
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    // m_placeHolder keeps MaterialSrg from being compiled out, causing SRG mismatches while assets are processing when iterating on graphs
+    bool m_placeHolder;
+
+    // O3DE_GENERATED_MATERIAL_SRG_BEGIN
+    // O3DE_GENERATED_MATERIAL_SRG_END
+}
+
+// O3DE_GENERATED_CLASSES_BEGIN
+// O3DE_GENERATED_CLASSES_END
+ 
+// O3DE_GENERATED_FUNCTIONS_BEGIN
+// O3DE_GENERATED_FUNCTIONS_END
+
+
+#if ENABLE_PARALLAX
+// Callback function for ParallaxMapping.azsli
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+{
+    return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+}
+
+bool ShouldHandleParallax()
+{
+    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
+}
+
+bool ShouldHandleParallaxInDepthShaders()
+{
+    // The depth pass shaders need to calculate parallax when the result could affect the depth buffer, or when
+    // parallax could affect texel clipping.
+    return ShouldHandleParallax() && (o_parallax_enablePixelDepthOffset || o_opacity_mode == OpacityMode::Cutout);
+}
+#endif
+
+bool NeedsTangentFrame()
+{
+    return true;
+}
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+#include "MaterialGraphName_VertexEval.azsli"
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+#include "MaterialGraphName_PixelGeometryEval.azsli"
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>
+#include "MaterialGraphName_SurfaceEval.azsli"
+
+#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+    
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+#include "MaterialGraphName_VertexEval.azsli"
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+#include "MaterialGraphName_PixelGeometryEval.azsli"
+    
+void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+{
+    const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
+    const float3 O3DE_MC_POSITION = (float3)IN.position;
+    const float3 O3DE_MC_NORMAL = (float3)IN.normal;
+    const float3 O3DE_MC_TANGENT = (float3)IN.tangent;
+    const float3 O3DE_MC_BITANGENT = (float3)bitangent;
+    const float3 O3DE_MC_POSITION_WS = geoData.positionWS;
+    const float3 O3DE_MC_NORMAL_WS = geoData.vertexNormal;
+    const float3 O3DE_MC_TANGENT_WS = geoData.tangents[0];
+    const float3 O3DE_MC_BITANGENT_WS = geoData.bitangents[0];
+    #define O3DE_MC_UV(index) geoData.uvs[clamp(index, 0, UvSetCount-1)];
+
+    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
+    const bool placeHolder = MaterialSrg::m_placeHolder;
+
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inAlpha, inOpacityFactor
+    real inAlpha = 1.0;
+    real inOpacityFactor = 1.0;
+    // O3DE_GENERATED_INSTRUCTIONS_END
+
+    #undef O3DE_MC_UV
+
+    CheckClipping((real)inAlpha, (real)inOpacityFactor);
+}
+
+#else
+
+#include "MaterialGraphName_DepthVertexData.azsli"
+#include "MaterialGraphName_DepthVertexEval.azsli"
+
+#endif

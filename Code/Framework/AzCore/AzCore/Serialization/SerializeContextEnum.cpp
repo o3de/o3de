@@ -10,8 +10,8 @@
 
 namespace AZ
 {
-    const Crc32 Serialize::Attributes::EnumValueKey(AZ_CRC("EnumValue", 0xe4f32eed));
-    const Crc32 Serialize::Attributes::EnumUnderlyingType(AZ_CRC("EnumUnderlyingType", 0x8c461f93));
+    const Crc32 Serialize::Attributes::EnumValueKey(AZ_CRC_CE("EnumValueKey"));
+    const Crc32 Serialize::Attributes::EnumUnderlyingType(AZ_CRC_CE("EnumUnderlyingType"));
 
     SerializeContext::EnumBuilder::EnumBuilder(SerializeContext* context, const typename SerializeContext::UuidToClassMap::iterator& classMapIter)
         : m_context(context)
@@ -34,13 +34,13 @@ namespace AZ
         {
             return this; // we have already removed the class data.
         }
-        AZ_Assert(version != VersionClassDeprecated, "You cannot use %u as the version, it is reserved by the system!", version);
+        AZ_Assert(version != Serialize::VersionClassDeprecated, "You cannot use %u as the version, it is reserved by the system!", version);
         m_classData->second.m_version = version;
         m_classData->second.m_converter = converter;
         return this;
     }
 
-    auto SerializeContext::EnumBuilder::Serializer(IDataSerializerPtr serializer) -> EnumBuilder*
+    auto SerializeContext::EnumBuilder::Serializer(Serialize::IDataSerializerPtr serializer) -> EnumBuilder*
     {
         if (m_context->IsRemovingReflection())
         {

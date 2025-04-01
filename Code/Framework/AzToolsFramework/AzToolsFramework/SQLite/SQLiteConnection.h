@@ -15,6 +15,14 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/parallel/mutex.h>
 
+namespace AzToolsFramework
+{
+    namespace AssetDatabase
+    {
+        class PathOrUuid;
+    }
+}
+
 typedef struct sqlite3 sqlite3;
 typedef struct sqlite3_stmt sqlite3_stmt;
 
@@ -36,7 +44,7 @@ namespace AzToolsFramework
         class Connection
         {
         public:
-            AZ_CLASS_ALLOCATOR(Connection, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(Connection, AZ::SystemAllocator)
             Connection(void);
             ~Connection(void);
 
@@ -105,7 +113,7 @@ namespace AzToolsFramework
         class Statement
         {
         public:
-            AZ_CLASS_ALLOCATOR(Statement, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Statement, AZ::SystemAllocator);
             Statement(StatementPrototype* parent);
             ~Statement();
 
@@ -135,6 +143,7 @@ namespace AzToolsFramework
             AZ::Uuid GetColumnUuid(int col);
 
             bool BindValueUuid(int col, const AZ::Uuid& data);
+            bool BindValuePathOrUuid(int col, const AssetDatabase::PathOrUuid& data);
             bool BindValueBlob(int col, void* data, int dataSize);
             bool BindValueDouble(int col, double data);
             bool BindValueInt(int col, int data);

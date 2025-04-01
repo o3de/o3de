@@ -10,6 +10,7 @@
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 #include <AzFramework/Input/Events/InputTextEventListener.h>
+#include <AzFramework/Input/Channels/InputChannel.h>
 
 
 namespace UnitTest
@@ -22,7 +23,7 @@ namespace UnitTest
     }
 
     class QtEventToAzInputMapperFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
         , public AzFramework::InputChannelNotificationBus::Handler
         , public AzFramework::InputTextNotificationBus::Handler
     {
@@ -32,7 +33,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(WidgetSize);
@@ -78,7 +79,7 @@ namespace UnitTest
 
             m_rootWidget.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed) override
@@ -368,7 +369,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
-    INSTANTIATE_TEST_CASE_P(All, MouseButtonParamQtEventToAzInputMapperFixture,
+    INSTANTIATE_TEST_SUITE_P(All, MouseButtonParamQtEventToAzInputMapperFixture,
         testing::Values(
             MouseButtonIdsParam{ Qt::MouseButton::LeftButton, AzFramework::InputDeviceMouse::Button::Left },
             MouseButtonIdsParam{ Qt::MouseButton::RightButton, AzFramework::InputDeviceMouse::Button::Right },
@@ -461,7 +462,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
-    INSTANTIATE_TEST_CASE_P(All, PrintableKeyEventParamQtEventToAzInputMapperFixture,
+    INSTANTIATE_TEST_SUITE_P(All, PrintableKeyEventParamQtEventToAzInputMapperFixture,
         testing::Values(
             KeyEventIdsParam{ Qt::Key_0, AzFramework::InputDeviceKeyboard::Key::Alphanumeric0 },
             KeyEventIdsParam{ Qt::Key_1, AzFramework::InputDeviceKeyboard::Key::Alphanumeric1 },
@@ -516,6 +517,102 @@ namespace UnitTest
             KeyEventIdsParam{ Qt::Key_Semicolon, AzFramework::InputDeviceKeyboard::Key::PunctuationSemicolon },
             KeyEventIdsParam{ Qt::Key_Slash, AzFramework::InputDeviceKeyboard::Key::PunctuationSlash },
             KeyEventIdsParam{ Qt::Key_QuoteLeft, AzFramework::InputDeviceKeyboard::Key::PunctuationTilde }
+        ),
+        [](const ::testing::TestParamInfo<KeyEventIdsParam>& info)
+        {
+            return info.param.m_az.GetName();
+        }
+    );
+
+    // Note that this class is identical to the previous fixture class.
+    // This is intentional - the test framework appears to gather all TEST_P bodies and execute them for all
+    // fixtures that use the same class, even if they have different names in INSTANTIATE_TEST_SUITE_P.
+    // By making a different class here, we can separate them so the above INSTANTIATE_TEST_SUITE_P params
+    // do not get fed into the below TEST_P.  (This happens even if you give the INSTANTIATE_TEST_SUITE_P calls different names.)
+    class ModifierKeyEventFixture
+        : public QtEventToAzInputMapperFixture
+        , public ::testing::WithParamInterface<KeyEventIdsParam>
+    {
+    };
+
+    // This test makes sure that the keyboard device releases the modifier keys when the application is deactivated.
+    // It tests a regression where the modifier keys would stick if the application was deactivated while they were held,
+    // for example, ALT-TAB would cause the ALT key to stick.
+    // It tests to make sure that the actual keyboard device input channel custom data containing the modifier keys
+    // has released the modifier key in its custom data, since the application checks that custom data to see if the
+    // modifiers are present.
+    TEST_P(ModifierKeyEventFixture, ModifierKey_During_ApplicationStateChange_Causes_ModifierKeys_Reset)
+    {
+        // setup phase
+        const KeyEventIdsParam keyEventIds = GetParam();
+        const Qt::Key whichKey = keyEventIds.m_qt;
+        Qt::KeyboardModifiers modifiers = {};
+        AzFramework::ModifierKeyMask expectedMask = {};
+
+        switch (whichKey)
+        {
+            case Qt::Key_Alt:     expectedMask = AzFramework::ModifierKeyMask::AltAny;   modifiers = Qt::KeyboardModifier::AltModifier; break;
+            case Qt::Key_Control: expectedMask = AzFramework::ModifierKeyMask::CtrlAny;  modifiers = Qt::KeyboardModifier::ControlModifier; break;
+            case Qt::Key_Super_L: expectedMask = AzFramework::ModifierKeyMask::SuperAny; modifiers = Qt::KeyboardModifier::MetaModifier; break;
+            case Qt::Key_Super_R: expectedMask = AzFramework::ModifierKeyMask::SuperAny; modifiers = Qt::KeyboardModifier::MetaModifier; break;
+            case Qt::Key_Shift:   expectedMask = AzFramework::ModifierKeyMask::ShiftAny; modifiers = Qt::KeyboardModifier::ShiftModifier; break;
+        };
+
+        AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+        AzFramework::InputTextNotificationBus::Handler::BusConnect();
+
+        // This is still the setup phase - we want to get into a state where the application
+        // believes that the modifier key is pressed as the starting point.
+        QTest::keyPress(m_rootWidget.get(), whichKey, modifiers);
+
+        // note that because Qt sends (up to) 4 events whenever it gets a single modifier keypress, we can expect
+        // this to have at least 1 but probably 4 events - for example, it sends out a ShortCut event in addition to the
+        // usual key press event because modifiers like ALT can trigger shorcuts.  Some modifiers will only output 1 event
+        // so here we only check that there is at least 1, and then work with that one.
+        ASSERT_GT(m_azChannelEvents.size(), 0);
+        EXPECT_TRUE(m_azChannelEvents[0].m_isActive); // it should consider it as being active now since it was pressed
+        EXPECT_STREQ(m_azChannelEvents[0].m_inputChannelId.GetName(), keyEventIds.m_az.GetName()); // it should be the expected key
+
+        // get the input channel directly, so that its extra class-specific data can be captured, in this case, we expect
+        // keyboard events to have a modifier key state special data object attached:
+        AzFramework::InputDeviceId deviceId = AzToolsFramework::GetSyntheticKeyboardDeviceId(QtEventToAzInputMapperFixture::TestDeviceIdSeed);
+        const AzFramework::InputChannel* inputChannel = nullptr;
+        AzFramework::InputChannelRequestBus::EventResult(inputChannel, {m_azChannelEvents[0].m_inputChannelId, deviceId.GetIndex()}, &AzFramework::InputChannelRequests::GetInputChannel);
+        ASSERT_NE(inputChannel, nullptr);
+
+        // At this point, we can expect the mask to be set to the modifier key actually pressed pressed.
+        // This would indicate the device has consumed the event and now thinks that the modifier key is held.
+        const AzFramework::ModifierKeyStates* modifierKeyStatesBefore = inputChannel->GetCustomData<AzFramework::ModifierKeyStates>();
+        ASSERT_NE(modifierKeyStatesBefore, nullptr);
+        // we are about to do bitwise masking operations on this, so it must be static cast like it is elsewhere in the code.
+        int activeModifierKeys = static_cast<int>(modifierKeyStatesBefore->GetActiveModifierKeys());
+        EXPECT_NE(activeModifierKeys & static_cast<int>(expectedMask), 0);
+
+        // Testing phase - trigger the event we are interested in seeing the outcome for.
+        // Tell the application that it has gone inactive.  It should respond by resetting any modifier keys,
+        // even though no keypress events have occurred since.
+        QApplicationStateChangeEvent event(Qt::ApplicationState::ApplicationInactive);
+        QCoreApplication::sendEvent(m_rootWidget.get(), &event);
+
+        // Get the active modifier keys (if any) of the input event. Will only exist for keyboard keys.
+        const AzFramework::ModifierKeyStates* modifierKeyStatesAfter = inputChannel->GetCustomData<AzFramework::ModifierKeyStates>();
+        ASSERT_NE(modifierKeyStatesAfter, nullptr);
+        EXPECT_EQ(modifierKeyStatesAfter->GetActiveModifierKeys(), AzFramework::ModifierKeyMask::None);
+
+        // cleanup
+        AzFramework::InputTextNotificationBus::Handler::BusDisconnect();
+        AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
+    }
+
+    // Test case exercises each modifier key and makes sure it doesn't "stick" when the application
+    // is deactivated.
+    INSTANTIATE_TEST_SUITE_P(All, ModifierKeyEventFixture,
+        testing::Values(
+            KeyEventIdsParam{ Qt::Key_Alt, AzFramework::InputDeviceKeyboard::Key::ModifierAltL },
+            KeyEventIdsParam{ Qt::Key_Shift, AzFramework::InputDeviceKeyboard::Key::ModifierShiftL },
+            KeyEventIdsParam{ Qt::Key_Control, AzFramework::InputDeviceKeyboard::Key::ModifierCtrlL },
+            KeyEventIdsParam{ Qt::Key_Super_L, AzFramework::InputDeviceKeyboard::Key::ModifierSuperL },
+            KeyEventIdsParam{ Qt::Key_Super_R, AzFramework::InputDeviceKeyboard::Key::ModifierSuperR }
         ),
         [](const ::testing::TestParamInfo<KeyEventIdsParam>& info)
         {
@@ -579,7 +676,7 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
-    INSTANTIATE_TEST_CASE_P(All, MoveMoveWrapParamQtEventToAzInputMapperFixture,
+    INSTANTIATE_TEST_SUITE_P(All, MoveMoveWrapParamQtEventToAzInputMapperFixture,
         testing::Values(
             // verify CursorModeWrappedX wrapping
             MouseMoveParam {AzToolsFramework::CursorInputMode::CursorModeWrappedX, 

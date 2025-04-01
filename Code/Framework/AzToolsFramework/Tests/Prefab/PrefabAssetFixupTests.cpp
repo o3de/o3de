@@ -20,7 +20,7 @@ namespace UnitTest
     {
         AZ_RTTI(MockAsset, "{DAB98A3F-1714-4B95-AACB-8C150B0D0628}", AZ::Data::AssetData);
 
-        AZ_CLASS_ALLOCATOR(MockAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MockAsset, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -56,7 +56,7 @@ namespace UnitTest
     class MockAssetHandler : public AZ::Data::AssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MockAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MockAssetHandler, AZ::SystemAllocator);
 
         AZ::Data::AssetPtr CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type) override
         {
@@ -176,7 +176,7 @@ namespace UnitTest
     TEST_F(PrefabFixupTest, Test_LoadInstanceFromPrefabDom_Overload3)
     {
         Instance instance;
-        Instance::EntityList entityList;
+        AzToolsFramework::EntityList entityList;
         (PrefabDomUtils::LoadInstanceFromPrefabDom(instance, entityList, m_prefabDom));
 
         CheckInstance(instance);

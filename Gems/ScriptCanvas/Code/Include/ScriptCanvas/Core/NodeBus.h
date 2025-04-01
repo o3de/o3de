@@ -79,7 +79,7 @@ namespace ScriptCanvas
             return FindDatum(slotId);
         }
 
-        virtual void FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) = 0;
+        virtual bool FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) = 0;
 
         //! Determines whether the slot on this node with the specified slot id can accept values of the specified type
         virtual AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const = 0;

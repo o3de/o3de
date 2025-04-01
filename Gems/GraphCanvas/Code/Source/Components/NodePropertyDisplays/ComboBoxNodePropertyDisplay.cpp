@@ -6,8 +6,8 @@
  *
  */
 
-#include <QGraphicsSceneDragDropEvent>
 #include <QGraphicsProxyWidget>
+#include <QGraphicsSceneDragDropEvent>
 #include <QGraphicsView>
 #include <QMenu>
 #include <QMimeData>
@@ -15,8 +15,8 @@
 
 #include <Components/NodePropertyDisplays/ComboBoxNodePropertyDisplay.h>
 
-#include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>
+#include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
 #include <GraphCanvas/Utils/ConversionUtils.h>
 #include <GraphCanvas/Widgets/NodePropertyBus.h>
@@ -224,10 +224,6 @@ namespace GraphCanvas
 
                     m_displayLabel->SetBorderColorOverride(QBrush(penGradient));
 
-                    if (m_comboBox)
-                    {
-                        m_comboBox->SetOutlineColor(penGradient, m_displayLabel->GetStyleHelper().GetColor(GraphCanvas::Styling::Attribute::BackgroundColor));
-                    }
                 }
             }
 
@@ -239,11 +235,6 @@ namespace GraphCanvas
                 {
                     QColor color = colorPalette->GetColor(GraphCanvas::Styling::Attribute::LineColor);
                     m_displayLabel->SetBorderColorOverride(QBrush(color));
-
-                    if (m_comboBox)
-                    {
-                        m_comboBox->SetOutlineColor(color, m_displayLabel->GetStyleHelper().GetColor(GraphCanvas::Styling::Attribute::BackgroundColor));
-                    }
                 }
                 else
                 {
@@ -310,15 +301,12 @@ namespace GraphCanvas
             m_comboBox = aznew GraphCanvasComboBox(m_dataInterface->GetItemInterface());
             m_comboBox->setContextMenuPolicy(Qt::CustomContextMenu);
 
-            QObject::connect(m_comboBox, &AzToolsFramework::PropertyEntityIdCtrl::customContextMenuRequested, [this](const QPoint& pos) { this->ShowContextMenu(pos); });
-
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::SelectedIndexChanged, [this](const QModelIndex& /*index*/) { this->m_valueDirty = true; });
-
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusIn, [this]() { this->EditStart();  });
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusOut, [this]() { this->EditFinished();  });
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnMenuAboutToDisplay, [this]() { this->OnMenuAboutToDisplay(); });
-
-            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnUserActionComplete, [this]() { this->SubmitValue();  });
+            QObject::connect(m_comboBox, &AzToolsFramework::PropertyEntityIdCtrl::customContextMenuRequested, [this](const QPoint& pos) { ShowContextMenu(pos); });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::SelectedIndexChanged, [this](const QModelIndex& /*index*/) { m_valueDirty = true; });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusIn, [this]() { EditStart(); });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnFocusOut, [this]() { EditFinished(); });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnUserActionComplete, [this]() { SubmitValue(); });
+            QObject::connect(m_comboBox, &GraphCanvasComboBox::OnMenuAboutToDisplay, [this]() { OnMenuAboutToDisplay(); });
 
             m_proxyWidget->setWidget(m_comboBox);
 
@@ -338,11 +326,6 @@ namespace GraphCanvas
             m_valueDirty = false;
             m_menuDisplayDirty = true;
 
-            if (m_dataTypeOutlineEnabled)
-            {
-                m_comboBox->SetOutline(m_displayLabel->GetBorderColorOverride(), m_displayLabel->GetStyleHelper().GetColor(GraphCanvas::Styling::Attribute::BackgroundColor));
-            }
-
             ViewNotificationBus::Handler::BusConnect(viewId);
             GeometryNotificationBus::Handler::BusConnect(GetNodeId());
         }
@@ -359,6 +342,7 @@ namespace GraphCanvas
 
             m_menuDisplayDirty = false;
 
+            ViewNotificationBus::Handler::BusDisconnect();
             GeometryNotificationBus::Handler::BusDisconnect(GetNodeId());
         }
     }

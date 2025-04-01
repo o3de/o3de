@@ -16,7 +16,7 @@ namespace AZ
         class CommandQueueContext
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator);
             
             CommandQueueContext() = default;
             void Init(RHI::Device& device);
@@ -46,6 +46,7 @@ namespace AZ
             FenceSet m_compiledFences;
             AZStd::array<FenceSet, RHI::Limits::Device::FrameCountMax> m_frameFences;
             uint32_t m_currentFrameIndex = 0;
+            Device* m_device = nullptr;
             
             void QueueGpuSignals(FenceSet& fenceSet);
         };

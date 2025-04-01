@@ -15,9 +15,7 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 
@@ -88,6 +86,71 @@ namespace UnitTest
         }
 
         return AZStd::string(keyText.toUtf8().data());
+    }
+
+    bool ViewportSettingsTestImpl::GridSnappingEnabled() const
+    {
+        return m_gridSnapping;
+    }
+
+    float ViewportSettingsTestImpl::GridSize() const
+    {
+        return m_gridSize;
+    }
+
+    bool ViewportSettingsTestImpl::ShowGrid() const
+    {
+        return false;
+    }
+
+    bool ViewportSettingsTestImpl::AngleSnappingEnabled() const
+    {
+        return m_angularSnapping;
+    }
+
+    float ViewportSettingsTestImpl::AngleStep() const
+    {
+        return m_angularStep;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorLineBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorCircleBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    bool ViewportSettingsTestImpl::StickySelectEnabled() const
+    {
+        return m_stickySelect;
+    }
+
+    bool ViewportSettingsTestImpl::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportSettingsTestImpl::HelpersVisible() const
+    {
+        return m_helpersVisible;
+    }
+
+    bool ViewportSettingsTestImpl::OnlyShowHelpersForSelectedEntities() const
+    {
+        return m_onlyShowForSelectedEntities;
+    }
+
+    AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector2 ViewportSettingsTestImpl::DefaultEditorCameraOrientation() const
+    {
+        return AZ::Vector2::CreateZero();
     }
 
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
@@ -312,7 +375,6 @@ namespace UnitTest
 
     ToolsApplicationMessageHandler::ToolsApplicationMessageHandler()
     {
-        m_gridMateMessageHandler = AZStd::make_unique<ErrorHandler>("GridMate");
         m_enginePathMessageHandler = AZStd::make_unique<ErrorHandler>("Engine Path");
         m_skippingDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Skipping drive");
         m_storageDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Storage drive");
@@ -485,10 +547,10 @@ namespace UnitTest
 
         entity->Deactivate();
 
-        // add required components for the Editor entity
-        entity->CreateComponent<Components::TransformComponent>();
-        entity->CreateComponent<Components::EditorLockComponent>();
-        entity->CreateComponent<Components::EditorVisibilityComponent>();
+        // Add required components for the Editor entity if they are not added.
+        CreateComponentIfMissing<Components::TransformComponent>(entity);
+        CreateComponentIfMissing<Components::EditorLockComponent>(entity);
+        CreateComponentIfMissing<Components::EditorVisibilityComponent>(entity);
 
         // This is necessary to prevent a warning in the undo system.
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
@@ -496,27 +558,6 @@ namespace UnitTest
             entity->GetId());
 
         entity->Activate();
-
-        if (outEntity)
-        {
-            *outEntity = entity;
-        }
-
-        return entity->GetId();
-    }
-
-    AZ::EntityId CreateEditorLayerEntity(const char* name, AZ::Entity** outEntity /*= nullptr*/)
-    {
-        AZ::Entity* entity = nullptr;
-        CreateDefaultEditorEntity(name, &entity);
-
-        auto layer = aznew Layers::EditorLayerComponent();
-        AZStd::vector<AZ::Component*> newComponents{ layer };
-
-        EntityCompositionRequests::AddExistingComponentsOutcome componentAddResult;
-        EntityCompositionRequestBus::BroadcastResult(
-            componentAddResult, &EntityCompositionRequests::AddExistingComponentsToEntityById,
-            entity->GetId(), newComponents);
 
         if (outEntity)
         {
@@ -552,40 +593,42 @@ namespace UnitTest
         return assetId;
     }
 
-    AZ::SliceComponent::EntityList InstantiateSlice(
-        AZ::Data::AssetId sliceAssetId, const SliceAssets& sliceAssets)
+    const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ViewportUiManagerTestable::ButtonGroup>>&
+    ViewportUiManagerTestable::GetClusterMap()
     {
-        auto foundItr = sliceAssets.find(sliceAssetId);
-        AZ_Assert(foundItr != sliceAssets.end(), "sliceAssetId not in sliceAssets");
-
-        AZ::SliceComponent* rootSlice;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
-            rootSlice, &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-        AZ::SliceComponent::SliceInstanceAddress sliceInstAddress = rootSlice->AddSlice(foundItr->second);
-        rootSlice->Instantiate();
-
-        const AZ::SliceComponent::InstantiatedContainer* instanceContainer =
-            sliceInstAddress.GetInstance()->GetInstantiated();
-
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequestBus::Events::HandleEntitiesAdded,
-            instanceContainer->m_entities);
-
-        return instanceContainer->m_entities;
+        return m_clusterButtonGroups;
     }
 
-    void DestroySlices(SliceAssets& sliceAssets)
+    ViewportUiManagerTestable::ViewportUiDisplay* ViewportUiManagerTestable::GetViewportUiDisplay()
     {
-        AZ::SliceComponent* rootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
-            rootSlice, &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
+        return m_viewportUi.get();
+    }
 
-        for (const auto& sliceAssetPair : sliceAssets)
-        {
-            rootSlice->RemoveSlice(sliceAssetPair.second);
-        }
+    void ViewportManagerWrapper::Create()
+    {
+        m_viewportManager = AZStd::make_unique<ViewportUiManagerTestable>();
+        m_viewportManager->ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
+        m_mockRenderOverlay = AZStd::make_unique<QWidget>();
+        m_parentWidget = AZStd::make_unique<QWidget>();
+        m_viewportManager->InitializeViewportUi(m_parentWidget.get(), m_mockRenderOverlay.get());
+    }
 
-        sliceAssets.clear();
+    void ViewportManagerWrapper::Destroy()
+    {
+        m_viewportManager->DisconnectViewportUiBus();
+        m_viewportManager.reset();
+        m_mockRenderOverlay.reset();
+        m_parentWidget.reset();
+    }
+
+    ViewportUiManagerTestable* ViewportManagerWrapper::GetViewportManager()
+    {
+        return m_viewportManager.get();
+    }
+
+    QWidget* ViewportManagerWrapper::GetMockRenderOverlay()
+    {
+        return m_mockRenderOverlay.get();
     }
 } // namespace UnitTest
 

@@ -22,7 +22,7 @@ namespace ScriptCanvas
     {
         if (componentElementNode.GetVersion() < 3)
         {
-            componentElementNode.RemoveElementByName(AZ_CRC("m_uniqueId", 0x52157a7a));
+            componentElementNode.RemoveElementByName(AZ_CRC_CE("m_uniqueId"));
         }
 
         return true;
@@ -327,7 +327,7 @@ namespace ScriptCanvas
     {
         for (auto& variablePair : m_variableData.GetVariables())
         {
-            if (variablePair.second.GetDataType() == dataType)
+            if (variablePair.second.GetDataType().IS_A(dataType))
             {
                 if (excludedVariableIds.count(variablePair.first) == 0)
                 {

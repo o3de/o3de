@@ -18,30 +18,34 @@ endif()
 ################################################################################
 
 if(PAL_TRAIT_TEST_PYTEST_SUPPORTED)
-    foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
-        ly_add_pytest(
-            NAME pytest_sanity_${suite_name}_no_gpu
-            PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
-            TEST_SUITE ${suite_name}
-        )
+    # Disabled due to intermittent XML error in https://github.com/o3de/o3de/issues/11667
+     foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
+         ly_add_pytest(
+             NAME pytest_sanity_${suite_name}_no_gpu
+             PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
+             TEST_SUITE ${suite_name}
+             TEST_SERIAL
+         )
 
-        ly_add_pytest(
-            NAME pytest_sanity_${suite_name}_requires_gpu
-            PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
-            TEST_SUITE ${suite_name}
-            TEST_REQUIRES gpu
-        )
-    endforeach()
+         ly_add_pytest(
+             NAME pytest_sanity_${suite_name}_requires_gpu
+             PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
+             TEST_SUITE ${suite_name}
+             TEST_REQUIRES gpu
+             TEST_SERIAL
+         )
+     endforeach()
 
-    # add a custom test which makes sure that the test filtering works!
-    ly_add_test(
-        NAME cli_test_driver
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        TEST_COMMAND ${LY_PYTHON_CMD} ${CMAKE_CURRENT_LIST_DIR}/ctest_driver_test.py
-            -x ${CMAKE_CTEST_COMMAND} 
-            --build-path ${CMAKE_BINARY_DIR}
-            --config $<CONFIG>
-        TEST_LIBRARY pytest
-    )
+    # Disabled due to dependency on the test above
+     # add a custom test which makes sure that the test filtering works!
+     ly_add_test(
+         NAME cli_test_driver
+         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+         TEST_COMMAND ${LY_PYTHON_CMD} ${CMAKE_CURRENT_LIST_DIR}/ctest_driver_test.py
+             -x ${CMAKE_CTEST_COMMAND} 
+             --build-path ${CMAKE_BINARY_DIR}
+             --config $<CONFIG>
+         TEST_LIBRARY pytest
+     )
 
 endif()

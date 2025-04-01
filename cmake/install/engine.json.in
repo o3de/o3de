@@ -1,11 +1,16 @@
 {
-    "engine_name": "@LY_VERSION_ENGINE_NAME@",
-    "restricted_name": "o3de",
-    "FileVersion": 1,
-    "O3DEVersion": "@LY_VERSION_STRING@",
-    "O3DECopyrightYear": @LY_VERSION_COPYRIGHT_YEAR@,
-    "O3DEBuildNumber": @LY_VERSION_BUILD_NUMBER@,
-    "external_subdirectories": [@LY_INSTALL_EXTERNAL_SUBDIRS@],
-    "projects": [@LY_INSTALL_PROJECTS@],
-    "templates": [@LY_INSTALL_TEMPLATES@]
+    "engine_name": "@O3DE_INSTALL_ENGINE_NAME@",
+    "restricted_name": "@O3DE_INSTALL_ENGINE_NAME@",
+    "display_version": "@O3DE_INSTALL_DISPLAY_VERSION_STRING@",
+    "version": "@O3DE_INSTALL_VERSION_STRING@",
+    "api_versions": @O3DE_INSTALL_API_VERSIONS@,
+    "file_version": 2,
+    "copyright_year": @O3DE_COPYRIGHT_YEAR@,
+    "build": @O3DE_INSTALL_BUILD_VERSION@,
+    "external_subdirectories": [@O3DE_INSTALL_EXTERNAL_SUBDIRS@],
+    "gem_names": [@O3DE_INSTALL_ENGINE_GEMS@],
+    "projects": [@O3DE_INSTALL_PROJECTS@],
+    "repos": [@O3DE_INSTALL_REPOS@],
+    "templates": [@O3DE_INSTALL_TEMPLATES@],
+    "sdk_engine": true
 }

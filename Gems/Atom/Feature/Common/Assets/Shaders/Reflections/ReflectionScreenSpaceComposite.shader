@@ -14,7 +14,7 @@
         }
     },
 
-    "BlendState":
+    "GlobalTargetBlendState":
     {
         "Enable": true,
         "BlendSource": "AlphaSource",
@@ -37,8 +37,15 @@
                 "type": "Fragment"
             }
         ]
-    },
+    }, 
 
-    "ProgramVariants": [
-    ]
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
+        }
+    ]  
 }

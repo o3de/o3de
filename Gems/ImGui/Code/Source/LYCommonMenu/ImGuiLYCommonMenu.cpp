@@ -11,12 +11,21 @@
 #ifdef IMGUI_ENABLED
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Viewport/ViewportBus.h>
+#include <imgui/imgui_internal.h>
 #include <ILevelSystem.h>
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
+
+// individual menus
+#include "ImGuiLYAssetExplorer.h"
+#include "ImGuiLYCameraMonitor.h"
+#include "ImGuiLYEntityOutliner.h"
 
 namespace ImGui
 {
@@ -44,6 +53,7 @@ namespace ImGui
         m_assetExplorer.Initialize();
         m_cameraMonitor.Initialize();
         m_entityOutliner.Initialize();
+        m_inputMonitor.Initialize();
 
         m_deltaTimeHistogram.Init("onTick Delta Time (Milliseconds)", 250, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f, 60.0f);
         AZ::TickBus::Handler::BusConnect();
@@ -56,6 +66,7 @@ namespace ImGui
         ImGuiUpdateListenerBus::Handler::BusDisconnect();
 
         // shutdown sub menu objects
+        m_inputMonitor.Shutdown();
         m_assetExplorer.Shutdown();
         m_cameraMonitor.Shutdown();
         m_entityOutliner.Shutdown();
@@ -111,6 +122,50 @@ namespace ImGui
             viewportBorderPaddingOpt, &AzFramework::ViewportBorderRequestBus::Events::GetViewportBorderPadding);
 
         AzFramework::ViewportBorderPadding viewportBorderPadding = viewportBorderPaddingOpt.value_or(AzFramework::ViewportBorderPadding{});
+
+        auto ctx = ImGui::GetCurrentContext();
+
+        // determine if the window is the drop down and if it is active
+        const auto windowIt = AZStd::find_if(
+            ctx->Windows.begin(),
+            ctx->Windows.end(),
+            [](const ImGuiWindow* window)
+            {
+                // there is a drop down if the BeginOrder is 2 (1 below main menu),
+                // drop down items are called "##Menu_00"
+                return window->BeginOrderWithinContext == 2 && strcmp(window->Name, "##Menu_00") == 0 && window->WasActive;
+            });
+
+        if (windowIt != ctx->Windows.end())
+        {
+            m_markedForHiding = false;
+            // this conditional stops the notification from repeatedly broadcasting
+            if (m_dropdownState != ImGuiDropdownState::Shown)
+            {
+                m_dropdownState = ImGuiDropdownState::Shown;
+                AzFramework::ViewportImGuiNotificationBus::Broadcast(
+                    &AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDropDownShown);
+            }
+        }
+        else
+        {
+            // if it has already been marked that it is hidden, notify that it has done so
+            if (m_dropdownState != ImGuiDropdownState::Hidden && m_markedForHiding)
+            {
+                m_dropdownState = ImGuiDropdownState::Hidden;
+                AzFramework::ViewportImGuiNotificationBus::Broadcast(
+                    &AzFramework::ViewportImGuiNotificationBus::Events::OnImGuiDropDownHidden);
+                m_markedForHiding = false;
+            }
+            else
+            {
+                // when the dropdown switches between options it counts as hidden, but it isn't known if it is
+                // actually hidden or just switching, this acts as an intermediary for the next update
+                // in the above conditional
+                m_markedForHiding = true;
+            }
+        }
+        
         // Utility function to return the current offset (scaled by DPI) if a viewport border
         // is active (otherwise 0.0)
         auto dpiAwareBorderOffsetFn = [&viewportBorderPaddingOpt, &dpiAwareSizeFn](float size)
@@ -146,7 +201,7 @@ namespace ImGui
                 {
                     // Discrete Input - Control ImGui and Game independently.
                     ImGui::DisplayState state;
-                    ImGui::ImGuiManagerBus::BroadcastResult(state, &ImGui::IImGuiManager::GetClientMenuBarState);
+                    ImGui::ImGuiManagerBus::BroadcastResult(state, &ImGui::IImGuiManager::GetDisplayState);
                     if (state == DisplayState::Visible)
                     {
                         inputTitle.append("ImGui");
@@ -191,6 +246,23 @@ namespace ImGui
             // Main Open 3D Engine menu
             if (ImGui::BeginMenu("O3DE"))
             {
+                AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+                if (console != nullptr)
+                {
+                    // Get the current console visibility status and cache it
+                    bool showConsole = true;
+                    console->GetCvarValue("bg_showDebugConsole", showConsole);
+                    const bool originalValue = showConsole;
+
+                    ImGui::Checkbox("Console", &showConsole);
+                    if (originalValue != showConsole)
+                    {
+                        // If the visibility state changed then update the console variable
+                        // Guard for edges so we don't continuously spam the console with commands
+                        console->PerformCommand(showConsole ? "bg_showDebugConsole true" : "bg_showDebugConsole false");
+                    }
+                }
+
                 if (ImGui::MenuItem("Delta Time Graph"))
                 {
                     m_showDeltaTimeGraphs = !m_showDeltaTimeGraphs;
@@ -205,6 +277,11 @@ namespace ImGui
                 if (ImGui::MenuItem("Camera Monitor"))
                 {
                     m_cameraMonitor.ToggleEnabled();
+                }
+
+                if (ImGui::MenuItem("Input Monitor"))
+                {
+                    m_inputMonitor.ToggleEnabled();
                 }
 
                 // LY Entity Outliner
@@ -256,65 +333,65 @@ namespace ImGui
 
                 // View Maps ( pending valid ILevelSystem )
                 auto lvlSystem = (gEnv && gEnv->pSystem) ? gEnv->pSystem->GetILevelSystem() : nullptr;
-                if (lvlSystem && ImGui::BeginMenu("Levels"))
+                if (lvlSystem && AzFramework::LevelSystemLifecycleInterface::Get() && ImGui::BeginMenu("Levels"))
                 {
-                    if (lvlSystem->IsLevelLoaded())
+                    if (AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded())
                     {
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Current Level: ");
                         ImGui::SameLine();
-                        ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "%s", lvlSystem->GetCurrentLevelName());
+                        ImGui::TextColored(
+                            ImGui::Colors::s_NiceLabelColor,
+                            "%s",
+                            AzFramework::LevelSystemLifecycleInterface::Get()->GetCurrentLevelName());
                     }
 
-                    bool usePrefabSystemForLevels = false;
-                    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+                    // Run through all the assets in the asset catalog and gather up the list of level assets
 
-                    if (usePrefabSystemForLevels)
+                    AZ::Data::AssetType levelAssetType = lvlSystem->GetLevelAssetType();
+                    AZStd::vector<AZStd::string> levelNames;
+                    AZStd::set<AZStd::string> networkedLevelNames;
+                    auto enumerateCB =
+                        [levelAssetType, &levelNames, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                     {
-                        // Run through all the assets in the asset catalog and gather up the list of level assets
-
-                        AZ::Data::AssetType levelAssetType = lvlSystem->GetLevelAssetType();
-                        AZStd::vector<AZStd::string> levelNames;
-                        auto enumerateCB =
-                            [levelAssetType, &levelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
+                        if (assetInfo.m_assetType == levelAssetType)
                         {
-                            if (assetInfo.m_assetType == levelAssetType)
+                            // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
+                            // Filter out network spawnables from the level list, 
+                            // but keep track of which levels require networking so they can be recognized in the level selection menu. 
+                            constexpr AZStd::fixed_string<32> networkSpawnablePrefix(".network");
+                            constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + AzFramework::Spawnable::DotFileExtension;
+
+                            if (assetInfo.m_relativePath.ends_with(networkSpawnableFileExtension))
+                            {   
+                                AZStd::string spawnablePath(assetInfo.m_relativePath); 
+                                AZ::StringFunc::Replace(spawnablePath, networkSpawnablePrefix.c_str(), "");
+                                networkedLevelNames.emplace(spawnablePath);
+                            }
+                            else
                             {
                                 levelNames.emplace_back(assetInfo.m_relativePath);
                             }
-                        };
-
-                        AZ::Data::AssetCatalogRequestBus::Broadcast(
-                            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
-
-                        AZStd::sort(levelNames.begin(), levelNames.end());
-
-                        // Create a menu item for each level asset, with an action to load it if selected.
-
-                        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
-                        for (int i = 0; i < levelNames.size(); i++)
-                        {
-                            if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, levelNames[i].c_str()).c_str()))
-                            {
-                                AZ::TickBus::QueueFunction(
-                                    [lvlSystem, levelNames, i]()
-                                    {
-                                        lvlSystem->LoadLevel(levelNames[i].c_str());
-                                    });
-                            }
                         }
-                    }
-                    else
+                    };
+
+                    AZ::Data::AssetCatalogRequestBus::Broadcast(
+                        &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
+
+                    AZStd::sort(levelNames.begin(), levelNames.end());
+
+                    // Create a menu item for each level asset, with an action to load it if selected.
+
+                    ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
+                    for (int i = 0; i < levelNames.size(); i++)
                     {
-                        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
-                        for (int i = 0; i < lvlSystem->GetLevelCount(); i++)
+                        bool isNetworked = networkedLevelNames.contains(levelNames[i]);
+                        if (ImGui::MenuItem(AZStd::string::format("%d- %s%s", i, levelNames[i].c_str(), isNetworked ? " (Multiplayer)":"").c_str()))
                         {
-                            if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, lvlSystem->GetLevelInfo(i)->GetName()).c_str()))
-                            {
-                                AZ::TickBus::QueueFunction([lvlSystem, i]() {
-                                    lvlSystem->LoadLevel(lvlSystem->GetLevelInfo(i)->GetName());
+                            AZ::TickBus::QueueFunction(
+                                [lvlSystem, levelNames, i]()
+                                {
+                                    lvlSystem->LoadLevel(levelNames[i].c_str());
                                 });
-                            }
                         }
                     }
 
@@ -370,7 +447,7 @@ namespace ImGui
                 if (ImGui::BeginMenu("Video Options"))
                 {
                     // VSync
-                    IMGUI_DRAW_CVAR_CHECKBOX("r_VSync", "VSync");
+                    IMGUI_DRAW_CVAR_CHECKBOX("vsync_interval", "VSync");
 
                     // Max Frame Rate
                     static ICVar* maxFPSCVar = gEnv->pConsole->GetCVar("sys_MaxFPS");
@@ -494,6 +571,8 @@ namespace ImGui
                     }
 
                     // Discrete Input Mode
+                    // Not available in edit mode because inputs are discrete there anyway.
+                    if (!gEnv->IsEditor() || gEnv->IsEditorGameMode())
                     {
                         bool discreteInputEnabledCheckbox = discreteInputEnabled;
                         ImGui::Checkbox(AZStd::string::format("Discrete Input %s (Click Checkbox to Toggle)", discreteInputEnabledCheckbox ? "On" : "Off").c_str(), &discreteInputEnabledCheckbox);
@@ -592,8 +671,18 @@ namespace ImGui
                     ImGui::EndMenu();
                 }
 
+                if (ImGui::MenuItem("ImGui Demo"))
+                {
+                    m_showImGuiDemo = true;
+                }
+
                 // End LY Common Tools menu
                 ImGui::EndMenu();
+            }
+
+            if (m_showImGuiDemo)
+            {
+                ImGui::ShowDemoWindow(&m_showImGuiDemo);
             }
 
             const float labelSize = dpiAwareSizeFn(100.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;
@@ -635,6 +724,7 @@ namespace ImGui
         // Update sub menus
         m_assetExplorer.ImGuiUpdate();
         m_cameraMonitor.ImGuiUpdate();
+        m_inputMonitor.ImGuiUpdate();
         m_entityOutliner.ImGuiUpdate();
         if (m_showDeltaTimeGraphs)
         {
@@ -775,10 +865,10 @@ namespace ImGui
         m_telemetryCaptureTimeRemaining = m_telemetryCaptureTime;
 
         // Get the current ImGui Display state to restore it later.
-        ImGuiManagerBus::BroadcastResult(m_telemetryCapturePreCaptureState, &IImGuiManager::GetClientMenuBarState);
+        ImGuiManagerBus::BroadcastResult(m_telemetryCapturePreCaptureState, &IImGuiManager::GetDisplayState);
 
         // Turn off the ImGui Manager
-        ImGuiManagerBus::Broadcast(&IImGuiManager::SetClientMenuBarState, DisplayState::Hidden);
+        ImGuiManagerBus::Broadcast(&IImGuiManager::SetDisplayState, DisplayState::Hidden);
     }
 
     void ImGuiLYCommonMenu::StopTelemetryCapture()
@@ -788,7 +878,7 @@ namespace ImGui
 
         // Restore ImGui State
         // Turn off the ImGui Manager
-        ImGuiManagerBus::Broadcast(&IImGuiManager::SetClientMenuBarState, m_telemetryCapturePreCaptureState);
+        ImGuiManagerBus::Broadcast(&IImGuiManager::SetDisplayState, m_telemetryCapturePreCaptureState);
 
         // Reset timer and disconnect tick bus
         m_telemetryCaptureTimeRemaining = 0.0f;

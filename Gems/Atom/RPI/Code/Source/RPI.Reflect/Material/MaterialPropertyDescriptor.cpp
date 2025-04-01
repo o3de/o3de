@@ -23,6 +23,8 @@ namespace AZ
             {
             case MaterialPropertyOutputType::ShaderInput:  return "ShaderInput";
             case MaterialPropertyOutputType::ShaderOption: return "ShaderOption";
+            case MaterialPropertyOutputType::ShaderEnabled: return "ShaderEnabled";
+            case MaterialPropertyOutputType::InternalProperty: return "InternalProperty";
             default:
                 AZ_Assert(false, "Unhandled type");
                 return "<Unknown>";
@@ -98,7 +100,7 @@ namespace AZ
             }
         }
         
-        bool ValidateMaterialPropertyDataType(TypeId typeId, const Name& propertyName, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError)
+        bool ValidateMaterialPropertyDataType(TypeId typeId, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError)
         {
             auto toMaterialPropertyDataType = [](TypeId typeId)
             {
@@ -126,7 +128,7 @@ namespace AZ
                 {
                     onError(
                         AZStd::string::format("Material property '%s' is a Enum type, can only accept UInt value, input value is %s",
-                            propertyName.GetCStr(),
+                            materialPropertyDescriptor->GetName().GetCStr(),
                             ToString(actualDataType)
                         ).data());
                     return false;
@@ -138,7 +140,7 @@ namespace AZ
                 {
                     onError(
                         AZStd::string::format("Material property '%s': Type mismatch. Expected %s but was %s",
-                            propertyName.GetCStr(),
+                            materialPropertyDescriptor->GetName().GetCStr(),
                             ToString(expectedDataType),
                             ToString(actualDataType)
                         ).data());
@@ -154,8 +156,9 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialPropertyOutputId>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_type", &MaterialPropertyOutputId::m_type)
+                    ->Field("m_materialPipelineName", &MaterialPropertyOutputId::m_materialPipelineName)
                     ->Field("m_containerIndex", &MaterialPropertyOutputId::m_containerIndex)
                     ->Field("m_itemIndex", &MaterialPropertyOutputId::m_itemIndex)
                     ;
@@ -169,6 +172,8 @@ namespace AZ
                 serializeContext->Enum<MaterialPropertyOutputType>()
                     ->Value(ToString(MaterialPropertyOutputType::ShaderInput), MaterialPropertyOutputType::ShaderInput)
                     ->Value(ToString(MaterialPropertyOutputType::ShaderOption), MaterialPropertyOutputType::ShaderOption)
+                    ->Value(ToString(MaterialPropertyOutputType::ShaderEnabled), MaterialPropertyOutputType::ShaderEnabled)
+                    ->Value(ToString(MaterialPropertyOutputType::InternalProperty), MaterialPropertyOutputType::InternalProperty)
                     ;
 
                 serializeContext->Enum<MaterialPropertyDataType>()
@@ -196,11 +201,6 @@ namespace AZ
 
             MaterialPropertyIndex::Reflect(context);
         }
-        
-        MaterialPropertyDataType MaterialPropertyDescriptor::GetDataType() const
-        {
-            return m_dataType;
-        }
 
         const Name& MaterialPropertyDescriptor::GetName() const
         {
@@ -210,6 +210,41 @@ namespace AZ
         const MaterialPropertyDescriptor::OutputList& MaterialPropertyDescriptor::GetOutputConnections() const
         {
             return m_outputConnections;
+        }
+
+        MaterialPropertyDataType MaterialPropertyDescriptor::GetDataType() const
+        {
+            return m_dataType;
+        }
+
+        AZ::TypeId MaterialPropertyDescriptor::GetAssetDataTypeId() const
+        {
+            switch (m_dataType)
+            {
+            case MaterialPropertyDataType::Bool:
+                return azrtti_typeid<bool>();
+            case MaterialPropertyDataType::Int:
+                return azrtti_typeid<int32_t>();
+            case MaterialPropertyDataType::UInt:
+                return azrtti_typeid<uint32_t>();
+            case MaterialPropertyDataType::Float:
+                return azrtti_typeid<float>();
+            case MaterialPropertyDataType::Vector2:
+                return azrtti_typeid<Vector2>();
+            case MaterialPropertyDataType::Vector3:
+                return azrtti_typeid<Vector3>();
+            case MaterialPropertyDataType::Vector4:
+                return azrtti_typeid<Vector4>();
+            case MaterialPropertyDataType::Color:
+                return azrtti_typeid<Color>();
+            case MaterialPropertyDataType::Enum:
+                return azrtti_typeid<uint32_t>();
+            case MaterialPropertyDataType::Image:
+                return azrtti_typeid<Data::Asset<ImageAsset>>();
+            default:
+                AZ_Error("MaterialPropertyDescriptor", false, "Unhandle material property type %s.", ToString(m_dataType));
+                return Uuid::CreateNull();
+            }
         }
 
         AZ::TypeId MaterialPropertyDescriptor::GetStorageDataTypeId() const
@@ -236,7 +271,7 @@ namespace AZ
             case MaterialPropertyDataType::Image:
                 return azrtti_typeid<AZStd::string>();
             default:
-                AZ_Error("MaterialPropertyValueSourceData", false, "Unhandle material property type %s.", ToString(m_dataType));
+                AZ_Error("MaterialPropertyDescriptor", false, "Unhandle material property type %s.", ToString(m_dataType));
                 return Uuid::CreateNull();
             }
         }

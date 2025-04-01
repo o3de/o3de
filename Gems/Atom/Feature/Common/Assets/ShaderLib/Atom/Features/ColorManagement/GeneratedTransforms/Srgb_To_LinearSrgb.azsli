@@ -11,5 +11,24 @@
 float3 Srgb_To_LinearSrgb(float3 color)
 {
     // Copied from CryFx's ToAccurateLinear()
-    return (color.xyz < 0.04045h) ? color.xyz / 12.92h : pow((color.xyz + float3(0.055h, 0.055h, 0.055h)) / float3(1.055h, 1.055h, 1.055h), 2.4h);
+#ifdef PRE_HLSL_2021
+    // See /o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/PRE_HLSL_2021.md for details.
+    return (color.xyz < 0.04045) ? color.xyz / 12.92 : pow((color.xyz + float3(0.055, 0.055, 0.055)) / float3(1.055, 1.055, 1.055), 2.4);
+#else
+    return select((color.xyz < 0.04045), color.xyz / 12.92, pow((color.xyz + float3(0.055, 0.055, 0.055)) / float3(1.055, 1.055, 1.055), 2.4));
+#endif
+}
+
+// Some shaders don't use "real" variables. So on mobile devices they'd be penalized
+// when calling  Srgb_To_LinearSrgb because of the data conversion from "float" to "half" and viceversa.
+// This is why this alternative version is available.
+half3 Srgb_To_LinearSrgb(half3 color)
+{
+    // Copied from CryFx's ToAccurateLinear()
+#ifdef PRE_HLSL_2021
+    // See /o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/PRE_HLSL_2021.md for details.
+    return (color.xyz < 0.04045h) ? color.xyz / 12.92h : pow((color.xyz + half3(0.055, 0.055, 0.055)) / half3(1.055, 1.055, 1.055), 2.4);
+#else
+    return select((color.xyz < 0.04045h), color.xyz / 12.92h, pow((color.xyz + half3(0.055, 0.055, 0.055)) / half3(1.055, 1.055, 1.055), 2.4));
+#endif
 }

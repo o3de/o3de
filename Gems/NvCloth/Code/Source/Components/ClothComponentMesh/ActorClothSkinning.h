@@ -72,16 +72,34 @@ namespace NvCloth
     protected:
         AZ::EntityId m_entityId;
 
-        size_t m_numberOfInfluencesPerVertex = 0;
-
         // Skinning influences of all vertices
         AZStd::vector<SkinningInfluence> m_skinningInfluences;
 
-        // Indices to skinning influences that are part of the simulation
-        AZStd::vector<AZ::u32> m_simulatedVertices;
+        struct SimulatedVertex
+        {
+            AZ::u32 m_influenceOffset = 0;
+            // Influence count is a bit redundant since that is uniform across a sub-mesh,
+            // not unique to each vertex. However, it is necessary to track it here,
+            // since m_simulatedVertices remapped out of the original vertex order,
+            // and there is no way to correlate an element of m_simulatedVertices to which
+            // sub-mesh it came from
+            AZ::u32 m_influenceCount = 0;
+        };
+        // Offsets to skinning influences that are part of the simulation
+        AZStd::vector<SimulatedVertex> m_simulatedVertices;
 
-        // Indices to skinning influences that are not part of the simulation
-        AZStd::vector<AZ::u32> m_nonSimulatedVertices;
+        struct NonSimulatedVertex
+        {
+            AZ::u32 m_originalVertexIndex = 0;
+            AZ::u32 m_influenceOffset = 0;
+            // Influence count is a bit redundant since that is uniform across a sub-mesh,
+            // not unique to each vertex. However, the code is simpler and less error
+            // prone to just track the influence count here instead of associating a range
+            // of non-simulated vertices to a particular sub-mesh
+            AZ::u32 m_influenceCount = 0;
+        };
+        // Offsets to skinning influences that are not part of the simulation
+        AZStd::vector<NonSimulatedVertex> m_nonSimulatedVertices;
 
         // Collection of skeleton joint indices that influence the vertices
         AZStd::vector<AZ::u16> m_jointIndices;

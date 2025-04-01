@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/ComponentAdapterHelpers.h>
 
 namespace AzFramework

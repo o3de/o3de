@@ -1,5 +1,6 @@
 {
     "gem_name": "Atom_RHI",
+    "version": "0.0.0",
     "display_name": "Atom RHI",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -22,8 +23,6 @@
         "Atom_RHI_DX12",
         "Atom_RHI_Metal",
         "Atom_RHI_Vulkan",
-        "Atom_RHI_Salem",
-        "Atom_RHI_Null",
-        "Atom_Feature_Common"
+        "Atom_RHI_Null"
     ]
 }

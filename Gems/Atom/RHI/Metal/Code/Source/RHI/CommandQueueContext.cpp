@@ -24,11 +24,11 @@ namespace AZ
                 "Copy Submit Queue"
             };
 
-            auto& device = static_cast<Device&>(deviceBase);
-            m_compiledFences.Init(&device, RHI::FenceState::Reset);
+            m_device = static_cast<Device*>(&deviceBase);
+            m_compiledFences.Init(m_device, RHI::FenceState::Reset);
             for (uint32_t frameIdx = 0; frameIdx < RHI::Limits::Device::FrameCountMax; ++frameIdx)
             {
-                m_frameFences[frameIdx].Init(&device, RHI::FenceState::Signaled);
+                m_frameFences[frameIdx].Init(m_device, RHI::FenceState::Signaled);
             }
             
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
@@ -107,6 +107,20 @@ namespace AZ
             const ExecuteWorkRequest& request)
         {
             GetCommandQueue(hardwareQueueClass).ExecuteWork(request);
+            
+#if defined (AZ_FORCE_CPU_GPU_INSYNC)
+            // Flush any commands related to the command buffer to ensure it finishes
+            // execution. If the execution finishes with error log it and throw up a dialog box
+            // with information related to last executing scope
+            GetCommandQueue(hardwareQueueClass).FlushCommands();
+            if(request.m_commandBuffer->GetCommandBufferStatus() == MTLCommandBufferStatusError)
+            {
+                m_device->SetLastExecutingScope(request.m_commandLists.front()->GetName().GetStringView());
+                AZ_TracePrintf("Device", "The last executing pass before device removal was: %s\n", m_device->GetLastExecutingScope().data());
+                m_device->SetDeviceRemoved();
+                __builtin_trap();
+            }
+#endif            
         }
 
         CommandQueue& CommandQueueContext::GetCommandQueue(RHI::HardwareQueueClass hardwareQueueClass)

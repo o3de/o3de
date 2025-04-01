@@ -23,7 +23,7 @@ namespace TextureAtlasNamespace
     {
     public:
         AZ_RTTI(TextureAtlasModule, "{D3997F41-8117-4E0F-9BFE-937C4AE7E71F}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(TextureAtlasModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TextureAtlasModule, AZ::SystemAllocator);
 
         TextureAtlasModule()
             : CryHooksModule()
@@ -49,7 +49,8 @@ namespace TextureAtlasNamespace
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), TextureAtlasNamespace::TextureAtlasModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_TextureAtlas, TextureAtlasNamespace::TextureAtlasModule)
+#endif

@@ -1,0 +1,69 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{1F53AECF-F416-4AD1-9777-A7E6049383A8}",
+        "category": "Math Functions",
+        "title": "Split Float3",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Extract all input values from a float3",
+        "slotDataTypeGroups": [
+            "inValue",
+            "outX|outY|outZ"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float3",
+                "settings": {
+                    "materialPropertyMinVectorSize": [ "3" ],
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = inValue.z;"
+                    ]
+                }
+            }
+        ]
+    }
+}

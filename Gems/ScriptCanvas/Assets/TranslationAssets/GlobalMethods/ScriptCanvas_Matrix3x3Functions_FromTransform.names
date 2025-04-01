@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix3x3Functions_FromTransform",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Transform",
+                "category": "Math/Matrix3x3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix3x3Functions_FromTransform",
+                    "details": {
+                        "name": "From Transform",
+                        "tooltip": "Returns a matrix using the supplied transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

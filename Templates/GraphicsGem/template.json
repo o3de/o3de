@@ -1,0 +1,285 @@
+{
+    "template_name": "GraphicsGem",
+    "template_restricted_platform_relative_path": "Templates/GraphicsGem",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates/GraphicsGem",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Graphics Gem Template",
+    "summary": "This is a gem template that has Atom rendering support",
+    "canonical_tags": [
+        "Template",
+        "Gem"
+    ],
+    "user_tags": [
+        "Rendering",
+        "Graphics",
+        "Atom"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": ".gitignore",
+            "isTemplated": false
+        },
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "gem.json",
+            "isTemplated": true
+        },
+        {
+            "file": "preview.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}FeatureProcessorInterface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}FeatureProcessorInterface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}TypeIds.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/PAL_android.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/PAL_ios.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/PAL_linux.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/PAL_mac.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Clients/${Name}Module.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Clients/${Name}SystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Clients/${Name}SystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Components/${Name}Component.h",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Components/${Name}Component.cpp",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Components/${Name}ComponentController.h",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Components/${Name}ComponentController.cpp",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Tools/Components/Editor${Name}Component.h",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Tools/Components/Editor${Name}Component.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Render/${Name}FeatureProcessor.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Render/${Name}FeatureProcessor.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.h",
+            "isTemplated": true
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets"
+        },
+        {
+            "dir": "Code"
+        },
+        {
+            "dir": "Code/Include"
+        },
+        {
+            "dir": "Code/Include/${Name}"
+        },
+        {
+            "dir": "Code/Platform"
+        },
+        {
+            "dir": "Code/Platform/Android"
+        },
+        {
+            "dir": "Code/Platform/Linux"
+        },
+        {
+            "dir": "Code/Platform/Mac"
+        },
+        {
+            "dir": "Code/Platform/Windows"
+        },
+        {
+            "dir": "Code/Platform/iOS"
+        },
+        {
+            "dir": "Code/Source"
+        },
+        {
+            "dir": "Registry"
+        }
+    ]
+}
+

@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{39509794-1EC9-477C-B882-FDEA2439FE3B}",
+        "category": "Math Functions",
+        "title": "Ceiling",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the smallest integer which is greater than or equal to the input value (per component)",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = ceil(inValue);"
+                    ]
+                }
+            }
+        ]
+    }
+}

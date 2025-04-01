@@ -1,8 +1,0 @@
-<Material Name="Smoke_01" MtlFlags="524450" Shader="Illum" GenMask="1002000000000" StringGenMask="%SUBSURFACE_SCATTERING%VERTCOLORS" SurfaceType="" Diffuse="0.74540436,0.74540436,0.74540436,1" Specular="0,0,0,1" Opacity="0.99000001" Shininess="10" vertModifType="0" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="path/to/my/textures/test_anim_sequence_01_texture###000_005(0.08).dds">
-   <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TexMod_UOscillatorRate="1" TexMod_UOscillatorAmplitude="1" TileV="2" TexMod_VOscillatorType="2" TexMod_VOscillatorRate="0.1" TexMod_VOscillatorAmplitude="1"/>
-  </Texture>
- </Textures>
- <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25,1"/>
-</Material>

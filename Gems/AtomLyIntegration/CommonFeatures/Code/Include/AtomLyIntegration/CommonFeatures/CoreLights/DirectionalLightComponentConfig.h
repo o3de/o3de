@@ -11,16 +11,23 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h>
 
 namespace AZ
 {
     namespace Render
     {
+        namespace DirectionalLightConstants
+        {
+            static const float MIN_CASCADE_FAR_DEPTH = 0.01f;
+        }
+
         struct DirectionalLightComponentConfig final
             : public ComponentConfig
         {
-            AZ_RTTI(DirectionalLightConfiguration, "EB01B835-F9FE-4FF0-BDC4-455462BFE769", ComponentConfig);
+            AZ_CLASS_ALLOCATOR(DirectionalLightComponentConfig, SystemAllocator)
+            AZ_RTTI(DirectionalLightComponentConfig, "EB01B835-F9FE-4FF0-BDC4-455462BFE769", ComponentConfig);
             static void Reflect(ReflectContext* context);
 
             // The following functions provide information to an EditContext...
@@ -55,6 +62,9 @@ namespace AZ
 
             //! Far depth clips for shadows.
             float m_shadowFarClipDistance = 100.f;
+
+            //! Whether this light enables shadow
+            bool m_shadowEnabled = true;
 
             //! Width/Height of shadowmap images.
             ShadowmapSize m_shadowmapSize = ShadowmapSize::Size1024;
@@ -102,7 +112,7 @@ namespace AZ
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
 
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
-            float m_normalShadowBias = 0.0f;
+            float m_normalShadowBias = 2.5f;
 
             //! Sample Count for filtering (from 4 to 64)
             //! It is used only when the pixel is predicted as on the boundary.
@@ -113,17 +123,35 @@ namespace AZ
             bool m_receiverPlaneBiasEnabled = true;
 
             //! Reduces shadow acne by applying a small amount of offset along shadow-space z.
-            float m_shadowBias = 0.0f;
+            float m_shadowBias = 0.0015f;
 
             // If true, sample between two adjacent shadow map cascades in a small boundary area to smooth out the transition.
             bool m_cascadeBlendingEnabled = false;
 
+            // Whether to enable fullscreen blur on fullscreen shadows
+            bool m_fullscreenBlurEnabled = true;
+
+            //! How much a value is reduced from pixel to pixel on a perfectly flat surface
+            float m_fullscreenBlurConstFalloff = 2.0f / 3.0f;
+
+            //! How much the difference in depth slopes between pixels affects the blur falloff.
+            //! The higher this value, the sharper edges will appear
+            float m_fullscreenBlurDepthFalloffStrength = 50.0f;
+
+            // Global Illumination
+            bool m_affectsGI = true;
+            float m_affectsGIFactor = 1.0f;
+
+            // Lighting channel
+            AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
+            bool IsShadowDisabled() const;
             bool IsCascadeCorrectionDisabled() const;
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
             bool IsEsmDisabled() const;
+            AZ::Crc32 UpdateCascadeFarDepths();
         };
     } // namespace Render
 } // namespace AZ

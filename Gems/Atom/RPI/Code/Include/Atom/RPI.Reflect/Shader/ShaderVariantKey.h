@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/std/containers/bitset.h>
-
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RPI
     {
         //! Defines the maximum bit size of the shader variant key on the runtime.
@@ -43,10 +43,10 @@ namespace AZ
         //! A bitset of packed shader option values. Used to acquire shader variants.
         using ShaderVariantKey = AZStd::bitset<ShaderVariantKeyBitCount>;
 
-        struct ShaderVariantId final
+        struct ATOM_RPI_REFLECT_API ShaderVariantId final
         {
             AZ_RTTI(ShaderVariantId, "{27B1FEC2-8C8A-47D7-A034-6609FA092B34}");
-            AZ_CLASS_ALLOCATOR(ShaderVariantId, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderVariantId, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 
@@ -72,11 +72,11 @@ namespace AZ
         //! Also the ShaderVariantStableId is used to make the Asset SubId of ShaderVariantAssets. See ShaderVariantAsset::GetAssetSubId()
         using ShaderVariantStableId = RHI::Handle<uint32_t, ShaderVariantId>;
 
-        extern const ShaderVariantStableId RootShaderVariantStableId;
+        static constexpr ShaderVariantStableId RootShaderVariantStableId{ 0 };
 
         //! Suggests the shader binary which best fits a requested variant
         //! The suggested binary is given as an index in the asset where the search was performed
-        struct ShaderVariantSearchResult
+        struct ATOM_RPI_REFLECT_API ShaderVariantSearchResult
         {
         public:
             //! ShaderVariantSearchResult constructor.
@@ -103,7 +103,7 @@ namespace AZ
         };
 
         //! Comparator which performs a less-than operation on two shader keys. Used to sort a container of keys.
-        struct ShaderVariantKeyComparator
+        struct ATOM_RPI_REFLECT_API ShaderVariantKeyComparator
         {
         public:
             static int Compare(const ShaderVariantKey& lhs, const ShaderVariantKey& rhs);
@@ -114,7 +114,7 @@ namespace AZ
             static int CompareLargeKey(const ShaderVariantKey& lhs, const ShaderVariantKey& rhs);
         };
 
-        struct ShaderVariantIdComparator
+        struct ATOM_RPI_REFLECT_API ShaderVariantIdComparator
         {
         public:
             static int Compare(const ShaderVariantId& lhs, const ShaderVariantId& rhs);

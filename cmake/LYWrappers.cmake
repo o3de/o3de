@@ -36,9 +36,9 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
         the target is declared so a custom command that will do the copies can
         be generated later. Custom commands need to be declared in the same folder
         the target is declared, however, runtime dependencies need all targets
-        to be declared, so it is done towards the end of CMake parsing. When 
+        to be declared, so it is done towards the end of CMake parsing. When
         runtime dependencies are processed, this target property is filled so the
-        right dependencies are set for the custom command. 
+        right dependencies are set for the custom command.
         This property contains all the files that are going to be copied to the output
         when the target gets built.
     ]]
@@ -59,9 +59,12 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
 # \arg:STATIC (bool) defines this target to be a static library
 # \arg:GEM_STATIC (bool) defines this target to be a static library while also setting the GEM_MODULE property
 # \arg:SHARED (bool) defines this target to be a dynamic library
+# \arg:GEM_SHARED (bool) defines this target to be a dynamic library while also setting the GEM_MODULE property
 # \arg:MODULE (bool) defines this target to be a module library
 # \arg:GEM_MODULE (bool) defines this target to be a module library while also marking the target as a "Gem" via the GEM_MODULE property
-# \arg:HEADERONLY (bool) defines this target to be a header only library. A ${NAME}_HEADERS project will be created for the IDE
+# \arg:OBJECT (bool) defines this target to be an object library
+# \arg:INTERFACE (bool) defines this target to be an interface library. A ${NAME}_HEADERS project will be created for the IDE
+#                        The HEADERONLY option can be specified as an alternative
 # \arg:EXECUTABLE (bool) defines this target to be an executable
 # \arg:APPLICATION (bool) defines this target to be an application (executable that is not a console)
 # \arg:IMPORTED (bool) defines this target to be imported.
@@ -87,17 +90,26 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE OBJECT HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY EXPORT_ALL_SYMBOLS)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
     cmake_parse_arguments(ly_add_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    # Since the term "INTERFACE" used in  other context such as INCLUDE_DIRECTORIES, COMPILE_DEFINITIONS to specifiy property visibility
+    # It needs to be parsed after those arguments have been parsed to avoid the usage of INTERFACE as a visibility scope
+    cmake_parse_arguments(ly_add_target "INTERFACE" "" "" ${ly_add_target_UNPARSED_ARGUMENTS})
+
     # Validate input arguments
     if(NOT ly_add_target_NAME)
         message(FATAL_ERROR "You must provide a name for the target")
     endif()
-    if(NOT ly_add_target_IMPORTED AND NOT ly_add_target_HEADERONLY)
+
+    # Map HEADERONLY option to INTERFACE
+    if(ly_add_target_HEADERONLY)
+        set(ly_add_target_INTERFACE ly_add_target_HEADERONLY)
+    endif()
+    if(NOT ly_add_target_IMPORTED AND NOT ly_add_target_INTERFACE)
         if(NOT ly_add_target_FILES_CMAKE)
             message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
         endif()
@@ -110,6 +122,10 @@ function(ly_add_target)
     # If the GEM_STATIC tag is passed mark the target as STATIC
     if(ly_add_target_GEM_STATIC)
         set(ly_add_target_STATIC ${ly_add_target_GEM_STATIC})
+    endif()
+    # If the GEM_SHARED tag is passed mark the target as SHARED
+    if(ly_add_target_GEM_SHARED)
+        set(ly_add_target_SHARED ${ly_add_target_GEM_SHARED})
     endif()
 
     foreach(file_cmake ${ly_add_target_FILES_CMAKE})
@@ -124,6 +140,11 @@ function(ly_add_target)
         set(target_type_options STATIC)
         set(linking_count "${linking_count}1")
     endif()
+    if(ly_add_target_OBJECT)
+        set(linking_options OBJECT)
+        set(target_type_options OBJECT)
+        set(linking_count "${linking_count}1")
+    endif()
     if(ly_add_target_SHARED)
         set(linking_options SHARED)
         set(target_type_options SHARED)
@@ -134,7 +155,7 @@ function(ly_add_target)
         set(target_type_options ${PAL_LINKOPTION_MODULE})
         set(linking_count "${linking_count}1")
     endif()
-    if(ly_add_target_HEADERONLY)
+    if(ly_add_target_INTERFACE)
         set(linking_options INTERFACE)
         set(target_type_options INTERFACE)
         set(linking_count "${linking_count}1")
@@ -148,7 +169,7 @@ function(ly_add_target)
         set(linking_count "${linking_count}1")
     endif()
     if(NOT ("${linking_count}" STREQUAL "1"))
-        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION ] was specified and they are mutually exclusive")
+        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | OBJECT | INTERFACE | EXECUTABLE | APPLICATION ] was specified and they are mutually exclusive")
     endif()
     if(ly_add_target_IMPORTED)
         list(APPEND target_type_options IMPORTED GLOBAL)
@@ -162,7 +183,7 @@ function(ly_add_target)
 
     set(project_NAME ${ly_add_target_NAME})
     if(ly_add_target_EXECUTABLE)
-        add_executable(${ly_add_target_NAME} 
+        add_executable(${ly_add_target_NAME}
             ${target_type_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
@@ -171,7 +192,7 @@ function(ly_add_target)
             set_target_properties(${ly_add_target_NAME} PROPERTIES LINKER_LANGUAGE CXX)
         endif()
     elseif(ly_add_target_APPLICATION)
-        add_executable(${ly_add_target_NAME} 
+        add_executable(${ly_add_target_NAME}
             ${target_type_options}
             ${PAL_EXECUTABLE_APPLICATION_FLAG}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
@@ -180,7 +201,7 @@ function(ly_add_target)
         if(ly_add_target_IMPORTED)
             set_target_properties(${ly_add_target_NAME} PROPERTIES LINKER_LANGUAGE CXX)
         endif()
-    elseif(ly_add_target_HEADERONLY)
+    elseif(ly_add_target_INTERFACE)
         add_library(${ly_add_target_NAME}
             ${target_type_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
@@ -210,6 +231,15 @@ function(ly_add_target)
         )
     endif()
 
+    # Add the target dependencies so they can be walked later
+    if(ly_add_target_BUILD_DEPENDENCIES)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS_${ly_add_target_NAME}_BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES})
+    endif()
+
+    if(ly_add_target_RUNTIME_DEPENDENCIES)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS_${ly_add_target_NAME}_RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES})
+    endif()
+
     if (ly_add_target_SHARED OR ly_add_target_MODULE OR ly_add_target_EXECUTABLE OR ly_add_target_APPLICATION)
 
         if (ly_add_target_OUTPUT_SUBDIRECTORY)
@@ -217,10 +247,10 @@ function(ly_add_target)
         else()
             ly_handle_custom_output_directory(${ly_add_target_NAME} "")
         endif()
-
     endif()
 
-    if(ly_add_target_GEM_MODULE OR ly_add_target_GEM_STATIC)
+
+    if(ly_add_target_GEM_MODULE OR ly_add_target_GEM_STATIC OR ly_add_target_GEM_SHARED)
         set_target_properties(${ly_add_target_NAME} PROPERTIES GEM_MODULE TRUE)
     endif()
 
@@ -229,6 +259,8 @@ function(ly_add_target)
             ${ly_add_target_INCLUDE_DIRECTORIES}
         )
     endif()
+
+    ly_apply_debug_strip_options(${ly_add_target_NAME})
 
     # Parse the 3rdParty library dependencies
     ly_parse_third_party_dependencies("${ly_add_target_BUILD_DEPENDENCIES}")
@@ -242,10 +274,18 @@ function(ly_add_target)
         )
     endif()
 
+    if(ly_add_target_SHARED AND ly_add_target_EXPORT_ALL_SYMBOLS)
+        if(PAL_PLATFORM_NAME STREQUAL "Windows")
+            set_target_properties(${ly_add_target_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+        else()
+            target_compile_options(${ly_add_target_NAME} PRIVATE ${PAL_TRAIT_EXPORT_ALL_SYMBOLS_COMPILE_OPTIONS})
+        endif()
+    endif()
+
     # For any target that depends on AzTest and is built as an executable, an additional 'AZ_TEST_EXECUTABLE' define will
     # enable the 'AZ_UNIT_TEST_HOOK' macro to also implement main() so that running the executable directly will run
     # the AZ_UNIT_TEST_HOOK function
-    if (${PAL_TRAIT_TEST_TARGET_TYPE} STREQUAL "EXECUTABLE" AND "AZ::AzTest" IN_LIST ly_add_target_BUILD_DEPENDENCIES)
+    if (${linking_options} STREQUAL "EXECUTABLE" AND "AZ::AzTest" IN_LIST ly_add_target_BUILD_DEPENDENCIES)
         target_compile_definitions(${ly_add_target_NAME}
             PRIVATE
                 AZ_TEST_EXECUTABLE
@@ -257,7 +297,7 @@ function(ly_add_target)
             ${ly_add_target_TARGET_PROPERTIES})
     endif()
 
-    set(unity_target_types SHARED MODULE EXECUTABLE APPLICATION STATIC)
+    set(unity_target_types SHARED MODULE EXECUTABLE APPLICATION STATIC OBJECT)
     if(linking_options IN_LIST unity_target_types)
         # For eligible target types, if unity builds (LY_UNITY_BUILD) is enabled and the target is not marked with 'NO_UNITY',
         # enable UNITY builds individually for the target
@@ -327,7 +367,7 @@ function(ly_add_target)
         endif()
     endif()
 
-    # Custom commands need to be declared in the same folder as the target that they use. 
+    # Custom commands need to be declared in the same folder as the target that they use.
     # Not all the targets will require runtime dependencies, but we will generate at least an
     # empty file for them.
     set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION)
@@ -339,7 +379,7 @@ function(ly_add_target)
         # Non-multi config generators like Ninja (not "Ninja Multi-Config"), Makefiles, etc have trouble to
         # produce file-level dependencies per configuration, so we also default to use a post build step
         if(NOT is_multi_config_generator OR CMAKE_GENERATOR MATCHES Xcode)
-        
+
             add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
                 COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
@@ -363,7 +403,7 @@ function(ly_add_target)
                 VERBATIM
             )
 
-            # Unfortunately the VS generator cannot deal with generation expressions as part of the file name, wrapping the 
+            # Unfortunately the VS generator cannot deal with generation expressions as part of the file name, wrapping the
             # stamp file on each configuration so it gets properly excluded by the generator
             unset(stamp_files_per_config)
             foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
@@ -406,6 +446,71 @@ function(ly_target_link_libraries TARGET)
     set_property(TARGET ${TARGET} APPEND PROPERTY LY_DELAYED_LINK ${ARGN})
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_TARGETS ${TARGET}) # to walk them at the end
 
+endfunction()
+
+#! o3de_copy_targets_usage_requires: Copies the usage requirements of the input targets
+# For input target that have a TYPE of "MODULE_LIBRARY", its INTERFACE_* properties are copied,
+# since a MODULE_LIBRARY cannot be linked
+# For input targets that are not of "MODULE_LIBRARY" TYPE, they are addded as dependency of the
+# destination target through the target_link_libraries command
+# See: https://cmake.org/cmake/help/latest/prop_tgt/TYPE.html for list of available library types
+#
+# The primary purpose of this function is to aggregate the usage requirements of multiple dependencies
+# into an INTERFACE target, where it would act as a psuedo ALIAS target which can depend on multiple targets
+#\arg:TARGET destination INTERFACE target where usage requirements of the input targets will be aggregated into
+#\arg:SOURCE_TARGETS list of targets whose usage requirements will be copied from
+function(o3de_copy_targets_usage_requirements)
+    set(oneValueArgs TARGET)
+    set(multiValueArgs SOURCE_TARGETS)
+    cmake_parse_arguments(usage_dependencies "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT usage_dependencies_TARGET OR NOT TARGET ${usage_dependencies_TARGET})
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} must be specified a TARGET argument")
+    endif()
+
+    get_target_property(item_type ${usage_dependencies_TARGET} TYPE)
+    if (NOT item_type STREQUAL INTERFACE_LIBRARY)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} only supports copy of usage requirements to an INTERFACE TARGET")
+    endif()
+
+    set(dest_target ${usage_dependencies_TARGET})
+
+    foreach(source_target IN LISTS usage_dependencies_SOURCE_TARGETS)
+        unset(item_type)
+        # Retrieve the resolved source target name
+        set(source_target_de_alias ${source_target})
+        if (TARGET ${source_target})
+            get_property(item_type TARGET ${source_target} PROPERTY TYPE)
+            ly_de_alias_target(${source_target} source_target_de_alias)
+        endif()
+
+        # If the source target does not exist the item_type is empty
+        # In that case the TARGET is assumed to not be a MODULE_LIBRARY
+        if(item_type STREQUAL MODULE_LIBRARY)
+            # For module libraries the INTERFACE properties are copied over
+
+            # Copy over include and system include directories
+            target_include_directories(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_INCLUDE_DIRECTORIES>>)
+            target_include_directories(${dest_target} SYSTEM INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>>)
+
+            # Copy over dependent link libraries and linker options
+            target_link_libraries(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_LINK_LIBRARIES>>)
+            target_link_options(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_LINK_OPTIONS>>)
+
+            # Copy over compiler defintions and compiler options
+            target_compile_definitions(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_COMPILE_DEFINITIONS>>)
+            target_compile_options(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_COMPILE_OPTIONS>>)
+            # Copy over source filenames; For the destionation INTERFACE target these will not compile,
+            # but can be used as part of add_custom_command
+            target_sources(${dest_target} INTERFACE $<GENEX_EVAL:$<TARGET_PROPERTY:${source_target_de_alias},INTERFACE_SOURCES>>)
+        else()
+            # The simpler case for non-MODULE targets is to copy the usage dependencies via target_link_libraries
+            # This even works for source targets with a TYPE of "INTERFACE_LIBRARY" as its INTERFACE_* PROPERTIES
+            # are transferred via target_link_libraries as well
+            # https://cmake.org/cmake/help/latest/command/add_library.html#interface-libraries
+            target_link_libraries(${dest_target} INTERFACE ${source_target_de_alias})
+        endif()
+    endforeach()
 endfunction()
 
 #! ly_delayed_target_link_libraries: internal function called by the root CMakeLists.txt after all targets
@@ -471,30 +576,58 @@ endfunction()
 # \arg:ly_THIRD_PARTY_LIBRARIES name of the target libraries to validate existance of through the find_package command.
 #
 function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
+    # Support for deprecated LY_VERSION_ENGINE_NAME used in 3p-package-source and misc 3p packages
+    set(LY_VERSION_ENGINE_NAME ${O3DE_ENGINE_NAME})
+
     # Interface dependencies may require to find_packages. So far, we are just using packages for 3rdParty, so we will
     # search for those and automatically bring those packages. The naming convention used is 3rdParty::PackageName::OptionalInterface
+    unset(all_thirdparty_dependencies_found)
+
     foreach(dependency ${ly_THIRD_PARTY_LIBRARIES})
         string(REPLACE "::" ";" dependency_list ${dependency})
         list(GET dependency_list 0 dependency_namespace)
         if(${dependency_namespace} STREQUAL "3rdParty")
+            list(APPEND all_thirdparty_dependencies_found ${dependency})
             if (NOT TARGET ${dependency})
-                list(GET dependency_list 1 dependency_package)
-                list(LENGTH dependency_list dependency_list_length)
-                ly_download_associated_package(${dependency_package})
-                if (dependency_list_length GREATER 2)
-                    # There's an optional interface specified
-                    list(GET dependency_list 2 component)
-                    list(APPEND packages_with_components ${dependency_package})
-                    list(APPEND ${dependency_package}_components ${component})
+                if (O3DE_SCRIPT_ONLY)
+                    # we don't actually need 3p deps to try to download the package or call find_package.
+                    # instead we use pre-created part-of-the-installer 3p targets baked in from the above list
+                    # which will have been made at install time.
+                    # instead, we execute a pregenerated file that was created as part of install to 
+                    # create this target:
+                    string(REPLACE "::" "__" CLEAN_TARGET_NAME "${dependency}")  
+                    # not all 3ps actually exist as real targets, so this is an OPTIONAL include.
+                    include(${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/${CLEAN_TARGET_NAME}.cmake OPTIONAL)
                 else()
-                    find_package(${dependency_package} REQUIRED MODULE)
+                    list(GET dependency_list 1 dependency_package)
+                    list(LENGTH dependency_list dependency_list_length)
+                    ly_download_associated_package(${dependency_package})
+                    if (dependency_list_length GREATER 2)
+                        # There's an optional interface specified
+                        list(GET dependency_list 2 component)
+                        list(APPEND packages_with_components ${dependency_package})
+                        list(APPEND ${dependency_package}_components ${component})
+                    else()
+                        find_package(${dependency_package} REQUIRED MODULE)
+                    endif()
                 endif()
+
             endif()
         endif()
     endforeach()
 
     foreach(dependency IN LISTS packages_with_components)
         find_package(${dependency} REQUIRED MODULE COMPONENTS ${${dependency}_components})
+    endforeach()
+    
+    foreach(dependency ${all_thirdparty_dependencies_found})
+        if (TARGET ${dependency})
+            # keep track of all the 3p dependencies we actually depended on.
+            get_property(o3de_all_3rdparty_targets GLOBAL PROPERTY O3DE_ALL_3RDPARTY_TARGETS)
+            if(NOT ${dependency} IN_LIST o3de_all_3rdparty_targets)
+                set_property(GLOBAL APPEND PROPERTY O3DE_ALL_3RDPARTY_TARGETS "${dependency}")
+            endif()
+        endif()
     endforeach()
 endfunction()
 
@@ -529,7 +662,7 @@ macro(ly_configure_target_platform_properties)
             message(FATAL_ERROR "The supplied PLATFORM_INCLUDE_FILE(${platform_include_file}) cannot be included.\
  Parsing of target will halt")
         endif()
-        if(ly_add_target_HEADERONLY)
+        if(ly_add_target_INTERFACE OR ly_add_target_IMPORTED)
             target_sources(${ly_add_target_NAME} INTERFACE ${platform_include_file})
         else()
             target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
@@ -537,7 +670,6 @@ macro(ly_configure_target_platform_properties)
         ly_source_groups_from_folders("${platform_include_file}")
 
         if(LY_FILES_CMAKE)
-            set(ALLFILES)
             foreach(file_cmake ${LY_FILES_CMAKE})
                 ly_include_cmake_file_list(${file_cmake})
             endforeach()
@@ -681,7 +813,7 @@ endfunction()
 # What this method does is first check if the target being added to the Visual Studio solution is within
 # the LY_ROOT_FOLDER(i.e is the LY_ROOT_FOLDER a prefix of the target source directory)
 # If it is a relative path to the target is used as the folder name
-# Otherwise the target directory would either 
+# Otherwise the target directory would either
 # 1. Be a path outside of the LY_ROOT_FOLDER on the same drive.
 #    In that case forming a relative path would cause it to start with ".." which will not work
 # 2. Be an path outside of the LY_ROOT_FOLDER on a different drive

@@ -35,8 +35,14 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "BindFlags": "3",
-                        "SharedQueueMask": "1"
+                        "BindFlags": [
+                            "CopyRead",
+                            "Color",
+                            "ShaderReadWrite",
+                            "ShaderWrite",
+                            "ShaderRead"
+                        ],
+                        "SharedQueueMask": "Graphics"
                     }
                 }
             ],
@@ -60,7 +66,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/ContrastAdaptiveSharpening.shader"
                 },
-                "Make Fullscreen Pass": true,
+                "FullscreenDispatch": true,
                 "ShaderDataMappings": {
                     "FloatMappings": [
                         {

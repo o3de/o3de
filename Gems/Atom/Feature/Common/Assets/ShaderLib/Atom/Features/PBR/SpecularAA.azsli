@@ -1,0 +1,43 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef ENABLE_SPECULARAA
+#define ENABLE_SPECULARAA 1
+#endif
+
+#if ENABLE_SPECULARAA
+
+option bool o_applySpecularAA;
+
+// Specular Anti-Aliasing technique from this paper:
+// http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
+//
+// Inputs:
+// normal = the surface normal
+// roughnessA2 = roughness alpha squared (i.e. roughnessA * roughnessA), where roughnessA = rougnessLinear * roughnessLinear
+//
+// Output: the new anti-aliased value for roughnessA2
+//
+float CalculateSpecularAA(float3 normal, float roughnessA2)
+{
+    // Constants for formula below
+    const float screenVariance = 0.25f;
+    const float varianceThresh = 0.18f;
+
+    // Specular Anti-Aliasing
+    float3 dndu = ddx_fine( normal );
+    float3 dndv = ddy_fine( normal );
+    float variance = screenVariance * (dot( dndu , dndu ) + dot( dndv , dndv ));
+    float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
+    float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
+    return filteredRoughnessA2;
+}
+
+#endif

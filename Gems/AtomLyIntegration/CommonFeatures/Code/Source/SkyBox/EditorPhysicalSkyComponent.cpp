@@ -27,10 +27,10 @@ namespace AZ
                     editContext->Class<EditorPhysicalSkyComponent>(
                         "Physical Sky", "Physical Sky render the background of your scene with physical simulation")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Environment")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/physical-sky/")
                         ;

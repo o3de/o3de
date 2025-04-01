@@ -80,7 +80,7 @@ namespace AZ
                 AZ_RTTI(AssImpSceneDataPopulatedContext, "{888DA37E-4234-4990-AD50-E6E54AFA9C35}", AssImpImportContext, SceneDataPopulatedContextBase);
 
                 AssImpSceneDataPopulatedContext(AssImpNodeEncounteredContext& parent,
-                    const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData,
+                    AZStd::shared_ptr<DataTypes::IGraphObject> nodeData,
                     const AZStd::string& dataName);
 
                 AssImpSceneDataPopulatedContext(Containers::Scene& scene,
@@ -89,7 +89,7 @@ namespace AZ
                     const SceneSystem& sourceSceneSystem,
                     RenamedNodesMap& nodeNameMap,
                     AssImpSDKWrapper::AssImpNodeWrapper& sourceNode,
-                    const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData,
+                    AZStd::shared_ptr<DataTypes::IGraphObject> nodeData,
                     const AZStd::string& dataName);
             };
 
@@ -121,7 +121,7 @@ namespace AZ
                 AZ_RTTI(AssImpSceneAttributeDataPopulatedContext, "{A5EFB485-2F36-4214-972B-0EFF4EFBF33D}", AssImpImportContext, SceneAttributeDataPopulatedContextBase);
 
                 AssImpSceneAttributeDataPopulatedContext(AssImpSceneNodeAppendedContext& parent,
-                    const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData,
+                    AZStd::shared_ptr<DataTypes::IGraphObject> nodeData,
                     const Containers::SceneGraph::NodeIndex attributeNodeIndex,const AZStd::string& dataName);
             };
 

@@ -191,7 +191,14 @@ namespace ProjectSettingsTool
             root = GetProjectRoot() + "/Gem/Resources/Platform/iOS/Images.xcassets/";
             if (!SystemFile::Exists(root.c_str()))
             {
+                // old
                 root = GetProjectRoot() + "/Gem/Resources/IOSLauncher/Images.xcassets/";
+            }
+
+            if (!SystemFile::Exists(root.c_str()))
+            {
+                // newer layout (see project templates)
+                root = GetProjectRoot() + "/Resources/Platform/iOS/Images.xcassets/";
             }
         }
 

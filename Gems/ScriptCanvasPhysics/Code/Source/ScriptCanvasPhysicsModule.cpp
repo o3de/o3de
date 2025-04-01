@@ -6,11 +6,8 @@
  *
  */
 
-#include <AzCore/Memory/SystemAllocator.h>
-
 #include "ScriptCanvasPhysicsSystemComponent.h"
-#include "PhysicsNodeLibrary.h"
-
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
 namespace ScriptCanvasPhysics
@@ -20,18 +17,15 @@ namespace ScriptCanvasPhysics
     {
     public:
         AZ_RTTI(ScriptCanvasPhysicsModule, "{6B4D5464-DAA5-439D-A0D9-22311608C610}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasPhysicsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasPhysicsModule, AZ::SystemAllocator);
 
         ScriptCanvasPhysicsModule()
             : AZ::Module()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
-                    ScriptCanvasPhysicsSystemComponent::CreateDescriptor(),
-                });
-
-            AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(PhysicsNodeLibrary::GetComponentDescriptors());
-            m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+                ScriptCanvasPhysicsSystemComponent::CreateDescriptor(),
+            });
         }
 
         /**
@@ -40,13 +34,14 @@ namespace ScriptCanvasPhysics
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                       azrtti_typeid<ScriptCanvasPhysicsSystemComponent>(),
+                azrtti_typeid<ScriptCanvasPhysicsSystemComponent>(),
             };
         }
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ScriptCanvasPhysics::ScriptCanvasPhysicsModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasPhysics, ScriptCanvasPhysics::ScriptCanvasPhysicsModule)
+#endif

@@ -43,7 +43,7 @@ namespace AZ
         {
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            AZ::RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            AZ::RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
             if (fp)
             {
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -84,10 +84,11 @@ namespace AZ
         void DepthOfFieldMaskPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             // Update resolution size
-            const RPI::PassAttachmentBinding& attachmentBinding = GetAttachmentBindings()[0];
-            if (attachmentBinding.m_attachment)
+            const auto attachmentBindings = GetAttachmentBindings();
+            const RPI::PassAttachmentBinding& attachmentBinding = attachmentBindings[0];
+            if (attachmentBinding.GetAttachment())
             {
-                RHI::Size size = attachmentBinding.m_attachment->m_descriptor.m_image.m_size;
+                RHI::Size size = attachmentBinding.GetAttachment()->m_descriptor.m_image.m_size;
                 m_inputResolutionInverse[0] = 1.0f / size.m_width;
                 m_inputResolutionInverse[1] = 1.0f / size.m_height;
             }
@@ -113,6 +114,6 @@ namespace AZ
             m_radiusMin = min;
             m_radiusMax = max;
         }
-        
+
     }   // namespace Render
 }   // namespace AZ

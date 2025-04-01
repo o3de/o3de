@@ -19,6 +19,7 @@ namespace AzToolsFramework
     class PlanarManipulator;
     class LinearManipulator;
     class AngularManipulator;
+    class PaintBrushManipulator;
     class LineSegmentSelectionManipulator;
     class SplineSelectionManipulator;
 
@@ -50,7 +51,7 @@ namespace AzToolsFramework
     class ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorView, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorView, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorView, "{7529E3E9-39B3-4D15-899A-FA13770113B2}")
 
         ManipulatorView();
@@ -103,7 +104,7 @@ namespace AzToolsFramework
     class ManipulatorViewQuad : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewQuad, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewQuad, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewQuad, "{D85E1B45-495E-4755-BCF2-6AE45F8BB2B0}", ManipulatorView)
 
         void Draw(
@@ -133,7 +134,7 @@ namespace AzToolsFramework
     class ManipulatorViewQuadBillboard : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewQuadBillboard, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewQuadBillboard, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewQuadBillboard, "{C205E967-E8C6-4A73-A31B-41EE5529B15B}", ManipulatorView)
 
         void Draw(
@@ -154,7 +155,7 @@ namespace AzToolsFramework
     class ManipulatorViewLine : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewLine, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewLine, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewLine, "{831EEF66-4A5C-450C-B152-EA4A0BC8A272}", ManipulatorView)
 
         void Draw(
@@ -180,7 +181,7 @@ namespace AzToolsFramework
     class ManipulatorViewLineSelect : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewLineSelect, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewLineSelect, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewLineSelect, "{BF26A947-91F8-4595-9A5B-481876EB2C48}", ManipulatorView)
 
         void Draw(
@@ -204,7 +205,7 @@ namespace AzToolsFramework
     class ManipulatorViewCone : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewCone, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewCone, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewCone, "{BF042887-1F51-4FD8-8CA5-4A649B4AF356}", ManipulatorView)
 
         void Draw(
@@ -234,7 +235,7 @@ namespace AzToolsFramework
     class ManipulatorViewBox : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewBox, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewBox, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewBox, "{2D082201-7878-4C1B-A3DD-7A629E5AD598}", ManipulatorView)
 
         void Draw(
@@ -259,7 +260,7 @@ namespace AzToolsFramework
     class ManipulatorViewCylinder : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewCylinder, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewCylinder, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewCylinder, "{9B8E5EF4-0F85-4CD0-A5FF-3C7097DF58AC}", ManipulatorView)
 
         void Draw(
@@ -286,7 +287,7 @@ namespace AzToolsFramework
     class ManipulatorViewSphere : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewSphere, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewSphere, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewSphere, "{324D8329-6E7B-4A5D-AC8A-8C0E1C984E38}", ManipulatorView)
 
         void Draw(
@@ -304,13 +305,37 @@ namespace AzToolsFramework
         bool m_depthTest = false;
     };
 
+    //! Displays a wire circle that's projected and rotated into world space (useful for paint brush manipulators).
+    class ManipulatorViewProjectedCircle : public ManipulatorView
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ManipulatorViewProjectedCircle, AZ::SystemAllocator)
+        AZ_RTTI(ManipulatorViewProjectedCircle, "{2F6C918C-3B2D-41A1-871A-B143463324B1}", ManipulatorView)
+
+        void Draw(
+            ManipulatorManagerId managerId,
+            const ManipulatorManagerState& managerState,
+            ManipulatorId manipulatorId,
+            const ManipulatorState& manipulatorState,
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            const AzFramework::CameraState& cameraState,
+            const ViewportInteraction::MouseInteraction& mouseInteraction) override;
+
+        void SetRadius(float radius);
+
+        AZ::Vector3 m_axis = AZ::Vector3::CreateAxisZ();
+        float m_width = 0.5f;
+        float m_radius = 2.0f;
+        AZ::Color m_color = AZ::Colors::Red;
+    };
+
     //! Displays a wire circle. DrawCircleFunc can be used to either draw a full
     //! circle or a half dotted circle where the part of the circle facing away
     //! from the camera is dotted (useful for angular/rotation manipulators).
     class ManipulatorViewCircle : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewCircle, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewCircle, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewCircle, "{26563A03-3E48-49EB-9DCF-30EE4F567FCD}", ManipulatorView)
 
         using DrawCircleFunc = void (*)(AzFramework::DebugDisplayRequests&, const AZ::Vector3&, float, const AZ::Vector3&);
@@ -327,7 +352,7 @@ namespace AzToolsFramework
         AZ::Vector3 m_axis;
         float m_width = 0.0f;
         float m_radius = 0.0f;
-        AZ::Color m_color = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
+        AZ::Color m_color = AZ::Colors::Red;
         DrawCircleFunc m_drawCircleFunc = nullptr;
     };
 
@@ -344,7 +369,7 @@ namespace AzToolsFramework
     class ManipulatorViewSplineSelect : public ManipulatorView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorViewSplineSelect, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorViewSplineSelect, AZ::SystemAllocator)
         AZ_RTTI(ManipulatorViewSplineSelect, "{60996E49-D6BF-4817-BAA3-D27A407DD21A}", ManipulatorView)
 
         void Draw(
@@ -408,6 +433,9 @@ namespace AzToolsFramework
 
     AZStd::unique_ptr<ManipulatorViewSphere> CreateManipulatorViewSphere(
         const AZ::Color& color, float radius, const DecideColorFn& decideColor, bool enableDepthTest = false);
+
+    AZStd::unique_ptr<ManipulatorViewProjectedCircle> CreateManipulatorViewProjectedCircle(
+        const PaintBrushManipulator& brushManipulator, const AZ::Color& color, float radius, float width);
 
     AZStd::unique_ptr<ManipulatorViewCircle> CreateManipulatorViewCircle(
         const AngularManipulator& angularManipulator,

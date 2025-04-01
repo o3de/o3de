@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_PlaneFunctions_Transform",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Transform",
+                "category": "Math/Plane"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_PlaneFunctions_Transform",
+                    "details": {
+                        "name": "Transform",
+                        "tooltip": "Returns Source transformed by Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{847DD984-9DBF-4789-8E25-E0334402E8AD}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{847DD984-9DBF-4789-8E25-E0334402E8AD}",
+                            "details": {
+                                "name": "Plane"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -18,12 +18,11 @@
 
 namespace AzToolsFramework
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorDefaultSelection, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorDefaultSelection, AZ::SystemAllocator)
 
     EditorDefaultSelection::EditorDefaultSelection(
-        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+        const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_phantomWidget(nullptr)
-        , m_entityDataCache(entityDataCache)
         , m_viewportEditorModeTracker(viewportEditorModeTracker)
         , m_componentModeCollection(viewportEditorModeTracker)
     {
@@ -136,6 +135,9 @@ namespace AzToolsFramework
     void EditorDefaultSelection::EndComponentMode()
     {
         TransitionFromComponentMode();
+        // remove the component mode viewport border
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
     }
 
     void EditorDefaultSelection::Refresh(const AZ::EntityComponentIdPair& entityComponentIdPair)
@@ -150,6 +152,20 @@ namespace AzToolsFramework
 
     void EditorDefaultSelection::AddSelectedComponentModesOfType(const AZ::Uuid& componentType)
     {
+        ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
+            [componentType](ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
+            {
+                componentModeMouseRequests->AddComponentModeOfType(componentType);
+                return true;
+            });
+
+        TransitionToComponentMode();
+    }
+
+    void EditorDefaultSelection::ChangeComponentMode(const AZ::Uuid& componentType)
+    {
+        TransitionFromComponentMode();
+
         ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
             [componentType](ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
             {

@@ -9,92 +9,89 @@
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    ImageFrameAttachment::ImageFrameAttachment(
+        const AttachmentId& attachmentId,
+        Ptr<Image> image)
+        : FrameAttachment(
+            attachmentId,
+            HardwareQueueClassMask::All,
+            AttachmentLifetimeType::Imported)
+        , m_imageDescriptor{image->GetDescriptor()}
     {
-        ImageFrameAttachment::ImageFrameAttachment(
-            const AttachmentId& attachmentId,
-            Ptr<Image> image)
-            : FrameAttachment(
-                attachmentId,
-                HardwareQueueClassMask::All,
-                AttachmentLifetimeType::Imported)
-            , m_imageDescriptor{image->GetDescriptor()}
+        SetResource(AZStd::move(image));
+    }
+
+    ImageFrameAttachment::ImageFrameAttachment(const TransientImageDescriptor& descriptor)
+        : FrameAttachment(
+            descriptor.m_attachmentId,
+            descriptor.m_supportedQueueMask,
+            AttachmentLifetimeType::Transient)
+        , m_imageDescriptor{descriptor.m_imageDescriptor}
+    {
+        if (descriptor.m_optimizedClearValue)
         {
-            SetResource(AZStd::move(image));
+            m_clearValueOverride = *descriptor.m_optimizedClearValue;
+            m_hasClearValueOverride = true;
+        }
+    }
+
+    const ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment(int deviceIndex) const
+    {
+        return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment(deviceIndex));
+    }
+
+    ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment(int deviceIndex)
+    {
+        return static_cast<ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment(deviceIndex));
+    }
+
+    const ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment(int deviceIndex) const
+    {
+        return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment(deviceIndex));
+    }
+
+    ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment(int deviceIndex)
+    {
+        return static_cast<ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment(deviceIndex));
+    }
+
+    const ImageDescriptor& ImageFrameAttachment::GetImageDescriptor() const
+    {
+        return m_imageDescriptor;
+    }
+
+    const Image* ImageFrameAttachment::GetImage() const
+    {
+        return static_cast<const Image*>(GetResource());
+    }
+
+    Image* ImageFrameAttachment::GetImage()
+    {
+        return static_cast<Image*>(GetResource());
+    }
+
+    ClearValue ImageFrameAttachment::GetOptimizedClearValue(int deviceIndex) const
+    {
+        if (m_hasClearValueOverride)
+        {
+            return m_clearValueOverride;
         }
 
-        ImageFrameAttachment::ImageFrameAttachment(const TransientImageDescriptor& descriptor)
-            : FrameAttachment(
-                descriptor.m_attachmentId,
-                descriptor.m_supportedQueueMask,
-                AttachmentLifetimeType::Transient)
-            , m_imageDescriptor{descriptor.m_imageDescriptor}
+        const ScopeAttachment* bindingNode = GetFirstScopeAttachment(deviceIndex);
+        while (bindingNode)
         {
-            if (descriptor.m_optimizedClearValue)
+            const ImageScopeAttachmentDescriptor& binding = static_cast<const ImageScopeAttachment&>(*bindingNode).GetDescriptor();
+
+            if (binding.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear ||
+                binding.m_loadStoreAction.m_loadActionStencil == AttachmentLoadAction::Clear)
             {
-                m_clearValueOverride = *descriptor.m_optimizedClearValue;
-                m_hasClearValueOverride = true;
-            }
-        }
-
-        const ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment() const
-        {
-            return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
-        }
-
-        ImageScopeAttachment* ImageFrameAttachment::GetFirstScopeAttachment()
-        {
-            return static_cast<ImageScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
-        }
-
-        const ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment() const
-        {
-            return static_cast<const ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
-        }
-
-        ImageScopeAttachment* ImageFrameAttachment::GetLastScopeAttachment()
-        {
-            return static_cast<ImageScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
-        }
-
-        const ImageDescriptor& ImageFrameAttachment::GetImageDescriptor() const
-        {
-            return m_imageDescriptor;
-        }
-
-        const Image* ImageFrameAttachment::GetImage() const
-        {
-            return static_cast<const Image*>(GetResource());
-        }
-
-        Image* ImageFrameAttachment::GetImage()
-        {
-            return static_cast<Image*>(GetResource());
-        }
-
-        ClearValue ImageFrameAttachment::GetOptimizedClearValue() const
-        {
-            if (m_hasClearValueOverride)
-            {
-                return m_clearValueOverride;
+                return binding.m_loadStoreAction.m_clearValue;
             }
 
-            const ScopeAttachment* bindingNode = GetFirstScopeAttachment();
-            while (bindingNode)
-            {
-                const ImageScopeAttachmentDescriptor& binding = static_cast<const ImageScopeAttachment&>(*bindingNode).GetDescriptor();
-
-                if (binding.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear ||
-                    binding.m_loadStoreAction.m_loadActionStencil == AttachmentLoadAction::Clear)
-                {
-                    return binding.m_loadStoreAction.m_clearValue;
-                }
-
-                bindingNode = bindingNode->GetNext();
-            }
-            return ClearValue{};
+            bindingNode = bindingNode->GetNext();
         }
+        return ClearValue{};
     }
 }

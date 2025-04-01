@@ -10,14 +10,35 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+#ifndef USE_CUSTOM_DRAW_SRG
+#define USE_CUSTOM_DRAW_SRG 0
+#endif
+
+#ifndef USE_DRAWSRG_MESHLOD_MESHINDEX
+#define USE_DRAWSRG_MESHLOD_MESHINDEX 0
+#endif
+
+#ifndef MATERIAL_PIPELINE_DRAW_SRG_MEMBERS
+#define MATERIAL_PIPELINE_DRAW_SRG_MEMBERS
+#endif
+
+#if USE_CUSTOM_DRAW_SRG
+#else
 ShaderResourceGroup DrawSrg : SRG_PerDraw
 {
     // This SRG is unique per draw packet
     uint m_uvStreamTangentBitmask;
-    
+
+#if USE_DRAWSRG_MESHLOD_MESHINDEX
+    // See MeshDrawPacket.h
+    uint m_modelLodMeshIndex;
+#endif
+
     uint GetTangentAtUv(uint uvIndex)
     {
         return (m_uvStreamTangentBitmask >> (4 * uvIndex)) & 0xF;
     }
-}
 
+    MATERIAL_PIPELINE_DRAW_SRG_MEMBERS
+}
+#endif

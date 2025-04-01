@@ -17,19 +17,19 @@ namespace Gestures
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GesturesSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GestureInputService"));
+        provided.push_back(AZ_CRC_CE("GestureInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GesturesSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GestureInputService"));
+        incompatible.push_back(AZ_CRC_CE("GestureInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GesturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("InputSystemService", 0x5438d51a));
+        required.push_back(AZ_CRC_CE("InputSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,6 @@ namespace Gestures
             {
                 ec->Class<GesturesSystemComponent>("Gestures", "Interprets raw mouse/touch input in order to detect common gestures like drag, hold, swipe, etc.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &GesturesSystemComponent::m_doublePressConfig,
                         "Double Press", "The config used to create the default double press gesture input channel.")

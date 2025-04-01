@@ -14,6 +14,9 @@
 #include "MotionEventPresetManager.h"
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
+#include <EMotionFX/CommandSystem/Source/MotionCommands.h>
+#include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 
 // include MCore related
 #include <MCore/Source/LogManager.h>
@@ -49,7 +52,7 @@ namespace EMStudio
     //--------------------------------------------------------------------------
     // class EMStudioManager
     //--------------------------------------------------------------------------
-    AZ_CLASS_ALLOCATOR_IMPL(EMStudioManager, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EMStudioManager, AZ::SystemAllocator)
 
     // constructor
     EMStudioManager::EMStudioManager(QApplication* app, [[maybe_unused]] int& argc, [[maybe_unused]] char* argv[])
@@ -64,8 +67,6 @@ namespace EMStudio
 
         m_app = app;
 
-        AZ::AllocatorInstance<UIAllocator>::Create();
-        
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!serializeContext)
@@ -127,8 +128,6 @@ namespace EMStudio
         delete m_mainWindow;
         delete m_commandManager;
 
-        AZ::AllocatorInstance<UIAllocator>::Destroy();
-
         AZ::Interface<EMStudioManager>::Unregister(this);
     }
 
@@ -149,7 +148,8 @@ namespace EMStudio
         GetMainWindow()->Reset();
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphInstances(true);
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphs(true);
-        EMotionFX::GetMotionManager().Clear(true);
+        CommandSystem::ClearMotionSetsCommand();
+        CommandSystem::ClearMotions();
     }
 
 
@@ -176,26 +176,28 @@ namespace EMStudio
         m_pluginManager->LoadPluginsFromDirectory(pluginDir.c_str());
 #endif // EMFX_EMSTUDIOLYEMBEDDED
 
-        // Give a chance to every plugin to reflect data
-        const size_t numPlugins = m_pluginManager->GetNumPlugins();
-        if (numPlugins)
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ_Error("EMotionFX", serializeContext, "Can't get serialize context from component application.");
+        if (serializeContext)
         {
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            if (!serializeContext)
+            // Reflect plugin related data.
+            const PluginManager::PluginVector& registeredPlugins = m_pluginManager->GetRegisteredPlugins();
+            for (EMStudioPlugin* plugin : registeredPlugins)
             {
-                AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
+                plugin->Reflect(serializeContext);
             }
-            else
+
+            const PluginManager::PersistentPluginVector& persistentPlugins = m_pluginManager->GetPersistentPlugins();
+            for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
             {
-                for (size_t i = 0; i < numPlugins; ++i)
-                {
-                    EMStudioPlugin* plugin = m_pluginManager->GetPlugin(i);
-                    plugin->Reflect(serializeContext);
-                }
+                plugin->Reflect(serializeContext);
             }
+
+            // Reflect shared data that might be used by multiple plugins.
+            RenderOptions::Reflect(serializeContext);
         }
-        
+
         // Register the command event processing callback.
         m_eventProcessingCallback = new EventProcessingCallback();
         EMStudio::GetCommandManager()->RegisterCallback(m_eventProcessingCallback);
@@ -261,17 +263,6 @@ namespace EMStudio
     }
 
 
-    const char* EMStudioManager::ConstructHTMLLink(const char* text, const MCore::RGBAColor& color)
-    {
-        int32 r = aznumeric_cast<int32>(color.m_r * 256);
-        int32 g = aznumeric_cast<int32>(color.m_g * 256);
-        int32 b = aznumeric_cast<int32>(color.m_b * 256);
-
-        m_htmlLinkString = AZStd::string::format("<qt><style>a { color: rgb(%i, %i, %i); } a:hover { color: rgb(40, 40, 40); }</style><a href='%s'>%s</a></qt>", r, g, b, text, text);
-        return m_htmlLinkString.c_str();
-    }
-
-
     void EMStudioManager::MakeTransparentButton(QToolButton* button, const char* iconFileName, const char* toolTipText, uint32 width, uint32 height)
     {
         button->setObjectName("TransparentButton");
@@ -332,7 +323,7 @@ namespace EMStudio
 
     void EMStudioManager::JointSelectionChanged()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         EMotionFX::SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &EMotionFX::SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -354,6 +345,10 @@ namespace EMStudio
         }
     }
 
+    void EMStudioManager::JointHoveredChanged(size_t hoveredJointIndex)
+    {
+        m_hoveredJointIndex = hoveredJointIndex;
+    }
 
     // before executing a command
     void EMStudioManager::EventProcessingCallback::OnPreExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine)
@@ -389,7 +384,8 @@ namespace EMStudio
         QDir dir(appDataFolder.c_str());
         dir.mkpath(appDataFolder.c_str());
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, appDataFolder);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, appDataFolder);
         return appDataFolder.c_str();
     }
 
@@ -426,39 +422,6 @@ namespace EMStudio
     {
         return AZ::Interface<EMStudioManager>().Get();
     }
-
-
-    // function to add a gizmo to the manager
-    MCommon::TransformationManipulator* EMStudioManager::AddTransformationManipulator(MCommon::TransformationManipulator* manipulator)
-    {
-        // check if manipulator exists
-        if (manipulator == nullptr)
-        {
-            return nullptr;
-        }
-
-        // add and return the manipulator
-        m_transformationManipulators.emplace_back(manipulator);
-        return manipulator;
-    }
-
-
-    // remove the given gizmo from the array
-    void EMStudioManager::RemoveTransformationManipulator(MCommon::TransformationManipulator* manipulator)
-    {
-        if (const auto it = AZStd::find(begin(m_transformationManipulators), end(m_transformationManipulators), manipulator); it != end(m_transformationManipulators))
-        {
-            m_transformationManipulators.erase(it);
-        }
-    }
-
-
-    // returns the gizmo array
-    AZStd::vector<MCommon::TransformationManipulator*>* EMStudioManager::GetTransformationManipulators()
-    {
-        return &m_transformationManipulators;
-    }
-
 
     // new temporary helper function for text drawing
     void EMStudioManager::RenderText(QPainter& painter, const QString& text, const QColor& textColor, const QFont& font, const QFontMetrics& fontMetrics, Qt::Alignment textAlignment, const QRect& rect)
@@ -499,6 +462,9 @@ namespace EMStudio
         path.addText(textPos, font, text);
         painter.drawPath(path);
     }
+
+    const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId =
+        AzToolsFramework::ManipulatorManagerId(AZ::Crc32("AnimManipulatorManagerId"));
 
     // shortcuts
     QApplication* GetApp()

@@ -56,6 +56,11 @@ namespace AzToolsFramework
         return m_interactionRequests->InternalHandleMouseManipulatorInteraction(mouseInteraction);
     }
 
+    const EditorVisibleEntityDataCacheInterface* EditorInteractionSystemComponent::GetEntityDataCache() const
+    {
+        return m_entityDataCache.get();
+    }
+
     void EditorInteractionSystemComponent::SetHandler(
         const ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder)
     {
@@ -84,7 +89,7 @@ namespace AzToolsFramework
     void EditorInteractionSystemComponent::SetDefaultHandler()
     {
         SetHandler(
-            [](const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            [](const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 return AZStd::make_unique<EditorDefaultSelection>(entityDataCache, viewportEditorModeTracker);
             });

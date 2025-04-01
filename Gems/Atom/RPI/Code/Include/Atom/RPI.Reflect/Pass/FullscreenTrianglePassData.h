@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 namespace AZ
@@ -15,25 +16,16 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the FullscreenTrianglePass. Should be specified in the PassRequest.
-        struct FullscreenTrianglePassData
+        struct ATOM_RPI_REFLECT_API FullscreenTrianglePassData
             : public RenderPassData
         {
             AZ_RTTI(FullscreenTrianglePassData, "{564738A1-9690-4446-8CC1-615EA2567434}", RenderPassData);
-            AZ_CLASS_ALLOCATOR(FullscreenTrianglePassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FullscreenTrianglePassData, SystemAllocator);
 
             FullscreenTrianglePassData() = default;
             virtual ~FullscreenTrianglePassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<FullscreenTrianglePassData, RenderPassData>()
-                        ->Version(0)
-                        ->Field("ShaderAsset", &FullscreenTrianglePassData::m_shaderAsset)
-                        ->Field("StencilRef", &FullscreenTrianglePassData::m_stencilRef);
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             //! Reference to the shader asset used by the fullscreen triangle pass
             AssetReference m_shaderAsset;

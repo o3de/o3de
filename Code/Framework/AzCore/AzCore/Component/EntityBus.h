@@ -105,7 +105,7 @@ namespace AZ
                 EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
 
                 Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
                 if (entity)
                 {
                     const AZ::Entity::State entityState = entity->GetState();
@@ -189,3 +189,5 @@ namespace AZ
 
 #endif // AZCORE_ENTITY_BUS_H
 #pragma once
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(EntityEvents);

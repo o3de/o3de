@@ -151,7 +151,7 @@ def LayerBlender_E2E_Editor():
     # 6) Save the created level
     general.save_level()
     level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
-    success = helper.wait_for_condition(lambda: os.path.exists(level_prefab_path), 5.0)
+    success = helper.wait_for_condition(lambda: os.path.exists(level_prefab_path), 10.0)
     Report.result(Tests.saved_and_exported, success)
 
 

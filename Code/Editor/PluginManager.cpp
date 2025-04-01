@@ -84,9 +84,9 @@ namespace
         IPlugin* pIPlugin = pfnFactory(pInitParam);
         if (!pIPlugin)
         {
-            if (AZ::Debug::Trace::IsDebuggerPresent())
+            if (AZ::Debug::Trace::Instance().IsDebuggerPresent())
             {
-                AZ::Debug::Trace::Break();
+                AZ::Debug::Trace::Instance().Break();
             }
             CLogFile::FormatLine("Can't initialize plugin '%s'! Possible binary version incompatibility. Please reinstall this plugin.", szFilePath);
         }
@@ -123,10 +123,9 @@ namespace
     }
 }
 
-bool CPluginManager::LoadPlugins(const char* pPathWithMask)
+bool CPluginManager::LoadPlugins(const char* pluginsPath)
 {
-    QString strPath = PathUtil::GetPath(pPathWithMask).c_str();
-    QString strMask = PathUtil::GetFile(pPathWithMask);
+    QString strPath{ pluginsPath }; 
 
     CLogFile::WriteLine("[Plugin Manager] Loading plugins...");
 

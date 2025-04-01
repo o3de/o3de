@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME SurfaceData.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         surfacedata_files.cmake
@@ -18,15 +18,16 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Legacy::CryCommon
             Gem::LmbrCentral
         PUBLIC
+            AZ::AzCore
+            AZ::AzFramework
             Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
 )
 
 ly_add_target(
-    NAME SurfaceData ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         surfacedata_shared_files.cmake
@@ -36,22 +37,31 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryCommon
-            Gem::SurfaceData.Static
-            Gem::LmbrCentral
+        PUBLIC
+            Gem::${gem_name}.Static
+            Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/SurfaceDataModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the above module is for use in all client/server types 
-ly_create_alias(NAME SurfaceData.Servers  NAMESPACE Gem TARGETS Gem::SurfaceData)
-ly_create_alias(NAME SurfaceData.Clients  NAMESPACE Gem TARGETS Gem::SurfaceData)
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME SurfaceData.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -66,16 +76,25 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Legacy::CryCommon
                 AZ::AzToolsFramework
-                Gem::SurfaceData.Static
-                Gem::LmbrCentral.Editor
+                Gem::${gem_name}.Static
+                Gem::LmbrCentral.Editor.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/SurfaceDataEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
     # the above module is for use in dev tool situations
-    ly_create_alias(NAME SurfaceData.Builders NAMESPACE Gem TARGETS Gem::SurfaceData.Editor)
-    ly_create_alias(NAME SurfaceData.Tools    NAMESPACE Gem TARGETS Gem::SurfaceData.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 
@@ -85,7 +104,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME SurfaceData.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             surfacedata_tests_files.cmake
@@ -97,11 +116,17 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Legacy::CryCommon
-                Gem::SurfaceData.Static
+                Gem::${gem_name}.Static
                 Gem::LmbrCentral
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
     )
     ly_add_googletest(
-        NAME Gem::SurfaceData.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
+    )
+    ly_add_googlebenchmark(
+        NAME Gem::${gem_name}.Benchmarks
+        TARGET Gem::${gem_name}.Tests
     )
 endif()

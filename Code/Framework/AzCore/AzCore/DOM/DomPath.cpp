@@ -7,9 +7,9 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzCore/DOM/DomPath.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/Console/ConsoleTypeHelpers.h>
 
 namespace AZ::Dom
 {
@@ -53,17 +53,20 @@ namespace AZ::Dom
 
     bool PathEntry::operator==(size_t value) const
     {
-        return IsIndex() && GetIndex() == value;
+        const size_t* internalValue = AZStd::get_if<size_t>(&m_value);
+        return internalValue != nullptr && *internalValue == value;
     }
 
     bool PathEntry::operator==(const AZ::Name& key) const
     {
-        return IsKey() && GetKey() == key;
+        const AZ::Name* internalValue = AZStd::get_if<AZ::Name>(&m_value);
+        return internalValue != nullptr && *internalValue == key;
     }
 
     bool PathEntry::operator==(AZStd::string_view key) const
     {
-        return IsKey() && GetKey() == AZ::Name(key);
+        const AZ::Name* internalValue = AZStd::get_if<AZ::Name>(&m_value);
+        return internalValue != nullptr && *internalValue == AZ::Name(key);
     }
 
     bool PathEntry::operator!=(const PathEntry& other) const
@@ -73,17 +76,17 @@ namespace AZ::Dom
 
     bool PathEntry::operator!=(size_t value) const
     {
-        return !IsIndex() || GetIndex() != value;
+        return !operator==(value);
     }
 
     bool PathEntry::operator!=(const AZ::Name& key) const
     {
-        return !IsKey() || GetKey() != key;
+        return !operator==(key);
     }
 
     bool PathEntry::operator!=(AZStd::string_view key) const
     {
-        return !IsKey() || GetKey() != AZ::Name(key);
+        return !operator==(key);
     }
 
     void PathEntry::SetEndOfArray()
@@ -110,10 +113,40 @@ namespace AZ::Dom
 
     size_t PathEntry::GetIndex() const
     {
-        AZ_Assert(IsIndex(), "GetIndex called on PathEntry that is not an index");
+        AZ_Assert(!IsEndOfArray() && IsIndex(), "GetIndex called on PathEntry that is not an index");
         return AZStd::get<size_t>(m_value);
     }
 
+    size_t PathEntry::GetHash() const
+    {
+        return AZStd::visit(
+            [&](auto&& value) -> size_t
+            {
+                using CurrentType = AZStd::decay_t<decltype(value)>;
+                if constexpr (AZStd::is_same_v<CurrentType, size_t>)
+                {
+                    AZStd::hash<size_t> hasher;
+                    return hasher(value);
+                }
+                else if constexpr (AZStd::is_same_v<CurrentType, AZ::Name>)
+                {
+                    return value.GetHash();
+                }
+            },
+            m_value);
+    }
+} // namespace AZ::Dom
+
+namespace AZStd
+{
+    size_t AZStd::hash<AZ::Dom::PathEntry>::operator()(const AZ::Dom::PathEntry& entry) const
+    {
+        return entry.GetHash();
+    }
+} // namespace AZStd
+
+namespace AZ::Dom
+{
     const AZ::Name& PathEntry::GetKey() const
     {
         AZ_Assert(IsKey(), "Key called on PathEntry that is not a key");
@@ -238,9 +271,19 @@ namespace AZ::Dom
         return {};
     }
 
+    PathEntry Path::Back() const
+    {
+        return m_entries.back();
+    }
+
     size_t Path::Size() const
     {
         return m_entries.size();
+    }
+
+    bool Path::IsEmpty() const
+    {
+        return m_entries.empty();
     }
 
     PathEntry& Path::operator[](size_t index)
@@ -320,13 +363,13 @@ namespace AZ::Dom
         return size;
     }
 
-    void Path::FormatString(char* stringBuffer, size_t bufferSize) const
+    size_t Path::FormatString(char* stringBuffer, size_t bufferSize) const
     {
         size_t bufferIndex = 0;
 
         auto putChar = [&](char c)
         {
-            if (bufferIndex == bufferSize)
+            if (bufferIndex >= bufferSize)
             {
                 return;
             }
@@ -357,6 +400,11 @@ namespace AZ::Dom
 
         for (const PathEntry& entry : m_entries)
         {
+            if (bufferIndex >= bufferSize)
+            {
+                return bufferIndex;
+            }
+
             putChar(PathSeparator);
             if (entry.IsEndOfArray())
             {
@@ -372,7 +420,10 @@ namespace AZ::Dom
             }
         }
 
+        size_t bytesWritten = bufferIndex;
         putChar('\0');
+
+        return bytesWritten;
     }
 
     AZStd::string Path::ToString() const
@@ -392,6 +443,18 @@ namespace AZ::Dom
         FormatString(output.data() + startIndex, stringLength + 1);
     }
 
+    bool Path::ContainsNormalizedEntries() const
+    {
+        for (const PathEntry& entry : m_entries)
+        {
+            if (entry.IsEndOfArray())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void Path::FromString(AZStd::string_view pathString)
     {
         m_entries.clear();
@@ -401,7 +464,7 @@ namespace AZ::Dom
         }
 
         size_t pathEntryCount = 0;
-        for (size_t i = 1; i <= pathString.size(); ++i)
+        for (size_t i = 1; i < pathString.size(); ++i)
         {
             if (pathString[i] == PathSeparator)
             {

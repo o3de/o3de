@@ -373,11 +373,8 @@ namespace GraphCanvas
 
         virtual void HandleProposalDaisyChainWithGroup(const NodeId& startNode, SlotType slotType, ConnectionType connectionType, const QPoint& screenPoint, const QPointF& focusPoint, AZ::EntityId groupTarget) = 0;
 
-        virtual void HandleProposalDaisyChain(const NodeId& startNode, SlotType slotType, ConnectionType connectionType, const QPoint& screenPoint, const QPointF& focusPoint)
-        {
-            HandleProposalDaisyChainWithGroup(startNode, slotType, connectionType, screenPoint, focusPoint, AZ::EntityId());
-        }
-
+        virtual void HandleProposalDaisyChain(const NodeId& startNode, SlotType slotType, ConnectionType connectionType, const QPoint& screenPoint, const QPointF& focusPoint);
+        
         virtual void StartNudging(const AZStd::unordered_set<AZ::EntityId>& fixedNodes) = 0;
         virtual void FinalizeNudging() = 0;
         virtual void CancelNudging() = 0;
@@ -392,7 +389,6 @@ namespace GraphCanvas
 
     using SceneRequestBus = AZ::EBus<SceneRequests>;
 
-
     //! SceneNotifications
     //! Notifications about changes to the state of scenes.
     class SceneNotifications
@@ -406,8 +402,6 @@ namespace GraphCanvas
         virtual void OnNodeAdded(const AZ::EntityId& /*nodeId*/, bool /*isPaste*/) {}
         //! A node has been removed from the scene.
         virtual void OnNodeRemoved(const AZ::EntityId& /*nodeId*/) {}
-        //! A node is about to be removed from the scene.
-        virtual void PreOnNodeRemoved(const AZ::EntityId& /*nodeId*/) {}
         //! A node in the scene has been selected
         virtual void OnNodeSelected(const AZ::EntityId& /*nodeId*/, bool /*selected*/) {}
 
@@ -593,3 +587,5 @@ namespace GraphCanvas
 
     using SceneMemberNotificationBus = AZ::EBus<SceneMemberNotifications>;    
 }
+
+DECLARE_EBUS_EXTERN(GraphCanvas::SceneRequests);

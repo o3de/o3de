@@ -9,7 +9,19 @@
 
 #include <Tests/GradientSignalTestMocks.h>
 #include <LmbrCentral/Shape/MockShapes.h>
+#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <AzTest/GemTestEnvironment.h>
+
+namespace UnitTest::StubRHI
+{
+    class Factory;
+}// namespace UnitTest::StubRHI
+
+namespace AZ::RPI
+{
+    class RPISystem;
+    class ImageSystem;
+} // namespace AZ::RPI
 
 namespace UnitTest
 {
@@ -20,6 +32,7 @@ namespace UnitTest
     {
     public:
         void AddGemsAndComponents() override;
+        void PostCreateApplication() override;
     };
 
 #ifdef HAVE_BENCHMARK
@@ -46,6 +59,9 @@ namespace UnitTest
     class GradientSignalBaseFixture
     {
     public:
+        GradientSignalBaseFixture();
+        virtual ~GradientSignalBaseFixture();
+
         void SetupCoreSystems();
         void TearDownCoreSystems();
 
@@ -60,16 +76,16 @@ namespace UnitTest
             entity->Activate();
         }
 
-        // Create a mock SurfaceDataSystem that will respond to requests for surface points with mock responses for points inside
-        // the given input box.
-        AZStd::unique_ptr<MockSurfaceDataSystem> CreateMockSurfaceDataSystem(const AZ::Aabb& spawnerBox);
-
-        // Create an entity with a mock shape and a transform. It won't be activated yet though, because we expect a gradient component
+        // Create an entity with a box shape and a transform. It won't be activated yet though, because we expect a gradient component
         // to also get added to it first before activation.
         AZStd::unique_ptr<AZ::Entity> CreateTestEntity(float shapeHalfBounds);
 
+        // Create an entity with a sphere shape and a transform. It won't be activated yet though, because we expect a gradient component
+        // to also get added to it first before activation.
+        AZStd::unique_ptr<AZ::Entity> CreateTestSphereEntity(float shapeRadius);
+
         // Create and activate an entity with a gradient component of the requested type, initialized with test data.
-        AZStd::unique_ptr<AZ::Entity> BuildTestConstantGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestConstantGradient(float shapeHalfBounds, float value = 0.75f);
         AZStd::unique_ptr<AZ::Entity> BuildTestImageGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestPerlinGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestRandomGradient(float shapeHalfBounds);
@@ -89,7 +105,10 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceMaskGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceSlopeGradient(float shapeHalfBounds);
 
-        UnitTest::ImageAssetMockAssetHandler* m_mockHandler = nullptr;
+    protected:
+        AZStd::unique_ptr<UnitTest::StubRHI::Factory> m_rhiFactory;
+        AZStd::unique_ptr<AZ::RPI::RPISystem> m_rpiSystem;
+        AZStd::unique_ptr<AZ::RPI::ImageSystem> m_imageSystem;
     };
 
     struct GradientSignalTest
@@ -97,17 +116,11 @@ namespace UnitTest
         , public ::testing::Test
     {
     protected:
-        void SetUp() override
-        {
-            SetupCoreSystems();
-        }
-
-        void TearDown() override
-        {
-            TearDownCoreSystems();
-        }
+        void SetUp() override;
+        void TearDown() override;
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
+        void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, GradientSignal::GradientSampler& gradientSampler);
     };
 
 #ifdef HAVE_BENCHMARK

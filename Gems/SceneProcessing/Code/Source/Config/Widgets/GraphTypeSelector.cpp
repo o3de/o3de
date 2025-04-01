@@ -19,7 +19,7 @@ namespace AZ
 {
     namespace SceneProcessingConfig
     {
-        AZ_CLASS_ALLOCATOR_IMPL(GraphTypeSelector, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(GraphTypeSelector, SystemAllocator);
 
         GraphTypeSelector* GraphTypeSelector::s_instance = nullptr;
 
@@ -74,7 +74,7 @@ namespace AZ
 
         u32 GraphTypeSelector::GetHandlerName() const
         {
-            return AZ_CRC("GraphTypeSelector", 0x362ac245);
+            return AZ_CRC_CE("GraphTypeSelector");
         }
 
         bool GraphTypeSelector::AutoDelete() const

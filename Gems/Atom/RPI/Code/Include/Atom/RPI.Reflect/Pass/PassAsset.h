@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -27,20 +28,22 @@ namespace AZ
     {
         //! An asset that describes the root of a pass by having a PassTemplate.
         //! By adding PassRequests to the template you can describe an entire tree of passes.
-        class PassAsset final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API PassAsset final
             : public Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class PassSystem;
             friend class UnitTest::PassBuilderTests;
         public:
             AZ_RTTI(PassAsset, "{FBAF94C2-6617-491E-8269-55DBC9845539}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(PassAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassAsset, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 
-            static const char* DisplayName;
-            static const char* Group;
-            static const char* Extension;
+            static constexpr const char* DisplayName{ "Pass" };
+            static constexpr const char* Group{ "RenderingPipeline" };
+            static constexpr const char* Extension{ "pass" };
 
             //! Retrieves the underlying PassTemplate
             const AZStd::unique_ptr<PassTemplate>& GetPassTemplate() const;

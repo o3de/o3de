@@ -261,7 +261,7 @@ namespace AZ
                 Method("GetElement", &Vector4::GetElement)->
                 Method("SetElement", &Vector4::SetElement)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
-                Method("GetLength", &Vector4::GetLength)->
+                Method("GetLength", &Vector4::GetLength, { "Source", "The source of the magnitude calculation." }, {})->
                     Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Length", "Math"))->
                 Method("GetLengthSq", &Vector4::GetLengthSq)->
                 Method("GetLengthReciprocal", &Vector4::GetLengthReciprocal)->
@@ -314,7 +314,7 @@ namespace AZ
                 Method("CreateZero", &Vector4::CreateZero)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("ConstructFromValues", &Internal::ConstructVector4)->
-                Method<Vector4(Vector4::*)(float) const>("DivideFloatExplicit", &Vector4::operator/)->
+                Method<Vector4(Vector4::*)(float) const>("DivideFloatExplicit", &Vector4::operator/, { "Source", "The source value gets divided." }, { { { "Divisor", "The value that divides Source." } } })->
                     Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Divide By Number (/)", "Math"))->
                     Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "DivideGroup", "" }, { "DivideGroup" }))
                 ;

@@ -25,10 +25,14 @@ set(FILES
     Source/EditorComponents/EditorTerrainSystemComponent.h
     Source/EditorTerrainModule.cpp
     Source/EditorTerrainModule.h
+    Source/EditorSurfaceTagListProvider.h
+    Source/EditorSurfaceTagListProvider.cpp
     Source/TerrainModule.cpp
     Source/TerrainModule.h
     Source/TerrainRenderer/EditorComponents/EditorTerrainSurfaceMaterialsListComponent.cpp
     Source/TerrainRenderer/EditorComponents/EditorTerrainSurfaceMaterialsListComponent.h
     Source/TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.cpp
     Source/TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.h
+    Source/TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponentMode.cpp
+    Source/TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponentMode.h
 )

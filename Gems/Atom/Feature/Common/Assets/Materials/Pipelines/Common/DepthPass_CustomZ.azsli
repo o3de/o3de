@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#define MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE 1
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include MATERIAL_TYPE_AZSLI_FILE_PATH
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
+{
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    return OUT;
+}
+
+struct PsOutput
+{
+    precise float m_depth : SV_Depth;
+};
+
+PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
+
+    // Pixel clipping can be done here
+    EvaluateSurface(IN, geoData);
+
+    PsOutput OUT;
+    OUT.m_depth = IN.position.z;
+
+    return OUT;
+}

@@ -62,6 +62,7 @@ namespace AZ
 
             bool ConnectToAssetProcessor();
             void DisconnectFromAssetProcessor();
+            bool NeedAssetProcessor() const;
 
             bool ConvertSliceFile(AZ::SerializeContext* serializeContext, const AZStd::string& slicePath, bool isDryRun);
             bool ConvertSliceToPrefab(
@@ -72,7 +73,9 @@ namespace AZ
                 AZ::SerializeContext* serializeContext, bool isDryRun);
             bool ConvertSliceInstance(
                 AZ::SliceComponent::SliceInstance& instance, AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
-                AzToolsFramework::Prefab::TemplateReference nestedTemplate, AzToolsFramework::Prefab::Instance* topLevelInstance);
+                AzToolsFramework::Prefab::TemplateReference nestedTemplate,
+                AzToolsFramework::Prefab::Instance* topLevelInstance,
+                AZ::SerializeContext* serializeContext);
             void UpdateCachedTransform(const AZ::Entity& entity);
             void SetParentEntity(const AZ::Entity& entity, const AZ::EntityId& parentId, bool onlySetIfInvalid);
             void PrintPrefab(AzToolsFramework::Prefab::TemplateId templateId);
@@ -89,10 +92,16 @@ namespace AZ
                 SliceComponent::InstantiatedContainer* instantiatedEntities,
                 SerializeContext* context);
 
+            AZ::IO::Path m_projectPath;
+
             // Track all of the entity IDs created and associate them with enough conversion information to know how to place the
             // entities in the correct place in the prefab hierarchy and fix up parent entity ID mappings to work with the nested
             // prefab schema.
             AZStd::unordered_map<AZ::EntityId, SliceEntityMappingInfo> m_aliasIdMapper;
+
+            // When we don't use the asset processor, will store all of the discovered slices path
+            // with their absolute path and the relative posix path used by asset hint
+            AZStd::unordered_map<AZStd::string, AZStd::string> m_relativeToAbsoluteSlicePaths;
 
             // Track all of the created prefab template IDs on a slice conversion so that they can get removed at the end of the
             // conversion for that file.

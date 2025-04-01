@@ -21,7 +21,7 @@ namespace AZ::IO::IStreamerTypes
         : m_allocator(AZ::AllocatorInstance<AZ::SystemAllocator>::Get())
     {}
 
-    DefaultRequestMemoryAllocator::DefaultRequestMemoryAllocator(AZ::IAllocatorAllocate& allocator)
+    DefaultRequestMemoryAllocator::DefaultRequestMemoryAllocator(AZ::IAllocator& allocator)
         : m_allocator(allocator)
     {}
 
@@ -47,7 +47,7 @@ namespace AZ::IO::IStreamerTypes
         result.m_size = recommendedSize;
         result.m_type = MemoryType::ReadWrite;
         result.m_address = (recommendedSize > 0) ?
-            m_allocator.Allocate(recommendedSize, alignment, 0, "DefaultRequestMemoryAllocator", __FILE__, __LINE__) :
+            m_allocator.Allocate(recommendedSize, alignment) :
             nullptr;
 
 #ifdef AZ_ENABLE_TRACING

@@ -29,7 +29,7 @@ class SelectDestinationDialog
     Q_OBJECT
 
 public:
-    SelectDestinationDialog(QString message, QWidget* parent = nullptr);
+    SelectDestinationDialog(QString message, QWidget* parent = nullptr, QString suggestedDestination = QString());
     ~SelectDestinationDialog();
     
 Q_SIGNALS:
@@ -51,7 +51,7 @@ public Q_SLOTS:
 private:
     void UpdateMessage(QString message);
     void InitializeButtons();
-    void SetPreviousDestinationDirectory();
+    void SetPreviousOrSuggestedDestinationDirectory(QString suggestedDestination);
     QString DestinationDirectory() const;
 
     QScopedPointer<Ui::SelectDestinationDialog> m_ui;

@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/EBus/EBus.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <Editor/PropertyWidgets/LODTreeSelectionHandler.h>
 #include <Editor/PropertyWidgets/PropertyWidgetAllocator.h>
@@ -19,7 +18,7 @@ namespace EMotionFX
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(LODTreeSelectionHandler, PropertyWidgetAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(LODTreeSelectionHandler, PropertyWidgetAllocator)
 
             QWidget* LODTreeSelectionHandler::CreateGUI(QWidget* parent)
             {
@@ -27,14 +26,15 @@ namespace EMotionFX
                 connect(instance, &LODTreeSelectionWidget::valueChanged, this,
                     [instance]()
                     {
-                        EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, instance);
+                        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                            &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, instance);
                     });
                 return instance;
             }
 
             AZ::u32 LODTreeSelectionHandler::GetHandlerName() const
             {
-                return AZ_CRC("LODTreeSelection", 0x25c27718);
+                return AZ_CRC_CE("LODTreeSelection");
             }
 
             bool LODTreeSelectionHandler::IsDefaultHandler() const
@@ -53,7 +53,7 @@ namespace EMotionFX
                 }
                 SceneUI::NodeTreeSelectionHandler::ConsumeAttribute(widget, attrib, attrValue, debugNameStr.c_str());
 
-                if (attrib == AZ_CRC("HideUncheckable", 0xa5bafb99))
+                if (attrib == AZ_CRC_CE("HideUncheckable"))
                 {
                     ConsumeHideUncheckableAttribute(widget, attrValue);
                 }

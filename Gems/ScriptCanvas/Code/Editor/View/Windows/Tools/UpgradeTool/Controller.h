@@ -30,6 +30,11 @@ namespace Ui
     class View;
 }
 
+namespace ScriptCanvas
+{
+    class SourceHandle;
+}
+
 namespace AzQtComponents
 {
     class StyledBusyLabel;
@@ -49,7 +54,7 @@ namespace ScriptCanvasEditor
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(Controller, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Controller, AZ::SystemAllocator);
 
             explicit Controller(QWidget* parent = nullptr);
             ~Controller();

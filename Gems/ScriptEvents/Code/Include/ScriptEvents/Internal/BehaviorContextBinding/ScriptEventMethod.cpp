@@ -50,7 +50,7 @@ namespace ScriptEvents
         // BehaviorContext Ebus Events require an Id, it is passed in as the first parameter to the method.
         if (!m_busIdType.IsNull())
         {
-            AZ::BehaviorValueParameter busId;
+            AZ::BehaviorArgument busId;
             Internal::Utils::BehaviorParameterFromType(m_busIdType, true, busId);
             m_behaviorParameters.emplace_back(busId);
             SetArgumentName(index, busId.m_name);
@@ -65,7 +65,7 @@ namespace ScriptEvents
             const AZStd::string& argumentName = parameter.GetName();
             SetArgumentName(index, argumentName);
 
-            m_behaviorParameters.push_back();
+            m_behaviorParameters.emplace_back();
             Internal::Utils::BehaviorParameterFromParameter(behaviorContext, parameter, m_argumentNames[index].c_str(), m_behaviorParameters.back());
 
             const AZStd::string& tooltip = parameter.GetTooltip();
@@ -81,23 +81,29 @@ namespace ScriptEvents
 
     }
 
-    bool ScriptEventMethod::Call(AZ::BehaviorValueParameter* params, unsigned int paramCount, AZ::BehaviorValueParameter* returnValue) const
+    bool ScriptEventMethod::Call(AZStd::span<AZ::BehaviorArgument> params, AZ::BehaviorArgument* returnValue) const
     {
         Internal::BindingRequest::BindingParameters parameters;
         parameters.m_eventName = m_name;
         parameters.m_address = &params[0];  // The address is stored in the first parameter
-        parameters.m_parameters = params + 1; 
-        parameters.m_parameterCount = paramCount - 1; // Minus the address
+        parameters.m_parameters = params.data() + 1;
+        parameters.m_parameterCount = AZ::u32(params.size() - 1); // Minus the address
         parameters.m_returnValue = returnValue;
 
         Internal::BindingRequestBus::Event(m_busBindingId, &Internal::BindingRequest::Bind, parameters);
-        
+
         if (returnValue && returnValue->m_onAssignedResult)
         {
             returnValue->m_onAssignedResult();
         }
 
         return true;
+    }
+
+    auto ScriptEventMethod::IsCallable([[maybe_unused]] AZStd::span<AZ::BehaviorArgument> params, [[maybe_unused]] AZ::BehaviorArgument* returnValue) const
+        -> ResultOutcome
+    {
+        return AZ::Success();
     }
 
     void ScriptEventMethod::ReserveArguments(size_t numArguments)
@@ -107,14 +113,14 @@ namespace ScriptEvents
         m_argumentToolTips.resize(numArguments);
     }
 
-    void ScriptEventMethod::SetArgumentName(size_t index, const AZStd::string& name)
+    void ScriptEventMethod::SetArgumentName(size_t index, AZStd::string name)
     {
         if (index >= m_argumentNames.size())
         {
             m_argumentNames.resize(index + 1);
         }
 
-        m_argumentNames[index] = name;
+        m_argumentNames[index] = AZStd::move(name);
     }
 
     size_t ScriptEventMethod::GetMinNumberOfArguments() const
@@ -132,5 +138,5 @@ namespace ScriptEvents
         // Default values for Script Events are not implemented.
         return nullptr;
     }
-    
+
 }

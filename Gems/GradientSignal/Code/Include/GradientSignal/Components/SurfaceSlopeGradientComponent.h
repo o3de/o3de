@@ -9,10 +9,12 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SmoothStepRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceSlopeGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <GradientSignal/SmoothStep.h>
 #include <GradientSignal/Util.h>
 
@@ -35,7 +37,7 @@ namespace GradientSignal
             SMOOTH_STEP
         };
 
-        AZ_CLASS_ALLOCATOR(SurfaceSlopeGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceSlopeGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceSlopeGradientConfig, "{691E0F23-37E9-434F-A1D1-E8DE5B4A3405}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         float m_slopeMin = 0.0f;
@@ -59,7 +61,7 @@ namespace GradientSignal
         }
     };
 
-    static const AZ::Uuid SurfaceSlopeGradientComponentTypeId = "{F480A866-6296-4F2D-B97C-E80C7409EF61}";
+    inline constexpr AZ::TypeId SurfaceSlopeGradientComponentTypeId{ "{F480A866-6296-4F2D-B97C-E80C7409EF61}" };
 
     /**
     * Component implementing GradientRequestBus based on slope
@@ -123,37 +125,7 @@ namespace GradientSignal
         void SetFallOffMidpoint(float midpoint) override;
 
     private:
-        float GetSlopeRatio(const SurfaceData::SurfacePointList& points, float angleMin, float angleMax) const
-        {
-            if (points.empty())
-            {
-                return 0.0f;
-            }
-
-            // Assuming our surface normal vector is actually normalized, we can get the slope
-            // by just grabbing the Z value.  It's the same thing as normal.Dot(AZ::Vector3::CreateAxisZ()).
-            AZ_Assert(
-                points.front().m_normal.GetNormalized().IsClose(points.front().m_normal),
-                "Surface normals are expected to be normalized");
-            const float slope = points.front().m_normal.GetZ();
-            // Convert slope back to an angle so that we can lerp in "angular space", not "slope value space".
-            // (We want our 0-1 range to be linear across the range of angles)
-            const float slopeAngle = acosf(slope);
-
-            switch (m_configuration.m_rampType)
-            {
-            case SurfaceSlopeGradientConfig::RampType::SMOOTH_STEP:
-                return m_configuration.m_smoothStep.GetSmoothedValue(GetRatio(angleMin, angleMax, slopeAngle));
-            case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_UP:
-                // For ramp up, linearly interpolate from min to max.
-                return GetRatio(angleMin, angleMax, slopeAngle);
-            case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_DOWN:
-            default:
-                // For ramp down, linearly interpolate from max to min.
-                return GetRatio(angleMax, angleMin, slopeAngle);
-            }
-        }
-
         SurfaceSlopeGradientConfig m_configuration;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -40,7 +41,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceVirtualKeyboardAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceVirtualKeyboardAndroid, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -104,13 +105,6 @@ namespace AzFramework
         //! Unique pointer to the keyboard handler JNI object
         AZStd::unique_ptr<AZ::Android::JNI::Object> m_keyboardHandler;
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceVirtualKeyboard::Implementation* InputDeviceVirtualKeyboard::Implementation::Create(
-        InputDeviceVirtualKeyboard& inputDevice)
-    {
-        return aznew InputDeviceVirtualKeyboardAndroid(inputDevice);
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceVirtualKeyboardAndroid::InputDeviceVirtualKeyboardAndroid(
@@ -288,5 +282,23 @@ namespace AzFramework
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawTextEventsMutex);
         m_threadAwareRawTextEvents.push_back(AZStd::string(charsModifiedUTF8));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class AndroidDeviceVirtualKeyboardImplFactory
+        : public InputDeviceVirtualKeyboard::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceVirtualKeyboard::Implementation> Create(InputDeviceVirtualKeyboard& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceVirtualKeyboardAndroid>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceVirtualKeyboardImplentationFactory()
+    {
+        m_deviceVirtualKeyboardImplFactory = AZStd::make_unique<AndroidDeviceVirtualKeyboardImplFactory>();
+        AZ::Interface<InputDeviceVirtualKeyboard::ImplementationFactory>::Register(m_deviceVirtualKeyboardImplFactory.get());
     }
 } // namespace AzFramework

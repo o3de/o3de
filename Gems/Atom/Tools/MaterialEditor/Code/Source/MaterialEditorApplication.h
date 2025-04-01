@@ -9,21 +9,18 @@
 #pragma once
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <Window/MaterialEditorBrowserInteractions.h>
-#include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorMainWindow.h>
 
 namespace MaterialEditor
 {
-    class MaterialThumbnailRenderer;
-
     class MaterialEditorApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private AzToolsFramework::EditorWindowRequestBus::Handler
-        , private AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(MaterialEditorApplication, AZ::SystemAllocator)
         AZ_TYPE_INFO(MaterialEditor::MaterialEditorApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
 
         using Base = AtomToolsFramework::AtomToolsDocumentApplication;
@@ -33,22 +30,18 @@ namespace MaterialEditor
 
         // AzFramework::Application overrides...
         void Reflect(AZ::ReflectContext* context) override;
-        void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
+        void Destroy() override;
 
         // AtomToolsFramework::AtomToolsApplication overrides...
-        AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
-
-        // AtomToolsMainWindowFactoryRequestBus::Handler overrides...
-        void CreateMainWindow() override;
-        void DestroyMainWindow() override;
 
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
 
-        AZStd::unique_ptr<MaterialEditorWindow> m_window;
-        AZStd::unique_ptr<MaterialEditorBrowserInteractions> m_materialEditorBrowserInteractions;
+    private:
+        AZStd::unique_ptr<MaterialEditorMainWindow> m_window;
+        AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
     };
 } // namespace MaterialEditor

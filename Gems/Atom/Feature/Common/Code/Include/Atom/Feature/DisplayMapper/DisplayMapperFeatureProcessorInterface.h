@@ -13,7 +13,6 @@
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
 
 #include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI/ImageView.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
@@ -23,8 +22,8 @@ namespace AZ
     {
         struct DisplayMapperLut
         {
-            RHI::Ptr<RHI::Image>        m_lutImage;
-            RHI::Ptr<RHI::ImageView>    m_lutImageView;
+            RHI::Ptr<RHI::Image> m_lutImage;
+            RHI::Ptr<RHI::ImageView> m_lutImageView;
             RHI::ImageViewDescriptor    m_lutImageViewDescriptor = {};
         };
 
@@ -38,14 +37,15 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DisplayMapperFeatureProcessorInterface, "{FA57793A-1C7B-4B44-88C4-02AA431C468F}", FeatureProcessor);
+            AZ_RTTI(AZ::Render::DisplayMapperFeatureProcessorInterface, "{FA57793A-1C7B-4B44-88C4-02AA431C468F}", AZ::RPI::FeatureProcessor);
 
             virtual void GetOwnedLut(DisplayMapperLut& displayMapperLut, const AZ::Name& lutName) = 0;
             virtual void GetDisplayMapperLut(DisplayMapperLut& displayMapperLut) = 0;
             virtual void GetLutFromAssetLocation(DisplayMapperAssetLut& displayMapperAssetLut, const AZStd::string& assetPath) = 0;
             virtual void GetLutFromAssetId(DisplayMapperAssetLut& displayMapperAssetLut, const AZ::Data::AssetId) = 0;
             virtual void RegisterDisplayMapperConfiguration(const DisplayMapperConfigurationDescriptor& config) = 0;
-            virtual DisplayMapperConfigurationDescriptor GetDisplayMapperConfiguration() = 0;
+            virtual void UnregisterDisplayMapperConfiguration() = 0;
+            virtual const DisplayMapperConfigurationDescriptor* GetDisplayMapperConfiguration() = 0;
         };
     } // namespace Render
 } // namespace AZ

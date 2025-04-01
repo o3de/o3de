@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_PlaneFunctions_FromNormalAndPoint",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Normal And Point",
+                "category": "Math/Plane"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_PlaneFunctions_FromNormalAndPoint",
+                    "details": {
+                        "name": "From Normal And Point",
+                        "tooltip": "Returns the plane which includes the Point with the specified Normal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Normal"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Point"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{847DD984-9DBF-4789-8E25-E0334402E8AD}",
+                            "details": {
+                                "name": "Plane"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

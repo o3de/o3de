@@ -49,7 +49,6 @@ class UiCanvasComponent
     , public AZ::EntityBus::Handler
     , public UiAnimationBus::Handler
     , public UiInteractableActiveNotificationBus::Handler
-    , public ISystem::CrySystemNotificationBus::Handler
     , public IUiAnimationListener
     , public UiEditorCanvasBus::Handler
     , public UiCanvasComponentImplementationBus::Handler
@@ -115,6 +114,7 @@ public: // member functions
     const AZ::Matrix4x4& GetCanvasToViewportMatrix() override;
     void GetViewportToCanvasMatrix(AZ::Matrix4x4& matrix) override;
     AZ::Vector2 GetCanvasSize() override;
+    AZ::Vector2 GetAuthoredCanvasSize() override;
     void SetCanvasSize(const AZ::Vector2& canvasSize) override;
     void SetTargetCanvasSize(bool isInGame, const AZ::Vector2& targetCanvasSize) override;
     AZ::Vector2 GetDeviceScale() override;
@@ -128,8 +128,8 @@ public: // member functions
 
     bool GetIsRenderToTexture() override;
     void SetIsRenderToTexture(bool isRenderToTexture) override;
-    AZStd::string GetRenderTargetName() override;
-    void SetRenderTargetName(const AZStd::string& name) override;
+    const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& GetAttachmentImageAsset() override;
+    void SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
 
     bool GetIsPositionalInputSupported() override;
     void SetIsPositionalInputSupported(bool isSupported) override;
@@ -193,10 +193,6 @@ public: // member functions
     void ActiveChanged(AZ::EntityId m_newActiveInteractable, bool shouldStayActive) override;
     // ~UiInteractableActiveNotifications
 
-    // ISystem::CrySystemNotifications
-    void OnPreRender() override;
-    //ISystem::CrySystemNotifications
-
     // IUiAnimationListener
     void OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence) override;
     void OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, IUiAnimSequence* pAnimSequence) override;
@@ -235,11 +231,11 @@ public: // member functions
     void MarkRenderGraphDirty() override;
     // ~UiCanvasComponentImplementationInterface
 
-    // RenderToTextureRequests
+    // LyShine::RenderToTextureRequestBus overrides ...
     AZ::RHI::AttachmentId UseRenderTarget(const AZ::Name& renderTargetName, AZ::RHI::Size size) override;
+    AZ::RHI::AttachmentId UseRenderTargetAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
     void ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachmentId) override;
     AZ::Data::Instance<AZ::RPI::AttachmentImage> GetRenderTarget(const AZ::RHI::AttachmentId& attachmentId) override;
-    // ~RenderToTextureRequests
 
     void UpdateCanvas(float deltaTime, bool isInGame);
     void RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, UiRenderer* uiRenderer = nullptr);
@@ -300,12 +296,12 @@ public: // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiCanvasService", 0x2c8e8f87));
+        provided.push_back(AZ_CRC_CE("UiCanvasService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiCanvasService", 0x2c8e8f87));
+        incompatible.push_back(AZ_CRC_CE("UiCanvasService"));
     }
 
     static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -414,7 +410,6 @@ private: // member functions
 
     void CreateRenderTarget();
     void DestroyRenderTarget();
-    void RenderCanvasToTexture();
 
     bool SaveCanvasToFile(const AZStd::string& pathname, AZ::DataStream::StreamType streamType);
     bool SaveCanvasToStream(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType);
@@ -565,14 +560,11 @@ private: // data
     //! If true the canvas is not rendered to the screen but is instead rendered to a texture
     bool m_renderToTexture;
 
-    //! The user-specified name for the render target taht we render to if m_renderToTexture is true
-    AZStd::string m_renderTargetName;
+    //! The user-specified asset for the attachment image that we render to if m_renderToTexture is true
+    AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_attachmentImageAsset;
 
-    //! When rendering to a texture this is the texture ID of the render target
-    int m_renderTargetHandle = -1;
-
-    //! When rendering to a texture this is our depth surface
-    SDepthTexture* m_renderTargetDepthSurface = nullptr;
+    //! When rendering to a texture this is the attachment image for the render target
+    AZ::RHI::AttachmentId m_attachmentImageId;
 
     //! Each canvas has a layout manager to track and recompute layouts
     UiLayoutManager* m_layoutManager = nullptr;

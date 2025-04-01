@@ -1,0 +1,18 @@
+{
+    "description": "MaterialGraphName Material Type Template.",
+    "version": 1,
+    "lightingModel": "Base",
+    "materialShaderCode": "MaterialGraphName_Common.azsli",
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/HandleDoubleSided.lua"
+            }
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

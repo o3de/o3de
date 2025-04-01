@@ -133,11 +133,8 @@ class BenchmarkDataAggregator(object):
                 frame_time = data['ClassData']['frameTime']
                 cpu_frame_stats.update(frame_time)
 
-        if gpu_frame_stats.getCount() < 1:
-            raise BenchmarkPathException(f'No GPU frame timestamp logs were found in {benchmark_dir}')
-
-        if cpu_frame_stats.getCount() < 1:
-            raise BenchmarkPathException(f'No CPU frame times were found in {benchmark_dir}')
+        if gpu_frame_stats.getCount() < 1 and cpu_frame_stats.getCount() < 1:
+            raise BenchmarkPathException(f'No benchmark logs were found in {benchmark_dir}')
 
         return gpu_frame_stats, gpu_pass_stats, cpu_frame_stats
 
@@ -156,39 +153,45 @@ class BenchmarkDataAggregator(object):
         ns_to_ms = lambda ns: ns / 1e6
         payloads = []
 
-        # calculate statistics based on aggregated frame data
-        gpu_frame_payload = {
-            'frameTime': {
-                'avg': ns_to_ms(gpu_frame_stats.getAvg()),
-                'max': ns_to_ms(gpu_frame_stats.getMax()),
-                'min': ns_to_ms(gpu_frame_stats.getMin())
-            }
-        }
-        cpu_frame_payload = {
-            'frameTime': {
-                'avg': cpu_frame_stats.getAvg(),
-                'max': cpu_frame_stats.getMax(),
-                'min': cpu_frame_stats.getMin()
-            }
-        }
         # add benchmark metadata to payload
-        gpu_frame_payload.update(benchmark_metadata)
-        payloads.append(('gpu.frame_data', gpu_frame_payload))
-        cpu_frame_payload.update(benchmark_metadata)
-        payloads.append(('cpu.frame_data', cpu_frame_payload))
-
-        # calculate statistics for each pass
-        for name, stat in gpu_pass_stats.items():
-            gpu_pass_payload = {
-                'passName': name,
-                'passTime': {
-                    'avg': ns_to_ms(stat.getAvg()),
-                    'max': ns_to_ms(stat.getMax())
+        if (gpu_frame_stats.getCount() > 0):
+            # calculate statistics based on aggregated frame data
+            gpu_frame_payload = {
+                'frameTime': {
+                    'avg': ns_to_ms(gpu_frame_stats.getAvg()),
+                    'max': ns_to_ms(gpu_frame_stats.getMax()),
+                    'min': ns_to_ms(gpu_frame_stats.getMin())
                 }
             }
-            # add benchmark metadata to payload
-            gpu_pass_payload.update(benchmark_metadata)
-            payloads.append(('gpu.pass_data', gpu_pass_payload))
+
+            gpu_frame_payload.update(benchmark_metadata)
+            payloads.append(('gpu.frame_data', gpu_frame_payload))
+
+            # calculate statistics for each pass
+            for name, stat in gpu_pass_stats.items():
+                gpu_pass_payload = {
+                    'passName': name,
+                    'passTime': {
+                        'avg': ns_to_ms(stat.getAvg()),
+                        'max': ns_to_ms(stat.getMax())
+                    }
+                }
+                # add benchmark metadata to payload
+                gpu_pass_payload.update(benchmark_metadata)
+                payloads.append(('gpu.pass_data', gpu_pass_payload))
+
+        if (cpu_frame_stats.getCount() > 0):
+            # calculate statistics based on aggregated frame data
+            cpu_frame_payload = {
+                'frameTime': {
+                    'avg': cpu_frame_stats.getAvg(),
+                    'max': cpu_frame_stats.getMax(),
+                    'min': cpu_frame_stats.getMin()
+                }
+            }
+
+            cpu_frame_payload.update(benchmark_metadata)
+            payloads.append(('cpu.frame_data', cpu_frame_payload))
 
         return payloads
 

@@ -34,7 +34,7 @@ namespace AZ
         {
             friend class PipelineLayoutCache;
         public:
-            AZ_CLASS_ALLOCATOR(PipelineLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLayout, AZ::SystemAllocator);
             PipelineLayout() = default;
             ~PipelineLayout();
 

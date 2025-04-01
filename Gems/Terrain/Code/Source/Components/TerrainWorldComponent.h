@@ -11,6 +11,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <TerrainSystem/TerrainSystem.h>
 
 namespace LmbrCentral
@@ -21,25 +23,49 @@ namespace LmbrCentral
 
 namespace Terrain
 {
+    // Custom JSON serializer for TerrainWorldConfig to handle version conversion
+    class JsonTerrainWorldConfigSerializer : public AZ::BaseJsonSerializer
+    {
+    public:
+        AZ_RTTI(Terrain::JsonTerrainWorldConfigSerializer, "{910BC31F-CD49-488E-8004-227D9FEB5A16}", AZ::BaseJsonSerializer);
+        AZ_CLASS_ALLOCATOR_DECL;
+
+        AZ::JsonSerializationResult::Result Load(
+            void* outputValue, const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context) override;
+    };
+
     class TerrainWorldConfig
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainWorldConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainWorldConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainWorldConfig, "{295844DB-20DD-45B2-94DB-4245D5AE9AFF}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Vector3 m_worldMin{ 0.0f, 0.0f, 0.0f };
-        AZ::Vector3 m_worldMax{ 1024.0f, 1024.0f, 1024.0f };
-        AZ::Vector2 m_heightQueryResolution{ 1.0f, 1.0f };
+        float m_minHeight{ 0.0f };
+        float m_maxHeight{ 1024.0f };
+        float m_heightQueryResolution{ 1.0f };
+        float m_surfaceDataQueryResolution{ 1.0f };
 
-    private:
-        AZ::Outcome<void, AZStd::string> ValidateWorldMin(void* newValue, const AZ::Uuid& valueType);
-        AZ::Outcome<void, AZStd::string> ValidateWorldMax(void* newValue, const AZ::Uuid& valueType);
-        AZ::Outcome<void, AZStd::string> ValidateWorldHeight(void* newValue, const AZ::Uuid& valueType);
-        float NumberOfSamples(AZ::Vector3* min, AZ::Vector3* max, AZ::Vector2* heightQuery);
-        AZ::Outcome<void, AZStd::string> DetermineMessage(float numSamples);
+        static AZ::Outcome<void, AZStd::string> ValidateHeight(float minHeight, float maxHeight)
+        {
+            if (minHeight > maxHeight)
+            {
+                return AZ::Failure(AZStd::string("Terrain min height must be less than max height."));
+            }
+            return AZ::Success();
+        }
 
+        AZ::Outcome<void, AZStd::string> ValidateHeightMin(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            return ValidateHeight(*static_cast<float*>(newValue), m_maxHeight);
+        }
+
+        AZ::Outcome<void, AZStd::string> ValidateHeightMax(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            return ValidateHeight(m_minHeight, *static_cast<float*>(newValue));
+        }
     };
 
 

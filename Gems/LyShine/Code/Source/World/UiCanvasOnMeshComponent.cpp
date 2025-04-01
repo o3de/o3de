@@ -9,94 +9,39 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Math/IntersectPoint.h>
+#include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
+#include <LyShine/UiSerializeHelpers.h>
 
 #include <Cry_Geo.h>
 #include <IIndexedMesh.h>
 
-#if !defined(_RELEASE)
-#include <IRenderAuxGeom.h>
-
-// set this to 1 to enable debug display
-#define UI_CANVAS_ON_MESH_DEBUG 0
-#endif // !defined(_RELEASE)
 
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
-
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Anonymous namespace
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-#if UI_CANVAS_ON_MESH_DEBUG
-    // Debug draw methods only used for debugging the collision
-
-    static const ColorB debugHitColor(255, 0, 0, 255);
-    static const ColorB debugCollisionMeshColor(255, 255, 0, 255);
-    static const ColorB debugRenderMeshAttempt1Color(0, 255, 0, 255);
-    static const ColorB debugRenderMeshAttempt2Color(0, 0, 255, 255);
-
-    static const float debugDrawSphereSize = 0.01f;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void DrawSphere(const Vec3& point, const ColorB& color, float size)
+    AZ::Vector2 ConvertBarycentricCoordsToUVCoords(float u, float v, float w, AZ::Vector2 uv0, AZ::Vector2 uv1, AZ::Vector2 uv2)
     {
-        IRenderAuxGeom* pRenderAux = gEnv->pRenderer->GetIRenderAuxGeom();
-        pRenderAux->DrawSphere(point, size, color);
+        float arrVertWeight[3] = { max(0.f, u), max(0.f, v), max(0.f, w) };
+        float fDiv = 1.f / (arrVertWeight[0] + arrVertWeight[1] + arrVertWeight[2]);
+        arrVertWeight[0] *= fDiv;
+        arrVertWeight[1] *= fDiv;
+        arrVertWeight[2] *= fDiv;
+
+        AZ::Vector2 uvResult = uv0 * arrVertWeight[0] + uv1 * arrVertWeight[1] + uv2 * arrVertWeight[2];
+        return uvResult;
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void DrawTrianglePoints(const Vec3& v0, const Vec3& v1, const Vec3& v2, const ColorB& color, float size)
-    {
-        IRenderAuxGeom* pRenderAux = gEnv->pRenderer->GetIRenderAuxGeom();
-        pRenderAux->DrawSphere(v0, size, color);
-        pRenderAux->DrawSphere(v1, size, color);
-        pRenderAux->DrawSphere(v2, size, color);
-    }
-
-    void DrawCollisionMeshTrianglePoints(
-        int triIndex,
-        const IPhysicalEntity* collider,
-        int partIndex,
-        const Matrix34& slotWorldTM
-        )
-    {
-        if (collider)
-        {
-            const IPhysicalEntity* pe = collider;
-            pe_params_part partParams;
-            partParams.ipart = partIndex;
-            pe->GetParams(&partParams);
-            phys_geometry* pPhysGeom = partParams.pPhysGeom;
-            phys_geometry* pPhysGeomProxy = partParams.pPhysGeomProxy;
-
-            IGeometry* geom = pPhysGeom->pGeom;
-            Vec3 featurePoint[3];
-            int feat = geom->GetFeature(triIndex, 0, featurePoint);
-            primitives::triangle prim;
-            int primResult = geom->GetPrimitive(triIndex, &prim);
-
-            {
-                // get verts in world space
-                Vec3 wv0 = slotWorldTM.TransformPoint(prim.pt[0]);
-                Vec3 wv1 = slotWorldTM.TransformPoint(prim.pt[1]);
-                Vec3 wv2 = slotWorldTM.TransformPoint(prim.pt[2]);
-
-                // offset the points that we draw by the debug sphere radius so they can be seen when
-                // they are on top of the render mesh points
-                Vec3 worldNormal = slotWorldTM.TransformVector(prim.n);
-
-                wv0 += worldNormal * debugDrawSphereSize;
-                wv1 += worldNormal * debugDrawSphereSize;
-                wv2 += worldNormal * debugDrawSphereSize;
-
-                DrawTrianglePoints(wv0, wv1, wv2, debugCollisionMeshColor, debugDrawSphereSize * 0.5f);
-            }
-        }
-    }
-#endif
 
 } // Anonymous namespace
 
@@ -108,17 +53,51 @@ namespace
 UiCanvasOnMeshComponent::UiCanvasOnMeshComponent()
 {}
 
-bool UiCanvasOnMeshComponent::ProcessHitInputEvent(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiCanvasOnMeshComponent::ProcessHitInputEvent(
+    const AzFramework::InputChannel::Snapshot& inputSnapshot,
+    const AzFramework::RenderGeometry::RayRequest& rayRequest)
 {
-    return ProcessCollisionInputEventInternal(inputSnapshot, rayResult);
+    AZ::EntityId canvasEntityId = GetCanvas();
+
+    if (canvasEntityId.IsValid())
+    {
+        // Cache bus pointer as it will be used twice
+        UiCanvasBus::BusPtr uiCanvasInterfacePtr;
+        UiCanvasBus::Bind(uiCanvasInterfacePtr, canvasEntityId);
+        if (!uiCanvasInterfacePtr)
+        {
+            return false;
+        }
+
+        // Calculate UV texture coordinates of the intersected geometry
+        AZ::Vector2 uv(0.0f);
+        if (CalculateUVFromRayIntersection(rayRequest, uv))
+        {
+            AZ::Vector2 canvasSize;
+            UiCanvasBus::EventResult(canvasSize, uiCanvasInterfacePtr, &UiCanvasInterface::GetCanvasSize);
+            AZ::Vector2 canvasPoint = AZ::Vector2(uv.GetX() * canvasSize.GetX(), uv.GetY() * canvasSize.GetY());
+
+            bool handledByCanvas = false;
+            UiCanvasBus::EventResult(handledByCanvas, uiCanvasInterfacePtr,
+                &UiCanvasInterface::HandleInputPositionalEvent, inputSnapshot, canvasPoint);
+
+            if (handledByCanvas)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasOnMeshComponent::OnCanvasLoadedIntoEntity(AZ::EntityId uiCanvasEntity)
 {
-    if (uiCanvasEntity.IsValid() && !m_renderTargetOverride.empty())
+    if (uiCanvasEntity.IsValid() && m_attachmentImageAssetOverride)
     {
-        EBUS_EVENT_ID(uiCanvasEntity, UiCanvasBus, SetRenderTargetName, m_renderTargetOverride);
+        UiCanvasBus::Event(uiCanvasEntity, &UiCanvasInterface::SetAttachmentImageAsset, m_attachmentImageAssetOverride);
     }
 }
 
@@ -144,8 +123,8 @@ void UiCanvasOnMeshComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiCanvasOnMeshComponent, AZ::Component>()
-            ->Version(1)
-            ->Field("RenderTargetOverride", &UiCanvasOnMeshComponent::m_renderTargetOverride);
+            ->Version(2, &VersionConverter)
+            ->Field("AttachmentImageAssetOverride", &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride);
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
@@ -157,13 +136,13 @@ void UiCanvasOnMeshComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/UiCanvasOnMesh.svg")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/UiCanvasOnMesh.svg")
-                ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui-canvas-on-mesh/")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c));
+                ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui/canvas-on-mesh/")
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
-            editInfo->DataElement(0, &UiCanvasOnMeshComponent::m_renderTargetOverride,
+            editInfo->DataElement(0, &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride,
                 "Render target override",
-                "If not empty, this name overrides the render target set on the UI canvas.\n"
-                "This is useful if multiple instances the same UI canvas are rendered in the level.");
+                "If not empty, this asset overrides the render target set on the UI canvas.\n"
+                "This is useful if multiple instances of the same UI canvas are rendered in the level.");
         }
     }
 }
@@ -178,6 +157,15 @@ void UiCanvasOnMeshComponent::Activate()
     UiCanvasOnMeshBus::Handler::BusConnect(GetEntityId());
     UiCanvasAssetRefNotificationBus::Handler::BusConnect(GetEntityId());
     UiCanvasManagerNotificationBus::Handler::BusConnect();
+
+    // Check if a UI canvas has already been loaded into the entity
+    AZ::EntityId canvasEntityId;
+    UiCanvasRefBus::EventResult(
+        canvasEntityId, GetEntityId(), &UiCanvasRefBus::Events::GetCanvas);
+    if (canvasEntityId.IsValid())
+    {
+        OnCanvasLoadedIntoEntity(canvasEntityId);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,42 +176,152 @@ void UiCanvasOnMeshComponent::Deactivate()
     UiCanvasManagerNotificationBus::Handler::BusDisconnect();
 }
 
-bool UiCanvasOnMeshComponent::ProcessCollisionInputEventInternal(const AzFramework::InputChannel::Snapshot& inputSnapshot, const AzFramework::RenderGeometry::RayResult& rayResult)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, AZ::Vector2& outUv)
 {
-    AZ::EntityId canvasEntityId = GetCanvas();
+    outUv = AZ::Vector2(0.0f);
 
-    if (canvasEntityId.IsValid())
+    // Make sure we can get the model asset
+    AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+    AZ::Render::MeshComponentRequestBus::EventResult(
+        modelAsset, GetEntityId(), &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+    AZ::RPI::ModelAsset* asset = modelAsset.Get();
+    if (!asset)
     {
-        // Cache bus pointer as it will be used twice
-        UiCanvasBus::BusPtr uiCanvasInterfacePtr;
-        UiCanvasBus::Bind(uiCanvasInterfacePtr, canvasEntityId);
-        if (!uiCanvasInterfacePtr)
+        return false;
+    }
+
+    // Calculate the nearest point of collision
+    AZ::Transform meshWorldTM;
+    AZ::TransformBus::EventResult(meshWorldTM, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
+    AZ::Transform meshWorldTMInverse = meshWorldTM.GetInverse();
+
+    AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+    AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+
+    const AZ::Vector3 clampedNonUniformScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
+    AZ::Vector3 rayOrigin = meshWorldTMInverse.TransformPoint(rayRequest.m_startWorldPosition) / clampedNonUniformScale;
+    AZ::Vector3 rayEnd = meshWorldTMInverse.TransformPoint(rayRequest.m_endWorldPosition) / clampedNonUniformScale;
+    AZ::Vector3 rayDirection = rayEnd - rayOrigin;
+
+    // When a segment intersects a triangle, the returned hit distance will be between [0, 1].
+    // Initialize min hit distance to be greater than 1 so that the first hit will be the new min
+    float minResultDistance = 2.0f;
+    bool foundResult = false;
+
+    auto lods = modelAsset->GetLodAssets();
+    if (lods.empty())
+    {
+        return false;
+    }
+
+    auto meshes = lods[0]->GetMeshes();
+    for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
+    {
+        // Find position and UV semantics
+        static const AZ::Name positionName = AZ::Name::FromStringLiteral("POSITION", AZ::Interface<AZ::NameDictionary>::Get());
+        static const AZ::Name uvName = AZ::Name::FromStringLiteral("UV", AZ::Interface<AZ::NameDictionary>::Get());
+        auto streamBufferList = mesh.GetStreamBufferInfoList();
+        const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;
+        const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo* uvBuffer = nullptr;
+
+        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& bufferInfo : streamBufferList)
         {
-            return false;
+            if (bufferInfo.m_semantic.m_name == positionName)
+            {
+                positionBuffer = &bufferInfo;
+            }
+            else if ((bufferInfo.m_semantic.m_name == uvName) && (bufferInfo.m_semantic.m_index == 0))
+            {
+                uvBuffer = &bufferInfo;
+            }
         }
 
-        AZ::Vector2 canvasSize;
-        UiCanvasBus::EventResult(canvasSize, uiCanvasInterfacePtr, &UiCanvasInterface::GetCanvasSize);
-
-        AZ::Vector2 canvasPoint = AZ::Vector2(rayResult.m_uv.GetX() * canvasSize.GetX(), rayResult.m_uv.GetY() * canvasSize.GetY());
-
-        bool handledByCanvas = false;
-        UiCanvasBus::EventResult(handledByCanvas, uiCanvasInterfacePtr,
-            &UiCanvasInterface::HandleInputPositionalEvent, inputSnapshot, canvasPoint);
-
-        if (handledByCanvas)
+        if (!positionBuffer || !uvBuffer)
         {
-            return true;
+            continue;
+        }
+
+        auto positionBufferAsset = positionBuffer->m_bufferAssetView.GetBufferAsset();
+        const float* rawPositionBuffer = (const float*)(positionBufferAsset->GetBuffer().begin());
+        AZ_Assert(
+            positionBuffer->m_bufferAssetView.GetBufferViewDescriptor().m_elementFormat == AZ::RHI::Format::R32G32B32_FLOAT,
+            "Unexpected position element format.");
+
+        auto uvBufferAsset = uvBuffer->m_bufferAssetView.GetBufferAsset();
+        const float* rawUvBuffer = (const float*)(uvBufferAsset->GetBuffer().begin());
+        AZ_Assert(
+            uvBuffer->m_bufferAssetView.GetBufferViewDescriptor().m_elementFormat == AZ::RHI::Format::R32G32_FLOAT,
+            "Unexpected UV element format.");
+
+        auto indexBuffer = mesh.GetIndexBufferAssetView().GetBufferAsset();
+        const uint32_t* rawIndexBuffer = (const uint32_t*)(indexBuffer->GetBuffer().begin());
+        AZ_Assert(
+            (indexBuffer->GetBufferViewDescriptor().m_elementCount % 3) == 0,
+            "index buffer not a multiple of 3");
+
+        AZ::Intersect::SegmentTriangleHitTester hitTester(rayOrigin, rayEnd);
+
+        for (uint32_t index = 0; index < indexBuffer->GetBufferViewDescriptor().m_elementCount; index += 3)
+        {
+            uint32_t index1 = rawIndexBuffer[index];
+            uint32_t index2 = rawIndexBuffer[index + 1];
+            uint32_t index3 = rawIndexBuffer[index + 2];
+
+            AZ::Vector3 vertex1(
+                rawPositionBuffer[index1 * 3], rawPositionBuffer[(index1 * 3) + 1], rawPositionBuffer[(index1 * 3) + 2]);
+            AZ::Vector3 vertex2(
+                rawPositionBuffer[index2 * 3], rawPositionBuffer[(index2 * 3) + 1], rawPositionBuffer[(index2 * 3) + 2]);
+            AZ::Vector3 vertex3(
+                rawPositionBuffer[index3 * 3], rawPositionBuffer[(index3 * 3) + 1], rawPositionBuffer[(index3 * 3) + 2]);
+            AZ::Vector3 resultNormal;
+
+            float resultDistance = 0.0f;
+            if (hitTester.IntersectSegmentTriangle(vertex1, vertex2, vertex3, resultNormal, resultDistance))
+            {
+                if (resultDistance < minResultDistance)
+                {
+                    AZ::Vector3 hitPosition = rayOrigin + (rayDirection * resultDistance);
+                    AZ::Vector3 uvw = AZ::Intersect::Barycentric(vertex1, vertex2, vertex3, hitPosition);
+                    if (uvw.IsGreaterEqualThan(AZ::Vector3::CreateZero()))
+                    {
+                        AZ::Vector3 uv1(rawUvBuffer[index1 * 2], rawUvBuffer[(index1 * 2) + 1], 0.0f);
+                        AZ::Vector3 uv2(rawUvBuffer[index2 * 2], rawUvBuffer[(index2 * 2) + 1], 0.0f);
+                        AZ::Vector3 uv3(rawUvBuffer[index3 * 2], rawUvBuffer[(index3 * 2) + 1], 0.0f);
+                        outUv = ConvertBarycentricCoordsToUVCoords(
+                            uvw.GetX(), uvw.GetY(), uvw.GetZ(), AZ::Vector2(uv1), AZ::Vector2(uv2), AZ::Vector2(uv3));
+                        minResultDistance = resultDistance;
+                        foundResult = true;
+                    }
+                }
+            }
         }
     }
 
-    return false;
+    return foundResult;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::EntityId UiCanvasOnMeshComponent::GetCanvas()
 {
     AZ::EntityId result;
-    EBUS_EVENT_ID_RESULT(result, GetEntityId(), UiCanvasRefBus, GetCanvas);
+    UiCanvasRefBus::EventResult(result, GetEntityId(), &UiCanvasRefBus::Events::GetCanvas);
     return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiCanvasOnMeshComponent::VersionConverter(AZ::SerializeContext& context,
+    AZ::SerializeContext::DataElementNode& classElement)
+{
+    // conversion from version 1 to 2:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() < 2)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetOverride"))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }

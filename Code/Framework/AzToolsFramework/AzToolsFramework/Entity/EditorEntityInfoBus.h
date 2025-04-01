@@ -107,3 +107,5 @@ namespace AzToolsFramework
     };
     using EditorEntityInfoNotificationBus = AZ::EBus<EditorEntityInfoNotifications>;
 }
+
+DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityInfoRequests);

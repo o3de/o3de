@@ -26,7 +26,7 @@ namespace LUAEditor
 
     void FindResultsHighlighter::highlightBlock(const QString& text)
     {
-        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         auto block = currentBlock();
         QTBlockState blockState;
@@ -95,13 +95,13 @@ namespace LUAEditor
 
         m_gui->m_foldingWidget->setEnabled(true);
         m_gui->m_foldingWidget->SetTextEdit(m_gui->m_resultsList);
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::BlockDoubleClicked, this, &FindResults::OnBlockDoubleClicked);
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::cursorPositionChanged, this, [&]() { m_gui->m_foldingWidget->update(); });
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::Scrolled, this, [&]() { m_gui->m_foldingWidget->update(); });
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::BlockDoubleClicked, this, &FindResults::OnBlockDoubleClicked);
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::cursorPositionChanged, this, [&]() { m_gui->m_foldingWidget->update(); });
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::Scrolled, this, [&]() { m_gui->m_foldingWidget->update(); });
         connect(m_gui->m_foldingWidget, &FoldingWidget::TextBlockFoldingChanged, this, [&]() {m_gui->m_resultsList->update(); });
         connect(m_gui->m_resultsList->document(), &QTextDocument::contentsChange, m_gui->m_foldingWidget, &FoldingWidget::OnContentChanged);
 
-        auto settings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto settings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
         m_gui->m_resultsList->setFont(settings->GetFont());
         m_gui->m_foldingWidget->SetFont(settings->GetFont());
 

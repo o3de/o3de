@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
@@ -29,7 +29,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::LightCullingPass, "{F99EB06A-052E-4FAA-B2C4-4247BAD9BDC7}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(LightCullingPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LightCullingPass, SystemAllocator);
             virtual ~LightCullingPass() = default;
 
             /// Creates a LightCullingPass

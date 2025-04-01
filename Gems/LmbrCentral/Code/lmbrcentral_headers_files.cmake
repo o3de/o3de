@@ -7,10 +7,6 @@
 #
 
 set(FILES
-    include/LmbrCentral/Ai/NavigationComponentBus.h
-    include/LmbrCentral/Ai/NavigationAreaBus.h
-    include/LmbrCentral/Ai/NavigationSystemBus.h
-    include/LmbrCentral/Ai/NavigationSeedBus.h
     include/LmbrCentral/Animation/AttachmentComponentBus.h
     include/LmbrCentral/Animation/SkeletalHierarchyRequestBus.h
     include/LmbrCentral/Audio/AudioEnvironmentComponentBus.h
@@ -27,17 +23,7 @@ set(FILES
     include/LmbrCentral/Dependency/DependencyMonitor.h
     include/LmbrCentral/Dependency/DependencyMonitor.inl
     include/LmbrCentral/Dependency/DependencyNotificationBus.h
-    include/LmbrCentral/Physics/WindVolumeRequestBus.h
-    include/LmbrCentral/Physics/ForceVolumeRequestBus.h
-    include/LmbrCentral/Physics/WaterNotificationBus.h
-    include/LmbrCentral/Rendering/DecalComponentBus.h
-    include/LmbrCentral/Rendering/LightComponentBus.h
-    include/LmbrCentral/Rendering/MaterialAsset.h
-    include/LmbrCentral/Rendering/MaterialHandle.h
-    include/LmbrCentral/Rendering/MeshAsset.h
-    include/LmbrCentral/Rendering/MeshModificationBus.h
-    include/LmbrCentral/Rendering/GiRegistrationBus.h
-    include/LmbrCentral/Rendering/RenderBoundsBus.h
+    include/LmbrCentral/Rendering/TextureAsset.h
     include/LmbrCentral/Scripting/EditorTagComponentBus.h
     include/LmbrCentral/Scripting/GameplayNotificationBus.h
     include/LmbrCentral/Scripting/SimpleStateComponentBus.h
@@ -59,5 +45,4 @@ set(FILES
     include/LmbrCentral/Shape/ReferenceShapeComponentBus.h
     include/LmbrCentral/Shape/SplineAttribute.h
     include/LmbrCentral/Shape/SplineAttribute.inl
-    include/LmbrCentral/Terrain/TerrainSystemRequestBus.h
 )

@@ -16,9 +16,6 @@
 #include "UiAnimViewNodeFactories.h"
 #include "UiAnimViewSequence.h"
 #include "AnimationContext.h"
-#if UI_ANIMATION_REMOVED
-#include "Objects/EntityObject.h"
-#endif
 #include "Clipboard.h"
 
 #include "UiEditorAnimationBus.h"
@@ -95,7 +92,7 @@ bool CUiAnimViewSequence::IsBoundToEditorObjects() const
 CUiAnimViewKeyHandle CUiAnimViewSequence::FindSingleSelectedKey()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return CUiAnimViewKeyHandle();
@@ -218,7 +215,7 @@ void CUiAnimViewSequence::ForceAnimation()
         if (IsActive())
         {
             CUiAnimationContext* pAnimationContext = nullptr;
-            EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+            UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
             pAnimationContext->ForceAnimation();
         }
     }
@@ -269,7 +266,7 @@ void CUiAnimViewSequence::OnKeysChanged()
         if (IsActive())
         {
             CUiAnimationContext* pAnimationContext = nullptr;
-            EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+            UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
             pAnimationContext->ForceAnimation();
         }
     }
@@ -278,44 +275,6 @@ void CUiAnimViewSequence::OnKeysChanged()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewSequence::OnNodeChanged(CUiAnimViewNode* pNode, IUiAnimViewSequenceListener::ENodeChangeType type)
 {
-#if UI_ANIMATION_REMOVED    // UI_ANIMATION_REVISIT do we need any of this?
-    if (pNode && pNode->GetNodeType() == eUiAVNT_AnimNode)
-    {
-        CUiAnimViewAnimNode* pAnimNode = static_cast<CUiAnimViewAnimNode*>(pNode);
-        CEntityObject* pNodeEntity = pAnimNode->GetNodeEntity();
-
-        if (pAnimNode->IsActive() && pNodeEntity)
-        {
-            switch (type)
-            {
-            case IUiAnimViewSequenceListener::eNodeChangeType_Added:
-                pNodeEntity->SetTransformDelegate(pAnimNode);
-                pNodeEntity->RegisterListener(pAnimNode);
-                ForceAnimation();
-                break;
-            case IUiAnimViewSequenceListener::eNodeChangeType_Removed:
-                pNodeEntity->SetTransformDelegate(nullptr);
-                pNodeEntity->UnregisterListener(pAnimNode);
-                ForceAnimation();
-                break;
-            }
-        }
-
-        switch (type)
-        {
-        case IUiAnimViewSequenceListener::eNodeChangeType_Enabled:
-        // Fall through
-        case IUiAnimViewSequenceListener::eNodeChangeType_Hidden:
-        // Fall through
-        case IUiAnimViewSequenceListener::eNodeChangeType_SetAsActiveDirector:
-        // Fall through
-        case IUiAnimViewSequenceListener::eNodeChangeType_NodeOwnerChanged:
-            ForceAnimation();
-            break;
-        }
-    }
-#endif
-
     if (m_bNoNotifications)
     {
         return;
@@ -331,12 +290,6 @@ void CUiAnimViewSequence::OnNodeChanged(CUiAnimViewNode* pNode, IUiAnimViewSeque
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewSequence::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldName)
 {
-    bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
-    if (bLightAnimationSetActive)
-    {
-        UpdateLightAnimationRefs(pOldName, pNode->GetName().c_str());
-    }
-
     if (m_bNoNotifications)
     {
         return;
@@ -425,45 +378,9 @@ void CUiAnimViewSequence::DeleteSelectedNodes()
     }
 
     CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-
-#if UI_ANIMATION_REMOVED    // lights
-    // Check if any reference to the light animation to be deleted exists, and abort the removal, if any.
-    const bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
-    if (bLightAnimationSetActive)
-    {
-        QStringList lightNodes;
-
-        // Construct set of selected light nodes
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CUiAnimViewAnimNode* pCurrentNode = selectedNodes.GetNode(i);
-            if (pCurrentNode->GetType() == eUiAnimNodeType_Light)
-            {
-                stl::push_back_unique(lightNodes, pCurrentNode->GetName());
-            }
-        }
-
-        // Check all entities if any is referencing any selected light node
-        std::vector<CBaseObject*> entityObjects;
-        GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-
-        for (size_t i = 0; i < entityObjects.size(); ++i)
-        {
-            QString lightAnimationName = static_cast<CEntityObject*>(entityObjects[i])->GetLightAnimation();
-            if (stl::find(lightNodes, lightAnimationName))
-            {
-                QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("The node '%1' cannot be removed since there is a light entity still using it.").arg(lightAnimationName));
-                return;
-            }
-        }
-    }
-#endif
-
     CUiAnimViewTrackBundle selectedTracks = GetSelectedTracks();
-    const unsigned int numSelectedTracks = selectedTracks.GetCount();
 
-    for (unsigned int i = 0; i < numSelectedTracks; ++i)
+    for (unsigned int i = 0; i < selectedTracks.GetCount(); ++i)
     {
         CUiAnimViewTrack* pTrack = selectedTracks.GetTrack(i);
 
@@ -474,204 +391,12 @@ void CUiAnimViewSequence::DeleteSelectedNodes()
         }
     }
 
-    for (unsigned int i = 0; i < numSelectedNodes; ++i)
+    for (unsigned int i = 0; i < selectedNodes.GetCount(); ++i)
     {
         CUiAnimViewAnimNode* pNode = selectedNodes.GetNode(i);
         CUiAnimViewAnimNode* pParentNode = static_cast<CUiAnimViewAnimNode*>(pNode->GetParentNode());
         pParentNode->RemoveSubNode(pNode);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewSequence::SelectSelectedNodesInViewport()
-{
-    assert(UiAnimUndo::IsRecording());
-
-    CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-
-    std::vector<CBaseObject*> entitiesToBeSelected;
-
-#if UI_ANIMATION_REMOVED // lights
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-
-    // Also select objects that refer to light animation
-    const bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
-    if (bLightAnimationSetActive)
-    {
-        QStringList lightNodes;
-
-        // Construct set of selected light nodes
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CUiAnimViewAnimNode* pCurrentNode = selectedNodes.GetNode(i);
-            if (pCurrentNode->GetType() == eUiAnimNodeType_Light)
-            {
-                stl::push_back_unique(lightNodes, pCurrentNode->GetName());
-            }
-        }
-
-        // Check all entities if any is referencing any selected light node
-        std::vector<CBaseObject*> entityObjects;
-        GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-
-        for (size_t i = 0; i < entityObjects.size(); ++i)
-        {
-            QString lightAnimationName = static_cast<CEntityObject*>(entityObjects[i])->GetLightAnimation();
-            if (stl::find(lightNodes, lightAnimationName))
-            {
-                stl::push_back_unique(entitiesToBeSelected, entityObjects[i]);
-            }
-        }
-    }
-    else
-    {
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CUiAnimViewAnimNode* pNode = selectedNodes.GetNode(i);
-            CEntityObject* pEntity = pNode->GetNodeEntity();
-            if (pEntity)
-            {
-                stl::push_back_unique(entitiesToBeSelected, pEntity);
-            }
-        }
-    }
-#endif
-
-    for (auto iter = entitiesToBeSelected.begin(); iter != entitiesToBeSelected.end(); ++iter)
-    {
-        GetIEditor()->SelectObject(*iter);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewSequence::SyncSelectedTracksToBase()
-{
-    CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    bool bNothingWasSynced = true;
-
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-    if (numSelectedNodes > 0)
-    {
-        UiAnimUndo undo("Sync selected tracks to base");
-
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-#if UI_ANIMATION_REMOVED    // don't support CEntityObject
-            CUiAnimViewAnimNode* pAnimNode = selectedNodes.GetNode(i);
-            CEntityObject* pEntityObject = pAnimNode->GetNodeEntity();
-
-            if (pEntityObject)
-            {
-                CUiAnimViewAnimNode* pAnimNode = CUiAnimViewSequenceManager::GetSequenceManager()->GetActiveAnimNode(pEntityObject);
-
-                if (pAnimNode)
-                {
-                    ITransformDelegate* pDelegate = pEntityObject->GetTransformDelegate();
-                    pEntityObject->SetTransformDelegate(nullptr);
-
-
-                    const Vec3 position = pAnimNode->GetPos();
-                    pEntityObject->SetPos(position);
-
-                    const Quat rotation = pAnimNode->GetRotation();
-                    pEntityObject->SetRotation(rotation);
-
-                    const Vec3 scale = pAnimNode->GetScale();
-                    pEntityObject->SetScale(scale);
-
-                    pEntityObject->SetTransformDelegate(pDelegate);
-
-                    bNothingWasSynced = false;
-                }
-            }
-#endif
-        }
-
-        if (bNothingWasSynced)
-        {
-            undo.Cancel();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewSequence::SyncSelectedTracksFromBase()
-{
-    CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    bool bNothingWasSynced = true;
-
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
-    if (numSelectedNodes > 0)
-    {
-        UiAnimUndo undo("Sync selected tracks to base");
-
-#if UI_ANIMATION_REMOVED    // don't support CEntityObject
-        for (unsigned int i = 0; i < numSelectedNodes; ++i)
-        {
-            CUiAnimViewAnimNode* pAnimNode = selectedNodes.GetNode(i);
-            CEntityObject* pEntityObject = pAnimNode->GetNodeEntity();
-
-            if (pEntityObject)
-            {
-                CUiAnimViewAnimNode* pAnimNode = CUiAnimViewSequenceManager::GetSequenceManager()->GetActiveAnimNode(pEntityObject);
-
-                if (pAnimNode)
-                {
-                    ITransformDelegate* pDelegate = pEntityObject->GetTransformDelegate();
-                    pEntityObject->SetTransformDelegate(nullptr);
-
-                    const Vec3 position = pEntityObject->GetPos();
-                    pAnimNode->SetPos(position);
-
-                    const Quat rotation = pEntityObject->GetRotation();
-                    pAnimNode->SetRotation(rotation);
-
-                    const Vec3 scale = pEntityObject->GetScale();
-                    pEntityObject->SetScale(scale);
-
-                    pEntityObject->SetTransformDelegate(pDelegate);
-
-                    bNothingWasSynced = false;
-                }
-            }
-        }
-#endif
-
-        if (bNothingWasSynced)
-        {
-            undo.Cancel();
-        }
-    }
-
-    if (IsActive())
-    {
-        CUiAnimationContext* pAnimationContext = nullptr;
-        EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
-        pAnimationContext->ForceAnimation();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimViewSequence::UpdateLightAnimationRefs([[maybe_unused]] const char* pOldName, [[maybe_unused]] const char* pNewName)
-{
-#if UI_ANIMATION_REMOVED    // lights
-    std::vector<CBaseObject*> entityObjects;
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, entityObjects);
-    std::for_each(std::begin(entityObjects), std::end(entityObjects),
-        [&pOldName, &pNewName](CBaseObject* pBaseObject)
-        {
-            CEntityObject* pEntityObject = static_cast<CEntityObject*>(pBaseObject);
-            bool bLight = pEntityObject && pEntityObject->GetEntityClass().Compare("Light") == 0;
-            if (bLight)
-            {
-                string lightAnimation = pEntityObject->GetEntityPropertyString("lightanimation_LightAnimation");
-                if (lightAnimation == pOldName)
-                {
-                    pEntityObject->SetEntityPropertyString("lightanimation_LightAnimation", pNewName);
-                }
-            }
-        });
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -833,7 +558,7 @@ CUiAnimViewSequence::GetMatchedPasteLocations(XmlNodeRef clipboardContent, CUiAn
     if (bPastingSingleTrack && pTargetNode && pTargetTrack)
     {
         // We have a target node & track, so try to match the value type
-        int valueType = 0;
+        unsigned int valueType = 0;
         if (singleTrack->getAttr("valueType", valueType))
         {
             if (pTargetTrack->GetValueType() == valueType)
@@ -897,12 +622,12 @@ std::deque<CUiAnimViewTrack*> CUiAnimViewSequence::GetMatchingTracks(CUiAnimView
     const AZStd::string trackName = trackNode->getAttr("name");
 
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     CUiAnimParamType animParamType;
     animParamType.Serialize(animationSystem, trackNode, true);
 
-    int valueType;
+    unsigned int valueType;
     if (!trackNode->getAttr("valueType", valueType))
     {
         return matchingTracks;
@@ -986,7 +711,7 @@ void CUiAnimViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackL
             const AZStd::string trackName = xmlChildNode->getAttr("name");
 
             IUiAnimationSystem* animationSystem = nullptr;
-            EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+            UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
             CUiAnimParamType trackParamType;
             trackParamType.Serialize(animationSystem, xmlChildNode, true);
@@ -1380,7 +1105,7 @@ void CUiAnimViewSequence::EndRestoreTransaction()
 bool CUiAnimViewSequence::IsActiveSequence() const
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     return pSequence == this;
 }

@@ -5,8 +5,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+
 #fmt: off
-class Tests():
+class Tests:
     level_components_added                      = ("Level components added correctly", "Failed to create level components")
     create_terrain_spawner_entity               = ("Terrain_spawner_entity created successfully", "Failed to create terrain_spawner_entity")
     create_height_provider_entity               = ("Height_provider_entity created successfully", "Failed to create height_provider_entity")
@@ -22,6 +23,7 @@ class Tests():
     values_not_the_same                         = ("The tested values are not the same", "The tested values are the same")
     no_errors_and_warnings_found                = ("No errors and warnings found", "Found errors and warnings")
 #fmt: on
+
 
 def Terrain_World_ConfigurationWorks():
     """
@@ -47,8 +49,9 @@ def Terrain_World_ConfigurationWorks():
      12) Check terrain does not exist at a known position outside the world
      13) Check height value is the expected one when query resolution is changed
     """
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import TestHelper as helper, Report
+
+    from editor_python_test_tools.wait_utils import PrefabWaiter
+    from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
     import editor_python_test_tools.hydra_editor_utils as hydra
     import azlmbr.math as azmath
@@ -58,18 +61,15 @@ def Terrain_World_ConfigurationWorks():
     import azlmbr.terrain as terrain
     import math
 
-    SET_BOX_X_SIZE = 2048.0
-    SET_BOX_Y_SIZE = 2048.0
+    SET_BOX_X_SIZE = 1024.0
+    SET_BOX_Y_SIZE = 1024.0
     SET_BOX_Z_SIZE = 100.0
     CLAMP = 1
-    
-    helper.init_idle()
-    
+
     # 1) Start the Tracer to catch any errors and warnings
     with Tracer() as section_tracer:
         # 2) Load the level
-        helper.open_level("", "Base")
-        helper.wait_for_condition(lambda: general.get_current_level_name() == "Base", 2.0)
+        hydra.open_base_level()
         
         # 3) Load the level components
         terrain_world_component = hydra.add_level_component("Terrain World")
@@ -91,17 +91,17 @@ def Terrain_World_ConfigurationWorks():
         general.idle_wait_frames(1)
 
         # 5) Set the base Terrain World values
-        world_bounds_max = azmath.Vector3(1100.0, 1100.0, 1100.0)
-        world_bounds_min = azmath.Vector3(10.0, 10.0, 10.0)
-        height_query_resolution = azmath.Vector2(1.0, 1.0)
-        hydra.set_component_property_value(terrain_world_component, "Configuration|World Bounds (Max)", world_bounds_max)
-        hydra.set_component_property_value(terrain_world_component, "Configuration|World Bounds (Min)", world_bounds_min)
+        world_height_min = 10.0
+        world_height_max = 1100.0
+        height_query_resolution = 1.0
+        hydra.set_component_property_value(terrain_world_component, "Configuration|Min Height", world_height_min)
+        hydra.set_component_property_value(terrain_world_component, "Configuration|Max Height", world_height_max)
         hydra.set_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
-        world_max = hydra.get_component_property_value(terrain_world_component, "Configuration|World Bounds (Max)")
-        world_min = hydra.get_component_property_value(terrain_world_component, "Configuration|World Bounds (Min)")
+        world_min = hydra.get_component_property_value(terrain_world_component, "Configuration|Min Height")
+        world_max = hydra.get_component_property_value(terrain_world_component, "Configuration|Max Height")
         world_query = hydra.get_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)")
-        Report.result(Tests.bounds_max_changed, world_max == world_bounds_max)
-        Report.result(Tests.bounds_min_changed, world_min == world_bounds_min)
+        Report.result(Tests.bounds_min_changed, world_min == world_height_min)
+        Report.result(Tests.bounds_max_changed, world_max == world_height_max)
         Report.result(Tests.height_query_changed, world_query == height_query_resolution)
 
         # 6) Change the Axis Aligned Box Shape dimensions
@@ -120,6 +120,7 @@ def Terrain_World_ConfigurationWorks():
         height_provider_entity.get_set_test(2, "Configuration|Frequency", frequency)
         frequencyVal = hydra.get_component_property_value(height_provider_entity.components[2], "Configuration|Frequency")
         Report.result(Tests.frequency_changed, math.isclose(frequency, frequencyVal, abs_tol = 0.00001))
+        PrefabWaiter.wait_for_propagation()
 
         # 9) Set the Gradient List to height_provider_entity
         propertyTree = hydra.get_property_tree(terrain_spawner_entity.components[2])
@@ -133,26 +134,26 @@ def Terrain_World_ConfigurationWorks():
         editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
 
         # 11) Check terrain exists at a known position in the world
-        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 10.0, 10.0, CLAMP)
+        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(10.0, 10.0, 0.0), CLAMP)
         Report.result(Tests.terrain_exists, terrainExists)
 
-        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 1100.0, 1100.0, CLAMP)
+        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(1023.0, 1023.0, 0.0), CLAMP)
         Report.result(Tests.terrain_exists, terrainExists)
 
         # 12) Check terrain does not exist at a known position outside the world
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 1101.0, 1101.0, CLAMP)
+        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(1025.0, 1025.0, 0.0), CLAMP)
         Report.result(Tests.terrain_does_not_exist, terrainDoesNotExist)
 
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 9.0, 9.0, CLAMP)
+        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(-1.0, -1.0, 0.0), CLAMP)
         Report.result(Tests.terrain_does_not_exist, terrainDoesNotExist)
 
         # 13) Check height value is the expected one when query resolution is changed
-        testpoint = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloats', 10.5, 10.5, CLAMP)
-        height_query_resolution = azmath.Vector2(0.5, 0.5)
+        height1, exists1 = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeight', azmath.Vector3(10.5, 10.5, 0.0), CLAMP)
+        height_query_resolution = 0.5
         hydra.set_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
         general.idle_wait_frames(1)
-        testpoint2 =  terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloats', 10.5, 10.5, CLAMP)
-        Report.result(Tests.values_not_the_same, not math.isclose(testpoint, testpoint2, abs_tol = 0.000000001))
+        height2, exists2 = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeight', azmath.Vector3(10.5, 10.5, 0.0), CLAMP)
+        Report.result(Tests.values_not_the_same, not math.isclose(height1, height2, abs_tol = 0.000000001))
         
     helper.wait_for_condition(lambda: section_tracer.has_errors or section_tracer.has_asserts, 1.0)
     for error_info in section_tracer.errors:
@@ -165,4 +166,3 @@ if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
     Report.start_test(Terrain_World_ConfigurationWorks)
-

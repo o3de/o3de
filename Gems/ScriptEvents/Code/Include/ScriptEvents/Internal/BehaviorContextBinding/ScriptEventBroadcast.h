@@ -18,7 +18,7 @@
 namespace AZ
 {
     class BehaviorContext;
-    struct BehaviorValueParameter;
+    struct BehaviorArgument;
 }
 
 namespace ScriptEvents
@@ -29,11 +29,12 @@ namespace ScriptEvents
     public:
 
         AZ_TYPE_INFO(ScriptEventBroadcast, "{7C3DDD76-BECA-4A1D-8605-A72D6CF91051}");
-        AZ_CLASS_ALLOCATOR(ScriptEventBroadcast, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventBroadcast, AZ::SystemAllocator);
 
         ScriptEventBroadcast(AZ::BehaviorContext* behaviorContext, const ScriptEvent& definition, AZStd::string eventName);
 
-        bool Call(AZ::BehaviorValueParameter* params, unsigned int paramCount, AZ::BehaviorValueParameter* returnValue) const override;
+        bool Call(AZStd::span<AZ::BehaviorArgument> params, AZ::BehaviorArgument* returnValue) const override;
+        ResultOutcome IsCallable(AZStd::span<AZ::BehaviorArgument> params, AZ::BehaviorArgument* returnValue) const override;
         bool HasResult() const override { return !m_returnType.IsNull(); }
         bool IsMember() const override { return false; }
 
@@ -52,13 +53,13 @@ namespace ScriptEvents
         }
 
         const AZStd::string* GetArgumentName(size_t index) const override { return &m_argumentNames[index]; }
-        void SetArgumentName(size_t index, const AZStd::string& name) override;
+        void SetArgumentName(size_t index, AZStd::string name) override;
 
         const AZ::BehaviorParameter* GetResult() const override { return &m_result; }
         bool HasBusId() const override { return false; }
 
         const AZStd::string* GetArgumentToolTip(size_t index) const override { return &m_argumentToolTips[index]; }
-        void SetArgumentToolTip(size_t index, const AZStd::string& tooltip) override
+        void SetArgumentToolTip(size_t index, AZStd::string tooltip) override
         {
             if (index >= m_argumentToolTips.size())
             {
@@ -79,7 +80,7 @@ namespace ScriptEvents
     private:
 
         AZ::Uuid m_returnType;
-        AZ::BehaviorValueParameter m_result;
+        AZ::BehaviorArgument m_result;
 
         AZStd::vector<AZStd::string> m_argumentNames;
         AZStd::vector<AZStd::string> m_argumentToolTips;

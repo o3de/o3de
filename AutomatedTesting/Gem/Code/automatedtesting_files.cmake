@@ -8,9 +8,10 @@
 
 set(FILES
     Include/AutomatedTesting/AutomatedTestingBus.h
+    Source/AutoGen/NetworkTestPlayerComponent.AutoComponent.xml
+    Source/AutoGen/NetworkTestLevelEntityComponent.AutoComponent.xml
+    Source/AutoGen/SimpleScriptPlayerComponent.AutoComponent.xml
     Source/AutomatedTestingModule.cpp
     Source/AutomatedTestingSystemComponent.cpp
     Source/AutomatedTestingSystemComponent.h
-    Source/AutoGen/NetworkTestPlayerComponent.AutoComponent.xml
-    Source/AutoGen/NetworkTestLevelEntityComponent.AutoComponent.xml
 )

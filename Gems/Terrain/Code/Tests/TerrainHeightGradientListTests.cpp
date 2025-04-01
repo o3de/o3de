@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzTest/AzTest.h>
 
 #include <Components/TerrainHeightGradientListComponent.h>
@@ -18,38 +17,17 @@
 #include <Terrain/MockTerrainLayerSpawner.h>
 #include <Terrain/MockTerrain.h>
 #include <Tests/Mocks/Terrain/MockTerrainDataRequestBus.h>
+#include <TerrainTestFixtures.h>
 
 using ::testing::_;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
 
-class TerrainHeightGradientListComponentTest : public ::testing::Test
+class TerrainHeightGradientListComponentTest
+    : public UnitTest::TerrainTestFixture
 {
 protected:
-    AZ::ComponentApplication m_app;
-
-    void SetUp() override
-    {
-        AZ::ComponentApplication::Descriptor appDesc;
-        appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-        appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
-        appDesc.m_stackRecordLevels = 20;
-
-        m_app.Create(appDesc);
-    }
-
-    void TearDown() override
-    {
-        m_app.Destroy();
-    }
-
-    AZStd::unique_ptr<AZ::Entity> CreateEntity()
-    {
-        auto entity = AZStd::make_unique<AZ::Entity>();
-        entity->Init();
-        return entity;
-    }
 
     Terrain::TerrainHeightGradientListComponent* AddHeightGradientListToEntity(AZ::Entity* entity)
     {
@@ -58,20 +36,16 @@ protected:
         config.m_gradientEntities.push_back(entity->GetId());
 
         auto heightGradientListComponent = entity->CreateComponent<Terrain::TerrainHeightGradientListComponent>(config);
-        m_app.RegisterComponentDescriptor(heightGradientListComponent->CreateDescriptor());
-
         return heightGradientListComponent;
     }
 
     void AddRequiredComponentsToEntity(AZ::Entity* entity)
     {
         // Create the required box component.
-        UnitTest::MockAxisAlignedBoxShapeComponent* boxComponent = entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
-        m_app.RegisterComponentDescriptor(boxComponent->CreateDescriptor());
+        entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
 
         // Create a MockTerrainLayerSpawnerComponent to provide the required TerrainAreaService.
-        UnitTest::MockTerrainLayerSpawnerComponent* layerSpawner = entity->CreateComponent<UnitTest::MockTerrainLayerSpawnerComponent>();
-        m_app.RegisterComponentDescriptor(layerSpawner->CreateDescriptor());
+        entity->CreateComponent<UnitTest::MockTerrainLayerSpawnerComponent>();
     }
 };
 
@@ -89,12 +63,10 @@ TEST_F(TerrainHeightGradientListComponentTest, ActivateEntityActivateSuccess)
 {
     // Check that the entity activates.
     auto entity = CreateEntity();
-
     AddHeightGradientListToEntity(entity.get());
-
     AddRequiredComponentsToEntity(entity.get());
+    ActivateEntity(entity.get());
 
-    entity->Activate();
     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
 }
 
@@ -102,12 +74,9 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientRefreshesTer
 {
     // Check that the HeightGradientListComponent informs the TerrainSystem when the composition changes.
     auto entity = CreateEntity();
-
     AddHeightGradientListToEntity(entity.get());
-
     AddRequiredComponentsToEntity(entity.get());
-
-    entity->Activate();
+    ActivateEntity(entity.get());
 
     NiceMock<UnitTest::MockTerrainSystemService> terrainSystem;
 
@@ -126,14 +95,10 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsH
 {
     // Check that the HeightGradientListComponent returns expected height values.
     auto entity = CreateEntity();
-
     AddHeightGradientListToEntity(entity.get());
-
     AddRequiredComponentsToEntity(entity.get());
 
     NiceMock<UnitTest::MockTerrainAreaHeightRequests> heightfieldRequestBus(entity->GetId());
-
-    entity->Activate();
 
     const float mockGradientValue = 0.25f;
     NiceMock<UnitTest::MockGradientRequests> gradientRequests(entity->GetId());
@@ -147,10 +112,11 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsH
     ON_CALL(mockShapeRequests, GetEncompassingAabb).WillByDefault(Return(aabb));
 
     const float worldMax = 10000.0f;
-    const AZ::Aabb worldAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(worldMax));
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
-    ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(AZ::Vector2(1.0f)));
-    ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
+    ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
+    ON_CALL(mockterrainDataRequests, GetTerrainHeightBounds).WillByDefault(Return(AzFramework::Terrain::FloatRange({0.0f, worldMax})));
+
+    ActivateEntity(entity.get());
 
     // Ensure the cached values in the HeightGradientListComponent are up to date.
     LmbrCentral::DependencyNotificationBus::Event(entity->GetId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -176,8 +142,6 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListGetHeigh
 
     NiceMock<UnitTest::MockTerrainAreaHeightRequests> heightfieldRequestBus(entity->GetId());
 
-    entity->Activate();
-
     // Create a deterministic but varying result for our mock gradient.
     NiceMock<UnitTest::MockGradientRequests> gradientRequests(entity->GetId());
     ON_CALL(gradientRequests, GetValue)
@@ -195,11 +159,10 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListGetHeigh
     NiceMock<UnitTest::MockShapeComponentRequests> mockShapeRequests(entity->GetId());
     ON_CALL(mockShapeRequests, GetEncompassingAabb).WillByDefault(Return(aabb));
 
-    const float worldMax = 10000.0f;
-    const AZ::Aabb worldAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(worldMax));
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
-    ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(AZ::Vector2(1.0f)));
-    ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
+    ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
+
+    ActivateEntity(entity.get());
 
     // Ensure the cached values in the HeightGradientListComponent are up to date.
     LmbrCentral::DependencyNotificationBus::Event(entity->GetId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);

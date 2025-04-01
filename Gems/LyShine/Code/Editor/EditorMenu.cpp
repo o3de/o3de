@@ -6,10 +6,12 @@
  *
  */
 #include "EditorCommon.h"
-#include "FeedbackDialog.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Slice/SliceUtilities.h>
 
 #include "AlignToolbarSection.h"
 #include "ViewportAlign.h"
@@ -59,13 +61,33 @@ void EditorWindow::EditorMenu_Open(QString optional_selectedFile)
             dir = FileHelpers::GetAbsoluteDir(UICANVASEDITOR_CANVAS_DIRECTORY);
         }
 
-        QFileDialog dialog(this, QString(), dir, "*." UICANVASEDITOR_CANVAS_EXTENSION);
-        dialog.setFileMode(QFileDialog::ExistingFiles);
+        AssetSelectionModel selection;
 
-        if (dialog.exec() == QDialog::Accepted)
+        StringFilter* stringFilter = new StringFilter();
+        const QString& filterString = QString(".") + UICANVASEDITOR_CANVAS_EXTENSION;
+        stringFilter->SetName("UI Canvas files (*.uicanvas)");
+        stringFilter->SetFilterString(filterString);
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
+
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+        selection.SetMultiselect(true);
+
+        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
-            OpenCanvases(dialog.selectedFiles());
+            return;
         }
+
+        QStringList list;
+        for (const auto& result : selection.GetResults())
+        {
+            list.push_back(result->GetFullPath().c_str());
+        }
+
+        OpenCanvases(list);
     }
     else
     {
@@ -607,7 +629,7 @@ void EditorWindow::AddMenu_View()
             {
                 // Clear guides
                 AZStd::string canvasUndoXml = CanvasHelpers::BeginUndoableCanvasChange(GetCanvas());
-                EBUS_EVENT_ID(GetCanvas(), UiEditorCanvasBus, RemoveAllGuides);
+                UiEditorCanvasBus::Event(GetCanvas(), &UiEditorCanvasBus::Events::RemoveAllGuides);
                 CanvasHelpers::EndUndoableCanvasChange(this, "clear guides", canvasUndoXml);
             });
         menu->addAction(action);
@@ -871,7 +893,7 @@ void EditorWindow::AddMenu_Help()
 {
     const char* documentationUrl = "https://o3de.org/docs/user-guide/interactivity/user-interface/";
     const char* tutorialsUrl = "https://o3de.org/docs/learning-guide/tutorials/";
-    const char* forumUrl = "https://o3deorg.netlify.app/community/";
+    const char* forumUrl = "https://o3de.org/community/";
 
     QMenu* menu = menuBar()->addMenu("&Help");
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
@@ -916,22 +938,6 @@ void EditorWindow::AddMenu_Help()
             [forumUrl]([[maybe_unused]] bool checked)
             {
                 QDesktopServices::openUrl(QUrl(forumUrl));
-            });
-        menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
-    }
-
-    // Give Us Feedback
-    {
-        QAction* action = new QAction("&Give Us Feedback", this);
-
-        QObject::connect(action,
-            &QAction::triggered,
-            this,
-            [this]([[maybe_unused]] bool checked)
-            {
-                FeedbackDialog dialog(this);
-                dialog.exec();
             });
         menu->addAction(action);
         addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
@@ -1048,7 +1054,7 @@ QAction* EditorWindow::CreateSaveCanvasAction(AZ::EntityId canvasEntityId, bool 
     if (canvasMetadata)
     {
         canvasSourcePathname = canvasMetadata->m_canvasSourceAssetPathname;
-        EBUS_EVENT_ID_RESULT(canvasFilename, canvasEntityId, UiCanvasBus, GetPathname);
+        UiCanvasBus::EventResult(canvasFilename, canvasEntityId, &UiCanvasBus::Events::GetPathname);
     }
 
     QFileInfo fileInfo(canvasSourcePathname.c_str());
@@ -1098,7 +1104,7 @@ QAction* EditorWindow::CreateSaveCanvasAsAction(AZ::EntityId canvasEntityId, boo
     if (canvasMetadata)
     {
         canvasSourcePathname = canvasMetadata->m_canvasSourceAssetPathname;
-        EBUS_EVENT_ID_RESULT(canvasFilename, canvasEntityId, UiCanvasBus, GetPathname);
+        UiCanvasBus::EventResult(canvasFilename, canvasEntityId, &UiCanvasBus::Events::GetPathname);
     }
 
     QAction* action = new QAction("Save Canvas &As...", this);
@@ -1145,7 +1151,7 @@ QAction* EditorWindow::CreateSaveSliceAction(UiCanvasMetadata *canvasMetadata, b
     // as a safeguard check that the entity still exists
     AZ::EntityId sliceEntityId = canvasMetadata->m_sliceEntityId;
     AZ::Entity* sliceEntity = nullptr;
-    EBUS_EVENT_RESULT(sliceEntity, AZ::ComponentApplicationBus, FindEntity, sliceEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(sliceEntity, &AZ::ComponentApplicationBus::Events::FindEntity, sliceEntityId);
     if (!sliceEntity)
     {
         // Slice entity not found, disable the menu item but also change it to indicate the error

@@ -10,16 +10,14 @@ set(FILES
     Include/GradientSignal/GradientSampler.h
     Include/GradientSignal/GradientTransform.h
     Include/GradientSignal/SmoothStep.h
-    Include/GradientSignal/ImageAsset.h
-    Include/GradientSignal/ImageSettings.h
     Include/GradientSignal/PerlinImprovedNoise.h
     Include/GradientSignal/Util.h
-    Include/GradientSignal/GradientImageConversion.h
     Include/GradientSignal/Components/ConstantGradientComponent.h
     Include/GradientSignal/Components/DitherGradientComponent.h
     Include/GradientSignal/Components/GradientSurfaceDataComponent.h
     Include/GradientSignal/Components/GradientTransformComponent.h
     Include/GradientSignal/Components/ImageGradientComponent.h
+    Include/GradientSignal/Components/ImageGradientModification.h
     Include/GradientSignal/Components/InvertGradientComponent.h
     Include/GradientSignal/Components/LevelsGradientComponent.h
     Include/GradientSignal/Components/MixedGradientComponent.h
@@ -48,6 +46,7 @@ set(FILES
     Include/GradientSignal/Ebuses/SmoothStepGradientRequestBus.h
     Include/GradientSignal/Ebuses/ThresholdGradientRequestBus.h
     Include/GradientSignal/Ebuses/ConstantGradientRequestBus.h
+    Include/GradientSignal/Ebuses/ImageGradientModificationBus.h
     Include/GradientSignal/Ebuses/ImageGradientRequestBus.h
     Include/GradientSignal/Ebuses/MixedGradientRequestBus.h
     Include/GradientSignal/Ebuses/ReferenceGradientRequestBus.h
@@ -62,6 +61,7 @@ set(FILES
     Source/Components/GradientSurfaceDataComponent.cpp
     Source/Components/GradientTransformComponent.cpp
     Source/Components/ImageGradientComponent.cpp
+    Source/Components/ImageGradientModification.cpp
     Source/Components/InvertGradientComponent.cpp
     Source/Components/LevelsGradientComponent.cpp
     Source/Components/MixedGradientComponent.cpp
@@ -80,8 +80,5 @@ set(FILES
     Source/GradientSignalSystemComponent.h
     Source/GradientTransform.cpp
     Source/SmoothStep.cpp
-    Source/ImageAsset.cpp
-    Source/ImageSettings.cpp
     Source/PerlinImprovedNoise.cpp
-    Source/GradientImageConversion.cpp
 )

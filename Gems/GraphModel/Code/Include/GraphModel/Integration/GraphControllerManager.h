@@ -24,7 +24,8 @@ namespace GraphModelIntegration
     public:
         AZ_RTTI(GraphControllerManager, "{DA358B3E-46EF-411B-B84B-0397F5CD3539}");
 
-        GraphControllerManager() = default;
+        GraphControllerManager();
+        ~GraphControllerManager();
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphModelIntegration::GraphManagerRequestBus overrides
@@ -36,9 +37,6 @@ namespace GraphModelIntegration
         const GraphModelSerialization& GetSerializedMappings() override;
         void SetSerializedMappings(const GraphModelSerialization& serialization) override;
         ////////////////////////////////////////////////////////////////////////////////////
-
-        void Activate();
-        void Deactivate();
 
     private:
         AZ_DISABLE_COPY_MOVE(GraphControllerManager);

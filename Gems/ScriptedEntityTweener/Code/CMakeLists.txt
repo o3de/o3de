@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME ScriptedEntityTweener.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         scriptedentitytweener_files.cmake
@@ -22,7 +22,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptedEntityTweener ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         scriptedentitytweener_shared_files.cmake
@@ -33,13 +33,23 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::ScriptedEntityTweener.Static
+            Gem::${gem_name}.Static
             AZ::AzCore
             Legacy::CryCommon
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/ScriptedEntityTweenerModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the above module is for use in all application types:
-ly_create_alias(NAME ScriptedEntityTweener.Tools    NAMESPACE Gem TARGETS Gem::ScriptedEntityTweener)
-ly_create_alias(NAME ScriptedEntityTweener.Clients  NAMESPACE Gem TARGETS Gem::ScriptedEntityTweener)
-ly_create_alias(NAME ScriptedEntityTweener.Builders NAMESPACE Gem TARGETS Gem::ScriptedEntityTweener)
-ly_create_alias(NAME ScriptedEntityTweener.Servers  NAMESPACE Gem TARGETS Gem::ScriptedEntityTweener)
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})

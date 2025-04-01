@@ -486,22 +486,25 @@ class SceneManifest:
 
         mesh_group['rules']['rules'].append(rule)
 
-    def __add_physx_base_mesh_group(self, name: str, physics_material: typing.Optional[str] = None) -> dict:
+    def __add_physx_base_mesh_group(self, name: str, physics_material_asset_hint: typing.Optional[str] = None) -> dict:
         import azlmbr.math
         group = {
             '$type': '{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup',
-            'id': azlmbr.math.Uuid_CreateRandom().ToString(),
             'name': name,
             'NodeSelectionList': {
                 'selectedNodes': [],
                 'unselectedNodes': []
             },
-            "MaterialSlots": [
-                "Material"
-            ],
-            "PhysicsMaterials": [
-                self.__default_or_value(physics_material, "<Default Physics Material>")
-            ],
+            "PhysicsMaterialSlots": {
+                "Slots": [
+                    {
+                        "Name": "",
+                        "MaterialAsset": {
+                            "assetHint": self.__default_or_value(physics_material_asset_hint, "")
+                        }
+                    }
+                ]
+            },
             "rules": {
                 "rules": []
             }
@@ -519,7 +522,7 @@ class SceneManifest:
                                       build_triangle_adjacencies: bool = False,
                                       mesh_weld_tolerance: float = 0.0,
                                       num_tris_per_leaf: int = 4,
-                                      physics_material: typing.Optional[str] = None) -> dict:
+                                      physics_material_asset_hint: typing.Optional[str] = None) -> dict:
         """Adds a Triangle type PhysX Mesh Group to the scene.
 
         Parameters
@@ -548,7 +551,7 @@ class SceneManifest:
         num_tris_per_leaf :
             Mesh cooking hint for max triangles per leaf limit. Fewer triangles per leaf
             produces larger meshes with better runtime performance and worse cooking performance.
-        physics_material :
+        physics_material_asset_hint :
             Configure which physics material to use.
 
         Returns
@@ -557,7 +560,7 @@ class SceneManifest:
             The newly created mesh group.
 
         """
-        group = self.__add_physx_base_mesh_group(name, physics_material)
+        group = self.__add_physx_base_mesh_group(name, physics_material_asset_hint)
         group["export method"] = 0
         group["TriangleMeshAssetParams"] = {
             "MergeMeshes": merge_meshes,
@@ -580,7 +583,7 @@ class SceneManifest:
                                     shift_vertices: bool = False,
                                     gauss_map_limit: int = 32,
                                     build_gpu_data: bool = False,
-                                    physics_material: typing.Optional[str] = None) -> dict:
+                                    physics_material_asset_hint: typing.Optional[str] = None) -> dict:
         """Adds a Convex type PhysX Mesh Group to the scene.
 
         Parameters
@@ -616,7 +619,7 @@ class SceneManifest:
             simulation is created. This can increase memory usage and cooking times for convex meshes
             and triangle meshes. Convex hulls are created with respect to GPU simulation limitations.
             Vertex limit is set to 64 and vertex limit per face is internally set to 32.
-        physics_material :
+        physics_material_asset_hint :
             Configure which physics material to use.
 
         Returns
@@ -625,7 +628,7 @@ class SceneManifest:
             The newly created mesh group.
 
         """
-        group = self.__add_physx_base_mesh_group(name, physics_material)
+        group = self.__add_physx_base_mesh_group(name, physics_material_asset_hint)
         group["export method"] = 1
         group["ConvexAssetParams"] = {
             "AreaTestEpsilon": area_test_epsilon,
@@ -644,7 +647,7 @@ class SceneManifest:
     def add_physx_primitive_mesh_group(self, name: str,
                                        primitive_shape_target: PrimitiveShape = PrimitiveShape.BEST_FIT,
                                        volume_term_coefficient: float = 0.0,
-                                       physics_material: typing.Optional[str] = None) -> dict:
+                                       physics_material_asset_hint: typing.Optional[str] = None) -> dict:
         """Adds a Primitive Shape type PhysX Mesh Group to the scene
 
         Parameters
@@ -658,7 +661,7 @@ class SceneManifest:
             This parameter controls how aggressively the primitive fitting algorithm will try
             to minimize the volume of the fitted primitive. A value of 0 (no volume minimization) is
             recommended for most meshes, especially those with moderate to high vertex counts.
-        physics_material :
+        physics_material_asset_hint :
             Configure which physics material to use.
 
         Returns
@@ -667,7 +670,7 @@ class SceneManifest:
             The newly created mesh group.
 
         """
-        group = self.__add_physx_base_mesh_group(name, physics_material)
+        group = self.__add_physx_base_mesh_group(name, physics_material_asset_hint)
         group["export method"] = 2
         group["PrimitiveAssetParams"] = {
             "PrimitiveShapeTarget": int(primitive_shape_target),
