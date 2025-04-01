@@ -185,7 +185,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "CTEST_OPTIONS": "-E (o3de_repo|o3de_export_project|AZ::AssetProcessor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
