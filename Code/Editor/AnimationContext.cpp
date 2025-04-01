@@ -287,7 +287,8 @@ bool CAnimationContext::IsInGameMode() const
 bool CAnimationContext::IsInEditingMode() const
 {
     const auto editor = GetIEditor();
-    const bool isNotEditing = !editor || editor->IsInConsolewMode() || editor->IsInTestMode() || editor->IsInLevelLoadTestMode() || editor->IsInPreviewMode();
+    const bool isNotEditing = !editor || editor->IsInConsolewMode() || editor->IsInTestMode() || editor->IsInLevelLoadTestMode() ||
+        editor->IsInPreviewMode() || editor->IsInSimulationMode();
     return !m_bIsInGameMode && !isNotEditing;
 }
 
