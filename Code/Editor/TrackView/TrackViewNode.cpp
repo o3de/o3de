@@ -776,7 +776,7 @@ CTrackViewNode* CTrackViewNode::GetFirstSelectedNode()
     for (unsigned int childIndex = 0; childIndex < numChilds; ++childIndex)
     {
         const auto pChild = GetChild(childIndex);
-        const auto pSelectedNode = pChild ? GetFirstSelectedNode() : nullptr;
+        const auto pSelectedNode = pChild ? pChild->GetFirstSelectedNode() : nullptr;
         if (pSelectedNode)
         {
             return pSelectedNode;
