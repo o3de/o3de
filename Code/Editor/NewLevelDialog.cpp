@@ -303,22 +303,15 @@ void CNewLevelDialog::OnLevelNameChange()
     {
         QDir levelDir(QString("%1/%2/").arg(m_levelFolders, m_level));
         QString strLevelPath = levelDir.absoluteFilePath(m_level + EditorUtils::LevelFile::GetDefaultFileExtension());
-        int levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
+        
         if (strLevelPath.length() >= AZ::IO::MaxPathLength)
         {
             valid = false;
-            if (!ui->nameErrorTips->isVisible())
-            {
-                ui->nameErrorTips->setVisible(true);
-            }
-            ui->nameErrorTips->setText(QObject::tr("The level name is too long, the maximum is '%1'.").arg(levelMaxLength));
-        }
-        else if (ui->nameErrorTips->isVisible())
-        {
-            ui->nameErrorTips->setVisible(false);
+
+            int levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
+            QMessageBox::warning(this, tr("Unable to Save Level"), QObject::tr("The level name is too long, the maximum is '%1'.").arg(levelMaxLength), QMessageBox::Ok, QMessageBox::Ok);
         }
     }
-
 
     // Use the validity to dynamically change the Ok button's enabled state
     if (QPushButton* button = ui->buttonBox->button(QDialogButtonBox::Ok))
