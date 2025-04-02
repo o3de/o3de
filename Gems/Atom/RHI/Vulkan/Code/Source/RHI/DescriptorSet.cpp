@@ -319,7 +319,7 @@ namespace AZ
                 // Reserve memory for the acceleration structures descriptors
                 // We need t a pointer to the entries which may be invalidated in push_back without reserving memory
                 size_t numAccelerationStructureEntries = 0;
-                for (const WriteDescriptorData& updateData : m_updateData.span())
+                for (const WriteDescriptorData& updateData : m_updateData)
                 {
                     const VkDescriptorType descType = layout.GetDescriptorType(updateData.m_layoutIndex);
                     if (descType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR)
@@ -330,7 +330,7 @@ namespace AZ
                 writeAccelerationStructureDescs.reserve(numAccelerationStructureEntries);
             }
 
-            for (const WriteDescriptorData& updateData : m_updateData.span())
+            for (const WriteDescriptorData& updateData : m_updateData)
             {
                 const VkDescriptorType descType = layout.GetDescriptorType(updateData.m_layoutIndex);
 
@@ -432,7 +432,7 @@ namespace AZ
             uint32_t unboundedArraySize = 0;
 
             // find the unbounded array in the update data
-            for (const WriteDescriptorData& updateData : m_updateData.span())
+            for (const WriteDescriptorData& updateData : m_updateData)
             {
                 if ((layout.GetNativeBindingFlags()[updateData.m_layoutIndex] & VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT) != 0)
                 {
