@@ -28,12 +28,12 @@ namespace Maestro
 
         TAnimTrack();
 
-        EAnimCurveType GetCurveType() override
+        EAnimCurveType GetCurveType() const override
         {
             return eAnimCurveType_Unknown;
         }
 
-        AnimValueType GetValueType() override
+        AnimValueType GetValueType() const override
         {
             return kAnimValueUnknown;
         }
@@ -44,7 +44,7 @@ namespace Maestro
         }
 
         // Return Animation Node that owns this Track.
-        IAnimNode* GetNode() override
+        IAnimNode* GetNode() const override
         {
             return m_node;
         }
@@ -85,49 +85,69 @@ namespace Maestro
         void release() override;
         //////////////////////////////////////////////////////////////////////////
 
-        bool IsKeySelected(int key) const override
+        bool IsKeySelected(int keyIndex) const override
         {
-            AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index is out of range");
-            if (m_keys[key].flags & AKEY_SELECTED)
+            if (keyIndex < 0 || keyIndex >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index (%d) is out of range (0 .. %d)", keyIndex, GetNumKeys());
+                return false;
+            }
+
+            if (m_keys[keyIndex].flags & AKEY_SELECTED)
             {
                 return true;
             }
             return false;
         }
 
-        void SelectKey(int key, bool select) override
+        void SelectKey(int keyIndex, bool select) override
         {
-            AZ_Assert(key >= 0 && key < (int)m_keys.size(), "Key index is out of range");
+            if (keyIndex < 0 || keyIndex >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index (%d) is out of range (0 .. %d)", keyIndex, GetNumKeys());
+                return;
+            }
+
             if (select)
             {
-                m_keys[key].flags |= AKEY_SELECTED;
+                m_keys[keyIndex].flags |= AKEY_SELECTED;
             }
             else
             {
-                m_keys[key].flags &= ~AKEY_SELECTED;
+                m_keys[keyIndex].flags &= ~AKEY_SELECTED;
             }
         }
 
-        bool IsSortMarkerKey(unsigned int key) const override
+        bool IsSortMarkerKey(int keyIndex) const override
         {
-            AZ_Assert(key < m_keys.size(), "key index is out of range");
-            if (m_keys[key].flags & AKEY_SORT_MARKER)
+            if (keyIndex < 0 || keyIndex >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index (%d) is out of range (0 .. %d)", keyIndex, GetNumKeys());
+                return false;
+            }
+
+            if (m_keys[keyIndex].flags & AKEY_SORT_MARKER)
             {
                 return true;
             }
             return false;
         }
 
-        void SetSortMarkerKey(unsigned int key, bool enabled) override
+        void SetSortMarkerKey(int keyIndex, bool enabled) override
         {
-            AZ_Assert(key < m_keys.size(), "key index is out of range");
+            if (keyIndex < 0 || keyIndex >= GetNumKeys())
+            {
+                AZ_Assert(false, "Key index (%d) is out of range (0 .. %d)", keyIndex, GetNumKeys());
+                return;
+            }
+
             if (enabled)
             {
-                m_keys[key].flags |= AKEY_SORT_MARKER;
+                m_keys[keyIndex].flags |= AKEY_SORT_MARKER;
             }
             else
             {
-                m_keys[key].flags &= ~AKEY_SORT_MARKER;
+                m_keys[keyIndex].flags &= ~AKEY_SORT_MARKER;
             }
         }
 
@@ -151,11 +171,11 @@ namespace Maestro
         }
 
         //! Remove specified key.
-        void RemoveKey(int num) override;
+        void RemoveKey(int keyIndex) override;
 
         int CreateKey(float time) override;
-        int CloneKey(int fromKey) override;
-        int CopyKey(IAnimTrack* pFromTrack, int nFromKey) override;
+        int CloneKey(int srcKeyIndex, float timeOffset) override;
+        int CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex) override;
 
         //! Get key at specified location.
         //! @param key Must be valid pointer to compatible key structure, to be filled with specified key location.
@@ -165,9 +185,13 @@ namespace Maestro
         //! @return key time.
         float GetKeyTime(int index) const override;
 
+        //! Get minimal legal time delta between keys.
+        //! @return Minimal legal time delta between keys.
+        float GetMinKeyTimeDelta() const override { return 0.01f; };
+
         //! Find key at given time.
         //! @return Index of found key, or -1 if key with this time not found.
-        int FindKey(float time) override;
+        int FindKey(float time) const override;
 
         //! Get flags of specified key.
         //! @return key time.
@@ -187,7 +211,7 @@ namespace Maestro
         void SortKeys() override;
 
         //! Get track flags.
-        int GetFlags() override
+        int GetFlags() const override
         {
             return m_flags;
         }
@@ -208,34 +232,37 @@ namespace Maestro
         // Get track value at specified time.
         // Interpolates keys if needed.
         //////////////////////////////////////////////////////////////////////////
-        void GetValue([[maybe_unused]] float time, [[maybe_unused]] float& value, [[maybe_unused]] bool applyMultiplier = false) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] float& value, [[maybe_unused]] bool applyMultiplier = false) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue(
-            [[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value, [[maybe_unused]] bool applyMultiplier = false) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value, [[maybe_unused]] bool applyMultiplier = false) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue(
-            [[maybe_unused]] float time, [[maybe_unused]] AZ::Vector4& value, [[maybe_unused]] bool applyMultiplier = false) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector4& value, [[maybe_unused]] bool applyMultiplier = false) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Quaternion& value) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Quaternion& value) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AssetBlends<AZ::Data::AssetData>& value) override
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AssetBlends<AZ::Data::AssetData>& value) const override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZStd::string& value) const override
         {
             AZ_Assert(false, "Not expected to be used");
         }
@@ -244,35 +271,22 @@ namespace Maestro
         // Set track value at specified time.
         // Adds new keys if required.
         //////////////////////////////////////////////////////////////////////////
-        void SetValue(
-            [[maybe_unused]] float time,
-            [[maybe_unused]] const float& value,
-            [[maybe_unused]] bool bDefault = false,
-            [[maybe_unused]] bool applyMultiplier = false) override
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const float& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(
-            [[maybe_unused]] float time,
-            [[maybe_unused]] const AZ::Vector3& value,
-            [[maybe_unused]] bool bDefault = false,
-            [[maybe_unused]] bool applyMultiplier = false) override
+        void SetValue( [[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(
-            [[maybe_unused]] float time,
-            [[maybe_unused]] const AZ::Vector4& value,
-            [[maybe_unused]] bool bDefault = false,
-            [[maybe_unused]] bool applyMultiplier = false) override
+        void SetValue( [[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector4& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(
-            [[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false) override
+        void SetValue( [[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
@@ -282,10 +296,12 @@ namespace Maestro
             AZ_Assert(false, "Not expected to be used");
         }
 
-        void SetValue(
-            [[maybe_unused]] float time,
-            [[maybe_unused]] const AssetBlends<AZ::Data::AssetData>& value,
-            [[maybe_unused]] bool bDefault = false) override
+        void SetValue( [[maybe_unused]] float time, [[maybe_unused]] const AssetBlends<AZ::Data::AssetData>& value, [[maybe_unused]] bool bDefault = false) override
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZStd::string& value, [[maybe_unused]] bool bDefault = false) override
         {
             AZ_Assert(false, "Not expected to be used");
         }
@@ -308,6 +324,11 @@ namespace Maestro
             m_timeRange = timeRange;
         }
 
+        Range GetTimeRange() const override
+        {
+            return m_timeRange;
+        }
+
         /** Serialize this animation track to XML.
                 Do not override this method, prefer to override SerializeKey.
         */
@@ -320,6 +341,8 @@ namespace Maestro
                 Do not save time attribute, it is already saved in Serialize of the track.
         */
         virtual void SerializeKey(KeyType& key, XmlNodeRef& keyNode, bool bLoading) = 0;
+
+        void InitPostLoad([[maybe_unused]] IAnimSequence* sequence) override { }
 
         //////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////
@@ -365,7 +388,10 @@ namespace Maestro
 
         void SetMultiplier(float trackMultiplier) override
         {
-            m_trackMultiplier = trackMultiplier;
+            if (AZStd::abs(trackMultiplier) > AZ::Constants::Tolerance)
+            {
+                m_trackMultiplier = trackMultiplier;
+            }
         }
 
         void SetExpanded([[maybe_unused]] bool expanded) override
@@ -393,18 +419,6 @@ namespace Maestro
         }
 
     protected:
-        void CheckValid()
-        {
-            if (m_bModified)
-            {
-                SortKeys();
-            }
-        }
-
-        void Invalidate()
-        {
-            m_bModified = -1;
-        }
 
         int m_refCount;
 
@@ -414,7 +428,6 @@ namespace Maestro
 
         CAnimParamType m_nParamType;
         int m_currKey : 31;
-        int m_bModified : 1;
         float m_lastTime;
         int m_flags;
 
@@ -428,7 +441,7 @@ namespace Maestro
 
         IAnimNode* m_node;
 
-        float m_trackMultiplier;
+        float m_trackMultiplier = 1.0f;
 
         unsigned int m_id = 0;
     };
@@ -458,7 +471,6 @@ namespace Maestro
         m_currKey = 0;
         m_flags = 0;
         m_lastTime = -1;
-        m_bModified = 0;
         m_node = nullptr;
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
@@ -468,56 +480,99 @@ namespace Maestro
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline void TAnimTrack<KeyType>::RemoveKey(int index)
+    inline void TAnimTrack<KeyType>::RemoveKey(int keyIndex)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        m_keys.erase(m_keys.begin() + index);
-        Invalidate();
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        m_keys.erase(m_keys.begin() + keyIndex);
+
+        SortKeys();
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline void TAnimTrack<KeyType>::GetKey(int index, IKey* key) const
+    inline void TAnimTrack<KeyType>::GetKey(int keyIndex, IKey* key) const
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        AZ_Assert(key != 0, "Key cannot be null!");
-        *(KeyType*)key = m_keys[index];
+        if (!key || keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(key, "Invalid key pointer.");
+            AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        *(KeyType*)key = m_keys[keyIndex];
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline void TAnimTrack<KeyType>::SetKey(int index, IKey* key)
+    inline void TAnimTrack<KeyType>::SetKey(int keyIndex, IKey* key)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        AZ_Assert(key != 0, "Key cannot be null!");
-        m_keys[index] = *(KeyType*)key;
-        Invalidate();
+        if (!key || keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(key, "Invalid key pointer.");
+            AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(),"Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        m_keys[keyIndex] = *(KeyType*)key;
+
+        SortKeys();
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline float TAnimTrack<KeyType>::GetKeyTime(int index) const
+    inline float TAnimTrack<KeyType>::GetKeyTime(int keyIndex) const
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        return m_keys[index].time;
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(keyIndex >= 0 && keyIndex < GetNumKeys(), "Key index (%d) is out of range (0 .. %d)", keyIndex, GetNumKeys());
+            return -1.0f;
+        }
+
+        return m_keys[keyIndex].time;
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline void TAnimTrack<KeyType>::SetKeyTime(int index, float time)
+    inline void TAnimTrack<KeyType>::SetKeyTime(int keyIndex, float time)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        m_keys[index].time = time;
-        Invalidate();
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        if (((m_timeRange.end - m_timeRange.start) > AZ::Constants::Tolerance) && (time < m_timeRange.start || time > m_timeRange.end))
+        {
+            AZ_WarningOnce("AnimTrack", false, "SetKeyTime(%d, %f): Key time is out of range (%f .. %f) in track (%s), clamped.",
+                keyIndex, time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+        }
+
+        const int exitingIndex = FindKey(time);
+        if (exitingIndex >= 0)
+        {
+            AZ_Error("AnimTrack", exitingIndex == keyIndex, "SetKeyTime(%d, %f): A key with this time exists in track (%s).",
+                keyIndex, time, (GetNode() ? GetNode()->GetName() : ""));
+            return;
+        }
+
+        m_keys[keyIndex].time = time;
+
+        SortKeys();
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline int TAnimTrack<KeyType>::FindKey(float time)
+    inline int TAnimTrack<KeyType>::FindKey(float time) const
     {
         for (int i = 0; i < (int)m_keys.size(); i++)
         {
-            if (m_keys[i].time == time)
+            if (AZStd::abs(m_keys[i].time - time) < AZ::Constants::Tolerance)
             {
                 return i;
             }
@@ -527,19 +582,30 @@ namespace Maestro
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline int TAnimTrack<KeyType>::GetKeyFlags(int index)
+    inline int TAnimTrack<KeyType>::GetKeyFlags(int keyIndex)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        return m_keys[index].flags;
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return 0;
+        }
+
+        return m_keys[keyIndex].flags;
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline void TAnimTrack<KeyType>::SetKeyFlags(int index, int flags)
+    inline void TAnimTrack<KeyType>::SetKeyFlags(int keyIndex, int flags)
     {
-        AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-        m_keys[index].flags = flags;
-        Invalidate();
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        m_keys[keyIndex].flags = flags;
+
+        SortKeys();
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -547,7 +613,6 @@ namespace Maestro
     inline void TAnimTrack<KeyType>::SortKeys()
     {
         AZStd::sort(m_keys.begin(), m_keys.end());
-        m_bModified = 0;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -596,8 +661,7 @@ namespace Maestro
         }
         else
         {
-            int num = GetNumKeys();
-            CheckValid();
+            SortKeys();
             xmlNode->setAttr("Flags", GetFlags());
             xmlNode->setAttr("StartTime", m_timeRange.start);
             xmlNode->setAttr("EndTime", m_timeRange.end);
@@ -609,7 +673,7 @@ namespace Maestro
             }
 #endif
 
-            for (int i = 0; i < num; i++)
+            for (int i = 0; i < GetNumKeys(); i++)
             {
                 XmlNodeRef keyNode = xmlNode->newChild("Key");
                 keyNode->setAttr("time", m_keys[i].time);
@@ -652,7 +716,6 @@ namespace Maestro
                     m_keys[i + numCur].flags |= AKEY_SELECTED;
                 }
             }
-            SortKeys();
         }
         else
         {
@@ -672,6 +735,9 @@ namespace Maestro
                 }
             }
         }
+
+        SortKeys();
+
         return true;
     }
 
@@ -679,52 +745,148 @@ namespace Maestro
     template<class KeyType>
     inline int TAnimTrack<KeyType>::CreateKey(float time)
     {
+        if ((m_timeRange.end - m_timeRange.start > AZ::Constants::Tolerance) && (time < m_timeRange.start || time > m_timeRange.end))
+        {
+            AZ_Warning("AnimSplineTrack", false, "CreateKey(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
+                time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
+            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+        }
+
+        const auto existingKeyIndex = FindKey(time);
+        if (existingKeyIndex >= 0)
+        {
+            AZ_Error("AnimTrack", false, "CreateKey(%f) : A key (%d) with this time exists in track (%s).",
+                time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""));
+            return -1;
+        }
+
         KeyType key;
-        int nkey = GetNumKeys();
+        const int nkey = GetNumKeys();
         SetNumKeys(nkey + 1);
         key.time = time;
         SetKey(nkey, &key);
 
-        return nkey;
+        SortKeys();
+
+        return FindKey(time);
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline int TAnimTrack<KeyType>::CloneKey(int fromKey)
+    inline int TAnimTrack<KeyType>::CloneKey(int srcKeyIndex, float timeOffset)
     {
+        const auto numKeys = GetNumKeys();
+        if (srcKeyIndex < 0 || srcKeyIndex >= numKeys)
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", srcKeyIndex, numKeys);
+            return -1;
+        }
+
         KeyType key;
-        GetKey(fromKey, &key);
-        int nkey = GetNumKeys();
-        SetNumKeys(nkey + 1);
-        SetKey(nkey, &key);
-        return nkey;
+        GetKey(srcKeyIndex, &key);
+
+        if (AZStd::abs(timeOffset) < GetMinKeyTimeDelta())
+        {
+            timeOffset = timeOffset >= 0.0f ? GetMinKeyTimeDelta() : -GetMinKeyTimeDelta();
+        }
+
+        key.time += timeOffset;
+
+        const auto existingKeyIndex = FindKey(key.time);
+        if (existingKeyIndex >= 0)
+        {
+            AZ_Error("AnimTrack", false, "CloneKey(%d, %f): A key at this time already exists in this track (%s).", srcKeyIndex, key.time, (GetNode() ? GetNode()->GetName() : ""));
+            return -1;
+        }
+
+        SetNumKeys(numKeys + 1);
+        SetKey(numKeys, &key);
+
+        SortKeys();
+
+        return FindKey(key.time);
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
-    inline int TAnimTrack<KeyType>::CopyKey(IAnimTrack* pFromTrack, int nFromKey)
+    inline int TAnimTrack<KeyType>::CopyKey(IAnimTrack* pFromTrack, int fromKeyIndex)
     {
+        if (!pFromTrack)
+        {
+            AZ_Assert(false, "Expected valid track pointer.");
+            return -1;
+        }
+
+        if (fromKeyIndex < 0 || fromKeyIndex >= pFromTrack->GetNumKeys())
+        {
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", fromKeyIndex, GetNumKeys());
+            return -1;
+        }
+
         KeyType key;
-        pFromTrack->GetKey(nFromKey, &key);
-        int nkey = GetNumKeys();
-        SetNumKeys(nkey + 1);
-        SetKey(nkey, &key);
-        return nkey;
+        pFromTrack->GetKey(fromKeyIndex, &key);
+
+        if (this == pFromTrack)
+        {
+            // Shift key time to avoid fully equal keys, with offset selected bigger than minimal legal key time delta
+            const float timeOffset = GetMinKeyTimeDelta() * 1.1f;
+            const auto timeRange = GetTimeRange();
+            bool allowToAddKey = timeRange.end - timeRange.start > timeOffset;
+            if (allowToAddKey)
+            {
+                key.time += timeOffset;
+                if (key.time > timeRange.end)
+                {
+                    key.time -= timeOffset * 2.0f;
+                    allowToAddKey = key.time >= timeRange.start;
+                }
+            }
+            if (!allowToAddKey)
+            {
+                AZ_Error("AnimSplineTrack", false, "CopyKey(%s, %d): Too narrow time range (%f .. %f) to clone key in this track.",
+                    (GetNode() ? GetNode()->GetName() : ""), fromKeyIndex, timeRange.start, timeRange.end);
+                return -1;
+            }
+
+            const auto existingKeyIndex = FindKey(key.time);
+            if (existingKeyIndex >= 0)
+            {
+                AZ_Error("AnimTrack", false, "CopyKey(%s, %d): A key at time (%f) with index (%d) already exists in track (%s).",
+                    (pFromTrack->GetNode() ? pFromTrack->GetNode()->GetName() : ""), fromKeyIndex, key.time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""));
+                return -1;
+            }
+        }
+        else
+        {
+            const auto existingKeyIndex = FindKey(key.time);
+            if (existingKeyIndex >= 0)
+            {
+                AZ_Error("AnimTrack", false, "CopyKey(%s, %d): A key at time (%f) with index (%d) already exists in this track (%s).",
+                    (pFromTrack->GetNode() ? pFromTrack->GetNode()->GetName() : ""), fromKeyIndex, key.time, existingKeyIndex, (GetNode() ? GetNode()->GetName() : ""));
+                return -1;
+            }
+        }
+
+        const auto numKeys = GetNumKeys();
+        SetNumKeys(numKeys + 1);
+        SetKey(numKeys, &key);
+
+        SortKeys();
+
+        return FindKey(key.time);
     }
 
     //////////////////////////////////////////////////////////////////////////
     template<class KeyType>
     inline int TAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
     {
-        CheckValid();
-
-        if (key == nullptr)
+        if (!key)
         {
             return -1;
         }
 
-        int nkeys = static_cast<int>(m_keys.size());
-        if (nkeys == 0)
+        const int numKeys = GetNumKeys();
+        if (numKeys == 0)
         {
             m_lastTime = time;
             m_currKey = -1;
@@ -738,8 +900,8 @@ namespace Maestro
             // Warp time.
             const char* desc = 0;
             float duration = 0;
-            GetKeyInfo(nkeys - 1, desc, duration);
-            float endtime = GetKeyTime(nkeys - 1) + duration;
+            GetKeyInfo(numKeys - 1, desc, duration);
+            float endtime = GetKeyTime(numKeys - 1) + duration;
             time = fmod_tpl(time, endtime);
             if (time < m_lastTime)
             {
@@ -755,7 +917,7 @@ namespace Maestro
             if (bTimeWrap)
             {
                 // If time wrapped, active key is last key.
-                m_currKey = nkeys - 1;
+                m_currKey = numKeys - 1;
                 *key = m_keys[m_currKey];
             }
             else
@@ -772,11 +934,11 @@ namespace Maestro
 
         // Start from current key.
         int i;
-        for (i = m_currKey; i < nkeys; i++)
+        for (i = m_currKey; i < numKeys; i++)
         {
             if (time >= m_keys[i].time)
             {
-                if ((i >= nkeys - 1) || (time < m_keys[i + 1].time))
+                if ((i >= numKeys - 1) || (time < m_keys[i + 1].time))
                 {
                     m_currKey = i;
                     *key = m_keys[m_currKey];
@@ -790,11 +952,11 @@ namespace Maestro
         }
 
         // Start from beginning.
-        for (i = 0; i < nkeys; i++)
+        for (i = 0; i < numKeys; i++)
         {
             if (time >= m_keys[i].time)
             {
-                if ((i >= nkeys - 1) || (time < m_keys[i + 1].time))
+                if ((i >= numKeys - 1) || (time < m_keys[i + 1].time))
                 {
                     m_currKey = i;
                     *key = m_keys[m_currKey];

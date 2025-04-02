@@ -124,7 +124,7 @@ namespace Maestro
 
             void SetFovAndNearZ(float degreesFoV, float nearZ) override
             {
-                if ((degreesFoV > 0.0f && degreesFoV < 180.0f) && !AZ::IsClose(GetFoV(), degreesFoV, AZ::Constants::FloatEpsilon))
+                if ((degreesFoV >= 1.0f && degreesFoV < 180.0f) && !AZ::IsClose(GetFoV(), degreesFoV, AZ::Constants::FloatEpsilon))
                 {
                     Camera::CameraRequestBus::Event(m_cameraEntityId, &Camera::CameraComponentRequests::SetFovDegrees, degreesFoV);
                 }
@@ -280,10 +280,6 @@ namespace Maestro
             case AnimParamType::Camera:
                 {
                     CSelectTrack* pSelectTrack = (CSelectTrack*)pTrack;
-                    if (bActivate)
-                    {
-                        pSelectTrack->CalculateDurationForEachKey(); // Ensure keys are sorted by time and fDuration is calculated.
-                    }
 
                     const int numKeys = pSelectTrack->GetNumKeys();
                     for (int currKeyIdx = 0; currKeyIdx < numKeys; ++currKeyIdx)
@@ -305,6 +301,11 @@ namespace Maestro
                             // When deactivating, restore cameras' properties, if the key was initialized
                             RestoreCameraProperties(currKey);
                         }
+                    }
+
+                    if (bActivate)
+                    {
+                        pSelectTrack->CalculateDurationForEachKey(); // Ensure keys are sorted by time and fDuration is calculated.
                     }
                 }
                 break;
@@ -730,8 +731,14 @@ namespace Maestro
         }
 
         ISceneCamera* currCamera =static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(key.cameraAzEntityId));
-        key.m_FoV = currCamera->GetFoV();
-        key.m_nearZ = currCamera->GetNearZ();
+        const auto degreesFoV = currCamera->GetFoV();
+        const auto nearZ = currCamera->GetNearZ();
+        if (degreesFoV < 1.0f || nearZ <= AZ::Constants::Tolerance)
+        {
+            return false; // Invalid camera properties
+        }
+        key.m_FoV = degreesFoV;
+        key.m_nearZ = nearZ;
         key.m_position = currCamera->GetWorldPosition();
         key.m_rotation = currCamera->GetWorldRotation();
         delete currCamera;
@@ -797,15 +804,23 @@ namespace Maestro
 
     void CAnimSceneNode::ApplyCameraKey(int currKeyIdx, ISelectKey& currKey, const SAnimContext& ec)
     {
-        if (!m_movieSystem || !m_pSequence || !m_CurrentSelectTrack || !currKey.IsInitialized())
+        if (!m_movieSystem || !m_pSequence || !m_CurrentSelectTrack)
         {
-            [[maybe_unused]] const auto text =
-                AZStd::string::format("ApplyCameraKey(%d, %s, time=%f)", currKeyIdx, currKey.cameraAzEntityId.ToString().c_str(), ec.time).c_str();
-            AZ_Assert(m_movieSystem, "%s: invalid movie system pointer.", text);
-            AZ_Assert(m_pSequence, "%s: invalid sequence pointer.", text);
-            AZ_Assert(m_CurrentSelectTrack, "%s: invalid track pointer.", text);
-            AZ_Assert(currKey.IsInitialized(), "%s: invalid key.", text);
-            return; // internal error
+            AZ_Assert(m_movieSystem, "Invalid movie system pointer.");
+            AZ_Assert(m_pSequence, "Invalid sequence pointer.");
+            AZ_Assert(m_CurrentSelectTrack, "Invalid track pointer.");
+            return;
+        }
+
+        if (!currKey.IsInitialized())
+        {
+            // Try lazy initialization, useful for a sequence in a separate prefab instance
+            if (!InitializeCameraProperties(currKey))
+            {
+                AZ_Error("AnimSceneNode", false, "ApplyCameraKey(%d, %s, time=%f): Invalid key.",
+                    currKeyIdx, currKey.cameraAzEntityId.ToString().c_str(), ec.time);
+                return;
+            }
         }
 
         const auto numKeys = m_CurrentSelectTrack->GetNumKeys();
@@ -1074,7 +1089,7 @@ namespace Maestro
         }
     }
 
-    void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType)
+    void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnimParamType& paramType, [[maybe_unused]] AnimValueType remapValueType)
     {
         if (paramType.GetType() == AnimParamType::TimeWarp)
         {

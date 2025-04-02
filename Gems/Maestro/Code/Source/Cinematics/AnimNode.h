@@ -217,10 +217,13 @@ namespace Maestro
         uint32 GetTrackParamIndex(const IAnimTrack* pTrack) const override;
 
         void SetTrack(const CAnimParamType& paramType, IAnimTrack* track) override;
-        IAnimTrack* CreateTrack(const CAnimParamType& paramType) override;
-        void InitializeTrackDefaultValue([[maybe_unused]] IAnimTrack* pTrack, [[maybe_unused]] const CAnimParamType& paramType) override
+        IAnimTrack* CreateTrack(const CAnimParamType& paramType, AnimValueType remapValueType = AnimValueType::Unknown) override;
+        void InitializeTrackDefaultValue([[maybe_unused]] IAnimTrack* pTrack, [[maybe_unused]] const CAnimParamType& paramType,
+            [[maybe_unused]] AnimValueType remapValueType = AnimValueType::Unknown) override
         {
         }
+        void UpdateTrackDefaultValue([[maybe_unused]] float time, [[maybe_unused]] IAnimTrack* pTrack) override {};
+
         void SetTimeRange(Range timeRange) override;
         void AddTrack(IAnimTrack* pTrack) override;
         bool RemoveTrack(IAnimTrack* pTrack) override;
@@ -257,6 +260,14 @@ namespace Maestro
     protected:
         virtual void UpdateDynamicParamsInternal() {}
         virtual bool GetParamInfoFromType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] SParamInfo& info) const
+        {
+            return false;
+        }
+
+        // Utility function to query the units for a track and set the track multiplier if needed:
+        // when underlying animated class is AZ::Color or when AZ::Vector3 is remapped to have remapValueType = AnimValueType::RGB.
+        // Returns true if track multiplier was set.
+        virtual bool SetTrackMultiplier([[maybe_unused]] IAnimTrack* track, [[maybe_unused]] AnimValueType remapValueType = AnimValueType::Unknown) const
         {
             return false;
         }

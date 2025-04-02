@@ -29,7 +29,7 @@ namespace Maestro
 
         bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-        void GetKeyInfo(int key, const char*& description, float& duration) override;
+        void GetKeyInfo(int keyIndex, const char*& description, float& duration) const override;
         void SerializeKey(ILookAtKey& key, XmlNodeRef& keyNode, bool bLoading) override;
 
         int GetAnimationLayerIndex() const override

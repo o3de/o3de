@@ -856,7 +856,7 @@ namespace AzToolsFramework
             if (!owningInstance.has_value())
             {
                 AZ_Warning("Prefab", false, "GenerateUndoNodesForEntityChangeAndUpdateCache - "
-                    "The dirty entity has no owning instance.");
+                    "The dirty entity %s has no owning instance.", entityId.ToString().c_str());
                 return AZ::Success();
             }
 
