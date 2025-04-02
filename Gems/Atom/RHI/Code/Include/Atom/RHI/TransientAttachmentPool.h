@@ -54,9 +54,7 @@ namespace AZ::RHI
         //! This is called at the beginning of the compile phase for the current frame,
         //! before any allocations occur. The user should clear the backing allocator to
         //! a fresh state.
-        void Begin(
-            const TransientAttachmentPoolCompileFlags flags = TransientAttachmentPoolCompileFlags::None,
-            const TransientAttachmentStatistics::MemoryUsage* memoryHint = nullptr);
+        void Begin(const TransientAttachmentPoolCompileFlags flags = TransientAttachmentPoolCompileFlags::None);
 
         //! Called when a new scope is being allocated. Scopes are allocated in submission order.
         void BeginScope(Scope& scopeBase);
