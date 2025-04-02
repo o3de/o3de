@@ -8,9 +8,7 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/Component.h>

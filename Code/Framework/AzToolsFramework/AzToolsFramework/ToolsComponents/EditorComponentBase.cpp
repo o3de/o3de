@@ -15,6 +15,8 @@
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 
+AZTF_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+
 namespace AzToolsFramework
 {
     namespace Components

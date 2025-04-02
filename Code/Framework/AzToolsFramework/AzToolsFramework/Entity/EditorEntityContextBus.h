@@ -7,9 +7,6 @@
  */
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -18,6 +15,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {

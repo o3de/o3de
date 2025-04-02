@@ -7,15 +7,13 @@
  */
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include "EditorEntitySortBus.h"
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityStartStatus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {

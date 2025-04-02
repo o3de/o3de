@@ -17,16 +17,16 @@
  */
 
 #pragma once
-//AZTF-SHARED
-
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 class QMenu;
 
 namespace AZ
@@ -372,4 +372,5 @@ namespace AzToolsFramework
     } // namespace Components
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+AZTF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+

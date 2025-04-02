@@ -8,9 +8,6 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
@@ -20,6 +17,8 @@
 #include <AzCore/std/string/string_view.h>
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {

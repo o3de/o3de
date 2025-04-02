@@ -8,14 +8,13 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <QString>
 #include <QPointer>
 #include <QWidget>
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {

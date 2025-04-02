@@ -8,11 +8,9 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -20,6 +18,7 @@
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {

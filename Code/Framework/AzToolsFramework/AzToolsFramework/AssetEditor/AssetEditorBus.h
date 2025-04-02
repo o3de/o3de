@@ -7,13 +7,12 @@
  */
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/unordered_set.h>
-
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 namespace AzToolsFramework
 {
     class InstanceDataNode;

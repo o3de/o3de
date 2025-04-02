@@ -8,11 +8,9 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'

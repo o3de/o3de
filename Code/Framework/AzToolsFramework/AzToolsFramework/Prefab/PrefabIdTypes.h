@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/base.h>
 #include <AzCore/std/limits.h>
 
 namespace AzToolsFramework

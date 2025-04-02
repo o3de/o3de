@@ -14,7 +14,7 @@
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/Math/Crc.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(AZ::ComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+//AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS_WITH_TRAITS(AZ::ComponentDescriptor, AZ::ComponentDescriptorBusTraits);
 
 namespace AZ
 {

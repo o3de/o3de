@@ -13,6 +13,11 @@
 
 #include <QtCore/QString>
 
+AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(LegacyFramework::CoreMessages);
+AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(LegacyFramework::FrameworkApplicationMessages);
+AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(LegacyFramework::LogComponentAPI);
+AZTF_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(LegacyFramework::IPCCommandAPI);
+
 namespace LegacyFramework
 {
     const char* appName()

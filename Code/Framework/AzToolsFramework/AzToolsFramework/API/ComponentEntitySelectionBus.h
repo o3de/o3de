@@ -8,13 +8,14 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/Component/EntityId.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzToolsFramework/API/ComponentEntitySelection.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
+
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 namespace AzFramework
 {
     struct ViewportInfo;

@@ -8,10 +8,10 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework::Prefab
 {

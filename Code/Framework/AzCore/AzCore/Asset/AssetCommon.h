@@ -626,7 +626,7 @@ namespace AZ
             virtual void OnAssetContainerReady([[maybe_unused]] Asset<AssetData> asset) { }
         };
 
-        typedef EBus<AssetEvents> AssetBus;
+        using AssetBus = AZCORE_API EBus<AssetEvents>;
 
         /*
          * AssetBusCallbacks is a utility class that maps AssetBus events to user callbacks
@@ -1266,4 +1266,4 @@ namespace AZStd
     };
 }
 
-// AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::Data::AssetEvents);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::Data::AssetEvents);

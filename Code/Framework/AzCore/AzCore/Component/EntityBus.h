@@ -183,7 +183,7 @@ namespace AZ
      * The EBus for notification events dispatched by a specific entity.
      * The events are defined in the AZ::EntityEvents class.
      */
-    typedef AZ::EBus<EntityEvents>  EntityBus;
-}
+    using EntityBus = AZCORE_API AZ::EBus<EntityEvents>;
+} // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::EntityEvents);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::EntityEvents);

@@ -36,7 +36,7 @@ namespace AZ
         virtual void RegisterScaleChangedEvent(NonUniformScaleChangedEvent::Handler& handler) = 0;
     };
 
-    using NonUniformScaleRequestBus = AZ::EBus<NonUniformScaleRequests>;
+    using NonUniformScaleRequestBus = AZCORE_API AZ::EBus<NonUniformScaleRequests>;
 } // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::NonUniformScaleRequests);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::NonUniformScaleRequests);

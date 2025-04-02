@@ -7,12 +7,11 @@
  */
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {

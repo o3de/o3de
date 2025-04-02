@@ -7,48 +7,105 @@
 #
 
 set(FILES
-    Application/ToolsApplication.cpp
-    Application/ToolsApplication.h
-    API/AssetSystemJobInfo.cpp
-    API/AssetSystemJobInfo.h
-    API/ComponentEntitySelection.h
-    API/ComponentEntitySelection.cpp
-    API/EntityCompositionRequest.cpp
-    API/EntityCompositionRequest.h    
-    API/PythonLoader.cpp
-    API/PythonLoader.h
-	API/ToolsApplicationAPI.h
-    API/ToolsApplicationAPI.cpp
     ActionManager/Action/ActionManager.cpp
     ActionManager/Action/ActionManager.h
+    ActionManager/Action/ActionManagerInterface.h
+    ActionManager/Action/ActionManagerInternalInterface.h
+    ActionManager/Action/ActionManagerNotificationBus.cpp
+    ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionContext.cpp
     ActionManager/Action/EditorActionContext.h
+    ActionManager/Action/EditorActionUtils.h
     ActionManager/Action/EditorWidgetAction.cpp
     ActionManager/Action/EditorWidgetAction.h
+    ActionManager/ActionManagerRegistrationNotificationBus.cpp
+    ActionManager/ActionManagerRegistrationNotificationBus.h
+    ActionManager/ActionManagerSystemComponent.cpp
+    ActionManager/ActionManagerSystemComponent.h
     ActionManager/HotKey/HotKeyManager.cpp
     ActionManager/HotKey/HotKeyManager.h
+    ActionManager/HotKey/HotKeyManagerInterface.h
+    ActionManager/HotKey/HotKeyManagerInternalInterface.h
     ActionManager/HotKey/HotKeyWidgetRegistrationHelper.cpp
     ActionManager/HotKey/HotKeyWidgetRegistrationHelper.h
+    ActionManager/HotKey/HotKeyWidgetRegistrationInterface.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
     ActionManager/Menu/EditorMenuBar.cpp
     ActionManager/Menu/EditorMenuBar.h
     ActionManager/Menu/MenuManager.cpp
     ActionManager/Menu/MenuManager.h
+    ActionManager/Menu/MenuManagerInterface.h
+    ActionManager/Menu/MenuManagerInternalInterface.h
     ActionManager/ToolBar/EditorToolBar.cpp
     ActionManager/ToolBar/EditorToolBar.h
     ActionManager/ToolBar/EditorToolBarArea.cpp
     ActionManager/ToolBar/EditorToolBarArea.h
     ActionManager/ToolBar/ToolBarManager.cpp
     ActionManager/ToolBar/ToolBarManager.h
-    ActionManager/ActionManagerSystemComponent.cpp
-    ActionManager/ActionManagerSystemComponent.h
+    ActionManager/ToolBar/ToolBarManagerInterface.h
+    ActionManager/ToolBar/ToolBarManagerInternalInterface.h
+    API/AssetDatabaseBus.cpp
+    API/AssetDatabaseBus.h
+    API/AssetSystemJobInfo.cpp
+    API/AssetSystemJobInfo.h
+    API/ComponentEntityObjectBus.cpp
+    API/ComponentEntityObjectBus.h
+    API/ComponentEntitySelection.cpp
+    API/ComponentEntitySelection.h
+    API/ComponentEntitySelectionBus.cpp
+    API/ComponentEntitySelectionBus.h
+    API/ComponentModeCollectionInterface.h
+    API/EditorAnimationSystemRequestBus.cpp
+    API/EditorAnimationSystemRequestBus.h
+    API/EditorAssetSystemAPI.h
+    API/EditorAssetSystemBus.cpp
+    API/EditorAssetSystemBus.h
+    API/EditorCameraBus.cpp
+    API/EditorCameraBus.h
+    API/EditorEntityAPI.h
+    API/EditorLevelNotificationBus.cpp
+    API/EditorLevelNotificationBus.h
+    API/EditorPythonConsoleBus.cpp
+    API/EditorPythonConsoleBus.h
+    API/EditorPythonInterface.h
+    API/EditorPythonRunnerRequestsBus.cpp
+    API/EditorPythonRunnerRequestsBus.h
+    API/EditorPythonScriptNotificationsBus.cpp
+    API/EditorPythonScriptNotificationsBus.h
+    API/EditorViewportIconDisplayInterface.h
+    API/EditorWindowRequestBus.cpp
+    API/EditorWindowRequestBus.h
+    API/EntityCompositionNotificationBus.cpp
+    API/EntityCompositionNotificationBus.h
+    API/EntityCompositionRequest.cpp
+    API/EntityCompositionRequest.h
+    API/EntityCompositionRequestBus.cpp
+    API/EntityCompositionRequestBus.h
+    API/EntityPropertyEditorNotificationBus.cpp
+    API/EntityPropertyEditorNotificationBus.h
+    API/EntityPropertyEditorRequestsBus.cpp
+    API/EntityPropertyEditorRequestsBus.h
+    API/PythonLoader.cpp
+    API/PythonLoader.h
+    API/SettingsRegistryUtils.h
+    API/ToolsApplicationAPI.cpp
+    API/ToolsApplicationAPI.h
+    API/ToolsApplicationBus.cpp
+    API/ToolsApplicationBus.h
+    API/ViewPaneOptions.h
+    API/ViewportEditorModeTrackerInterface.h
+    API/ViewportEditorModeTrackerNotificationBus.cpp
+    API/ViewportEditorModeTrackerNotificationBus.h
     Application/EditorEntityManager.cpp
     Application/EditorEntityManager.h
     Application/Ticker.cpp
     Application/Ticker.h
+    Application/ToolsApplication.cpp
+    Application/ToolsApplication.h
+    Archive/ArchiveAPI.h
     Archive/ArchiveComponent.cpp
     Archive/ArchiveComponent.h
     Asset/AssetBundler.cpp
@@ -57,15 +114,40 @@ set(FILES
     Asset/AssetDebugInfo.h
     Asset/AssetProcessorMessages.cpp
     Asset/AssetProcessorMessages.h
-    Asset/AssetSeedManager.h
     Asset/AssetSeedManager.cpp
+    Asset/AssetSeedManager.h
     Asset/AssetSystemComponent.cpp
     Asset/AssetSystemComponent.h
     Asset/AssetUtils.cpp
     Asset/AssetUtils.h
+    AssetBrowser/AssetBrowserBus.cpp
+    AssetBrowser/AssetBrowserBus.h
+    AssetBrowser/AssetBrowserComponent.cpp
+    AssetBrowser/AssetBrowserComponent.h
+    AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
+    AssetBrowser/AssetBrowserEntityInspectorWidget.h
+    AssetBrowser/AssetBrowserEntry.h
+    AssetBrowser/AssetBrowserFilterModel.cpp
+    AssetBrowser/AssetBrowserFilterModel.h
+    AssetBrowser/AssetBrowserListModel.cpp
+    AssetBrowser/AssetBrowserListModel.h
+    AssetBrowser/AssetBrowserModel.cpp
+    AssetBrowser/AssetBrowserModel.h
+    AssetBrowser/AssetBrowserTableViewProxyModel.cpp
+    AssetBrowser/AssetBrowserTableViewProxyModel.h
+    AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
+    AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
+    AssetBrowser/AssetBrowserTreeToTableProxyModel.cpp
+    AssetBrowser/AssetBrowserTreeToTableProxyModel.h
+    AssetBrowser/AssetEntryChange.h
+    AssetBrowser/AssetEntryChangeset.cpp
+    AssetBrowser/AssetEntryChangeset.h
     AssetBrowser/AssetPicker/AssetPickerDialog.cpp
     AssetBrowser/AssetPicker/AssetPickerDialog.h
     AssetBrowser/AssetPicker/AssetPickerDialog.ui
+    AssetBrowser/AssetSelectionModel.cpp
+    AssetBrowser/AssetSelectionModel.h
+    AssetBrowser/EBusFindAssetTypeByName.h
     AssetBrowser/Entries/AssetBrowserEntry.cpp
     AssetBrowser/Entries/AssetBrowserEntry.h
     AssetBrowser/Entries/AssetBrowserEntry.inl
@@ -100,6 +182,9 @@ set(FILES
     AssetBrowser/Previewer/EmptyPreviewer.ui
     AssetBrowser/Previewer/Previewer.cpp
     AssetBrowser/Previewer/Previewer.h
+    AssetBrowser/Previewer/PreviewerBus.cpp
+    AssetBrowser/Previewer/PreviewerBus.h
+    AssetBrowser/Previewer/PreviewerFactory.h
     AssetBrowser/Previewer/PreviewerFrame.cpp
     AssetBrowser/Previewer/PreviewerFrame.h
     AssetBrowser/Search/Filter.cpp
@@ -107,6 +192,7 @@ set(FILES
     AssetBrowser/Search/FilterByWidget.cpp
     AssetBrowser/Search/FilterByWidget.h
     AssetBrowser/Search/FilterByWidget.ui
+    AssetBrowser/Search/search.qrc
     AssetBrowser/Search/SearchAssetTypeSelectorWidget.cpp
     AssetBrowser/Search/SearchAssetTypeSelectorWidget.h
     AssetBrowser/Search/SearchAssetTypeSelectorWidget.ui
@@ -139,68 +225,69 @@ set(FILES
     AssetBrowser/Views/AssetBrowserViewUtils.h
     AssetBrowser/Views/EntryDelegate.cpp
     AssetBrowser/Views/EntryDelegate.h
-    AssetBrowser/AssetBrowserComponent.cpp
-    AssetBrowser/AssetBrowserComponent.h
-    AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
-    AssetBrowser/AssetBrowserEntityInspectorWidget.h
-    AssetBrowser/AssetBrowserFilterModel.cpp
-    AssetBrowser/AssetBrowserFilterModel.h
-    AssetBrowser/AssetBrowserListModel.cpp
-    AssetBrowser/AssetBrowserListModel.h
-    AssetBrowser/AssetBrowserModel.cpp
-    AssetBrowser/AssetBrowserModel.h
-    AssetBrowser/AssetBrowserTableViewProxyModel.cpp
-    AssetBrowser/AssetBrowserTableViewProxyModel.h
-    AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
-    AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
-    AssetBrowser/AssetBrowserTreeToTableProxyModel.cpp
-    AssetBrowser/AssetBrowserTreeToTableProxyModel.h
-    AssetBrowser/AssetEntryChangeset.cpp
-    AssetBrowser/AssetEntryChangeset.h
-    AssetBrowser/AssetSelectionModel.cpp
-    AssetBrowser/AssetSelectionModel.h
+    AssetBundle/AssetBundleAPI.h
     AssetBundle/AssetBundleComponent.cpp
     AssetBundle/AssetBundleComponent.h
     AssetCatalog/PlatformAddressedAssetCatalog.cpp
     AssetCatalog/PlatformAddressedAssetCatalog.h
+    AssetCatalog/PlatformAddressedAssetCatalogBus.cpp
+    AssetCatalog/PlatformAddressedAssetCatalogBus.h
     AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
     AssetCatalog/PlatformAddressedAssetCatalogManager.h
     AssetDatabase/AssetDatabaseConnection.cpp
     AssetDatabase/AssetDatabaseConnection.h
     AssetDatabase/PathOrUuid.cpp
     AssetDatabase/PathOrUuid.h
+    AssetEditor/AssetEditorBus.cpp
+    AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorHeader.cpp
     AssetEditor/AssetEditorHeader.h
     AssetEditor/AssetEditorStatusBar.ui
     AssetEditor/AssetEditorTab.cpp
     AssetEditor/AssetEditorTab.h
     AssetEditor/AssetEditorToolbar.ui
+    AssetEditor/AssetEditorUtils.h
     AssetEditor/AssetEditorWidget.cpp
     AssetEditor/AssetEditorWidget.h
     AssetEditor/AssetEditorWindowSettings.cpp
     AssetEditor/AssetEditorWindowSettings.h
+    AzToolsFrameworkModule.cpp
+    AzToolsFrameworkModule.h
     Commands/ComponentModeCommand.cpp
     Commands/ComponentModeCommand.h
     Commands/EntityManipulatorCommand.cpp
     Commands/EntityManipulatorCommand.h
     Commands/SelectionCommand.cpp
     Commands/SelectionCommand.h
+    Component/EditorComponentAPIBus.cpp
+    Component/EditorComponentAPIBus.h
+    Component/EditorComponentAPIBus.h
     Component/EditorComponentAPIComponent.cpp
     Component/EditorComponentAPIComponent.h
+    Component/EditorLevelComponentAPIBus.cpp
+    Component/EditorLevelComponentAPIBus.h
+    Component/EditorLevelComponentAPIBus.h
     Component/EditorLevelComponentAPIComponent.cpp
     Component/EditorLevelComponentAPIComponent.h
     ComponentMode/ComponentModeActionHandler.cpp
     ComponentMode/ComponentModeActionHandler.h
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeCollection.h
-	ComponentMode/ComponentModeDelegate.cpp
-	ComponentMode/ComponentModeDelegate.h
+    ComponentMode/ComponentModeDelegate.cpp
+    ComponentMode/ComponentModeDelegate.h
+    ComponentMode/ComponentModeDelegateBus.cpp
+    ComponentMode/ComponentModeDelegateBus.h
     ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeSwitcher.h
     ComponentMode/ComponentModeViewportUi.cpp
     ComponentMode/ComponentModeViewportUi.h
+    ComponentMode/ComponentModeViewportUiRequestBus.cpp
+    ComponentMode/ComponentModeViewportUiRequestBus.h
+    ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentMode/EditorBaseComponentMode.cpp
     ComponentMode/EditorBaseComponentMode.h
+    ComponentMode/EditorComponentModeBus.cpp
+    ComponentMode/EditorComponentModeBus.h
     ComponentModes/BaseShapeComponentMode.cpp
     ComponentModes/BaseShapeComponentMode.h
     ComponentModes/BaseShapeViewportEdit.cpp
@@ -217,15 +304,22 @@ set(FILES
     ComponentModes/CylinderComponentMode.h
     ComponentModes/CylinderViewportEdit.cpp
     ComponentModes/CylinderViewportEdit.h
+    ComponentModes/ShapeComponentModeBus.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
     ComponentModes/SphereComponentMode.cpp
     ComponentModes/SphereComponentMode.h
     ComponentModes/SphereViewportEdit.cpp
     ComponentModes/SphereViewportEdit.h
+    ComponentModes/ViewportEditUtilities.h
+    ContainerEntity/ContainerEntityInterface.h
+    ContainerEntity/ContainerEntityNotificationBus.cpp
+    ContainerEntity/ContainerEntityNotificationBus.h
+    ContainerEntity/ContainerEntityNotificationBus.h
     ContainerEntity/ContainerEntitySystemComponent.cpp
     ContainerEntity/ContainerEntitySystemComponent.h
-
+    Debug/TraceContext.h
+    Debug/TraceContext.inl
     Debug/TraceContextLogFormatter.cpp
     Debug/TraceContextLogFormatter.h
     Debug/TraceContextMultiStackHandler.cpp
@@ -234,56 +328,113 @@ set(FILES
     Debug/TraceContextSingleStackHandler.h
     Debug/TraceContextStack.cpp
     Debug/TraceContextStack.h
-    Editor/ActionManagerUtils.cpp		
+    Debug/TraceContextStackInterface.h
+    Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h
+    Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h
+    Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h
+    Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h
+    Editor/ActionManagerUtils.cpp
     Editor/ActionManagerUtils.h
+    Editor/EditorSettingsAPIBus.cpp
+    Editor/EditorSettingsAPIBus.h
     Editor/RichTextHighlighter.cpp
     Editor/RichTextHighlighter.h
-    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
-    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
     Entity/EditorEntityActionComponent.cpp
     Entity/EditorEntityActionComponent.h
+    Entity/EditorEntityAPIBus.cpp
+    Entity/EditorEntityAPIBus.h
+    Entity/EditorEntityContextBus.cpp
+    Entity/EditorEntityContextBus.h
+    Entity/EditorEntityContextBus.h
+    Entity/EditorEntityContextComponent.cpp
+    Entity/EditorEntityContextComponent.h
+    Entity/EditorEntityContextPickingBus.cpp
+    Entity/EditorEntityContextPickingBus.h
+    Entity/EditorEntityContextPickingBus.h
     Entity/EditorEntityFixupComponent.cpp
     Entity/EditorEntityFixupComponent.h
     Entity/EditorEntityHelpers.cpp
     Entity/EditorEntityHelpers.h
+    Entity/EditorEntityInfoBus.cpp
+    Entity/EditorEntityInfoBus.h
     Entity/EditorEntityModel.cpp
     Entity/EditorEntityModel.h
+    Entity/EditorEntityModelBus.cpp
+    Entity/EditorEntityModelBus.h
+    Entity/EditorEntityModelBus.h
     Entity/EditorEntityModelComponent.cpp
     Entity/EditorEntityModelComponent.h
+    Entity/EditorEntityRuntimeActivationBus.cpp
+    Entity/EditorEntityRuntimeActivationBus.h
+    Entity/EditorEntityRuntimeActivationBus.h
+    Entity/EditorEntitySearchBus.cpp
+    Entity/EditorEntitySearchBus.h
+    Entity/EditorEntitySearchBus.h
     Entity/EditorEntitySearchComponent.cpp
     Entity/EditorEntitySearchComponent.h
+    Entity/EditorEntitySortBus.cpp
+    Entity/EditorEntitySortBus.h
+    Entity/EditorEntitySortBus.h
     Entity/EditorEntitySortComponent.cpp
     Entity/EditorEntitySortComponent.h
     Entity/EditorEntitySortComponentSerializer.cpp
     Entity/EditorEntitySortComponentSerializer.h
-    Entity/PrefabEditorEntityOwnershipService.cpp
-    Entity/PrefabEditorEntityOwnershipService.h
-    Entity/EditorEntityContextComponent.cpp
-    Entity/EditorEntityContextComponent.h
+    Entity/EditorEntityStartStatus.h
+    Entity/EditorEntityTransformBus.cpp
+    Entity/EditorEntityTransformBus.h
+    Entity/EditorEntityTransformBus.h
+    Entity/EntityTypes.h
     Entity/EntityUtilityComponent.cpp
     Entity/EntityUtilityComponent.h
-	Fingerprinting/TypeFingerprinter.cpp
-	Fingerprinting/TypeFingerprinter.h
-	FocusMode/FocusModeSystemComponent.cpp
-	FocusMode/FocusModeSystemComponent.h
-	Input/QtEventToAzInputMapper.cpp
-	Input/QtEventToAzInputMapper.h
-	Logger/TraceLogger.cpp
-	Logger/TraceLogger.h
-	Manipulators/AngularManipulator.cpp
-	Manipulators/AngularManipulator.h
-    Manipulators/AngularManipulatorCircleViewFeedback.cpp	
+    Entity/PrefabEditorEntityOwnershipInterface.h
+    Entity/PrefabEditorEntityOwnershipService.cpp
+    Entity/PrefabEditorEntityOwnershipService.h
+    Entity/ReadOnly/ReadOnlyEntityBus.h
+    Entity/ReadOnly/ReadOnlyEntityInterface.h
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.cpp
+    Entity/ReadOnly/ReadOnlyEntitySystemComponent.h
+    Fingerprinting/TypeFingerprinter.cpp
+    Fingerprinting/TypeFingerprinter.h
+    FocusMode/FocusModeInterface.h
+    FocusMode/FocusModeNotificationBus.cpp
+    FocusMode/FocusModeNotificationBus.h
+    FocusMode/FocusModeNotificationBus.h
+    FocusMode/FocusModeSystemComponent.cpp
+    FocusMode/FocusModeSystemComponent.h
+    Input/QtEventToAzInputMapper.cpp
+    Input/QtEventToAzInputMapper.h
+    Logger/TraceLogger.cpp
+    Logger/TraceLogger.h
+    Manipulators/AngularManipulator.cpp
+    Manipulators/AngularManipulator.h
+    Manipulators/AngularManipulatorCircleViewFeedback.cpp
     Manipulators/AngularManipulatorCircleViewFeedback.h
     Manipulators/BaseManipulator.cpp
     Manipulators/BaseManipulator.h
-    Manipulators/EditorVertexSelection.h
+    Manipulators/BoxManipulatorRequestBus.cpp
+    Manipulators/BoxManipulatorRequestBus.h
+    Manipulators/BoxManipulatorRequestBus.h
+    Manipulators/CapsuleManipulatorRequestBus.cpp
+    Manipulators/CapsuleManipulatorRequestBus.h
+    Manipulators/CapsuleManipulatorRequestBus.h
+    Manipulators/CylinderManipulatorRequestBus.cpp
+    Manipulators/CylinderManipulatorRequestBus.h
+    Manipulators/CylinderManipulatorRequestBus.h
     Manipulators/EditorVertexSelection.cpp
+    Manipulators/EditorVertexSelection.h
+    Manipulators/EditorVertexSelectionBus.cpp
+    Manipulators/EditorVertexSelectionBus.h
+    Manipulators/EditorVertexSelectionBus.h
+    Manipulators/HoverSelection.h
     Manipulators/LinearManipulator.cpp
-    Manipulators/LinearManipulator.h	
+    Manipulators/LinearManipulator.h
     Manipulators/LineHoverSelection.cpp
     Manipulators/LineHoverSelection.h
     Manipulators/LineSegmentSelectionManipulator.cpp
     Manipulators/LineSegmentSelectionManipulator.h
+    Manipulators/ManipulatorBus.cpp
+    Manipulators/ManipulatorBus.h
+    Manipulators/ManipulatorBus.h
     Manipulators/ManipulatorDebug.cpp
     Manipulators/ManipulatorDebug.h
     Manipulators/ManipulatorManager.cpp
@@ -297,15 +448,21 @@ set(FILES
     Manipulators/MultiLinearManipulator.cpp
     Manipulators/MultiLinearManipulator.h
     Manipulators/PaintBrushManipulator.cpp
-    Manipulators/PaintBrushManipulator.h	
+    Manipulators/PaintBrushManipulator.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
+    Manipulators/RadiusManipulatorRequestBus.cpp
+    Manipulators/RadiusManipulatorRequestBus.h
+    Manipulators/RadiusManipulatorRequestBus.h
     Manipulators/RotationManipulators.cpp
     Manipulators/RotationManipulators.h
     Manipulators/ScaleManipulators.cpp
     Manipulators/ScaleManipulators.h
     Manipulators/SelectionManipulator.cpp
     Manipulators/SelectionManipulator.h
+    Manipulators/ShapeManipulatorRequestBus.cpp
+    Manipulators/ShapeManipulatorRequestBus.h
+    Manipulators/ShapeManipulatorRequestBus.h
     Manipulators/SplineHoverSelection.cpp
     Manipulators/SplineHoverSelection.h
     Manipulators/SplineSelectionManipulator.cpp
@@ -314,15 +471,21 @@ set(FILES
     Manipulators/SurfaceManipulator.h
     Manipulators/TranslationManipulators.cpp
     Manipulators/TranslationManipulators.h
+    Maths/TransformUtils.h
     Metadata/MetadataManager.cpp
     Metadata/MetadataManager.h
     Metadata/MetaUuidEntry.cpp
     Metadata/MetaUuidEntry.h
     Metadata/UuidUtils.cpp
-    Metadata/UuidUtils.h	
-
+    Metadata/UuidUtils.h
     PaintBrush/GlobalPaintBrushSettings.cpp
     PaintBrush/GlobalPaintBrushSettings.h
+    PaintBrush/GlobalPaintBrushSettingsNotificationBus.cpp
+    PaintBrush/GlobalPaintBrushSettingsNotificationBus.h
+    PaintBrush/GlobalPaintBrushSettingsNotificationBus.h
+    PaintBrush/GlobalPaintBrushSettingsRequestBus.cpp
+    PaintBrush/GlobalPaintBrushSettingsRequestBus.h
+    PaintBrush/GlobalPaintBrushSettingsRequestBus.h
     PaintBrush/GlobalPaintBrushSettingsSystemComponent.cpp
     PaintBrush/GlobalPaintBrushSettingsSystemComponent.h
     PaintBrush/GlobalPaintBrushSettingsWindow_Internals.h
@@ -330,6 +493,8 @@ set(FILES
     PaintBrush/GlobalPaintBrushSettingsWindow.h
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h
+    Picking/BoundInterface.h
+    Picking/ContextBoundAPI.h
     Picking/Manipulators/ManipulatorBoundManager.cpp
     Picking/Manipulators/ManipulatorBoundManager.h
     Picking/Manipulators/ManipulatorBounds.cpp
@@ -338,59 +503,127 @@ set(FILES
     Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h
     Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.cpp
     Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h
+    Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h
+    Prefab/DocumentPropertyEditor/Resources/OverrideResources.qrc
+    Prefab/EditorPrefabComponent.cpp
+    Prefab/EditorPrefabComponent.h
     Prefab/Instance/Instance.cpp
     Prefab/Instance/Instance.h
     Prefab/Instance/InstanceDomGenerator.cpp
     Prefab/Instance/InstanceDomGenerator.h
+    Prefab/Instance/InstanceDomGeneratorInterface.h
     Prefab/Instance/InstanceEntityIdMapper.cpp
     Prefab/Instance/InstanceEntityIdMapper.h
     Prefab/Instance/InstanceEntityMapper.cpp
     Prefab/Instance/InstanceEntityMapper.h
+    Prefab/Instance/InstanceEntityMapperInterface.h
     Prefab/Instance/InstanceEntityScrubber.cpp
     Prefab/Instance/InstanceEntityScrubber.h
     Prefab/Instance/InstanceSerializer.cpp
     Prefab/Instance/InstanceSerializer.h
+    Prefab/Instance/InstanceToTemplateInterface.h
     Prefab/Instance/InstanceToTemplatePropagator.cpp
     Prefab/Instance/InstanceToTemplatePropagator.h
     Prefab/Instance/InstanceUpdateExecutor.cpp
     Prefab/Instance/InstanceUpdateExecutor.h
+    Prefab/Instance/InstanceUpdateExecutorInterface.h
     Prefab/Instance/TemplateInstanceMapper.cpp
     Prefab/Instance/TemplateInstanceMapper.h
+    Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.cpp
     Prefab/Link/Link.h
     Prefab/Overrides/PrefabOverrideHandler.cpp
     Prefab/Overrides/PrefabOverrideHandler.h
     Prefab/Overrides/PrefabOverridePublicHandler.cpp
     Prefab/Overrides/PrefabOverridePublicHandler.h
-    Prefab/EditorPrefabComponent.cpp
-    Prefab/EditorPrefabComponent.h
+    Prefab/Overrides/PrefabOverridePublicInterface.h
+    Prefab/Overrides/PrefabOverrideTypes.h
+    Prefab/PrefabDomTypes.h
+    Prefab/PrefabDomUtils.cpp
+    Prefab/PrefabDomUtils.h
+    Prefab/PrefabEditorPreferences.cpp
+    Prefab/PrefabEditorPreferences.h
+    Prefab/PrefabFocusHandler.cpp
+    Prefab/PrefabFocusHandler.h
+    Prefab/PrefabFocusInterface.h
+    Prefab/PrefabFocusNotificationBus.cpp
+    Prefab/PrefabFocusNotificationBus.h
+    Prefab/PrefabFocusNotificationBus.h
+    Prefab/PrefabFocusPublicInterface.h
+    Prefab/PrefabFocusUndo.cpp
+    Prefab/PrefabFocusUndo.h
+    Prefab/PrefabIdTypes.h
+    Prefab/PrefabInstanceUtils.cpp
+    Prefab/PrefabInstanceUtils.h
+    Prefab/PrefabLoader.cpp
+    Prefab/PrefabLoader.h
+    Prefab/PrefabLoaderInterface.cpp
+    Prefab/PrefabLoaderInterface.h
+    Prefab/PrefabLoaderScriptingBus.cpp
+    Prefab/PrefabLoaderScriptingBus.h
+    Prefab/PrefabLoaderScriptingBus.h
+    Prefab/PrefabPublicHandler.cpp
+    Prefab/PrefabPublicHandler.h
+    Prefab/PrefabPublicInterface.h
+    Prefab/PrefabPublicNotificationBus.cpp
+    Prefab/PrefabPublicNotificationBus.h
+    Prefab/PrefabPublicNotificationHandler.cpp
+    Prefab/PrefabPublicNotificationHandler.h
+    Prefab/PrefabPublicRequestBus.cpp
+    Prefab/PrefabPublicRequestBus.h
+    Prefab/PrefabPublicRequestBus.h
+    Prefab/PrefabPublicRequestHandler.cpp
+    Prefab/PrefabPublicRequestHandler.h
+    Prefab/PrefabSettings.h
+    Prefab/PrefabSystemComponent.cpp
+    Prefab/PrefabSystemComponent.h
+    Prefab/PrefabSystemComponentInterface.h
+    Prefab/PrefabSystemScriptingBus.cpp
+    Prefab/PrefabSystemScriptingBus.h
+    Prefab/PrefabSystemScriptingHandler.cpp
+    Prefab/PrefabSystemScriptingHandler.h
+    Prefab/PrefabUndoCache.cpp
+    Prefab/PrefabUndoCache.h
+    Prefab/PrefabUndoHelpers.cpp
+    Prefab/PrefabUndoHelpers.h
     Prefab/Procedural/ProceduralPrefabAsset.cpp
     Prefab/Procedural/ProceduralPrefabAsset.h
-    Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.cpp
-    Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h
-    Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
-    Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.h
-    Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
-    Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
+    Prefab/ProceduralPrefabSystemComponent.cpp
+    Prefab/ProceduralPrefabSystemComponent.h
+    Prefab/ProceduralPrefabSystemComponentInterface.h
+    Prefab/ScriptingPrefabLoader.cpp
+    Prefab/ScriptingPrefabLoader.h
     Prefab/Spawnable/AssetPlatformComponentRemover.cpp
     Prefab/Spawnable/AssetPlatformComponentRemover.h
     Prefab/Spawnable/ComponentRequirementsValidator.cpp
     Prefab/Spawnable/ComponentRequirementsValidator.h
     Prefab/Spawnable/EditorInfoRemover.cpp
     Prefab/Spawnable/EditorInfoRemover.h
+    Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h
+    Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.h
+    Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
+    Prefab/Spawnable/EntityAliasTypes.h
+    Prefab/Spawnable/EntityIdPathMapperInterface.h
     Prefab/Spawnable/InMemorySpawnableAssetUtils.cpp
     Prefab/Spawnable/InMemorySpawnableAssetUtils.h
     Prefab/Spawnable/PrefabCatchmentProcessor.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h
     Prefab/Spawnable/PrefabConversionPipeline.cpp
     Prefab/Spawnable/PrefabConversionPipeline.h
+    Prefab/Spawnable/PrefabConverterStackProfileNames.h
     Prefab/Spawnable/PrefabDocument.cpp
     Prefab/Spawnable/PrefabDocument.h
     Prefab/Spawnable/PrefabDocument.inl
     Prefab/Spawnable/PrefabInMemorySpawnableConverter.cpp
     Prefab/Spawnable/PrefabInMemorySpawnableConverter.h
+    Prefab/Spawnable/PrefabProcessor.h
     Prefab/Spawnable/PrefabProcessorContext.cpp
     Prefab/Spawnable/PrefabProcessorContext.h
+    Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.cpp
+    Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/ProcesedObjectStore.h
     Prefab/Spawnable/SpawnableMetaDataBuilder.cpp
@@ -417,134 +650,119 @@ set(FILES
     Prefab/Undo/PrefabUndoDelete.h
     Prefab/Undo/PrefabUndoDeleteAsOverride.cpp
     Prefab/Undo/PrefabUndoDeleteAsOverride.h
+    Prefab/Undo/PrefabUndoEntityOverrides.cpp
+    Prefab/Undo/PrefabUndoEntityOverrides.h
     Prefab/Undo/PrefabUndoRevertOverrides.cpp
     Prefab/Undo/PrefabUndoRevertOverrides.h
     Prefab/Undo/PrefabUndoUpdateLink.cpp
     Prefab/Undo/PrefabUndoUpdateLink.h
     Prefab/Undo/PrefabUndoUtils.cpp
     Prefab/Undo/PrefabUndoUtils.h
-    Prefab/PrefabDomUtils.cpp
-    Prefab/PrefabDomUtils.h
-    Prefab/PrefabEditorPreferences.cpp
-    Prefab/PrefabEditorPreferences.h
-    Prefab/PrefabFocusHandler.cpp
-    Prefab/PrefabFocusHandler.h
-    Prefab/PrefabFocusUndo.cpp
-    Prefab/PrefabFocusUndo.h
-    Prefab/PrefabInstanceUtils.cpp
-    Prefab/PrefabInstanceUtils.h
-    Prefab/PrefabLoader.cpp
-    Prefab/PrefabLoader.h
-    Prefab/PrefabLoaderInterface.cpp    
-    Prefab/PrefabLoaderInterface.h
-    Prefab/PrefabPublicHandler.cpp
-    Prefab/PrefabPublicHandler.h
-    Prefab/PrefabPublicNotificationHandler.cpp
-    Prefab/PrefabPublicNotificationHandler.h
-    Prefab/PrefabPublicRequestHandler.cpp
-    Prefab/PrefabPublicRequestHandler.h	 
-    Prefab/PrefabSystemComponent.cpp
-    Prefab/PrefabSystemComponent.h	 
-    Prefab/PrefabSystemScriptingHandler.cpp
-    Prefab/PrefabSystemScriptingHandler.h
-    Prefab/PrefabUndoCache.cpp
-    Prefab/PrefabUndoCache.h
-    Prefab/PrefabUndoHelpers.cpp
-    Prefab/PrefabUndoHelpers.h
-    Prefab/ProceduralPrefabSystemComponent.cpp
-    Prefab/ProceduralPrefabSystemComponent.h
-    Prefab/ScriptingPrefabLoader.cpp
-    Prefab/ScriptingPrefabLoader.h
+    PropertyTreeEditor/PropertyTreeEditor.cpp
     PropertyTreeEditor/PropertyTreeEditor.cpp
     PropertyTreeEditor/PropertyTreeEditor.h
+    PropertyTreeEditor/PropertyTreeEditor.h
+    PropertyTreeEditor/PropertyTreeEditorComponent.cpp
     PropertyTreeEditor/PropertyTreeEditorComponent.cpp
     PropertyTreeEditor/PropertyTreeEditorComponent.h
+    PropertyTreeEditor/PropertyTreeEditorComponent.h
+    PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
+    PythonTerminal/ScriptHelpDialog.h
+    PythonTerminal/ScriptHelpDialog.ui
     PythonTerminal/ScriptHelpDialog.ui
     PythonTerminal/ScriptTermDialog.cpp
+    PythonTerminal/ScriptTermDialog.cpp
+    PythonTerminal/ScriptTermDialog.h
     PythonTerminal/ScriptTermDialog.h
     PythonTerminal/ScriptTermDialog.ui
+    PythonTerminal/ScriptTermDialog.ui
+    Render/EditorIntersectorComponent.cpp
     Render/EditorIntersectorComponent.cpp
     Render/EditorIntersectorComponent.h
+    Render/EditorIntersectorComponent.h
     Script/LuaEditorSystemComponent.cpp
+    Script/LuaEditorSystemComponent.cpp
+    Script/LuaEditorSystemComponent.h
     Script/LuaEditorSystemComponent.h
     Script/LuaSymbolsReporter.cpp
     Script/LuaSymbolsReporter.h
+    Script/LuaSymbolsReporterBus.cpp
+    Script/LuaSymbolsReporterBus.h
+    Script/LuaSymbolsReporterSystemComponent.cpp
     Script/LuaSymbolsReporterSystemComponent.cpp
     Script/LuaSymbolsReporterSystemComponent.h
-    Slice/SliceCompilation.cpp
-    Slice/SliceCompilation.h
-    Slice/SliceDataFlagsCommand.cpp
-    Slice/SliceDataFlagsCommand.h
-    Slice/SliceMetadataEntityContextComponent.cpp
-    Slice/SliceMetadataEntityContextComponent.h
-    Slice/SliceRelationshipNode.cpp
-    Slice/SliceRelationshipNode.h
-    Slice/SliceRequestComponent.cpp
-    Slice/SliceRequestComponent.h
-    Slice/SliceTransaction.cpp
-    Slice/SliceTransaction.h
-    Slice/SliceUtilities.cpp
-    Slice/SliceUtilities.h
-    PropertyTreeEditor/PropertyTreeEditor.cpp
-    PropertyTreeEditor/PropertyTreeEditor.h
-    PropertyTreeEditor/PropertyTreeEditorComponent.cpp
-    PropertyTreeEditor/PropertyTreeEditorComponent.h
-    PythonTerminal/ScriptHelpDialog.cpp
-    PythonTerminal/ScriptHelpDialog.h
-    PythonTerminal/ScriptHelpDialog.ui
-    PythonTerminal/ScriptTermDialog.cpp
-    PythonTerminal/ScriptTermDialog.h
-    PythonTerminal/ScriptTermDialog.ui
-    Render/EditorIntersectorComponent.cpp
-    Render/EditorIntersectorComponent.h
-    Script/LuaEditorSystemComponent.cpp
-    Script/LuaEditorSystemComponent.h
-    Script/LuaSymbolsReporterSystemComponent.cpp
     Script/LuaSymbolsReporterSystemComponent.h
     Slice/SliceCompilation.cpp
+    Slice/SliceCompilation.cpp
+    Slice/SliceCompilation.h
     Slice/SliceCompilation.h
     Slice/SliceDataFlagsCommand.cpp
+    Slice/SliceDataFlagsCommand.cpp
     Slice/SliceDataFlagsCommand.h
+    Slice/SliceDataFlagsCommand.h
+    Slice/SliceDependencyBrowserBus.cpp
+    Slice/SliceDependencyBrowserBus.h
     Slice/SliceDependencyBrowserComponent.cpp
     Slice/SliceDependencyBrowserComponent.h
+    Slice/SliceMetadataEntityContextBus.cpp
+    Slice/SliceMetadataEntityContextBus.h
+    Slice/SliceMetadataEntityContextComponent.cpp
     Slice/SliceMetadataEntityContextComponent.cpp
     Slice/SliceMetadataEntityContextComponent.h
+    Slice/SliceMetadataEntityContextComponent.h
+    Slice/SliceRelationshipNode.cpp
     Slice/SliceRelationshipNode.cpp
     Slice/SliceRelationshipNode.h
+    Slice/SliceRelationshipNode.h
+    Slice/SliceRequestBus.cpp
+    Slice/SliceRequestBus.h
+    Slice/SliceRequestComponent.cpp
     Slice/SliceRequestComponent.cpp
     Slice/SliceRequestComponent.h
+    Slice/SliceRequestComponent.h
+    Slice/SliceTransaction.cpp
     Slice/SliceTransaction.cpp
     Slice/SliceTransaction.h
+    Slice/SliceTransaction.h
+    Slice/SliceUtilities.cpp
     Slice/SliceUtilities.cpp
     Slice/SliceUtilities.h
-    SourceControl/PerforceConnection.cpp
-    SourceControl/PerforceConnection.h
+    Slice/SliceUtilities.h
     SourceControl/LocalFileSCComponent.cpp
     SourceControl/LocalFileSCComponent.h
     SourceControl/PerforceComponent.cpp
     SourceControl/PerforceComponent.h
+    SourceControl/PerforceConnection.cpp
+    SourceControl/PerforceConnection.h
     SourceControl/PerforceSettings.cpp
     SourceControl/PerforceSettings.h
     SourceControl/PerforceSettings.ui
     SourceControl/QtSourceControlNotificationHandler.cpp
     SourceControl/QtSourceControlNotificationHandler.h
-    SQLite/SQLiteBoundColumnSet.h
+    SourceControl/SourceControlAPI.h
     SQLite/SQLiteBoundColumnSet.cpp
+    SQLite/SQLiteBoundColumnSet.h
     SQLite/SQLiteConnection.cpp
     SQLite/SQLiteConnection.h
     SQLite/SQLiteQuery.cpp
     SQLite/SQLiteQuery.h
+    SQLite/SQLiteQueryLogBus.cpp
+    SQLite/SQLiteQueryLogBus.h
     Thumbnails/LoadingThumbnail.cpp
     Thumbnails/LoadingThumbnail.h
     Thumbnails/MissingThumbnail.cpp
-    Thumbnails/MissingThumbnail.h 
+    Thumbnails/MissingThumbnail.h
     Thumbnails/SourceControlThumbnail.cpp
     Thumbnails/SourceControlThumbnail.h
+    Thumbnails/SourceControlThumbnailBus.cpp
+    Thumbnails/SourceControlThumbnailBus.h
     Thumbnails/Thumbnail.cpp
     Thumbnails/Thumbnail.h
     Thumbnails/Thumbnail.inl
+    Thumbnails/ThumbnailerBus.cpp
+    Thumbnails/ThumbnailerBus.h
     Thumbnails/ThumbnailerComponent.cpp
     Thumbnails/ThumbnailerComponent.h
     Thumbnails/ThumbnailerNullComponent.cpp
@@ -561,8 +779,14 @@ set(FILES
     ToolsComponents/EditorAssetMimeDataContainer.h
     ToolsComponents/EditorAssetReference.cpp
     ToolsComponents/EditorAssetReference.h
+    ToolsComponents/EditorComponentAdapter.h
+    ToolsComponents/EditorComponentAdapter.inl
     ToolsComponents/EditorComponentBase.cpp
     ToolsComponents/EditorComponentBase.h
+    ToolsComponents/EditorComponentBus.cpp
+    ToolsComponents/EditorComponentBus.h
+    ToolsComponents/EditorDisabledCompositionBus.cpp
+    ToolsComponents/EditorDisabledCompositionBus.h
     ToolsComponents/EditorDisabledCompositionComponent.cpp
     ToolsComponents/EditorDisabledCompositionComponent.h
     ToolsComponents/EditorEntityIconComponent.cpp
@@ -571,18 +795,30 @@ set(FILES
     ToolsComponents/EditorEntityIdContainer.h
     ToolsComponents/EditorInspectorComponent.cpp
     ToolsComponents/EditorInspectorComponent.h
+    ToolsComponents/EditorInspectorComponentBus.cpp
+    ToolsComponents/EditorInspectorComponentBus.h
     ToolsComponents/EditorLockComponent.cpp
     ToolsComponents/EditorLockComponent.h
+    ToolsComponents/EditorLockComponentBus.cpp
+    ToolsComponents/EditorLockComponentBus.h
     ToolsComponents/EditorNonUniformScaleComponent.cpp
     ToolsComponents/EditorNonUniformScaleComponent.h
     ToolsComponents/EditorNonUniformScaleComponentMode.cpp
     ToolsComponents/EditorNonUniformScaleComponentMode.h
     ToolsComponents/EditorOnlyEntityComponent.cpp
     ToolsComponents/EditorOnlyEntityComponent.h
+    ToolsComponents/EditorOnlyEntityComponentBus.cpp
+    ToolsComponents/EditorOnlyEntityComponentBus.h
+    ToolsComponents/EditorPendingCompositionBus.cpp
+    ToolsComponents/EditorPendingCompositionBus.h
     ToolsComponents/EditorPendingCompositionComponent.cpp
     ToolsComponents/EditorPendingCompositionComponent.h
+    ToolsComponents/EditorSelectionAccentingBus.cpp
+    ToolsComponents/EditorSelectionAccentingBus.h
     ToolsComponents/EditorSelectionAccentSystemComponent.cpp
     ToolsComponents/EditorSelectionAccentSystemComponent.h
+    ToolsComponents/EditorVisibilityBus.cpp
+    ToolsComponents/EditorVisibilityBus.h
     ToolsComponents/EditorVisibilityComponent.cpp
     ToolsComponents/EditorVisibilityComponent.h
     ToolsComponents/GenericComponentWrapper.cpp
@@ -591,13 +827,19 @@ set(FILES
     ToolsComponents/ScriptEditorComponent.h
     ToolsComponents/SelectionComponent.cpp
     ToolsComponents/SelectionComponent.h
+    ToolsComponents/ToolsAssetCatalogBus.cpp
+    ToolsComponents/ToolsAssetCatalogBus.h
     ToolsComponents/ToolsAssetCatalogComponent.cpp
     ToolsComponents/ToolsAssetCatalogComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponent.h
+    ToolsComponents/TransformComponentBus.cpp
+    ToolsComponents/TransformComponentBus.h
     ToolsComponents/TransformComponentSerializer.cpp
     ToolsComponents/TransformComponentSerializer.h
-
+    ToolsFileUtils/ToolsFileUtils.h
+    ToolsMessaging/EntityHighlightBus.cpp
+    ToolsMessaging/EntityHighlightBus.h
     UI/ComponentPalette/ComponentPaletteModel.cpp
     UI/ComponentPalette/ComponentPaletteModel.hxx
     UI/ComponentPalette/ComponentPaletteUtil.cpp
@@ -617,11 +859,13 @@ set(FILES
     UI/DocumentPropertyEditor/FilteredDPE.ui
     UI/DocumentPropertyEditor/GenericButtonHandler.cpp
     UI/DocumentPropertyEditor/GenericButtonHandler.h
+    UI/DocumentPropertyEditor/IPropertyEditor.h
     UI/DocumentPropertyEditor/KeyQueryDPE.cpp
     UI/DocumentPropertyEditor/KeyQueryDPE.h
     UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
+    UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
     UI/DocumentPropertyEditor/ValueStringFilter.cpp
@@ -635,27 +879,31 @@ set(FILES
     UI/DPEDebugViewer/DPEDebugWindow.ui
     UI/EditorEntityUi/EditorEntityUiHandlerBase.cpp
     UI/EditorEntityUi/EditorEntityUiHandlerBase.h
+    UI/EditorEntityUi/EditorEntityUiInterface.h
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
     UI/EditorEntityUi/EditorEntityUiSystemComponent.h
+    UI/LegacyFramework/Core/EditorContextBus.h
+    UI/LegacyFramework/Core/EditorFrameworkAPI.cpp
+    UI/LegacyFramework/Core/EditorFrameworkAPI.h
+    UI/LegacyFramework/Core/EditorFrameworkApplication.cpp
+    UI/LegacyFramework/Core/EditorFrameworkApplication.h
+    UI/LegacyFramework/Core/IPCComponent.cpp
+    UI/LegacyFramework/Core/IPCComponent.h
+    UI/LegacyFramework/CustomMenus/CustomMenusAPI.h
+    UI/LegacyFramework/CustomMenus/CustomMenusComponent.cpp
     UI/LegacyFramework/MainWindowSavedState.cpp
     UI/LegacyFramework/MainWindowSavedState.h
     UI/LegacyFramework/UIFramework.cpp
     UI/LegacyFramework/UIFramework.hxx
     UI/LegacyFramework/UIFrameworkAPI.h
     UI/LegacyFramework/UIFrameworkPreferences.cpp
-    UI/LegacyFramework/Core/EditorContextBus.h
-    UI/LegacyFramework/Core/EditorFrameworkAPI.cpp
-    UI/LegacyFramework/Core/EditorFrameworkAPI.h
-    UI/LegacyFramework/Core/EditorFrameworkApplication.cpp
-    UI/LegacyFramework/Core/EditorFrameworkApplication.h
-    UI/LegacyFramework/Core/IPCComponent.h
-    UI/LegacyFramework/Core/IPCComponent.cpp
-    UI/Logging/GenericLogPanel.h
     UI/Logging/GenericLogPanel.cpp
+    UI/Logging/GenericLogPanel.h
     UI/Logging/LogControl.cpp
     UI/Logging/LogControl.h
     UI/Logging/LogEntry.cpp
     UI/Logging/LogEntry.h
+    UI/Logging/LoggingCommon.h
     UI/Logging/LogLine.cpp
     UI/Logging/LogLine.h
     UI/Logging/LogPanel_Panel.cpp
@@ -663,39 +911,48 @@ set(FILES
     UI/Logging/LogTableItemDelegate.cpp
     UI/Logging/LogTableItemDelegate.h
     UI/Logging/LogTableModel.cpp
-    UI/Logging/LogTableModel.h 
-    UI/Logging/NewLogTabDialog.qss
-    UI/Logging/NewLogTabDialog.ui
+    UI/Logging/LogTableModel.h
     UI/Logging/NewLogTabDialog.cpp
     UI/Logging/NewLogTabDialog.h
+    UI/Logging/NewLogTabDialog.qss
+    UI/Logging/NewLogTabDialog.ui
     UI/Logging/StyledLogPanel.cpp
     UI/Logging/StyledLogPanel.h
     UI/Logging/StyledTracePrintFLogPanel.cpp
     UI/Logging/StyledTracePrintFLogPanel.h
     UI/Logging/TracePrintFLogPanel.cpp
-    UI/Logging/TracePrintFLogPanel.h 
+    UI/Logging/TracePrintFLogPanel.h
+    UI/Notifications/ToastBus.cpp
+    UI/Notifications/ToastBus.h
     UI/Notifications/ToastNotificationsView.cpp
     UI/Notifications/ToastNotificationsView.h
     UI/Outliner/EntityOutliner.qss
+    UI/Outliner/EntityOutlinerCacheBus.cpp
+    UI/Outliner/EntityOutlinerCacheBus.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
+    UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.cpp
     UI/Outliner/EntityOutlinerListModel.hxx
+    UI/Outliner/EntityOutlinerRequestBus.cpp
+    UI/Outliner/EntityOutlinerRequestBus.h
     UI/Outliner/EntityOutlinerSearchWidget.cpp
     UI/Outliner/EntityOutlinerSearchWidget.h
     UI/Outliner/EntityOutlinerSortFilterProxyModel.cpp
-    UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx 
+    UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.ui
-    UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.cpp
-    UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.h
-    UI/Prefab/Procedural/ProceduralPrefabUiHandler.cpp
-    UI/Prefab/Procedural/ProceduralPrefabUiHandler.h
+    UI/Outliner/resources.qrc
+    UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
+    UI/Prefab/Constants.h
     UI/Prefab/LevelRootUiHandler.cpp
     UI/Prefab/LevelRootUiHandler.h
+    UI/Prefab/PrefabIntegrationBus.cpp
+    UI/Prefab/PrefabIntegrationBus.h
+    UI/Prefab/PrefabIntegrationInterface.h
     UI/Prefab/PrefabIntegrationManager.cpp
     UI/Prefab/PrefabIntegrationManager.h
     UI/Prefab/PrefabSaveLoadHandler.cpp
@@ -704,10 +961,10 @@ set(FILES
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabViewportFocusPathHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h
-    UI/PropertyEditor/Model/AssetCompleterModel.cpp
-    UI/PropertyEditor/Model/AssetCompleterModel.h
-    UI/PropertyEditor/View/AssetCompleterListView.cpp
-    UI/PropertyEditor/View/AssetCompleterListView.h
+    UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.cpp
+    UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.h
+    UI/Prefab/Procedural/ProceduralPrefabUiHandler.cpp
+    UI/Prefab/Procedural/ProceduralPrefabUiHandler.h
     UI/PropertyEditor/ComponentEditor.cpp
     UI/PropertyEditor/ComponentEditor.hxx
     UI/PropertyEditor/ComponentEditorHeader.cpp
@@ -732,6 +989,8 @@ set(FILES
     UI/PropertyEditor/InstanceDataHierarchy.h
     UI/PropertyEditor/LabelHandler.cpp
     UI/PropertyEditor/LabelHandler.h
+    UI/PropertyEditor/Model/AssetCompleterModel.cpp
+    UI/PropertyEditor/Model/AssetCompleterModel.h
     UI/PropertyEditor/MultiLineTextEditHandler.cpp
     UI/PropertyEditor/MultiLineTextEditHandler.h
     UI/PropertyEditor/PropertyAssetCtrl.cpp
@@ -746,31 +1005,33 @@ set(FILES
     UI/PropertyEditor/PropertyButtonCtrl.cpp
     UI/PropertyEditor/PropertyButtonCtrl.hxx
     UI/PropertyEditor/PropertyCheckBoxCtrl.cpp
-    UI/PropertyEditor/PropertyCheckBoxCtrl.hxx 
+    UI/PropertyEditor/PropertyCheckBoxCtrl.hxx
     UI/PropertyEditor/PropertyColorCtrl.cpp
     UI/PropertyEditor/PropertyColorCtrl.hxx
     UI/PropertyEditor/PropertyCRCCtrl.cpp
     UI/PropertyEditor/PropertyCRCCtrl.h
     UI/PropertyEditor/PropertyDoubleSliderCtrl.cpp
-    UI/PropertyEditor/PropertyDoubleSliderCtrl.hxx 
+    UI/PropertyEditor/PropertyDoubleSliderCtrl.hxx
     UI/PropertyEditor/PropertyDoubleSpinCtrl.cpp
     UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx
+    UI/PropertyEditor/PropertyEditorAPI_Internals_Impl.h
+    UI/PropertyEditor/PropertyEditorAPI_Internals.h
     UI/PropertyEditor/PropertyEditorApi.cpp
     UI/PropertyEditor/PropertyEditorAPI.h
-    UI/PropertyEditor/PropertyEditorAPI_Internals.h
-    UI/PropertyEditor/PropertyEditorAPI_Internals_Impl.h
     UI/PropertyEditor/PropertyEntityIdCtrl.cpp
     UI/PropertyEditor/PropertyEntityIdCtrl.hxx
     UI/PropertyEditor/PropertyEnumComboBoxCtrl.cpp
     UI/PropertyEditor/PropertyEnumComboBoxCtrl.hxx
     UI/PropertyEditor/PropertyFilePathCtrl.cpp
     UI/PropertyEditor/PropertyFilePathCtrl.h
+    UI/PropertyEditor/PropertyIntCtrlCommon.h
     UI/PropertyEditor/PropertyIntSliderCtrl.cpp
     UI/PropertyEditor/PropertyIntSliderCtrl.hxx
     UI/PropertyEditor/PropertyIntSpinCtrl.cpp
-    UI/PropertyEditor/PropertyIntSpinCtrl.hxx 
+    UI/PropertyEditor/PropertyIntSpinCtrl.hxx
     UI/PropertyEditor/PropertyManagerComponent.cpp
     UI/PropertyEditor/PropertyManagerComponent.h
+    UI/PropertyEditor/PropertyQTConstants.h
     UI/PropertyEditor/PropertyRowWidget.cpp
     UI/PropertyEditor/PropertyRowWidget.hxx
     UI/PropertyEditor/PropertyStringComboBoxCtrl.cpp
@@ -779,10 +1040,13 @@ set(FILES
     UI/PropertyEditor/PropertyStringLineEditCtrl.hxx
     UI/PropertyEditor/PropertyVectorCtrl.cpp
     UI/PropertyEditor/PropertyVectorCtrl.hxx
+    UI/PropertyEditor/QtWidgetLimits.h
     UI/PropertyEditor/ReflectedPropertyEditor.cpp
     UI/PropertyEditor/ReflectedPropertyEditor.hxx
     UI/PropertyEditor/ThumbnailPropertyCtrl.cpp
     UI/PropertyEditor/ThumbnailPropertyCtrl.h
+    UI/PropertyEditor/View/AssetCompleterListView.cpp
+    UI/PropertyEditor/View/AssetCompleterListView.h
     UI/SearchWidget/SearchCriteriaWidget.cpp
     UI/SearchWidget/SearchCriteriaWidget.hxx
     UI/SearchWidget/SearchWidgetTypes.hxx
@@ -804,6 +1068,9 @@ set(FILES
     UI/UICore/ConsoleTextEdit.hxx
     UI/UICore/IconButton.cpp
     UI/UICore/IconButton.hxx
+    UI/UICore/OverwritePromptDialog.cpp
+    UI/UICore/OverwritePromptDialog.hxx
+    UI/UICore/OverwritePromptDialog.ui
     UI/UICore/ProgressShield.cpp
     UI/UICore/ProgressShield.hxx
     UI/UICore/ProgressShield.ui
@@ -811,20 +1078,18 @@ set(FILES
     UI/UICore/QTreeViewStateSaver.hxx
     UI/UICore/QWidgetSavedState.cpp
     UI/UICore/QWidgetSavedState.h
+    UI/UICore/SaveChangesDialog.cpp
+    UI/UICore/SaveChangesDialog.hxx
+    UI/UICore/SaveChangesDialog.ui
     UI/UICore/TargetSelectorButton.cpp
     UI/UICore/TargetSelectorButton.hxx
     UI/UICore/WidgetHelpers.h
-
-    UI/UICore/OverwritePromptDialog.hxx
-    UI/UICore/OverwritePromptDialog.cpp
-    UI/UICore/OverwritePromptDialog.ui
-    UI/UICore/SaveChangesDialog.hxx
-    UI/UICore/SaveChangesDialog.cpp
-    UI/UICore/SaveChangesDialog.ui
-
     Undo/UndoCacheInterface.h
     Undo/UndoSystem.cpp
     Undo/UndoSystem.h
+    Viewport/ActionBus.cpp
+    Viewport/ActionBus.h
+    Viewport/ActionBus.h
     Viewport/EditorContextMenu.cpp
     Viewport/EditorContextMenu.h
     Viewport/LocalViewBookmarkComponent.cpp
@@ -833,15 +1098,18 @@ set(FILES
     Viewport/LocalViewBookmarkLoader.h
     Viewport/SharedViewBookmarkComponent.cpp
     Viewport/SharedViewBookmarkComponent.h
-    Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
+    Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplayDefaults.h
+    Viewport/ViewBookmarkLoaderInterface.h
     Viewport/ViewBookmarkSystemComponent.cpp
     Viewport/ViewBookmarkSystemComponent.h
     Viewport/ViewportInteractionHelpers.cpp
     Viewport/ViewportInteractionHelpers.h
     Viewport/ViewportMessages.cpp
     Viewport/ViewportMessages.h
+    Viewport/ViewportMessagesBus.cpp
+    Viewport/ViewportMessagesBus.h
     Viewport/ViewportSettings.cpp
     Viewport/ViewportSettings.h
     Viewport/ViewportTypes.cpp
@@ -854,12 +1122,15 @@ set(FILES
     ViewportSelection/EditorHelpers.h
     ViewportSelection/EditorInteractionSystemComponent.cpp
     ViewportSelection/EditorInteractionSystemComponent.h
+    ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h
     ViewportSelection/EditorPickEntitySelection.cpp
     ViewportSelection/EditorPickEntitySelection.h
     ViewportSelection/EditorSelectionUtil.cpp
     ViewportSelection/EditorSelectionUtil.h
     ViewportSelection/EditorTransformComponentSelection.cpp
     ViewportSelection/EditorTransformComponentSelection.h
+    ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
+    ViewportSelection/EditorTransformComponentSelectionRequestBus.h
     ViewportSelection/EditorVisibleEntityDataCache.cpp
     ViewportSelection/EditorVisibleEntityDataCache.h
     ViewportSelection/InvalidClicks.cpp
@@ -880,15 +1151,13 @@ set(FILES
     ViewportUi/ViewportUiDisplayLayout.h
     ViewportUi/ViewportUiManager.cpp
     ViewportUi/ViewportUiManager.h
+    ViewportUi/ViewportUiRequestBus.h
     ViewportUi/ViewportUiSwitcher.cpp
     ViewportUi/ViewportUiSwitcher.h
     ViewportUi/ViewportUiTextField.cpp
     ViewportUi/ViewportUiTextField.h
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiWidgetCallbacks.h
-    
-    AzToolsFrameworkModule.cpp
-    AzToolsFrameworkModule.h
 )
 
 # Prevent the following files from being grouped in UNITY builds
@@ -896,9 +1165,4 @@ set(SKIP_UNITY_BUILD_INCLUSION_FILES
     # The following files are skipped from unity to avoid duplicated symbols related to an ebus
     AzToolsFrameworkModule.cpp
     Application/ToolsApplication.cpp
-#    UI/PropertyEditor/PropertyEntityIdCtrl.cpp
-#    UI/PropertyEditor/PropertyManagerComponent.cpp
-#    ViewportSelection/EditorDefaultSelection.cpp
-#    ViewportSelection/EditorInteractionSystemComponent.cpp
-#    ViewportSelection/EditorTransformComponentSelection.cpp
 )

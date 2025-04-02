@@ -16,7 +16,6 @@ ly_add_target(
     NAME AzToolsFramework.Static STATIC
     NAMESPACE AZ
     AUTOMOC
-#    AUTOUIC
     AUTORCC
     FILES_CMAKE
         AzToolsFramework/aztoolsframework_files.cmake
@@ -52,7 +51,6 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         AzToolsFramework/aztoolsframework_shared_files.cmake
-        AzToolsFramework/aztoolsframework_ebus_files.cmake
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC

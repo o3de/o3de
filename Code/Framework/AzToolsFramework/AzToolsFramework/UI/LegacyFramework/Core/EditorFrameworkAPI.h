@@ -7,9 +7,6 @@
  */
 
 #pragma once
-//AZTF-SHARED
-
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Math/Uuid.h>
@@ -17,6 +14,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzFramework/CommandLine/CommandLine.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 // this file contains the API for the buses that the framework communicates on to NON-GUI-CLIENTS
 // note that this does not include UI messaging, this is for non-ui parts of it!
@@ -40,7 +38,7 @@ namespace LegacyFramework
     {
     public:
         virtual ~CoreMessages() {}
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ:: EBusHandlerPolicy::MultipleAndOrdered; // there are many listeners
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::MultipleAndOrdered; // there are many listeners
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // this is a broadcast bus
 
         bool Compare(const CoreMessages* rhs) const
@@ -140,7 +138,7 @@ namespace LegacyFramework
         virtual void ApplicationCensus() {}
     };
 
-    typedef AZ::EBus<CoreMessages> CoreMessageBus;
+    using CoreMessageBus = AZTF_API AZ::EBus<CoreMessages> ;
 
 
     /** Retrieves the name of the app you set in your application descriptor before calling Run
@@ -202,7 +200,7 @@ namespace LegacyFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ:: EBusHandlerPolicy::Single; // its a singleton
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // its a singleton
 
-        typedef AZ::EBus<FrameworkApplicationMessages> Bus;
+        using Bus = AZ::EBus<FrameworkApplicationMessages>;
         typedef Bus::Handler Handler;
 
         virtual ~FrameworkApplicationMessages() {}
@@ -321,3 +319,10 @@ namespace LegacyFramework
 
     typedef AZ::EBus<IPCCommandAPI> IPCCommandBus;
 };
+
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(LegacyFramework::CoreMessages);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(LegacyFramework::FrameworkApplicationMessages);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(LegacyFramework::LogComponentAPI);
+AZTF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(LegacyFramework::IPCCommandAPI);
+
+

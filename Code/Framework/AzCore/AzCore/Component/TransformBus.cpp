@@ -9,5 +9,5 @@
 #include <AzCore/Component/TransformBus.h>
 
 AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZ::TransformInterface);
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZ::TransformNotification);
+AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZ::TransformNotification);
 AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZ::TransformHierarchyInformation);

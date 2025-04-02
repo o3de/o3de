@@ -7,9 +7,6 @@
  */
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Debug/Budget.h>
@@ -23,6 +20,7 @@
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QObject>
 

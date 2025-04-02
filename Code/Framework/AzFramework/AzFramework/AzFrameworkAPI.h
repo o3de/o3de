@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/PlatformDef.h> ///< Platform/compiler specific defines
-#include <AzCore/EBus/EBus.h>
 
 #if defined(AZ_MONOLITHIC_BUILD)
     #define AZF_API
@@ -90,10 +89,10 @@ namespace AZ \
 #define AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(a) \
 namespace AZ \
 { \
-   extern template class AZF_API_EXTERN EBus<a, a>; \
+   AZF_API_EXTERN template class AZF_API EBus<a, a>; \
    AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
-   extern template class AZF_API_EXTERN Internal::NonIdHandler<a, a, EBus<a, a>::BusesContainer>; \
-   extern template struct AZF_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZF_API_EXTERN template class AZF_API Internal::NonIdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   AZF_API_EXTERN template struct AZF_API Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
    AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
 }
 
@@ -113,11 +112,11 @@ namespace AZ \
 #define AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(a) \
 namespace AZ \
 { \
-   extern template class AZF_API_EXTERN EBus<a, a>;  \
+   AZF_API_EXTERN template class AZF_API EBus<a, a>;  \
    AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
-   extern template class AZF_API_EXTERN Internal::IdHandler<a, a, EBus<a, a>::BusesContainer>; \
-   extern template class AZF_API_EXTERN Internal::MultiHandler<a, a, EBus<a, a>::BusesContainer>; \
-   extern template struct AZF_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+   AZF_API_EXTERN template class AZF_API Internal::IdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   AZF_API_EXTERN template class AZF_API Internal::MultiHandler<a, a, EBus<a, a>::BusesContainer>; \
+   AZF_API_EXTERN template struct AZF_API Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
    AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
 }
 
@@ -138,10 +137,10 @@ namespace AZ \
 #define AZF_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS_WITH_TRAITS(a, b) \
 namespace AZ \
 { \
-   extern template class AZF_API_EXTERN EBus<a, b>;     \
+   AZF_API_EXTERN template class AZF_API EBus<a, b>;     \
    AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
-   extern template class AZF_API_EXTERN Internal::NonIdHandler<a, b, EBus<a, b>::BusesContainer>; \
-   extern template struct AZF_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZF_API_EXTERN template class AZF_API Internal::NonIdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   AZF_API_EXTERN template struct AZF_API Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
    AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
 }
 
@@ -161,11 +160,11 @@ namespace AZ \
 #define AZF_DECLARE_EBUS_EXTERN_MULTI_ADDRESS_WITH_TRAITS(a, b) \
 namespace AZ \
 { \
-   extern template class AZF_API_EXTERN EBus<a, b>;  \
+   AZF_API_EXTERN template class AZF_API EBus<a, b>;  \
    AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
-   extern template class AZF_API_EXTERN Internal::IdHandler<a, b, EBus<a, b>::BusesContainer>; \
-   extern template class AZF_API_EXTERN Internal::MultiHandler<a, b, EBus<a, b>::BusesContainer>; \
-   extern template struct AZF_API_EXTERN Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+   AZF_API_EXTERN template class AZF_API Internal::IdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   AZF_API_EXTERN template class AZF_API Internal::MultiHandler<a, b, EBus<a, b>::BusesContainer>; \
+   AZF_API_EXTERN template struct AZF_API Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
    AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING \
 }
 

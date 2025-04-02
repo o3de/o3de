@@ -98,7 +98,6 @@ ly_append_configurations_options(
         /NOLOGO             # Suppress Copyright and version number message
         /IGNORE:4099        # 3rdParty linking produces noise with LNK4099
     LINK_NON_STATIC_PROFILE
-        /FORCE:MULTIPLE     
         /OPT:REF            # Eliminates functions and data that are never referenced
         /OPT:ICF            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
         /INCREMENTAL:NO

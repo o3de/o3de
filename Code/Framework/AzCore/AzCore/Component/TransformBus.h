@@ -307,7 +307,7 @@ namespace AZ
 
     //! The EBus for requests to position and parent an entity.
     //! The events are defined in the AZ::TransformInterface class.
-    using TransformBus = AZ::EBus<TransformInterface>;
+    using TransformBus = AZCORE_API AZ::EBus<TransformInterface>;
 
     //! @deprecated Use AZ::Event notifications on the main transform interface.
     //! Interface for AZ::TransformNotificationBus, which is the EBus that dispatches transform changes to listeners.
@@ -358,7 +358,7 @@ namespace AZ
 
     //! The EBus for transform notification events.
     //! The events are defined in the AZ::TransformNotification class.
-    using TransformNotificationBus = AZ::EBus<TransformNotification>;
+    using TransformNotificationBus = AZCORE_API AZ::EBus<TransformNotification>;
 
     //! The typeId of game component AzFramework::TransformComponent.
     static constexpr TypeId TransformComponentTypeId{ AZStd::string_view("{22B10178-39B6-4C12-BB37-77DB45FDD3B6}") };
@@ -490,5 +490,5 @@ namespace AZ
 }
 
 AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::TransformInterface);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::TransformNotification);
+AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::TransformNotification);
 AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::TransformHierarchyInformation);

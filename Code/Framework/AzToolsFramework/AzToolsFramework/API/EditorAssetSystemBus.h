@@ -8,9 +8,6 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Math/Crc.h>
@@ -18,6 +15,8 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/PlatformDef.h>
 #include <AzToolsFramework/API/AssetSystemJobInfo.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {

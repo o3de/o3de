@@ -8,15 +8,13 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {

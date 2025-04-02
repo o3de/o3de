@@ -8,13 +8,11 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/EBus/Event.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {

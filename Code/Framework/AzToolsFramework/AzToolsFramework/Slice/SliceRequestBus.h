@@ -8,14 +8,12 @@
 
 #pragma once
 
-//AZTF-EBUS
-#include <AzToolsFramework/AzToolsFrameworkEBus.h>
-
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Slice/SliceInstantiationTicket.h>
-
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 namespace AzToolsFramework
 {
     //! Bus for making slice requests.
