@@ -129,7 +129,14 @@ namespace AzToolsFramework
             // Redo - Update target template of the link.
             link->get().UpdateTarget();
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+
+            // If we get into this function, it means that we are reading from a realized set of actual C++ entities in memory
+            // as the "Source of Truth", and calling GenerateEntityDomBySerializing to write the changes that have already been applied
+            // to those c++ entities into an override patch, comparing before/after.  This implies that the instance we have focused
+            // has already got the changes applied to its c++ entities, and does not need template propogation.  All OTHER instances
+            // besides that one do need propogation.  If we do not skip the focusedInstance, we will be modifying the instance
+            // and possibly despawning/respawning it while the user is actually still editing/dragging/typing/looking at properties of it.
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), focusedInstance);
         }
 
         void PrefabUndoEntityOverrides::Undo()
