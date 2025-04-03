@@ -36,5 +36,9 @@ namespace AtomToolsFramework
 
         //! Prepare or pose content before rendering
         virtual void Update() = 0;
+
+        //! Returns true when it is guaranteed that the content is in GPU memory
+        //! and ready to render.
+        virtual bool IsReadyToRender() = 0;
     };
 } // namespace AtomToolsFramework

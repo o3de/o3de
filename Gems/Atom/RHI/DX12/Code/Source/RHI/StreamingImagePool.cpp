@@ -210,26 +210,36 @@ namespace AZ
 
             uint32_t totalTiles = request.m_sourceRegionSize.NumTiles;
 
-            // Check if heap memory is enough for the tiles. 
-            RHI::HeapMemoryUsage& memoryAllocatorUsage = GetDeviceHeapMemoryUsage();
-            size_t pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(totalTiles);
-
-            // Try to release some memory if there isn't enough memory available in the pool
-            bool canAllocate = memoryAllocatorUsage.CanAllocate(pageAllocationInBytes);
-            if (!canAllocate && m_memoryReleaseCallback)
+            // protect access to m_tileAllocator
             {
-                // only try to release tiles the resource need
-                uint32_t maxUsedTiles = m_tileAllocator.GetTotalTileCount() - totalTiles;
-                bool releaseSuccess = m_memoryReleaseCallback(maxUsedTiles * m_tileAllocator.GetDescriptor().m_tileSizeInBytes);
+                AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
 
-                if (!releaseSuccess)
+                // Check if heap memory is enough for the tiles.
+                RHI::HeapMemoryUsage& memoryAllocatorUsage = GetDeviceHeapMemoryUsage();
+                size_t pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(totalTiles);
+
+                // Try to release some memory if there isn't enough memory available in the pool
+                bool canAllocate = memoryAllocatorUsage.CanAllocate(pageAllocationInBytes);
+                if (!canAllocate && m_memoryReleaseCallback)
                 {
-                    AZ_Warning("DX12::StreamingImagePool", false, "There isn't enough memory to allocate the image [%s]'s subresource %d. "
-                        "Using the default tile for the subresource. Try increase the StreamingImagePool memory budget", image.GetName().GetCStr(), subresourceIndex);
-                }
-            }
+                    // only try to release tiles the resource need
+                    uint32_t maxUsedTiles = m_tileAllocator.GetTotalTileCount() - totalTiles;
+                    bool releaseSuccess = m_memoryReleaseCallback(maxUsedTiles * m_tileAllocator.GetDescriptor().m_tileSizeInBytes);
 
-            image.m_heapTiles[subresourceIndex] = m_tileAllocator.Allocate(totalTiles);
+                    if (!releaseSuccess)
+                    {
+                        AZ_Warning(
+                            "DX12::StreamingImagePool",
+                            false,
+                            "There isn't enough memory to allocate the image [%s]'s subresource %d. "
+                            "Using the default tile for the subresource. Try increase the StreamingImagePool memory budget",
+                            image.GetName().GetCStr(),
+                            subresourceIndex);
+                    }
+                }
+
+                image.m_heapTiles[subresourceIndex] = m_tileAllocator.Allocate(totalTiles);
+            } // Unlock m_tileMutex.
 
             // If it failed to allocate tiles, use default tile for the sub-resource
             if (image.m_heapTiles[subresourceIndex].size() == 0)
@@ -340,12 +350,16 @@ namespace AZ
             image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, request.m_sourceCoordinate, request.m_sourceRegionSize);
             GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
 
-            // deallocate tiles and update image's sub-resource info
-            m_tileAllocator.DeAllocate(heapTilesList);
-            image.m_heapTiles[subresourceIndex] = {};
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
 
-            // Garbage collect the allocator immediately.
-            m_tileAllocator.GarbageCollect();
+                // deallocate tiles and update image's sub-resource info
+                m_tileAllocator.DeAllocate(heapTilesList);
+                image.m_heapTiles[subresourceIndex] = {};
+
+                // Garbage collect the allocator immediately.
+                m_tileAllocator.GarbageCollect();
+            }
         }
 
         void StreamingImagePool::AllocatePackedImageTiles(Image& image)
@@ -357,7 +371,6 @@ namespace AZ
             const ImageTileLayout& tileLayout = image.m_tileLayout;
             if (tileLayout.m_mipCountPacked)
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
                 AllocateImageTilesInternal(image, tileLayout.GetPackedSubresourceIndex());
                 image.UpdateResidentTilesSizeInBytes(TileSizeInBytes);
             }
@@ -377,7 +390,6 @@ namespace AZ
             // Only proceed if the interval is still valid.
             if (mipInterval.m_min < mipInterval.m_max)
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
                 for (uint32_t arrayIndex = 0; arrayIndex < descriptor.m_arraySize; ++arrayIndex)
                 {
                     for (uint32_t mipIndex = mipInterval.m_min; mipIndex < mipInterval.m_max; ++mipIndex)
@@ -411,7 +423,6 @@ namespace AZ
                 const Fence& fence = compiledFences.GetFence(RHI::HardwareQueueClass::Graphics);
                 GetDevice().GetAsyncUploadQueue().QueueWaitFence(fence, fence.GetPendingValue());
 
-                AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
                 for (uint32_t arrayIndex = 0; arrayIndex < descriptor.m_arraySize; ++arrayIndex)
                 {
                     for (uint32_t mipIndex = mipInterval.m_min; mipIndex < mipInterval.m_max; ++mipIndex)
@@ -528,7 +539,7 @@ namespace AZ
 
             // Queue upload tail mip slices
             RHI::DeviceStreamingImageExpandRequest uploadMipRequest;
-            uploadMipRequest.m_image = &image;
+            uploadMipRequest.m_image = request.m_image;
             uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
             uploadMipRequest.m_waitForUpload = true;
             GetDevice().GetAsyncUploadQueue().QueueUpload(uploadMipRequest, request.m_descriptor.m_mipLevels);
@@ -542,8 +553,8 @@ namespace AZ
         {
             Image& image = static_cast<Image&>(resourceBase);
 
-            // Wait for any upload of this image done. 
-            GetDevice().GetAsyncUploadQueue().WaitForUpload(image.GetUploadFenceValue());
+            // Wait for any upload of this image done.
+            WaitFinishUploading(image);
 
             if (auto* resolver = GetResolver())
             {
@@ -580,6 +591,9 @@ namespace AZ
         {
             Image& image = static_cast<Image&>(*request.m_image);
 
+            // Wait for any upload of this image done.
+            WaitFinishUploading(image);
+
             const uint32_t residentMipLevelBefore = image.GetResidentMipLevel();
             const uint32_t residentMipLevelAfter = residentMipLevelBefore - static_cast<uint32_t>(request.m_mipSlices.size());
 
@@ -612,7 +626,7 @@ namespace AZ
             Image& imageImpl = static_cast<Image&>(image);
 
             // Wait for any upload of this image done. 
-            GetDevice().GetAsyncUploadQueue().WaitForUpload(imageImpl.GetUploadFenceValue());
+            WaitFinishUploading(imageImpl);
 
             // Set streamed mip level to target mip level
             if (imageImpl.GetStreamedMipLevel() < targetMipLevel)
@@ -669,6 +683,11 @@ namespace AZ
         bool StreamingImagePool::SupportTiledImageInternal() const
         {
             return m_enableTileResource;
+        }
+
+        void StreamingImagePool::WaitFinishUploading(const Image& image)
+        {
+            GetDevice().GetAsyncUploadQueue().WaitForUpload(image.GetUploadFenceValue());
         }
     }
 }

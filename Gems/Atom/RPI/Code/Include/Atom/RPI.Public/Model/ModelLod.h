@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
@@ -33,9 +34,11 @@ namespace AZ
         //! A map matches the UV shader inputs of this material to the custom UV names from the model.
         using MaterialModelUvOverrideMap = AZStd::unordered_map<RHI::ShaderSemantic, AZ::Name>;
 
-        class ModelLod final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ModelLod final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelSystem;
 
         public:

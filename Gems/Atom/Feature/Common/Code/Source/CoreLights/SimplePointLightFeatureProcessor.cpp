@@ -7,12 +7,12 @@
  */
 
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
+#include <CoreLights/LightCommon.h>
 #include <CoreLights/SpotLightUtils.h>
+#include <Mesh/MeshFeatureProcessor.h>
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
-#include <Atom/Feature/CoreLights/LightCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RenderPipeline.h>

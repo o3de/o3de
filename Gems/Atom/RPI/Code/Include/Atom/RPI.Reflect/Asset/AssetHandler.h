@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-
 #include <AzFramework/Asset/GenericAssetHandler.h>
 
 namespace AZ

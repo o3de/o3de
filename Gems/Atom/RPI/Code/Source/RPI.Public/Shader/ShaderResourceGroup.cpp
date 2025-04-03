@@ -140,6 +140,11 @@ namespace AZ
             return m_shaderResourceGroup->IsQueuedForCompile();
         }
 
+        bool ShaderResourceGroup::IsInitialized() const
+        {
+            return m_isInitialized;
+        }
+
         RHI::ShaderInputBufferIndex ShaderResourceGroup::FindShaderInputBufferIndex(const Name& name) const
         {
             return m_layout->FindShaderInputBufferIndex(name);
@@ -872,7 +877,7 @@ namespace AZ
                         indirectResourceBufferIndex,
                         indirectResourceBuffer.get(),
                         bufferViewPtrArray,
-                        nullptr,
+                        {},
                         isReadOnlyBuffer,
                         entry.first.second);
                 }
@@ -883,7 +888,7 @@ namespace AZ
                         indirectResourceBufferIndex,
                         indirectResourceBuffer.get(),
                         imageViewPtrArray,
-                        nullptr,
+                        {},
                         isReadOnlyImage,
                         entry.first.second);
                 }
@@ -906,7 +911,7 @@ namespace AZ
             RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
             const RHI::BufferView* indirectResourceBuffer,
             AZStd::span<const RHI::ImageView* const> imageViews,
-            uint32_t* outIndices,
+            AZStd::unordered_map<int, uint32_t*> outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {
@@ -918,7 +923,7 @@ namespace AZ
             RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
             const RHI::BufferView* indirectResourceBuffer,
             AZStd::span<const RHI::BufferView* const> bufferViews,
-            uint32_t* outIndices,
+            AZStd::unordered_map<int, uint32_t*> outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {

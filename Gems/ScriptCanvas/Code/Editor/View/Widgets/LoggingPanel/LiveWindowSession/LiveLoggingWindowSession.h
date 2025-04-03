@@ -100,7 +100,7 @@ namespace ScriptCanvasEditor
         ////
 
         // ScriptCavnas::Debugger::ServiceNotificationsBus
-        void Connected(const ScriptCanvas::Debugger::Target& target) override;
+        void Connected(ScriptCanvas::Debugger::Target& target) override;
         ////
         
     protected:

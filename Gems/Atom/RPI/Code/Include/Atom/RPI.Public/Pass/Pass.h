@@ -9,6 +9,7 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
@@ -28,6 +29,7 @@
 #include <AzCore/std/containers/span.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -66,11 +68,6 @@ namespace AZ
 
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
 
-        const uint32_t PassAttachmentBindingCountMax = 32;
-        const uint32_t PassInputBindingCountMax = PassAttachmentBindingCountMax;
-        const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
-        const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
-                
         enum class PassAttachmentReadbackOption : uint8_t
         {
             Input = 0,
@@ -100,7 +97,7 @@ namespace AZ
         //! a PassTemplate, or a PassRequest. To register your pass class with the PassFactory,
         //! you'll need to write a static create method (see ParentPass and RenderPass for examples)
         //! and register this create method with the PassFactory.
-        class Pass
+        class ATOM_RPI_PUBLIC_API Pass
             : public AZStd::intrusive_base
         {
             AZ_RPI_PASS(Pass);
@@ -207,8 +204,11 @@ namespace AZ
             //! Adds an attachment binding to the list of this Pass' attachment bindings
             void AddAttachmentBinding(PassAttachmentBinding attachmentBinding);
 
-            // Binds all attachments from the pass 
-            void DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph, PassSlotType slotType = PassSlotType::Uninitialized) const;
+            // Binds all attachments from the pass
+            void DeclareAttachmentsToFrameGraph(
+                RHI::FrameGraphInterface frameGraph,
+                PassSlotType slotType = PassSlotType::Uninitialized,
+                RHI::ScopeAttachmentAccess accessMask = RHI::ScopeAttachmentAccess::ReadWrite) const;
 
             // Returns a reference to the N-th input binding, where N is the index passed to the function
             PassAttachmentBinding& GetInputBinding(uint32_t index);
@@ -325,6 +325,9 @@ namespace AZ
             PassState GetPassState() const { return m_state; }
 
             //! Alter the connection of an Input or InputOutput attachment
+            void ChangeConnection(const Name& localSlot, const Name& passName, const Name& attachment, RenderPipeline* pipeline);
+
+            //! Alter the connection of an Input or InputOutput attachment
             void ChangeConnection(const Name& localSlot, Pass* pass, const Name& attachment);
 
             // Update all bindings on this pass that are connected to bindings on other passes
@@ -336,11 +339,11 @@ namespace AZ
             // Update output bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedOutputBindings();
 
-        protected:
-            explicit Pass(const PassDescriptor& descriptor);
-
             // Creates a pass descriptor for creating a duplicate pass. Used for hot reloading.
             PassDescriptor GetPassDescriptor() const;
+
+        protected:
+            explicit Pass(const PassDescriptor& descriptor);
 
             // Imports owned imported attachments into the FrameGraph
             // Called in pass's frame prepare function
@@ -445,9 +448,8 @@ namespace AZ
             const Name PipelineGlobalKeyword{"PipelineGlobal"};
 
             // List of input, output and input/output attachment bindings
-            // Fixed size for performance and so we can hold pointers to the bindings for connections
-            AZStd::fixed_vector<PassAttachmentBinding, PassAttachmentBindingCountMax> m_attachmentBindings;
-            
+            PassAttachmentBindingList m_attachmentBindings;
+
             // List of attachments owned by this pass.
             // It includes both transient attachments and imported attachments
             AZStd::vector<Ptr<PassAttachment>> m_ownedAttachments;
@@ -558,7 +560,7 @@ namespace AZ
             
             // For read back attachment
             AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
-            PassAttachmentReadbackOption m_readbackOption;
+            PassAttachmentReadbackOption m_readbackOption = PassAttachmentReadbackOption::Input;
 
             // For image attachment preview
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
@@ -660,13 +662,13 @@ namespace AZ
             // --- Private Members ---
 
             // List of attachment binding indices for all the input bindings
-            AZStd::fixed_vector<uint8_t, PassInputBindingCountMax> m_inputBindingIndices;
+            AZStd::vector<uint8_t> m_inputBindingIndices;
 
             // List of attachment binding indices for all the input/output bindings
-            AZStd::fixed_vector<uint8_t, PassInputOutputBindingCountMax> m_inputOutputBindingIndices;
+            AZStd::vector<uint8_t> m_inputOutputBindingIndices;
 
             // List of attachment binding indices for all the output bindings
-            AZStd::fixed_vector<uint8_t, PassOutputBindingCountMax> m_outputBindingIndices;
+            AZStd::vector<uint8_t> m_outputBindingIndices;
 
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase
@@ -700,7 +702,7 @@ namespace AZ
         };
 
         //! Struct used to return results from Pass hierarchy validation
-        struct PassValidationResults
+        struct ATOM_RPI_PUBLIC_API PassValidationResults
         {
             bool IsValid();
             void PrintValidationIfError();

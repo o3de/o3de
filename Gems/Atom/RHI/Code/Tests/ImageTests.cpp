@@ -396,6 +396,6 @@ namespace UnitTest
         return ImageBindFlagsToString(info.param.imageBindFlags) + "ImageWith" + ImageBindFlagsToString(info.param.viewBindFlags) + "ImageView";
     }
 
-    INSTANTIATE_TEST_CASE_P(ImageView, ImageBindFlagTests, ::testing::ValuesIn(GenerateCompatibleImageBindFlagCombinations()), GenerateImageBindFlagTestCaseName);
-    INSTANTIATE_TEST_CASE_P(ImageView, ImageBindFlagFailureCases, ::testing::ValuesIn(GenerateIncompatibleImageBindFlagCombinations()), GenerateImageBindFlagTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(ImageView, ImageBindFlagTests, ::testing::ValuesIn(GenerateCompatibleImageBindFlagCombinations()), GenerateImageBindFlagTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(ImageView, ImageBindFlagFailureCases, ::testing::ValuesIn(GenerateIncompatibleImageBindFlagCombinations()), GenerateImageBindFlagTestCaseName);
 }

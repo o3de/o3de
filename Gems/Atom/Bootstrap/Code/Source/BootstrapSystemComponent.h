@@ -105,6 +105,9 @@ namespace AZ
                 void CreateViewportContext();
                 void SetWindowResolution();
 
+                //! Run the BRDF pipeline to generate the BRDF texture
+                void RunBRDFPipeline(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext);
+
                 //! Load a render pipeline from disk and add it to the scene
                 RPI::RenderPipelinePtr LoadPipeline(
                     const AZ::RPI::ScenePtr scene,

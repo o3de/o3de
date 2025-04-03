@@ -553,10 +553,12 @@ namespace LUAEditor
         auto colors =
             AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
-        // Match against ; : , . = * - + /
+        // Order of declaration matters as some rules can stop the next ones from being processed
+
+        // Match against ; : , . = * - + / < >
         {
             HighlightingRule rule;
-            rule.pattern = QRegularExpression(R"([\;\:\,\.\=\*\-\+\/])");
+            rule.pattern = QRegularExpression(R"([\;\:\,\.\=\*\-\+\/\<\>])");
             rule.colorCB = [colors]()
             {
                 return colors->GetSpecialCharacterColor();
@@ -575,17 +577,6 @@ namespace LUAEditor
             m_highlightingRules.push_back(rule);
         }
 
-        // Match against local and self keywords
-        {
-            HighlightingRule rule;
-            rule.pattern = QRegularExpression(R"(\bself\b|\blocal\b)");
-            rule.colorCB = [colors]()
-            {
-                return colors->GetSpecialKeywordColor();
-            };
-            m_highlightingRules.push_back(rule);
-        }
-
         // Match methods and definitions. Any word which ends with '('
         {
             HighlightingRule rule;
@@ -593,6 +584,53 @@ namespace LUAEditor
             rule.colorCB = [colors]()
             {
                 return colors->GetMethodColor();
+            };
+            m_highlightingRules.push_back(rule);
+        }
+
+        // Match any word which ends with ':'
+        {
+            HighlightingRule rule;
+            rule.pattern = QRegularExpression(R"(\b[A-Za-z0-9_]+(?=\:))");
+            rule.colorCB = [colors]()
+            {
+                return colors->GetLibraryColor();
+            };
+            m_highlightingRules.push_back(rule);
+        }
+
+        // Match against local, self, true, false and nil keywords
+        {
+            HighlightingRule rule;
+            rule.stopProcessingMoreRulesAfterThis = true;
+            rule.pattern = QRegularExpression(R"(\bself\b|\blocal\b|\btrue\b|\bfalse\b|\bnil\b)");
+            rule.colorCB = [colors]()
+            {
+                return colors->GetSpecialKeywordColor();
+            };
+            m_highlightingRules.push_back(rule);
+        }
+
+        // Match against reserved keywords such as function, then, if, etc
+        const HighlightedWords::LUAKeywordsType* keywords = nullptr;
+        HighlightedWords::Bus::BroadcastResult(keywords, &HighlightedWords::Bus::Events::GetLUAKeywords);
+        if (keywords)
+        {
+            QString pattern;
+            for (const AZStd::string& keyword : *keywords)
+            {
+                pattern += "\\b";
+                pattern += keyword.c_str();
+                pattern += "\\b|";
+            }
+            pattern.chop(1); // remove last |
+
+            HighlightingRule rule;
+            rule.stopProcessingMoreRulesAfterThis = true;
+            rule.pattern = QRegularExpression(pattern);
+            rule.colorCB = [colors]()
+            {
+                return colors->GetKeywordColor();
             };
             m_highlightingRules.push_back(rule);
         }
@@ -627,8 +665,6 @@ namespace LUAEditor
 
         auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
-        const HighlightedWords::LUAKeywordsType* keywords = nullptr;
-        HighlightedWords::Bus::BroadcastResult(keywords, &HighlightedWords::Bus::Events::GetLUAKeywords);
         const HighlightedWords::LUAKeywordsType* libraryFuncs = nullptr;
         HighlightedWords::Bus::BroadcastResult(libraryFuncs, &HighlightedWords::Bus::Events::GetLUALibraryFunctions);
 
@@ -664,13 +700,8 @@ namespace LUAEditor
             {
                 if (state == ParserStates::Name)
                 {
-                    AZStd::string dhText(text.mid(position, length).toUtf8().constData());
-                    if (keywords && keywords->find(dhText) != keywords->end())
-                    {
-                        textFormat.setForeground(colors->GetKeywordColor());
-                        setFormat(position, length, textFormat);
-                    }
-                    else if (libraryFuncs && libraryFuncs->find(dhText) != libraryFuncs->end())
+                    const AZStd::string dhText(text.mid(position, length).toUtf8().constData());
+                    if (libraryFuncs && libraryFuncs->find(dhText) != libraryFuncs->end())
                     {
                         textFormat.setForeground(colors->GetLibraryColor());
                         setFormat(position, length, textFormat);
@@ -680,7 +711,6 @@ namespace LUAEditor
                         textFormat.setForeground(colors->GetTextColor());
                         setFormat(position, length, textFormat);
                     }
-
 
                     if (m_LUAStartBlockKeywords.find(dhText) != m_LUAStartBlockKeywords.end())
                     {
@@ -711,15 +741,25 @@ namespace LUAEditor
                 if (!canRunRegEx)
                     return;
 
+                // Special case to allow to lint methods via regex
+                const int nextCharPos = position + length;
+                const bool nextCharNeededForRegEx = text.at(nextCharPos) == '(' || text.at(nextCharPos) == ':';
+
+                const QString dhText = nextCharNeededForRegEx ? text.mid(position, length + 1) : text.mid(position, length);
                 for (const HighlightingRule& rule : m_highlightingRules)
                 {
-                    QRegularExpressionMatchIterator i = rule.pattern.globalMatch(text);
+                    bool hasMatch = false;
+                    QRegularExpressionMatchIterator i = rule.pattern.globalMatch(dhText);
                     while (i.hasNext())
                     {
+                        hasMatch = true;
                         QRegularExpressionMatch match = i.next();
                         textFormat.setForeground(rule.colorCB());
-                        setFormat(match.capturedStart(), match.capturedLength(), textFormat);
+                        setFormat(position + match.capturedStart(), match.capturedLength(), textFormat);
                     }
+
+                    if (hasMatch && rule.stopProcessingMoreRulesAfterThis)
+                        return;
                 }
             };
         m_machine->Parse(text);

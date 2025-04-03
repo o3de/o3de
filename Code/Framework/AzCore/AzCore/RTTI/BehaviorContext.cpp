@@ -10,8 +10,6 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Component/EntityBus.h>
 
-DECLARE_EBUS_INSTANTIATION(BehaviorContextEvents);
-
 namespace AZ
 {
     // Definitions for TypeInfo and RTTI functions
@@ -710,6 +708,133 @@ namespace AZ
         auto ebusIt = m_ebuses.find(reflectedName);
         return ebusIt != m_ebuses.end() ? ebusIt->second: nullptr;
     }
+    BehaviorClass* BehaviorContext::ClassImpl(
+        const char* name, const AZ::TypeId& typeUuid, AZ::IRttiHelper* rttiHelper, size_t alignment, size_t size)
+    {
+        AZ_Assert(!typeUuid.IsNull(), "Type %s has no AZ_TYPE_INFO or AZ_RTTI.  Please use an AZ_RTTI or AZ_TYPE_INFO declaration before trying to use it in reflection contexts.", name ? name : "<Unknown class>");
+        if (typeUuid.IsNull())
+        {
+            return nullptr;
+        }
+
+        auto classTypeIt = m_typeToClassMap.find(typeUuid);
+        if (IsRemovingReflection())
+        {
+            if (classTypeIt != m_typeToClassMap.end())
+            {
+                // find it in the name category
+                auto nameIt = m_classes.find(name);
+                while (nameIt != m_classes.end())
+                {
+                    if (nameIt->second == classTypeIt->second)
+                    {
+                        m_classes.erase(nameIt);
+                        break;
+                    }
+                }
+                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveClass, name, classTypeIt->second);
+                delete classTypeIt->second;
+                m_typeToClassMap.erase(classTypeIt);
+            }
+            return nullptr;
+        }
+        else
+        {
+            if (classTypeIt != m_typeToClassMap.end())
+            {
+                AZ_Error("Reflection", false, "Class '%s' is already registered using Uuid: %s!", name, classTypeIt->first.ToFixedString().c_str());
+                return nullptr;
+            }
+
+            // TODO: make it a set and use the name inside the class
+            if (m_classes.find(name) != m_classes.end())
+            {
+                AZ_Error("Reflection", false, "A class with name '%s' is already registered!", name);
+                return nullptr;
+            }
+
+            BehaviorClass* behaviorClass = aznew BehaviorClass();
+            behaviorClass->m_typeId = typeUuid;
+            behaviorClass->m_azRtti = rttiHelper;
+            behaviorClass->m_alignment = alignment;
+            behaviorClass->m_size = size;
+            behaviorClass->m_name = name;
+
+            // Switch to Set (we store the name in the class)
+            m_classes.emplace(behaviorClass->m_name, behaviorClass);
+            m_typeToClassMap.emplace(behaviorClass->m_typeId, behaviorClass);
+            return behaviorClass;
+        }
+    }
+
+    bool BehaviorContext::MethodImpl(BehaviorMethod* method, const char* name, const BehaviorParameterOverrides* args, size_t argsSize, const char* deprecatedName)
+    {
+        /*
+        ** check to see if the deprecated name is used, and ensure its not duplicated.
+        */
+        if (deprecatedName != nullptr)
+        {
+            auto itr = m_methods.find(name);
+            if (itr != m_methods.end())
+            {
+                // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
+                bool isDuplicate = false;
+                for (const auto& i : m_methods)
+                {
+                    if (i.second->GetDeprecatedName() == deprecatedName)
+                    {
+                        AZ_Warning("BehaviorContext", false, "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name is ignored!", name, deprecatedName, i.first.c_str());
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate)
+                {
+                    itr->second->SetDeprecatedName(deprecatedName);
+                }
+            }
+            else
+            {
+                AZ_Warning("BehaviorContext", false, "Method %s does not exist, so the deprecated name is ignored!", name, deprecatedName);
+            }
+        }
+
+        // global method
+        if (!m_methods.insert(AZStd::make_pair(name, method)).second)
+        {
+            delete method;
+            return false;
+        }
+
+        size_t classPtrIndex = method->IsMember() ? 1 : 0;
+        for (size_t i = 0; i < argsSize; ++i)
+        {
+            method->SetArgumentName(i + classPtrIndex, args[i].m_name);
+            method->SetArgumentToolTip(i + classPtrIndex, args[i].m_toolTip);
+            method->SetDefaultValue(i + classPtrIndex, args[i].m_defaultValue);
+            method->OverrideParameterTraits(i + classPtrIndex, args[i].m_addTraits, args[i].m_removeTraits);
+        }
+        return true;
+    }
+
+    void BehaviorContext::InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t 
+            paramOverridesCount)
+    {
+        if (defaultValues)
+        {
+            AZ_Assert(defaultValues->GetNumValues() <= paramOverridesCount,
+                "You can't have more default values than the number of function arguments");
+            // Copy default values to parameter override structure
+            size_t startArgumentIndex = paramOverridesCount - defaultValues->GetNumValues();
+            for (size_t i = 0; i < defaultValues->GetNumValues(); ++i)
+            {
+                paramOverrides[startArgumentIndex + i].m_defaultValue = defaultValues->GetDefaultValue(i);
+            }
+            delete defaultValues;
+        }
+    }
+
 
     //=========================================================================
     // BehaviorClass

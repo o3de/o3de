@@ -20,6 +20,8 @@
 #include "AnimationContext.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/iterator.h>
 
 namespace
 {
@@ -52,9 +54,7 @@ namespace
 
 namespace
 {
-    //////////////////////////////////////////////////////////////////////////
     // Misc
-    //////////////////////////////////////////////////////////////////////////
     void PyTrackViewSetRecording(bool bRecording)
     {
         CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
@@ -64,9 +64,7 @@ namespace
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////
     // Sequences
-    //////////////////////////////////////////////////////////////////////////
     void PyTrackViewNewSequence(const char* name, int sequenceType)
     {
         CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
@@ -177,9 +175,7 @@ namespace
         pAnimationContext->SetTime(time);
     }
 
-    //////////////////////////////////////////////////////////////////////////
     // Nodes
-    //////////////////////////////////////////////////////////////////////////
     void PyTrackViewAddNode(const char* nodeTypeString, const char* nodeName)
     {
         CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -188,14 +184,19 @@ namespace
             throw std::runtime_error("No sequence is active");
         }
 
-        const AnimNodeType nodeType = GetIEditor()->GetMovieSystem()->GetNodeTypeFromString(nodeTypeString);
-        if (nodeType == AnimNodeType::Invalid)
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
         {
-            throw std::runtime_error("Invalid node type");
+            const AnimNodeType nodeType = movieSystem->GetNodeTypeFromString(nodeTypeString);
+            if (nodeType == AnimNodeType::Invalid)
+            {
+                throw std::runtime_error("Invalid node type");
+            }
+
+            CUndo undo("Create anim node");
+            pSequence->CreateSubNode(nodeName, nodeType);
         }
 
-        CUndo undo("Create anim node");
-        pSequence->CreateSubNode(nodeName, nodeType);
     }
 
     void PyTrackViewAddSelectedEntities()
@@ -321,15 +322,19 @@ namespace
             throw std::runtime_error("Couldn't find node");
         }
 
-        const CAnimParamType paramType = GetIEditor()->GetMovieSystem()->GetParamTypeFromString(paramName);
-        CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType, index);
-        if (!pTrack)
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
         {
-            throw std::runtime_error("Could not find track");
-        }
+            const CAnimParamType paramType = movieSystem->GetParamTypeFromString(paramName);
+            CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType, index);
+            if (!pTrack)
+            {
+                throw std::runtime_error("Could not find track");
+            }
 
-        CUndo undo("Delete TrackView track");
-        pNode->RemoveTrack(pTrack);
+            CUndo undo("Delete TrackView track");
+            pNode->RemoveTrack(pTrack);
+        }
     }
 
     int PyTrackViewGetNumNodes(AZStd::string_view parentDirectorName)
@@ -387,9 +392,7 @@ namespace
         return foundNodes.GetNode(index)->GetName();
     }
 
-    //////////////////////////////////////////////////////////////////////////
     // Tracks
-    //////////////////////////////////////////////////////////////////////////
     CTrackViewTrack* GetTrack(const char* paramName, uint32 index, const char* nodeName, const char* parentDirectorName)
     {
         CTrackViewAnimNode* pNode = GetNodeFromName(nodeName, parentDirectorName);
@@ -398,9 +401,10 @@ namespace
             throw std::runtime_error("Couldn't find node");
         }
 
-        if (GetIEditor()->GetMovieSystem())
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+        if (movieSystem)
         {
-            const CAnimParamType paramType = GetIEditor()->GetMovieSystem()->GetParamTypeFromString(paramName);
+            const CAnimParamType paramType = movieSystem->GetParamTypeFromString(paramName);
             CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType, index);
             if (!pTrack)
             {
@@ -415,9 +419,9 @@ namespace
         }
     }
 
-    std::set<float> GetKeyTimeSet(CTrackViewTrack* pTrack)
+    AZStd::set<float> GetKeyTimeSet(CTrackViewTrack* pTrack)
     {
-        std::set<float> keyTimeSet;
+        AZStd::set<float> keyTimeSet;
         for (uint i = 0; i < pTrack->GetKeyCount(); ++i)
         {
             CTrackViewKeyHandle keyHandle = pTrack->GetKey(i);
@@ -482,6 +486,13 @@ namespace
             return AZStd::make_any<AZ::Color>(value.GetX(), value.GetY(), value.GetZ(), 0.0f);
         }
         break;
+        case AnimValueType::String:
+            {
+                AZStd::string value;
+                pTrack->GetValue(time, value);
+                return AZStd::make_any<AZStd::string>(value);
+            }
+            break;
         default:
             throw std::runtime_error("Unsupported key type");
         }
@@ -491,14 +502,14 @@ namespace
     {
         CTrackViewTrack* pTrack = GetTrack(paramName, trackIndex, nodeName, parentDirectorName);
 
-        std::set<float> keyTimeSet = GetKeyTimeSet(pTrack);
+        AZStd::set<float> keyTimeSet = GetKeyTimeSet(pTrack);
         if (keyIndex < 0 || keyIndex >= keyTimeSet.size())
         {
             throw std::runtime_error("Invalid key index");
         }
 
         auto keyTimeIter = keyTimeSet.begin();
-        std::advance(keyTimeIter, keyIndex);
+        AZStd::advance(keyTimeIter, keyIndex);
         const float keyTime = *keyTimeIter;
 
         return PyTrackViewGetInterpolatedValue(paramName, trackIndex, keyTime, nodeName, parentDirectorName);

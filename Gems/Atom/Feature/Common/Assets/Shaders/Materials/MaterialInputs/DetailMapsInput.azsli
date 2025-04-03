@@ -60,7 +60,11 @@ real GetDetailLayerBlendFactor(Texture2D detailLayerBlendMask, sampler detailLay
         }
         else
         {
+            #ifdef CS_SAMPLERS
+            detailLayerBlendFactor *= real(detailLayerBlendMask.SampleLevel(detailLayerBlendMaskSampler, detailLayerBlendMaskUv, 0).r);
+            #else
             detailLayerBlendFactor *= real(detailLayerBlendMask.Sample(detailLayerBlendMaskSampler, detailLayerBlendMaskUv).r);
+            #endif
         }
     }
 
@@ -164,7 +168,11 @@ real3 ApplyTextureOverlay(bool applyOverlay, real3 baseColor, Texture2D map, sam
         }
         else
         {
+            #ifdef CS_SAMPLERS
+            sampledColor = real3(map.SampleLevel(mapSampler, uv, 0).rgb);
+            #else
             sampledColor = real3(map.Sample(mapSampler, uv).rgb);
+            #endif
         }
         sampledColor = TransformColor(sampledColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         return ApplyTextureBlend(baseColor, sampledColor, factor, TextureBlendMode::Overlay);

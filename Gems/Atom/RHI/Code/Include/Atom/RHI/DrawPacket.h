@@ -44,14 +44,20 @@ namespace AZ::RHI
         //! Returns the number of draw items stored in the packet.
         size_t GetDrawItemCount() const;
 
-        //! Returns the index associated with the given DrawListTag
-        s32 GetDrawListIndex(DrawListTag drawListTag) const;
+        //! Returns the index of the first DrawItem that matches the given DrawListTag, and the given DrawFilterMask.
+        //! REMARK: When more than one MaterialPipelines are active, they may have Shaders with the same DrawListTag.
+        //!         In these cases there will be one DrawItem for each MaterialPipeline.
+        s32 GetDrawListIndex(DrawListTag drawListTag, DrawFilterMask materialPipelineMask = DrawFilterMaskDefaultValue) const;
 
         //! Returns the DeviceDrawItem at the given index
         DrawItem* GetDrawItem(size_t index);
+        const DrawItem* GetDrawItem(size_t index) const;
 
-        //! Returns the DeviceDrawItem associated with the given DrawListTag
-        DrawItem* GetDrawItem(DrawListTag drawListTag);
+        //! Returns the first DrawItem that matches the given DrawListTag, and the given DrawFilterMask.
+        //! REMARK: When more than one MaterialPipelines are active, they may have Shaders with the same DrawListTag.
+        //!         In these cases there will be one DrawItem for each MaterialPipeline.
+        DrawItem* GetDrawItem(DrawListTag drawListTag, DrawFilterMask materialPipelineMask = DrawFilterMaskDefaultValue);
+        const DrawItem* GetDrawItem(DrawListTag drawListTag, DrawFilterMask materialPipelineMask = DrawFilterMaskDefaultValue) const;
 
         //! Returns the draw item and its properties associated with the provided index.
         DrawItemProperties GetDrawItemProperties(size_t index) const;

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
+
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Format.h>
@@ -56,7 +58,7 @@ namespace AZ
             bool m_isUniqueName = false;
         };
 
-        class BufferSystemInterface
+        class ATOM_RPI_PUBLIC_API BufferSystemInterface
         {
         public:
             AZ_RTTI(BufferSystemInterface, "{6FD805CC-C3EC-4E58-A2AF-E9E918965122}");

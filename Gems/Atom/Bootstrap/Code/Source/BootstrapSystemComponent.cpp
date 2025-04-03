@@ -134,6 +134,7 @@ AZ_CVAR(AZ::CVarFixedString, r_default_openxr_right_pipeline_name, "passes/XRRig
 AZ_CVAR(uint32_t, r_width, 1920, cvar_r_resolution_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window width in pixels.");
 AZ_CVAR(uint32_t, r_height, 1080, cvar_r_resolution_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
+AZ_CVAR(uint32_t, r_resizable, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the window should be resizable.");
 AZ_CVAR(uint32_t, r_resolutionMode, 0, cvar_r_resolution_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
 AZ_CVAR(float, r_renderScale, 1.0f, cvar_r_renderScale_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
 AZ_CVAR(AZ::CVarFixedString, r_antiAliasing, "", cvar_r_antiAliasing_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The anti-aliasing to be used for the current render pipeline. Available options: MSAA, TAA, SMAA");
@@ -223,6 +224,20 @@ namespace AZ
                         if (AZ::StringFunc::LooksLikeBool(valueStr.c_str()))
                         {
                             r_fullscreen = AZ::StringFunc::ToBool(valueStr.c_str());
+                        }
+                    }
+                }
+
+                const AZStd::string resizableCvarName("r_resizable");
+                if (pCmdLine->HasSwitch(resizableCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(resizableCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(resizableCvarName);
+                        if (AZ::StringFunc::LooksLikeBool(valueStr.c_str()))
+                        {
+                            r_resizable = AZ::StringFunc::ToBool(valueStr.c_str());
                         }
                     }
                 }
@@ -351,8 +366,14 @@ namespace AZ
                     // command line arguments into cvars.
                     UpdateCVarsFromCommandLine();
 
+                    AzFramework::WindowStyleMasks masks{};
+                    if (r_resizable)
+                    {
+                        masks.m_platformAgnosticStyleMask |= AzFramework::WindowStyleMasks::WINDOW_STYLE_RESIZEABLE;
+                    }
+
                     m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(
-                        projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height));
+                        projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height), masks);
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();
@@ -444,6 +465,16 @@ namespace AZ
                     if (m_createDefaultScene)
                     {
                         CreateDefaultRenderPipeline();
+                    }
+                }
+                else
+                {
+                    AZ::ApplicationTypeQuery appType;
+                    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                    // Run BRDF pipeline for the app in console mode, to use it in render-to-texture pipelines.
+                    if (appType.IsConsoleMode())
+                    {
+                        RunBRDFPipeline(m_defaultScene, nullptr);
                     }
                 }
             }
@@ -607,34 +638,9 @@ namespace AZ
                     {
                         renderPipeline->SetActiveAAMethod(antiAliasing.c_str());
                     }
-
-                    // As part of our initialization we need to create the BRDF texture generation pipeline
-                    AZ::RPI::RenderPipelineDescriptor pipelineDesc;
-                    pipelineDesc.m_mainViewTagName = "MainCamera";
-                    pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%i", viewportContext->GetId());
-                    pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
-                    pipelineDesc.m_executeOnce = true;
-
-                    // Save a reference to the generated BRDF texture so it doesn't get deleted if all the passes refering to it get deleted
-                    // and it's ref count goes to zero
-                    if (!m_brdfTexture)
-                    {
-                        const AZStd::shared_ptr<const RPI::PassTemplate> brdfTextureTemplate =
-                            RPI::PassSystemInterface::Get()->GetPassTemplate(Name("BRDFTextureTemplate"));
-                        Data::Asset<RPI::AttachmentImageAsset> brdfImageAsset = RPI::AssetUtils::LoadAssetById<RPI::AttachmentImageAsset>(
-                            brdfTextureTemplate->m_imageAttachments[0].m_assetRef.m_assetId, RPI::AssetUtils::TraceLevel::Error);
-                        if (brdfImageAsset.IsReady())
-                        {
-                            m_brdfTexture = RPI::AttachmentImage::FindOrCreate(brdfImageAsset);
-                        }
-                    }
-
-                    if (!scene->GetRenderPipeline(AZ::Name(pipelineDesc.m_name)))
-                    {
-                        RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
-                        scene->AddRenderPipeline(brdfTexturePipeline);
-                    }
                 }
+
+                RunBRDFPipeline(scene, viewportContext);
 
                 // Load XR pipelines if applicable
                 if (xrSystem)
@@ -679,6 +685,43 @@ namespace AZ
                 }
 
                 return true;
+            }
+
+            void BootstrapSystemComponent::RunBRDFPipeline(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext)
+            {
+                // As part of our initialization we need to create the BRDF texture generation pipeline
+
+                // Save a reference to the generated BRDF texture so it doesn't get deleted if all the passes refering to it get deleted
+                // and it's ref count goes to zero
+                if (!m_brdfTexture)
+                {
+
+                    const AZStd::shared_ptr<const RPI::PassTemplate> brdfTextureTemplate =
+                        RPI::PassSystemInterface::Get()->GetPassTemplate(Name("BRDFTextureTemplate"));
+                    Data::Asset<RPI::AttachmentImageAsset> brdfImageAsset = RPI::AssetUtils::LoadAssetById<RPI::AttachmentImageAsset>(
+                        brdfTextureTemplate->m_imageAttachments[0].m_assetRef.m_assetId, RPI::AssetUtils::TraceLevel::Error);
+                    if (brdfImageAsset.IsReady())
+                    {
+                        m_brdfTexture = RPI::AttachmentImage::FindOrCreate(brdfImageAsset);
+                    }
+                }
+
+                AZ::RPI::RenderPipelineDescriptor pipelineDesc;
+                pipelineDesc.m_mainViewTagName = "MainCamera";
+                pipelineDesc.m_rootPassTemplate = "BRDFTexturePipeline";
+                pipelineDesc.m_executeOnce = true;
+                const AzFramework::ViewportId viewportId = viewportContext ? viewportContext->GetId() : AzFramework::InvalidViewportId;
+                for (int deviceIndex{ 0 }; deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
+                {
+                    pipelineDesc.m_name = AZStd::string::format("BRDFTexturePipeline_%d_%d", viewportId, deviceIndex);
+
+                    if (!scene->GetRenderPipeline(AZ::Name(pipelineDesc.m_name)))
+                    {
+                        RPI::RenderPipelinePtr brdfTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+                        brdfTexturePipeline->GetRootPass()->SetDeviceIndex(deviceIndex);
+                        scene->AddRenderPipeline(brdfTexturePipeline);
+                    }
+                }
             }
 
             void BootstrapSystemComponent::SwitchRenderPipeline(const AZ::RPI::RenderPipelineDescriptor& newRenderPipelineDesc, AZ::RPI::ViewportContextPtr viewportContext)

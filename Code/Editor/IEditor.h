@@ -228,17 +228,6 @@ enum AxisConstrains
     AXIS_TERRAIN,
 };
 
-//! Reference coordinate system values
-enum RefCoordSys
-{ // Don't change this order. Should be in the same order as MainWindow::CreateRefCoordComboBox()
-    COORDS_VIEW = 0,
-    COORDS_LOCAL,
-    COORDS_PARENT,
-    COORDS_WORLD,
-    COORDS_USERDEFINED,
-    LAST_COORD_SYSTEM, // Must always be the last member
-};
-
 // Insert locations for menu items
 enum EMenuInsertLocation
 {
@@ -338,6 +327,7 @@ struct ITrackViewSequenceManager
     virtual void OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence) = 0;
 
     virtual void OnSequenceActivated(const AZ::EntityId& entityId) = 0;
+    virtual void OnSequenceDeactivated(const AZ::EntityId& entityId) = 0;
 };
 
 //! Interface to expose TrackViewSequence functionality to SequenceComponent
@@ -440,7 +430,6 @@ struct IEditor
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
     virtual const QColor& GetColorByName(const QString& name) = 0;
 
-    virtual struct IMovieSystem* GetMovieSystem() = 0;
     virtual class CPluginManager* GetPluginManager() = 0;
     virtual class CViewManager* GetViewManager() = 0;
     virtual class CViewport* GetActiveView() = 0;
@@ -468,10 +457,7 @@ struct IEditor
     //! If set, when axis terrain constrain is selected, snapping only to terrain.
     virtual void SetTerrainAxisIgnoreObjects(bool bIgnore) = 0;
     virtual bool IsTerrainAxisIgnoreObjects() = 0;
-    //! Set current reference coordinate system used when constructing/modifying objects.
-    virtual void SetReferenceCoordSys(RefCoordSys refCoords) = 0;
     //! Get current reference coordinate system used when constructing/modifying objects.
-    virtual RefCoordSys GetReferenceCoordSys() = 0;
     virtual XmlNodeRef FindTemplate(const QString& templateName) = 0;
     virtual void AddTemplate(const QString& templateName, XmlNodeRef& tmpl) = 0;
 

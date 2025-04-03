@@ -79,7 +79,7 @@ namespace Terrain
         
         m_meshMovedFlag = m_parentScene->GetViewTagBitRegistry().AcquireTag(AZ::Render::MeshCommon::MeshMovedName);
 
-        m_rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
+        m_rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessorInterface>();
         m_rayTracingEnabled = (AZ::RHI::RHISystemInterface::Get()->GetRayTracingSupport() != AZ::RHI::MultiDevice::NoDevices) && m_rayTracingFeatureProcessor;
 
         m_isInitialized = true;
@@ -404,14 +404,14 @@ namespace Terrain
         auto createMesh = [&](RtSector::MeshGroup& meshGroup, uint32_t indexBufferByteOffset, uint32_t indexBufferByteCount)
         {
             meshGroup.m_submeshVector.clear();
-            AZ::Render::RayTracingFeatureProcessor::SubMesh& subMesh = meshGroup.m_submeshVector.emplace_back();
+            AZ::Render::RayTracingFeatureProcessorInterface::SubMesh& subMesh = meshGroup.m_submeshVector.emplace_back();
 
             subMesh.m_positionFormat = positionsBufferFormat;
             subMesh.m_positionVertexBufferView = positionsVertexBufferView;
-            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.BuildBufferView(positionsBufferDescriptor);
+            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetBufferView(positionsBufferDescriptor);
             subMesh.m_normalFormat = normalsBufferFormat;
             subMesh.m_normalVertexBufferView = normalsVertexBufferView;
-            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.BuildBufferView(normalsBufferDescriptor);
+            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
             subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
             subMesh.m_material.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
 
@@ -421,12 +421,14 @@ namespace Terrain
             indexBufferDescriptor.m_elementSize = indexElementSize;
             indexBufferDescriptor.m_elementFormat = AZ::RHI::Format::R32_UINT;
 
-            subMesh.m_indexShaderBufferView = rhiIndexBuffer.BuildBufferView(indexBufferDescriptor);
+            subMesh.m_indexShaderBufferView = rhiIndexBuffer.GetBufferView(indexBufferDescriptor);
 
             meshGroup.m_mesh.m_assetId = AZ::Data::AssetId(meshGroup.m_id);
             float xyScale = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
             meshGroup.m_mesh.m_transform = AZ::Transform::CreateIdentity();
             meshGroup.m_mesh.m_nonUniformScale = AZ::Vector3(xyScale, xyScale, m_worldHeightBounds.m_max - m_worldHeightBounds.m_min);
+            meshGroup.m_mesh.m_instanceMask |=
+                static_cast<uint32_t>(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH);
         };
 
         createMesh(rtSector.m_meshGroups[0], 0, totalIndexBufferByteCount);

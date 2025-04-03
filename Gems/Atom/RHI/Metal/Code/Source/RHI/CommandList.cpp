@@ -128,7 +128,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    MTLBlitOption mtlBlitOption = GetBlitOption(destinationImage->GetDescriptor().m_format, descriptor.m_destinationSubresource.m_aspect);
+                    MTLBlitOption mtlBlitOption = GetBlitOption(descriptor.m_sourceFormat, descriptor.m_destinationSubresource.m_aspect);
                     [blitEncoder copyFromBuffer: sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
                                    sourceOffset: sourceBuffer->GetMemoryView().GetOffset() + descriptor.m_sourceOffset
                               sourceBytesPerRow: descriptor.m_sourceBytesPerRow
@@ -157,7 +157,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    MTLBlitOption mtlBlitOption = GetBlitOption(sourceImage->GetDescriptor().m_format, descriptor.m_sourceSubresource.m_aspect);
+                    MTLBlitOption mtlBlitOption = GetBlitOption(descriptor.m_destinationFormat, descriptor.m_sourceSubresource.m_aspect);
                     [blitEncoder copyFromTexture: sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
                                      sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
                                      sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
@@ -906,6 +906,20 @@ namespace AZ
         }
 
         void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::QueryBlasCompactionSizes(
+            const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::CompactBottomLevelAccelerationStructure(
+            const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

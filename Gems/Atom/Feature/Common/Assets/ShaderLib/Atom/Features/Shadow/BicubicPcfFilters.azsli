@@ -28,11 +28,11 @@ static const real DepthMargin = 1.0 - 1e-3;
 struct SampleShadowMapBicubicParameters
 {
     Texture2DArray<float> shadowMap;
-    real3 shadowPos;
+    float3 shadowPos;
     real shadowMapSize;
     real invShadowMapSize;
     SamplerComparisonState samplerState;
-    real comparisonValue;
+    float comparisonValue;
 
     // Optionally pass in a non-zero value into the receiverPlaneDepthBias to reduce shadow acne with large Pcf kernels
     float2 receiverPlaneDepthBias;

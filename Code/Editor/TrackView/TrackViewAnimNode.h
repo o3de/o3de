@@ -9,12 +9,13 @@
 
 #pragma once
 
-#include <AzCore/std/containers/map.h>
-#include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/EntityBus.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzCore/Component/TransformBus.h>
 
 #include "TrackViewNode.h"
 #include "TrackViewTrack.h"
@@ -40,7 +41,7 @@ public:
     void CollapseAll();
 
 private:
-    std::vector<CTrackViewAnimNode*> m_animNodes;
+    AZStd::vector<CTrackViewAnimNode*> m_animNodes;
 };
 
 // Callback called by animation node when its animated.
@@ -57,7 +58,7 @@ public:
     virtual void UnBind([[maybe_unused]] CTrackViewAnimNode* pNode) {}
 };
 
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 //
 // This class represents a IAnimNode in TrackView and contains
 // the editor side code for changing it
@@ -65,7 +66,7 @@ public:
 // It does *not* have ownership of the IAnimNode, therefore deleting it
 // will not destroy the CryMovie track
 //
-////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 class CTrackViewAnimNode
     : public CTrackViewNode
     , public IAnimNodeOwner
@@ -93,7 +94,7 @@ public:
     virtual void SyncToConsole(SAnimContext& animContext);
 
     // CTrackViewAnimNode
-    virtual ETrackViewNodeType GetNodeType() const override { return eTVNT_AnimNode; }
+    ETrackViewNodeType GetNodeType() const override { return eTVNT_AnimNode; }
 
     // Create & remove sub anim nodes
     virtual CTrackViewAnimNode* CreateSubNode(
@@ -104,6 +105,9 @@ public:
     // Create & remove sub tracks
     virtual CTrackViewTrack* CreateTrack(const CAnimParamType& paramType);
     virtual void RemoveTrack(CTrackViewTrack* pTrack);
+
+    // Updates track default values before adding a new key at time, so that animated entity is not affected by adding a key
+    void UpdateTrackDefaultValue(float time, IAnimTrack* pTrack);
 
     // Add selected entities from scene to group node
     virtual CTrackViewAnimNodeBundle AddSelectedEntities(const AZStd::vector<AnimParamType>& tracks);
@@ -120,8 +124,8 @@ public:
 
     // Name setter/getter
     AZStd::string GetName() const override { return m_animNode->GetName(); }
-    virtual bool SetName(const char* pName) override;
-    virtual bool CanBeRenamed() const override;
+    bool SetName(const char* pName) override;
+    bool CanBeRenamed() const override;
 
     // Node owner setter/getter
     virtual void SetNodeEntityId(AZ::EntityId entityId);
@@ -131,8 +135,8 @@ public:
     bool IsBoundToAzEntity() const { return m_animNode ? m_animNode->GetAzEntityId().IsValid(): false; }
 
     // Snap time value to prev/next key in sequence
-    virtual bool SnapTimeToPrevKey(float& time) const override;
-    virtual bool SnapTimeToNextKey(float& time) const override;
+    bool SnapTimeToPrevKey(float& time) const override;
+    bool SnapTimeToNextKey(float& time) const override;
 
     // Expanded state interface
     void SetExpanded(bool expanded) override;
@@ -151,9 +155,9 @@ public:
     virtual CTrackViewTrackBundle GetTracksByParam(const CAnimParamType& paramType) const;
 
     // Key getters
-    virtual CTrackViewKeyBundle GetAllKeys() override;
-    virtual CTrackViewKeyBundle GetSelectedKeys() override;
-    virtual CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) override;
+    CTrackViewKeyBundle GetAllKeys() override;
+    CTrackViewKeyBundle GetSelectedKeys() override;
+    CTrackViewKeyBundle GetKeysInTimeRange(const float t0, const float t1) override;
 
     // Type getters
     AnimNodeType GetType() const;
@@ -163,8 +167,8 @@ public:
     bool AreFlagsSetOnNodeOrAnyParent(EAnimNodeFlags flagsToCheck) const;
 
     // Disabled state
-    virtual void SetDisabled(bool bDisabled) override;
-    virtual bool IsDisabled() const override;
+    void SetDisabled(bool bDisabled) override;
+    bool IsDisabled() const override;
     bool CanBeEnabled() const override;
 
     // Return track assigned to the specified parameter.
@@ -195,7 +199,7 @@ public:
     }
 
     // Check if it's a group node
-    virtual bool IsGroupNode() const override;
+    bool IsGroupNode() const override;
 
     // Generate a new node name
     virtual QString GetAvailableNodeNameStartingWith(const QString& name) const;
@@ -260,13 +264,12 @@ protected:
 
 private:
     // Copy selected keys to XML representation for clipboard
-    virtual void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
+    void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
 
     void CopyNodesToClipboardRec(CTrackViewAnimNode* pCurrentAnimNode, XmlNodeRef& xmlNode, const bool bOnlySelected);
 
     void PasteTracksFrom(XmlNodeRef& xmlNodeWithTracks);
 
-    bool HasObsoleteTrackRec(CTrackViewNode* pCurrentNode) const;
     CTrackViewTrackBundle GetTracks(const bool bOnlySelected, const CAnimParamType& paramType) const;
 
     void PasteNodeFromClipboard(AZStd::map<int, IAnimNode*>& copiedIdToNodeMap, XmlNodeRef xmlNode);
@@ -279,7 +282,6 @@ private:
     void OnNodeVisibilityChanged(IAnimNode* pNode, const bool bHidden) override;
     void OnNodeReset(IAnimNode* pNode) override;
     // ~IAnimNodeOwner
-
 
     // Helper for Is<Position/Rotation/Scale>Delegated to call internally
     bool IsTransformAnimParamTypeDelegated(AnimParamType animParamType) const;

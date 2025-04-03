@@ -17,14 +17,39 @@ namespace AZ
 {
     namespace Render
     {
+        void EditorSubMeshStatsForLod::Reflect(ReflectContext* context)
+        {
+            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<EditorSubMeshStatsForLod>()
+                    ->Field("vertCount", &EditorSubMeshStatsForLod::m_vertCount)
+                    ->Field("triCount", &EditorSubMeshStatsForLod::m_triCount);
+
+                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<EditorSubMeshStatsForLod>("EditorSubMeshStatsForLod", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSubMeshStatsForLod::m_vertCount, "Vert Count", "")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSubMeshStatsForLod::m_triCount, "Tri Count", "")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ;
+                }
+            }
+        }
+
         void EditorMeshStatsForLod::Reflect(ReflectContext* context)
         {
+            EditorSubMeshStatsForLod::Reflect(context);
+
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorMeshStatsForLod>()
                     ->Field("meshCount", &EditorMeshStatsForLod::m_meshCount)
                     ->Field("vertCount", &EditorMeshStatsForLod::m_vertCount)
                     ->Field("triCount", &EditorMeshStatsForLod::m_triCount)
+                    ->Field("subMeshInfo", &EditorMeshStatsForLod::m_subMeshStatsForLod)
                 ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -37,6 +62,8 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_vertCount, "Vert Count", "")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_triCount, "Tri Count", "")
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_subMeshStatsForLod, "Mesh Stats", "")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ;
                 }

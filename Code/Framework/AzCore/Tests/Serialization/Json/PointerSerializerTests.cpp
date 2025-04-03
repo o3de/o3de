@@ -69,5 +69,5 @@ namespace JsonSerializationTests
     };
 
     using PointerConformityTestTypes = ::testing::Types<PointerTestDescription>;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(Pointer, JsonSerializerConformityTests, PointerConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(Pointer, JsonSerializerConformityTests, PointerConformityTestTypes));
 } // namespace JsonSerializationTests

@@ -41,7 +41,6 @@ ly_add_target(
             Gem::Atom_Component_DebugCamera.Static
             Gem::Atom_Feature_Common
             Gem::Atom_Feature_Common.Public
-            Gem::Atom_Feature_Common.Static
             Gem::Atom_RHI.Public
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Edit

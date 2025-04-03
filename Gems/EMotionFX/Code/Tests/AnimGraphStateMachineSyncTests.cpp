@@ -222,7 +222,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphStateMachineSyncTests,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphStateMachineSyncTests,
         AnimGraphStateMachineSyncFixture,
         ::testing::ValuesIn(animGraphStateMachineSyncTestData)
     );

@@ -9,11 +9,14 @@
 
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/DeviceShaderResourceGroupData.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
 #include <AzCore/std/containers/variant.h>
+
 
 namespace AZ::RHI
 {
@@ -204,7 +207,7 @@ namespace AZ::RHI
             ShaderInputBufferIndex indirectResourceBufferIndex,
             const BufferView* indirectResourceBufferView,
             AZStd::span<const ImageView* const> imageViews,
-            uint32_t* outIndices,
+            AZStd::unordered_map<int, uint32_t*> outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex = 0);
 
@@ -213,7 +216,7 @@ namespace AZ::RHI
             ShaderInputBufferIndex indirectResourceBufferIndex,
             const BufferView* indirectResourceBufferView,
             AZStd::span<const BufferView* const> bufferViews,
-            uint32_t* outIndices,
+            AZStd::unordered_map<int, uint32_t*> outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex = 0);
 

@@ -43,67 +43,6 @@ namespace AZ
 {
     namespace Render
     {
-        enum PlaneType
-        {
-            PlaneLeft,
-            PlaneRight,
-            PlaneBottom,
-            PlaneTop,
-            PlaneNear,
-            PlaneFar,
-
-            PlanesNum
-        };
-
-        static void ViewProjectionMatrixToPlanes(const AZ::Matrix4x4& viewToClip, AZStd::array<AZ::Plane, PlanesNum>& planes)
-        {
-            AZ::Vector4 l = viewToClip.GetRow(3) + viewToClip.GetRow(0);
-            AZ::Vector4 r = viewToClip.GetRow(3) - viewToClip.GetRow(0);
-            AZ::Vector4 b = viewToClip.GetRow(3) + viewToClip.GetRow(1);
-            AZ::Vector4 t = viewToClip.GetRow(3) - viewToClip.GetRow(1);
-            AZ::Vector4 f = viewToClip.GetRow(3) - viewToClip.GetRow(2);
-            AZ::Vector4 n = viewToClip.GetRow(2);
-
-            l /= sqrtf(l.Dot3(l.GetAsVector3()));
-            r /= sqrtf(r.Dot3(r.GetAsVector3()));
-            b /= sqrtf(b.Dot3(b.GetAsVector3()));
-            t /= sqrtf(t.Dot3(t.GetAsVector3()));
-            n /= AZStd::max(sqrtf(n.Dot3(n.GetAsVector3())), FLT_MIN);
-            f /= AZStd::max(sqrtf(f.Dot3(f.GetAsVector3())), FLT_MIN);
-
-            bool reversedDepthBuffer = abs(n.GetW()) > abs(f.GetW());
-            if (reversedDepthBuffer)
-            {
-                AZStd::swap(n, f);
-            }
-
-            planes[PlaneLeft].Set(l);
-            planes[PlaneRight].Set(r);
-            planes[PlaneBottom].Set(b);
-            planes[PlaneTop].Set(t);
-            planes[PlaneNear].Set(n);
-            planes[PlaneFar].Set(f);
-        }
-
-        // given a 0 to 1 screen uv position, these constants can be used to construct a view-space ray to that location
-        static AZStd::array<float, 4> GenerateScreenUVToRayConstants(const AZ::Matrix4x4& viewToClip)
-        {
-            AZStd::array<Plane, PlanesNum> planes;
-            ViewProjectionMatrixToPlanes(viewToClip, planes);
-
-            // What we are doing here is converting from a plane normal to (eventually in the shader) a ray with a z length of 1.0
-            // Once we have that we simply multiply by the tile depth to get a view space position
-
-            // The reciprocal here is from our desire to get a ray with a length of 1.0
-            float leftX, rightX, bottomY, topY;
-            leftX = planes[PlaneLeft].GetNormal().GetZ() / planes[PlaneLeft].GetNormal().GetX();
-            rightX = planes[PlaneRight].GetNormal().GetZ() / planes[PlaneRight].GetNormal().GetX();
-            bottomY = planes[PlaneBottom].GetNormal().GetZ() / planes[PlaneBottom].GetNormal().GetY();
-            topY = planes[PlaneTop].GetNormal().GetZ() / planes[PlaneTop].GetNormal().GetY();
-
-            return AZStd::array<float, 4>{rightX - leftX, bottomY - topY, leftX, topY};
-        }
-
         RPI::Ptr<LightCullingPass> LightCullingPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<LightCullingPass> pass = aznew LightCullingPass(descriptor);
@@ -139,6 +78,10 @@ namespace AZ
             SetConstantdataToSRG();
 
             BindPassSrg(context, m_shaderResourceGroup);
+            if (RPI::ViewPtr view = GetView())
+            {
+                BindSrg(view->GetRHIShaderResourceGroup());
+            }
 
             m_shaderResourceGroup->Compile();
         }
@@ -208,17 +151,12 @@ namespace AZ
         {
             struct LightCullingConstants
             {
-                AZStd::array<float, 16> m_worldToView;
-                AZStd::array<float, 4> m_screenUVToRay;
                 AZStd::array<float, 2> m_gridPixel;
                 AZStd::array<float, 2> m_gridHalfPixel;
-                uint32_t             m_gridWidth;
-                uint32_t             m_padding[3];
+                uint32_t m_gridWidth;
+                uint32_t m_padding[3];
             } cullingConstants{};
 
-            RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
-            view->GetWorldToViewMatrix().StoreToRowMajorFloat16(cullingConstants.m_worldToView.data());
-            cullingConstants.m_screenUVToRay = GenerateScreenUVToRayConstants(view->GetViewToClipMatrix());
             cullingConstants.m_gridPixel = ComputeGridPixelSize();
             cullingConstants.m_gridHalfPixel[0] = cullingConstants.m_gridPixel[0] * 0.5f;
             cullingConstants.m_gridHalfPixel[1] = cullingConstants.m_gridPixel[1] * 0.5f;

@@ -6,7 +6,7 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 option enum class OpacityMode 
 {

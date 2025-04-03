@@ -111,9 +111,9 @@ namespace UnitTest
             m_longBuffer = Buffer::FindOrCreate(m_longBufferAsset);
 
             m_threeBuffers = { m_shortBuffer, m_mediumBuffer, m_longBuffer };
-            m_bufferViewA = m_longBuffer->GetRHIBuffer()->BuildBufferView(RHI::BufferViewDescriptor::CreateRaw(5, 6));
-            m_bufferViewB = m_longBuffer->GetRHIBuffer()->BuildBufferView(RHI::BufferViewDescriptor::CreateRaw(15, 4));
-            m_bufferViewC = m_longBuffer->GetRHIBuffer()->BuildBufferView(RHI::BufferViewDescriptor::CreateRaw(22, 18));
+            m_bufferViewA = m_longBuffer->GetRHIBuffer()->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(5, 6));
+            m_bufferViewB = m_longBuffer->GetRHIBuffer()->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(15, 4));
+            m_bufferViewC = m_longBuffer->GetRHIBuffer()->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(22, 18));
 
             m_threeBufferViews = { m_bufferViewA.get(), m_bufferViewB.get(), m_bufferViewC.get() };
         }

@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
@@ -91,6 +92,10 @@ namespace AZ
             virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
             //! Sets all of the the point data for the provided LightHandle.
             virtual void SetPointData(LightHandle handle, const PointLightData& data) = 0;
+            //! Returns the buffer containing the light data for all point lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the number of point lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

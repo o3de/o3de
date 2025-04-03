@@ -186,11 +186,14 @@ namespace Multiplayer
 
         EXPECT_TRUE(netEntityTracker->Exists(netId));
 
-        NetworkEntityTracker::iterator it = netEntityTracker->begin();
-        AZ::Entity* entity = netEntityTracker->Move(it);
+        // Move() will destroy the iterator.  This code has been changed
+        // to avoid keeping an object in scope that would otherwise be invalid (the iterator)
+        NetEntityId movedEntityId = netEntityTracker->begin()->first;
+        AZ::Entity* entity = netEntityTracker->Move(netEntityTracker->begin());
+
         EXPECT_NE(entity, nullptr);
-        netEntityTracker->Add(it->first, entity);
-        netEntityTracker->erase(it->first);
+        netEntityTracker->Add(movedEntityId, entity);
+        netEntityTracker->erase(movedEntityId);
         EXPECT_FALSE(netEntityTracker->Exists(netId));
     }
 

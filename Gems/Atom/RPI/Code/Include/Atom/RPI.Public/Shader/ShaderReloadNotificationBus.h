@@ -9,7 +9,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 namespace AZ
@@ -29,7 +29,7 @@ namespace AZ
          * your bus Handlers could receive Reinitialized messages from multiple sources. It may be necessary to check the memory addresses of these
          * parameters against local members before using this data.
          */
-        class ShaderReloadNotifications
+        class ATOM_RPI_PUBLIC_API ShaderReloadNotifications
             : public EBusTraits
         {
 
@@ -56,3 +56,5 @@ namespace AZ
 
     } // namespace RPI
 } //namespace AZ
+
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(RPI::ShaderReloadNotifications);

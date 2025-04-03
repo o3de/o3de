@@ -59,6 +59,14 @@ namespace AZ::RHI
             return m_enabled;
         }
 
+        //! The pipeline state type is the same regardless of the device,
+        //! so we query here the default device.
+        PipelineStateType GetPipelineStateType() const
+        {
+            const auto& deviceDrawItem = GetDeviceDrawItem(MultiDevice::DefaultDeviceIndex);
+            return deviceDrawItem.m_pipelineState->GetType();
+        }
+
         void SetEnabled(bool enabled)
         {
             m_enabled = enabled;

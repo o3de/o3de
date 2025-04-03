@@ -424,7 +424,7 @@ namespace UnitTest
         EXPECT_TRUE(IsPackValid(testArchivePath.c_str()));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         ArchiveCompression,
         ArchiveCompressionTestFixture,
         ::testing::Values(

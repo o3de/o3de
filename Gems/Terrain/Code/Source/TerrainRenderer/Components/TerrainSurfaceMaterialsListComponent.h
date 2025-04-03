@@ -106,6 +106,9 @@ namespace Terrain
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
+        void OnAssetReadyPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void OnAssetReloadedPostTick(AZ::Data::Asset<AZ::Data::AssetData> asset);
+
         TerrainSurfaceMaterialsListConfig m_configuration;
 
         AZ::Aabb m_cachedAabb{ AZ::Aabb::CreateNull() };

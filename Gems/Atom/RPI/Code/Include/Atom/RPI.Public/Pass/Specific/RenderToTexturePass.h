@@ -11,6 +11,7 @@
 
 #include <Atom/RPI.Reflect/Pass/RenderToTexturePassData.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
@@ -22,7 +23,7 @@ namespace AZ
         //! The RenderToTexturePass's pass descriptor defines the render target's size and format and the child pass's template name.
         //! RenderToTexturePass can also read back the render target.
         //! This is useful to render a render pipeline to a render target and (optional) read back its data to cpu memory for later use. 
-        class RenderToTexturePass final
+        class ATOM_RPI_PUBLIC_API RenderToTexturePass final
             : public ParentPass
         {
         public:

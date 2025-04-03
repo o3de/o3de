@@ -10,7 +10,7 @@
 
 #define ENABLE_ATMOSPHERE_SHADOWS 1
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>

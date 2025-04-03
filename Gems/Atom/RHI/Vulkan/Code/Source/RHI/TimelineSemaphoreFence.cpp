@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/VkAllocator.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <RHI/Device.h>
 #include <RHI/TimelineSemaphoreFence.h>
 
@@ -49,6 +50,17 @@ namespace AZ
             timelineCreateInfo.pNext = nullptr;
             timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
             timelineCreateInfo.initialValue = 0;
+
+            VkExternalSemaphoreHandleTypeFlags externalHandleTypeFlags = 0;
+            ExternalHandleRequirementBus::Broadcast(
+                &ExternalHandleRequirementBus::Events::CollectSemaphoreExportHandleTypes, externalHandleTypeFlags);
+            VkExportSemaphoreCreateInfoKHR createExport{};
+            if (externalHandleTypeFlags != 0)
+            {
+                createExport.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
+                createExport.handleTypes = externalHandleTypeFlags;
+                timelineCreateInfo.pNext = &createExport;
+            }
 
             VkSemaphoreCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

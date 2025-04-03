@@ -246,7 +246,7 @@ namespace AZ
             {
                 fenceValue = m_uploadFence.Increment();
 
-                Image* image = static_cast<Image*>(request.m_image);
+                Image* image = static_cast<Image*>(request.m_image.get());
                 image->SetUploadFenceValue(fenceValue);
 
                 uint32_t startMip = residentMip - 1;

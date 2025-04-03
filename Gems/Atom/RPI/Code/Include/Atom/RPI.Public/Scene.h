@@ -16,6 +16,7 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -55,7 +56,7 @@ namespace AZ
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;
 
-        class Scene final : public SceneRequestBus::Handler
+        class ATOM_RPI_PUBLIC_API Scene final : public SceneRequestBus::Handler
         {
             friend class FeatureProcessorFactory;
             friend class RPISystem;

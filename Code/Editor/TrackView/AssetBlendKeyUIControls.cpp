@@ -13,9 +13,9 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 
 // CryCommon
+#include <CryCommon/Maestro/Bus/SequenceComponentBus.h>
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
-#include <CryCommon/Maestro/Bus/SequenceComponentBus.h>
 #include <CryCommon/Maestro/Types/AssetBlendKey.h>
 
 // Editor
@@ -23,7 +23,6 @@
 #include "TrackViewKeyPropertiesDlg.h"
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
 
-//////////////////////////////////////////////////////////////////////////
 void CAssetBlendKeyUIControls::ResetStartEndLimits(float assetBlendKeyDuration)
 {
     const float time_zero = .0f;
@@ -34,7 +33,7 @@ void CAssetBlendKeyUIControls::ResetStartEndLimits(float assetBlendKeyDuration)
     mv_blendOutTime.GetVar()->SetLimits(time_zero, assetBlendKeyDuration, step, true, true);
 }
 
-bool CAssetBlendKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CAssetBlendKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

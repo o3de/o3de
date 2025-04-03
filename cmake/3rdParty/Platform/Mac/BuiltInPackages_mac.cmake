@@ -19,7 +19,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-mac                              TARGETS expat                       PACKAGE_HASH 70f195977a17b08a4dc8687400fd7f2589e3b414d4961b562129166965b6f658)
-ly_associate_package(PACKAGE_NAME assimp-5.4.3-rev1-mac                             TARGETS assimplib                   PACKAGE_HASH 2e3eaf23990888e1386328d3d42d99d65bff4c94d385889406f314952608062b)
+ly_associate_package(PACKAGE_NAME assimp-5.4.3-rev3-mac                             TARGETS assimp                      PACKAGE_HASH bfda2c319bb4cc26aea8445a9ad33347e0e5ead2a959a5eafb5eed47431f56ef)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.7.2308-o3de-rev2-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH bdbf069d5704cf16079e60421857bda150ba6eed69900d03ac7ffefc2335cda3)
 ly_associate_package(PACKAGE_NAME SPIRVCross-1.3.275.0-rev1-mac                     TARGETS SPIRVCross                  PACKAGE_HASH 5ad9629f677c42847daf8b097728323685d7018d3ac8af0508d1bd0727a81304)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-mac                            TARGETS TIFF                        PACKAGE_HASH c2615ccdadcc0e1d6c5ed61e5965c4d3a82193d206591b79b805c3b3ff35a4bf)
@@ -30,7 +30,6 @@ ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-mac                      
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac                             TARGETS mikkelsen                   PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-mac                    TARGETS GoogleBenchmark             PACKAGE_HASH a1c8793eb1760905290065929b45600a4b4457345fcc129fce253d1a8980bbce)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev3-mac           TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH bc322f9e28d519ab5959a638b38ee3b773fefb868802823fad2396ab4f7bcbc8)
-ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-mac                             TARGETS OpenMesh                    PACKAGE_HASH af92db02a25c1f7e1741ec898f49d81d52631e00336bf9bddd1e191590063c2f)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1o-rev1-mac                           TARGETS OpenSSL                     PACKAGE_HASH 73a4bd7856b53edf5ab9d2ff1d31ebb02301be818680a59206ce8ec5940f3468)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev4-mac                            TARGETS OpenEXR Imath               PACKAGE_HASH 927b8ca6cc5815fa8ee4efe6ea2845487cba2540f7958d537692e7c9481a68fc)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-rev8-mac                                TARGETS Qt                          PACKAGE_HASH d0f97579ea2822c73f0b316a26c68ceb5332763e691d7e78d6b02fe3104b1d31)

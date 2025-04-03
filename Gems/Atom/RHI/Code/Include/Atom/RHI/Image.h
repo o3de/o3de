@@ -51,7 +51,7 @@ namespace AZ::RHI
         const ImageDescriptor& GetDescriptor() const;
 
         //! Returns the multi-device DeviceImageView
-        Ptr<ImageView> BuildImageView(const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<ImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
 
         //! Computes the subresource layouts and total size of the image contents, if represented linearly. Effectively,
         //! this data represents how to store the image in a buffer resource. Naturally, if the image contents
@@ -93,9 +93,6 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        //! Returns true if the DeviceResourceView is in the cache of all single device images
-        bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
-
     protected:
         virtual void SetDescriptor(const ImageDescriptor& descriptor);
 
@@ -110,60 +107,4 @@ namespace AZ::RHI
         ImageAspectFlags m_aspectFlags = ImageAspectFlags::None;
     };
 
-    //! A ImageView is a light-weight representation of a view onto a multi-device image.
-    //! It holds a raw pointer to a multi-device image as well as an ImageViewDescriptor
-    //! Using both, single-device ImageViews can be retrieved
-    class ImageView : public ResourceView
-    {
-    public:
-        AZ_RTTI(ImageView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", ResourceView);
-        virtual ~ImageView() = default;
-
-        ImageView(const RHI::Image* image, ImageViewDescriptor descriptor, MultiDevice::DeviceMask deviceMask)
-            : m_image{ image }
-            , m_descriptor{ descriptor }
-            , m_deviceMask{ deviceMask }
-        {
-        }
-
-        //! Given a device index, return the corresponding DeviceImageView for the selected device
-        const RHI::Ptr<RHI::DeviceImageView> GetDeviceImageView(int deviceIndex) const;
-
-        //! Return the contained multi-device image
-        const RHI::Image* GetImage() const
-        {
-            return m_image.get();
-        }
-
-        //! Return the contained ImageViewDescriptor
-        const ImageViewDescriptor& GetDescriptor() const
-        {
-            return m_descriptor;
-        }
-
-        const Resource* GetResource() const override
-        {
-            return m_image.get();
-        }
-
-        const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
-        {
-            return GetDeviceImageView(deviceIndex).get();
-        }
-
-    private:
-        //! Safe-guard access to DeviceImageView cache during parallel access
-        mutable AZStd::mutex m_imageViewMutex;
-        //! A raw pointer to a multi-device image
-        ConstPtr<RHI::Image> m_image;
-        //! The corresponding ImageViewDescriptor for this view.
-        ImageViewDescriptor m_descriptor;
-        //! The device mask of the image stored for comparison to figure out when cache entries need to be freed.
-        mutable MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
-        //! DeviceImageView cache
-        //! This cache is necessary as the caller receives raw pointers from the ResourceCache,
-        //! which now, with multi-device objects in use, need to be held in memory as long as
-        //! the multi-device view is held.
-        mutable AZStd::unordered_map<int, Ptr<RHI::DeviceImageView>> m_cache;
-    };
 } // namespace AZ::RHI

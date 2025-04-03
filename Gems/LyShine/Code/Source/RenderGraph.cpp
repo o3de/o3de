@@ -1046,8 +1046,11 @@ namespace LyShine
                         attachmentImages.emplace_back(childRenderTargetRenderNode->GetRenderTarget());
                     }
                 }
-
-                attachmentImagesAndDependencies.emplace_back(AttachmentImageAndDependentsPair(renderTargetRenderNode->GetRenderTarget(), attachmentImages));
+                if (renderTargetRenderNode->GetRenderTarget())
+                {
+                    attachmentImagesAndDependencies.emplace_back(
+                        AttachmentImageAndDependentsPair(renderTargetRenderNode->GetRenderTarget(), attachmentImages));
+                }
             }
         }
     }

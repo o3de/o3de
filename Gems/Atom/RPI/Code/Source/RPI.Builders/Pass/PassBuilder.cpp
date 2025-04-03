@@ -55,7 +55,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc builder;
             builder.m_name = PassBuilderJobKey;
-            builder.m_version = 17; // Add RHI::ScopeAttachmentUsage to PassTemplate
+            builder.m_version = 18; // Add Allocator to ShaderStageFunction
             builder.m_busId = azrtti_typeid<PassBuilder>();
             builder.m_createJobFunction = AZStd::bind(&PassBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
             builder.m_processJobFunction = AZStd::bind(&PassBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);

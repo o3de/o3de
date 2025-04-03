@@ -160,29 +160,23 @@ namespace Multiplayer
                 "that is network enabled with a Network Binding component.",
                 prefabEntityId.m_prefabName.GetCStr());
         }
-        else if (entityList.size() == 1)
-        {
-            // Success: The player prefab has exactly one networked entity in it.
-            controlledEntity = entityList[0];
-        }
-        else
-        {
-            // Failure: The player prefab has too many networked entities in it.
-            AZLOG_ERROR(
-                "Attempt to spawn prefab '%s' failed, it contains too many networked entities. "
-                "A player prefab must only have a single networked entity inside of it.",
-                prefabEntityId.m_prefabName.GetCStr());
-            for (auto& entityHandle : entityList)
-            {
-                AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(entityHandle);
-            }
-        }
 
+        controlledEntity = entityList[0];
         return controlledEntity;
     }
 
     void SimplePlayerSpawnerComponent::OnPlayerLeave(ConstNetworkEntityHandle entityHandle, [[maybe_unused]] const ReplicationSet& replicationSet, [[maybe_unused]] AzNetworking::DisconnectReason reason)
     {
-        AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(entityHandle);
+        // Walk hierarchy backwards to remove all children before parents
+        AZStd::vector<AZ::EntityId> hierarchy = entityHandle.GetEntity()->GetTransform()->GetEntityAndAllDescendants();
+        for (auto it = hierarchy.rbegin(); it != hierarchy.rend(); ++it)
+        {
+            const AZ::EntityId hierarchyEntityId = *it;
+            ConstNetworkEntityHandle hierarchyEntityHandle = GetNetworkEntityManager()->GetEntity(GetNetworkEntityManager()->GetNetEntityIdById(hierarchyEntityId));
+            if (hierarchyEntityHandle)
+            {
+                AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(hierarchyEntityHandle);
+            }
+        }
     }
 } // namespace Multiplayer

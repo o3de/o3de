@@ -199,7 +199,11 @@ real3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMas
                 }
                 else
                 {
+                #ifdef CS_SAMPLERS
+                    blendSourceValues = real3(MaterialSrg::m_blendMaskTexture.SampleLevel(MaterialSrg::m_sampler, blendMaskUv, 0).rgb);
+                #else
                     blendSourceValues = real3(MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, blendMaskUv).rgb);
+                #endif
                 }
                 break;
             case LayerBlendSource::BlendMaskVertexColors:

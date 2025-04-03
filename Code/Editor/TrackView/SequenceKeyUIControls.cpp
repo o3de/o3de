@@ -16,8 +16,7 @@
 #include "KeyUIControls.h"
 #include "TrackViewDialog.h"
 
-//////////////////////////////////////////////////////////////////////////
-bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {
@@ -34,7 +33,6 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedK
         {
             CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
 
-            /////////////////////////////////////////////////////////////////////////////////
             // fill sequence comboBox with available sequences
             mv_sequence.SetEnumList(nullptr);
 
@@ -56,28 +54,31 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedK
                 }
             }
 
-            /////////////////////////////////////////////////////////////////////////////////
             // fill Key Properties with selected key values
             ISequenceKey sequenceKey;
             keyHandle.GetKey(&sequenceKey);
             
             QString entityIdString = CTrackViewDialog::GetEntityIdAsString((sequenceKey.sequenceEntityId));
-            mv_sequence = entityIdString;            
+            mv_sequence = entityIdString;
            
             mv_overrideTimes = sequenceKey.bOverrideTimes;
             if (!sequenceKey.bOverrideTimes)
             {
-                IAnimSequence* pSequence2 = GetIEditor()->GetSystem()->GetIMovieSystem()->FindSequence(sequenceKey.sequenceEntityId);
+                IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+                if (movieSystem)
+                {
+                    IAnimSequence* pSequence2 = movieSystem->FindSequence(sequenceKey.sequenceEntityId);
 
-                if (pSequence2)
-                {
-                    sequenceKey.fStartTime = pSequence2->GetTimeRange().start;
-                    sequenceKey.fEndTime = pSequence2->GetTimeRange().end;
-                }
-                else
-                {
-                    sequenceKey.fStartTime = 0.0f;
-                    sequenceKey.fEndTime = 0.0f;
+                    if (pSequence2)
+                    {
+                        sequenceKey.fStartTime = pSequence2->GetTimeRange().start;
+                        sequenceKey.fEndTime = pSequence2->GetTimeRange().end;
+                    }
+                    else
+                    {
+                        sequenceKey.fStartTime = 0.0f;
+                        sequenceKey.fEndTime = 0.0f;
+                    }
                 }
             }
 
@@ -104,6 +105,8 @@ void CSequenceKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
         return;
     }
 
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
     for (unsigned int keyIndex = 0; keyIndex < selectedKeys.GetKeyCount(); ++keyIndex)
     {
         CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(keyIndex);
@@ -126,7 +129,7 @@ void CSequenceKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
 
             SyncValue(mv_overrideTimes, sequenceKey.bOverrideTimes, false, pVar);
 
-            IAnimSequence* pSequence = GetIEditor()->GetSystem()->GetIMovieSystem()->FindSequence(seqOwnerId);
+            IAnimSequence* pSequence = movieSystem ? movieSystem->FindSequence(seqOwnerId) : nullptr;
 
             if (!sequenceKey.bOverrideTimes)
             {
@@ -149,11 +152,9 @@ void CSequenceKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
 
             sequenceKey.fDuration = sequenceKey.fEndTime - sequenceKey.fStartTime > 0 ? sequenceKey.fEndTime - sequenceKey.fStartTime : 0.0f;
 
-            IMovieSystem* pMovieSystem = GetIEditor()->GetSystem()->GetIMovieSystem();
-
-            if (pMovieSystem != nullptr)
+            if (movieSystem)
             {
-                pMovieSystem->SetStartEndTime(pSequence, sequenceKey.fStartTime, sequenceKey.fEndTime);
+                movieSystem->SetStartEndTime(pSequence, sequenceKey.fStartTime, sequenceKey.fEndTime);
             }
 
             bool isDuringUndo = false;

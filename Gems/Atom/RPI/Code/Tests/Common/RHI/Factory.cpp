@@ -6,20 +6,22 @@
  *
  */
 
-#include <Common/RHI/Factory.h>
-#include <Common/RHI/Stubs.h>
 #include <Atom/RHI/DeviceDispatchRaysIndirectBuffer.h>
+#include <Atom/RHI/DeviceFence.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
+#include <Atom/RHI/DeviceRayTracingCompactionQueryPool.h>
 #include <Atom/RHI/DeviceRayTracingPipelineState.h>
 #include <Atom/RHI/DeviceRayTracingShaderTable.h>
-#include <Atom/RHI/DeviceRayTracingBufferPools.h>
-#include <Atom/RHI/DeviceTransientAttachmentPool.h>
-#include <Atom/RHI/FrameGraphExecuter.h>
-#include <Atom/RHI/FrameGraphCompiler.h>
-#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/DeviceShaderResourceGroupPool.h>
-#include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/DeviceSwapChain.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
+#include <Atom/RHI/FrameGraphCompiler.h>
+#include <Atom/RHI/FrameGraphExecuter.h>
+#include <Common/RHI/Factory.h>
+#include <Common/RHI/Stubs.h>
+
 
 namespace UnitTest
 {
@@ -218,6 +220,18 @@ namespace UnitTest
         }
 
         RHI::Ptr<RHI::DeviceDispatchRaysIndirectBuffer> Factory::CreateDispatchRaysIndirectBuffer()
+        {
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
+
+        AZ::RHI::Ptr<AZ::RHI::DeviceRayTracingCompactionQueryPool> Factory::CreateRayTracingCompactionQueryPool()
+        {
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
+
+        AZ::RHI::Ptr<AZ::RHI::DeviceRayTracingCompactionQuery> Factory::CreateRayTracingCompactionQuery()
         {
             AZ_Assert(false, "Not implemented");
             return nullptr;

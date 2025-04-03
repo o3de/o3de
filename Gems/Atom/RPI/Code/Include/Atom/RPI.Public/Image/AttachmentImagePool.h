@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/Device.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
@@ -24,9 +24,11 @@ namespace AZ
     {
         class ResourcePoolAsset;
 
-        class AttachmentImagePool final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API AttachmentImagePool final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ImageSystem;
 
         public:
@@ -36,14 +38,14 @@ namespace AZ
             //! Instantiates or returns an existing attachment image pool using a paired resource pool asset.
             static Data::Instance<AttachmentImagePool> FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset);
 
-            ~AttachmentImagePool() override = default;
+            ~AttachmentImagePool() override;
 
             RHI::ImagePool* GetRHIPool();
 
             const RHI::ImagePool* GetRHIPool() const;
 
         private:
-            AttachmentImagePool() = default;
+            AttachmentImagePool();
 
             // Standard asset creation path.
             static Data::Instance<AttachmentImagePool> CreateInternal(ResourcePoolAsset& poolAsset);

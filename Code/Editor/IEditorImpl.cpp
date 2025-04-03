@@ -84,7 +84,6 @@ CEditorImpl::CEditorImpl()
     , m_pViewManager(nullptr)
     , m_pUndoManager(nullptr)
     , m_selectedAxis(AXIS_TERRAIN)
-    , m_refCoordsSys(COORDS_LOCAL)
     , m_bUpdates(true)
     , m_bTerrainAxisIgnoreObjects(false)
     , m_pDisplaySettings(nullptr)
@@ -125,6 +124,7 @@ CEditorImpl::CEditorImpl()
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
     m_pSequenceManager = new CTrackViewSequenceManager;
+
     m_pAnimationContext = new CAnimationContext;
 
     DetectVersion();
@@ -493,29 +493,6 @@ bool CEditorImpl::IsTerrainAxisIgnoreObjects()
 {
     return m_bTerrainAxisIgnoreObjects;
 }
-
-void CEditorImpl::SetReferenceCoordSys(RefCoordSys refCoords)
-{
-    m_refCoordsSys = refCoords;
-
-    // Update all views.
-    UpdateViews(eUpdateObjects, nullptr);
-
-    // Update the construction plane infos.
-    CViewport* pViewport = GetActiveView();
-    if (pViewport)
-    {
-        pViewport->MakeConstructionPlane(GetIEditor()->GetAxisConstrains());
-    }
-
-    Notify(eNotify_OnRefCoordSysChange);
-}
-
-RefCoordSys CEditorImpl::GetReferenceCoordSys()
-{
-    return m_refCoordsSys;
-}
-
 
 CSettingsManager* CEditorImpl::GetSettingsManager()
 {

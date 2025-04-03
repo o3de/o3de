@@ -209,11 +209,17 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
+    bool PreviewRenderer::IsContentReadyToRender()
+    {
+        return m_currentCaptureRequest.m_content->IsReadyToRender();
+    }
+
     AZ::Render::FrameCaptureId PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
-        auto captureCallback = [captureCompleteCallback, captureFailedCallback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
+        auto captureCallback =
+            [captureCompleteCallback, captureFailedCallback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
         {
             if (result.m_dataBuffer)
             {

@@ -315,7 +315,7 @@ namespace EMotionFX
         const float t = (currentTime - firstKey.GetTime()) / (nextKey.GetTime() - firstKey.GetTime());
 
         // lerp between them
-        return MCore::NLerp(firstKey.GetValue(), nextKey.GetValue(), t);
+        return firstKey.GetValue().NLerp(nextKey.GetValue(), t);
     }
 
 

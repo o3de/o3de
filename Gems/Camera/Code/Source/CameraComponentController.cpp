@@ -21,7 +21,7 @@
 #include <AzCore/Math/Vector2.h>
 
 #include <AzFramework/Viewport/ViewportScreen.h>
-
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace Camera
 {
@@ -42,6 +42,7 @@ namespace Camera
                 ->Field("MakeActiveViewOnActivation", &CameraComponentConfig::m_makeActiveViewOnActivation)
                 ->Field("RenderToTexture", &CameraComponentConfig::m_renderTextureAsset)
                 ->Field("PipelineTemplate", &CameraComponentConfig::m_pipelineTemplate)
+                ->Field("AllowPipelineChange", &CameraComponentConfig::m_allowPipelineChanges)
             ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -82,9 +83,21 @@ namespace Camera
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Render To Texture")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_renderTextureAsset, "Target texture", "The render target texture which the camera renders to.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_pipelineTemplate, "Pipeline template", "The root pass template for the camera's render pipeline")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_allowPipelineChanges, "Allow pipeline changes", "If true, the camera's render pipeline can be changed at runtime.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &CameraComponentConfig::GetAllowPipelineChangesVisibility)
                 ;
             }
         }
+    }
+    AZ::u32 CameraComponentConfig::GetAllowPipelineChangesVisibility() const
+    {
+        bool experimentalFeaturesEnabled = false;
+        const auto* registry = AZ::SettingsRegistry::Get();
+        if (registry)
+        {
+            registry->Get(experimentalFeaturesEnabled, "/O3DE/Atom/ExperimentalFeaturesEnabled");
+        }
+        return experimentalFeaturesEnabled ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     float CameraComponentConfig::GetFarClipDistance() const
@@ -326,7 +339,7 @@ namespace Camera
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = m_config.m_pipelineTemplate;
         pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
-        pipelineDesc.m_allowModification = false;
+        pipelineDesc.m_allowModification = m_config.m_allowPipelineChanges;
         m_renderToTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForImage(pipelineDesc, m_config.m_renderTextureAsset);
 
         if (!m_renderToTexturePipeline)

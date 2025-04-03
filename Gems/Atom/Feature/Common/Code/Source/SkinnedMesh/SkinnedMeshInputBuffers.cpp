@@ -16,6 +16,7 @@
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
+#include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RHI/Factory.h>
@@ -23,8 +24,6 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Math/PackedVector3.h>
 #include <inttypes.h>
-
-AZ_DECLARE_BUDGET(AzRender);
 
 namespace AZ
 {
@@ -108,6 +107,13 @@ namespace AZ
             // Create a buffer view for each input stream in the current mesh
             for (; !streamIter.HasEnded(); ++streamIter, ++meshStreamIndex)
             {
+                // `IsValid` would return false for dummy buffers, since the index of those buffers equals the size of the buffer view.
+                // We shall skip dummy buffers to avoid empty pointers in the following code. 
+                if (!streamIter.IsValid())
+                {
+                    continue;
+                }
+
                 // Get the semantic from the input layout, and use that to get the SkinnedMeshStreamInfo
                 const SkinnedMeshVertexStreamInfo* streamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(
                     inputLayout.GetStreamChannels()[meshStreamIndex].m_semantic);
@@ -118,7 +124,8 @@ namespace AZ
                     RHI::BufferViewDescriptor descriptor =
                         CreateInputViewDescriptor(streamInfo->m_enum, streamInfo->m_elementFormat, streamBufferView);
 
-                    AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = const_cast<RHI::Buffer*>(streamBufferView.GetBuffer())->BuildBufferView(descriptor);
+                    AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView =
+                        const_cast<RHI::Buffer*>(streamBufferView.GetBuffer())->GetBufferView(descriptor);
                     {
                         // Initialize the buffer view
                         AZStd::string bufferViewName = AZStd::string::format(
