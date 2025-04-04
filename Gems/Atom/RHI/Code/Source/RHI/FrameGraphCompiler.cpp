@@ -690,7 +690,7 @@ namespace AZ::RHI
 
         AZStd::sort(commands.begin(), commands.end());
 
-        auto processCommands = [&](TransientAttachmentPoolCompileFlags compileFlags, MultiDevice::DeviceMask memoryHints)
+        auto processCommands = [&](TransientAttachmentPoolCompileFlags compileFlags, MultiDevice::DeviceMask memoryHintDeviceMask)
         {
             bool allocateResources = !CheckBitsAny(compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources);
             transientAttachmentPool.Begin(compileFlags);
@@ -706,7 +706,7 @@ namespace AZ::RHI
                 const uint32_t attachmentIndex = command.m_bits.m_attachmentIndex;
                 const Action action = (Action)command.m_bits.m_action;
 
-                if (!allocateResources && !CheckBit(memoryHints, scopes[scopeIndex]->GetDeviceIndex()))
+                if (!allocateResources && !CheckBit(memoryHintDeviceMask, scopes[scopeIndex]->GetDeviceIndex()))
                 {
                     // We can skip scopes in the exploratory phase if they run on a device that does not use the MemoryHint strategy for
                     // allocation
@@ -822,22 +822,22 @@ namespace AZ::RHI
             transientAttachmentPool.End();
         };
 
-        MultiDevice::DeviceMask memoryHintStrategy{};
+        MultiDevice::DeviceMask memoryHintDeviceMask{};
         for (auto& [deviceIndex, descriptor] : transientAttachmentPool.GetDescriptor())
         {
             if (descriptor.m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
             {
-                memoryHintStrategy = SetBit(memoryHintStrategy, deviceIndex);
+                memoryHintDeviceMask = SetBit(memoryHintDeviceMask, deviceIndex);
             }
         }
 
         // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
-        if (AZStd::to_underlying(memoryHintStrategy))
+        if (memoryHintDeviceMask != MultiDevice::NoDevices)
         {
             // First pass to calculate size needed.
             processCommands(
                 TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources,
-                memoryHintStrategy);
+                memoryHintDeviceMask);
         }
 
         // Second pass uses the information about memory usage
@@ -846,7 +846,7 @@ namespace AZ::RHI
         {
             poolCompileFlags |= TransientAttachmentPoolCompileFlags::GatherStatistics;
         }
-        processCommands(poolCompileFlags, memoryHintStrategy);
+        processCommands(poolCompileFlags, memoryHintDeviceMask);
 
         for (auto& [deviceIndex, attachmentIndex] : removeImages)
         {
