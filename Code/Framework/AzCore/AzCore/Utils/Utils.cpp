@@ -436,8 +436,8 @@ namespace AZ::Utils
     }
 
 
-    template AZCORE_API AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-    template AZCORE_API AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-    template AZCORE_API AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-    template AZCORE_API AZ::Outcome<AZStd::vector<AZStd::byte>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+    template AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+    template AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+    template AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+    template AZ::Outcome<AZStd::vector<AZStd::byte>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
 }

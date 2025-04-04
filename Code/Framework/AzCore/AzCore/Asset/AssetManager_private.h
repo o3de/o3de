@@ -10,7 +10,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {

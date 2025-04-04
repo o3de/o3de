@@ -11,7 +11,6 @@
 #include <AzCore/Metrics/JsonTraceEventLogger.h>
 #include <AzCore/Statistics/StatisticsManager.h>
 #include <AzCore/std/chrono/chrono.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Debug
 {
@@ -20,7 +19,7 @@ namespace AZ::Debug
     //! The metrics can be recorded as raw events (DataLogType::LogAllSamples)
     //! or aggregated as statistical summaries (DataLogType::LogStatistics).
     //! Performance is captured in batches of frames.
-    class AZCORE_API PerformanceCollector final
+    class PerformanceCollector final
     {
     public:
         PerformanceCollector() = delete;
@@ -145,7 +144,7 @@ namespace AZ::Debug
 
     //! A Convenience class used to measure time performance of scopes of code
     //! with constructor/destructor.
-    class AZCORE_API ScopeDuration
+    class ScopeDuration
     {
     public:
         ScopeDuration() = delete;

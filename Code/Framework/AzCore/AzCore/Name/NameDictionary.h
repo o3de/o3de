@@ -15,7 +15,6 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Name/Name.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace UnitTest
 {
@@ -44,7 +43,7 @@ namespace AZ
     //! Benchmarks have shown that creating a new Name object can be quite slow when the name doesn't
     //! already exist in the NameDictionary, but is comparable to creating an AZStd::string for names
     //! that already exist.
-    class AZCORE_API NameDictionary final
+    class NameDictionary final
     {
     public:
         AZ_CLASS_ALLOCATOR(NameDictionary, AZ::OSAllocator);

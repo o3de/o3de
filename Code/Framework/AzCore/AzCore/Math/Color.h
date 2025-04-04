@@ -11,12 +11,11 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     //! A color class with 4 components, RGBA.
-    class AZCORE_API Color
+    class Color
     {
     public:
 

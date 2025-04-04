@@ -8,5 +8,5 @@
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 
- AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZ::AssetTypeInfo);
+ //AZ_DECLARE_EBUS_INSTANTIATION_MULTI_ADDRESS(AZ::AssetTypeInfo);
 

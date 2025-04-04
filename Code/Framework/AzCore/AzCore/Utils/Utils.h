@@ -12,12 +12,10 @@
 #include <AzCore/base.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -27,7 +25,7 @@ namespace AZ
         //! This is used when due to abnormal circumstances the application can no
         //! longer continue. On most platforms and in most configurations this will
         //! lead to a crash report, though this is not guaranteed.
-        AZCORE_API void RequestAbnormalTermination();
+        void RequestAbnormalTermination();
 
         //! Shows a platform native error message. This message box is available even before
         //! the engine is fully initialized. This function will do nothing on platforms
@@ -35,7 +33,7 @@ namespace AZ
         //! message boxes as it's designed to only be used in situations where the engine
         //! is booting or shutting down. NativeMessageBox will not return until the user
         //! has closed the message box.
-        AZCORE_API void NativeErrorMessageBox(const char* title, const char* message);
+        void NativeErrorMessageBox(const char* title, const char* message);
 
         //! Enum used for the GetExecutablePath return type which indicates
         //! whether the function returned with a success value or a specific error
@@ -61,38 +59,38 @@ namespace AZ
         //! @param exeStorageSize size of the exeStorageBuffer
         //! @returns a struct that indicates if the executable path was able to be stored within the executableBuffer
         //! as well as if the executable path contains the executable filename or the executable directory
-        AZCORE_API GetExecutablePathReturnType GetExecutablePath(char* exeStorageBuffer, size_t exeStorageSize);
+        GetExecutablePathReturnType GetExecutablePath(char* exeStorageBuffer, size_t exeStorageSize);
 
         //! Retrieves the directory of the application executable
         //! @param exeStorageBuffer output buffer which is used to store the executable path within
         //! @param exeStorageSize size of the exeStorageBuffer
         //! @returns a result object that indicates if the executable directory was able to be stored within the buffer
-        AZCORE_API ExecutablePathResult GetExecutableDirectory(char* exeStorageBuffer, size_t exeStorageSize);
+        ExecutablePathResult GetExecutableDirectory(char* exeStorageBuffer, size_t exeStorageSize);
 
         //! Retrieves the full path of the directory containing the executable
-        AZCORE_API AZ::IO::FixedMaxPathString GetExecutableDirectory();
+        AZ::IO::FixedMaxPathString GetExecutableDirectory();
 
         //! Retrieves the full path to the engine from the settings registry
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetEnginePath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetEnginePath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full path to the project from the settings registry
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetProjectPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetProjectPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full path to the project user path from the settings registry
         //! This path defaults to <project-path>/user, but can be overridden via the --project-user-path option
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetProjectUserPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetProjectUserPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full path to the project log path from the settings registry
         //! This path defaults to <project-user-path>/logs, but can be overridden via the --project-log-path option
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetProjectLogPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetProjectLogPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full path to the project path for the current asset platform from the settings registry
         //! This path is based on <project-cache-path>/<asset-platform>,
@@ -100,68 +98,68 @@ namespace AZ
         //! The list of OS -> asset platforms is available in the `AZ::PlatformDefaults::OSPlatformToDefaultAssetPlatform` function
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the project name from the settings registry
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::SettingsRegistryInterface::FixedValueString GetProjectName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::SettingsRegistryInterface::FixedValueString GetProjectName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the project display name from the settings registry
         //! First attempts to lookup the "display_name" field read from the project.json settings section of the
         //! Settings Registry ! and if that is not available, the "project_name" field is read instead.
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::SettingsRegistryInterface::FixedValueString GetProjectDisplayName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::SettingsRegistryInterface::FixedValueString GetProjectDisplayName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Lookups the full path for a gem, given it's name from the settings registry
         //! @param gemName path of the gem whose paths will be queried from within the settings registry
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetGemPath(AZStd::string_view gemName, AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetGemPath(AZStd::string_view gemName, AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full directory to the Home directory, i.e. "<userhome>" or overrideHomeDirectory
         //! @param settingsRegistry pointer to the SettingsRegistry to lookup the overrideHomeDirectory
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full directory to the O3DE manifest directory, i.e. "<userhome>/.o3de"
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetO3deManifestDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetO3deManifestDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full path where the manifest file lives, i.e. "<userhome>/.o3de/o3de_manifest.json"
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetO3deManifestPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetO3deManifestPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full directory to the O3DE logs directory, i.e. "<userhome>/.o3de/Logs"
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetO3deLogsDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetO3deLogsDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves a full directory which can be used to write files into during development
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetDevWriteStoragePath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetDevWriteStoragePath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the application root path for a non-host platform
         //! On host platforms this returns a nullopt
-        AZCORE_API AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath();
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath();
 
         //! Retrieves the default development write storage path to use on the current platform, may be considered
         //! temporary or cache storage
-        AZCORE_API AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultDevWriteStoragePath();
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultDevWriteStoragePath();
 
         //! Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path
-        AZCORE_API AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path);
-        AZCORE_API bool ConvertToAbsolutePath(AZ::IO::FixedMaxPath& outputPath, AZStd::string_view path);
-        AZCORE_API bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 absolutePathMaxSize);
+        AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path);
+        bool ConvertToAbsolutePath(AZ::IO::FixedMaxPath& outputPath, AZStd::string_view path);
+        bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 absolutePathMaxSize);
 
         //! Save a string to a file. Otherwise returns a failure with error message.
-        AZCORE_API AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath);
-        AZCORE_API AZ::Outcome<void, AZStd::string> WriteFile(AZStd::span<AZStd::byte const> content, AZStd::string_view filePath);
+        AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath);
+        AZ::Outcome<void, AZStd::string> WriteFile(AZStd::span<AZStd::byte const> content, AZStd::string_view filePath);
 
         //! Read a file into a string. Returns a failure with error message if the content could not be loaded or if
         //! the file size is larger than the max file size provided.
@@ -175,12 +173,12 @@ namespace AZ
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup of the manifest file to base the lookup from
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         //! Returns the outcome of the request, the configured 3rd Party path if successful, the error message if not.
-        AZCORE_API AZ::Outcome<AZStd::string, AZStd::string> Get3rdPartyDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::Outcome<AZStd::string, AZStd::string> Get3rdPartyDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full directory to the O3DE Python virtual environment (venv) folder. 
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
-        AZCORE_API AZ::IO::FixedMaxPathString GetO3dePythonVenvRoot(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+        AZ::IO::FixedMaxPathString GetO3dePythonVenvRoot(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
 
         //! error code value returned when GetEnv fails
@@ -210,12 +208,12 @@ namespace AZ
         //! @return Return an outcome with a string_view of the environment varaible if successful,
         //! otherwise if the environment variable is not set or the span size cannot fit the environment
         //! variable value, a GetEnvErrorResult will be returned
-        AZCORE_API GetEnvOutcome GetEnv(AZStd::span<char> envvalueBuffer, const char* envname);
+        GetEnvOutcome GetEnv(AZStd::span<char> envvalueBuffer, const char* envname);
 
         //! Queries if environment variable is set
         //! @param envname The environment variable name
         //! @return Return true if successful, otherwise false
-        AZCORE_API bool IsEnvSet(const char* envname);
+        bool IsEnvSet(const char* envname);
 
         //! Create or modify environment variable.
         //! @param envname The environment variable name
@@ -223,11 +221,11 @@ namespace AZ
         //! @param overwrite If name does exist in the environment, then its value is changed to value if overwrite is nonzero;
         //! if overwrite is zero, then the value of name is not changed
         //! @returns Return true if successful, otherwise false
-        AZCORE_API bool SetEnv(const char* envname, const char* envvalue, bool overwrite);
+        bool SetEnv(const char* envname, const char* envvalue, bool overwrite);
 
         //! Remove environment variable.
         //! @param envname The environment variable name
         //! @returns Return true if successful, otherwise false
-        AZCORE_API bool UnsetEnv(const char* envname);
+        bool UnsetEnv(const char* envname);
     }
 }

@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/AzCoreAPI.h>
-
 namespace AZ
 {
     class ReflectContext;
@@ -16,6 +14,6 @@ namespace AZ
     namespace Debug
     {
         //! Reflects the profiler bus script bindings
-        AZCORE_API void ProfilerReflect(AZ::ReflectContext* context);
+        void ProfilerReflect(AZ::ReflectContext* context);
     } // namespace Debug
 } // namespace AZ

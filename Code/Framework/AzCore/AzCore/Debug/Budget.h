@@ -9,12 +9,11 @@
 
 #include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Math/Crc.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Debug
 {
     // A budget collates per-frame resource utilization and memory for a particular category
-    class AZCORE_API Budget final
+    class Budget final
     {
     public:
         explicit Budget(const char* name);

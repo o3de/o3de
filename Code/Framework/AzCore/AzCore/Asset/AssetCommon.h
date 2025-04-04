@@ -21,7 +21,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_base_of.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -45,7 +44,7 @@ namespace AZ
 
         namespace AssetInternal
         {
-            AZCORE_API bool IsValidAssetType(const AssetType& type, AZ::SerializeContext* serializeContext = nullptr);
+            bool IsValidAssetType(const AssetType& type, AZ::SerializeContext* serializeContext = nullptr);
         }
 
         /**
@@ -53,7 +52,7 @@ namespace AZ
          */
         typedef AssetData*  AssetPtr;
 
-        struct AZCORE_API AssetId
+        struct AssetId
         {
             AZ_TYPE_INFO(AssetId, "{652ED536-3402-439B-AEBE-4A5DBC554085}");
 
@@ -110,7 +109,7 @@ namespace AZ
         /**
          * Base class for all asset types.
          */
-        class AZCORE_API AssetData
+        class AssetData
         {
             template<class T>
             friend class Asset;
@@ -228,7 +227,7 @@ namespace AZ
             (Default, QueueLoad)
         );
 
-        struct AZCORE_API AssetFilterInfo
+        struct AssetFilterInfo
         {
             AssetId m_assetId;
             AssetType m_assetType;
@@ -250,7 +249,7 @@ namespace AZ
             LoadAll = 1
         };
 
-        struct AZCORE_API AssetLoadParameters
+        struct AssetLoadParameters
         {
             AssetLoadParameters() : m_assetLoadFilterCB() {}
 
@@ -510,14 +509,14 @@ namespace AZ
 
         namespace AssetInternal
         {
-            AZCORE_API Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior);
-            AZCORE_API Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior, const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
-            AZCORE_API AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
-            AZCORE_API void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
-            AZCORE_API bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
-            AZCORE_API bool SaveAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
-            AZCORE_API Asset<AssetData> GetAssetData(const AssetId& id, AssetLoadBehavior assetReferenceLoadBehavior);
-            AZCORE_API AssetId ResolveAssetId(const AssetId& id);
+            Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior);
+            Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior, const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
+            AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
+            void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
+            bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
+            bool SaveAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
+            Asset<AssetData> GetAssetData(const AssetId& id, AssetLoadBehavior assetReferenceLoadBehavior);
+            AssetId ResolveAssetId(const AssetId& id);
         }
 
         /**
@@ -626,12 +625,12 @@ namespace AZ
             virtual void OnAssetContainerReady([[maybe_unused]] Asset<AssetData> asset) { }
         };
 
-        using AssetBus = AZCORE_API EBus<AssetEvents>;
+        using AssetBus = EBus<AssetEvents>;
 
         /*
          * AssetBusCallbacks is a utility class that maps AssetBus events to user callbacks
          */
-        class AZCORE_API AssetBusCallbacks
+        class AssetBusCallbacks
             : public AssetBus::Handler
         {
         public:
@@ -1224,7 +1223,7 @@ namespace AZ
         //=========================================================================
 
         /// Indiscriminately skips all asset references.
-        AZCORE_API bool AssetFilterNoAssetLoading(const AssetFilterInfo& filterInfo);
+        bool AssetFilterNoAssetLoading(const AssetFilterInfo& filterInfo);
 
         // Shared ProductDependency concepts between AP and LY
         namespace ProductDependencyInfo
@@ -1240,8 +1239,8 @@ namespace AZ
                 Unused
             };
             using ProductDependencyFlags = AZStd::bitset<64>;
-            AZCORE_API AZ::Data::AssetLoadBehavior LoadBehaviorFromFlags(const ProductDependencyFlags& dependencyFlags);
-            AZCORE_API AZ::Data::ProductDependencyInfo::ProductDependencyFlags CreateFlags(AZ::Data::AssetLoadBehavior autoLoadBehavior);
+            AZ::Data::AssetLoadBehavior LoadBehaviorFromFlags(const ProductDependencyFlags& dependencyFlags);
+            AZ::Data::ProductDependencyInfo::ProductDependencyFlags CreateFlags(AZ::Data::AssetLoadBehavior autoLoadBehavior);
         } // namespace ProductDependencyInfo
     }  // namespace Data
 
@@ -1266,4 +1265,4 @@ namespace AZStd
     };
 }
 
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::Data::AssetEvents);
+//AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::Data::AssetEvents);

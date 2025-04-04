@@ -15,7 +15,6 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/AzCoreAPI.h>
 
 // this header contains the interface FileIOBase, a base class to derive
 // from in order to implement the low level file operations that the engine uses
@@ -32,11 +31,11 @@ namespace AZ
         /// return true if name of file matches glob filter.
         /// glob filters are MS-DOS (or windows) findNextFile style filters
         /// like "*.bat" or "blah??.pak" or "test*.exe" and such.
-        AZCORE_API bool NameMatchesFilter(AZStd::string_view name, AZStd::string_view filter);
+        bool NameMatchesFilter(AZStd::string_view name, AZStd::string_view filter);
 
         //! Converts the operating-specific values returned by AZ::IO::FileIO API
         //! to independent units representing the milliseconds since 1/1/1970 0:00 UTC
-        AZCORE_API AZ::u64 FileTimeToMSecsSincePosixEpoch(AZ::u64 fileTime);
+        AZ::u64 FileTimeToMSecsSincePosixEpoch(AZ::u64 fileTime);
 
         using HandleType = AZ::u32;
         static const HandleType InvalidHandle = 0;
@@ -48,8 +47,8 @@ namespace AZ
             SeekFromEnd
         };
 
-        AZCORE_API SeekType GetSeekTypeFromFSeekMode(int mode);
-        AZCORE_API int GetFSeekModeFromSeekType(SeekType type);
+        SeekType GetSeekTypeFromFSeekMode(int mode);
+        int GetFSeekModeFromSeekType(SeekType type);
 
         enum class ResultCode : AZ::u32
         {
@@ -60,7 +59,7 @@ namespace AZ
         };
 
         // a function which returns a result code and supports operator bool explicitly
-        class AZCORE_API Result
+        class Result
         {
         public:
             Result(ResultCode resultCode)
@@ -87,7 +86,7 @@ namespace AZ
         };
 
         /// The base class for file IO stack classes
-        class AZCORE_API FileIOBase
+        class FileIOBase
         {
         public:
             virtual ~FileIOBase()
@@ -243,7 +242,7 @@ namespace AZ
          * Stream implementation for reading/writing to/from a FileIO handle.
          * This may be used alongside ObjectStream, or in async asset tasks.
          */
-        class AZCORE_API FileIOStream
+        class FileIOStream
             : public GenericStream
         {
         public:

@@ -13,7 +13,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/osstring.h>
 #include <AzCore/Memory/OSAllocator.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -27,7 +26,7 @@ namespace AZ
      * This context will be generated automatically once you enable the Debugging in the \ref ScriptContext.
      * Use this class to obtain registered classes, better callstacks, breakpoints, etc.
      */
-    class AZCORE_API ScriptContextDebug
+    class ScriptContextDebug
     {
         ScriptContextDebug(const ScriptContextDebug&);
         ScriptContextDebug operator=(const ScriptContextDebug&);

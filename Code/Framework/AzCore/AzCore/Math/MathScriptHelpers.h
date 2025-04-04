@@ -13,7 +13,6 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -23,12 +22,12 @@ namespace AZ
     class Quaternion;
     class Transform;
 
-    AZCORE_API AZStd::string Vector3ToString(const Vector3& v);
-    AZCORE_API AZStd::string Vector4ToString(const Vector4& v);
-    AZCORE_API AZStd::string QuaternionToString(const Quaternion& v);
-    AZCORE_API AZStd::string TransformToString(const Transform& t);
+    AZStd::string Vector3ToString(const Vector3& v);
+    AZStd::string Vector4ToString(const Vector4& v);
+    AZStd::string QuaternionToString(const Quaternion& v);
+    AZStd::string TransformToString(const Transform& t);
 
-    AZCORE_API float GetTransformEpsilon();
+    float GetTransformEpsilon();
 
     template<typename t_Argument, typename t_Constructed>
     bool ConstructOnTypedArgument(t_Constructed& constructed, ScriptDataContext& dc, int index)
@@ -46,7 +45,7 @@ namespace AZ
         }
     }
 
-    class AZCORE_API UuidSerializer
+    class UuidSerializer
         : public SerializeContext::IDataSerializer
     {
         //! Store the class data into a binary buffer.
@@ -64,7 +63,7 @@ namespace AZ
         bool CompareValueData(const void* lhs, const void* rhs) override;
     };
 
-    class AZCORE_API FloatArrayTextSerializer
+    class FloatArrayTextSerializer
     {
     public:
         static size_t DataToText(const float* floats, size_t numFloats, char* textBuffer, size_t textBufferSize, bool isDataBigEndian);

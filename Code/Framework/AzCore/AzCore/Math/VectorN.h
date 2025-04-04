@@ -11,14 +11,13 @@
 #include <AzCore/Math/Internal/MathTypes.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     class ReflectContext;
 
     //! N-dimensional vector class.
-    class AZCORE_API VectorN final
+    class VectorN final
     {
     public:
 

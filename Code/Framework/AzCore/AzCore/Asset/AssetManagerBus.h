@@ -16,7 +16,6 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AzFramework
 {
@@ -298,6 +297,6 @@ namespace AZ
     }   // namespace Data
 }   // namespace AZ
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetManagerNotifications);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetCatalogRequests);
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetManagerEvents);
+//AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetManagerNotifications);
+//AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetCatalogRequests);
+//AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Data::AssetManagerEvents);

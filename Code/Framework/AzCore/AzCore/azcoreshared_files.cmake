@@ -9,26 +9,6 @@
 set(FILES
     AzCoreModule.h
     AzCoreModule.cpp
-    Asset/AssetInternal/WeakAsset.h
-    Asset/AssetCommon.cpp
-    Asset/AssetCommon.h
-    Asset/AssetContainer.cpp
-    Asset/AssetContainer.h
-    Asset/AssetDataStream.cpp
-    Asset/AssetDataStream.h
-    Asset/AssetJsonSerializer.cpp
-    Asset/AssetJsonSerializer.h
-    Asset/AssetManager_private.h
-    Asset/AssetManager.cpp
-    Asset/AssetManager.h
-    Asset/AssetManagerBus.cpp
-    Asset/AssetManagerBus.h
-    Asset/AssetManagerComponent.cpp
-    Asset/AssetManagerComponent.h
-    Asset/AssetSerializer.cpp
-    Asset/AssetSerializer.h
-    Asset/AssetTypeInfoBus.cpp
-    Asset/AssetTypeInfoBus.h
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.cpp
@@ -48,8 +28,6 @@ set(FILES
     Component/EntitySerializer.h
     Component/EntityUtils.cpp
     Component/EntityUtils.h
-    Component/NamedEntityId.cpp
-    Component/NamedEntityId.h
     Component/NonUniformScaleBus.cpp
     Component/NonUniformScaleBus.h
     Component/TickBus.cpp
@@ -68,31 +46,10 @@ set(FILES
     Console/ConsoleTypeHelpers.inl
     Console/LoggerSystemComponent.cpp
     Console/LoggerSystemComponent.h
-    Date/DateFormat.cpp
-    Date/DateFormat.h
-    Debug/Budget.h
-    Debug/Budget.cpp
-    Debug/BudgetTracker.h
-    Debug/BudgetTracker.cpp
-    Debug/MemoryProfiler.h
-    Debug/PerformanceCollector.h
-    Debug/PerformanceCollector.cpp
-    Debug/Profiler.cpp
-    Debug/Profiler.h
-    Debug/ProfilerBus.h
-    Debug/ProfilerReflection.cpp
-    Debug/ProfilerReflection.h
-    Debug/Timer.h
-    Debug/TraceMessageBus.cpp
-    Debug/TraceMessageBus.h
-    Debug/TraceReflection.cpp
-    Debug/TraceReflection.h
     DOM/DomPatch.cpp
     DOM/DomPatch.h
     DOM/DomPath.cpp
     DOM/DomPath.h
-    DOM/DomUtils.cpp
-    DOM/DomUtils.h
     DOM/DomComparison.cpp
     DOM/DomComparison.h
     DOM/DomPrefixTree.h
@@ -111,8 +68,6 @@ set(FILES
     IO/CompressorZLib.h
     IO/CompressorZStd.cpp
     IO/CompressorZStd.h
-    IO/FileIO.cpp
-    IO/FileIO.h
     IO/FileReader.cpp
     IO/FileReader.h
     IO/IOUtils.cpp
@@ -122,15 +77,8 @@ set(FILES
     IO/IStreamerTypes.h
     IO/IStreamerTypes.inl
     IO/IStreamerTypes.cpp
-    IO/GenericStreams.cpp
-    IO/GenericStreams.h
     IO/OpenMode.h
     IO/OpenMode.cpp
-    IO/SystemFile.cpp
-    IO/SystemFile.h
-    IO/Path/Path.cpp
-    IO/Path/Path.h
-    IO/Path/Path.inl
     IO/Path/PathIterable.inl
     IO/Path/PathParser.inl
     IO/Path/PathReflect.cpp
@@ -222,9 +170,6 @@ set(FILES
     Math/Aabb.inl
     Math/Capsule.h
     Math/Capsule.inl
-    Math/Color.cpp
-    Math/Color.h
-    Math/Color.inl
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
     Math/DocsMath.h
@@ -268,8 +213,6 @@ set(FILES
     Math/MathIntrinsics.h
     Math/MathReflection.cpp
     Math/MathReflection.h
-    Math/MathScriptHelpers.cpp
-    Math/MathScriptHelpers.h
     Math/MathUtils.cpp
     Math/MathUtils.h
     Math/MathMatrixSerializer.h
@@ -326,18 +269,6 @@ set(FILES
     Math/TransformSerializer.h
     Math/UuidSerializer.h
     Math/UuidSerializer.cpp
-    Math/Vector2.cpp
-    Math/Vector2.h
-    Math/Vector2.inl
-    Math/Vector3.cpp
-    Math/Vector3.h
-    Math/Vector3.inl
-    Math/Vector4.cpp
-    Math/Vector4.h
-    Math/Vector4.inl
-    Math/VectorN.cpp
-    Math/VectorN.h
-    Math/VectorN.inl
     Math/VectorConversions.h
     Math/VertexContainer.h
     Math/VertexContainer.cpp
@@ -345,10 +276,6 @@ set(FILES
     Math/PackedVector2.h
     Math/PackedVector3.h
     Math/PackedVector4.h
-    Math/Color.h
-    Math/Color.cpp
-    Math/ColorSerializer.h
-    Math/ColorSerializer.cpp
     Metrics/EventLoggerFactoryImpl.h
     Metrics/EventLoggerFactoryImpl.cpp
     Metrics/EventLoggerReflectUtils.cpp
@@ -373,12 +300,6 @@ set(FILES
     Module/ModuleManager.h
     Module/Internal/ModuleManagerSearchPathTool.h
     Module/Internal/ModuleManagerSearchPathTool.cpp
-    Name/NameDictionary.h
-    Name/NameDictionary.cpp
-    Name/NameJsonSerializer.h
-    Name/NameJsonSerializer.cpp
-    Name/NameSerializer.h
-    Name/NameSerializer.cpp
     NativeUI/NativeUISystemComponent.cpp
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.cpp
@@ -391,11 +312,7 @@ set(FILES
     Script/lua/lua.h
     Script/ScriptAsset.cpp
     Script/ScriptAsset.h
-    Script/ScriptContext.h
-    Script/ScriptContext.cpp
     Script/ScriptContextAttributes.h
-    Script/ScriptContextDebug.cpp
-    Script/ScriptContextDebug.h
     Script/ScriptSystemBus.cpp
     Script/ScriptSystemBus.h
     Script/ScriptSystemComponent.cpp
@@ -494,8 +411,6 @@ set(FILES
     UserSettings/UserSettingsProvider.h
     Utils/TypeHash.cpp
     Utils/TypeHash.h
-    Utils/Utils.cpp
-    Utils/Utils.h
     variadic.h
     XML/rapidxml.h
     XML/rapidxml_iterators.h

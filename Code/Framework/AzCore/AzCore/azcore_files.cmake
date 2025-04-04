@@ -8,17 +8,41 @@
 
 set(FILES
     base.h
+    Asset/AssetInternal/WeakAsset.h
+    Asset/AssetCommon.cpp
+    Asset/AssetCommon.h
+    Asset/AssetContainer.cpp
+    Asset/AssetContainer.h
+    Asset/AssetDataStream.cpp
+    Asset/AssetDataStream.h
+    Asset/AssetJsonSerializer.cpp
+    Asset/AssetJsonSerializer.h
+    Asset/AssetManager_private.h
+    Asset/AssetManager.cpp
+    Asset/AssetManager.h
+    Asset/AssetManagerBus.cpp
+    Asset/AssetManagerBus.h
+    Asset/AssetManagerComponent.cpp
+    Asset/AssetManagerComponent.h
+    Asset/AssetTypeInfoBus.cpp
+    Asset/AssetTypeInfoBus.h
+    Asset/AssetSerializer.cpp
+    Asset/AssetSerializer.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
     Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
+    Component/NamedEntityId.cpp
+    Component/NamedEntityId.h
     Console/ConsoleFunctor.cpp
     Console/ConsoleFunctor.h
     Console/ConsoleFunctor.inl
     Console/IConsole.h
     Console/IConsoleTypes.h
     Console/ILogger.h
+    Date/DateFormat.cpp
+    Date/DateFormat.h
     Debug/StackTracer.h
     Debug/Trace.cpp
     Debug/Trace.h
@@ -26,10 +50,29 @@ set(FILES
     Dependency/Dependency.inl
     Dependency/Version.h
     Docs.h
+    Debug/Budget.h
+    Debug/Budget.cpp
+    Debug/BudgetTracker.h
+    Debug/BudgetTracker.cpp
+    Debug/MemoryProfiler.h
+    Debug/PerformanceCollector.h
+    Debug/PerformanceCollector.cpp
+    Debug/Profiler.cpp
+    Debug/Profiler.h
+    Debug/ProfilerBus.h
+    Debug/ProfilerReflection.cpp
+    Debug/ProfilerReflection.h
+    Debug/Timer.h
+    Debug/TraceMessageBus.cpp
+    Debug/TraceMessageBus.h
+    Debug/TraceReflection.cpp
+    Debug/TraceReflection.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
+    DOM/DomUtils.cpp
+    DOM/DomUtils.h
     DOM/DomValue.cpp
     DOM/DomValue.h
     DOM/DomValueWriter.cpp
@@ -61,16 +104,42 @@ set(FILES
     EBus/Internal/StoragePolicies.h
     Instance/InstancePool.h
     Interface/Interface.h
+    IO/FileIO.cpp
+    IO/FileIO.h
+    IO/Path/Path.cpp
+    IO/Path/Path.h
+    IO/Path/Path.inl
+    IO/GenericStreams.cpp
+    IO/GenericStreams.h
+    IO/SystemFile.cpp
+    IO/SystemFile.h
     JSON/rapidjson.h
     JSON/rapidjson.cpp
+    Math/Color.cpp
+    Math/Color.h
+    Math/Color.inl
     Math/Crc.cpp
     Math/Crc.inl
     Math/Crc.h
+    Math/MathScriptHelpers.cpp
+    Math/MathScriptHelpers.h
     Math/Sfmt.cpp
     Math/Sfmt.h
     Math/Uuid.cpp
     Math/Uuid.h
     Math/Uuid.inl
+    Math/Vector2.cpp
+    Math/Vector2.h
+    Math/Vector2.inl
+    Math/Vector3.cpp
+    Math/Vector3.h
+    Math/Vector3.inl
+    Math/VectorN.cpp
+    Math/VectorN.h
+    Math/VectorN.inl
+    Math/Vector4.cpp
+    Math/Vector4.h
+    Math/Vector4.inl
     Memory/AllocationRecords.cpp
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
@@ -103,6 +172,12 @@ set(FILES
     Name/Name.cpp
     Name/Internal/NameData.h
     Name/Internal/NameData.cpp
+    Name/NameDictionary.h
+    Name/NameDictionary.cpp
+    Name/NameJsonSerializer.h
+    Name/NameJsonSerializer.cpp
+    Name/NameSerializer.h
+    Name/NameSerializer.cpp
     Outcome/Outcome.h
     Outcome/Internal/OutcomeImpl.h
     Platform.cpp
@@ -146,6 +221,10 @@ set(FILES
     RTTI/TypeInfo.cpp
     RTTI/TypeInfoSimple.h
     RTTI/TypeSafeIntegral.h
+    Script/ScriptContext.h
+    Script/ScriptContext.cpp
+    Script/ScriptContextDebug.cpp
+    Script/ScriptContextDebug.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
     Serialization/DataOverlay.h
@@ -241,4 +320,6 @@ set(FILES
     Serialization/std/VariantReflection.inl
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
+    Utils/Utils.cpp
+    Utils/Utils.h
 )

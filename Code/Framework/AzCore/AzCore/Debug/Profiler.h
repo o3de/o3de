@@ -9,7 +9,6 @@
 
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
-#include <AzCore/AzCoreAPI.h>
 
 #if defined(AZ_PROFILER_MACRO_DISABLE) // by default we never disable the profiler registers as their overhead should be minimal, you can
                                        // still do that for your code though.
@@ -67,7 +66,7 @@ namespace AZStd
 namespace AZ::Debug
 {
     // interface for externally defined profiler systems
-    class AZCORE_API Profiler
+    class Profiler
     {
     public:
         AZ_RTTI(Profiler, "{3E5D6329-72D1-41BA-9158-68A349D1A4D5}");
@@ -83,7 +82,7 @@ namespace AZ::Debug
         static void ReportProfileEvent(const Budget* budget, const char* eventName);
     };
 
-    class AZCORE_API ProfileScope
+    class ProfileScope
     {
     public:
         static void BeginRegion(Budget* budget, const char* eventName, ...);
