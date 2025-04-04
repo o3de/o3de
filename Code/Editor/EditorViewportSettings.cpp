@@ -16,6 +16,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
+#include <AzToolsFramework/API/SettingsRegistryUtils.h>
 
 namespace SandboxEditor
 {

@@ -44,7 +44,7 @@ namespace TextureAtlasNamespace
         {
             serialize->Class<TextureAtlasSystemComponent, AZ::Component>()
                 ->Version(0)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }));
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }));
             ;
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
@@ -60,13 +60,13 @@ namespace TextureAtlasNamespace
 
     void TextureAtlasSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("TextureAtlasService"));
+        provided.push_back(AZ_CRC_CE("TextureAtlasService"));
     }
 
     void
         TextureAtlasSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("TextureAtlasService"));
+        incompatible.push_back(AZ_CRC_CE("TextureAtlasService"));
     }
 
     void TextureAtlasSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

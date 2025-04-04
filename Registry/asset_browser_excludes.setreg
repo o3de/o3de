@@ -1,0 +1,9 @@
+{
+    "O3DE": {
+        "AssetBrowser": {
+            "AssetTypeUuidExcludes": {
+				"abdataAssetType": "{D0A5E84E-9866-4AD7-A6A1-4D28FE7871C5}"
+            }
+        }
+    }
+}

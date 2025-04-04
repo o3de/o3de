@@ -536,7 +536,7 @@ namespace EMotionFX
 
     AZ::u32 BlendSpaceMotionContainerHandler::GetHandlerName() const
     {
-        return AZ_CRC("BlendSpaceMotionContainer", 0x8025d37d);
+        return AZ_CRC_CE("BlendSpaceMotionContainer");
     }
 
 

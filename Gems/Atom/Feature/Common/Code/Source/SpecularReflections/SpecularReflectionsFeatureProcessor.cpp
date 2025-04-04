@@ -7,10 +7,10 @@
  */
 
 #include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
+#include <Atom/Feature/RayTracing/RayTracingPass.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
-#include <RayTracing/RayTracingPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpacePass.h>
 
 namespace AZ
@@ -56,11 +56,11 @@ namespace AZ
 
         void SpecularReflectionsFeatureProcessor::UpdatePasses()
         {
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
-
             // disable raytracing if the platform does not support it
-            m_ssrOptions.m_rayTracing &= device->GetFeatures().m_rayTracing;
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
+            {
+                m_ssrOptions.m_reflectionMethod = SSROptions::ReflectionMethod::ScreenSpace;
+            }
 
             // determine size multiplier to pass to the shaders
             float sizeMultiplier = m_ssrOptions.m_halfResolution ? 0.5f : 1.0f;
@@ -85,7 +85,6 @@ namespace AZ
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpacePass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {
@@ -121,9 +120,9 @@ namespace AZ
                 AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, sizeMultiplier](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                     {
                         // enable/disable
-                        pass->SetEnabled(m_ssrOptions.m_rayTracing);
+                        pass->SetEnabled(m_ssrOptions.IsRayTracingEnabled());
 
-                        if (m_ssrOptions.m_rayTracing)
+                        if (m_ssrOptions.IsRayTracingEnabled())
                         {
                             // options
                             RayTracingPass* rayTracingPass = azrtti_cast<RayTracingPass*>(pass);
@@ -133,7 +132,7 @@ namespace AZ
 
                             rayTracingPassSrg->SetConstant(m_invOutputScaleNameIndex, 1.0f / m_ssrOptions.GetOutputScale());
                             rayTracingPassSrg->SetConstant(m_maxRoughnessNameIndex, m_ssrOptions.m_maxRoughness);
-                            rayTracingPassSrg->SetConstant(m_rayTraceFallbackDataNameIndex, m_ssrOptions.m_rayTraceFallbackData);
+                            rayTracingPassSrg->SetConstant(m_reflectionMethodNameIndex, m_ssrOptions.m_reflectionMethod);
                             rayTracingPassSrg->SetConstant(m_rayTraceFallbackSpecularNameIndex, m_ssrOptions.m_rayTraceFallbackSpecular);
 
                             // size multiplier
@@ -141,7 +140,6 @@ namespace AZ
                             for (const auto& attachmentName : attachmentNames)
                             {
                                 RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                                AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceRayTracingPass", attachmentName.GetCStr());
 
                                 if (attachmentBinding)
                                 {
@@ -167,11 +165,10 @@ namespace AZ
                 AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [sizeMultiplier](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                     {
                         // size multiplier
-                        static AZStd::vector<AZ::Name> attachmentNames = { AZ::Name("ScreenSpaceReflectionOutput"), AZ::Name("TraceCoordsOutput"), AZ::Name("DownsampledDepthOutput") };
+                        static AZStd::vector<AZ::Name> attachmentNames = { AZ::Name("ScreenSpaceReflectionOutput"), AZ::Name("TraceCoordsOutput") };
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceTracePass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {
@@ -190,6 +187,30 @@ namespace AZ
                     });
             }
 
+            // downsample depth linear pass
+            {
+                AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceDownsampleDepthLinearPass"), (AZ::RPI::Scene*) nullptr);
+                AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [sizeMultiplier](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                    {
+                        // size multiplier
+                        RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(AZ::Name("DownsampledDepthLinearInputOutput"));
+
+                        if (attachmentBinding)
+                        {
+                            RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
+                            if (attachment.get())
+                            {
+                                RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
+            
+                                sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                                sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                            }
+                        }
+            
+                        return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
+            }
+
             // filter pass
             {
                 AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceFilterPass"), (AZ::RPI::Scene*) nullptr);
@@ -200,7 +221,6 @@ namespace AZ
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
-                            AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceFilterPass", attachmentName.GetCStr());
 
                             if (attachmentBinding)
                             {

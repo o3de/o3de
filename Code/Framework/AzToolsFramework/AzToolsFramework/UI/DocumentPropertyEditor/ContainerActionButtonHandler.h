@@ -18,10 +18,16 @@ namespace AzToolsFramework
         ContainerActionButtonHandler();
 
         void SetValueFromDom(const AZ::Dom::Value& node) override;
+        virtual bool ResetToDefaults() override;
 
         static constexpr const AZStd::string_view GetHandlerName()
         {
             return AZ::DocumentPropertyEditor::Nodes::ContainerActionButton::Name;
         }
+
+    protected:
+        AZ::DocumentPropertyEditor::Nodes::ContainerAction m_action;
+
+        void OnClicked() override;
     };
 } // namespace AzToolsFramework

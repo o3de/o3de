@@ -184,7 +184,7 @@ def create_basic_atom_rendering_scene():
     ground_plane_material_component = ground_plane_entity.add_component(AtomComponentProperties.material())
     ground_plane_entity.set_local_uniform_scale(32.0)
     ground_plane_mesh_component = ground_plane_entity.add_component(AtomComponentProperties.mesh())
-    ground_plane_mesh_asset_path = os.path.join("testdata", "objects", "plane.azmodel")
+    ground_plane_mesh_asset_path = os.path.join("testdata", "objects", "plane.fbx.azmodel")
     ground_plane_mesh_asset = Asset.find_asset_by_path(ground_plane_mesh_asset_path, False)
     ground_plane_mesh_component.set_component_property_value(
         AtomComponentProperties.mesh('Model Asset'), ground_plane_mesh_asset.id)
@@ -204,7 +204,7 @@ def create_basic_atom_rendering_scene():
     sphere_entity = EditorEntity.create_editor_entity_at(
         math.Vector3(0.0, 0.0, 1.0), "Sphere", default_level_entity.id)
     sphere_mesh_component = sphere_entity.add_component(AtomComponentProperties.mesh())
-    sphere_mesh_asset_path = os.path.join("models", "sphere.azmodel")
+    sphere_mesh_asset_path = os.path.join("models", "sphere.fbx.azmodel")
     sphere_mesh_asset = Asset.find_asset_by_path(sphere_mesh_asset_path, False)
     sphere_mesh_component.set_component_property_value(
         AtomComponentProperties.mesh('Model Asset'), sphere_mesh_asset.id)

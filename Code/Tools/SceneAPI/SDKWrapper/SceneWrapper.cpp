@@ -9,30 +9,32 @@
 
 namespace AZ
 {
-   namespace SDKScene
-   {
-      const char* SceneWrapperBase::s_defaultSceneName = "myScene";
+    namespace SDKScene
+    {
+        const char* SceneWrapperBase::s_defaultSceneName = "myScene";
 
-      bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const char* fileName)
-      {
-          return false;
-      }
-      bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const AZStd::string& fileName)
-      {
-          return LoadSceneFromFile(fileName.c_str());
-      }
+        bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const char* fileName,
+            [[maybe_unused]] const SceneAPI::SceneImportSettings& importSettings)
+        {
+            return false;
+        }
+        bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const AZStd::string& fileName,
+            const SceneAPI::SceneImportSettings& importSettings)
+        {
+            return LoadSceneFromFile(fileName.c_str(), importSettings);
+        }
 
-      const std::shared_ptr<SDKNode::NodeWrapper> SceneWrapperBase::GetRootNode() const
-      {
-          return {};
-      }
-      std::shared_ptr<SDKNode::NodeWrapper> SceneWrapperBase::GetRootNode()
-      {
-          return {};
-      }
+        const std::shared_ptr<SDKNode::NodeWrapper> SceneWrapperBase::GetRootNode() const
+        {
+            return {};
+        }
+        std::shared_ptr<SDKNode::NodeWrapper> SceneWrapperBase::GetRootNode()
+        {
+            return {};
+        }
 
-      void SceneWrapperBase::Clear()
-      {
-      }
-   } //namespace Scene
+        void SceneWrapperBase::Clear()
+        {
+        }
+    } //namespace SDKScene
 }// namespace AZ

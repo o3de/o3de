@@ -19,7 +19,7 @@ if(NOT PAL_TRAIT_ATOM_SHADER_MANAGEMENT_CONSOLE_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME ShaderManagementConsole EXECUTABLE
+    NAME ShaderManagementConsole APPLICATION
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
@@ -39,6 +39,7 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
             Gem::AtomToolsFramework.Editor
+            Gem::AtomShader.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
 )

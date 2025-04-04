@@ -177,12 +177,13 @@ namespace AZ::ScriptAutomation
 
     void ScriptAutomationSystemComponent::SetIdleFrames(int numFrames)
     {
-        AZ_Assert(m_scriptIdleSeconds == 0, "m_scriptIdleFrames is being stomped");
+        AZ_Assert(m_scriptIdleFrames <= 0, "m_scriptIdleFrames is being stomped");
         m_scriptIdleFrames = numFrames;
     }
 
     void ScriptAutomationSystemComponent::SetIdleSeconds(float numSeconds)
     {
+        AZ_Assert(m_scriptIdleSeconds <= 0, "m_scriptIdleSeconds is being stomped");
         m_scriptIdleSeconds = numSeconds;
     }
 
@@ -325,9 +326,10 @@ namespace AZ::ScriptAutomation
     void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath)
     {
         AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
-        [[maybe_unused]] AZStd::string localScriptFilePath = scriptFilePath;
+        AZStd::string localScriptFilePath = scriptFilePath;
         if (!scriptAsset)
         {
+#if AZ_ENABLE_TRACING
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([localScriptFilePath]()
@@ -335,17 +337,21 @@ namespace AZ::ScriptAutomation
                     AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", localScriptFilePath.c_str());
                 }
             );
+#endif // AZ_ENABLE_TRACING
             return;
         }
 
+#if AZ_ENABLE_TRACING
         QueueScriptOperation([localScriptFilePath]()
             {
                 AZ_Printf("ScriptAutomation", "Running script '%s'...\n", localScriptFilePath.c_str());
             }
         );
+#endif // AZ_ENABLE_TRACING
 
         if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), localScriptFilePath.c_str(), scriptAsset->m_data.GetScriptBuffer().size()))
         {
+#if AZ_ENABLE_TRACING
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([localScriptFilePath]()
@@ -353,6 +359,7 @@ namespace AZ::ScriptAutomation
                     AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", localScriptFilePath.c_str());
                 }
             );
+#endif // AZ_ENABLE_TRACING
         }
     }
 

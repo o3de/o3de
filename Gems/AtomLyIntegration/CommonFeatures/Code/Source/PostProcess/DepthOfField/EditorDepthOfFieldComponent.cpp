@@ -25,12 +25,12 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDepthOfFieldComponent>(
-                        "DepthOfField", "Controls the Depth of Field.")
+                        "Depth Of Field", "Controls the Depth of Field.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.y 
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/depth-of-field/") // [GFX TODO][ATOM-2672][PostFX] need create page for PostProcessing.
                         ;
@@ -101,6 +101,14 @@ namespace AZ
                             "Enables auto focus.")
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::ArePropertiesReadOnly)
+
+                        ->DataElement(Edit::UIHandlers::Default,
+                            &DepthOfFieldComponentConfig::m_focusedEntityId,
+                            "Focused Entity",
+                            "Entity to focus on.\n"
+                            "If unset, the screen position is used.")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsFocusedEntityReadonly)
 
                         ->DataElement(Edit::UIHandlers::Default, &DepthOfFieldComponentConfig::m_autoFocusScreenPosition,
                             "Focus Screen Position",

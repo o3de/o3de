@@ -16,9 +16,24 @@ namespace AZ
     {
     }
 
-    bool DynamicModuleHandle::Load(bool isInitializeFunctionRequired)
+    bool DynamicModuleHandle::Load(bool isInitializeFunctionRequired, bool globalSymbols /*= false*/)
     {
-        LoadStatus status = LoadModule();
+        LoadFlags flags = LoadFlags::None;
+        if (isInitializeFunctionRequired)
+        {
+            flags |= LoadFlags::InitFuncRequired;
+        }
+
+        if (globalSymbols)
+        {
+            flags |= LoadFlags::GlobalSymbols;
+        }
+        return Load(flags);
+    }
+
+    bool DynamicModuleHandle::Load(LoadFlags flags /*= LoadFlags::None*/)
+    {
+        LoadStatus status = LoadModule(flags);
         switch (status)
         {
             case LoadStatus::LoadFailure:
@@ -48,7 +63,7 @@ namespace AZ
                 initFunc();
             }
         }
-        else if (isInitializeFunctionRequired)
+        else if (CheckBitsAny(flags, LoadFlags::InitFuncRequired))
         {
             AZ_Error("Module", false, "Unable to locate required entry point '%s' within module '%s'.",
                 InitializeDynamicModuleFunctionName, m_fileName.c_str());

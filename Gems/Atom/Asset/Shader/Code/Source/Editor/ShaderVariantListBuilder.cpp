@@ -25,6 +25,8 @@ namespace AZ
 {
     namespace ShaderBuilder
     {
+        constexpr uint32_t HashedVariantBatchSize = 30;
+
         AZ_TYPE_INFO_WITH_NAME_IMPL(HashedVariantListSourceData, "HashedVariantListSourceData", "{D86DA375-DD77-45F9-81D5-2E50C24C8469}");
         AZ_TYPE_INFO_WITH_NAME_IMPL(HashedVariantInfoSourceData, "HashedVariantInfoSourceData", "{6B00EFB2-D02B-4EBD-BA8C-F4C432D234FA}");
         AZ_TYPE_INFO_WITH_NAME_IMPL(ShaderVariantListBuilder, "ShaderVariantListBuilder", "{D7FB0C17-131B-43E8-BCCC-408C1763E538}");
@@ -36,7 +38,6 @@ namespace AZ
             {
                 serializeContext->Class<HashedVariantInfoSourceData>()
                     ->Version(1)
-                    ->Field("ShaderPath", &HashedVariantInfoSourceData::m_shaderPath)
                     ->Field("VariantInfo", &HashedVariantInfoSourceData::m_variantInfo)
                     ->Field("Hash", &HashedVariantInfoSourceData::m_hash)
                     ;
@@ -76,7 +77,7 @@ namespace AZ
             m_hash = CalculateHash(optionValuesHash, m_variantInfo);
         }
 
-        static constexpr char ShaderVariantListBuilderName[] = "ShaderVariantListBuilder";
+        [[maybe_unused]] static constexpr char ShaderVariantListBuilderName[] = "ShaderVariantListBuilder";
 
         //! Adds source file dependencies for every place a referenced file may appear, and detects if one of
         //! those possible paths resolves to the expected file.
@@ -85,29 +86,28 @@ namespace AZ
         //! @param sourceFileDependencies - new source file dependencies will be added to this list
         //! @return absolute path of the shader file, if it exists, otherwise, an empty string.
         static AZStd::string GetSourceShaderAbsolutePath(
-            const AZStd::string& variantListFullpath, const AZStd::string& originalShaderPath,
+            const AZStd::string& variantListFullpath,
+            const AZStd::string& originalShaderPath,
             AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies)
         {
+            auto& sourceDependency = sourceFileDependencies.emplace_back();
+            sourceDependency.m_sourceFileDependencyPath = RPI::AssetUtils::ResolvePathReference(variantListFullpath, originalShaderPath);
+
+            AZ::Data::AssetInfo sourceInfo;
+            AZStd::string watchFolder;
+            bool found = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+                sourceDependency.m_sourceFileDependencyPath.c_str(),
+                sourceInfo,
+                watchFolder);
+
             AZStd::string sourceShaderAbsolutePath;
 
-            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(variantListFullpath, originalShaderPath);
-            for (auto& file : possibleDependencies)
+            if (found)
             {
-                AssetBuilderSDK::SourceFileDependency sourceFileDependency;
-                sourceFileDependency.m_sourceFileDependencyPath = file;
-                sourceFileDependencies.push_back(sourceFileDependency);
-
-                if (sourceShaderAbsolutePath.empty())
-                {
-                    AZ::Data::AssetInfo sourceInfo;
-                    AZStd::string watchFolder;
-                    bool found = false;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(found, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, file.c_str(), sourceInfo, watchFolder);
-                    if (found)
-                    {
-                        AZ::StringFunc::Path::Join(watchFolder.c_str(), sourceInfo.m_relativePath.c_str(), sourceShaderAbsolutePath);
-                    }
-                }
+                AZ::StringFunc::Path::Join(watchFolder.c_str(), sourceInfo.m_relativePath.c_str(), sourceShaderAbsolutePath);
             }
 
             return sourceShaderAbsolutePath;
@@ -362,19 +362,25 @@ namespace AZ
 
         // If successful returns the absolute path of the created HashedVariantInfo file in the "user/AssetProcessorTemp" folder.
         // If it fails, it returns an empty string
-        static AZStd::string SaveHashedVariantInfoFile(const AssetBuilderSDK::ProcessJobRequest& request
+        static AZStd::string SaveHashedVariantBatchFile(const AssetBuilderSDK::ProcessJobRequest& request
             , const AZStd::string& shaderName
-            , const HashedVariantInfoSourceData& hashedVariantInfo
+            , const HashedVariantListSourceData& hashedVariantBatch
             , bool saveAsBinary = true)
         {
             AZ::IO::Path outputFilePath = request.m_tempDirPath;
-            outputFilePath /= AZStd::string::format("%s_%u.%s", shaderName.c_str(), hashedVariantInfo.m_variantInfo.m_stableId, HashedVariantInfoSourceData::Extension);
+            outputFilePath /= AZStd::string::format(
+                "%s_%u.%s",
+                shaderName.c_str(),
+                hashedVariantBatch.m_hashedVariants.front().m_variantInfo.m_stableId / HashedVariantBatchSize,
+                HashedVariantInfoSourceData::Extension);
             AZStd::string outputFilePathStr = outputFilePath.String();
 
             if (saveAsBinary)
             {
-                if (!AZ::Utils::SaveObjectToFile(outputFilePathStr, AZ::DataStream::ST_BINARY
-                    , &hashedVariantInfo, HashedVariantInfoSourceData::TYPEINFO_Uuid(), nullptr))
+                if (!AZ::Utils::SaveObjectToFile(outputFilePathStr, AZ::DataStream::ST_BINARY,
+                        &hashedVariantBatch,
+                        HashedVariantListSourceData::TYPEINFO_Uuid(),
+                        nullptr))
                 {
                     AZ_Error(ShaderVariantListBuilderName, false, "Failed to create %s.\n", outputFilePathStr.c_str());
                     return "";
@@ -382,7 +388,7 @@ namespace AZ
                 return outputFilePathStr;
             }
 
-            if (!AZ::RPI::JsonUtils::SaveObjectToFile(outputFilePathStr, hashedVariantInfo))
+            if (!AZ::RPI::JsonUtils::SaveObjectToFile(outputFilePathStr, hashedVariantBatch))
             {
                 AZ_Error(ShaderVariantListBuilderName, false, "Failed to create %s.\n", outputFilePathStr.c_str());
                 return "";
@@ -454,7 +460,9 @@ namespace AZ
             // As we calculate hashes for each variant, we are going to calculate the hash
             // of only the optionValues part and this will help us find variants that share the same
             // content but have different StableIds. If two variants with different StableId has the same content this will be an error.
+            // Shader variants are divided in batches using their stable id (so the division is stable).
             AZStd::unordered_map<size_t, uint32_t> hashToStableIdMap;
+            AZStd::unordered_map<uint32_t, AZStd::vector<HashedVariantInfoSourceData>> hashedVariantBatches;
             HashedVariantListSourceData hashedVariantList;
             hashedVariantList.m_shaderPath = shaderFullPath;
             for (const auto& variantInfo : shaderVariantList.m_shaderVariants)
@@ -470,10 +478,11 @@ namespace AZ
                 hashToStableIdMap.emplace(optionValuesHash, variantInfo.m_stableId);
             
                 HashedVariantInfoSourceData hashedVariantInfo;
-                hashedVariantInfo.m_shaderPath = shaderFullPath;
                 hashedVariantInfo.m_variantInfo = variantInfo;
                 hashedVariantInfo.CalculateHash(optionValuesHash);
                 hashedVariantList.m_hashedVariants.emplace_back(AZStd::move(hashedVariantInfo));
+
+                hashedVariantBatches[variantInfo.m_stableId / HashedVariantBatchSize].push_back(hashedVariantList.m_hashedVariants.back());
             }
 
             AZ::IO::FixedMaxPath shaderPath(shaderVariantList.m_shaderFilePath);
@@ -499,9 +508,14 @@ namespace AZ
                 response.m_outputProducts.emplace_back(AZStd::move(product));
             }
 
-            for (const auto& hashedVariantInfo : hashedVariantList.m_hashedVariants)
+            // We batch the generation of shader variants because there's some work that is common for every shader variant
+            // generation. This way we save some work when building hundreads of variants.
+            HashedVariantListSourceData hashedVariantBatch;
+            hashedVariantBatch.m_shaderPath = hashedVariantList.m_shaderPath;
+            for (auto& batch : hashedVariantBatches)
             {
-                auto outputFilePath = SaveHashedVariantInfoFile(request, shaderName, hashedVariantInfo, false /* as binary */);
+                hashedVariantBatch.m_hashedVariants = AZStd::move(batch.second);
+                auto outputFilePath = SaveHashedVariantBatchFile(request, shaderName, hashedVariantBatch, false /* as binary */);
                 if (outputFilePath.empty())
                 {
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -513,8 +527,9 @@ namespace AZ
                 product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
                 product.m_dependenciesHandled = true;
                 product.m_productFileName = outputFilePath;
-                product.m_productAssetType = azrtti_typeid<>(hashedVariantInfo);
-                product.m_productSubID = hashedVariantInfo.m_variantInfo.m_stableId;
+                product.m_productAssetType = azrtti_typeid<>(hashedVariantBatch);
+                product.m_productSubID =
+                    HashedVariantListSourceData::SubId + batch.first + 1; // 0 is reserved for the full hashed variant list
                 response.m_outputProducts.emplace_back(AZStd::move(product));
             }
 

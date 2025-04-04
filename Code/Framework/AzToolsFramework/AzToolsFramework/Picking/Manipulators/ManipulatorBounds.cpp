@@ -90,7 +90,7 @@ namespace AzToolsFramework
         }
 
         bool ManipulatorBoundSphere::IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
         {
             float vecRayIntersectionDistance;
             if (AZ::Intersect::IntersectRaySphere(rayOrigin, rayDirection, m_center, m_radius, vecRayIntersectionDistance) > 0)
@@ -112,7 +112,7 @@ namespace AzToolsFramework
         }
 
         bool ManipulatorBoundBox::IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
         {
             return AZ::Intersect::IntersectRayBox(
                        rayOrigin, rayDirection, m_center, m_axis1, m_axis2, m_axis3, m_halfExtents.GetX(), m_halfExtents.GetY(),
@@ -132,7 +132,7 @@ namespace AzToolsFramework
         }
 
         bool ManipulatorBoundCylinder::IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
         {
             float t1 = std::numeric_limits<float>::max();
             float t2 = std::numeric_limits<float>::max();
@@ -157,7 +157,7 @@ namespace AzToolsFramework
         }
 
         bool ManipulatorBoundCone::IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
         {
             float t = std::numeric_limits<float>::max();
             if (IntersectRayCone(rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t))
@@ -181,7 +181,7 @@ namespace AzToolsFramework
         }
 
         bool ManipulatorBoundQuad::IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
         {
             return AZ::Intersect::IntersectRayQuad(
                        rayOrigin, rayDirection, m_corner1, m_corner2, m_corner3, m_corner4, rayIntersectionDistance) > 0;
@@ -199,7 +199,7 @@ namespace AzToolsFramework
         }
 
         bool ManipulatorBoundTorus::IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
         {
             return IntersectHollowCylinder(
                 rayOrigin, rayDirection, m_center, m_axis, m_minorRadius, m_majorRadius, rayIntersectionDistance);
@@ -217,7 +217,7 @@ namespace AzToolsFramework
         }
 
         bool ManipulatorBoundLineSegment::IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
         {
             const float rayLength = 1000.0f;
             AZ::Vector3 closestPosRay, closestPosLineSegment;
@@ -250,7 +250,7 @@ namespace AzToolsFramework
         }
 
         bool ManipulatorBoundSpline::IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const
         {
             if (const AZStd::shared_ptr<const AZ::Spline> spline = m_spline.lock())
             {

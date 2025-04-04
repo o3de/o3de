@@ -25,7 +25,7 @@ namespace AZ
 
             const char* GetElementName([[maybe_unused]] int index = 0) override { return "m_data"; }
 
-            u32 GetElementNameCrC([[maybe_unused]] int index = 0) override { return AZ_CRC("m_data", 0x335cc942); }
+            u32 GetElementNameCrC([[maybe_unused]] int index = 0) override { return AZ_CRC_CE("m_data"); }
 
             /// Null if element with this name can't be found.
             const SerializeContext::ClassElement* GetElement(u32) const override
@@ -35,10 +35,10 @@ namespace AZ
 
             bool GetElement(SerializeContext::ClassElement& classElement, const SerializeContext::DataElement& dataElement) const override
             {
-                if (static_cast<AZ::u32>(AZ_CRC("m_data", 0x335cc942)) == dataElement.m_nameCrc)
+                if (static_cast<AZ::u32>(AZ_CRC_CE("m_data")) == dataElement.m_nameCrc)
                 {
                     classElement.m_name = "m_data";
-                    classElement.m_nameCrc = AZ_CRC("m_data", 0x335cc942);
+                    classElement.m_nameCrc = AZ_CRC_CE("m_data");
                     classElement.m_typeId = dataElement.m_id;
                     classElement.m_dataSize = sizeof(void*);
                     classElement.m_offset = 0;
@@ -65,7 +65,7 @@ namespace AZ
 
                 SerializeContext::ClassElement anyChildElement;
                 anyChildElement.m_name = "m_data";
-                anyChildElement.m_nameCrc = AZ_CRC("m_data", 0x335cc942);
+                anyChildElement.m_nameCrc = AZ_CRC_CE("m_data");
                 anyChildElement.m_typeId = anyTypeId;
                 anyChildElement.m_dataSize = sizeof(void*);
                 anyChildElement.m_offset = 0;

@@ -22,4 +22,9 @@ namespace O3DELauncher
     {
         return "@log@/Unified.log";
     }
+
+    const char* GetLauncherTypeSpecialization()
+    {
+        return "unified";
+    }
 }

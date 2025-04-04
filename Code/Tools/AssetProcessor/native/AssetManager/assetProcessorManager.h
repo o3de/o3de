@@ -129,6 +129,7 @@ namespace AssetProcessor
             bool m_isDelete = false;
             bool m_isFromScanner = false;
             AZStd::chrono::steady_clock::time_point m_initialProcessTime{};
+            QString m_fromDependencyChain;
 
             FileEntry() = default;
 
@@ -255,7 +256,7 @@ namespace AssetProcessor
         void PrepareForFileMove(AZ::IO::PathView oldPath, AZ::IO::PathView newPath) override;
 
     Q_SIGNALS:
-        void NumRemainingJobsChanged(int newNumJobs);
+        void NumRemainingJobsChanged(int newNumJobs, QString extraInfo = "");
 
         void AssetToProcess(JobDetails jobDetails);
 
@@ -308,6 +309,8 @@ namespace AssetProcessor
 
         //! Fired when a previously-delayed file has begun processing.
         void ProcessingResumed(QString filePath);
+
+        void FileCacheIsReady();
 
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
@@ -369,7 +372,7 @@ namespace AssetProcessor
     private:
         template <class R>
         bool Recv(unsigned int connId, QByteArray payload, R& request);
-        void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false);
+        void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false, QString fromDependencyChain = "");
         void CheckSource(const FileEntry& source);
         void CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
@@ -528,6 +531,15 @@ namespace AssetProcessor
         typedef QHash<QString, FileEntry> FileExamineContainer;
         FileExamineContainer m_filesToExamine; // order does not actually matter in this (yet)
 
+        QString AnalysisExtraInfo() const;
+        int m_totalScannerFilesToAssess = 0;
+        int m_scannerFilesAssessed = 0;
+        int m_assetsNeedingProcessing_BuildersChanged = 0;
+        int m_assetsNeedingProcessing_NewFile = 0;
+        int m_assetsNeedingProcessing_TimeStampChanged = 0;
+        int m_assetsNeedingProcessing_DependenciesChanged = 0;
+
+
         // Set of files which are metadata-enabled but don't have a metadata file.
         // These files will be delayed for processing for a short time to wait for a metadata file to show up.
         AZStd::unordered_map<AZ::IO::Path, QDateTime> m_delayProcessMetadataFiles;
@@ -672,6 +684,7 @@ namespace AssetProcessor
         int m_numSourcesNeedingFullAnalysis = 0;
         int m_numSourcesNotHandledByAnyBuilder = 0;
         bool m_reportedAnalysisMetrics = false;
+        int m_numOverrides = 0;
 
         // cache these so we don't have to check them each time during analysis:
         QSet<QString> m_metaFilesWhichActuallyExistOnDisk;

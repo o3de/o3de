@@ -9,4 +9,6 @@ set(FILES
     Source/Tools/ArchiveEditorSystemComponent.h
     Source/Tools/ArchiveWriter.cpp
     Source/Tools/ArchiveWriter.h
+    Source/Tools/ArchiveWriterFactory.cpp
+    Source/Tools/ArchiveWriterFactory.h
 )

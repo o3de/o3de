@@ -592,6 +592,8 @@ namespace ScriptCanvas
         AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const override;
         Data::Type GetSlotDataType(const SlotId& slotId) const override;
 
+        Data::Type GetUnderlyingSlotDataType(const SlotId& slotId) const;
+
         VariableId GetSlotVariableId(const SlotId& slotId) const override;
         void SetSlotVariableId(const SlotId& slotId, const VariableId& variableId) override;
         void ClearSlotVariableId(const SlotId& slotId) override;
@@ -832,6 +834,12 @@ namespace ScriptCanvas
         AZ::Outcome<AZStd::string> GetInternalOutKey(const SlotExecution::Map& map, const Slot& slot) const;
 
         AZ::Outcome<AZStd::string> GetLatentOutKey(const SlotExecution::Map& map, const Slot& slot) const;
+
+        // Returns the provided slot's corresponding execution slot
+        const Slot* GetCorrespondingExecutionSlot(const Slot* slot) const;
+
+        // Returns the provided slot's corresponding data slots
+        AZStd::vector<const Slot*> GetCorrespondingDataSlots(const Slot* slot) const;
 
         void ClearDisplayType(const SlotId& slotId);
         void SetDisplayType(const SlotId& slotId, const Data::Type& dataType);

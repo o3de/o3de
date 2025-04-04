@@ -27,6 +27,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Math/Crc.h>
 
 #define MAX_CELL_COUNT 32
@@ -937,6 +938,9 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
             return (true);
         }
     }
+
+    // Use the invariant culture while loading files from disk
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
 
     ListAndClearProblemLabels();
 
@@ -2634,7 +2638,7 @@ namespace
 {
     void UnixTimeToFileTime(time_t unixtime, FILETIME* filetime)
     {
-        LONGLONG longlong = Int32x32To64(unixtime, 10000000) + 116444736000000000;
+        LONGLONG longlong = (unixtime * 10000000LL) + 116444736000000000LL;
         filetime->dwLowDateTime = (DWORD) longlong;
         filetime->dwHighDateTime = (DWORD)(longlong >> 32);
     }

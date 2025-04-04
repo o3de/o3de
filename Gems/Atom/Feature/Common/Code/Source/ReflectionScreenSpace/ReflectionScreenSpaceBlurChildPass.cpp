@@ -7,10 +7,6 @@
  */
 
 #include "ReflectionScreenSpaceBlurChildPass.h"
-#include <Atom/RHI/FrameGraphBuilder.h>
-#include <Atom/RHI/FrameGraphAttachmentInterface.h>
-#include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ
 {
@@ -57,6 +53,8 @@ namespace AZ
             if (m_updateSrg)
             {
                 m_shaderResourceGroup->SetConstant(m_invOutputScaleNameIndex, m_invOutputScale);
+                m_shaderResourceGroup->SetConstant(m_mipLevelNameIndex, m_mipLevel);
+
                 m_updateSrg = false;
             }
 

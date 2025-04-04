@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QStyleOptionSpinBox>
 #include <QHBoxLayout>
+#include <QEvent>
 
 namespace AzQtComponents
 {
@@ -107,6 +108,15 @@ void VectorElement::onSpinBoxEditingFinished()
 void VectorElement::setCoordinate(VectorElement::Coordinate coordinate)
 {
     setProperty(g_CoordinatePropertyName, QVariant::fromValue(coordinate));
+}
+
+void VectorElement::changeEvent(QEvent* event) {
+
+    if(event->type() == QEvent::EnabledChange) {
+         style()->unpolish(m_label);
+         style()->polish(m_label);
+    }
+    QWidget::changeEvent(event);
 }
 
 QSize VectorElement::sizeHint() const

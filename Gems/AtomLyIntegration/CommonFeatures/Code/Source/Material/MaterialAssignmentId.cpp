@@ -19,7 +19,7 @@ namespace AZ
         {
             if (classElement.GetVersion() < 2)
             {
-                constexpr AZ::u32 materialAssetIdCrc = AZ_CRC("materialAssetId");
+                constexpr AZ::u32 materialAssetIdCrc = AZ_CRC_CE("materialAssetId");
 
                 AZ::Data::AssetId materialAssetId;
                 if (!classElement.GetChildData(materialAssetIdCrc, materialAssetId))

@@ -222,25 +222,12 @@ set(FILES
     res/veed_tree.bmp
     res/vegetati.bmp
     res/vegtree.bmp
+    res/Prefab_80.svg
     res/video_record.ico
     res/warning16x16.ico
     res/water.bmp
     res/work_in_progress_icon.ico
     res/MannFileManagerImageList.bmp
-    res/infobar/CameraCollision-default.svg
-    res/infobar/GotoLocation-default.svg
-    res/infobar/LockScale-default.svg
-    res/infobar/LockSelection-default.svg
-    res/infobar/Mute-default.svg
-    res/infobar/NoPlayerSync-default.svg
-    res/infobar/NoPlayerSync-selected.svg
-    res/infobar/Pause-default.svg
-    res/infobar/PausePlay-default.svg
-    res/infobar/PhysicsCol-default.svg
-    res/infobar/VR-default.svg
-    res/infobar/XYZ-default.svg
-    Plugin.cpp
-    Plugin.h
     PluginManager.cpp
     PluginManager.h
     IEditor.h
@@ -261,8 +248,6 @@ set(FILES
     Core/EditorActionsHandler.h
     Core/QtEditorApplication.cpp
     Core/QtEditorApplication.h
-    Core/LevelEditorMenuHandler.cpp
-    Core/LevelEditorMenuHandler.h
     Core/Widgets/PrefabEditVisualModeWidget.h
     Core/Widgets/PrefabEditVisualModeWidget.cpp
     Core/Widgets/ViewportSettingsWidgets.h
@@ -275,17 +260,11 @@ set(FILES
     Include/HitContext.h
     Include/ICommandManager.h
     Include/IDisplayViewport.h
-    Include/IEditorClassFactory.h
-    Include/ILogFile.h
     Include/IKeyTimeSet.h
-    Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/ISourceControl.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
-    Objects/BaseObject.cpp
-    Objects/BaseObject.h
     AnimationContext.cpp
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
@@ -332,8 +311,6 @@ set(FILES
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/WndGridHelper.h
-    Controls/ReflectedPropertyControl/PropertyGenericCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyGenericCtrl.h
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.h
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.cpp
@@ -353,10 +330,6 @@ set(FILES
     LogFile.cpp
     LogFile.h
     Resource.h
-    ActionManager.cpp
-    ActionManager.h
-    ShortcutDispatcher.cpp
-    ShortcutDispatcher.h
     CheckOutDialog.cpp
     CheckOutDialog.h
     CheckOutDialog.ui
@@ -385,9 +358,6 @@ set(FILES
     LevelFileDialog.qrc
     LevelFileDialog.h
     LevelFileDialog.ui
-    QuickAccessBar.cpp
-    QuickAccessBar.h
-    QuickAccessBar.ui
     SelectLightAnimationDialog.cpp
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
@@ -396,11 +366,6 @@ set(FILES
     StartupLogoDialog.h
     StartupLogoDialog.ui
     StartupLogoDialog.qrc
-    ToolbarCustomizationDialog.ui
-    ToolbarCustomizationDialog.cpp
-    ToolbarCustomizationDialog.h
-    ToolbarManager.h
-    ToolbarManager.cpp
     ToolsConfigPage.cpp
     ToolsConfigPage.h
     ToolsConfigPage.ui
@@ -410,6 +375,7 @@ set(FILES
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
+    NewLevelDialog.qrc
     Dialogs/PythonScriptsDialog.cpp
     Dialogs/PythonScriptsDialog.h
     Dialogs/PythonScriptsDialog.ui
@@ -418,9 +384,7 @@ set(FILES
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h
-    GameExporter.cpp
     GameResourcesExporter.cpp
-    GameExporter.h
     GameResourcesExporter.h
     DocMultiArchive.h
     FBXExporterDialog.h
@@ -432,36 +396,13 @@ set(FILES
     Util/GeometryUtil.h
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
-    LogFileImpl.cpp
-    LogFileImpl.h
-    Objects/ClassDesc.h
-    Objects/DisplayContextShared.inl
-    Objects/SelectionGroup.cpp
-    Objects/SelectionGroup.h
-    Objects/ObjectLoader.cpp
-    Objects/ObjectLoader.h
-    Objects/ObjectManager.cpp
-    Objects/ObjectManager.h
-    Objects/ObjectManagerLegacyUndo.cpp
-    Objects/ObjectManagerLegacyUndo.h
-    Objects/DisplayContext.cpp
-    Objects/DisplayContext.h
-    Objects/EntityObject.cpp
-    Objects/EntityObject.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
-    CustomizeKeyboardDialog.h
-    CustomizeKeyboardDialog.cpp
-    CustomizeKeyboardDialog.ui
-    KeyboardCustomizationSettings.h
-    KeyboardCustomizationSettings.cpp
     Settings.cpp
     SettingsManager.cpp
     SettingsManagerDialog.cpp
-    PreferencesStdPages.h
-    PreferencesStdPages.cpp
     EditorPreferencesPageGeneral.h
     EditorPreferencesPageGeneral.cpp
     EditorPreferencesPageFiles.h
@@ -474,8 +415,6 @@ set(FILES
     EditorPreferencesPageViewportCamera.cpp
     EditorPreferencesPageViewportDebug.h
     EditorPreferencesPageViewportDebug.cpp
-    EditorPreferencesPageExperimentalLighting.h
-    EditorPreferencesPageExperimentalLighting.cpp
     EditorPreferencesPageAWS.h
     EditorPreferencesPageAWS.cpp
     EditorPreferencesDialog.h
@@ -497,9 +436,6 @@ set(FILES
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
-    Dialogs/ErrorsDlg.cpp
-    Dialogs/ErrorsDlg.h
-    Dialogs/ErrorsDlg.ui
     DisplaySettings.cpp
     DisplaySettings.h
     DisplaySettingsPythonFuncs.h
@@ -520,8 +456,6 @@ set(FILES
     TrackView/TrackViewPythonFuncs.cpp
     TrackView/TrackViewSequenceManager.cpp
     TrackView/TrackViewSequenceManager.h
-    TrackView/TrackViewUndo.cpp
-    TrackView/TrackViewUndo.h
     TrackView/CommentNodeAnimator.cpp
     TrackView/DirectorNodeAnimator.cpp
     TrackView/CommentNodeAnimator.h
@@ -563,6 +497,7 @@ set(FILES
     TrackView/SelectKeyUIControls.cpp
     TrackView/SequenceKeyUIControls.cpp
     TrackView/SoundKeyUIControls.cpp
+    TrackView/StringKeyUIControls.cpp
     TrackView/TrackEventKeyUIControls.cpp
     TrackView/TrackViewTrackPropsDlg.ui
     TrackView/TVEventsDialog.cpp
@@ -586,6 +521,9 @@ set(FILES
     TrackView/TrackViewSequence.h
     TrackView/TrackViewNodeFactories.h
     TrackView/TrackViewEventNode.h
+    TrackView/TrackViewMessageBox.cpp
+    TrackView/TrackViewMessageBox.h
+    TrackView/VectorKeyUIControls.cpp
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
@@ -624,8 +562,6 @@ set(FILES
     WaitProgress.h
     Util/FileUtil_impl.h
     Util/FileUtil_impl.cpp
-    Util/ImageUtil_impl.h
-    Util/ImageUtil_impl.cpp
     Util/ColumnSortProxyModel.h
     Util/ColumnSortProxyModel.cpp
     Util/AbstractGroupProxyModel.h
@@ -646,13 +582,10 @@ set(FILES
     Util/3DConnexionDriver.h
     Util/FileChangeMonitor.cpp
     Util/FileChangeMonitor.h
-    Util/ImageUtil.cpp
-    Util/ImageUtil.h
     Util/ImageGif.cpp
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
-    Util/Math.h
     WelcomeScreen/WelcomeScreenDialog.h
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui
@@ -679,13 +612,10 @@ set(FILES
     ViewportTitleDlg.cpp
     ViewportTitleDlg.ui
     ViewportTitleDlg.h
-    EditorEnvironment.cpp
-    EditorEnvironment.h
 )
 
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
     TrackView/TrackViewPythonFuncs.cpp
-    Core/LevelEditorMenuHandler.cpp
     Util/AffineParts.cpp
 )

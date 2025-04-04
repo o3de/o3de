@@ -11,7 +11,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/SplashScreen/SplashScreenPass.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             },
             "Slots": [
                 {

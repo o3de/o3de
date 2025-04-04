@@ -5,8 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Source/Mesh/MeshInstanceManager.h>
+#include <Mesh/MeshInstanceManager.h>
 #include <AzCore/std/parallel/scoped_lock.h>
+
 namespace AZ
 {
     namespace Render

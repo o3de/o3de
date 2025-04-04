@@ -553,7 +553,7 @@ class TestObjectDownload:
             git_provider_mock.clone_from_git = MagicMock(side_effect=clone_from_git)
             return git_provider_mock
 
-        def register(gem_path: pathlib.Path = None):
+        def register(gem_path: pathlib.Path = None, force_register_with_o3de_manifest:bool = False ):
             self.registered_path = gem_path
             return 0
 

@@ -17,7 +17,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
@@ -293,10 +292,6 @@ namespace AzToolsFramework
             }
         }
 
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
         for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
         {
             AZ::u64 fileSize = 0;
@@ -311,18 +306,6 @@ namespace AzToolsFramework
             if (fileSize > maxSizeInBytes)
             {
                 AZ_Warning(logWindowName, false, "File (%s) size (%d) is bigger than the max bundle size (%d).\n", assetFileInfo.m_assetRelativePath.c_str(), fileSize, maxSizeInBytes);
-            }
-
-            if (!usePrefabSystemForLevels && (AzFramework::StringFunc::EndsWith(assetFileInfo.m_assetRelativePath, "level.pak")))
-            {
-                AZStd::string levelFolder;
-                AzFramework::StringFunc::Path::GetFolderPath(assetFileInfo.m_assetRelativePath.c_str(), levelFolder);
-                AzFramework::StringFunc::RelativePath::Normalize(levelFolder);
-                if (AzFramework::StringFunc::LastCharacter(levelFolder.c_str()) == AZ_CORRECT_FILESYSTEM_SEPARATOR)
-                {
-                    AzFramework::StringFunc::RChop(levelFolder, 1);
-                }
-                levelDirs.emplace_back(levelFolder);
             }
 
             totalFileSize += fileSize;

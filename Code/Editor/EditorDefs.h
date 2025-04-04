@@ -115,7 +115,8 @@
 // Utility classes.
 #include "Util/EditorUtils.h"
 #include "Util/FileEnum.h"
-#include "Util/Math.h"
+#include <Editor/Util/EditorUtils.h>
+#include <CryCommon/Cry_GeoIntersect.h>
 #include "Util/AffineParts.h"
 
 // Xml support.

@@ -22,10 +22,12 @@ Surface EvaluateSurface_MaterialGraphName(
     VsOutput IN,
     float3 positionWS,
     real3 normalWS,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
-    bool isFrontFace)
+    bool isFrontFace,
+    float4 uvDxDy,
+    bool customDerivatives)
 {
     const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
     const float3 O3DE_MC_POSITION = (float3)IN.position;
@@ -36,7 +38,15 @@ Surface EvaluateSurface_MaterialGraphName(
     const float3 O3DE_MC_NORMAL_WS = normalWS;
     const float3 O3DE_MC_TANGENT_WS = tangents[0];
     const float3 O3DE_MC_BITANGENT_WS = bitangents[0];
+#if ENABLE_VERTEX_COLOR
+    const float4 O3DE_MC_COLOR = IN.color0;
+#else
+    const float4 O3DE_MC_COLOR = float4(1.0f, 1.0f, 1.0f, 1.0f);
+#endif
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
+
+    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
+    const bool placeHolder = MaterialSrg::m_placeHolder;
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor
     real3 inNormal = normalWS;
@@ -52,11 +62,49 @@ Surface EvaluateSurface_MaterialGraphName(
     surface.position = positionWS;
     surface.vertexNormal = normalWS;
     surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((real2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
+    surface.normal *= real(mad(isFrontFace, 2.0, -1.0));
 
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
     surface.CalculateRoughnessA();
     return surface;
+}
+
+// helper function to keep compatible with the previous version
+// because dxc compiler doesn't allow default parameters on functions with overloads
+Surface EvaluateSurface_MaterialGraphName(
+    VsOutput IN,
+    float3 positionWS,
+    real3 normalWS,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    bool isFrontFace)
+{
+    return EvaluateSurface_MaterialGraphName(
+        IN,
+        positionWS,
+        normalWS,
+        tangents,
+        bitangents,
+        uvs,
+        isFrontFace,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false);
+}
+
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+{
+    return EvaluateSurface_MaterialGraphName(
+        IN,
+        geoData.positionWS,
+        geoData.vertexNormal,
+        geoData.tangents,
+        geoData.bitangents,
+        geoData.uvs,
+        geoData.isFrontFace,
+        uvDxDy,
+        customDerivatives);
 }
 
 Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData)
@@ -68,5 +116,7 @@ Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData
         geoData.tangents,
         geoData.bitangents,
         geoData.uvs,
-        geoData.isFrontFace);
+        geoData.isFrontFace,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false);
 }

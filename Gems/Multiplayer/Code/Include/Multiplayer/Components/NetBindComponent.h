@@ -50,7 +50,7 @@ namespace Multiplayer
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         NetBindComponent();
-        ~NetBindComponent() override = default;
+        ~NetBindComponent() override;
 
         //! AZ::Component overrides.
         //! @{
@@ -223,6 +223,9 @@ namespace Multiplayer
 
         void StopEntity();
 
+        void Register(AZ::Entity* entity);
+        void Unregister();
+
         ReplicationRecord m_currentRecord = NetEntityRole::InvalidRole;
         ReplicationRecord m_totalRecord = NetEntityRole::InvalidRole;
         ReplicationRecord m_predictableRecord = NetEntityRole::Autonomous;
@@ -267,6 +270,7 @@ namespace Multiplayer
         bool m_isMigrationDataValid = false;
         bool m_needsToBeStopped     = false;
         bool m_playerHostAutonomyEnabled = false; // Set to true for the host's controlled entity
+        bool m_isRegistered = false;
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;

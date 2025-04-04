@@ -18,7 +18,7 @@ namespace EMotionFX
 
     AZ::u32 RagdollMultiJointHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorRagdollJoints", 0xed1cae00);
+        return AZ_CRC_CE("ActorRagdollJoints");
     }
 
     QWidget* RagdollMultiJointHandler::CreateGUI(QWidget* parent)

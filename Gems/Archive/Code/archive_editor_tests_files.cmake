@@ -6,4 +6,6 @@
 
 set(FILES
     Tests/Tools/ArchiveEditorTest.cpp
+    Tests/Tools/ArchiveReaderTest.cpp
+    Tests/Tools/ArchiveWriterTest.cpp
 )

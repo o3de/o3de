@@ -66,7 +66,7 @@ def Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx():
     import azlmbr.asset as azasset
 
     # Asset paths
-    STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx", "test_asset.azmodel")
+    STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx", "test_asset.fbx.azmodel")
 
     # 1) Load the empty level
     hydra.open_base_level()

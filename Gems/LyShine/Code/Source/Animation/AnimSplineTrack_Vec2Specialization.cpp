@@ -9,7 +9,6 @@
 
 #include "AnimSplineTrack.h"
 #include "2DSpline.h"
-#include <IMovieSystem.h>
 #include <LyShine/UiBase.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -421,7 +420,7 @@ static bool TUiAnimSplineTrackVec2VersionConverter(AZ::SerializeContext& context
     bool converted = false;
     if (classElement.GetVersion() == 1)
     {
-        int splineElementIdx = classElement.FindElement(AZ_CRC("Spline", 0x35f655e9));
+        int splineElementIdx = classElement.FindElement(AZ_CRC_CE("Spline"));
         if (splineElementIdx != -1)
         {
             // Find & copy the raw pointer node

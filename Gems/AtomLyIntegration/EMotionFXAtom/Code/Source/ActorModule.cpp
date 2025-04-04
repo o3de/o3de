@@ -54,7 +54,8 @@ namespace AZ
     } // end Render namespace
 } // end AZ namespace
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Render::ActorModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_EMotionFX_Atom, AZ::Render::ActorModule)
+#endif

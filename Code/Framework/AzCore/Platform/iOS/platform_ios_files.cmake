@@ -36,6 +36,8 @@ set(FILES
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.h
     ../Common/Apple/AzCore/IO/SystemFile_Apple.cpp
     ../Common/Apple/AzCore/IO/SystemFile_Apple.h
+    ../Common/UnixLike/AzCore/IO/AnsiTerminalUtils_UnixLike.cpp
+    ../Common/UnixLike/AzCore/IO/FileIO_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.cpp
@@ -56,12 +58,21 @@ set(FILES
     ../Common/UnixLike/AzCore/PlatformIncl_UnixLike.h
     ../Common/UnixLike/AzCore/Platform_UnixLike.cpp
     AzCore/PlatformIncl_Platform.h
+    AzCore/Serialization/Locale_Platform.h
+    AzCore/Settings/CommandLineParser_Platform.h
+    ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.h
+    ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_fwd_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.cpp
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.h
     AzCore/Socket/AzSocket_fwd_Platform.h
     AzCore/Socket/AzSocket_Platform.h
     ../Common/Apple/AzCore/std/time_Apple.cpp
+    AzCore/Utils/SystemUtilsApple_Platform.h
+    ../Common/Apple/AzCore/Utils/SystemUtilsApple.h
+    ../Common/Apple/AzCore/Utils/SystemUtilsApple.mm
     AzCore/Utils/Utils_iOS.mm
     ../Common/Apple/AzCore/Utils/Utils_Apple.cpp
     ../Common/UnixLike/AzCore/Utils/Utils_UnixLike.cpp

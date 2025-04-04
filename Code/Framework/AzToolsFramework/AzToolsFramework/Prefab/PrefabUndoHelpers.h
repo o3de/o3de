@@ -65,12 +65,16 @@ namespace AzToolsFramework
             //! @param entityId The id of the entity.
             //! @param undoBatch The undo batch node to register the update-entity undo node to.
             //! @param updateCache Flag that determines if the cached instance DOM is updated to avoid reloading in next tick.
+            //! @param instanceToSkipInUpdate - if not nullopt, it indicates to this function that it can skip this entity
+            //!                                 in the "propagate to other instances" queue, as this instance will have already been manually updated.
             void UpdateEntity(
                 const PrefabDomValue& entityDomBeforeUpdatingEntity,
                 const PrefabDomValue& entityDomAfterUpdatingEntity,
                 AZ::EntityId entityId,
                 UndoSystem::URSequencePoint* undoBatch,
-                bool updateCache = true);
+                bool updateCache = true,
+                InstanceOptionalConstReference instanceToSkipInUpdate = AZStd::nullopt
+            );
 
             //! Helper function for updating entities as overrides to focused template with undo-redo support.
             //! @param entityList Entity list for entities to be updated in focused template.

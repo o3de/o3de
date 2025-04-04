@@ -35,17 +35,17 @@ public: // static functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiFlipbookService"));
+        provided.push_back(AZ_CRC_CE("UiFlipbookService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiFlipbookService"));
+        incompatible.push_back(AZ_CRC_CE("UiFlipbookService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiIndexableImageService"));
+        required.push_back(AZ_CRC_CE("UiIndexableImageService"));
     }
 
 public: // functions

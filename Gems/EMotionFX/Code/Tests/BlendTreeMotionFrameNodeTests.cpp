@@ -102,7 +102,6 @@ namespace EMotionFX
         }
 
     public:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         float m_motionDuration = 1.0f;
         AnimGraphMotionNode* m_motionNode = nullptr;
         BlendTreeMotionFrameNode* m_motionFrameNode = nullptr;

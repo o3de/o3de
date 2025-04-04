@@ -42,14 +42,15 @@ namespace AzToolsFramework
             : Thumbnail(key)
         {}
 
-        void FolderThumbnail::LoadThread()
+        void FolderThumbnail::Load()
         {
+            m_state = State::Loading;
             AZ_Assert(azrtti_cast<const FolderThumbnailKey*>(m_key.data()), "Incorrect key type, excpected FolderThumbnailKey");
 
-            const char* folderIcon = FolderIconPath;
-            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / folderIcon;
+            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / FolderIconPath;
             m_pixmap.load(absoluteIconPath.c_str());
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
+            QueueThumbnailUpdated();
         }
 
         //////////////////////////////////////////////////////////////////////////

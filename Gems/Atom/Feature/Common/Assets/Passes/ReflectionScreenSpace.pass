@@ -78,8 +78,8 @@
                             "Attachment": "DepthStencilInput"
                         },
                         "Multipliers": {
-                            "WidthMultiplier": "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                     "ImageDescriptor": {
@@ -95,8 +95,8 @@
                             "Attachment": "DepthStencilInput"
                         },
                         "Multipliers": {
-                            "WidthMultiplier": "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                     "ImageDescriptor": {
@@ -219,6 +219,19 @@
                     ]
                 },
                 {
+                    "Name": "ReflectionScreenSpaceDownsampleDepthLinearPass",
+                    "TemplateName": "ReflectionScreenSpaceDownsampleDepthLinearPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "ReflectionScreenSpaceBlurPass",
                     "TemplateName": "ReflectionScreenSpaceBlurPassTemplate",
                     "Connections": [
@@ -227,6 +240,13 @@
                             "AttachmentRef": {
                                 "Pass": "ReflectionScreenSpaceTracePass",
                                 "Attachment": "ScreenSpaceReflectionOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DownsampledDepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionScreenSpaceDownsampleDepthLinearPass",
+                                "Attachment": "DownsampledDepthLinearInputOutput"
                             }
                         }
                     ]
@@ -304,10 +324,17 @@
                             }
                         },
                         {
-                            "LocalSlot": "DownsampledDepthInput",
+                            "LocalSlot": "DepthLinear",
                             "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceTracePass",
-                                "Attachment": "DownsampledDepthOutput"
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DownsampledDepthLinearInput",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionScreenSpaceDownsampleDepthLinearPass",
+                                "Attachment": "DownsampledDepthLinearInputOutput"
                             }
                         },
                         {
@@ -322,13 +349,6 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SpecularF0Input"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DepthStencilTextureInput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthStencilInput"
                             }
                         },
                         {

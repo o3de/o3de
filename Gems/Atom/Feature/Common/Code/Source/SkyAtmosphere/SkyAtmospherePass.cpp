@@ -207,6 +207,7 @@ namespace AZ::Render
 
     void SkyAtmospherePass::UpdatePassData()
     {
+        uint32_t childIndex = 0;
         for (auto passData : m_atmospherePassData)
         {
             passData.m_srg->SetConstant(passData.m_index, m_constants);
@@ -217,8 +218,16 @@ namespace AZ::Render
             passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableFastAerialPerspective"), AZ::RPI::ShaderOptionValue{ m_fastAerialPerspectiveEnabled });
             passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableAerialPerspective"), AZ::RPI::ShaderOptionValue{ m_aerialPerspectiveEnabled });
 
-            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
-            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
+            const auto& pass = m_children[childIndex];
+            if (auto fullscreenPass = azrtti_cast<RPI::FullscreenTrianglePass*>(pass); fullscreenPass != nullptr)
+            {
+                fullscreenPass->UpdateShaderOptions(passData.m_shaderOptionGroup.GetShaderVariantId());
+            }
+            else if (auto computePass = azrtti_cast<RPI::ComputePass*>(pass); computePass != nullptr)
+            {
+                computePass->UpdateShaderOptions(passData.m_shaderOptionGroup.GetShaderVariantId());
+            }
+            childIndex++;
         }
     }
 

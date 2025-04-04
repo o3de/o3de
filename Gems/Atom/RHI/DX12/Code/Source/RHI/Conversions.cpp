@@ -845,6 +845,19 @@ namespace AZ
                 return 0;
             }
         }
+
+        RHI::ImageAspectFlags ConvertPlaneSliceToImageAspectFlags(uint16_t planeSlice)
+        {
+            if (planeSlice == 0)
+            {
+                return RHI::ImageAspectFlags::Depth | RHI::ImageAspectFlags::Color;
+            }
+            else if (planeSlice == 1)
+            {
+                return RHI::ImageAspectFlags::Stencil;
+            }
+            return RHI::ImageAspectFlags::None;
+        }
     
         DXGI_FORMAT ConvertFormat(RHI::Format format, [[maybe_unused]] bool raiseAsserts)
         {
@@ -1193,8 +1206,8 @@ namespace AZ
                 return D3D12_SHADER_VISIBILITY_ALL;
             case RHI::ShaderStageMask::Vertex:
                 return D3D12_SHADER_VISIBILITY_VERTEX;
-            case RHI::ShaderStageMask::Tessellation:
-                return D3D12_SHADER_VISIBILITY_ALL;
+            case RHI::ShaderStageMask::Geometry:
+                return D3D12_SHADER_VISIBILITY_GEOMETRY;
             case RHI::ShaderStageMask::Fragment:
                 return D3D12_SHADER_VISIBILITY_PIXEL;
             case RHI::ShaderStageMask::Compute:
@@ -1455,5 +1468,20 @@ namespace AZ
                     return RHI::ResultCode::Fail;
             }
         }
-   }
+
+        DXGI_SCALING ConvertScaling(RHI::Scaling scaling)
+        {
+            switch(scaling)
+            {
+                case RHI::Scaling::None:
+                    return DXGI_SCALING_NONE;
+                case RHI::Scaling::Stretch:
+                    return DXGI_SCALING_STRETCH;
+                case RHI::Scaling::AspectRatioStretch:
+                    return DXGI_SCALING_ASPECT_RATIO_STRETCH;
+                default:
+                    return DXGI_SCALING_STRETCH;
+            }
+        }
+    }
 }

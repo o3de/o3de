@@ -6,6 +6,10 @@
 #
 #
 
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
+
 # Name of test impact framework console static library target
 set(LY_TEST_IMPACT_CONSOLE_NATIVE_STATIC_TARGET "TestImpact.Frontend.Console.Native.Static")
 

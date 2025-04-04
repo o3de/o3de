@@ -118,7 +118,7 @@ namespace ExpressionEvaluation
             VariableDescriptor descriptor = Utils::GetAnyValue<VariableDescriptor>(parseResult.m_element.m_extraStore);
 
             EXPECT_EQ(descriptor.m_displayName, AZStd::string("Cats"));
-            EXPECT_EQ(descriptor.m_nameHash, AZ_CRC("Cats", 0xc39dba92));
+            EXPECT_EQ(descriptor.m_nameHash, AZ_CRC_CE("Cats"));
         }
     }
 }

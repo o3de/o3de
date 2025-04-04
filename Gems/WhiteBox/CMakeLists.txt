@@ -6,8 +6,10 @@
 #
 #
 
-set(gem_path ${CMAKE_CURRENT_LIST_DIR})
-set(gem_json ${gem_path}/gem.json)
-o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
+o3de_gem_setup("WhiteBox")
+
+# when compiling from source, use the 3rdParty/FindOpenMesh.cmake file
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 
 add_subdirectory(Code)

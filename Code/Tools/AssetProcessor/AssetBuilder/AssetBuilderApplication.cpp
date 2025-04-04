@@ -93,7 +93,12 @@ AZ::ComponentTypeList AssetBuilderApplication::GetRequiredSystemComponents() con
 }
 
 AssetBuilderApplication::AssetBuilderApplication(int* argc, char*** argv)
-    : AzToolsFramework::ToolsApplication(argc, argv)
+    : AssetBuilderApplication(argc, argv, {})
+{
+}
+
+AssetBuilderApplication::AssetBuilderApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
     , m_qtApplication(*argc, *argv)
 {
     // The settings registry has been created at this point

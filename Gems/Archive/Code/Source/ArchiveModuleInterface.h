@@ -13,6 +13,8 @@
 
 namespace Archive
 {
+    class IArchiveReaderFactory;
+
     class ArchiveModuleInterface
         : public AZ::Module
     {
@@ -22,10 +24,16 @@ namespace Archive
         AZ_CLASS_ALLOCATOR_DECL
 
         ArchiveModuleInterface();
+        ~ArchiveModuleInterface();
 
         /**
          * Add required SystemComponents to the SystemEntity.
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+    private:
+        // Archive Reader factory registered with the ArchiveReaderFactoryInterface
+        // This allows external gem modules to create ArchiveReader instances
+        // via the CreateArchiveReader functions in the ArchiveReaderAPI.h
+        AZStd::unique_ptr<IArchiveReaderFactory> m_archiveReaderFactory;
     };
 }// namespace Archive

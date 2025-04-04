@@ -22,9 +22,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ShaderOptionDescriptor::DebugCategory = "ShaderOption";
-        const char* ShaderOptionGroupLayout::DebugCategory = "ShaderOption";
-
         const char* ToString(ShaderOptionType shaderOptionType)
         {
             switch (shaderOptionType)
@@ -85,7 +82,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderOptionDescriptor>()
-                    ->Version(4)
+                    ->Version(6)  // 6: addition of m_specializationId field
                     ->Field("m_name", &ShaderOptionDescriptor::m_name)
                     ->Field("m_type", &ShaderOptionDescriptor::m_type)
                     ->Field("m_defaultValue", &ShaderOptionDescriptor::m_defaultValue)
@@ -93,10 +90,13 @@ namespace AZ
                     ->Field("m_maxValue", &ShaderOptionDescriptor::m_maxValue)
                     ->Field("m_bitOffset", &ShaderOptionDescriptor::m_bitOffset)
                     ->Field("m_bitCount", &ShaderOptionDescriptor::m_bitCount)
+                    ->Field("m_order", &ShaderOptionDescriptor::m_order)
+                    ->Field("m_costEstimate", &ShaderOptionDescriptor::m_costEstimate)
                     ->Field("m_bitMask", &ShaderOptionDescriptor::m_bitMask)
                     ->Field("m_bitMaskNot", &ShaderOptionDescriptor::m_bitMaskNot)
                     ->Field("m_hash", &ShaderOptionDescriptor::m_hash)
                     ->Field("m_nameReflectionForValues", &ShaderOptionDescriptor::m_nameReflectionForValues)
+                    ->Field("m_specializationId", &ShaderOptionDescriptor::m_specializationId)
                     ;
             }
 
@@ -116,22 +116,28 @@ namespace AZ
                     ->Method("GetValuesCount", &ShaderOptionDescriptor::GetValuesCount)
                     ->Method("GetType", &ShaderOptionDescriptor::GetType)
                     ->Method("GetValueNameByIndex", static_cast<Name (ShaderOptionDescriptor::*)(uint32_t) const>(&ShaderOptionDescriptor::GetValueName))
+                    ->Method("GetOrder", &ShaderOptionDescriptor::GetOrder)
+                    ->Method("GetCostEstimate", &ShaderOptionDescriptor::GetCostEstimate)
                     ;
             }   
         }
 
         ShaderOptionDescriptor::ShaderOptionDescriptor(const Name& name,            
                                                        const ShaderOptionType& optionType, 
-                                                       uint32_t bitOffset,                                      
+                                                       uint32_t bitOffset,
                                                        uint32_t order,
                                                        const ShaderOptionValues& nameIndexList,
-                                                       const Name& defaultValue)                        
+                                                       const Name& defaultValue,
+                                                       uint32_t cost,
+                                                       int specializationId)
 
             : m_name{name}
             , m_type{optionType}
             , m_bitOffset{bitOffset}
             , m_order{order}
+            , m_costEstimate{cost}
             , m_defaultValue{defaultValue}
+            , m_specializationId{specializationId}
         {
             for (auto pair : nameIndexList)
             {   // Registers the pair in the lookup table
@@ -176,6 +182,15 @@ namespace AZ
             return m_order;
         }
 
+        uint32_t ShaderOptionDescriptor::GetCostEstimate() const
+        {
+            return m_costEstimate;
+        }
+
+        int ShaderOptionDescriptor::GetSpecializationId() const
+        {
+            return m_specializationId;
+        }
 
         ShaderVariantKey ShaderOptionDescriptor::GetBitMask() const
         {
@@ -442,11 +457,13 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderOptionGroupLayout>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("m_bitMask", &ShaderOptionGroupLayout::m_bitMask)
                     ->Field("m_options", &ShaderOptionGroupLayout::m_options)
                     ->Field("m_nameReflectionForOptions", &ShaderOptionGroupLayout::m_nameReflectionForOptions)
                     ->Field("m_hash", &ShaderOptionGroupLayout::m_hash)
+                    ->Field("m_isFullySpecialized", &ShaderOptionGroupLayout::m_isFullySpecialized)
+                    ->Field("m_useSpecializationConstants", &ShaderOptionGroupLayout::m_useSpecializationConstants)
                     ;
             }
 
@@ -476,6 +493,16 @@ namespace AZ
             return m_hash;
         }
 
+        bool ShaderOptionGroupLayout::IsFullySpecialized() const
+        {
+            return m_isFullySpecialized;
+        }
+
+        bool ShaderOptionGroupLayout::UseSpecializationConstants() const
+        {
+            return m_useSpecializationConstants;
+        }
+
         void ShaderOptionGroupLayout::Clear()
         {
             m_options.clear();
@@ -496,6 +523,20 @@ namespace AZ
                 hash = TypeHash64(option.GetHash(), hash);
             }
             m_hash = hash;
+            m_isFullySpecialized = !AZStd::any_of(
+                m_options.begin(),
+                m_options.end(),
+                [](const ShaderOptionDescriptor& elem)
+                {
+                    return elem.GetSpecializationId() < 0;
+                });
+            m_useSpecializationConstants = AZStd::any_of(
+                m_options.begin(),
+                m_options.end(),
+                [](const ShaderOptionDescriptor& elem)
+                {
+                    return elem.GetSpecializationId() >= 0;
+                });
         }
 
         bool ShaderOptionGroupLayout::ValidateIsFinalized() const

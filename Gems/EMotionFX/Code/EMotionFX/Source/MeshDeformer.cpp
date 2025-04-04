@@ -17,7 +17,7 @@ namespace EMotionFX
 
     // constructor
     MeshDeformer::MeshDeformer(Mesh* mesh)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_mesh       = mesh;
         m_isEnabled  = true;

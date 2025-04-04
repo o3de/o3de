@@ -71,17 +71,17 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ViewportDisplayInfoService"));
+        provided.push_back(AZ_CRC_CE("ViewportDisplayInfoService"));
     }
 
     void AtomViewportDisplayInfoSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ViewportDisplayInfoService"));
+        incompatible.push_back(AZ_CRC_CE("ViewportDisplayInfoService"));
     }
 
     void AtomViewportDisplayInfoSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        required.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void AtomViewportDisplayInfoSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -163,8 +163,11 @@ namespace AZ::Render
         }
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
+        
         auto viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
+        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
+            AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
+        
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
@@ -214,12 +217,44 @@ namespace AZ::Render
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
         const RHI::MultisampleState& multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
-        DrawLine(AZStd::string::format(
-            "Resolution: %dx%d (%s)",
-            viewportContext->GetViewportSize().m_width,
-            viewportContext->GetViewportSize().m_height,
-            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA"
-        ));
+        AZ::RPI::ScenePtr pScene = viewportContext->GetRenderScene();
+       
+        AZStd::string defaultAA = "MSAA";
+        bool hasAAMethod = false;
+        if (pScene != nullptr)
+        {
+            AZ::RPI::RenderPipelinePtr pPipeline = pScene->GetDefaultRenderPipeline();
+ 
+            AZ::RPI::AntiAliasingMode defaultAAMethod = pPipeline->GetActiveAAMethod();
+            defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
+            hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
+        }
+        auto resolutionStr =
+            AZStd::string::format(
+                "Resolution: %dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
+        auto msaaStr =
+            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples) : AZStd::string("NoMSAA");
+ 
+        if (hasAAMethod)
+        {
+            if (multisampleState.m_samples > 1)
+            {
+                DrawLine(AZStd::string::format("%s (%s + %s)", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()));
+            }
+            else
+            {
+                DrawLine(AZStd::string::format("%s (%s)", resolutionStr.c_str(), defaultAA.c_str()));
+            }
+        }
+        else
+        {
+            DrawLine(AZStd::string::format("%s (%s)", resolutionStr.c_str(), msaaStr.c_str()));
+        }
+
+        if(viewportContext->GetCurrentPipeline())   // avoid VR crash on nullptr
+        {
+            DrawLine(AZStd::string::format("Render pipeline: %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
+        }
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo()
@@ -252,15 +287,12 @@ namespace AZ::Render
             return;
         }
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
-        const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
 
         RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
 
         DrawLine(AZStd::string::format(
-            "RenderPasses: %d Vertex Count: %lld Primitive Count: %lld",
-            passSystemFrameStatistics.m_numRenderPassesExecuted,
-            aznumeric_cast<long long>(stats.m_vertexCount),
-            aznumeric_cast<long long>(stats.m_primitiveCount)
+            "RenderPasses: %d",
+            passSystemFrameStatistics.m_numRenderPassesExecuted
         ));
         DrawLine(AZStd::string::format(
             "Total Draw Item Count: %d  Max Draw Items in a Pass: %d",
@@ -303,10 +335,24 @@ namespace AZ::Render
         size_t deviceResident = 0;
         size_t deviceReserved = 0;
 
-        for (const auto& pool : stats->m_pools)
+        for (const auto& heap : stats->m_heaps)
         {
-            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
-            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
+            if (heap.m_heapMemoryType == RHI::HeapMemoryLevel::Device)
+            {
+                deviceResident += heap.m_memoryUsage.m_usedResidentInBytes;                
+                deviceReserved += heap.m_memoryUsage.m_totalResidentInBytes;
+            }
+        }
+
+        // Fallback if the information from the heaps is not available, we use the pools instead.
+        if (deviceResident == 0 || deviceReserved == 0)
+        {
+            deviceResident = deviceReserved = 0;
+            for (const auto& pool : stats->m_pools)
+            {
+                deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
+                deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
+            }
         }
 
         // Query for available device memory
@@ -357,7 +403,7 @@ namespace AZ::Render
         }
 
         DrawLine(
-            AZStd::string::format("StreamingImagePool %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            AZStd::string::format("Texture %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
             fontColor
         );
     }

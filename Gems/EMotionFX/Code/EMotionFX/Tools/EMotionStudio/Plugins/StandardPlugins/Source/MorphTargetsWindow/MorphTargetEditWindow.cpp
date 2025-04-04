@@ -7,6 +7,9 @@
  */
 
 #include "MorphTargetEditWindow.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -145,6 +148,8 @@ namespace EMStudio
 
     void MorphTargetEditWindow::Accepted()
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         const float rangeMin = (float)m_rangeMin->value();
         const float rangeMax = (float)m_rangeMax->value();
 

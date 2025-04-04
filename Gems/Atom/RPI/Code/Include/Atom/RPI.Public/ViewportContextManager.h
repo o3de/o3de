@@ -10,6 +10,7 @@
 
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewGroup.h>
@@ -19,7 +20,7 @@ namespace AZ
     namespace RPI
     {
         //! Exposes the AZ::Interface for ViewportContextRequestsInterface
-        class ViewportContextManager final
+        class ATOM_RPI_PUBLIC_API ViewportContextManager final
             : public ViewportContextRequestsInterface
         {
         public:

@@ -354,7 +354,7 @@ def AtomEditorComponents_Hair_AddedToEntity():
         Report.result(Tests.hair_enabled, hair_component.is_enabled())
 
         # 8. Set assets for Actor and Hair
-        head_path = os.path.join('testdata', 'headbonechainhairstyle', 'test_hair_bone_chain_head_style.azmodel')
+        head_path = os.path.join('testdata', 'headbonechainhairstyle', 'test_hair_bone_chain_head_style.fbx.azmodel')
         head_asset = Asset.find_asset_by_path(head_path)
         hair_path = os.path.join('testdata', 'headbonechainhairstyle', 'test_hair_bone_chain_head_style.tfxhair')
         hair_asset = Asset.find_asset_by_path(hair_path)

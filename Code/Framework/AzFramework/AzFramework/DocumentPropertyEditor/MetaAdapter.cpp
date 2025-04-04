@@ -39,6 +39,13 @@ namespace AZ::DocumentPropertyEditor
         HandleReset();
     }
 
+    ExpanderSettings* MetaAdapter::CreateExpanderSettings(
+        DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
+    {
+        AZ_Assert(m_sourceAdapter, "MetaAdapter::CreateExpanderSettings called before source adapter was specified!");
+        return m_sourceAdapter->CreateExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
+    }
+
     void MetaAdapter::HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, [[maybe_unused]] Dom::Value& value)
     {
         // forward all messages unaltered

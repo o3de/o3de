@@ -45,6 +45,7 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             RHI::ShaderInputNameIndex m_invOutputScaleNameIndex = "m_invOutputScale";
+            RHI::ShaderInputNameIndex m_mipLevelNameIndex = "m_mipLevel";
 
             bool m_updateSrg = false;
             PassType m_passType;

@@ -34,13 +34,13 @@ namespace AzFramework
         //! @note It is preferred to use CalculateEntityWorldBoundsUnion in the general case as
         //! more than one component may be providing a bound. It isn't guaranteed which bound
         //! will be returned by a single call to GetWorldBounds.
-        virtual AZ::Aabb GetWorldBounds() = 0;
+        virtual AZ::Aabb GetWorldBounds() const = 0;
 
         //! Returns an axis aligned bounding box in local space.
         //! @note It is preferred to use CalculateEntityLocalBoundsUnion in the general case as
         //! more than one component may be providing a bound. It isn't guaranteed which bound
         //! will be returned by a single call to GetLocalBounds.
-        virtual AZ::Aabb GetLocalBounds() = 0;
+        virtual AZ::Aabb GetLocalBounds() const = 0;
 
     protected:
         ~BoundsRequests() = default;

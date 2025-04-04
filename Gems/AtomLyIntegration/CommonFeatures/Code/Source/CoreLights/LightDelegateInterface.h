@@ -10,7 +10,9 @@
 
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <AtomCore/Instance/Instance.h>
 #include <AzCore/Component/TransformBus.h>
+
 
 namespace AzFramework
 {
@@ -23,6 +25,11 @@ namespace AZ
     class Transform;
     class Aabb;
 
+    namespace RPI
+    {
+        class Image;
+    }
+    
     namespace Render
     {
         //! Delegate for managing light shape specific functionality in the AreaLightComponentController.
@@ -60,6 +67,9 @@ namespace AZ
             //! Turns the visibility of this light on/off.
             virtual void SetVisibility(bool visibility) = 0;
 
+            // gobo
+            virtual void SetGoboTexture(AZ::Data::Instance<AZ::RPI::Image> goboTexture) = 0;
+
             // Shutters
 
             // Sets if the light should be restricted to shutter angles.
@@ -95,6 +105,8 @@ namespace AZ
             //! Sets the multiplier on the contribution to diffuse global illumination.
             virtual void SetAffectsGIFactor(float affectsGIFactor) = 0;
 
+            //! Set the lighting channel mask
+            virtual void SetLightingChannelMask(uint32_t lightingChannelMask) = 0;
             // Debug Visualization
 
             //! Returns the Aabb for the debug visualization of the light.

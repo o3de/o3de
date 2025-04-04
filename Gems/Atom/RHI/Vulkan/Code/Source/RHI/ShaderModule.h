@@ -56,7 +56,6 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             Descriptor m_descriptor;
-            AZStd::vector<uint32_t> m_alignedByteCode;
             VkShaderModule m_nativeShaderModule = VK_NULL_HANDLE;
         };
     }

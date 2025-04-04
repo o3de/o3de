@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
-
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
 
 #include <AzCore/std/containers/span.h>
@@ -24,7 +24,7 @@ namespace AZ
     {
         //! Used to data drive passes in the pass system. Contains lists of input and
         //! output attachment slots as well as requests to instantiate child passes.
-        class PassTemplate final
+        class ATOM_RPI_REFLECT_API PassTemplate final
         {
         public:
             friend class PassAsset;
@@ -91,6 +91,9 @@ namespace AZ
 
             //! Optional data to be used during pass initialization
             AZStd::shared_ptr<PassData> m_passData = nullptr;
+
+            //! Default RHI::ScopeAttachmentStage value for all pass attachments of usage RHI::ScopeAttachmentUsage::Shader
+            RHI::ScopeAttachmentStage m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::AnyGraphics;
         };
     }   // namespace RPI
 }   // namespace AZ

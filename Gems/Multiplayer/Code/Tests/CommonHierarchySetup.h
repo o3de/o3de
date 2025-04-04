@@ -114,7 +114,9 @@ namespace Multiplayer
             AZ::Interface<INetworkEntityManager>::Register(m_mockNetworkEntityManager.get());
 
             ON_CALL(*m_mockNetworkEntityManager, AddEntityToEntityMap(_, _)).WillByDefault(Invoke(this, &HierarchyTests::AddEntityToEntityMap));
+            ON_CALL(*m_mockNetworkEntityManager, RemoveEntityFromEntityMap(_)).WillByDefault(Invoke(this, &HierarchyTests::RemoveEntityFromEntityMap));
             ON_CALL(*m_mockNetworkEntityManager, GetEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::GetEntity));
+            ON_CALL(*m_mockNetworkEntityManager, GetEntityCount()).WillByDefault(Invoke(this, &HierarchyTests::GetEntityCount));
             ON_CALL(*m_mockNetworkEntityManager, GetNetEntityIdById(_)).WillByDefault(Invoke(this, &HierarchyTests::GetNetEntityIdById));
 
             m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
@@ -171,6 +173,8 @@ namespace Multiplayer
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
 
+            m_eventScheduler->Deactivate();
+
             m_eventScheduler.reset();
             m_mockTime.reset();
 
@@ -223,6 +227,16 @@ namespace Multiplayer
         {
             m_networkEntityMap[netEntityId] = entity;
             return NetworkEntityHandle(entity, m_networkEntityTracker.get());
+        }
+
+        void RemoveEntityFromEntityMap(NetEntityId netEntityId)
+        {
+            m_networkEntityMap.erase(netEntityId);
+        }
+
+        uint32_t GetEntityCount() const
+        {
+            return aznumeric_cast<uint32_t>(m_networkEntityMap.size());
         }
 
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const

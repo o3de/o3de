@@ -29,5 +29,7 @@ namespace UnitTest
             const AzToolsFramework::ComponentEditor::VisitComponentAdapterContentsCallback& callback);
 
         AZStd::unique_ptr<AzToolsFramework::EntityPropertyEditor> m_testEntityPropertyEditor;
+        bool m_ed_enableDPEInspector = false;
+        bool m_ed_enableInspectorOverrideManagement = false;
     };
 } // namespace UnitTest

@@ -44,12 +44,14 @@ namespace AZ
 
         static const char* ShaderCompilerName = "AZSL Compiler";            
 
-        AzslCompiler::AzslCompiler(const AZStd::string& inputFilePath)
-            : m_inputFilePath(inputFilePath)
+        AzslCompiler::AzslCompiler(const AZStd::string& inputFilePath, const AZStd::string& tempFolder)
+            : m_inputFilePath(inputFilePath),
+            m_tempFolder(tempFolder)
         {
         }
 
-        bool AzslCompiler::Compile(const AZStd::string& compilerParams, const AZStd::string& outputFilePath) const
+        bool AzslCompiler::Compile(const AZStd::string& compilerParams,
+                                   const AZStd::string& outputFilePath) const
         {
             // Shader compiler executable
             AZStd::string azslcPath = "Builders/AZSLc/";
@@ -60,7 +62,7 @@ namespace AZ
                 AZStd::string overridePath;
                 if (setReg->Get(overridePath, AzslCompilerOverridePath))
                 {
-                    AZ_TraceOnce("AzslCompiler", "AZSLc executable override specified, using %s", azslcPath.c_str());
+                    AZ_TraceOnce("AzslCompiler", "AZSLc executable override specified, using %s", overridePath.c_str());
                     azslcPath = AZStd::move(overridePath);
                 }
             }
@@ -84,7 +86,7 @@ namespace AZ
             }
 
             // Run Shader Compiler
-            if (!RHI::ExecuteShaderCompiler(azslcPath, azslcCommandOptions, m_inputFilePath, "AZSLc"))
+            if (!RHI::ExecuteShaderCompiler(azslcPath, azslcCommandOptions, m_inputFilePath, m_tempFolder, "AZSLc"))
             {
                 return false;
             }
@@ -92,7 +94,8 @@ namespace AZ
             return true;
         }
 
-        bool AzslCompiler::EmitShader(AZ::IO::GenericStream& outputStream, const AZStd::string& compilerParams) const
+        bool AzslCompiler::EmitShader(AZ::IO::GenericStream& outputStream,
+                                      const AZStd::string& compilerParams) const
         {
             // .azslin for input and .azslout for output (in the same folder)
             AZStd::string hlslOutputFile = m_inputFilePath;
@@ -133,7 +136,8 @@ namespace AZ
 
         namespace SubProducts = ShaderBuilderUtility::AzslSubProducts;
 
-        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments, const AZStd::string& outputFile /* = ""*/) const
+        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments,
+                                                               const AZStd::string& outputFile) const
         {
             const auto azslArgsStr = RHI::ShaderBuildArguments::ListAsString(azslcArguments);
             bool success = Compile(azslArgsStr, outputFile);
@@ -896,7 +900,10 @@ namespace AZ
             return CompileToFileAndPrepareJsonDocument(output, "--options", "options.json") == BuildResult::Success;
         }
 
-        bool AzslCompiler::ParseOptionsPopulateOptionGroupLayout(const rapidjson::Document& input, RPI::Ptr<RPI::ShaderOptionGroupLayout>& shaderOptionGroupLayout) const
+        bool AzslCompiler::ParseOptionsPopulateOptionGroupLayout(
+            const rapidjson::Document& input,
+            RPI::Ptr<RPI::ShaderOptionGroupLayout>& shaderOptionGroupLayout,
+            bool& outUseSpecializationConstants) const
         {
             auto totalBitOffset = (uint32_t) 0u;
 
@@ -928,6 +935,12 @@ namespace AZ
                     shaderOptionGroupLayout->Finalize();
                     return false;
                 };
+
+            outUseSpecializationConstants = false;
+            if (input.HasMember("specializationConstants"))
+            {
+                outUseSpecializationConstants = input["specializationConstants"].GetBool();
+            }
 
             const rapidjson::Value& shaderOptions = input["ShaderOptions"];
             AZ_Assert(shaderOptions.IsArray(), "Attribute ShaderOptions must be an array");
@@ -1027,12 +1040,26 @@ namespace AZ
                         implicitlyOrdered++;
                     }
 
+                    uint32_t cost = 0;
+                    if (optionEntry.HasMember("costImpact"))
+                    {
+                        cost = optionEntry["costImpact"].GetUint();
+                    }
+
+                    int specializationId = -1;
+                    if (optionEntry.HasMember("specializationId"))
+                    {
+                        specializationId = optionEntry["specializationId"].GetInt();
+                    }
+
                     RPI::ShaderOptionDescriptor shaderOption(Name(optionName), 
                                                              optionType,
                                                              keyOffset,
                                                              order,
                                                              idIndexList,
-                                                             defaultValueId);
+                                                             defaultValueId,
+                                                             cost,
+                                                             specializationId);
 
                     if (!shaderOptionGroupLayout->AddShaderOption(shaderOption))
                     {

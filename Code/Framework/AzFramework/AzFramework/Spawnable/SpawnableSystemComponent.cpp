@@ -95,6 +95,12 @@ namespace AzFramework
                         &RootSpawnableNotificationBus::Events::OnRootSpawnableAssigned, AZStd::move(rootSpawnable), generation);
                 }, SpawnableEntitiesContainer::CheckIfSpawnableIsLoaded::Yes);
             m_rootSpawnableContainer.SpawnAllEntities();
+
+            #if defined(AZ_ENABLE_TRACING)
+                // Save the root spawnable's name before the compiler eats the rootSpawnable variable from AZStd::move(rootSpawnable)
+                AZStd::string rootSpawnableName = rootSpawnable.GetHint();
+            #endif
+
             m_rootSpawnableContainer.Alert(
                 [newSpawnable = AZStd::move(rootSpawnable)](uint32_t generation)
                 {
@@ -102,7 +108,7 @@ namespace AzFramework
                         &RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZStd::move(newSpawnable), generation);
                 });
 
-            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnable.GetHint().c_str(), generation);     
+            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnableName.c_str(), generation);     
         }
         else
         {
@@ -132,7 +138,18 @@ namespace AzFramework
             SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
 
-    void SpawnableSystemComponent::OnRootSpawnableAssigned([[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
+    void SpawnableSystemComponent::ProcessSpawnableQueueUntilEmpty()
+    {
+        SpawnableEntitiesManager::CommandQueueStatus queueStatus;
+        do
+        {
+            queueStatus = m_entitiesManager.ProcessQueue(
+                SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        } while (queueStatus == SpawnableEntitiesManager::CommandQueueStatus::HasCommandsLeft);
+    }
+
+    void SpawnableSystemComponent::OnRootSpawnableAssigned(
+        [[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
         [[maybe_unused]] uint32_t generation)
     {
         AZ_TracePrintf("Spawnables", "New root spawnable '%s' assigned (generation: %i).\n", rootSpawnable.GetHint().c_str(), generation);
@@ -205,12 +222,7 @@ namespace AzFramework
             // entity manager before it can safely destroy it on shutdown, but also to make sure that are no
             // more calls to the callback registered to the root spawnable as that accesses this component.
             m_rootSpawnableContainer.Clear();
-            SpawnableEntitiesManager::CommandQueueStatus queueStatus;
-            do
-            {
-                queueStatus = m_entitiesManager.ProcessQueue(
-                    SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
-            } while (queueStatus == SpawnableEntitiesManager::CommandQueueStatus::HasCommandsLeft);
+            ProcessSpawnableQueueUntilEmpty();
         }
 
         AZ::Data::AssetManager::Instance().UnregisterHandler(&m_assetHandler);

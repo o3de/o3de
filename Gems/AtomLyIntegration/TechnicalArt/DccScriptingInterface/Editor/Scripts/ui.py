@@ -45,7 +45,6 @@ import DccScriptingInterface.azpy.shared.ui.samples
 from DccScriptingInterface.azpy.shared.ui.samples import SampleUI
 
 # O3DE imports
-import az_qt_helpers
 import azlmbr
 import azlmbr.bus
 import azlmbr.paths
@@ -65,6 +64,8 @@ def click_action_sampleui():
     """
     _LOGGER.debug(f'Clicked: click_action_sampleui')
 
+    # import additional O3DE QtForPython Gem modules
+    import az_qt_helpers
     ui = SampleUI(parent=az_qt_helpers.get_editor_main_window(),
                   title='Dccsi: SampleUI')
     ui.show()

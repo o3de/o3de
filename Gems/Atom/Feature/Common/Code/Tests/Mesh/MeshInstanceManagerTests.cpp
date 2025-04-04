@@ -19,13 +19,13 @@ namespace UnitTest
     using namespace AZ::Render;
 
     constexpr size_t keyCount = 4;
-    AZ::Data::InstanceId modelIdA = AZ::Data::InstanceId{ AZ::Uuid::CreateRandom(), 0 };
-    AZ::Data::InstanceId modelIdB = AZ::Data::InstanceId{ AZ::Uuid::CreateRandom(), 0 };
+    AZ::Data::InstanceId modelIdA = AZ::Data::InstanceId::CreateFromAssetId({ AZ::Uuid::CreateRandom(), 0 });
+    AZ::Data::InstanceId modelIdB = AZ::Data::InstanceId::CreateFromAssetId({ AZ::Uuid::CreateRandom(), 0 });
     uint32_t testLodIndex = 0;
     uint32_t testMeshIndex = 0;
     RHI::DrawItemSortKey testSortKey = 0;
-    AZ::Data::InstanceId materialIdA = AZ::Data::InstanceId{ AZ::Uuid::CreateRandom(), 0 };
-    AZ::Data::InstanceId materialIdB = AZ::Data::InstanceId{ AZ::Uuid::CreateRandom(), 0 };
+    AZ::Data::InstanceId materialIdA = AZ::Data::InstanceId::CreateFromAssetId({ AZ::Uuid::CreateRandom(), 0 });
+    AZ::Data::InstanceId materialIdB = AZ::Data::InstanceId::CreateFromAssetId({ AZ::Uuid::CreateRandom(), 0 });
 
     class MeshInstanceManagerTestFixture
         : public LeakDetectionFixture

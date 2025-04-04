@@ -9,10 +9,12 @@
 ly_install_directory(
     DIRECTORIES
         AssetGem
+        AddTestsToProject
         CppToolGem
         DefaultGem
         PrebuiltGem
         PythonToolGem
+        RemoteRepo
         DefaultProject
         MinimalProject
         GemRepo
@@ -20,5 +22,6 @@ ly_install_directory(
         ScriptCanvasNode
         UnifiedMultiplayerGem
         GraphicsGem
+        ScriptOnlyProject
     VERBATIM
 )

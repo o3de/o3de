@@ -59,7 +59,7 @@ class TestsSceneScripting(object):
         assert result, f"AP Batch failed with {extra_args}"
 
         expected_product_list = [
-            'cube_icosphere.dbgsg',
+            'cube_icosphere.fbx.dbgsg',
             'cube_icosphere.fbx.default_script'
         ]
 

@@ -20,7 +20,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "Maestro/Types/AnimNodeType.h"
 
-/////////////////////////////////////////////////////////////////////////////
 // CTrackViewFindDlg dialog
 
 
@@ -52,24 +51,28 @@ void CTrackViewFindDlg::FillData()
 {
     m_numSeqs = 0;
     m_objs.resize(0);
-    for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
-    {
-        IAnimSequence* seq = GetIEditor()->GetMovieSystem()->GetSequence(k);
-        for (int i = 0; i < seq->GetNodeCount(); i++)
-        {
-            IAnimNode* pNode = seq->GetNode(i);
-            ObjName obj;
-            obj.m_objName = pNode->GetName();
-            obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
-            AZStd::string fullname = seq->GetName();
-            obj.m_seqName = fullname.c_str();
-            m_objs.push_back(obj);
-        }
-        m_numSeqs++;
-    }
-    FillList();
-}
 
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        for (int k = 0; k < movieSystem->GetNumSequences(); ++k)
+        {
+            IAnimSequence* seq = movieSystem->GetSequence(k);
+            for (int i = 0; i < seq->GetNodeCount(); i++)
+            {
+                IAnimNode* pNode = seq->GetNode(i);
+                ObjName obj;
+                obj.m_objName = pNode->GetName();
+                obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
+                AZStd::string fullname = seq->GetName();
+                obj.m_seqName = fullname.c_str();
+                m_objs.push_back(obj);
+            }
+            m_numSeqs++;
+        }
+        FillList();
+    }
+}
 
 void CTrackViewFindDlg::Init(CTrackViewDialog* tvDlg)
 {

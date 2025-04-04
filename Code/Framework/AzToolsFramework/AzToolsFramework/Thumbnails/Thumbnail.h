@@ -13,7 +13,7 @@
 AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: conditional expression is constant
                                                                     // 4251: 'QLocale::d': class 'QSharedDataPointer<QLocalePrivate>' needs to have dll-interface to be used by clients of class 'QLocale'
                                                                     // 4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-#include <QFutureWatcher>
+
 #include <QObject>
 #include <QPixmap>
 AZ_POP_DISABLE_WARNING
@@ -28,8 +28,7 @@ namespace AzToolsFramework
             ThumbnailKey contains any kind of identifiable information to retrieve thumbnails (e.g. assetId, assetType, filename, etc.)
             To use thumbnail system, keep reference to your thumbnail key, and retrieve Thumbnail via ThumbnailerRequestBus
         */
-        class ThumbnailKey
-            : public QObject
+        class ThumbnailKey : public QObject
         {
             Q_OBJECT
         public:
@@ -49,10 +48,10 @@ namespace AzToolsFramework
             virtual bool Equals(const ThumbnailKey* other) const;
 
         Q_SIGNALS:
-            //! Updated signal is dispatched whenever thumbnail data was changed. Anyone using this thumbnail should listen to this.
-            void ThumbnailUpdatedSignal() const;
+            //! This signal is sent whenever the thumbnail image where data has changed.
+            void ThumbnailUpdated() const;
             //! Force update mapped thumbnails
-            void UpdateThumbnailSignal() const;
+            void ThumbnailUpdateRequested() const;
 
         private:
             bool m_ready = false;
@@ -65,11 +64,11 @@ namespace AzToolsFramework
         //! Thumbnail is the base class in thumbnailer system.
         /*
             Thumbnail handles storing and updating data for each specific thumbnail
-            Thumbnail also emits Updated signal whenever thumbnail data changes, this signal is listened to by every ThumbnailKey that maps to this thumbnail
-            Because you should be storing reference to ThumbnailKey and not Thumbnail, connect to ThumbnailKey signal instead
+            Thumbnail also emits Updated signal whenever thumbnail data changes, this signal is listened to by every ThumbnailKey that maps
+           to this thumbnail Because you should be storing reference to ThumbnailKey and not Thumbnail, connect to ThumbnailKey signal
+           instead
         */
-        class Thumbnail
-            : public QObject
+        class Thumbnail : public QObject
         {
             Q_OBJECT
         public:
@@ -83,26 +82,27 @@ namespace AzToolsFramework
 
             Thumbnail(SharedThumbnailKey key);
             ~Thumbnail() override;
-            bool operator == (const Thumbnail& other) const;
-            void Load();
-            virtual void UpdateTime(float deltaTime);
+            bool operator==(const Thumbnail& other) const;
+            virtual void Load();
             const QPixmap& GetPixmap() const;
             SharedThumbnailKey GetKey() const;
             State GetState() const;
+            AZStd::chrono::steady_clock::time_point GetLastTimeUpdated() const;
+            bool CanAttemptReload() const;
 
         Q_SIGNALS:
-            void Updated() const;
+            void ThumbnailUpdated() const;
 
         public Q_SLOTS:
             virtual void Update() {}
 
         protected:
-            QFutureWatcher<void> m_watcher;
-            State m_state;
+            void QueueThumbnailUpdated();
+
+            AZStd::chrono::steady_clock::time_point m_lastTimeUpdated = AZStd::chrono::steady_clock::now();
+            AZStd::atomic<State> m_state;
             SharedThumbnailKey m_key;
             QPixmap m_pixmap;
-
-            virtual void LoadThread() {}
         };
 
         typedef QSharedPointer<Thumbnail> SharedThumbnail;
@@ -114,6 +114,7 @@ namespace AzToolsFramework
             ThumbnailProvider() = default;
             virtual ~ThumbnailProvider() = default;
             virtual bool GetThumbnail(SharedThumbnailKey key, SharedThumbnail& thumbnail) = 0;
+
             //! Priority identifies ThumbnailProvider order
             //! Higher priority means this ThumbnailProvider will take precedence in generating a thumbnail when a supplied ThumbnailKey is
             //! supported by multiple providers.
@@ -126,13 +127,13 @@ namespace AzToolsFramework
         };
 
         typedef QSharedPointer<ThumbnailProvider> SharedThumbnailProvider;
-    }
-}
+    } // namespace Thumbnailer
+} // namespace AzToolsFramework
 
 namespace AZStd
 {
     // hash specialization
-    template <>
+    template<>
     struct hash<AzToolsFramework::Thumbnailer::SharedThumbnailKey>
     {
         AZ_FORCE_INLINE size_t operator()(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const
@@ -141,15 +142,17 @@ namespace AZStd
         }
     };
 
-    template <>
+    template<>
     struct equal_to<AzToolsFramework::Thumbnailer::SharedThumbnailKey>
     {
-        AZ_FORCE_INLINE bool operator()(const AzToolsFramework::Thumbnailer::SharedThumbnailKey& left, const AzToolsFramework::Thumbnailer::SharedThumbnailKey& right) const
+        AZ_FORCE_INLINE bool operator()(
+            const AzToolsFramework::Thumbnailer::SharedThumbnailKey& left,
+            const AzToolsFramework::Thumbnailer::SharedThumbnailKey& right) const
         {
             return left->Equals(right.data());
         }
     };
-}
+} // namespace AZStd
 
 namespace AzToolsFramework
 {
@@ -164,18 +167,11 @@ namespace AzToolsFramework
             what constitutes a unique key and how should the key collection be optimized
         */
         template<class ThumbnailType, class Hasher = AZStd::hash<SharedThumbnailKey>, class EqualKey = AZStd::equal_to<SharedThumbnailKey>>
-        class ThumbnailCache
-            : public ThumbnailProvider
-            , public AZ::TickBus::Handler
+        class ThumbnailCache : public ThumbnailProvider
         {
         public:
             ThumbnailCache();
             ~ThumbnailCache() override;
-
-            //////////////////////////////////////////////////////////////////////////
-            // TickBus
-            //////////////////////////////////////////////////////////////////////////
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             bool GetThumbnail(SharedThumbnailKey key, SharedThumbnail& thumbnail) override;
 
@@ -191,6 +187,5 @@ namespace AzToolsFramework
 } // namespace AzToolsFramework
 
 Q_DECLARE_METATYPE(AzToolsFramework::Thumbnailer::SharedThumbnailKey)
-
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.inl>

@@ -16,6 +16,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/MatrixMxN.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/Quaternion.h>
@@ -24,6 +25,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/VectorN.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/string/string.h>
 
@@ -56,6 +58,11 @@ namespace ScriptCanvas
             // Function,
             // List,
             AssetId,
+            VectorN,
+            MatrixMxN,
+            
+            // Add any new types above this. This is used to provide a count of all the types defined.
+            Count
         };
 
         using AABBType = AZ::Aabb;
@@ -67,6 +74,7 @@ namespace ScriptCanvas
         using NamedEntityIDType = AZ::NamedEntityId;
         using Matrix3x3Type = AZ::Matrix3x3;
         using Matrix4x4Type = AZ::Matrix4x4;
+        using MatrixMxNType = AZ::MatrixMxN;
         using NumberType = double;
         using OBBType = AZ::Obb;
         using PlaneType = AZ::Plane;
@@ -76,6 +84,7 @@ namespace ScriptCanvas
         using Vector2Type = AZ::Vector2;
         using Vector3Type = AZ::Vector3;
         using Vector4Type = AZ::Vector4;
+        using VectorNType = AZ::VectorN;
 
         class Type final
         {
@@ -95,6 +104,7 @@ namespace ScriptCanvas
             static Type Invalid();
             static Type Matrix3x3();
             static Type Matrix4x4();
+            static Type MatrixMxN();
             static Type Number();
             static Type OBB();
             static Type Plane();
@@ -104,6 +114,7 @@ namespace ScriptCanvas
             static Type Vector2();
             static Type Vector3();
             static Type Vector4();
+            static Type VectorN();
 
             // the default ctr produces the invalid type, and is only here to help the compiler
             Type();

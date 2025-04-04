@@ -10,13 +10,14 @@
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 
 namespace AZ
 {
     namespace RPI
     {
         //! Constructs an instance of a BufferAsset
-        class BufferAssetCreator
+        class ATOM_RPI_REFLECT_API BufferAssetCreator
             : public AssetCreator<BufferAsset>
         {
         public:

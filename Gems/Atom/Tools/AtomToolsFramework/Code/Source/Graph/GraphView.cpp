@@ -149,7 +149,7 @@ namespace AtomToolsFramework
             GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PostOnActiveGraphChanged);
         }
 
-        // Update all of the main window menus with commands from this view what are you doing.
+        // Update main window menus with commands from this view.
         AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, true);
     }
 

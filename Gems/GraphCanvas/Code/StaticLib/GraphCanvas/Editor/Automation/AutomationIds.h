@@ -14,8 +14,8 @@ namespace GraphCanvas
     namespace AutomationIds
     {
         // ToolBar
-        static const AZ::Crc32 CreateCommentButton = AZ_CRC("GC_CreateCommentButton", 0xb83d2bef);
-        static const AZ::Crc32 GroupButton = AZ_CRC("GC_GroupButton", 0x4ee8f5e9);
-        static const AZ::Crc32 UngroupButton = AZ_CRC("GC_UngroupButton", 0xe7f2c4fd);
+        static const AZ::Crc32 CreateCommentButton = AZ_CRC_CE("GC_CreateCommentButton");
+        static const AZ::Crc32 GroupButton = AZ_CRC_CE("GC_GroupButton");
+        static const AZ::Crc32 UngroupButton = AZ_CRC_CE("GC_UngroupButton");
     }
 }

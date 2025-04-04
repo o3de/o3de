@@ -107,8 +107,9 @@ namespace Audio
 
         bool m_bSystemInitialized;
 
-        using duration_ms = AZStd::chrono::duration<float, AZStd::milli>;
-        const duration_ms m_targetUpdatePeriod = AZStd::chrono::milliseconds(4);
+        // Using microseconds to allow sub-millisecond sleeping. 4000us is 4ms.
+        // chrono::microseconds is stored in 64-bit so can safely be added to epoch time (now) to produce absolute time.
+        const AZStd::chrono::microseconds m_targetUpdatePeriod = AZStd::chrono::microseconds(4000);
 
         CAudioTranslationLayer m_oATL;
         CAudioThread m_audioSystemThread;

@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -14,7 +15,6 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridVisualizationAccelerationStructurePass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -30,8 +30,7 @@ namespace AZ
             : Pass(descriptor)
         {
             // disable this pass if we're on a platform that doesn't support raytracing
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false || !AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices || !AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
             {
                 SetEnabled(false);
             }
@@ -82,7 +81,6 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
@@ -118,7 +116,8 @@ namespace AZ
                         desc.m_bufferViewDescriptor = bufferViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
+                        frameGraph.UseShaderAttachment(
+                            desc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentStage::RayTracingShader);
                     }
 
                     // TLAS Instances buffer
@@ -138,7 +137,7 @@ namespace AZ
                         desc.m_bufferViewDescriptor = bufferViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::RayTracingShader);
                     }
                 }
             }
@@ -151,10 +150,14 @@ namespace AZ
 
             // build the visualization BLAS from the DiffuseProbeGridFeatureProcessor
             // Note: the BLAS is used by all DiffuseProbeGrid visualization TLAS objects
+            AZStd::vector<const RHI::DeviceRayTracingBlas*> changedBlasList;
             if (m_visualizationBlasBuilt == false)
             {
-                context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas());
+                context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas()->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                 m_visualizationBlasBuilt = true;
+                changedBlasList.push_back(diffuseProbeGridFeatureProcessor->GetVisualizationBlas()
+                                              ->GetDeviceRayTracingBlas(context.GetDeviceIndex())
+                                              .get());
             }
 
             // call BuildTopLevelAccelerationStructure for each DiffuseProbeGrid in this range
@@ -172,7 +175,7 @@ namespace AZ
                 }
 
                 // build the TLAS object
-                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas());
+                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
             }
         }
 

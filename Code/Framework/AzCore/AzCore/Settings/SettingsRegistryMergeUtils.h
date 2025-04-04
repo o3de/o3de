@@ -21,8 +21,8 @@ namespace AZ::IO
 namespace AZ::SettingsRegistryMergeUtils
 {
     inline constexpr const char* OrganizationRootKey = "/Amazon";
-    inline constexpr const char* BuildTargetNameKey = "/Amazon/AzCore/Settings/BuildTargetName";
-    inline constexpr const char* SpecializationsRootKey = "/Amazon/AzCore/Settings/Specializations";
+    inline constexpr const char* BuildTargetNameKey = "/O3DE/Settings/BuildTargetName";
+    inline constexpr const char* SpecializationsRootKey = "/O3DE/Settings/Specializations";
     inline constexpr const char* BootstrapSettingsRootKey = "/Amazon/AzCore/Bootstrap";
     inline constexpr const char* FilePathsRootKey = "/O3DE/Runtime/FilePaths";
     inline constexpr const char* FilePathKey_BinaryFolder = "/O3DE/Runtime/FilePaths/BinaryFolder";
@@ -125,6 +125,10 @@ namespace AZ::SettingsRegistryMergeUtils
     //! Query the specializations that will be used when loading the Settings Registry.
     //! The SpecializationsRootKey is visited to retrieve any specializations stored within that section of that registry
     void QuerySpecializationsFromRegistry(SettingsRegistryInterface& registry, SettingsRegistryInterface::Specializations& specializations);
+
+    //! Adds value as a string under the Settings Registry `SpecializationsRootKey`
+    //! The specializations can be queried using the QuerySpecializationsFromRegistry function above
+    void MergeSettingsToRegistry_AddSpecialization(SettingsRegistryInterface& registry, AZStd::string_view value);
 
     //! Adds name of current build system target to the Settings Registry specialization section
     //! A build system target is the name used by the build system to build a particular executable or library
@@ -273,13 +277,13 @@ namespace AZ::SettingsRegistryMergeUtils
     //! --regdump <path> Dumps the content of the key at path and all it's content/children to output.
     //!     example: --regdump /My/Array/With/Objects
     //! --regdumpall Dumps the entire settings registry to output.
-    //! 
+    //!
     //! The CommandsToParse structure determines which options should be processed from the command line
     //! `CommandsToParse::m_parseRegdumpCommands=true` allows the --regdump and --regdumpall commands to be processed
     //! `CommandsToParse::m_parseRegsetCommands=true` allows the --regset command to be processed
     //! `CommandsToParse::m_parseRegremveCommands=true` allows the --regremove command to be processed
     //! `CommandsToParse::m_parseRegsetFileCommands=true` allows the --regset-file command to be processed
-    //! 
+    //!
     //! Note that this function is only called in development builds and is compiled out in release builds.
     void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine,
         const CommandsToParse& commandsToParse = {});

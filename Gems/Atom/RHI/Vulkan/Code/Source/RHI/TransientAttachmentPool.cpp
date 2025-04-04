@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
+#include <Atom/RHI/RHIBus.h>
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -49,20 +50,20 @@ namespace AZ
             }
         }
 
-        RHI::Image* TransientAttachmentPool::ActivateImage(const RHI::TransientImageDescriptor& descriptor)
+        RHI::DeviceImage* TransientAttachmentPool::ActivateImage(const RHI::TransientImageDescriptor& descriptor)
         {
             AliasedAttachmentAllocator* allocator = GetImageAllocator(descriptor.m_imageDescriptor);
             AZ_Assert(allocator, "No image heap allocator to allocate an image. Make sure you specified one at pool creation time");
-            RHI::Image* image = allocator->ActivateImage(descriptor, *m_currentScope);
+            RHI::DeviceImage* image = allocator->ActivateImage(descriptor, *m_currentScope);
             AZ_Assert(RHI::CheckBitsAll(GetCompileFlags(), RHI::TransientAttachmentPoolCompileFlags::DontAllocateResources) || image, "Failed to allocate image. Heap is not big enough");
             m_imageToAllocatorMap[descriptor.m_attachmentId] = allocator;
             return image;
         }
 
-        RHI::Buffer* TransientAttachmentPool::ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor)
+        RHI::DeviceBuffer* TransientAttachmentPool::ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor)
         {
             AZ_Assert(m_bufferAllocator, "No buffer heap allocator to allocate a transient buffer. Make sure you specified one at pool creation time");
-            RHI::Buffer* buffer = m_bufferAllocator->ActivateBuffer(descriptor, *m_currentScope);
+            RHI::DeviceBuffer* buffer = m_bufferAllocator->ActivateBuffer(descriptor, *m_currentScope);
             AZ_Assert(RHI::CheckBitsAll(GetCompileFlags(), RHI::TransientAttachmentPoolCompileFlags::DontAllocateResources) || buffer, "Failed to allocate buffer. Heap is not big enough.");
             return buffer;
         }
@@ -222,12 +223,20 @@ namespace AZ
             RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
             AliasedAttachmentAllocator::Descriptor heapDesc;
             heapDesc.m_cacheSize = ObjectCacheSize;
-            heapDesc.m_memoryTypeMask = memRequirements.memoryTypeBits;
-            heapDesc.m_memoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-            heapDesc.m_alignment = memRequirements.alignment;
+            heapDesc.m_memoryRequirements = memRequirements;
             heapDesc.m_budgetInBytes = budgetInBytes;
             heapDesc.m_resourceTypeMask = resourceTypeMask;
             heapDesc.m_allocationParameters = heapParameters;
+            struct
+            {
+                size_t m_alignment = 0;
+                void operator=(size_t value)
+                {
+                    m_alignment = AZStd::max(m_alignment, value);
+                }
+            } alignment;
+            RHI::RHIRequirementRequestBus::BroadcastResult(alignment, &RHI::RHIRequirementsRequest::GetRequiredAlignment, device);
+            heapDesc.m_alignment = AZStd::max(alignment.m_alignment, heapDesc.m_alignment);
 
             auto result = allocator->Init(device, heapDesc);
             if (result != RHI::ResultCode::Success)

@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     constexpr const char CryEditMainName[] = "CryEditMain";
 
     auto handle = AZ::DynamicModuleHandle::Create("EditorLib");
-    [[maybe_unused]] const bool loaded = handle->Load(true);
+    [[maybe_unused]] const bool loaded = handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
     AZ_Assert(loaded, "EditorLib could not be loaded");
 
     int ret = 1;

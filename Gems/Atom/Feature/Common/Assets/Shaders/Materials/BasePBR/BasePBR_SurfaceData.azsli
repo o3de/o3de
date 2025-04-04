@@ -27,7 +27,7 @@ class SurfaceData_BasePBR
     real metallic;             //!< Surface metallic property
     real roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
     real roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
-    real roughnessA2;          //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
+    float roughnessA2;         //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance. Float precision is needed as values can get very close to 0
 
     //! Surface lighting data
     real3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
@@ -38,6 +38,12 @@ class SurfaceData_BasePBR
 
     //! Sets albedo, base color, specularF0, and metallic properties using metallic workflow
     void SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF0Factor, real newMetallic);
+
+    real3 GetDiffuseNormal() { return normal; }
+    real3 GetSpecularNormal() { return normal; }
+    real3 GetDefaultNormal() { return normal; }
+    real3 GetVertexNormal() { return vertexNormal; }
+    real3 GetSpecularF0() { return specularF0; }
 };
 
 void SurfaceData_BasePBR::CalculateRoughnessA()
@@ -51,5 +57,5 @@ void SurfaceData_BasePBR::SetAlbedoAndSpecularF0(real3 newBaseColor, real specul
     metallic = newMetallic;
 
     albedo = GetAlbedo(baseColor, metallic);
-    specularF0 = GetSpecularF0(baseColor, metallic, specularF0Factor);
+    specularF0 = CalculateSpecularF0(baseColor, metallic, specularF0Factor);
 }

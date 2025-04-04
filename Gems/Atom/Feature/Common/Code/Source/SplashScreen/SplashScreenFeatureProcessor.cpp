@@ -26,7 +26,7 @@ namespace AZ::Render
     {
         AZ::ApplicationTypeQuery appType;
         AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-        if (!appType.IsValid() || appType.IsEditor())
+        if (!appType.IsGame())
         {
             return;
         }

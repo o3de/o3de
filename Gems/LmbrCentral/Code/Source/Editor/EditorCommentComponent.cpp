@@ -31,11 +31,11 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level", 0x9aeacc13), AZ_CRC("Game", 0x232b318c), AZ_CRC("Layer", 0xe4db211a) }))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level"), AZ_CRC_CE("Game"), AZ_CRC_CE("Layer") }))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/editor/comment/")
                     ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorCommentComponent::m_comment,"", "Comment")
-                        ->Attribute(AZ_CRC("PlaceholderText", 0xa23ec278), "Add comment text here");
+                        ->Attribute(AZ::Edit::Attributes::PlaceholderText, "Add comment text here");
             }
         }
     }

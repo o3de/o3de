@@ -70,6 +70,7 @@ set(FILES
     ranges/reverse_view.h
     ranges/single_view.h
     ranges/subrange.h
+    ranges/subrange_fwd.h
     ranges/split_view.h
     ranges/swap.h
     ranges/transform_view.h
@@ -85,6 +86,7 @@ set(FILES
     chrono/chrono.h
     chrono/time.cpp
     containers/array.h
+    containers/array_fwd.h
     containers/bitset.h
     containers/compressed_pair.h
     containers/compressed_pair.inl
@@ -106,6 +108,7 @@ set(FILES
     containers/rbtree.h
     containers/ring_buffer.h
     containers/set.h
+    containers/span_fwd.h
     containers/span.h
     containers/span.inl
     containers/stack.h
@@ -269,5 +272,10 @@ set(FILES
     utility/expected_internal.h
     utility/expected_internal.inl
     utility/move.h
+    utility/pair_fwd.h
+    utility/pair.h
+    utility/pair.inl
     utility/to_underlying.h
+    utility/tuple_concepts.h
+    utility/tuple_fwd.h
 )

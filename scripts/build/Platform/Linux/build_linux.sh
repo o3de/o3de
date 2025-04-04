@@ -62,11 +62,14 @@ if [[ "${LY_MIN_MEMORY_PER_CORE:-0}" -gt 0 ]]; then
     CORE_COUNT=$((CALCULATED_MAX_CORE_USAGE > TOTAL_CORE_COUNT ? TOTAL_CORE_COUNT :  CALCULATED_MAX_CORE_USAGE))
     echo "Max Usable Cores    : $CORE_COUNT"
 else
-    CORE_COUNT=$TOTAL_CORE_COUNT
+    # Reserve at least 1 core to reduce IO contention
+    CORE_COUNT=$(expr $TOTAL_CORE_COUNT - 1)
 fi
 
-
-eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
-eval cmake --build . --target ${CMAKE_TARGET} --config ${CONFIGURATION} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
-
+# Split the configuration on semi-colon and use the cmake --build wrapper to run the underlying build command for each
+for config in $(echo $CONFIGURATION | sed "s/;/ /g")
+do
+    eval echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
+    eval cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $CORE_COUNT -- ${CMAKE_NATIVE_BUILD_ARGS}
+done
 popd

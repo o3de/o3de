@@ -96,16 +96,14 @@ namespace AZ
                             continue;
                         }
 
-                        AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
-                        AssetBuilderSDK::SourceFileDependency sourceDependency;
-                        sourceDependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
-                        response.m_sourceFileDependencyList.push_back(sourceDependency);
+                        const AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(
+                            request.m_sourceFile, rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
 
                         AssetBuilderSDK::JobDependency jobDependency;
                         jobDependency.m_jobKey = "azshadervariant";
                         jobDependency.m_platformIdentifier = platformInfo.m_identifier;
                         jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                        jobDependency.m_sourceFile = sourceDependency;
+                        jobDependency.m_sourceFile.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
                         jobDependencyList.push_back(jobDependency);
                     }
                 }

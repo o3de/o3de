@@ -405,7 +405,7 @@ namespace AzToolsFramework
              pathIter != endIter && returnedNode != nullptr && pathIter->IsIndex();
              ++pathIter)
         {
-            // non-index subpaths are for properties not nodes, so only handle the index paths
+            // non-index sub-paths are for properties not nodes, so only handle the index paths
             returnedNode = returnedNode->GetChildFromDomIndex(pathIter->GetIndex());
         }
         return returnedNode;
@@ -527,6 +527,7 @@ namespace AzToolsFramework
                 // replace operations on a DOM can be surprisingly complicated, like if a column is replaced by a row, or vice versa
                 // the safest method is to get the full row of the node, remove it, update it, and put it back into place
                 auto* destinationNode = GetNodeFromPath(operationIterator->GetDestinationPath());
+                AZ_Assert(destinationNode, "received patch for non-existent node!");
                 auto* owningRow = destinationNode->GetParentNode();
                 if (owningRow && owningRow != m_rootNode)
                 {

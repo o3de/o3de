@@ -82,7 +82,6 @@ namespace EMotionFX
         }
 
     protected:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         BlendTree* m_blendTree = nullptr;
         BlendTreeFloatConstantNode* m_floatConstantNodeOne = nullptr;
         BlendTreeFloatConstantNode* m_floatConstantNodeTwo = nullptr;
@@ -197,7 +196,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeFloatConditionNode_ConditionTest,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeFloatConditionNode_ConditionTest,
         BlendTreeFloatConditionNodeFixture,
         ::testing::Combine(
             ::testing::Bool(),

@@ -46,7 +46,7 @@ namespace ScriptCanvas
         
         AZ::Crc32 GetIdCrc() const override
         {
-            return AZ_CRC(ExecutionValidationIds::UnusedNodeId);
+            return AZ_CRC_CE(ExecutionValidationIds::UnusedNodeId);
         }
         
         const AZ::EntityId& GetNodeId() const

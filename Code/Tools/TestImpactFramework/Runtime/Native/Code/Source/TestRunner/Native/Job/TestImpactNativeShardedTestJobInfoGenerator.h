@@ -204,12 +204,24 @@ namespace TestImpact
         const TestTargetAndEnumeration& testTargetAndEnumeration, typename TestJobRunner::JobInfo::Id startingId)
     {
         // If the target can shard and has more than one test, and the max concurrency is greater than 1, we will shard
-        if (const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
-            testTarget->CanShard()
+        const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
+        const bool testTargetCanShard = testEnumeration.has_value() &&
+            ((testTarget->GetShardingConfiguration() == ShardingConfiguration::TestInterleaved
+                && testEnumeration->GetNumEnabledTests() > 1) ||
+                (testTarget->GetShardingConfiguration() == ShardingConfiguration::FixtureInterleaved
+                    && testEnumeration->GetNumEnabledTestSuites() > 1));
+
+        if (testTarget->CanShard()
             && m_maxConcurrency > 1
-            && testEnumeration.has_value()
-            && testEnumeration->GetNumEnabledTests() > 1)
+            && testTargetCanShard)
         {
+            std::printf(R"(Splitting test run into shards with sharding configuration "%s", enabled test count = "%zu")"
+                R"(, enabled test suite/fixture count = "%zu" for target "%s")" "\n",
+                testTarget->GetShardingConfiguration() == ShardingConfiguration::TestInterleaved
+                ? "Test Interleaved" : "Fixture Interleaved",
+                testEnumeration->GetNumEnabledTests(),
+                testEnumeration->GetNumEnabledTestSuites(),
+                testTarget->GetName().c_str());
             return GenerateJobInfoImpl(testTargetAndEnumeration, startingId);
         }
         else
@@ -251,6 +263,11 @@ namespace TestImpact
         const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
         const auto numTests = testEnumeration->GetNumEnabledTests();
         const auto numShards = std::min(m_maxConcurrency, numTests);
+        if (numShards == 0)
+        {
+            // If there are no shards, there is no work to be done
+            return {};
+        }
         ShardedTestsList shardTestList(numShards);
 
         size_t testIndex = 0;
@@ -283,6 +300,11 @@ namespace TestImpact
         const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
         const auto numFixtures = testEnumeration->GetNumEnabledTestSuites();
         const auto numShards = std::min(m_maxConcurrency, numFixtures);
+        if (numShards == 0)
+        {
+            // If there are no shards, there is no work to be done
+            return {};
+        }
         ShardedTestsList shardTestList(numShards);
 
         size_t fixtureIndex = 0;

@@ -75,6 +75,8 @@ namespace GraphCanvas
         GraphCanvasLabel*           m_slotText;
 
         GraphCanvasLabel*           m_textDecoration;
+
+        bool m_isNameHidden = false;
     };
 
     //! Lays out the parts of a basic Node

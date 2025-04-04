@@ -21,4 +21,8 @@ namespace Archive
     };
 }// namespace Archive
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Archive::ArchiveModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Archive, Archive::ArchiveModule)
+#endif

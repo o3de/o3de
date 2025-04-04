@@ -34,11 +34,6 @@
 
 #include <AzCore/Debug/Profiler.h>
 
-DECLARE_EBUS_INSTANTIATION(EntityEvents);
-DECLARE_EBUS_INSTANTIATION(TransformInterface);
-DECLARE_EBUS_INSTANTIATION(TransformNotification);
-DECLARE_EBUS_INSTANTIATION(TransformHierarchyInformation);
-
 namespace AZ
 {
     class SerializeEntityFactory
@@ -341,7 +336,8 @@ namespace AZ
         }
         component->SetEntity(this);
 
-        component->OnPrepareForAdditionToEntity(this);
+        component->OnAfterEntitySet();
+
         m_components.push_back(component);
 
         if (m_state == State::Init)
@@ -674,9 +670,17 @@ namespace AZ
 
     void Entity::OnNameChanged() const
     {
-        EntityBus::Event(GetId(), &EntityBus::Events::OnEntityNameChanged, m_name);
-        EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityNameChanged, GetId(), m_name);
+        // we only emit on these busses if the entity is active.  This prevents OnEntityNameChanged happening on inactive entities
+        // when for example, another thread is constructing a prefab.  It also prevents spam of these functions from situations where
+        // inactive entities are being constructed or modified in place, such as in undo/redo or scene compilation.
+        // In general, only active entities should have any bearing on the actual scene, such as showing up in the Scene Outliner.
+        if (m_state == State::Active)
+        {
+            EntityBus::Event(GetId(), &EntityBus::Events::OnEntityNameChanged, m_name);
+            EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityNameChanged, GetId(), m_name);
+        }
     }
+
 
     bool Entity::CanAddRemoveComponents() const
     {
@@ -704,7 +708,7 @@ namespace AZ
             for (int i = 0; i < classElement.GetNumSubElements(); ++i)
             {
                 AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                if (elementNode.GetName() == AZ_CRC("Id", 0xbf396750))
+                if (elementNode.GetName() == AZ_CRC_CE("Id"))
                 {
                     u64 oldEntityId;
                     if (elementNode.GetData(oldEntityId))
@@ -747,7 +751,7 @@ namespace AZ
             for (int i = 0; i < classElement.GetNumSubElements(); ++i)
             {
                 AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                if (elementNode.GetName() == AZ_CRC("m_refId", 0xb7853eda))
+                if (elementNode.GetName() == AZ_CRC_CE("m_refId"))
                 {
                     u64 oldEntityId;
                     if (elementNode.GetData(oldEntityId))
@@ -1039,8 +1043,12 @@ namespace AZ
             // different error message for multiple components of the same type
             if (componentProvidingService->m_underlyingTypeId == componentIncompatibleWithService->m_underlyingTypeId)
             {
-                return AZStd::string::format("Multiple '%s' found, but this component is incompatible with others of the same type.",
-                    componentProvidingService->m_component->RTTI_GetTypeName());
+                return AZStd::string::format(
+                    "Multiple '%s' found, but this component is incompatible with others of the same type. Components with UUID %s "
+                    "and %s are incompatible with each other.",
+                    componentProvidingService->m_component->RTTI_GetTypeName(),
+                    componentProvidingService->m_component->RTTI_GetType().ToString<AZStd::string>().c_str(),
+                    componentIncompatibleWithService->m_component->RTTI_GetType().ToString<AZStd::string>().c_str());
             }
 
             return AZStd::string::format("Components '%s' and '%s' are incompatible.",
@@ -1087,7 +1095,7 @@ namespace AZ
         AZStd::vector<ComponentInfo*> candidateComponents;
 
         // Components in final sorted order
-        AZStd::vector<Component*> sortedComponents;
+        ComponentArrayType sortedComponents;
 
         // Tmp vectors to re-use when querying services
         ComponentDescriptor::DependencyArrayType servicesTmp;
@@ -1330,7 +1338,7 @@ namespace AZ
             processInfo.m_processId = AZ::Platform::GetCurrentProcessId();
             processInfo.m_startTime = AZStd::GetTimeUTCMilliSecond();
             AZ::u32 signature = AZ::Crc32(&processInfo, sizeof(processInfo));
-            processSignature = Environment::CreateVariable<AZ::u32>(AZ_CRC("MachineProcessSignature", 0x47681763), signature);
+            processSignature = Environment::CreateVariable<AZ::u32>(AZ_CRC_CE("MachineProcessSignature"), signature);
         }
         return *processSignature;
     }
@@ -1362,7 +1370,7 @@ namespace AZ
 
         if (!counter)
         {
-            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC("EntityIdMonotonicCounter", 0xbe691c64), 1);
+            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC_CE("EntityIdMonotonicCounter"), 1);
         }
 
         AZ::u64 count = counter->fetch_add(1);

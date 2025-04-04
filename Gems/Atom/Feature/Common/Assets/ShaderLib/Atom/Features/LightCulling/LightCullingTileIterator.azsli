@@ -14,6 +14,12 @@
 // This class is used by forward shaders to iterate through lights (and decals) that are visible at this pixel position
 class LightCullingTileIterator
 {       
+    void InitNoCulling()
+    {
+        m_readIndex = 0;
+        m_value = NVLC_END_OF_LIST;  
+    }
+
     void Init(float4 svPosition, StructuredBuffer<uint> lightListRemapped, Texture2D<uint4> tileLightDataTex)
     {
 #if ENABLE_LIGHT_CULLING
@@ -34,8 +40,7 @@ class LightCullingTileIterator
         m_readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN;  
         m_value = 0;  
 #else
-        m_readIndex = 0;
-        m_value = NVLC_END_OF_LIST;  
+        InitNoCulling();  
 #endif
     }
             

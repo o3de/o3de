@@ -72,8 +72,8 @@ namespace AZ
         return (testValue & (testValue - 1)) == 0;
     }
 
-    //! Calculates at compile-time the integral log base 2 of the input value.
-    constexpr uint32_t Log2(uint64_t maxValue)
+    //! Calculates at compile-time the number of bits required to represent the given max value.
+    constexpr uint32_t RequiredBitsForValue(uint64_t maxValue)
     {
         uint32_t bits = 0;
         do
@@ -361,6 +361,22 @@ namespace AZ
     constexpr T GetMax(T a, T b)
     {
         return a > b ? a : b;
+    }
+
+    //! Return the gcd of 2 values.
+    //! \note we don't use names like clamp, min and max because many implementations define it as a macro.
+    template<typename T>
+    constexpr T GetGCD(T a, T b)
+    {
+        static_assert(std::is_integral<T>::value);
+        T c = a % b;
+        while (c != 0)
+        {
+            a = b;
+            b = c;
+            c = a % b;
+        }
+        return b;
     }
 
     //! Returns a linear interpolation between 2 values.

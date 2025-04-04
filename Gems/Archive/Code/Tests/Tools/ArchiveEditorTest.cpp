@@ -7,5 +7,22 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzTest/GemTestEnvironment.h>
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+class ArchiveEditorTestEnvironment
+    : public AZ::Test::GemTestEnvironment
+{
+public:
+    void AddGemsAndComponents() override
+    {
+        // Load the (lib)Compression.Editor.(dll|so|dylib) file
+        // in the Archive Test code
+        // The AzTestRunner explicitly loads this module: (lib)Archive.Editor.Tests.(dll|so|dylib)
+        // via its first command line argument
+        AddDynamicModulePaths({ "Compression.Editor" });
+        // Set both this Gem "Archive" and the Compression Gem has active
+        AddActiveGems(AZStd::to_array<AZStd::string_view>({ "Archive", "Compression" }));
+    }
+};
+
+AZ_UNIT_TEST_HOOK(new ArchiveEditorTestEnvironment);

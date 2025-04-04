@@ -11,6 +11,11 @@
                     "Name": "ScreenSpaceReflectionInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "DownsampledDepthLinear",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
                 }
             ]
         }

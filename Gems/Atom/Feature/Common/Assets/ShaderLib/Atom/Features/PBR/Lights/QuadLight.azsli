@@ -12,12 +12,6 @@
 #include <Atom/Features/PBR/Lights/Ltc.azsli>
 
 #if ENABLE_QUAD_LIGHTS
-enum QuadLightFlag
-{
-    None = 0x00,
-    EmitsBothDirections  = 0x01, // 1 << 0, // Quad should emit light from both sides
-    UseFastApproximation = 0x02, // 1 << 1, // Use a fast approximation instead of linearly transformed cosines.
-};
 
 // Returns the solid angle at origin of a rectangle defined by points p0-p3. Does not handle horizon.
 // Modified from https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf Listing 11 on page 49.
@@ -76,7 +70,7 @@ float3 GetSpecularDominantDirection(float3 normal, float3 reflection, float roug
 }
 
 // Quad light approximation. Diffuse portion based on https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf Pages 49-50.
-void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingData lightingData)
+void ApplyQuadLight(QuadLight light, Surface surface, inout LightingData lightingData)
 {
     float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized.
 
@@ -86,7 +80,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
     float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
     float falloff = distanceToLight2 * light.m_invAttenuationRadiusSquared;
 
-    bool doubleSided = (light.m_flags & QuadLightFlag::EmitsBothDirections) > 0;
+    bool doubleSided = (light.m_flags & EmitsBothDirections) > 0;
     if (doubleSided)
     {
         lightDirection *= sign(posToLightDotLightDirection);
@@ -108,7 +102,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
         float3 p2 = posToLight +  left + -up;
         float3 p3 = posToLight +  left +  up;
 
-        bool useFastApproximation = (light.m_flags & QuadLightFlag::UseFastApproximation) > 0;
+        bool useFastApproximation = (light.m_flags & UseFastApproximation) > 0;
         if (!useFastApproximation && o_enableQuadLightLTC)
         {
             float3 p[4] = {p0, p1, p2, p3};
@@ -173,7 +167,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             // Then adjusting it's brightness based on different factors.
 
             // Calculate the reflection ray from the view direction and surface normal
-            float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+            float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
             
             // First find the reflection-plane intersection, then find the closest point on the rectangle to that intersection.
             float2 halfSize = float2(light.m_halfWidth, light.m_halfHeight);
@@ -198,7 +192,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             float rough = surface.roughnessA; // shorten the name for readability.
             float roughnessAdjustment = lerp(0.0, solidAngle, pow(rough, 1.5));
             // Decrease intensity when the light position doesn't line up well with the dominant reflection direction.
-            float3 dominantDir = GetSpecularDominantDirection(surface.normal, reflectionDir, rough);
+            float3 dominantDir = GetSpecularDominantDirection(surface.GetSpecularNormal(), reflectionDir, rough);
             roughnessAdjustment *= max(0.0f, dot(dirToLight, dominantDir)) * INV_PI; // INV_PI is here to make brightness match ground truth result more accurately for nearby lights.
             // Smooth surfaces need to increase light intensity with distance to maintain constant perceptual
             // intensity depending on the solid angle of the light.
@@ -211,7 +205,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
     }
 }
 
-float3 SampleRectangle(float2 randomPoint, ViewSrg::QuadLight light)
+float3 SampleRectangle(float2 randomPoint, QuadLight light)
 {
     randomPoint = randomPoint * 2.0 - 1.0; // transform to -1 to 1 range.
     randomPoint *= float2(light.m_halfWidth, light.m_halfHeight);
@@ -221,7 +215,7 @@ float3 SampleRectangle(float2 randomPoint, ViewSrg::QuadLight light)
     return outPoint;
 }
 
-void ValidateQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingData lightingData)
+void ValidateQuadLight(QuadLight light, Surface surface, inout LightingData lightingData)
 {
     float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized.
 
@@ -231,7 +225,7 @@ void ValidateQuadLight(ViewSrg::QuadLight light, Surface surface, inout Lighting
     float3 specularAcc = float3(0.0, 0.0, 0.0);
     float3 translucentAcc = float3(0.0, 0.0, 0.0);
 
-    bool emitsBothDirections = (light.m_flags & QuadLightFlag::EmitsBothDirections) > 0;
+    bool emitsBothDirections = (light.m_flags & EmitsBothDirections) > 0;
     float bothDirectionsFactor = emitsBothDirections ? -1.0 : 0.0;
 
     for (uint i = 0; i < sampleCount; ++i)
@@ -256,8 +250,11 @@ void ApplyQuadLightInternal(uint lightIndex, Surface surface, inout LightingData
 {
     if (o_enableQuadLightApprox || o_enableQuadLightLTC)
     {
-        ViewSrg::QuadLight light = ViewSrg::m_quadLights[lightIndex];
-            
+        QuadLight light = ViewSrg::m_quadLights[lightIndex];
+        if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+        {
+            return;
+        }
 #if ENABLE_AREA_LIGHT_VALIDATION
         if (o_area_light_validation)
         {

@@ -49,8 +49,8 @@ namespace AZ
 
             void HairSystemComponent::GetRequiredServices([[maybe_unused]] ComponentDescriptor::DependencyArrayType& required)
             {
-                required.push_back(AZ_CRC("ActorSystemService", 0x5e493d6c));
-                required.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
+                required.push_back(AZ_CRC_CE("ActorSystemService"));
+                required.push_back(AZ_CRC_CE("EMotionFXAnimationService"));
             }
 
             void HairSystemComponent::LoadPassTemplateMappings()

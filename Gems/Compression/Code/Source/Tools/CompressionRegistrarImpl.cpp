@@ -120,6 +120,30 @@ namespace Compression
         return compressionIter != m_compressionInterfaces.end() ? compressionIter->m_compressionInterface.get() : nullptr;
     }
 
+
+    ICompressionInterface* CompressionRegistrarImpl::FindCompressionInterface(AZStd::string_view algorithmName) const
+    {
+        // Potentially the entire vector is iterated over
+        ICompressionInterface* resultInterface{};
+        auto FindCompressionInterfaceByName = [algorithmName, &resultInterface](const ICompressionInterface& compressionInterface)
+        {
+            if (compressionInterface.GetCompressionAlgorithmName() == algorithmName)
+            {
+                // const_cast is being used here to avoid making a second visitor overload
+                // NOTE: this is function is internal to the implementation of the Compression Registrar
+                resultInterface = const_cast<ICompressionInterface*>(&compressionInterface);
+                // The matching interface has been found, halt visitation.
+                return false;
+            }
+
+            return true;
+        };
+        AZStd::scoped_lock lock(m_compressionInterfaceMutex);
+
+        VisitCompressionInterfaces(FindCompressionInterfaceByName);
+        return resultInterface;
+    }
+
     bool CompressionRegistrarImpl::IsRegistered(CompressionAlgorithmId compressionAlgorithmId) const
     {
         AZStd::scoped_lock lock(m_compressionInterfaceMutex);

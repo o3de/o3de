@@ -169,7 +169,7 @@ namespace AZ
         }
         else
         {
-            AZ_Error("Memory", false, "There are %d allocations in allocator 0%p (%s):\n", allocations.size(), this, GetName());
+            AZ_Error("Memory", false, "There are %zu allocations in allocator 0%p (%s):\n", allocations.size(), this, GetName());
             for (const AllocationRecord& record : allocations)
             {
                 record.Print();

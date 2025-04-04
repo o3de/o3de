@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME Stars.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         stars_files.cmake
@@ -26,7 +26,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Stars.API HEADERONLY
+    NAME ${gem_name}.API HEADERONLY
     NAMESPACE Gem
     FILES_CMAKE
         stars_headers_files.cmake
@@ -36,7 +36,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Stars ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         stars_shared_files.cmake
@@ -47,14 +47,23 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Stars.Static
+            Gem::${gem_name}.Static
 )
 
-ly_create_alias(NAME Stars.Clients NAMESPACE Gem TARGETS Gem::Stars)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/StarsModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Stars.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             stars_editor_files.cmake
@@ -66,13 +75,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                Gem::Stars.Static
-                Gem::Atom_Feature_Common.Static
+                Gem::${gem_name}.Static
                 Gem::Atom_Feature_Common.Public
     )
 
     ly_add_target(
-        NAME Stars.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
@@ -84,13 +92,22 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
-                Gem::Stars.Editor.Static
+                Gem::${gem_name}.Editor.Static
     )
 
-    ly_create_alias(NAME Stars.Tools    NAMESPACE Gem TARGETS Gem::Stars.Editor)
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/EditorStarsModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     # A Builders alias must exist for Gem Assets to be seen by the Asset Processor.
     # A Builders alias target must exist for the Prefab .spawnable builder to be able to
     # load the .dll so the builder can serialize StarComponents to .spawnable files 
     # which are needed in the game launcher.
-    ly_create_alias(NAME Stars.Builders NAMESPACE Gem TARGETS Gem::Stars.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 endif()

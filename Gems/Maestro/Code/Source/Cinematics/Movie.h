@@ -9,17 +9,19 @@
 
 // TODO - Determine if this code is deprecated. A CVar closely tied to its use was removed
 
-#ifndef CRYINCLUDE_CRYMOVIE_MOVIE_H
-#define CRYINCLUDE_CRYMOVIE_MOVIE_H
-
 #pragma once
+
+#include <IMovieSystem.h>
+
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/Time/ITime.h>
-
-#include <CryCommon/TimeValue.h>
 #include <CryCommon/StlUtils.h>
+#include <CryCommon/TimeValue.h>
 
-#include "IMovieSystem.h"
+struct IConsoleCmdArgs;
+
 
 struct PlayingSequence
 {
@@ -37,12 +39,10 @@ struct PlayingSequence
     bool bSingleFrame;
 };
 
-struct IConsoleCmdArgs;
-
 class CMovieSystem
     : public IMovieSystem
 {
-    typedef std::vector<PlayingSequence> PlayingSequences;
+    typedef AZStd::vector<PlayingSequence> PlayingSequences;
 
 public:
     AZ_CLASS_ALLOCATOR(CMovieSystem, AZ::SystemAllocator);
@@ -50,6 +50,7 @@ public:
 
     CMovieSystem(ISystem* system);
     CMovieSystem();
+    ~CMovieSystem();
 
     void Release() override { delete this; };
 
@@ -86,9 +87,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Sequence playback.
     //////////////////////////////////////////////////////////////////////////
-    void PlaySequence(const char* sequence, IAnimSequence* parentSeq = NULL, bool bResetFX = true,
+    void PlaySequence(const char* sequence, IAnimSequence* parentSeq = nullptr, bool bResetFX = true,
         bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX) override;
-    void PlaySequence(IAnimSequence* seq, IAnimSequence* parentSeq = NULL, bool bResetFX = true,
+    void PlaySequence(IAnimSequence* seq, IAnimSequence* parentSeq = nullptr, bool bResetFX = true,
         bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX) override;
     void PlayOnLoadSequences() override;
 
@@ -98,7 +99,6 @@ public:
 
     void StopAllSequences() override;
     void StopAllCutScenes() override;
-    void Pause(bool bPause);
 
     void Reset(bool bPlayOnReset, bool bSeekToStart) override;
     void StillUpdate() override;
@@ -121,17 +121,15 @@ public:
     void PauseCutScenes() override;
     void ResumeCutScenes() override;
 
-    void SetRecording(bool recording) override { m_bRecording = recording; };
-    bool IsRecording() const override { return m_bRecording; };
-
-    void EnableCameraShake(bool bEnabled) override{ m_bEnableCameraShake = bEnabled; };
+    void SetRecording(bool recording) override { m_bRecording = recording; }
+    bool IsRecording() const override { return m_bRecording; }
 
     void SetCallback(IMovieCallback* pCallback) override { m_pCallback = pCallback; }
     IMovieCallback* GetCallback() override { return m_pCallback; }
     void Callback(IMovieCallback::ECallbackReason Reason, IAnimNode* pNode);
 
-    const SCameraParams& GetCameraParams() const override { return m_ActiveCameraParams; }
-    void SetCameraParams(const SCameraParams& Params) override;
+    AZ::EntityId GetActiveCamera() const override { return m_ActiveCameraEntityId; }
+    void SetActiveCamera(const AZ::EntityId& entityId) override;
 
     void SendGlobalEvent(const char* pszEvent) override;
     void SetSequenceStopBehavior(ESequenceStopBehavior behavior) override;
@@ -229,9 +227,8 @@ private:
     bool    m_bRecording;
     bool    m_bPaused;
     bool    m_bCutscenesPausedInEditor;
-    bool    m_bEnableCameraShake;
 
-    SCameraParams m_ActiveCameraParams;
+    AZ::EntityId m_ActiveCameraEntityId;
 
     ESequenceStopBehavior m_sequenceStopBehavior;
 
@@ -246,7 +243,6 @@ private:
     ICVar* m_cvar_sys_maxTimeStepForMovieSystem;
     ICVar* m_cvar_capture_frames;
     ICVar* m_cvar_capture_file_prefix;
-    ICVar* m_cvar_capture_buffer;
 
     static int m_mov_NoCutscenes;
     ICVar* m_mov_overrideCam;
@@ -277,12 +273,9 @@ private:
     void RegisterNodeTypes();
     void RegisterParamTypes();
 
-public:
-    static float m_mov_cameraPrecacheTime;
+private:
 #if !defined(_RELEASE)
     static int m_mov_DebugEvents;
     static int m_mov_debugCamShake;
 #endif
 };
-
-#endif // CRYINCLUDE_CRYMOVIE_MOVIE_H

@@ -8,22 +8,20 @@
 
 #include <Atom/RHI/ResolveScopeAttachment.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    ResolveScopeAttachment::ResolveScopeAttachment(
+        Scope& scope,
+        FrameAttachment& attachment,
+        const ResolveScopeAttachmentDescriptor& descriptor)
+        : ImageScopeAttachment(
+              scope, attachment, ScopeAttachmentUsage::Resolve, ScopeAttachmentAccess::Write, ScopeAttachmentStage::Copy, descriptor)
+        , m_descriptor{ descriptor }
     {
-        ResolveScopeAttachment::ResolveScopeAttachment(
-            Scope& scope,
-            FrameAttachment& attachment,
-            const ResolveScopeAttachmentDescriptor& descriptor)
-            : ImageScopeAttachment(scope, attachment, ScopeAttachmentUsage::Resolve, ScopeAttachmentAccess::Write, descriptor)
-            , m_descriptor{ descriptor }
-        {
-        }
+    }
 
-        const ResolveScopeAttachmentDescriptor& ResolveScopeAttachment::GetDescriptor() const
-        {
-            return m_descriptor;
-        }
+    const ResolveScopeAttachmentDescriptor& ResolveScopeAttachment::GetDescriptor() const
+    {
+        return m_descriptor;
     }
 }

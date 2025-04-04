@@ -51,8 +51,6 @@ namespace AZ
                 ui->setupUi(this);
 
                 ui->m_icon->hide();
-                ui->m_headerLine->hide();
-                ui->m_headerLineSpacer->hide();
                 
                 ui->m_deleteButton->setIcon(QIcon(":/stylesheet/img/close_small.svg"));
                 connect(ui->m_deleteButton, &QToolButton::clicked, this, &HeaderWidget::DeleteObject);
@@ -269,8 +267,7 @@ namespace AZ
                                 AZStd::string categoryAttributeValue = categoryAttributeData->Get(&sceneNodeGroup);
                                 if (categoryAttributeValue.compare("display divider") == 0)
                                 {
-                                    ui->m_headerLine->show();
-                                    ui->m_headerLineSpacer->show();
+                                    setStyleSheet("QFrame, QLabel {margin-top: 0px; font: bold;}");
                                 }
                             }
                         }

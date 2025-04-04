@@ -7,6 +7,9 @@
  */
 
 #include "MotionCommands.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include "CommandManager.h"
 
 #include <MCore/Source/Compare.h>
@@ -21,6 +24,8 @@
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
+
+#include <AzCore/Serialization/Locale.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -77,6 +82,8 @@ namespace CommandSystem
 
     AZStd::string CommandPlayMotion::PlayBackInfoToCommandParameters(const EMotionFX::PlayBackInfo* playbackInfo)
     {
+        AZ::Locale::ScopedSerializationLocale localeScope; // ensures that %f uses '.' as decimal separator
+
         return AZStd::string::format("-blendInTime %f -blendOutTime %f -playSpeed %f -targetWeight %f -eventWeightThreshold %f -maxPlayTime %f -numLoops %i -priorityLevel %i -blendMode %i -playMode %i -mirrorMotion %s -mix %s -playNow %s -motionExtraction %s -retarget %s -freezeAtLastFrame %s -enableMotionEvents %s -blendOutBeforeEnded %s -canOverwrite %s -deleteOnZeroWeight %s -inPlace %s",
             playbackInfo->m_blendInTime,
             playbackInfo->m_blendOutTime,
@@ -1017,6 +1024,8 @@ namespace CommandSystem
 
         if (m_useUnitType == false)
         {
+            AZ::Locale::ScopedSerializationLocale locale;
+
             AZStd::string commandString;
             commandString = AZStd::string::format("ScaleMotionData -id %d -scaleFactor %.8f", m_motionId, 1.0f / m_scaleFactor);
             GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult);

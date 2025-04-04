@@ -99,7 +99,7 @@ namespace AzFramework
             // However, some data may have been exported with this field present, so 
             // remove it if its found, but only in this version which the change was present in, so that
             // future re-additions of it won't remove it (as long as they bump the version number.)
-            classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
+            classElement.RemoveElementByName(AZ_CRC_CE("InterpolateScale"));
         }
 
         return true;
@@ -704,7 +704,7 @@ namespace AzFramework
 
     void TransformComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        provided.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void TransformComponent::Reflect(AZ::ReflectContext* reflection)

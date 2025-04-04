@@ -191,6 +191,12 @@ namespace AZ
 
         AZ_Assert(context.GetRegistrationContext() && context.GetSerializeContext(), "Expected valid registration context and serialize context.");
 
+        // Compatibility with Reflection Serialize - it expects this callback after before into a C++ class.
+        if (classData.m_eventHandler)
+        {
+            classData.m_eventHandler->OnWriteBegin(object);
+        }
+
         size_t numLoads = 0;
         ResultCode retVal(Tasks::ReadField);
         for (auto iter = value.MemberBegin(); iter != value.MemberEnd(); ++iter)
@@ -230,6 +236,12 @@ namespace AZ
         if (elementCount > numLoads)
         {
             retVal.Combine(ResultCode(Tasks::ReadField, numLoads == 0 ? Outcomes::DefaultsUsed : Outcomes::PartialDefaults));
+        }
+
+        // Compatibility with Reflection Serialize - it expects this callback after reading into a C++ class.
+        if (classData.m_eventHandler)
+        {
+            classData.m_eventHandler->OnWriteEnd(object);
         }
 
         return retVal;
@@ -609,7 +621,6 @@ namespace AZ
                 }
                 else
                 {
-                    using ReporterString = AZStd::fixed_string<1024>;
                     status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                         ReporterString::format("Serialization information for target type %s not found.", loadedTypeId.m_typeId.ToString<ReporterString>().c_str()));
                     return ResolvePointerResult::FullyProcessed;

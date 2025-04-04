@@ -8,198 +8,234 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/IndirectBufferView.h>
 #include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/IndirectBufferView.h>
+#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/StreamBufferView.h>
 #include <AzCore/std/containers/array.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    struct Scissor;
+    struct Viewport;
+    struct DefaultNamespaceType;
+    // Forward declaration to
+    template<typename T, typename NamespaceType>
+    struct Handle;
+
+    struct DrawItem
     {
-        class PipelineState;
-        class ShaderResourceGroup;
-        struct Scissor;
-        struct Viewport;
-        struct DefaultNamespaceType;
-        // Forward declaration to
-        template <typename T , typename NamespaceType>
-        struct Handle;
+        friend class DrawPacketBuilder;
 
-        struct DrawLinear
+    public:
+        DrawItem(MultiDevice::DeviceMask deviceMask);
+
+        DrawItem(MultiDevice::DeviceMask deviceMask, AZStd::unordered_map<int, DeviceDrawItem*>&& deviceDrawItemPtrs);
+
+        DrawItem(const DrawItem& other) = delete;
+        DrawItem(DrawItem&& other) = default;
+
+        DrawItem& operator=(const DrawItem& other) = delete;
+        DrawItem& operator=(DrawItem&& other) = default;
+
+        //! Returns the device-specific DeviceDrawItem for the given index
+        const DeviceDrawItem& GetDeviceDrawItem(int deviceIndex) const
         {
-            DrawLinear() = default;
+            AZ_Error(
+                "DrawItem",
+                m_deviceDrawItemPtrs.find(deviceIndex) != m_deviceDrawItemPtrs.end(),
+                "No DeviceDrawItem found for device index %d\n",
+                deviceIndex);
 
-            DrawLinear(
-                uint32_t instanceCount,
-                uint32_t instanceOffset,
-                uint32_t vertexCount,
-                uint32_t vertexOffset)
-                : m_instanceCount(instanceCount)
-                , m_instanceOffset(instanceOffset)
-                , m_vertexCount(vertexCount)
-                , m_vertexOffset(vertexOffset)
-            {}
+            return *m_deviceDrawItemPtrs.at(deviceIndex);
+        }
 
-            uint32_t m_instanceCount = 1;
-            uint32_t m_instanceOffset = 0;
-            uint32_t m_vertexCount = 0;
-            uint32_t m_vertexOffset = 0;
-        };
-
-        struct DrawIndexed
+        bool GetEnabled() const
         {
-            DrawIndexed() = default;
+            return m_enabled;
+        }
 
-            DrawIndexed(
-                uint32_t instanceCount,
-                uint32_t instanceOffset,
-                uint32_t vertexOffset,
-                uint32_t indexCount,
-                uint32_t indexOffset)
-                : m_instanceCount(instanceCount)
-                , m_instanceOffset(instanceOffset)
-                , m_vertexOffset(vertexOffset)
-                , m_indexCount(indexCount)
-                , m_indexOffset(indexOffset)
-            {}
-
-            uint32_t m_instanceCount = 1;
-            uint32_t m_instanceOffset = 0;
-            uint32_t m_vertexOffset = 0;
-            uint32_t m_indexCount = 0;
-            uint32_t m_indexOffset = 0;
-        };
-
-        using DrawIndirect = IndirectArguments;
-
-        enum class DrawType : uint8_t
+        //! The pipeline state type is the same regardless of the device,
+        //! so we query here the default device.
+        PipelineStateType GetPipelineStateType() const
         {
-            Indexed = 0,
-            Linear,
-            Indirect
-        };
+            const auto& deviceDrawItem = GetDeviceDrawItem(MultiDevice::DefaultDeviceIndex);
+            return deviceDrawItem.m_pipelineState->GetType();
+        }
 
-        struct DrawArguments
+        void SetEnabled(bool enabled)
         {
-            AZ_TYPE_INFO(DrawArguments, "B8127BDE-513E-4D5C-98C2-027BA1DE9E6E");
+            m_enabled = enabled;
 
-            DrawArguments() : DrawArguments(DrawIndexed{}) {}
-
-            DrawArguments(const DrawIndexed& indexed)
-                : m_type{DrawType::Indexed}
-                , m_indexed{indexed}
-            {}
-
-            DrawArguments(const DrawLinear& linear)
-                : m_type{DrawType::Linear}
-                , m_linear{linear}
-            {}
-
-
-            DrawArguments(const DrawIndirect& indirect)
-                : m_type{ DrawType::Indirect }
-                , m_indirect{ indirect }
-            {}
-
-            DrawType m_type;
-            union
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                DrawIndexed m_indexed;
-                DrawLinear m_linear;
-                DrawIndirect m_indirect;
-            };
-        };
-
-        struct DrawItem
-        {
-            DrawItem() = default;
-
-            DrawArguments m_arguments;
-
-            uint8_t m_stencilRef = 0;
-            uint8_t m_streamBufferViewCount = 0;
-            uint8_t m_shaderResourceGroupCount = 0;
-            uint8_t m_rootConstantSize = 0;
-            uint8_t m_scissorsCount = 0;
-            uint8_t m_viewportsCount = 0;
-
-            const PipelineState* m_pipelineState = nullptr;
-
-            /// The index buffer used when drawing with an indexed draw call.
-            const IndexBufferView* m_indexBufferView = nullptr;
-
-            /// Array of stream buffers to bind (count must match m_streamBufferViewCount).
-            const StreamBufferView* m_streamBufferViews = nullptr;
-
-            /// Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
-            const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
-
-            /// Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback key
-            const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
-
-            /// Array of root constants to bind (count must match m_rootConstantSize).
-            const uint8_t* m_rootConstants = nullptr;
-
-            /// List of scissors to be applied to this draw item only. Scissor will be restore to the previous state
-            /// after the DrawItem has been processed.
-            const Scissor* m_scissors = nullptr;
-
-            /// List of viewports to be applied to this draw item only. Viewports will be restore to the previous state
-            /// after the DrawItem has been processed.
-            const Viewport* m_viewports = nullptr;
-        };
-
-        using DrawItemSortKey = AZ::s64;
-
-        // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
-        using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;
-        using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
-        constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
-        static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");
-
-        struct DrawItemProperties
-        {
-            DrawItemProperties() = default;
-
-            DrawItemProperties(const DrawItem* item, DrawItemSortKey sortKey = 0, DrawFilterMask filterMask = DrawFilterMaskDefaultValue)
-                : m_item{item}
-                , m_sortKey{sortKey}
-                , m_drawFilterMask{filterMask}
-            {
+                drawItem->m_enabled = enabled;
             }
+        }
 
-            bool operator==(const DrawItemProperties& rhs) const
+        void SetStencilRef(uint8_t stencilRef)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                return m_item == rhs.m_item &&
-                    m_sortKey == rhs.m_sortKey &&
-                    m_depth == rhs.m_depth &&
-                    m_drawFilterMask == rhs.m_drawFilterMask
-                    ;
+                drawItem->m_stencilRef = stencilRef;
             }
+        }
 
-            bool operator!=(const DrawItemProperties& rhs) const
+        void SetPipelineState(const PipelineState* pipelineState)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                return !(*this == rhs);
+                drawItem->m_pipelineState = pipelineState ? pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr;
             }
+        }
 
-            bool operator<(const DrawItemProperties& rhs) const
+        //! Shader Resource Groups
+        void SetShaderResourceGroups(const ShaderResourceGroup* const* shaderResourceGroups, uint32_t shaderResourceGroupCount)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                return m_sortKey < rhs.m_sortKey;
+                drawItem->m_shaderResourceGroupCount = static_cast<uint8_t>(shaderResourceGroupCount);
+
+                auto [it, insertOK]{ m_deviceShaderResourceGroups.emplace(
+                    deviceIndex, AZStd::vector<DeviceShaderResourceGroup*>(shaderResourceGroupCount)) };
+
+                auto& [index, deviceShaderResourceGroup]{ *it };
+
+                for (auto i = 0u; i < shaderResourceGroupCount; ++i)
+                {
+                    deviceShaderResourceGroup[i] = shaderResourceGroups[i]->GetDeviceShaderResourceGroup(deviceIndex).get();
+                }
+
+                drawItem->m_shaderResourceGroups = deviceShaderResourceGroup.data();
             }
+        }
 
-            //! A pointer to the draw item
-            const DrawItem* m_item = nullptr;
-            //! A sorting key of this draw item which is used for sorting draw items in DrawList
-            // Check RHI::SortDrawList() function for detail
-            DrawItemSortKey m_sortKey = 0;
-            //! A depth value this draw item which is used for sorting draw items in DrawList
-            //! Check RHI::SortDrawList() function for detail
-            float m_depth = 0.0f;
-            //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
-            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
-        };
+        //! Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback
+        //! key
+        void SetUniqueShaderResourceGroup(const ShaderResourceGroup* uniqueShaderResourceGroup)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_uniqueShaderResourceGroup = uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get();
+            }
+        }
 
-    }
-}
+        //! Array of root constants to bind (count must match m_rootConstantSize).
+        void SetRootConstants(const uint8_t* rootConstants, uint8_t rootConstantSize)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_rootConstantSize = rootConstantSize;
+                drawItem->m_rootConstants = rootConstants;
+            }
+        }
+
+        //! List of scissors to be applied to this draw item only. Scissor will be restored to the previous state
+        //! after the DrawItem has been processed.
+        void SetScissors(const Scissor* scissors, uint8_t scissorsCount)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_scissorsCount = scissorsCount;
+                drawItem->m_scissors = scissors;
+            }
+        }
+
+        //! List of viewports to be applied to this draw item only. Viewports will be restored to the previous state
+        //! after the DrawItem has been processed.
+        void SetViewports(const Viewport* viewports, uint8_t viewportCount)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_viewportsCount = viewportCount;
+                drawItem->m_viewports = viewports;
+            }
+        }
+
+        void SetDrawInstanceArgs(const RHI::DrawInstanceArguments& drawInstanceArgs)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_drawInstanceArgs = drawInstanceArgs;
+            }
+        }
+
+        void SetGeometryView(RHI::GeometryView* geometryView)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_geometryView = geometryView->GetDeviceGeometryView(deviceIndex);
+            }
+        }
+
+        void SetStreamIndices(RHI::StreamBufferIndices streamIndices)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_streamIndices = streamIndices;
+            }
+        }
+
+    private:
+        bool m_enabled{ true };
+
+        MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
+
+        //! A map of all device-specific DrawItems, indexed by the device index
+        AZStd::unordered_map<int, DeviceDrawItem> m_deviceDrawItems;
+
+        //! A map of pointers to device-specific DrawItems, indexed by the device index
+        //! These pointers may point to m_deviceDrawItems (in case of direct usage of a DeviceDrawItem)
+        //! or may point to DrawItems in linear memory (when allocated via a DrawPacket)
+        AZStd::unordered_map<int, DeviceDrawItem*> m_deviceDrawItemPtrs;
+
+        //! A map of all device-specific ShaderResourceGroups, indexed by the device index
+        //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a DeviceShaderResourceGroup**,
+        //! which are then locally cached in a vector (per device) and the device-specific DeviceDrawItem holds a pointer to this vector's data.
+        AZStd::unordered_map<int, AZStd::vector<DeviceShaderResourceGroup*>> m_deviceShaderResourceGroups;
+    };
+
+    struct DrawItemProperties
+    {
+        bool operator==(const DrawItemProperties& rhs) const
+        {
+            return m_item == rhs.m_item && m_sortKey == rhs.m_sortKey && m_depth == rhs.m_depth &&
+                m_drawFilterMask == rhs.m_drawFilterMask;
+        }
+
+        bool operator!=(const DrawItemProperties& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+        bool operator<(const DrawItemProperties& rhs) const
+        {
+            return m_sortKey < rhs.m_sortKey;
+        }
+
+        //! Returns the device-specific DeviceDrawItemProperties for the given index
+        DeviceDrawItemProperties GetDeviceDrawItemProperties(int deviceIndex) const
+        {
+            AZ_Assert(m_item, "Not initialized with DrawItem\n");
+
+            DeviceDrawItemProperties result{ &m_item->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask, m_depth };
+
+            return result;
+        }
+
+        //! A pointer to the draw item
+        const DrawItem* m_item = nullptr;
+        //! A sorting key of this draw item which is used for sorting draw items in DrawList
+        //! Check RHI::SortDrawList() function for detail
+        DrawItemSortKey m_sortKey = 0;
+        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
+        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
+        //! A depth value this draw item which is used for sorting draw items in DrawList
+        //! Check RHI::SortDrawList() function for detail
+        float m_depth = 0.0f;
+    };
+} // namespace AZ::RHI

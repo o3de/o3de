@@ -24,9 +24,9 @@ namespace Vegetation
             if (classElement.GetVersion() < 1)
             {
                 AZ::u8 areaType = 0; //default to cluster
-                if (classElement.GetChildData(AZ_CRC("AreaType", 0x5365f66f), areaType))
+                if (classElement.GetChildData(AZ_CRC_CE("AreaType"), areaType))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("AreaType", 0x5365f66f));
+                    classElement.RemoveElementByName(AZ_CRC_CE("AreaType"));
                     switch (areaType)
                     {
                     default:
@@ -40,20 +40,20 @@ namespace Vegetation
                 }
 
                 int priority = 1;
-                if (classElement.GetChildData(AZ_CRC("Priority", 0x62a6dc27), priority))
+                if (classElement.GetChildData(AZ_CRC_CE("Priority"), priority))
                 {
-                    classElement.RemoveElementByName(AZ_CRC("Priority", 0x62a6dc27));
+                    classElement.RemoveElementByName(AZ_CRC_CE("Priority"));
                     classElement.AddElementWithData(context, "Priority", (float)(priority - 1) / (float)std::numeric_limits<int>::max());
                 }
             }
             if (classElement.GetVersion() < 2)
             {
                 float priority = 0.0f;
-                if (classElement.GetChildData(AZ_CRC("Priority", 0x62a6dc27), priority))
+                if (classElement.GetChildData(AZ_CRC_CE("Priority"), priority))
                 {
                     priority = AZ::GetClamp(priority, 0.0f, 1.0f);
                     const AZ::u32 convertedPriority = (AZ::u32)(priority * AreaConstants::s_prioritySoftMax); //using soft max accommodate slider range and int/float conversion
-                    classElement.RemoveElementByName(AZ_CRC("Priority", 0x62a6dc27));
+                    classElement.RemoveElementByName(AZ_CRC_CE("Priority"));
                     classElement.AddElementWithData(context, "Priority", convertedPriority);
                 }
             }
@@ -114,14 +114,14 @@ namespace Vegetation
 
     void AreaComponentBase::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void AreaComponentBase::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
+        services.push_back(AZ_CRC_CE("GradientService"));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
     }
 
     void AreaComponentBase::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

@@ -122,13 +122,12 @@ namespace AzToolsFramework::AssetUtils
         AZStd::vector<AZStd::string>& enabledPlatforms)
     {
         // note that the current host platform is enabled by default.
-        enabledPlatforms.push_back(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
-
         // in the setreg the platform can be missing (commented out)
         // in which case it is disabled implicitly by not being there
         // or it can be 'disabled' which means that it is explicitly disabled.
         // or it can be 'enabled' which means that it is explicitly enabled.
         EnabledPlatformsVisitor visitor;
+        visitor.m_enabledPlatforms.push_back(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
         settingsRegistry.Visit(visitor, AZ::SettingsRegistryInterface::FixedValueString(Internal::AssetProcessorSettingsKey) + "/Platforms");
         enabledPlatforms.insert(enabledPlatforms.end(), AZStd::make_move_iterator(visitor.m_enabledPlatforms.begin()),
             AZStd::make_move_iterator(visitor.m_enabledPlatforms.end()));
@@ -242,8 +241,24 @@ namespace AzToolsFramework::AssetUtils
         return configFiles;
     }
 
-    bool UpdateFilePathToCorrectCase(AZStd::string_view rootPath, AZStd::string& relPathFromRoot)
+    bool UpdateFilePathToCorrectCase(AZStd::string_view rootPath, AZStd::string& relPathFromRoot, bool checkEntirePath /* = true */)
     {
+        // The reason this is so expensive is that it could also be the case that the DIRECTORY path is the wrong case.
+        // For example, the actual path might be /SomeFolder/textures/whatever/texture.dat
+        // but the real file on disk is actually /SomeFolder/Textures/Whatever/texture.dat 
+        // Note the case difference of the directories.  If you were to ask the operating system just to list all of
+        // the files in the input folder (/SomeFolder/textures/whatever/*) it would not find any since the directory 
+        // does not itself exist.  Not only that, but many operating system calls on case-insensitive file systems
+        // actually use the input given in their return - that is, if you ask a WINAPI call to construct an absolute path
+        // to a file and give it the wrong case as input, the output absolute path will also be the wrong case.
+        // Thus, to actually correct a path it has to start at the bottom and whenever it encounters
+        // a path segment, it has to do a read of the actual directory information to see which files exist in that
+        // directory, and whether a file or directory exists with the correct name but with different case.
+
+        // if checkEntirePath is false, we only check the file name, and nothing else.  This is for the case where
+        // the path is known to be good except for the file name, such as when the relPathFromRoot comes from just
+        // taking an existing, known-good file and replacing its extension only.
+
         AZ::StringFunc::Path::Normalize(relPathFromRoot);
         AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(relPathFromRoot.c_str(), tokens, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
@@ -262,6 +277,15 @@ namespace AzToolsFramework::AssetUtils
 
         for (int idx = 0; idx < tokens.size(); idx++)
         {
+            if (!checkEntirePath)
+            {
+                if (idx != tokens.size() - 1)
+                {
+                    // only the last token is potentially incorrect, we can skip filenames before that
+                    validatedPath /= tokens[idx]; // go one step deeper.
+                    continue;
+                }
+            }
             AZStd::string element = tokens[idx];
             bool foundAMatch = false;
             AZ::IO::FileIOBase::GetInstance()->FindFiles(validatedPath.c_str(), "*", [&](const char* file)

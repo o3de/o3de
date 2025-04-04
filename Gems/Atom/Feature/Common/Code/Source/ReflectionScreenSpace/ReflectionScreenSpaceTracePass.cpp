@@ -35,8 +35,8 @@ namespace AZ
             Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
 
             // retrieve the previous frame image attachment from the pass
-            AZ_Assert(m_ownedAttachments.size() == 4, "ReflectionScreenSpaceTracePass must have the following attachment images defined: ReflectionImage, TraceCoordsImage, DownSampledDepthImage, and PreviousFrameImage");
-            RPI::Ptr<RPI::PassAttachment> previousFrameImageAttachment = m_ownedAttachments[3];
+            AZ_Assert(m_ownedAttachments.size() == 3, "ReflectionScreenSpaceTracePass must have the following attachment images defined: ReflectionImage, TraceCoordsImage, and PreviousFrameImage");
+            RPI::Ptr<RPI::PassAttachment> previousFrameImageAttachment = m_ownedAttachments[2];
             
             // update the image attachment descriptor to sync up size and format
             previousFrameImageAttachment->Update();
@@ -76,8 +76,8 @@ namespace AZ
             m_shaderResourceGroup->SetConstant(m_invOutputScaleNameIndex, 1.0f / ssrOptions.GetOutputScale());
             m_shaderResourceGroup->SetConstant(m_outputWidthNameIndex, outputImageSize.m_width);
             m_shaderResourceGroup->SetConstant(m_outputHeightNameIndex, outputImageSize.m_height);
-            m_shaderResourceGroup->SetConstant(m_rayTracingEnabledNameIndex, ssrOptions.m_rayTracing);
-            m_shaderResourceGroup->SetConstant(m_rayTraceFallbackDataNameIndex, ssrOptions.m_rayTraceFallbackData);
+            m_shaderResourceGroup->SetConstant(m_rayTracingEnabledNameIndex, ssrOptions.IsRayTracingEnabled());
+            m_shaderResourceGroup->SetConstant(m_rayTraceFallbackDataNameIndex, ssrOptions.IsRayTracingFallbackEnabled());
             m_shaderResourceGroup->SetConstant(m_maxRayDistanceNameIndex, ssrOptions.m_maxRayDistance);
             m_shaderResourceGroup->SetConstant(m_maxDepthThresholdNameIndex, ssrOptions.m_maxDepthThreshold);
             m_shaderResourceGroup->SetConstant(m_maxRoughnessNameIndex, ssrOptions.m_maxRoughness);

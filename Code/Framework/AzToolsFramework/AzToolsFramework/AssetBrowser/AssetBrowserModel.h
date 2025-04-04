@@ -74,6 +74,7 @@ namespace AzToolsFramework
             QStringList mimeTypes() const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
             QModelIndex parent(const QModelIndex& child) const override;
+            bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserModelRequestBus
@@ -83,6 +84,9 @@ namespace AzToolsFramework
             void EndAddEntry(AssetBrowserEntry* parent) override;
             void BeginRemoveEntry(AssetBrowserEntry* entry) override;
             void EndRemoveEntry() override;
+
+            void BeginReset() override;
+            void EndReset() override;
 
             //////////////////////////////////////////////////////////////////////////
             // TickBus
@@ -118,6 +122,8 @@ namespace AzToolsFramework
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
 
             void WatchForExpectedAssets(AssetBrowserEntry* entry);
+
+            bool m_isResetting = false;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

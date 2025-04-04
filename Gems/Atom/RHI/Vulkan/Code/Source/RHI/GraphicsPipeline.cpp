@@ -30,9 +30,9 @@ namespace AZ
             AZ_Assert(descriptor.m_pipelineDescritor->GetType() == RHI::PipelineStateType::Draw, "Invalid pipeline descriptor type");
 
             const auto* drawDescriptor = static_cast<const RHI::PipelineStateDescriptorForDraw*>(descriptor.m_pipelineDescritor);
-            const RHI::RenderAttachmentLayout& renderAttachmentLayout = drawDescriptor->m_renderAttachmentConfiguration.m_renderAttachmentLayout;            
+            const RHI::RenderAttachmentLayout& renderAttachmentLayout = drawDescriptor->m_renderAttachmentConfiguration.m_renderAttachmentLayout;
             auto renderpassDescriptor = RenderPass::ConvertRenderAttachmentLayout(
-                *descriptor.m_device, renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);            
+                *descriptor.m_device, renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);
             m_renderPass = descriptor.m_device->AcquireRenderPass(renderpassDescriptor);
 
             return BuildNativePipeline(descriptor, pipelineLayout);
@@ -43,6 +43,15 @@ namespace AZ
             m_renderPass = nullptr;
 
             Base::Shutdown();
+        }
+
+        void GraphicsPipeline::SetNameInternal(const AZStd::string_view& name)
+        {
+            if (m_renderPass)
+            {
+                m_renderPass->SetName(AZ::Name(name));
+            }
+            Base::SetNameInternal(name);
         }
 
         RHI::ResultCode GraphicsPipeline::BuildNativePipeline(const Descriptor& descriptor, const PipelineLayout& pipelineLayout)
@@ -114,16 +123,14 @@ namespace AZ
             m_pipelineShaderStageCreateInfos.emplace_back();
             FillPipelineShaderStageCreateInfo(*func, RHI::ShaderStage::Vertex, ShaderSubStage::Default, *m_pipelineShaderStageCreateInfos.rbegin());
 
-            if (GetDevice().GetFeatures().m_tessellationShader)
+            if (GetDevice().GetFeatures().m_geometryShader)
             {
-                func = static_cast<ShaderStageFunction const*>(descriptor.m_tessellationFunction.get());
+                func = static_cast<ShaderStageFunction const*>(descriptor.m_geometryFunction.get());
                 if (func)
                 {
-                    for (uint32_t subStageIndex = 0; subStageIndex < ShaderSubStageCountMax; ++subStageIndex)
-                    {
-                        m_pipelineShaderStageCreateInfos.emplace_back();
-                        FillPipelineShaderStageCreateInfo(*func, RHI::ShaderStage::Tessellation, subStageIndex, *m_pipelineShaderStageCreateInfos.rbegin());
-                    }
+                    m_pipelineShaderStageCreateInfos.emplace_back();
+                    FillPipelineShaderStageCreateInfo(
+                        *func, RHI::ShaderStage::Geometry, ShaderSubStage::Default, *m_pipelineShaderStageCreateInfos.rbegin());
                 }
             }
 
@@ -135,7 +142,7 @@ namespace AZ
             }
         }
 
-        void GraphicsPipeline::BuildPipelineVertexInputStateCreateInfo(const RHI::InputStreamLayout& inputStreamLayout) 
+        void GraphicsPipeline::BuildPipelineVertexInputStateCreateInfo(const RHI::InputStreamLayout& inputStreamLayout)
         {
             const auto& streamChannels = inputStreamLayout.GetStreamChannels();
             m_vertexInputAttributeDescriptions.resize(streamChannels.size());
@@ -165,7 +172,8 @@ namespace AZ
             uint32_t index, VkVertexInputAttributeDescription& desc)
         {
             AZ_Assert(index < inputStreamLayout.GetStreamChannels().size(), "Index is wrong.");
-            const RHI::StreamChannelDescriptor& chanDesc = inputStreamLayout.GetStreamChannels()[index];
+            const auto streamChannels = inputStreamLayout.GetStreamChannels();
+            const RHI::StreamChannelDescriptor& chanDesc = streamChannels[index];
 
             desc = {};
             desc.location = index;
@@ -178,7 +186,8 @@ namespace AZ
             uint32_t index, VkVertexInputBindingDescription& desc)
         {
             AZ_Assert(index < inputStreamLayout.GetStreamBuffers().size(), "Index is wrong.");
-            const RHI::StreamBufferDescriptor& buffDesc = inputStreamLayout.GetStreamBuffers()[index];
+            const auto streamBuffers = inputStreamLayout.GetStreamBuffers();
+            const RHI::StreamBufferDescriptor& buffDesc = streamBuffers[index];
 
             VkVertexInputRate inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
             switch (buffDesc.m_stepFunction)
@@ -200,16 +209,16 @@ namespace AZ
 
             if (desc.stride == 0)
             {
-                 const auto& streamChannels = inputStreamLayout.GetStreamChannels();
-                 
-                 for (uint32_t channelIndex = 0; channelIndex < streamChannels.size(); ++channelIndex)
-                 {
-                     const RHI::StreamChannelDescriptor& chanDesc = inputStreamLayout.GetStreamChannels()[channelIndex];
-                     if (chanDesc.m_bufferIndex == index)
-                     {
-                         desc.stride += GetFormatSize(chanDesc.m_format);
-                     }
-                 }
+                const auto streamChannels = inputStreamLayout.GetStreamChannels();
+
+                for (uint32_t channelIndex = 0; channelIndex < streamChannels.size(); ++channelIndex)
+                {
+                    const RHI::StreamChannelDescriptor& chanDesc = streamChannels[channelIndex];
+                    if (chanDesc.m_bufferIndex == index)
+                    {
+                        desc.stride += GetFormatSize(chanDesc.m_format);
+                    }
+                }
             }
         }
 
@@ -261,14 +270,14 @@ namespace AZ
             info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
             info.pNext = nullptr;
             info.depthClampEnable = VK_FALSE;
-            info.flags = 0;            
+            info.flags = 0;
             info.rasterizerDiscardEnable = VK_FALSE;
 
             VkPipelineRasterizationDepthClipStateCreateInfoEXT& depthClipState = m_pipelineRasterizationDepthClipStateInfo;
             depthClipState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT;
             if (physicalDevice.IsFeatureSupported(DeviceFeature::DepthClipEnable))
             {
-                depthClipState.depthClipEnable = rasterState.m_depthClipEnable;                
+                depthClipState.depthClipEnable = rasterState.m_depthClipEnable;
                 info.pNext = &depthClipState;
             }
             else if (enabledFeatures.depthClamp)
@@ -355,7 +364,7 @@ namespace AZ
             info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
             info.flags = 0;
             info.rasterizationSamples = ConvertSampleCount(multisampleState.m_samples);
- 
+
             info.sampleShadingEnable = VK_FALSE;
             info.pSampleMask = nullptr;
 
@@ -368,7 +377,7 @@ namespace AZ
                 if (physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation))
                 {
                     AZStd::transform(
-                        multisampleState.m_customPositions.begin(), 
+                        multisampleState.m_customPositions.begin(),
                         multisampleState.m_customPositions.begin() + multisampleState.m_customPositionsCount,
                         AZStd::back_inserter(m_customSampleLocations), [&](const auto& item)
                     {
@@ -482,7 +491,7 @@ namespace AZ
             m_dynamicStates =
             {
                 VK_DYNAMIC_STATE_VIEWPORT,
-                VK_DYNAMIC_STATE_SCISSOR, 
+                VK_DYNAMIC_STATE_SCISSOR,
                 VK_DYNAMIC_STATE_STENCIL_REFERENCE
             };
 

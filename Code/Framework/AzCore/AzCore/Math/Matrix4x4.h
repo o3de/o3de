@@ -42,8 +42,8 @@ namespace AZ
 
         //! Default constructor does not initialize the matrix.
         Matrix4x4() = default;
+        Matrix4x4(const Matrix4x4& rhs) = default;
 
-        Matrix4x4(const Matrix4x4& rhs);
         Matrix4x4(Simd::Vec4::FloatArgType row0, Simd::Vec4::FloatArgType row1, Simd::Vec4::FloatArgType row2, Simd::Vec4::FloatArgType row3);
 
         static Matrix4x4 CreateIdentity();

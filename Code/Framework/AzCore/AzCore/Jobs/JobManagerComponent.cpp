@@ -61,7 +61,7 @@ namespace AZ
             numberOfWorkerThreads = AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS;
         #else
             uint32_t scaledHardwareThreads = Threading::CalcNumWorkerThreads(cl_jobThreadsConcurrencyRatio, cl_jobThreadsMinNumber, 0, cl_jobThreadsNumReserved);
-            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), scaledHardwareThreads);
+            numberOfWorkerThreads = desc.GetWorkerThreadCount(scaledHardwareThreads);
         #endif // (AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS)
         }
 
@@ -99,7 +99,7 @@ namespace AZ
     //=========================================================================
     void JobManagerComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("JobsService", 0xd5ab5a50));
+        provided.push_back(AZ_CRC_CE("JobsService"));
     }
 
     //=========================================================================
@@ -107,7 +107,7 @@ namespace AZ
     //=========================================================================
     void JobManagerComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("JobsService", 0xd5ab5a50));
+        incompatible.push_back(AZ_CRC_CE("JobsService"));
     }
 
     //=========================================================================
@@ -115,7 +115,7 @@ namespace AZ
     //=========================================================================
     void JobManagerComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("ProfilerService", 0x505033c9));
+        dependent.push_back(AZ_CRC_CE("ProfilerService"));
     }
 
     //=========================================================================

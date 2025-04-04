@@ -236,7 +236,7 @@ namespace Multiplayer
 
     void NetworkEntityManager::HandleLocalRpcMessage(NetworkEntityRpcMessage& message)
     {
-        m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
+        m_localDeferredRpcMessages.emplace_back(message);
     }
 
     void NetworkEntityManager::HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain)
@@ -245,7 +245,7 @@ namespace Multiplayer
         {
             NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(exitingId);
 
-            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);;
+            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);
 
             // Validate that we aren't already planning to remove this entity
             if (safeToExit)
@@ -464,6 +464,12 @@ namespace Multiplayer
                 auto it = originalToCloneIdMap.find(parentId);
                 if (it != originalToCloneIdMap.end())
                 {
+                    // Note: The need to remove and readd the transform component parent will go away once this method replaces serializeContext->CloneObject
+                    //    with the standard AzFramework::SpawnableEntitiesInterface::SpawnEntities
+                    // This stops SetParentRelative() from printing distracting warnings, due to the cloned component m_entity being null.
+                    // AddComponent properly sets the component's m_entity. 
+                    clone->RemoveComponent(cloneTransformComponent);
+                    clone->AddComponent(cloneTransformComponent);
                     cloneTransformComponent->SetParentRelative(it->second);
                 }
                 else
@@ -482,7 +488,12 @@ namespace Multiplayer
 
             const NetEntityId netEntityId = NextId();
             cloneNetBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
-            cloneTransformComponent->SetWorldTM(transform);
+
+            // Set the transform if we're a root entity (have no parent); otherwise, keep the local transform
+            if (!parentId.IsValid() || removeParent)
+            {
+                cloneTransformComponent->SetWorldTM(transform);
+            }
 
             if (autoActivate == AutoActivate::DoNotActivate)
             {

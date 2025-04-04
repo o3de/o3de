@@ -9,26 +9,23 @@
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void SwapChainDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void SwapChainDescriptor::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<SwapChainDimensions>()
-                    ->Version(1)
-                    ->Field("m_imageCount", &SwapChainDimensions::m_imageCount)
-                    ->Field("m_imageWidth", &SwapChainDimensions::m_imageWidth)
-                    ->Field("m_imageHeight", &SwapChainDimensions::m_imageHeight)
-                    ->Field("m_imageFormat", &SwapChainDimensions::m_imageFormat);
+            serializeContext->Class<SwapChainDimensions>()
+                ->Version(1)
+                ->Field("m_imageCount", &SwapChainDimensions::m_imageCount)
+                ->Field("m_imageWidth", &SwapChainDimensions::m_imageWidth)
+                ->Field("m_imageHeight", &SwapChainDimensions::m_imageHeight)
+                ->Field("m_imageFormat", &SwapChainDimensions::m_imageFormat);
 
-                serializeContext->Class<SwapChainDescriptor, ResourcePoolDescriptor>()
-                    ->Version(1)
-                    ->Field("m_dimensions", &SwapChainDescriptor::m_dimensions)
-                    ->Field("m_verticalSyncInterval", &SwapChainDescriptor::m_verticalSyncInterval);
-            }
+            serializeContext->Class<SwapChainDescriptor, ResourcePoolDescriptor>()
+                ->Version(1)
+                ->Field("m_dimensions", &SwapChainDescriptor::m_dimensions)
+                ->Field("m_verticalSyncInterval", &SwapChainDescriptor::m_verticalSyncInterval);
         }
     }
 }

@@ -75,7 +75,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/EditorModeTint.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

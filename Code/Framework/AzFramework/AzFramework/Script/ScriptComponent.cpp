@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptProperty.h>
@@ -509,9 +510,11 @@ namespace AzFramework
         // Load the script, find the base table...
         if (LoadInContext())
         {
+#if defined(_RELEASE)
             bool isHotReloadEnabled = false;
-
-            // Retrieve new action manager setting
+#else
+            bool isHotReloadEnabled = true;
+#endif
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
                 registry->Get(isHotReloadEnabled, ScriptComponentHotReloadPath);
@@ -568,6 +571,7 @@ namespace AzFramework
     void ScriptComponent::Deactivate()
     {
         AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
 
         DestroyEntityTable();
     }
@@ -577,6 +581,14 @@ namespace AzFramework
         DestroyEntityTable();
 
         m_script = asset;
+
+        // Load the updated asset on the next tick so we're not holding on to the old script
+        AZ::TickBus::Handler::BusConnect();
+    }
+
+    void ScriptComponent::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time)
+    {
+        AZ::TickBus::Handler::BusDisconnect();
 
         if (LoadInContext())
         {
@@ -872,7 +884,7 @@ namespace AzFramework
                     // If version 2, remove SourceScriptName
                     if (node.GetVersion() == 2)
                     {
-                        int index = node.FindElement(AZ_CRC("SourceScriptName", 0x3654ac50));
+                        int index = node.FindElement(AZ_CRC_CE("SourceScriptName"));
                         if (index != -1)
                         {
                             node.RemoveElement(index);

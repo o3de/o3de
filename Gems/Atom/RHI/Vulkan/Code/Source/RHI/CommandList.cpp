@@ -5,8 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/std/containers/vector.h>
+#include <Atom/RHI.Reflect/IndirectBufferLayout.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
+#include <Atom/RHI/DeviceIndirectBufferSignature.h>
+#include <Atom/RHI/DeviceRayTracingCompactionQueryPool.h>
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/lock.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
@@ -23,18 +27,18 @@
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>
-#include <RHI/RayTracingBlas.h>
-#include <RHI/RayTracingTlas.h>
-#include <RHI/RayTracingPipelineState.h>
-#include <RHI/RayTracingShaderTable.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
+#include <RHI/RayTracingAccelerationStructure.h>
+#include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingCompactionQueryPool.h>
+#include <RHI/RayTracingPipelineState.h>
+#include <RHI/RayTracingShaderTable.h>
+#include <RHI/RayTracingTlas.h>
 #include <RHI/RenderPass.h>
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI/IndirectBufferSignature.h>
-#include <Atom/RHI.Reflect/IndirectBufferLayout.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+
 
 namespace AZ
 {
@@ -84,17 +88,17 @@ namespace AZ
             m_state.m_scissorState.Set(AZStd::span<const RHI::Scissor>(rhiScissors, count));
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup(shaderResourceGroup, RHI::PipelineStateType::Draw);
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup) 
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup) 
         {
             SetShaderResourceGroup(shaderResourceGroup, RHI::PipelineStateType::Dispatch);
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceCopyItem& copyItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -104,7 +108,7 @@ namespace AZ
             {
             case RHI::CopyItemType::Buffer:
             {
-                const RHI::CopyBufferDescriptor& descriptor = copyItem.m_buffer;
+                const RHI::DeviceCopyBufferDescriptor& descriptor = copyItem.m_buffer;
                 const auto* sourceBufferMemoryView = static_cast<const Buffer*>(descriptor.m_sourceBuffer)->GetBufferMemoryView();
                 const auto* destinationBufferMemoryView = static_cast<const Buffer*>(descriptor.m_destinationBuffer)->GetBufferMemoryView();
 
@@ -123,10 +127,11 @@ namespace AZ
             }
             case RHI::CopyItemType::BufferToImage:
             {
-                const RHI::CopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
+                const RHI::DeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                 const auto* sourceBufferMemoryView = static_cast<const Buffer*>(descriptor.m_sourceBuffer)->GetBufferMemoryView();
                 const auto* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
-                const RHI::Format format = destinationImage->GetDescriptor().m_format;
+                const RHI::Format format = descriptor.m_sourceFormat;
+                RHI::Size formatDimensionAlignment = GetFormatDimensionAlignment(format);
 
                 // VkBufferImageCopy::bufferRowLength is specified in texels not in bytes. 
                 // Because of this we need to convert m_sourceBytesPerRow from bytes to pixels to account 
@@ -137,9 +142,10 @@ namespace AZ
 
                 VkBufferImageCopy copy{};
                 copy.bufferOffset = sourceBufferMemoryView->GetOffset() + descriptor.m_sourceOffset;
-                copy.bufferRowLength = descriptor.m_sourceBytesPerRow / GetFormatSize(format) * GetFormatDimensionAlignment(format);
-                copy.bufferImageHeight = descriptor.m_sourceSize.m_height;
-                copy.imageSubresource.aspectMask = destinationImage->GetImageAspectFlags();
+                copy.bufferRowLength = descriptor.m_sourceBytesPerRow / GetFormatSize(format) * formatDimensionAlignment.m_width;
+                copy.bufferImageHeight = RHI::AlignUp(descriptor.m_sourceSize.m_height, formatDimensionAlignment.m_height);
+                copy.imageSubresource.aspectMask = ConvertImageAspect(descriptor.m_destinationSubresource.m_aspect);
+
                 copy.imageSubresource.mipLevel = descriptor.m_destinationSubresource.m_mipSlice;
                 copy.imageSubresource.baseArrayLayer = descriptor.m_destinationSubresource.m_arraySlice;
                 copy.imageSubresource.layerCount = 1;
@@ -161,19 +167,19 @@ namespace AZ
             }
             case RHI::CopyItemType::Image:
             {
-                const RHI::CopyImageDescriptor& descriptor = copyItem.m_image;
+                const RHI::DeviceCopyImageDescriptor& descriptor = copyItem.m_image;
                 const auto* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                 const auto* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
                 VkImageCopy copy{};
-                copy.srcSubresource.aspectMask = sourceImage->GetImageAspectFlags();
+                copy.srcSubresource.aspectMask = ConvertImageAspect(descriptor.m_sourceSubresource.m_aspect);
                 copy.srcSubresource.mipLevel = descriptor.m_sourceSubresource.m_mipSlice;
                 copy.srcSubresource.baseArrayLayer = descriptor.m_sourceSubresource.m_arraySlice;
                 copy.srcSubresource.layerCount = 1;
                 copy.srcOffset.x = descriptor.m_sourceOrigin.m_left;
                 copy.srcOffset.y = descriptor.m_sourceOrigin.m_top;
                 copy.srcOffset.z = descriptor.m_sourceOrigin.m_front;
-                copy.dstSubresource.aspectMask = destinationImage->GetImageAspectFlags();
+                copy.dstSubresource.aspectMask = ConvertImageAspect(descriptor.m_destinationSubresource.m_aspect);
                 copy.dstSubresource.mipLevel = descriptor.m_destinationSubresource.m_mipSlice;
                 copy.dstSubresource.baseArrayLayer = descriptor.m_destinationSubresource.m_arraySlice;
                 copy.dstSubresource.layerCount = 1;
@@ -196,10 +202,11 @@ namespace AZ
             }
             case RHI::CopyItemType::ImageToBuffer:
             {
-                const RHI::CopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
+                const RHI::DeviceCopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
                 const auto* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                 const auto* destinationBufferMemoryView = static_cast<const Buffer*>(descriptor.m_destinationBuffer)->GetBufferMemoryView();
                 const RHI::Format format = descriptor.m_destinationFormat;
+                RHI::Size formatDimensionAlignment = GetFormatDimensionAlignment(format);
 
                 // VkBufferImageCopy::bufferRowLength is specified in texels not in bytes. 
                 // Because of this we need to convert m_sourceBytesPerRow from bytes to pixels to account 
@@ -210,8 +217,8 @@ namespace AZ
 
                 VkBufferImageCopy copy{};
                 copy.bufferOffset = destinationBufferMemoryView->GetOffset() + descriptor.m_destinationOffset;
-                copy.bufferRowLength = descriptor.m_destinationBytesPerRow / GetFormatSize(format) * GetFormatDimensionAlignment(format);
-                copy.bufferImageHeight = descriptor.m_sourceSize.m_height;
+                copy.bufferRowLength = descriptor.m_destinationBytesPerRow / GetFormatSize(format) * formatDimensionAlignment.m_width;
+                copy.bufferImageHeight = RHI::AlignUp(descriptor.m_sourceSize.m_height, formatDimensionAlignment.m_height);
                 copy.imageSubresource.aspectMask = ConvertImageAspect(descriptor.m_sourceSubresource.m_aspect);
                 copy.imageSubresource.mipLevel = descriptor.m_sourceSubresource.m_mipSlice;
                 copy.imageSubresource.baseArrayLayer = descriptor.m_sourceSubresource.m_arraySlice;
@@ -223,6 +230,15 @@ namespace AZ
                 copy.imageExtent.height = descriptor.m_sourceSize.m_height;
                 copy.imageExtent.depth = descriptor.m_sourceSize.m_depth;
 
+                // [GFX TODO] https://github.com/o3de/o3de/issues/16444
+                // It was found that after submitting the copy command, there could occur
+                // a Vulkan validation error if the Source Attachment image is later used as an SRV
+                // because this CmdCopyImageToBuffer command will change and leave the layout as VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
+                // The solution would be to add another MemoryBarrier to change the layout back to its original
+                // state. 
+                // [ UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout ]
+                //     (subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout VK_IMAGE_LAYOUT_GENERAL
+                //     --instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
                 context.CmdCopyImageToBuffer(
                     m_nativeCommandBuffer,
                     sourceImage->GetNativeImage(),
@@ -234,7 +250,7 @@ namespace AZ
             }
             case RHI::CopyItemType::QueryToBuffer:
             {
-                const RHI::CopyQueryToBufferDescriptor& descriptor = copyItem.m_queryToBuffer;
+                const RHI::DeviceCopyQueryToBufferDescriptor& descriptor = copyItem.m_queryToBuffer;
                 const auto* sourceQueryPool = static_cast<const QueryPool*>(descriptor.m_sourceQueryPool);
                 const auto* destinationBufferMemoryView = static_cast<const Buffer*>(descriptor.m_destinationBuffer)->GetBufferMemoryView();
 
@@ -254,9 +270,15 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDrawItem& drawItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
+
+            if (drawItem.m_geometryView == nullptr)
+            {
+                AZ_Assert(false, "DrawItem being submitted without GeometryView, i.e. without draw arguments, index buffer or stream buffers!");
+                return;
+            }
 
             if (!CommitShaderResource(drawItem))
             {
@@ -265,7 +287,7 @@ namespace AZ
             }
 
             SetStencilRef(drawItem.m_stencilRef);
-            SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+            SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
 
             RHI::CommandListScissorState scissorState;
             if (drawItem.m_scissorsCount)
@@ -287,35 +309,39 @@ namespace AZ
 
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
-            switch (drawItem.m_arguments.m_type)
+            switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
             {
-                AZ_Assert(drawItem.m_indexBufferView, "IndexBufferView is null.");
+                AZ_Assert(drawItem.m_geometryView->GetIndexBufferView().GetBuffer(), "IndexBufferView is null.");
 
-                const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-                SetIndexBuffer(*drawItem.m_indexBufferView);
+                const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
 
                 context.CmdDrawIndexed(
                     m_nativeCommandBuffer,
                     indexed.m_indexCount,
-                    indexed.m_instanceCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
                     indexed.m_indexOffset,
                     indexed.m_vertexOffset,
-                    indexed.m_instanceOffset);
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
             case RHI::DrawType::Linear:
             {
-                const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
 
                 context.CmdDraw(
-                    m_nativeCommandBuffer, linear.m_vertexCount, linear.m_instanceCount, linear.m_vertexOffset, linear.m_instanceOffset);
+                    m_nativeCommandBuffer,
+                    linear.m_vertexCount,
+                    drawItem.m_drawInstanceArgs.m_instanceCount,
+                    linear.m_vertexOffset,
+                    drawItem.m_drawInstanceArgs.m_instanceOffset);
                 break;
             }
             case RHI::DrawType::Indirect:
             {
-                const RHI::DrawIndirect& indirect = drawItem.m_arguments.m_indirect;
+                const RHI::DeviceDrawIndirect& indirect = drawItem.m_geometryView->GetDrawArguments().m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
                 decltype(context.CmdDrawIndexedIndirectCountKHR) drawIndirectCountFunctionPtr = nullptr;
                 decltype(context.CmdDrawIndexedIndirect) drawIndirectfunctionPtr = nullptr;
@@ -326,7 +352,7 @@ namespace AZ
                     drawIndirectfunctionPtr = context.CmdDrawIndirect;
                     break;
                 case RHI::IndirectBufferLayoutType::IndexedDraw:
-                    SetIndexBuffer(*drawItem.m_indexBufferView);
+                    SetIndexBuffer(drawItem.m_geometryView->GetIndexBufferView());
                     drawIndirectCountFunctionPtr = context.CmdDrawIndexedIndirectCountKHR;
                     drawIndirectfunctionPtr = context.CmdDrawIndexedIndirect;
                     break;
@@ -381,7 +407,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchItem& dispatchItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -419,7 +445,7 @@ namespace AZ
             }            
         }       
 
-        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
+        void CommandList::Submit([[maybe_unused]] const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -486,7 +512,7 @@ namespace AZ
                 if (shaderResourceGroup == nullptr)
                 {
                     AZ_Assert(
-                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()],
                         "Bindless SRG slot needs to match the one described in the shader.");
                     descriptorSets.push_back(m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet());
                 }
@@ -551,18 +577,44 @@ namespace AZ
             hitGroupTable.stride = shaderTableBuffers.m_hitGroupTableStride;
             hitGroupTable.size = shaderTableBuffers.m_hitGroupTableSize;
 
-            context.CmdTraceRaysKHR(
-                m_nativeCommandBuffer,
-                &rayGenerationTable,
-                &missTable,
-                &hitGroupTable,
-                &callableTable,
-                dispatchRaysItem.m_width,
-                dispatchRaysItem.m_height,
-                dispatchRaysItem.m_depth);
+            switch (dispatchRaysItem.m_arguments.m_type)
+            {
+            case RHI::DispatchRaysType::Direct:
+                {
+                    const auto& arguments = dispatchRaysItem.m_arguments.m_direct;
+                    context.CmdTraceRaysKHR(
+                        m_nativeCommandBuffer,
+                        &rayGenerationTable,
+                        &missTable,
+                        &hitGroupTable,
+                        &callableTable,
+                        arguments.m_width,
+                        arguments.m_height,
+                        arguments.m_depth);
+                    break;
+                }
+            case RHI::DispatchRaysType::Indirect:
+                {
+                    const auto& arguments = dispatchRaysItem.m_arguments.m_indirect;
+                    AZ_Assert(arguments.m_countBuffer == nullptr, "Count buffer is not supported for indirect dispatch on this platform.");
+                    const auto* indirectBufferMemoryView =
+                        static_cast<const Buffer*>(arguments.m_indirectBufferView->GetBuffer())->GetBufferMemoryView();
+                    addressInfo.buffer = indirectBufferMemoryView->GetNativeBuffer();
+                    VkDeviceAddress indirectDeviceAddress =
+                        context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo) +
+                        indirectBufferMemoryView->GetOffset() + arguments.m_indirectBufferView->GetByteOffset() +
+                        arguments.m_indirectBufferByteOffset;
+                    context.CmdTraceRaysIndirectKHR(
+                        m_nativeCommandBuffer, &rayGenerationTable, &missTable, &hitGroupTable, &callableTable, indirectDeviceAddress);
+                    break;
+                }
+            default:
+                AZ_Assert(false, "Invalid dispatch type");
+                break;
+            }
         }
 
-        void CommandList::BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation)
+        void CommandList::BeginPredication(const RHI::DeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation)
         {
             if (!m_supportsPredication)
             {
@@ -614,13 +666,14 @@ namespace AZ
             if (m_descriptor.m_level == VK_COMMAND_BUFFER_LEVEL_SECONDARY)
             {
                 AZ_Assert(inheritance, "Null inheritance info");
-                const RenderPass* renderPass = inheritance->m_frameBuffer->GetRenderPass();
+                const RenderPass* renderPass = inheritance->m_frameBuffer ? inheritance->m_frameBuffer->GetRenderPass() : nullptr;
                 inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                inheritanceInfo.renderPass = renderPass->GetNativeRenderPass();
+                inheritanceInfo.renderPass = renderPass ? renderPass->GetNativeRenderPass() : VK_NULL_HANDLE;
                 inheritanceInfo.subpass = inheritance->m_subpass;
-                inheritanceInfo.framebuffer = inheritance->m_frameBuffer->GetNativeFramebuffer();
+                inheritanceInfo.framebuffer =
+                    inheritance->m_frameBuffer ? inheritance->m_frameBuffer->GetNativeFramebuffer() : VK_NULL_HANDLE;
                 beginInfo.pInheritanceInfo = &inheritanceInfo;
-                beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                beginInfo.flags |= renderPass ? VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT : 0;
                 m_state.m_framebuffer = inheritance->m_frameBuffer;
                 m_state.m_subpassIndex = inheritance->m_subpass;
             }
@@ -777,7 +830,7 @@ namespace AZ
             return m_validator;
         }
 
-        void CommandList::SetShaderResourceGroup(const RHI::ShaderResourceGroup& shaderResourceGroupBase, RHI::PipelineStateType type)
+        void CommandList::SetShaderResourceGroup(const RHI::DeviceShaderResourceGroup& shaderResourceGroupBase, RHI::PipelineStateType type)
         {
             const uint32_t bindingSlot = shaderResourceGroupBase.GetBindingSlot();
             const auto& shaderResourceGroup = static_cast<const ShaderResourceGroup&>(shaderResourceGroupBase);
@@ -789,14 +842,16 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryView, const RHI::StreamBufferIndices& streamIndices)
         {
+            auto streamIter = geometryView.CreateStreamIterator(streamIndices);
             RHI::Interval interval = InvalidInterval;
-            for (uint32_t index = 0; index < count; ++index)
+
+            for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
             {
-                if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streams[index].GetHash()))
+                if (m_state.m_streamBufferHashes[index] != static_cast<uint64_t>(streamIter->GetHash()))
                 {
-                    m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streams[index].GetHash());
+                    m_state.m_streamBufferHashes[index] = static_cast<uint64_t>(streamIter->GetHash());
                     interval.m_min = AZStd::min<uint32_t>(interval.m_min, index);
                     interval.m_max = AZStd::max<uint32_t>(interval.m_max, index);
                 }
@@ -805,21 +860,21 @@ namespace AZ
             if (interval != InvalidInterval)
             {
                 uint32_t numBuffers = interval.m_max - interval.m_min + 1;
-                AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers(numBuffers, VK_NULL_HANDLE);
-                AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets(numBuffers, 0);
-                for (uint32_t i = 0; i < numBuffers; ++i)
+                AZStd::fixed_vector<VkBuffer, RHI::Limits::Pipeline::StreamCountMax> nativeBuffers;
+                AZStd::fixed_vector<VkDeviceSize, RHI::Limits::Pipeline::StreamCountMax> offsets;
+
+                for (u8 i = (u8)interval.m_min; i <= (u8)interval.m_max; ++i)
                 {
-                    const RHI::StreamBufferView& bufferView = streams[i + interval.m_min];
-                    if (bufferView.GetBuffer())
+                    if (streamIter[i].GetBuffer())
                     {
-                        const auto* bufferMemoryView = static_cast<const Buffer*>(bufferView.GetBuffer())->GetBufferMemoryView();
-                        nativeBuffers[i] = bufferMemoryView->GetNativeBuffer();
-                        offsets[i] = bufferMemoryView->GetOffset() + bufferView.GetByteOffset();
+                        const auto* bufferMemoryView = static_cast<const Buffer*>(streamIter[i].GetBuffer())->GetBufferMemoryView();
+                        nativeBuffers.push_back(bufferMemoryView->GetNativeBuffer());
+                        offsets.push_back(bufferMemoryView->GetOffset() + streamIter[i].GetByteOffset());
                     }
                     else
                     {
-                        nativeBuffers[i] = VK_NULL_HANDLE;
-                        offsets[i] = 0;
+                        nativeBuffers.push_back(VK_NULL_HANDLE);
+                        offsets.push_back(0);
                     }
                 }
 
@@ -829,7 +884,7 @@ namespace AZ
             }
         }
 
-        void CommandList::SetIndexBuffer(const RHI::IndexBufferView& indexBufferView)
+        void CommandList::SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView)
         {
             uint64_t indexBufferHash = static_cast<uint64_t>(indexBufferView.GetHash());
             if (indexBufferHash != m_state.m_indexBufferHash)
@@ -841,7 +896,8 @@ namespace AZ
                 static_cast<Device&>(GetDevice())
                     .GetContext()
                     .CmdBindIndexBuffer(
-                        m_nativeCommandBuffer, indexBufferMemoryView->GetNativeBuffer(),
+                        m_nativeCommandBuffer,
+                        indexBufferMemoryView->GetNativeBuffer(),
                         indexBufferMemoryView->GetOffset() + indexBufferView.GetByteOffset(),
                         ConvertIndexBufferFormat(indexBufferView.GetIndexFormat()));
             }
@@ -1010,12 +1066,14 @@ namespace AZ
                     shaderResourceGroup = shaderResourceGroupList.front();
                 }
 
+                bindings.m_SRGByVulkanBindingIndex[index] = shaderResourceGroup.get();
+
                 VkDescriptorSet vkDescriptorSet = nullptr;
 
                 if (shaderResourceGroup == nullptr)
                 {
                     AZ_Assert(
-                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()],
                         "Bindless SRG slot needs to match the one described in the shader.");
                     vkDescriptorSet = m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet();
                 }
@@ -1089,7 +1147,7 @@ namespace AZ
                 const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(i);
                 for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
                 {
-                    if (srgBitset[bindingSlot] && bindingSlot != RHI::ShaderResourceGroupData::BindlessSRGFrequencyId)
+                    if (srgBitset[bindingSlot] && bindingSlot != m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot())
                     {
                         const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
                         AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");
@@ -1100,7 +1158,7 @@ namespace AZ
 #endif
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingBlas& rayTracingBlas)
         {
             const RayTracingBlas& vulkanRayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
             const RayTracingBlas::BlasBuffers& blasBuffers = vulkanRayTracingBlas.GetBuffers();
@@ -1110,15 +1168,45 @@ namespace AZ
             // submit the command to build the BLAS
             const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
             context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &blasBuffers.m_buildInfo, &rangeInfos);
+        }
 
-            // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
-            // are built prior to building the TLAS in BuildTopLevelAccelerationStructure()
+        void CommandList::UpdateBottomLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingBlas& rayTracingBlas)
+        {
+            const RayTracingBlas& vulkanRayTracingBlas = dynamic_cast<const RayTracingBlas&>(rayTracingBlas);
+            const RayTracingBlas::BlasBuffers& blasBuffers = vulkanRayTracingBlas.GetBuffers();
+
+            // Set the build mode to update the acceleration structure
+            VkAccelerationStructureBuildGeometryInfoKHR tempBuildInfo = blasBuffers.m_buildInfo;
+            tempBuildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_UPDATE_KHR;
+            tempBuildInfo.srcAccelerationStructure = blasBuffers.m_accelerationStructure->GetNativeAccelerationStructure();
+
+            const auto& context = dynamic_cast<Device&>(GetDevice()).GetContext();
+
+            // submit the command to build the BLAS
+            const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
+            context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tempBuildInfo, &rangeInfos);
+        }
+
+        void CommandList::QueryBlasCompactionSizes(
+            const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
+        {
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
+            AZStd::unordered_set<RayTracingCompactionQueryPool*> usedPools;
+            for (auto& [blas, compactionQuery] : blasToQuery)
+            {
+                usedPools.insert(static_cast<RayTracingCompactionQueryPool*>(compactionQuery->GetPool()));
+            }
+            for (auto pool : usedPools)
+            {
+                pool->ResetFreedQueries(this);
+            }
+
             VkMemoryBarrier memoryBarrier = {};
             memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             memoryBarrier.pNext = nullptr;
             memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
             memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-
             context.CmdPipelineBarrier(
                 GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
@@ -1130,14 +1218,72 @@ namespace AZ
                 nullptr,
                 0,
                 nullptr);
+
+            for (auto& [blas, compactionQuery] : blasToQuery)
+            {
+                auto vulkanRayTracingBlas = static_cast<const RayTracingBlas*>(blas);
+                auto vulkanCompactionQuery = static_cast<RayTracingCompactionQuery*>(compactionQuery);
+                auto vulkanCompactionQueryPool = static_cast<RayTracingCompactionQueryPool*>(compactionQuery->GetPool());
+                auto acc = vulkanRayTracingBlas->GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
+
+                vulkanCompactionQuery->Allocate();
+                context.CmdWriteAccelerationStructuresPropertiesKHR(
+                    GetNativeCommandBuffer(),
+                    1,
+                    &acc,
+                    VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR,
+                    vulkanCompactionQueryPool->GetNativeQueryPool(),
+                    vulkanCompactionQuery->GetIndexInPool());
+            }
         }
-        
-        void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas)
+
+        void CommandList::CompactBottomLevelAccelerationStructure(
+            const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas)
         {
-            const RayTracingTlas& vulkanRayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
-            const RayTracingTlas::TlasBuffers& tlasBuffers = vulkanRayTracingTlas.GetBuffers();
+            const RayTracingBlas& vulkanSourceBlas = static_cast<const RayTracingBlas&>(sourceBlas);
+            const RayTracingBlas& vulkanCompactBlas = static_cast<const RayTracingBlas&>(compactBlas);
+
+            VkCopyAccelerationStructureInfoKHR copyInfo;
+            copyInfo.sType = VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR;
+            copyInfo.pNext = nullptr;
+            copyInfo.src = vulkanSourceBlas.GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
+            copyInfo.dst = vulkanCompactBlas.GetBuffers().m_accelerationStructure->GetNativeAccelerationStructure();
+            copyInfo.mode = VK_COPY_ACCELERATION_STRUCTURE_MODE_COMPACT_KHR;
 
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+            context.CmdCopyAccelerationStructureKHR(GetNativeCommandBuffer(), &copyInfo);
+        }
+
+        void CommandList::BuildTopLevelAccelerationStructure(
+            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList)
+        {
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
+            VkMemoryBarrier memoryBarrier = {};
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.pNext = nullptr;
+            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+
+            if (!changedBlasList.empty())
+            {
+                // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
+                // are built prior to building the TLAS
+                context.CmdPipelineBarrier(
+                    GetNativeCommandBuffer(),
+                    VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                    VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                    0,
+                    1,
+                    &memoryBarrier,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr);
+            }
+
+            const RayTracingTlas& vulkanRayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
+            const RayTracingTlas::TlasBuffers& tlasBuffers = vulkanRayTracingTlas.GetBuffers();
 
             // submit the command to build the TLAS
             const VkAccelerationStructureBuildRangeInfoKHR& offsetInfo = tlasBuffers.m_offsetInfo;
@@ -1146,12 +1292,6 @@ namespace AZ
 
             // we need a pipeline barrier on VK_ACCESS_ACCELERATION_STRUCTURE (both read and write) in case we are building
             // multiple TLAS objects in a command list
-            VkMemoryBarrier memoryBarrier = {};
-            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-            memoryBarrier.pNext = nullptr;
-            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-
             context.CmdPipelineBarrier(
                 GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
@@ -1184,7 +1324,7 @@ namespace AZ
 
         void CommandList::ClearImage(const ResourceClearRequest& request)
         {
-            const ImageView& imageView = static_cast<const ImageView&>(*request.m_resourceView);
+            const ImageView& imageView = static_cast<const ImageView&>(*request.m_resourceView->GetDeviceResourceView(GetDevice().GetDeviceIndex()));
             const Image& image = static_cast<const Image&>(imageView.GetImage());
             const VkImageSubresourceRange& range = imageView.GetVkImageSubresourceRange();
 
@@ -1217,7 +1357,7 @@ namespace AZ
 
         void CommandList::ClearBuffer(const ResourceClearRequest& request)
         {
-            const BufferView& bufferView = static_cast<const BufferView&>(*request.m_resourceView);
+            const BufferView& bufferView = static_cast<const BufferView&>(*request.m_resourceView->GetDeviceResourceView(GetDevice().GetDeviceIndex()));
             const RHI::BufferViewDescriptor& bufferViewDesc = bufferView.GetDescriptor();
             const Buffer& buffer = static_cast<const Buffer&>(bufferView.GetBuffer());
             union
@@ -1258,9 +1398,8 @@ namespace AZ
                     buffer.GetBufferMemoryView()->GetNativeBuffer(),
                     buffer.GetBufferMemoryView()->GetOffset() +
                         static_cast<size_t>(bufferViewDesc.m_elementOffset) * bufferViewDesc.m_elementSize,
-                    buffer.GetBufferMemoryView()->GetSize(),
+                    static_cast<size_t>(bufferViewDesc.m_elementCount) * bufferViewDesc.m_elementSize,
                     vkClearValue.i);
         }
-
     }
 }

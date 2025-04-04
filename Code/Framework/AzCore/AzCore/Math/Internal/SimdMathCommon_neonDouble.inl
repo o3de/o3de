@@ -70,12 +70,12 @@ namespace AZ
                 vst1_s32(addr, value);
             }
 
-            AZ_MATH_INLINE float SelectFirst(float32x2_t value)
+            AZ_MATH_INLINE float SelectIndex0(float32x2_t value)
             {
                 return vget_lane_f32(value, 0);
             }
 
-            AZ_MATH_INLINE float SelectSecond(float32x2_t value)
+            AZ_MATH_INLINE float SelectIndex1(float32x2_t value)
             {
                 return vget_lane_f32(value, 1);
             }
@@ -90,34 +90,34 @@ namespace AZ
                 return vdup_n_s32(value);
             }
 
-            AZ_MATH_INLINE float32x2_t SplatFirst(float32x2_t value)
+            AZ_MATH_INLINE float32x2_t SplatIndex0(float32x2_t value)
             {
                 return vdup_lane_f32(value, 0);
             }
 
-            AZ_MATH_INLINE float32x2_t SplatSecond(float32x2_t value)
+            AZ_MATH_INLINE float32x2_t SplatIndex1(float32x2_t value)
             {
                 return vdup_lane_f32(value, 1);
             }
 
-            AZ_MATH_INLINE float32x2_t ReplaceFirst(float32x2_t a, float b)
+            AZ_MATH_INLINE float32x2_t ReplaceIndex0(float32x2_t a, float b)
             {
                 return vset_lane_f32(b, a, 0);
             }
 
-            AZ_MATH_INLINE float32x2_t ReplaceFirst(float32x2_t a, float32x2_t b)
+            AZ_MATH_INLINE float32x2_t ReplaceIndex0(float32x2_t a, float32x2_t b)
             {
-                return ReplaceFirst(a, SelectFirst(b));
+                return ReplaceIndex0(a, SelectIndex0(b));
             }
 
-            AZ_MATH_INLINE float32x2_t ReplaceSecond(float32x2_t a, float b)
+            AZ_MATH_INLINE float32x2_t ReplaceIndex1(float32x2_t a, float b)
             {
                 return vset_lane_f32(b, a, 1);
             }
 
-            AZ_MATH_INLINE float32x2_t ReplaceSecond(float32x2_t a, float32x2_t b)
+            AZ_MATH_INLINE float32x2_t ReplaceIndex1(float32x2_t a, float32x2_t b)
             {
-                return ReplaceSecond(a, SelectSecond(b));
+                return ReplaceIndex1(a, SelectIndex1(b));
             }
 
             AZ_MATH_INLINE float32x2_t LoadImmediate(float x, float y)

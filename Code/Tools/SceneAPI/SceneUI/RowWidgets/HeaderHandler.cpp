@@ -26,7 +26,7 @@ namespace AZ
 
             u32 HeaderHandler::GetHandlerName() const
             {
-                return AZ_CRC("Header", 0x6e72a8c1);
+                return AZ_CRC_CE("Header");
             }
 
             bool HeaderHandler::AutoDelete() const

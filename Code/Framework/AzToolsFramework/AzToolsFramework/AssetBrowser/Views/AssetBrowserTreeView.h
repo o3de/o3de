@@ -30,6 +30,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         class AssetBrowserEntry;
+        class AssetBrowserListView;
         class AssetBrowserModel;
         class AssetBrowserTableView;
         class AssetBrowserFilterModel;
@@ -41,7 +42,6 @@ namespace AzToolsFramework
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
             , public AssetBrowserInteractionNotificationBus::Handler
-
         {
             Q_OBJECT
 
@@ -52,6 +52,11 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // QTreeView
             void setModel(QAbstractItemModel* model) override;
+            void dragEnterEvent(QDragEnterEvent* event) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
+            void dropEvent(QDropEvent* event) override;
+            void dragLeaveEvent(QDragLeaveEvent* event) override;
+            void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
             //////////////////////////////////////////////////////////////////////////
 
             //! Set unique asset browser name, used to persist tree expansion states
@@ -70,6 +75,7 @@ namespace AzToolsFramework
             //! can only work on sources and folders.
             AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
+            void SelectFolderFromBreadcrumbsPath(AZStd::string_view folderPath);
             void SelectFolder(AZStd::string_view folderPath);
 
             void DeleteEntries();
@@ -105,13 +111,20 @@ namespace AzToolsFramework
 
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
-            void SetShowIndexAfterUpdate(QModelIndex index);
+            void SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode);
+            AssetBrowserEntry::AssetEntrySortMode GetSortMode() const;
 
             void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
+            AssetBrowserThumbnailView* GetAttachedThumbnailView() const;
+
+            void SetShowIndexAfterUpdate(QModelIndex index);
+
             void SetAttachedTableView(AssetBrowserTableView* tableView);
+            AssetBrowserTableView* GetAttachedTableView() const;
 
             void SetApplySnapshot(bool applySnapshot);
 
+            void SetSearchString(const QString& searchString);
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -123,11 +136,11 @@ namespace AzToolsFramework
 
         protected:
             QModelIndexList selectedIndexes() const override;
-            void dropEvent(QDropEvent* event) override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+            void itemClicked(const QModelIndex& index);
 
         private:
             QPointer<AssetBrowserModel> m_assetBrowserModel;
@@ -137,6 +150,7 @@ namespace AzToolsFramework
             bool m_expandToEntriesByDefault = false;
 
             bool m_applySnapshot = true;
+            bool m_updateRequested = false;
 
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;
@@ -147,10 +161,10 @@ namespace AzToolsFramework
             QString m_name;
 
             QModelIndex m_indexToSelectAfterUpdate;
-            AZStd::string m_fileToSelectAfterUpdate = "";
+            AZStd::string m_fileToSelectAfterUpdate;
 
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
-            bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t entryPathIndex = 0, bool useDisplayName = false);
+            bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t lastFolderIndex = 0, const uint32_t entryPathIndex = 0, bool useDisplayName = false);
 
             //! Grab one entry from the source thumbnail list and update it
             void UpdateSCThumbnails();

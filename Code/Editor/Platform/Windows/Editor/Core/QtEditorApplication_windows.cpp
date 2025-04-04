@@ -24,6 +24,10 @@
 
 // AzFramework
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+
+#include <dbt.h>
 
 namespace Editor
 {
@@ -79,6 +83,13 @@ namespace Editor
         // keyboard and mouse events via Qt.
         if (GetIEditor()->IsInGameMode())
         {
+            auto systemCursorState = AzFramework::SystemCursorState::Unknown;
+            AzFramework::InputSystemCursorRequestBus::EventResult(systemCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
+
+            // filter Qt input events while in game mode if system cursor not visible
+            // to prevent the user from activating Qt menu actions
+            const bool filterInputEvents = systemCursorState != AzFramework::SystemCursorState::UnconstrainedAndVisible;
+
             if (msg->message == WM_INPUT)
             {
                 UINT rawInputSize;
@@ -98,17 +109,24 @@ namespace Editor
                 AzFramework::RawInputNotificationBusWindows::Broadcast(
                     &AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
 
-                return false;
+                return filterInputEvents;
             }
             else if (msg->message == WM_DEVICECHANGE)
             {
-                if (msg->wParam == 0x0007) // DBT_DEVNODES_CHANGED
+                if (msg->wParam == DBT_DEVNODES_CHANGED) // DBT_DEVNODES_CHANGED
                 {
                     AzFramework::RawInputNotificationBusWindows::Broadcast(
                         &AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
                 }
                 return true;
             }
+            else if (msg->message == WM_KEYDOWN || msg->message == WM_KEYUP || msg->message == WM_CHAR)
+            {
+                return filterInputEvents;
+            }
+
+            // allow all other Qt event types to pass through
+            // which are needed for focusing, etc.
         }
 
         return false;

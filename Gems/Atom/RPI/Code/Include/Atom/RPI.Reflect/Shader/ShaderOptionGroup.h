@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 
 #include <AzCore/Memory/PoolAllocator.h>
@@ -17,7 +18,7 @@ namespace AZ
     {
         class ShaderOptionDescriptor;
 
-        class ShaderOptionGroup final
+        class ATOM_RPI_REFLECT_API ShaderOptionGroup final
         {
             friend class ShaderOptionDescriptor;
 
@@ -97,7 +98,7 @@ namespace AZ
             const ShaderVariantKey& GetShaderVariantMask() const;
 
             //! Returns the constructed id, which contains both the shader variant key and mask
-            const ShaderVariantId& GetShaderVariantId() const;            
+            const ShaderVariantId& GetShaderVariantId() const;
 
             //! Returns the shader option layout used to build the key.
             const ShaderOptionGroupLayout* GetShaderOptionLayout() const;
@@ -113,7 +114,7 @@ namespace AZ
             AZStd::string ToString() const;
 
         private:
-            static const char* DebugCategory;
+            static constexpr const char* DebugCategory = "ShaderOption";
 
             //! Returns the constructed key.
             ShaderVariantKey& GetShaderVariantKey();

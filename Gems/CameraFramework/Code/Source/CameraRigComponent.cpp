@@ -126,7 +126,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::Category, "Camera")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/CameraRig.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/CameraRig.png")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/camera-rig/")
                     ->DataElement(0, &CameraRigComponent::m_targetAcquirers, "Target acquirers",
                     "A list of behaviors that define how a camera will select a target.  They are executed in order until one succeeds")
@@ -143,13 +143,13 @@ namespace Camera
 
     void CameraRigComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("CameraRigService", 0xd284a2d3));
+        provided.push_back(AZ_CRC_CE("CameraRigService"));
     }
 
     void CameraRigComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("CameraService", 0x1dd1caa4));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("CameraService"));
     }
 
     void CameraRigComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)

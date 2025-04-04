@@ -18,7 +18,6 @@
 #include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzTest/GemTestEnvironment.h>
-#include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 

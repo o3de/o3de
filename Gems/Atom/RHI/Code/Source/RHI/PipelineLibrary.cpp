@@ -6,90 +6,143 @@
  *
  */
 
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/DevicePipelineLibrary.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    bool PipelineLibrary::ValidateIsInitialized() const
     {
-        bool PipelineLibrary::ValidateIsInitialized() const
+        if (Validation::IsEnabled())
         {
-            if (Validation::IsEnabled())
+            if (!IsInitialized())
             {
-                if (!IsInitialized())
-                {
-                    AZ_Error("PipelineLibrary", false, "PipelineLibrary is not initialized. This operation is only permitted on an initialized library.");
-                    return false;
-                }
+                AZ_Error(
+                    "PipelineLibrary",
+                    false,
+                    "PipelineLibrary is not initialized. This operation is only permitted on an initialized library.");
+                return false;
             }
-            return true;
         }
+        return true;
+    }
 
-        ResultCode PipelineLibrary::Init(Device& device, const PipelineLibraryDescriptor& descriptor)
-        {
-            if (Validation::IsEnabled())
-            {
-                if (IsInitialized())
-                {
-                    AZ_Error("PipelineLibrary", false, "PipelineLibrary is initialized. This operation is only permitted on an uninitialized library.");
-                    return ResultCode::InvalidOperation;
-                }
-            }
-
-            ResultCode resultCode = InitInternal(device, descriptor);
-            if (resultCode == ResultCode::Success)
-            {
-                AZStd::string libName;
-                AzFramework::StringFunc::Path::GetFileName(descriptor.m_filePath.c_str(), libName);
-                SetName(Name(libName));
-                DeviceObject::Init(device);
-            }
-            return resultCode;
-        }
-
-        ResultCode PipelineLibrary::MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge)
-        {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
-
-            return MergeIntoInternal(librariesToMerge);
-        }
-
-        void PipelineLibrary::Shutdown()
+    ResultCode PipelineLibrary::Init(MultiDevice::DeviceMask deviceMask, const PipelineLibraryDescriptor& descriptor)
+    {
+        if (Validation::IsEnabled())
         {
             if (IsInitialized())
             {
-                ShutdownInternal();
-                DeviceObject::Shutdown();
+                AZ_Error(
+                    "PipelineLibrary",
+                    false,
+                    "PipelineLibrary is initialized. This operation is only permitted on an uninitialized library.");
+                return ResultCode::InvalidOperation;
             }
         }
 
-        ConstPtr<PipelineLibraryData> PipelineLibrary::GetSerializedData() const
-        {
-            if (!ValidateIsInitialized())
+        MultiDeviceObject::Init(deviceMask);
+
+        ResultCode resultCode = ResultCode::Success;
+
+        IterateDevices(
+            [this, &descriptor, &resultCode](int deviceIndex)
             {
-                return nullptr;
-            }
+                auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-            return GetSerializedDataInternal();
-        }
-    
-        bool PipelineLibrary::SaveSerializedData(const AZStd::string& filePath) const
+                m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineLibrary();
+
+                resultCode = GetDevicePipelineLibrary(deviceIndex)->Init(*device, descriptor.GetDevicePipelineLibraryDescriptor(deviceIndex));
+
+                return resultCode == ResultCode::Success;
+            });
+
+        if(resultCode != ResultCode::Success)
         {
-            if (!ValidateIsInitialized())
+            // Reset already initialized device-specific PipelineLibraries and set deviceMask to 0
+            m_deviceObjects.clear();
+            MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
+        return resultCode;
+    }
+
+    ResultCode PipelineLibrary::MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge)
+    {
+        if (!ValidateIsInitialized())
+        {
+            return ResultCode::InvalidOperation;
+        }
+
+        return IterateObjects<DevicePipelineLibrary>([&](auto deviceIndex, auto devicePipelineLibrary)
+        {
+            AZStd::vector<const DevicePipelineLibrary*> deviceLibrariesToMerge;
+
+            for (int i = 0; i < librariesToMerge.size(); ++i)
             {
-                return false;
+                auto it = librariesToMerge[i]->m_deviceObjects.find(deviceIndex);
+
+                if (it != librariesToMerge[i]->m_deviceObjects.end())
+                {
+                    deviceLibrariesToMerge.emplace_back(static_cast<const DevicePipelineLibrary*>(it->second.get()));
+                }
             }
 
-            return SaveSerializedDataInternal(filePath);
-        }
+            if (!deviceLibrariesToMerge.empty())
+            {
+                return devicePipelineLibrary->MergeInto(deviceLibrariesToMerge);
+            }
 
-        bool PipelineLibrary::IsMergeRequired() const
+            return ResultCode::Success;
+        });
+    }
+
+    void PipelineLibrary::Shutdown()
+    {
+        if (IsInitialized())
         {
-            return true;
+            m_deviceObjects.clear();
+            MultiDeviceObject::Shutdown();
         }
     }
-}
+
+    bool PipelineLibrary::IsMergeRequired() const
+    {
+        bool result = false;
+
+        IterateObjects<DevicePipelineLibrary>([&result]([[maybe_unused]]auto deviceIndex, auto devicePipelineLibrary)
+        {
+            result |= devicePipelineLibrary->IsMergeRequired();
+        });
+
+        return result;
+    }
+
+    bool PipelineLibrary::SaveSerializedData(const AZStd::unordered_map<int, AZStd::string>& filePaths) const
+    {
+        if (!ValidateIsInitialized())
+        {
+            return false;
+        }
+
+        bool result = true;
+
+        IterateObjects<DevicePipelineLibrary>(
+            [&result, &filePaths]([[maybe_unused]] auto deviceIndex, auto devicePipelineLibrary)
+            {
+                auto deviceResult{ devicePipelineLibrary->SaveSerializedData(filePaths.at(deviceIndex)) };
+                AZ_Error("PipelineLibrary", deviceResult, "SaveSerializedData failed for device %d", deviceIndex);
+                result &= deviceResult;
+            });
+
+        return result;
+    }
+} // namespace AZ::RHI

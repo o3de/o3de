@@ -78,6 +78,15 @@ ly_add_target(
             Gem::${gem_name}.Private.Object
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Clients/ArchiveModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # By default, we will specify that the above target ${gem_name} would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
 # active in Clients or Servers by default, delete one of both of the following lines:
@@ -126,7 +135,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 ${gem_name}.Editor.API
-                $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
+                ${gem_name}.Private.Object
     )
 
     ly_add_target(
@@ -147,6 +156,15 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Editor.Private.Object
     )
 
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/Tools/ArchiveEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
     # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
@@ -157,6 +175,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
     ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
 
+
+    ### AssetBundler additions ###
+    # Add the Clients.API and Tools.API as a build dependency of the AssetBundler if this gem is available
+    # as part of the current project
+    # This allows the Asset Bundler to have access to the gems API includes which it can use
+    # to create O3AR archive format files
+    target_link_libraries(AssetBundlerBatch.Static PUBLIC ${gem_name}.API ${gem_name}.Editor.API)
 endif()
 
 ################################################################################
@@ -210,6 +235,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         AZ::AzTest
                         Gem::${gem_name}.Editor.Private.Object
+                        Compression.Editor.API
+                RUNTIME_DEPENDENCIES
+                    Compression.Editor
             )
 
             # Add ${gem_name}.Editor.Tests to googletest

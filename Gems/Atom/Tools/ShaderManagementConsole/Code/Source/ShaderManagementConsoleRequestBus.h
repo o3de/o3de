@@ -13,6 +13,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
+#include <Atom/RPI.Reflect/Shader/ShaderOptionTypes.h>
 
 namespace ShaderManagementConsole
 {
@@ -36,11 +37,11 @@ namespace ShaderManagementConsole
         //! Return the id of all built material assets
         virtual AZStd::vector<AZ::Data::AssetId> GetAllMaterialAssetIds() = 0;
 
-        //! A wrapper to call GetFullSourcePathFromRelativeProductPath from python
-        virtual AZStd::string GetFullSourcePathFromRelativeProductPath(const AZStd::string& relativeProductPath) = 0;
-
         //! A wrapper to call GenerateRelativeSourcePath from python
         virtual AZStd::string GenerateRelativeSourcePath(const AZStd::string& fullShaderPath) = 0;
+
+        //! A convenience function to generate proper ShaderOptionValue instances from scripts
+        virtual AZ::RPI::ShaderOptionValue MakeShaderOptionValueFromInt(int value) = 0;
 
     };
     using ShaderManagementConsoleRequestBus = AZ::EBus<ShaderManagementConsoleRequests>;

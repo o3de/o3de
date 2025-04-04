@@ -63,7 +63,7 @@ namespace ScriptCanvas
                     return AZ::Success(GetSlotsByType(targetSlotType));
                 }
 
-                AZ::Crc32 GetInputExtensionId() const { return AZ_CRC("Output", 0xccde149e); }
+                AZ::Crc32 GetInputExtensionId() const { return AZ_CRC_CE("Output"); }
 
             private:
                 AZStd::string GenerateInputName(int counter);

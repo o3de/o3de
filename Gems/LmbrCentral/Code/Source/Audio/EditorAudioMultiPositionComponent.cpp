@@ -24,6 +24,11 @@ namespace LmbrCentral
                 ->Field("Behavior Type", &EditorAudioMultiPositionComponent::m_behaviorType)
                 ;
 
+            serializeContext->Enum<Audio::MultiPositionBehaviorType>()
+                ->Value("Separate", Audio::MultiPositionBehaviorType::Separate)
+                ->Value("Blended", Audio::MultiPositionBehaviorType::Blended)
+                ;
+
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Enum<Audio::MultiPositionBehaviorType>("Behavior Type", "How multiple position audio behaves")
@@ -36,7 +41,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioMultiPosition.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioMultiPosition.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio/multi-position/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioMultiPositionComponent::m_entityRefs, "Entity References", "The entities from which positions will be obtained for multi-position audio")

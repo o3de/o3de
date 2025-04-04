@@ -9,30 +9,25 @@
 
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! Describes the binding of a resolve image attachment to a scope.
+    struct ResolveScopeAttachmentDescriptor
+        : public ImageScopeAttachmentDescriptor
     {
-        /**
-         * Describes the binding of a resolve image attachment to a scope.
-         */
-        struct ResolveScopeAttachmentDescriptor
-            : public ImageScopeAttachmentDescriptor
-        {
-            AZ_TYPE_INFO(ResolveScopeAttachmentDescriptor, "{8ADC8E2B-2221-487B-A13F-E14218292E39}");
+        AZ_TYPE_INFO(ResolveScopeAttachmentDescriptor, "{8ADC8E2B-2221-487B-A13F-E14218292E39}");
 
-            static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            ResolveScopeAttachmentDescriptor() = default;
+        ResolveScopeAttachmentDescriptor() = default;
 
-            explicit ResolveScopeAttachmentDescriptor(
-                const AttachmentId& attachmentId,
-                const AttachmentId& resolveAttachmentId,
-                const ImageViewDescriptor& imageViewDescriptor = ImageViewDescriptor(),
-                const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction());
+        explicit ResolveScopeAttachmentDescriptor(
+            const AttachmentId& attachmentId,
+            const AttachmentId& resolveAttachmentId,
+            const ImageViewDescriptor& imageViewDescriptor = ImageViewDescriptor(),
+            const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction());
 
-            /// The attachment id associated with the attachment to be resolved.
-            AttachmentId m_resolveAttachmentId;
-        };
-    }
+        /// The attachment id associated with the attachment to be resolved.
+        AttachmentId m_resolveAttachmentId;
+    };
 }

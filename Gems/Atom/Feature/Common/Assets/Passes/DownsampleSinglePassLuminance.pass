@@ -8,7 +8,7 @@
             "PassClass": "DownsampleSinglePassLuminancePass",
             "PassData": {
                 "$type": "ComputePassData",
-                "Make Fullscreen Pass": false,
+                "FullscreenDispatch": false,
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DownsampleSinglePassLuminance.shader" 
                 }

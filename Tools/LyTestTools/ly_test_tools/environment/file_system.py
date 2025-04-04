@@ -41,7 +41,7 @@ def safe_makedirs(dest_path):
     """ This allows an OSError in the case the directory cannot be created, which is logged but does not propagate."""
     try:
         logger.info(f'Creating directory "{dest_path}"')
-        os.makedirs(dest_path)
+        os.makedirs(dest_path, exist_ok=True)
 
     except OSError as e:
         if e.errno == errno.EEXIST:
