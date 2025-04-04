@@ -68,11 +68,6 @@ namespace AZ::Render
         m_settings.reset();
     }
 
-    void RayTracingDebugFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
-    {
-        m_pipeline = pipeline;
-    }
-
     void RayTracingDebugFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* pipeline)
     {
         m_pipeline = pipeline;

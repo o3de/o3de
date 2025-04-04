@@ -29,9 +29,6 @@ namespace AZ::Render
         void OnRayTracingDebugComponentAdded() override;
         void OnRayTracingDebugComponentRemoved() override;
 
-        // SceneNotificationBus overrides
-        void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
-
         // FeatureProcessor overrides
         void Activate() override;
         void Deactivate() override;
