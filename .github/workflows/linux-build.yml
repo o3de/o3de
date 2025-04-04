@@ -178,7 +178,8 @@ jobs:
       - name: Compress artifacts
         # Compress with posix format to preserve permissions and timestamps at nanosecond precision
         # Skip compression and upload if the type is a test to reduce dirty build artifacts from previous runs
-        if: ${{ steps.extract-artifact.outcome == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
+        id: compress-artifacts
+        if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         run: |
           tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
@@ -190,7 +191,7 @@ jobs:
   
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ steps.extract-artifact.outcome == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
+        if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
