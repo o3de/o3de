@@ -14,12 +14,11 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Dom
 {
     //! Backends are registered centrally and used to transition DOM formats to and from a textual format.
-    class AZCORE_API Backend
+    class Backend
     {
     public:
         virtual ~Backend() = default;

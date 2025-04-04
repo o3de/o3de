@@ -7,14 +7,18 @@
 #
 
 set(FILES
-    AzCoreModule.h
-    AzCoreModule.cpp
     base.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
     Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
+    Console/ConsoleFunctor.cpp
+    Console/ConsoleFunctor.h
+    Console/ConsoleFunctor.inl
+    Console/IConsole.h
+    Console/IConsoleTypes.h
+    Console/ILogger.h
     Debug/StackTracer.h
     Debug/Trace.cpp
     Debug/Trace.h
@@ -24,8 +28,14 @@ set(FILES
     Docs.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
+    DOM/DomBackend.cpp
+    DOM/DomBackend.h
+    DOM/DomValue.cpp
+    DOM/DomValue.h
     DOM/DomValueWriter.cpp
     DOM/DomValueWriter.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
@@ -51,6 +61,8 @@ set(FILES
     EBus/Internal/StoragePolicies.h
     Instance/InstancePool.h
     Interface/Interface.h
+    JSON/rapidjson.h
+    JSON/rapidjson.cpp
     Math/Crc.cpp
     Math/Crc.inl
     Math/Crc.h
@@ -87,6 +99,10 @@ set(FILES
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h
+    Name/Name.h
+    Name/Name.cpp
+    Name/Internal/NameData.h
+    Name/Internal/NameData.cpp
     Outcome/Outcome.h
     Outcome/Internal/OutcomeImpl.h
     Platform.cpp
@@ -223,9 +239,6 @@ set(FILES
     Serialization/Json/UnsupportedTypesSerializer.h
     Serialization/Json/UnsupportedTypesSerializer.cpp
     Serialization/std/VariantReflection.inl
-    variadic.h
-    XML/rapidxml.h
-    XML/rapidxml_iterators.h
-    XML/rapidxml_print.h
-    XML/rapidxml_utils.h
+    StringFunc/StringFunc.cpp
+    StringFunc/StringFunc.h
 )

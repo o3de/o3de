@@ -8,10 +8,10 @@
 #pragma once
 
 #include <AzCore/Module/Module.h>
-
+#include <AzCore/AzCoreAPI.h>
 namespace AZ
 {
-    class AzCoreModule
+    class AZCORE_API AzCoreModule
         : public AZ::Module
     {
     public:

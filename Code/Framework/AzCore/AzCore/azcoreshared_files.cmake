@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    AzCoreModule.h
+    AzCoreModule.cpp
     Asset/AssetInternal/WeakAsset.h
     Asset/AssetCommon.cpp
     Asset/AssetCommon.h
@@ -62,14 +64,8 @@ set(FILES
     Console/Console.h
     Console/ConsoleDataWrapper.h
     Console/ConsoleDataWrapper.inl
-    Console/ConsoleFunctor.cpp
-    Console/ConsoleFunctor.h
-    Console/ConsoleFunctor.inl
     Console/ConsoleTypeHelpers.h
     Console/ConsoleTypeHelpers.inl
-    Console/IConsole.h
-    Console/IConsoleTypes.h
-    Console/ILogger.h
     Console/LoggerSystemComponent.cpp
     Console/LoggerSystemComponent.h
     Date/DateFormat.cpp
@@ -91,18 +87,12 @@ set(FILES
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
-    DOM/DomBackend.cpp
-    DOM/DomBackend.h
     DOM/DomPatch.cpp
     DOM/DomPatch.h
     DOM/DomPath.cpp
     DOM/DomPath.h
     DOM/DomUtils.cpp
     DOM/DomUtils.h
-    DOM/DomValue.cpp
-    DOM/DomValue.h
-    DOM/DomVisitor.cpp
-    DOM/DomVisitor.h
     DOM/DomComparison.cpp
     DOM/DomComparison.h
     DOM/DomPrefixTree.h
@@ -218,8 +208,6 @@ set(FILES
     JSON/ostreamwrapper.h
     JSON/pointer.h
     JSON/prettywriter.h
-    JSON/rapidjson.h
-    JSON/rapidjson.cpp
     JSON/RapidJsonAllocator.h
     JSON/RapidjsonAllocatorAdapter.h
     JSON/reader.h
@@ -385,16 +373,12 @@ set(FILES
     Module/ModuleManager.h
     Module/Internal/ModuleManagerSearchPathTool.h
     Module/Internal/ModuleManagerSearchPathTool.cpp
-    Name/Name.h
-    Name/Name.cpp
     Name/NameDictionary.h
     Name/NameDictionary.cpp
     Name/NameJsonSerializer.h
     Name/NameJsonSerializer.cpp
     Name/NameSerializer.h
     Name/NameSerializer.cpp
-    Name/Internal/NameData.h
-    Name/Internal/NameData.cpp
     NativeUI/NativeUISystemComponent.cpp
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.cpp
@@ -481,8 +465,6 @@ set(FILES
     Statistics/StatisticalProfilerProxySystemComponent.cpp
     Statistics/StatisticalProfilerProxySystemComponent.h
     Statistics/StatisticsManager.h
-    StringFunc/StringFunc.cpp
-    StringFunc/StringFunc.h
     Task/Internal/Task.cpp
     Task/Internal/Task.inl
     Task/Internal/Task.h
@@ -514,4 +496,9 @@ set(FILES
     Utils/TypeHash.h
     Utils/Utils.cpp
     Utils/Utils.h
+    variadic.h
+    XML/rapidxml.h
+    XML/rapidxml_iterators.h
+    XML/rapidxml_print.h
+    XML/rapidxml_utils.h
 )

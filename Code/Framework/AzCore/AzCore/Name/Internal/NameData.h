@@ -13,7 +13,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -22,7 +21,7 @@ namespace AZ
 
     namespace Internal
     {
-        class AZCORE_API NameData final
+        class NameData final
         {
             friend NameDictionary;
             friend Name;
