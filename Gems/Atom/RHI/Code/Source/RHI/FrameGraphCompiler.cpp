@@ -690,8 +690,7 @@ namespace AZ::RHI
 
         AZStd::sort(commands.begin(), commands.end());
 
-        auto processCommands =
-            [&](TransientAttachmentPoolCompileFlags compileFlags, AZStd::bitset<sizeof(MultiDevice::DeviceMask) * 8> memoryHints)
+        auto processCommands = [&](TransientAttachmentPoolCompileFlags compileFlags, MultiDevice::DeviceMask memoryHints)
         {
             bool allocateResources = !CheckBitsAny(compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources);
             transientAttachmentPool.Begin(compileFlags);
@@ -707,7 +706,7 @@ namespace AZ::RHI
                 const uint32_t attachmentIndex = command.m_bits.m_attachmentIndex;
                 const Action action = (Action)command.m_bits.m_action;
 
-                if (!allocateResources && !memoryHints.test(scopes[scopeIndex]->GetDeviceIndex()))
+                if (!allocateResources && !CheckBit(memoryHints, scopes[scopeIndex]->GetDeviceIndex()))
                 {
                     // We can skip scopes in the exploratory phase if they run on a device that does not use the MemoryHint strategy for
                     // allocation
@@ -823,17 +822,17 @@ namespace AZ::RHI
             transientAttachmentPool.End();
         };
 
-        AZStd::bitset<sizeof(MultiDevice::DeviceMask) * 8> memoryHintStrategy{};
+        MultiDevice::DeviceMask memoryHintStrategy{};
         for (auto& [deviceIndex, descriptor] : transientAttachmentPool.GetDescriptor())
         {
             if (descriptor.m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
             {
-                memoryHintStrategy.set(deviceIndex);
+                memoryHintStrategy = SetBit(memoryHintStrategy, deviceIndex);
             }
         }
 
         // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
-        if (memoryHintStrategy.any())
+        if (AZStd::to_underlying(memoryHintStrategy))
         {
             // First pass to calculate size needed.
             processCommands(
