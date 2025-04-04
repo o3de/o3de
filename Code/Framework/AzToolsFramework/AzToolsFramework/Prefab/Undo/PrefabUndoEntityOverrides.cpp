@@ -9,6 +9,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoEntityOverrides.h>
@@ -40,7 +41,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityOverrides::CaptureAndRedo(
             const AZStd::vector<const AZ::Entity*>& entityList,
             Instance& owningInstance,
-            const Instance& focusedInstance)
+            Instance& focusedInstance)
         {
             AZ_Assert(
                 &owningInstance != &focusedInstance,
@@ -62,6 +63,7 @@ namespace AzToolsFramework
             }
 
             PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
+            PrefabDomReference cachedFocusedInstanceDom = focusedInstance.GetCachedInstanceDom();
 
             const AZStd::string overridePatchPathToOwningInstance = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(
                 climbUpResult.m_climbedInstances, true); // skip top instance
@@ -124,6 +126,16 @@ namespace AzToolsFramework
                 {
                     PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, entityDomAfterUpdate, entityAliasPath);
                 }
+                // Preemptively update the cached DOM in the focused instance, too, since it will be skipped on update
+                if (cachedFocusedInstanceDom.has_value())
+                {
+                    AZStd::string pathInsideFocusedInstance = AZStd::string::format(
+                        "/%s/%s%s",
+                        PrefabDomUtils::InstancesName,
+                        link->get().GetInstanceName().c_str(),
+                        entityPathFromTopInstance.c_str());
+                    PrefabUndoUtils::UpdateEntityInPrefabDom(cachedFocusedInstanceDom, entityDomAfterUpdate, pathInsideFocusedInstance);
+                } 
             }
 
             // Redo - Update target template of the link.
