@@ -9,7 +9,6 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -27,7 +26,7 @@ namespace AZ
     
     namespace ScriptCanvasOnDemandReflection
     {
-        AZCORE_API AZStd::string GetPrettyNameForAZTypeId(AZ::BehaviorContext& context, AZ::Uuid typeId);
+        AZStd::string GetPrettyNameForAZTypeId(AZ::BehaviorContext& context, AZ::Uuid typeId);
 
         template<typename T>
         struct OnDemandPrettyName

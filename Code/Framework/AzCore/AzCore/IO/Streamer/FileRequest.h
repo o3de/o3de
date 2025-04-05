@@ -21,7 +21,6 @@
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -35,7 +34,7 @@ namespace AZ::IO::Requests
 {
     //! Request to read data. This is a translated request and holds an absolute path and has been
     //! resolved to the archive file if needed.
-    struct AZCORE_API ReadData
+    struct ReadData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
         inline constexpr static bool s_failWhenUnhandled = true;
@@ -52,7 +51,7 @@ namespace AZ::IO::Requests
 
     //! Request to read data. This is an untranslated request and holds a relative path. The Scheduler
     //! will translate this to the appropriate ReadData or CompressedReadData.
-    struct AZCORE_API ReadRequestData
+    struct ReadRequestData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
         inline constexpr static bool s_failWhenUnhandled = true;
@@ -87,7 +86,7 @@ namespace AZ::IO::Requests
 
     //! Creates a cache dedicated to a single file. This is best used for files where blocks are read from
     //! periodically such as audio banks of video files.
-    struct AZCORE_API CreateDedicatedCacheData
+    struct CreateDedicatedCacheData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -99,7 +98,7 @@ namespace AZ::IO::Requests
     };
 
     //! Destroys a cache dedicated to a single file that was previously created by CreateDedicatedCache
-    struct AZCORE_API DestroyDedicatedCacheData
+    struct DestroyDedicatedCacheData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -110,7 +109,7 @@ namespace AZ::IO::Requests
         FileRange m_range;
     };
 
-    struct AZCORE_API ReportData
+    struct ReportData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityLow;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -124,7 +123,7 @@ namespace AZ::IO::Requests
     //! Stores a reference to the external request so it stays alive while the request is being processed.
     //! This is needed because Streamer supports fire-and-forget requests since completion can be handled by
     //! registering a callback.
-    struct AZCORE_API ExternalRequestData
+    struct ExternalRequestData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
         inline constexpr static bool s_failWhenUnhandled = true;
@@ -138,7 +137,7 @@ namespace AZ::IO::Requests
     //! need a path take them by reference to the original request. In some cases a path originates from
     //! within in the stack and temporary storage is needed. This struct allows for that temporary storage
     //! so it can be safely referenced later.
-    struct AZCORE_API RequestPathStoreData
+    struct RequestPathStoreData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
         inline constexpr static bool s_failWhenUnhandled = true;
@@ -149,7 +148,7 @@ namespace AZ::IO::Requests
     };
 
     //! Request to read and decompress data.
-    struct AZCORE_API CompressedReadData
+    struct CompressedReadData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
         inline constexpr static bool s_failWhenUnhandled = true;
@@ -163,14 +162,14 @@ namespace AZ::IO::Requests
     };
 
     //! Holds the progress of an operation chain until this request is explicitly completed.
-    struct AZCORE_API WaitData
+    struct WaitData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
         inline constexpr static bool s_failWhenUnhandled = true;
     };
 
     //! Checks to see if any node in the stack can find a file at the provided path.
-    struct AZCORE_API FileExistsCheckData
+    struct FileExistsCheckData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -183,7 +182,7 @@ namespace AZ::IO::Requests
 
     //! Searches for a file in the stack and retrieves the meta data. This may be slower than a file exists
     //! check.
-    struct AZCORE_API FileMetaDataRetrievalData
+    struct FileMetaDataRetrievalData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -196,7 +195,7 @@ namespace AZ::IO::Requests
     };
 
     //! Cancels a request in the stream stack, if possible.
-    struct AZCORE_API CancelData
+    struct CancelData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHighest;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -207,7 +206,7 @@ namespace AZ::IO::Requests
     };
 
     //! Updates the priority and deadline of a request that has not been queued yet.
-    struct AZCORE_API RescheduleData
+    struct RescheduleData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -220,7 +219,7 @@ namespace AZ::IO::Requests
     };
 
     //! Flushes all references to the provided file in the streaming stack.
-    struct AZCORE_API FlushData
+    struct FlushData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -231,7 +230,7 @@ namespace AZ::IO::Requests
     };
 
     //! Flushes all caches in the streaming stack.
-    struct AZCORE_API FlushAllData
+    struct FlushAllData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
         inline constexpr static bool s_failWhenUnhandled = false;
@@ -239,7 +238,7 @@ namespace AZ::IO::Requests
 
     //! Data for a custom command. This can be used by nodes added extensions that need data that can't be stored
     //! in the already provided data.
-    struct AZCORE_API CustomData
+    struct CustomData
     {
         inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
 
@@ -288,7 +287,7 @@ namespace AZ::IO
     // Be especially careful if writing tests that the memory is not from a temporary object that is going to be destroyed before the streamer
     // system is exercised.
 
-    class AZCORE_API FileRequest final
+    class FileRequest final
     {
         friend Streamer_SchedulerTest_RequestSorting_Test;
 
@@ -429,7 +428,7 @@ namespace AZ::IO
     //! Streaming Stack. The main differences are that ExternalFileRequest is used in a thread-safe
     //! context and it doesn't get automatically destroyed upon completion. Instead intrusive_ptr is
     //! used to handle clean up.
-    class AZCORE_API ExternalFileRequest final
+    class ExternalFileRequest final
     {
         friend struct AZStd::IntrusivePtrCountPolicy<ExternalFileRequest>;
         friend class FileRequestHandle;
@@ -439,7 +438,7 @@ namespace AZ::IO
         friend class Scheduler;
         friend class Device;
         friend class Streamer_SchedulerTest_RequestSorting_Test;
-        friend AZCORE_API bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
+        friend bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
     public:
         AZ_CLASS_ALLOCATOR(ExternalFileRequest, SystemAllocator);
@@ -455,11 +454,11 @@ namespace AZ::IO
         StreamerContext* m_owner;
     };
 
-    class AZCORE_API FileRequestHandle
+    class FileRequestHandle
     {
     public:
         friend class Streamer;
-        friend AZCORE_API bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
+        friend bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
         // Intentional cast operator.
         FileRequestHandle(FileRequest& request)
@@ -475,13 +474,13 @@ namespace AZ::IO
         FileRequest* m_request;
     };
 
-    AZCORE_API bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
+    bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
-    AZCORE_API bool operator==(const FileRequestPtr& lhs, const FileRequestHandle& rhs);
+    bool operator==(const FileRequestPtr& lhs, const FileRequestHandle& rhs);
 
-    AZCORE_API bool operator!=(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
+    bool operator!=(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
-    AZCORE_API bool operator!=(const FileRequestPtr& lhs, const FileRequestHandle& rhs);
+    bool operator!=(const FileRequestPtr& lhs, const FileRequestHandle& rhs);
 
 } // namespace AZ::IO
 

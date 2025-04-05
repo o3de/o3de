@@ -10,7 +10,6 @@
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Matrix4x4.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -26,7 +25,7 @@ namespace AZ
     //! @param far Distance to the far view-plane. Must be greater than zero.
     //! @param reverseDepth Set to true to reverse depth which means near distance maps to 1 and far distance maps to 0.
     //! @return Pointer of the output matrix
-    AZCORE_API Matrix4x4* MakePerspectiveFovMatrixRH(Matrix4x4& out, float fovY, float aspectRatio, float nearDist, float farDist, bool reverseDepth = false);
+    Matrix4x4* MakePerspectiveFovMatrixRH(Matrix4x4& out, float fovY, float aspectRatio, float nearDist, float farDist, bool reverseDepth = false);
 
     //! Builds a right-handed perspective projection matrix from frustum data. 
     //! The generated projection matrix transforms vectors to clip space which 
@@ -42,7 +41,7 @@ namespace AZ
     //! @param far Distance to the far view-plane. Must be greater than zero.
     //! @param reverseDepth Set to true to reverse depth which means near distance maps to 1 and far distance maps to 0.
     //! @return Pointer of the output matrix
-    AZCORE_API Matrix4x4* MakeFrustumMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth = false);
+    Matrix4x4* MakeFrustumMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth = false);
     
     //! Builds a right-handed orthographic projection matrix from frustum data. 
     //! Expected use-cases are view-to-clip matrix of directional light,
@@ -60,19 +59,19 @@ namespace AZ
     //! @param far Distance to the far view-plane. Must be greater than zero.
     //! @param reverseDepth Set to true to reverse depth which means near distance maps to 1 and far distance maps to 0.
     //! @return Pointer of the output matrix
-    AZCORE_API Matrix4x4* MakeOrthographicMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth = false);
+    Matrix4x4* MakeOrthographicMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth = false);
 
     //! Transforms a position by a matrix. This function can be used with any generic cases which include projection matrices.
-    AZCORE_API Vector3 MatrixTransformPosition(const Matrix4x4& matrix, const Vector3& inPosition);
+    Vector3 MatrixTransformPosition(const Matrix4x4& matrix, const Vector3& inPosition);
 
 
-    AZCORE_API void SetPerspectiveMatrixFOV(Matrix4x4& out, float fovY, float aspectRatio);
-    AZCORE_API float GetPerspectiveMatrixFOV(const Matrix4x4& m);
+    void SetPerspectiveMatrixFOV(Matrix4x4& out, float fovY, float aspectRatio);
+    float GetPerspectiveMatrixFOV(const Matrix4x4& m);
 
     //! Adjust the near/far planes of an existing right-handed perspective projection matrix.
     //! @param out Matrix which stores output result.
     //! @param near Distance to the near view-plane. Must be no less than zero.
     //! @param far Distance to the far view-plane. Must be greater than zero.
     //! @param reverseDepth Set to true to reverse depth which means near distance maps to 1 and far distance maps to 0.
-    AZCORE_API void SetPerspectiveMatrixNearFar(Matrix4x4& out, float nearDist, float farDist, bool reverseDepth = true);
+    void SetPerspectiveMatrixNearFar(Matrix4x4& out, float nearDist, float farDist, bool reverseDepth = true);
 } // namespace AZ

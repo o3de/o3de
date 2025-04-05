@@ -12,11 +12,10 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/string/regex.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
-    class AZCORE_API JsonUuidSerializer
+    class JsonUuidSerializer
         : public BaseJsonSerializer
     {
     public:

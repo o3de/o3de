@@ -34,7 +34,7 @@
 
 #include <AzCore/Debug/Profiler.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZ::EntityEvents);
+//AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS(AZ::EntityEvents);
 
 namespace AZ
 {

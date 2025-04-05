@@ -11,7 +11,6 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -28,7 +27,7 @@ namespace AZ
     //!
     //! When multiplying with a Vector3, it assumes the w-component of the Vector3 is 1.0.
     //! Use the Multiply3x3 functions to multiply by the upper 3x3 submatrix only, e.g. for transforming normals.
-    class AZCORE_API Matrix4x4
+    class Matrix4x4
     {
     public:
 

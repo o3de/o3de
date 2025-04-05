@@ -15,25 +15,13 @@ set(FILES
     Component/ComponentApplicationBus.h
     Component/ComponentApplicationLifecycle.cpp
     Component/ComponentApplicationLifecycle.h
-    Component/ComponentBus.cpp
-    Component/ComponentBus.h
     Component/ComponentExport.h
-    Component/Entity.cpp
-    Component/Entity.h
     Component/EntityBus.h
     Component/EntityId.h
-    Component/EntityIdSerializer.cpp
-    Component/EntityIdSerializer.h
-    Component/EntitySerializer.cpp
-    Component/EntitySerializer.h
-    Component/EntityUtils.cpp
-    Component/EntityUtils.h
     Component/NonUniformScaleBus.cpp
     Component/NonUniformScaleBus.h
     Component/TickBus.cpp
     Component/TickBus.h
-    Component/TransformBus.cpp
-    Component/TransformBus.h
     Compression/compression.cpp
     Compression/Compression.h
     Compression/zstd_compression.cpp
@@ -48,8 +36,6 @@ set(FILES
     Console/LoggerSystemComponent.h
     DOM/DomPatch.cpp
     DOM/DomPatch.h
-    DOM/DomPath.cpp
-    DOM/DomPath.h
     DOM/DomComparison.cpp
     DOM/DomComparison.h
     DOM/DomPrefixTree.h
@@ -58,8 +44,6 @@ set(FILES
     IO/AnsiTerminalUtils.cpp
     IO/AnsiTerminalUtils.h
     IO/ByteContainerStream.h
-    IO/CompressionBus.h
-    IO/CompressionBus.cpp
     IO/Compressor.cpp
     IO/Compressor.h
     IO/CompressorStream.cpp
@@ -68,17 +52,10 @@ set(FILES
     IO/CompressorZLib.h
     IO/CompressorZStd.cpp
     IO/CompressorZStd.h
-    IO/FileReader.cpp
-    IO/FileReader.h
     IO/IOUtils.cpp
     IO/IOUtils.h
     IO/IStreamer.h
     IO/IStreamerProfiler.h
-    IO/IStreamerTypes.h
-    IO/IStreamerTypes.inl
-    IO/IStreamerTypes.cpp
-    IO/OpenMode.h
-    IO/OpenMode.cpp
     IO/Path/PathIterable.inl
     IO/Path/PathParser.inl
     IO/Path/PathReflect.cpp
@@ -89,9 +66,6 @@ set(FILES
     IO/Streamer/BlockCache.h
     IO/Streamer/DedicatedCache.cpp
     IO/Streamer/DedicatedCache.h
-    IO/Streamer/FileRequest.h
-    IO/Streamer/FileRequest.inl
-    IO/Streamer/FileRequest.cpp
     IO/Streamer/StorageDrive.cpp
     IO/Streamer/StorageDrive.h
     IO/Streamer/FileRange.h
@@ -100,18 +74,12 @@ set(FILES
     IO/Streamer/FullFileDecompressor.cpp
     IO/Streamer/ReadSplitter.h
     IO/Streamer/ReadSplitter.cpp
-    IO/Streamer/RequestPath.h
-    IO/Streamer/RequestPath.cpp
     IO/Streamer/Scheduler.h
     IO/Streamer/Scheduler.cpp
-    IO/Streamer/Statistics.h
-    IO/Streamer/Statistics.cpp
     IO/Streamer/StreamerConfiguration.h
     IO/Streamer/StreamerConfiguration.cpp
     IO/Streamer/Streamer.cpp
     IO/Streamer/Streamer.h
-    IO/Streamer/StreamerContext.h
-    IO/Streamer/StreamerContext.cpp
     IO/Streamer/StreamerComponent.cpp
     IO/Streamer/StreamerComponent.h
     IO/Streamer/StreamStackEntry.h
@@ -119,22 +87,12 @@ set(FILES
     IPC/SharedMemory.cpp
     IPC/SharedMemory.h
     Jobs/Algorithms.h
-    Jobs/Internal/JobManagerBase.cpp
-    Jobs/Internal/JobManagerBase.h
-    Jobs/Internal/JobManagerWorkStealing.cpp
-    Jobs/Internal/JobManagerWorkStealing.h
     Jobs/Internal/JobNotify.h
-    Jobs/Job.cpp
-    Jobs/Job.h
     Jobs/JobCancelGroup.h
     Jobs/JobCompletion.h
     Jobs/JobCompletionSpin.h
-    Jobs/JobContext.cpp
-    Jobs/JobContext.h
     Jobs/JobEmpty.h
     Jobs/JobFunction.h
-    Jobs/JobManager.cpp
-    Jobs/JobManager.h
     Jobs/JobManagerBus.cpp
     Jobs/JobManagerBus.h
     Jobs/JobManagerComponent.cpp
@@ -165,17 +123,9 @@ set(FILES
     JSON/writer.h
     JSON/error/en.h
     JSON/error/error.h
-    Math/Aabb.cpp
-    Math/Aabb.h
-    Math/Aabb.inl
     Math/Capsule.h
     Math/Capsule.inl
-    Math/ColorSerializer.h
-    Math/ColorSerializer.cpp
     Math/DocsMath.h
-    Math/Frustum.cpp
-    Math/Frustum.h
-    Math/Frustum.inl
     Math/Geometry2DUtils.cpp
     Math/Geometry2DUtils.h
     Math/Geometry3DUtils.cpp
@@ -211,41 +161,12 @@ set(FILES
     Math/LineSegment.cpp
     Math/LineSegment.h
     Math/MathIntrinsics.h
-    Math/MathReflection.cpp
-    Math/MathReflection.h
     Math/MathUtils.cpp
     Math/MathUtils.h
-    Math/MathMatrixSerializer.h
-    Math/MathMatrixSerializer.cpp
     Math/MathStringConversions.h
     Math/MathStringConversions.cpp
-    Math/MathVectorSerializer.h
-    Math/MathVectorSerializer.cpp
-    Math/Matrix3x3.cpp
-    Math/Matrix3x3.h
-    Math/Matrix3x3.inl
-    Math/Matrix3x4.cpp
-    Math/Matrix3x4.h
-    Math/Matrix3x4.inl
-    Math/Matrix4x4.cpp
-    Math/Matrix4x4.h
-    Math/Matrix4x4.inl
-    Math/MatrixMxN.cpp
-    Math/MatrixMxN.h
-    Math/MatrixMxN.inl
-    Math/MatrixUtils.h
-    Math/MatrixUtils.cpp
-    Math/Obb.cpp
-    Math/Obb.h
-    Math/Obb.inl
-    Math/Plane.cpp
-    Math/Plane.h
-    Math/Plane.inl
     Math/PolygonPrism.h
     Math/PolygonPrism.cpp
-    Math/Quaternion.cpp
-    Math/Quaternion.inl
-    Math/Quaternion.h
     Math/Random.h
     Math/Ray.cpp
     Math/Ray.h
@@ -262,13 +183,6 @@ set(FILES
     Math/Spline.h
     Math/Sphere.h
     Math/Sphere.inl
-    Math/Transform.cpp
-    Math/Transform.h
-    Math/Transform.inl
-    Math/TransformSerializer.cpp
-    Math/TransformSerializer.h
-    Math/UuidSerializer.h
-    Math/UuidSerializer.cpp
     Math/VectorConversions.h
     Math/VertexContainer.h
     Math/VertexContainer.cpp
@@ -321,24 +235,17 @@ set(FILES
     Script/ScriptTimePoint.h
     Script/ScriptPropertySerializer.h
     Script/ScriptPropertySerializer.cpp
-    Script/ScriptPropertyTable.h
-    Script/ScriptPropertyTable.cpp
     Script/ScriptPropertyWatcherBus.cpp
     Script/ScriptPropertyWatcherBus.h
     Script/ScriptDebug.cpp
     Script/ScriptDebug.h
     ScriptCanvas/ScriptCanvasAttributes.h
-    ScriptCanvas/ScriptCanvasOnDemandNames.cpp
-    ScriptCanvas/ScriptCanvasOnDemandNames.h
     Settings/CommandLine.cpp
     Settings/CommandLine.h
     Settings/CommandLineParser.cpp
     Settings/CommandLineParser.h
     Settings/ConfigParser.cpp
     Settings/ConfigParser.h
-    Settings/ConfigurableStack.cpp
-    Settings/ConfigurableStack.inl
-    Settings/ConfigurableStack.h
     Settings/SettingsRegistry.cpp
     Settings/SettingsRegistry.h
     Settings/SettingsRegistryConsoleUtils.cpp
@@ -375,8 +282,6 @@ set(FILES
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
-    Statistics/RunningStatistic.cpp
-    Statistics/RunningStatistic.h
     Statistics/StatisticalProfiler.h
     Statistics/StatisticalProfilerProxy.h
     Statistics/StatisticalProfilerProxySystemComponent.cpp

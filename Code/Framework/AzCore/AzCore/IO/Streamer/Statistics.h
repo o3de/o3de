@@ -15,11 +15,10 @@
 #include <AzCore/std/typetraits/is_arithmetic.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
-    class AZCORE_API Statistic
+    class Statistic
     {
     public:
         using TimeValue = AZStd::chrono::microseconds;

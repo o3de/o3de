@@ -9,7 +9,6 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/typetraits/underlying_type.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -46,17 +45,17 @@ namespace AZ::IO
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(OpenMode)
 
-    AZCORE_API OpenMode GetOpenModeFromStringMode(const char* mode);
+    OpenMode GetOpenModeFromStringMode(const char* mode);
 
-    AZCORE_API const char* GetStringModeFromOpenMode(OpenMode mode);
+    const char* GetStringModeFromOpenMode(OpenMode mode);
 
     // when reading, we ignore text mode requests, because text mode will not be supported from reading from
     // odd devices such as pack files, remote reads, and within compressed volumes anyway.  This makes it behave the same as
     // pak mode as it behaves loose.  In practice, developers should avoid depending on text mode for reading, specifically depending
     // on the platform-specific concept of removing '\r' characters from a text stream.
     // having the OS swallow characters without letting us know also messes up things like lookahead cache, optimizing functions like FGetS and so on.
-    AZCORE_API void UpdateOpenModeForReading(OpenMode& mode);
+    void UpdateOpenModeForReading(OpenMode& mode);
 
-    AZCORE_API int TranslateOpenModeToSystemFileMode(const char* path, OpenMode mode);
+    int TranslateOpenModeToSystemFileMode(const char* path, OpenMode mode);
 
 }   // namespace AZ::IO

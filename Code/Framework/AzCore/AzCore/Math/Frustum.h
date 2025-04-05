@@ -15,14 +15,13 @@
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/SimdMath.h>
 #include <AzCore/std/containers/array.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     class ReflectContext;
 
     //! Attributes required to construct a Frustum from a view volume.
-    struct AZCORE_API ViewFrustumAttributes
+    struct ViewFrustumAttributes
     {
         AZ_TYPE_INFO(ViewFrustumAttributes, "{4D36516C-96D5-4BB8-BAD9-5E68D281ACE5}");
 
@@ -48,7 +47,7 @@ namespace AZ
     };
 
     //! A frustum class that can be used for efficient primitive intersection tests.
-    class AZCORE_API Frustum final
+    class Frustum final
     {
     public:
 

@@ -11,14 +11,13 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     class Aabb;
 
     //! An oriented bounding box.
-    class AZCORE_API Obb
+    class Obb
     {
     public:
 
@@ -89,7 +88,7 @@ namespace AZ
         Vector3 m_halfLengths;
     };
 
-    AZCORE_API Obb operator*(const class Transform& transform, const Obb& obb);
+    Obb operator*(const class Transform& transform, const Obb& obb);
 }
 
 #include <AzCore/Math/Obb.inl>

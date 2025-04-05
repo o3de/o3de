@@ -10,7 +10,6 @@
 #include <AzCore/std/containers/span.h>
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -19,7 +18,7 @@ namespace AZ
 
     //! An axis aligned bounding box.
     //! It is defined as a closed set, i.e. it includes the boundary, so it will always include at least one point.
-    class AZCORE_API Aabb
+    class Aabb
     {
     public:
 

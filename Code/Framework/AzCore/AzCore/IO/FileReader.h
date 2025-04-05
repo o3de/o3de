@@ -10,7 +10,6 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/variant.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
@@ -21,7 +20,7 @@ namespace AZ::IO
     //! to either the FileIOBase or SystemFile classes based if a FileIOBase* instance has been supplied
     //! to the FileSystemReader class
     //! the SettingsRegistry option to use FileIO
-    class AZCORE_API FileReader
+    class FileReader
     {
         using HandleType = AZ::u32;
         using FileHandleType = AZStd::variant<AZStd::monostate, AZ::IO::SystemFile, HandleType>;

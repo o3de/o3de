@@ -9,7 +9,6 @@
 #define AZCORE_JOBS_JOBCONTEXT_H 1
 
 #include <AzCore/Jobs/JobCancelGroup.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -19,7 +18,7 @@ namespace AZ
      * A job context stores information about the execution environment of jobs, a single context should be shared
      * between many jobs.
      */
-    class AZCORE_API JobContext
+    class JobContext
     {
     public:
         AZ_CLASS_ALLOCATOR(JobContext, ThreadPoolAllocator);

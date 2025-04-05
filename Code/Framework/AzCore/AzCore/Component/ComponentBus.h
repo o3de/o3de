@@ -17,7 +17,6 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -95,7 +94,7 @@ namespace AZ
      * A pair of entity and component IDs that are used to access an address 
      * of an AZ::EntityComponentBus.
      */
-    class AZCORE_API EntityComponentIdPair 
+    class EntityComponentIdPair 
     {
     public:
 

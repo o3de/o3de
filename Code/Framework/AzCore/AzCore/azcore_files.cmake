@@ -33,8 +33,20 @@ set(FILES
     Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
+    Component/ComponentBus.cpp
+    Component/ComponentBus.h
+    Component/Entity.cpp
+    Component/Entity.h
+    Component/EntityIdSerializer.cpp
+    Component/EntityIdSerializer.h
+    Component/EntitySerializer.cpp
+    Component/EntitySerializer.h
+    Component/EntityUtils.cpp
+    Component/EntityUtils.h
     Component/NamedEntityId.cpp
     Component/NamedEntityId.h
+    Component/TransformBus.cpp
+    Component/TransformBus.h
     Console/ConsoleFunctor.cpp
     Console/ConsoleFunctor.h
     Console/ConsoleFunctor.inl
@@ -71,6 +83,8 @@ set(FILES
     DOM/Backends/JSON/JsonSerializationUtils.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
+    DOM/DomPath.cpp
+    DOM/DomPath.h
     DOM/DomUtils.cpp
     DOM/DomUtils.h
     DOM/DomValue.cpp
@@ -104,30 +118,98 @@ set(FILES
     EBus/Internal/StoragePolicies.h
     Instance/InstancePool.h
     Interface/Interface.h
+    IO/CompressionBus.h
+    IO/CompressionBus.cpp
     IO/FileIO.cpp
     IO/FileIO.h
+    IO/FileReader.cpp
+    IO/FileReader.h
+    IO/OpenMode.h
+    IO/OpenMode.cpp
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
     IO/GenericStreams.cpp
     IO/GenericStreams.h
+    IO/IStreamerTypes.h
+    IO/IStreamerTypes.inl
+    IO/IStreamerTypes.cpp
     IO/SystemFile.cpp
     IO/SystemFile.h
+    IO/Streamer/FileRequest.h
+    IO/Streamer/FileRequest.inl
+    IO/Streamer/FileRequest.cpp
+    IO/Streamer/RequestPath.h
+    IO/Streamer/RequestPath.cpp
+    IO/Streamer/Statistics.h
+    IO/Streamer/Statistics.cpp
+    IO/Streamer/StreamerContext.h
+    IO/Streamer/StreamerContext.cpp
     JSON/rapidjson.h
     JSON/rapidjson.cpp
+    Jobs/Job.cpp
+    Jobs/Job.h
+    Jobs/JobContext.cpp
+    Jobs/JobContext.h
+    Jobs/JobManager.cpp
+    Jobs/JobManager.h
+    Jobs/Internal/JobManagerBase.cpp
+    Jobs/Internal/JobManagerBase.h
+    Jobs/Internal/JobManagerWorkStealing.cpp
+    Jobs/Internal/JobManagerWorkStealing.h
+    Math/Aabb.cpp
+    Math/Aabb.h
+    Math/Aabb.inl
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
+    Math/ColorSerializer.h
+    Math/ColorSerializer.cpp
     Math/Crc.cpp
     Math/Crc.inl
     Math/Crc.h
+    Math/Frustum.cpp
+    Math/Frustum.h
+    Math/Frustum.inl
+    Math/MathReflection.cpp
+    Math/MathReflection.h
     Math/MathScriptHelpers.cpp
     Math/MathScriptHelpers.h
+    Math/Matrix3x3.cpp
+    Math/Matrix3x3.h
+    Math/Matrix3x3.inl
+    Math/Matrix3x4.cpp
+    Math/Matrix3x4.h
+    Math/Matrix3x4.inl
+    Math/Matrix4x4.cpp
+    Math/Matrix4x4.h
+    Math/Matrix4x4.inl
+    Math/MatrixMxN.cpp
+    Math/MatrixMxN.h
+    Math/MatrixMxN.inl
+    Math/MatrixUtils.h
+    Math/MatrixUtils.cpp
+    Math/Obb.cpp
+    Math/Obb.h
+    Math/Obb.inl
+    Math/Plane.cpp
+    Math/Plane.h
+    Math/Plane.inl
+    Math/Quaternion.cpp
+    Math/Quaternion.inl
+    Math/Quaternion.h
     Math/Sfmt.cpp
     Math/Sfmt.h
+    Math/Transform.cpp
+    Math/Transform.h
+    Math/Transform.inl
+    Math/TransformSerializer.cpp
+    Math/TransformSerializer.h
     Math/Uuid.cpp
     Math/Uuid.h
     Math/Uuid.inl
+    Math/UuidSerializer.h
+    Math/UuidSerializer.cpp
     Math/Vector2.cpp
     Math/Vector2.h
     Math/Vector2.inl
@@ -140,6 +222,10 @@ set(FILES
     Math/Vector4.cpp
     Math/Vector4.h
     Math/Vector4.inl
+    Math/MathMatrixSerializer.h
+    Math/MathMatrixSerializer.cpp
+    Math/MathVectorSerializer.h
+    Math/MathVectorSerializer.cpp
     Memory/AllocationRecords.cpp
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
@@ -227,6 +313,10 @@ set(FILES
     Script/ScriptContextDebug.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
+    Script/ScriptPropertyTable.h
+    Script/ScriptPropertyTable.cpp
+    ScriptCanvas/ScriptCanvasOnDemandNames.cpp
+    ScriptCanvas/ScriptCanvasOnDemandNames.h
     Serialization/DataOverlay.h
     Serialization/DataOverlayInstanceMsgs.h
     Serialization/DataOverlayProviderMsgs.cpp
@@ -318,6 +408,11 @@ set(FILES
     Serialization/Json/UnsupportedTypesSerializer.h
     Serialization/Json/UnsupportedTypesSerializer.cpp
     Serialization/std/VariantReflection.inl
+    Settings/ConfigurableStack.cpp
+    Settings/ConfigurableStack.inl
+    Settings/ConfigurableStack.h
+    Statistics/RunningStatistic.cpp
+    Statistics/RunningStatistic.h
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
     Utils/Utils.cpp

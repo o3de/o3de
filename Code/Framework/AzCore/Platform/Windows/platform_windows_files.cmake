@@ -49,4 +49,6 @@ set(FILES
     AzCore/std/time_Windows.cpp
     AzCore/Debug/Profiler_Platform.inl
     ../Common/WinAPI/AzCore/Debug/Profiler_WinAPI.inl
+    AzCore/Math/Random_Windows.cpp
+    AzCore/Math/Random_Windows.h
 )

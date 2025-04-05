@@ -8,4 +8,4 @@
 
 #include <AzCore/NativeUI/NativeUIRequests.h>
 
-AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(AZ::NativeUI::NativeUIRequests, AZ::NativeUI::NativeUIEBusTraits);
+// AZ_DECLARE_EBUS_INSTANTIATION_SINGLE_ADDRESS_WITH_TRAITS(AZ::NativeUI::NativeUIRequests, AZ::NativeUI::NativeUIEBusTraits);

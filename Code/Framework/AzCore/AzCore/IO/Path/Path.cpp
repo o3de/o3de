@@ -99,17 +99,17 @@ namespace AZ::IO
         const typename BasicPath<FixedMaxPathString>::value_type* rhs);
 
     // Iterator compare instantiations
-    template AZCORE_API bool operator== <const PathView>(const PathIterator<const PathView>& lhs,
+    template bool operator== <const PathView>(const PathIterator<const PathView>& lhs,
         const PathIterator<const PathView>& rhs);
-    template AZCORE_API bool operator== <const Path>(const PathIterator<const Path>& lhs,
+    template bool operator== <const Path>(const PathIterator<const Path>& lhs,
         const PathIterator<const Path>& rhs);
-    template AZCORE_API bool operator== <const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+    template bool operator== <const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
-    template AZCORE_API bool operator!= <const PathView>(const PathIterator<const PathView>& lhs,
+    template bool operator!= <const PathView>(const PathIterator<const PathView>& lhs,
         const PathIterator<const PathView>& rhs);
-    template AZCORE_API bool operator!= <const Path>(const PathIterator<const Path>& lhs,
+    template bool operator!= <const Path>(const PathIterator<const Path>& lhs,
         const PathIterator<const Path>& rhs);
-    template AZCORE_API bool operator!= <const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+    template bool operator!= <const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
 }
 

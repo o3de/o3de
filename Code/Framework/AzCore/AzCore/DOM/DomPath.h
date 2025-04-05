@@ -11,7 +11,6 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Dom
 {
@@ -21,7 +20,7 @@ namespace AZ::Dom
     //! - Key, a name for indexing within Objects and Nodes
     //! - EndOfArray, a special-case indicator for representing the end of an array
     //!   used by the patching system to represent push / pop back operations.
-    class AZCORE_API PathEntry final
+    class PathEntry final
     {
     public:
         static constexpr size_t EndOfArrayIndex = size_t(-1);
@@ -66,7 +65,7 @@ namespace AZ::Dom
 namespace AZ::Dom
 {
     //! Represents a path, represented as a series of PathEntry values, to a position in a Value.
-    class AZCORE_API Path final
+    class Path final
     {
     public:
         AZ_TYPE_INFO(AZ::Dom::Path, "{C0081C45-F15D-4F46-9680-19535D33C312}")
@@ -171,13 +170,13 @@ namespace AZ::Dom
 namespace AZStd
 {
     template<>
-    struct AZCORE_API hash<AZ::Dom::PathEntry>
+    struct hash<AZ::Dom::PathEntry>
     {
         size_t operator()(const AZ::Dom::PathEntry& entry) const;
     };
 
     template<>
-    struct AZCORE_API hash<AZ::Dom::Path>
+    struct hash<AZ::Dom::Path>
     {
         size_t operator()(const AZ::Dom::Path& path) const
         {

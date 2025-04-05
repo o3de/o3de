@@ -11,7 +11,6 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -24,7 +23,7 @@ namespace AZ
     //! Stores a matrix with 3 rows and 4 columns.
     //! The 3x3 matrix formed of the first 3 columns may represent rotation, scale and/or shear, and the final column
     //! represents translation.
-    class AZCORE_API Matrix3x4
+    class Matrix3x4
     {
     public:
 
