@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    ../Common/WinAPI/AzCore/IO/FileIO_WinAPI.cpp
     AzCore/IO/SystemFile_Platform.h
     AzCore/IO/Streamer/StorageDrive_Windows.h
     AzCore/IO/Streamer/StorageDrive_Windows.cpp
@@ -25,13 +24,9 @@ set(FILES
     AzCore/Socket/AzSocket_Platform.h
     AzCore/Socket/AzSocket_fwd_Platform.h
     AzCore/Socket/AzSocket_fwd_Windows.h
-    AzCore/Utils/Utils_Windows.cpp
-    ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp
-    ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.h
     ../Common/WinAPI/AzCore/Module/DynamicModuleHandle_WinAPI.cpp
     ../Common/WinAPI/AzCore/Process/ProcessInfo_WinAPI.cpp
     ../Common/WinAPI/AzCore/Socket/AzSocket_fwd_WinAPI.h
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.cpp
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.h
-    ../Common/WinAPI/AzCore/Utils/Utils_WinAPI.cpp
 )

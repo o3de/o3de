@@ -14,6 +14,7 @@
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 
 namespace LmbrCentral
 {

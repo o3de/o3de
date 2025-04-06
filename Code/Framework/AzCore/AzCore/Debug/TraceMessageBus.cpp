@@ -7,3 +7,4 @@
  */
 #include <AzCore/Debug/TraceMessageBus.h>
 
+AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::Debug::TraceMessageEvents);

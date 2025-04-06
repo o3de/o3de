@@ -9,6 +9,7 @@
 
 #include <Vegetation/InstanceSpawner.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 

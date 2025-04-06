@@ -14,6 +14,7 @@
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 
 namespace AZ
 {

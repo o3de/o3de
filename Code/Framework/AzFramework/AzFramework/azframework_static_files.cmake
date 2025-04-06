@@ -13,6 +13,8 @@ set(FILES
     FileTag/FileTagConstants.h
     Viewport/ViewportColors.h
     Viewport/ViewportColors.cpp    
+    Archive/ArchiveVars.cpp
+    Archive/ArchiveVars.h
     AzFrameworkStatic.cpp
     AzFrameworkStatic.h
 )

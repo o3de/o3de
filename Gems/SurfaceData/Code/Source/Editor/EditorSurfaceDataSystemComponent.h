@@ -11,6 +11,7 @@
 #include "EditorSurfaceTagListAsset.h"
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <SurfaceData/SurfaceDataTagProviderRequestBus.h>

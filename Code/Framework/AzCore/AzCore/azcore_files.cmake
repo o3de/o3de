@@ -24,8 +24,6 @@ set(FILES
     Asset/AssetManagerBus.h
     Asset/AssetManagerComponent.cpp
     Asset/AssetManagerComponent.h
-    Asset/AssetTypeInfoBus.cpp
-    Asset/AssetTypeInfoBus.h
     Asset/AssetSerializer.cpp
     Asset/AssetSerializer.h
     Casting/lossy_cast.h
@@ -45,8 +43,6 @@ set(FILES
     Component/EntityUtils.h
     Component/NamedEntityId.cpp
     Component/NamedEntityId.h
-    Component/TransformBus.cpp
-    Component/TransformBus.h
     Console/ConsoleFunctor.cpp
     Console/ConsoleFunctor.h
     Console/ConsoleFunctor.inl
@@ -75,8 +71,6 @@ set(FILES
     Debug/ProfilerReflection.cpp
     Debug/ProfilerReflection.h
     Debug/Timer.h
-    Debug/TraceMessageBus.cpp
-    Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp

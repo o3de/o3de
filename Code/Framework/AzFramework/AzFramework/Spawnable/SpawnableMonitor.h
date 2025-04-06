@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzFramework/Spawnable/Spawnable.h>

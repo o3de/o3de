@@ -100,7 +100,7 @@ namespace AZ::Debug
 // Declare budgets that are core engine budgets, or may be shared/needed across multiple external gems
 // You should NOT need to declare user-space or budgets with isolated usage here. Prefer declaring them local to the module(s) that use
 // the budget and defining them within a single module to avoid needing to recompile the entire engine.
-#if defined(AZ_MONOLITHIC_BUILD)
+//#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(Animation);
 AZ_DECLARE_BUDGET(Audio);
 AZ_DECLARE_BUDGET(AzCore);
@@ -109,13 +109,13 @@ AZ_DECLARE_BUDGET(Entity);
 AZ_DECLARE_BUDGET(Game);
 AZ_DECLARE_BUDGET(System);
 AZ_DECLARE_BUDGET(Physics);
-#else
-AZ_DECLARE_BUDGET_SHARED(Animation);
-AZ_DECLARE_BUDGET_SHARED(Audio);
-AZ_DECLARE_BUDGET_SHARED(AzCore);
-AZ_DECLARE_BUDGET_SHARED(Editor);
-AZ_DECLARE_BUDGET_SHARED(Entity);
-AZ_DECLARE_BUDGET_SHARED(Game);
-AZ_DECLARE_BUDGET_SHARED(System);
-AZ_DECLARE_BUDGET_SHARED(Physics);
-#endif
+//#else
+//AZ_DECLARE_BUDGET_SHARED(Animation);
+//AZ_DECLARE_BUDGET_SHARED(Audio);
+//AZ_DECLARE_BUDGET(AzCore);
+//AZ_DECLARE_BUDGET_SHARED(Editor);
+//AZ_DECLARE_BUDGET_SHARED(Entity);
+//AZ_DECLARE_BUDGET_SHARED(Game);
+//AZ_DECLARE_BUDGET_SHARED(System);
+//AZ_DECLARE_BUDGET_SHARED(Physics);
+//#endif

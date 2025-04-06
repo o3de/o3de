@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 #include <AzFramework/Components/EditorEntityEvents.h>
 
 #include <StartingPointInput/InputEventRequestBus.h>

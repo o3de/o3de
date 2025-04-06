@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <AzFramework/AzFrameworkAPI.h>
-
 namespace AZ::IO
 {
     enum class FileSearchPriority
@@ -29,10 +27,10 @@ namespace AZ::IO
         InPak
     };
 
-    AZF_API FileSearchPriority GetDefaultFileSearchPriority();
+    FileSearchPriority GetDefaultFileSearchPriority();
 
     // variables that control behavior of the Archive subsystem
-    struct AZF_API ArchiveVars
+    struct ArchiveVars
     {
 #if defined(_RELEASE)
         inline static constexpr bool IsReleaseConfig{ true };

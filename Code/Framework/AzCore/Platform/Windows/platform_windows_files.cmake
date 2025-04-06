@@ -43,6 +43,8 @@ set(FILES
     AzCore/PlatformIncl_Platform.h
     AzCore/PlatformIncl_Windows.h
     AzCore/Serialization/Locale_Platform.h
+    ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp
+    ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.h
     ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.h
     ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.cpp
     ../Common/WinAPI/AzCore/Settings/CommandLineParser_WinAPI.cpp
@@ -51,4 +53,7 @@ set(FILES
     ../Common/WinAPI/AzCore/Debug/Profiler_WinAPI.inl
     AzCore/Math/Random_Windows.cpp
     AzCore/Math/Random_Windows.h
+    ../Common/WinAPI/AzCore/Utils/Utils_WinAPI.cpp
+    AzCore/Utils/Utils_Windows.cpp
+    ../Common/WinAPI/AzCore/IO/FileIO_WinAPI.cpp
 )

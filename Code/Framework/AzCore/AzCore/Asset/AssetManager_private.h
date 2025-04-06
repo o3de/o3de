@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/parallel/mutex.h>
 

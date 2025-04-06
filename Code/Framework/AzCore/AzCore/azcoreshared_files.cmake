@@ -9,6 +9,10 @@
 set(FILES
     AzCoreModule.h
     AzCoreModule.cpp
+    Asset/AssetBus.cpp
+    Asset/AssetBus.h
+    Asset/AssetTypeInfoBus.cpp
+    Asset/AssetTypeInfoBus.h
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.cpp
@@ -16,12 +20,15 @@ set(FILES
     Component/ComponentApplicationLifecycle.cpp
     Component/ComponentApplicationLifecycle.h
     Component/ComponentExport.h
+    Component/EntityBus.cpp
     Component/EntityBus.h
     Component/EntityId.h
     Component/NonUniformScaleBus.cpp
     Component/NonUniformScaleBus.h
     Component/TickBus.cpp
     Component/TickBus.h
+    Component/TransformBus.cpp
+    Component/TransformBus.h
     Compression/compression.cpp
     Compression/Compression.h
     Compression/zstd_compression.cpp
@@ -34,6 +41,8 @@ set(FILES
     Console/ConsoleTypeHelpers.inl
     Console/LoggerSystemComponent.cpp
     Console/LoggerSystemComponent.h
+    Debug/TraceMessageBus.cpp
+    Debug/TraceMessageBus.h
     DOM/DomPatch.cpp
     DOM/DomPatch.h
     DOM/DomComparison.cpp

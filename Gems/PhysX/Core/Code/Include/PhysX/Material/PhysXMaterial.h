@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzCore/Math/Color.h>
 

@@ -19,8 +19,6 @@ set(FILES
     Archive/ArchiveFileIO.h
     Archive/ArchiveFindData.cpp
     Archive/ArchiveFindData.h
-    Archive/ArchiveVars.cpp
-    Archive/ArchiveVars.h
     Archive/Codec.h
     Archive/IArchive.h
     Archive/INestedArchive.h

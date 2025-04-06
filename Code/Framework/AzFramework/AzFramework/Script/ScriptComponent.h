@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Asset/AssetBus.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Component/Component.h>
