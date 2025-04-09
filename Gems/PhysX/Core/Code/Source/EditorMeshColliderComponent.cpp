@@ -243,7 +243,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXMeshCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXMeshCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/mesh-collider/")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/mesh-collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -679,7 +679,7 @@ namespace PhysX
                     "The physics asset \"%s\" was exported using triangle mesh geometry, which is not compatible with non-kinematic "
                     "dynamic rigid bodies. To make the collider compatible, you can export the asset using primitive or convex mesh "
                     "geometry, use mesh decomposition when exporting the asset, or set the rigid body to kinematic. Learn more about "
-                    "<a href=\"https://o3de.org/docs/user-guide/components/reference/physx/mesh-collider/\">colliders</a>.",
+                    "<a href=\"https://www.o3de.org/docs/user-guide/components/reference/physx/mesh-collider/\">colliders</a>.",
                     assetPath.c_str()));
 
                 // make sure the entity inspector scrolls so the warning is visible by marking this component as having

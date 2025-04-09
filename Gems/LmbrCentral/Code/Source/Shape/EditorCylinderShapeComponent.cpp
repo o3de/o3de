@@ -43,7 +43,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/cylinder-shape/")
+                        AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/cylinder-shape/")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorCylinderShapeComponent::m_cylinderShape,

@@ -35,7 +35,7 @@ namespace AZ
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(
                             Edit::Attributes::HelpPageURL,
-                            "https://o3de.org/docs/user-guide/components/reference/atom/ChromaticAberration/") // [TODO ATOM-2672][PostFX] need create page for PostProcessing.
+                            "https://www.o3de.org/docs/user-guide/components/reference/atom/ChromaticAberration/") // [TODO ATOM-2672][PostFX] need create page for PostProcessing.
                         ;
 
                     editContext->Class<ChromaticAberrationComponentController>("ChromaticAberrationComponentController", "")
