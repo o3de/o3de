@@ -48,6 +48,8 @@
     #define AZ_DLL_IMPORT_EXTERN
 #endif
 
+#define AZ_TEMPLATE_EXTERN AZ_TRAIT_OS_TEMPLATE_EXTERN
+
 // These defines will be deprecated in the future with LY-99152
 #if defined(AZ_PLATFORM_MAC)
     #define AZ_PLATFORM_APPLE_OSX

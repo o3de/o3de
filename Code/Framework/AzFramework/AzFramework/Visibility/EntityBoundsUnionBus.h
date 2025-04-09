@@ -14,6 +14,7 @@
 namespace AZ
 {
     class Aabb;
+    class Entity;
 } // namespace AZ
 
 namespace AzFramework

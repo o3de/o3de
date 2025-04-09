@@ -20,7 +20,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! EBus interface used to query for available input channels
-    class InputChannelRequests : public AZ::EBusTraits
+    class AZF_API InputChannelRequests : public AZ::EBusTraits
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ namespace AzFramework
         //! EBus Trait: requests should be addressed to a specific channel id / device index pair.
         //! While input channel ids must be unique across different input devices, multiple devices
         //! of the same type can exist, so requests must be addressed using an id/device index pair.
-        class BusIdType
+        class AZF_API BusIdType
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ namespace AzFramework
         //! \param[in] channelId Id of the input channel to find
         //! \param[in] deviceIndex Index of the device that owns the input channel
         //! \return Pointer to the input channel if it was found, nullptr if it was not
-        static const InputChannel* FindInputChannel(const InputChannelId& channelId,
+        AZF_API static const InputChannel* FindInputChannel(const InputChannelId& channelId,
                                                     AZ::u32 deviceIndex = 0);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
