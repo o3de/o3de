@@ -73,6 +73,8 @@ namespace AzToolsFramework
             ChangedSourceDependencySourceColumn,
             SplitMaterialBuilderAndMaterialAssetBuilder,
             NewMaterialTypeBuildPipeline,
+            AddedJobFailureSourceColumn,
+            AddedMissingDependenciesIndex,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -187,6 +189,8 @@ namespace AzToolsFramework
             AZ::Uuid m_builderGuid;
             AssetSystem::JobStatus m_status = AssetSystem::JobStatus::Queued;
             AZ::u64 m_jobRunKey = 0;
+            AZ::s64 m_failureCauseSourcePK = InvalidEntryId;
+            AZ::u32 m_failureCauseFingerprint = 0;
             AZ::s64 m_firstFailLogTime = 0;
             AZStd::string m_firstFailLogFile;
             AZ::s64 m_lastFailLogTime = 0;
@@ -248,7 +252,7 @@ namespace AzToolsFramework
             //  compare whether its represents the same product as the other rather than identical in every way (including file data).
             bool operator==(const ProductDatabaseEntry& other) const;
 
-            //! Logical equality compare. 
+            //! Logical equality compare.
             //! It will return true if the fields that establish the identify of a product are identical, regardless
             //! of the equality of things like its flags and hash.
             bool IsSameLogicalProductAs(const ProductDatabaseEntry& other) const;
@@ -582,6 +586,7 @@ namespace AzToolsFramework
             bool QueryJobByJobRunKey(AZ::u64 jobRunKey, jobHandler handler);
             bool QueryJobByProductID(AZ::s64 productID, jobHandler handler);
             bool QueryJobBySourceID(AZ::s64 sourceID, jobHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool QueryJobsByFailureCauseSourceID(AZ::s64 sourceID, jobHandler handler);
 
             //product
             bool QueryProductByProductID(AZ::s64 productID, productHandler handler);
@@ -621,7 +626,9 @@ namespace AzToolsFramework
 
 
             //SourceDependency
-            /// direct query - look up table row by row ID
+            //! Query all source dependencies
+            bool QuerySourceDependencies(sourceFileDependencyHandler handler);
+            //! direct query - look up table row by row ID
             bool QuerySourceDependencyBySourceDependencyId(AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler);
 
             //! Query sources which depend on 'dependsOnSource'

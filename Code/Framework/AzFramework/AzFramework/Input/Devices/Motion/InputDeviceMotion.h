@@ -127,19 +127,26 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // Foward declare the internal Implementation class so it can be passed into the constructor
+        // Foward declare the internal Implementation class so its unique ptr can be referenced from 
+        // the ImplementationFactory
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = Implementation*(InputDeviceMotion&);
+        //! The factory class to create a custom implementation for this input device
+        struct ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{97354B61-7599-4D06-9888-823D5B082191}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceMotion& inputDevice) = 0;
+        };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDeviceId Optional override of the default input device id
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceMotion(const InputDeviceId& inputDeviceId = Id,
-                                   ImplementationFactory implementationFactory = &Implementation::Create);
+                                   ImplementationFactory* implementationFactory = AZ::Interface<ImplementationFactory>::Get());
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

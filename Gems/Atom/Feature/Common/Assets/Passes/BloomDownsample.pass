@@ -44,8 +44,8 @@
                             "Attachment": "Input"
                         },
                         "Multipliers":{
-                            "WidthMultiplier" : "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier" : 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                      "FormatSource": {
@@ -65,8 +65,8 @@
                             "Attachment": "Input"
                         },
                         "Multipliers":{
-                            "WidthMultiplier" : "0.5",
-                            "HeightMultiplier": "0.5"
+                            "WidthMultiplier" : 0.5,
+                            "HeightMultiplier": 0.5
                         }
                     },
                      "FormatSource": {
@@ -100,7 +100,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/BloomDownsampleCS.shader"
                 },
-                "Make Fullscreen Pass": true
+                "FullscreenDispatch": true
             }
         }
     }

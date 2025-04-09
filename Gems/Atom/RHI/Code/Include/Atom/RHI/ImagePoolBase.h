@@ -7,35 +7,26 @@
  */
 #pragma once
 
-#include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI/Image.h>
+#include <Atom/RHI/ResourcePool.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! A simple base class for multi-device image pools. This mainly exists so that various
+    //! image pool implementations can have some type safety separate from other
+    //! resource pool types.
+    class ImagePoolBase : public ResourcePool
     {
-        /**
-         * A simple base class for image pools. This mainly exists so that various
-         * image pool implementations can have some type safety separate from other
-         * resource pool types.
-         */
-        class ImagePoolBase
-            : public ResourcePool
-        {
-        public:
-            AZ_RTTI(ImagePoolBase, "{6353E390-C5D2-42FF-8AA9-9AFCD1F2F1B5}", ResourcePool);
-            virtual ~ImagePoolBase() override = default;
+    public:
+        AZ_RTTI(ImagePoolBase, "{CAC2167A-D65A-493F-A450-FDE2B1A883B1}", ResourcePool);
+        virtual ~ImagePoolBase() override = default;
 
-        protected:
-            ImagePoolBase() = default;
+    protected:
+        ImagePoolBase() = default;
 
-            ResultCode InitImage(
-                Image* image,
-                const ImageDescriptor& descriptor,
-                PlatformMethod platformInitResourceMethod);
+        ResultCode InitImage(Image* image, const ImageDescriptor& descriptor, PlatformMethod platformInitResourceMethod);
 
-        private:
-            using ResourcePool::InitResource;
-        };
-    }
-}
+    private:
+        using ResourcePool::InitResource;
+    };
+} // namespace AZ::RHI

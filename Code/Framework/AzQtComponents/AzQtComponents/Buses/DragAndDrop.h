@@ -111,6 +111,11 @@ namespace AzQtComponents
         
         //! Sent when a drag and drop action completes.
         virtual void Drop(QDropEvent* /*event*/, DragAndDropContextBase& /*context*/) {}
+
+        //! Sent when a drag and drop action completes. Contains a suggested destination path that can be overridden in the dialog.
+        virtual void DropAtLocation(QDropEvent* /*event*/, DragAndDropContextBase& /*context*/, QString& /* path*/)
+        {
+        }
     };
 
     using DragAndDropEventsBus = AZ::EBus<DragAndDropEvents>;

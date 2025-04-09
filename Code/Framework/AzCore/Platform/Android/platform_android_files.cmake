@@ -27,6 +27,10 @@ set(FILES
     ../Common/Unimplemented/AzCore/PlatformIncl_Unimplemented.h
     ../Common/UnixLike/AzCore/Platform_UnixLike.cpp
     AzCore/PlatformIncl_Platform.h
+    AzCore/Serialization/Locale_Platform.h
+    AzCore/Settings/CommandLineParser_Platform.h
+    ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.h
+    ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.cpp
     ../Common/UnixLike/AzCore/Process/ProcessInfo_UnixLike.cpp
     ../Common/Unimplemented/AzCore/Debug/StackTracer_Unimplemented.cpp
     ../Common/UnixLike/AzCore/Debug/Trace_UnixLike.cpp
@@ -34,6 +38,8 @@ set(FILES
     ../Common/Default/AzCore/IO/Streamer/StreamerConfiguration_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.h
+    ../Common/UnixLike/AzCore/IO/AnsiTerminalUtils_UnixLike.cpp
+    ../Common/UnixLike/AzCore/IO/FileIO_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.cpp
@@ -52,6 +58,8 @@ set(FILES
     ../Common/UnixLike/AzCore/Module/DynamicModuleHandle_UnixLike.cpp
     AzCore/Module/DynamicModuleHandle_Android.cpp
     AzCore/NativeUI/NativeUISystemComponent_Android.cpp
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_fwd_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.cpp
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.h
@@ -59,7 +67,6 @@ set(FILES
     AzCore/Socket/AzSocket_Platform.h
     ../Common/UnixLike/AzCore/std/time_UnixLike.cpp
     AzCore/Utils/Utils_Android.cpp
-    ../Common/Unimplemented/AzCore/Utils/Utils_Unimplemented.cpp
     AzCore/Android/AndroidEnv.cpp
     AzCore/Android/AndroidEnv.h
     AzCore/Android/APKFileHandler.cpp
@@ -95,6 +102,6 @@ endif()
 # algorithm, which gets broken by the fast-math optimizations.
 ly_add_source_properties(
     SOURCES ${CMAKE_CURRENT_LIST_DIR}/../../AzCore/Math/IntersectSegment.cpp
-    PROPERTY COMPILE_FLAGS
-    VALUES -fno-fast-math
+    PROPERTY COMPILE_OPTIONS
+    VALUES -fno-fast-math -Wno-overriding-t-option
 )

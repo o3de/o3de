@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/Spawnable/AssetPlatformComponentRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
@@ -68,6 +69,7 @@ namespace AzToolsFramework
             Instance::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabConversionPipeline::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
+            AzToolsFramework::Prefab::PrefabConversionUtils::AssetPlatformComponentRemover::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
             PrefabPublicNotificationHandler::Reflect(context);
@@ -186,17 +188,36 @@ namespace AzToolsFramework
         }
 
         AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
-            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
             AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent,
             bool shouldCreateLinks)
         {
             AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity), parent);
-            CreatePrefab(entities, AZStd::move(instancesToConsume), filePath, newInstance, shouldCreateLinks);
+            AZStd::map<EntityAlias, AZ::Entity*> entityAliasMap;
+            for (AZ::Entity* entity : entities)
+            {
+                entityAliasMap.emplace(newInstance->GenerateEntityAlias(), entity);
+            }
+            CreatePrefab(entityAliasMap, AZStd::move(nestedInstances), filePath, newInstance, shouldCreateLinks);
+            return newInstance;
+        }
+
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefabWithCustomEntityAliases(
+            const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+            AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
+            AZ::IO::PathView filePath,
+            AZStd::unique_ptr<AZ::Entity> containerEntity,
+            InstanceOptionalReference parent,
+            bool shouldCreateLinks)
+        {
+            AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity), parent);
+            CreatePrefab(entities, AZStd::move(nestedInstances), filePath, newInstance, shouldCreateLinks);
             return newInstance;
         }
 
         void PrefabSystemComponent::CreatePrefab(
-            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+            AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
             AZ::IO::PathView filePath, AZStd::unique_ptr<Instance>& newInstance, bool shouldCreateLinks)
         {
             AZ::IO::Path relativeFilePath = m_prefabLoader.GenerateRelativePath(filePath);
@@ -209,14 +230,14 @@ namespace AzToolsFramework
                 return;
             }
 
-            for (AZ::Entity* entity : entities)
+            for (const auto& [entityAlias, entity] : entities)
             {
                 AZ_Assert(entity, "Prefab - Null entity passed in during Create Prefab");
 
-                newInstance->AddEntity(*entity);
+                newInstance->AddEntity(*entity, entityAlias);
             }
 
-            for (AZStd::unique_ptr<Instance>& instance : instancesToConsume)
+            for (AZStd::unique_ptr<Instance>& instance : nestedInstances)
             {
                 AZ_Assert(instance, "Prefab - Null instance passed in during Create Prefab");
 
@@ -1244,7 +1265,7 @@ namespace AzToolsFramework
             {
                 removed = templateIterator->second.RemoveLink(linkId);
 
-                //remove link
+                // Remove link
                 PrefabDomValueReference templateInstancesRef = templateIterator->second.GetInstancesValue();
                 if (templateInstancesRef == AZStd::nullopt)
                 {
@@ -1255,7 +1276,9 @@ namespace AzToolsFramework
                 removed = templateInstancesRef->get().RemoveMember(link.GetInstanceName().c_str())
                     ? removed : false;
 
-                if (removed)
+                // If removing all templates, we should not make any unnecessary updates for the linked instance DOMs.
+                // It is because doing such updates might cause some unexpected prefab patch warnings.
+                if (removed && !m_removingAllTemplates)
                 {
                     templateIterator->second.MarkAsDirty(true);
                     PropagateTemplateChanges(targetTemplateId);

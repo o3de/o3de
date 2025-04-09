@@ -10,15 +10,18 @@
 
 struct ForwardPassOutput
 {
-    float4 m_color1 : SV_Target0;   
-    float4 m_color2 : SV_Target1;  // Used as the alternate blend source when dual-source blending is enabled for TintedTransparent     
+    [[vk::location(0), vk::index(0)]]
+    float4 m_color1 : SV_Target0;
+    [[vk::location(0), vk::index(1)]]
+    float4 m_color2 : SV_Target1;  // Used as the alternate blend source when dual-source blending is enabled for TintedTransparent
 };
 
 // --- Vertex Shader ---
-
-VsOutput VertexShader(VsInput IN)
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    VsOutput OUT = EvaluateVertexGeometry(IN);
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
     return OUT;
 }
 
@@ -32,7 +35,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     Surface surface = EvaluateSurface(IN, geoData);
 
-    LightingData lightingData = EvaluateLighting(surface, IN.position);
+    LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
 
     // ------- Output -------
 
@@ -58,7 +61,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
     // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
     // not apply.
-    float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, surface.alpha, surface.roughnessLinear).x;
+    float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.alpha, surface.roughnessLinear).x;
     float alpha = lerp(fresnelAlpha, surface.alpha, surface.opacityAffectsSpecularFactor);
 
     if (o_opacity_mode == OpacityMode::Blended)
@@ -79,12 +82,11 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
         // This means that m_specularColor.rgb (source 1) is multiplied against the destination, then
         // m_diffuseColor.rgb (source) is added to that, and the final result is stored in render target 0.
 
-        OUT.m_color2.rgb = surface.baseColor * (1.0 - alpha); 
+        OUT.m_color2 = float4((surface.baseColor * (1.0 - alpha)), 0);
         
         // the output alpha doesn't matter in this case because it's not used in the shader's BlendState function.
         // Everything is pre-multiplied.
         OUT.m_color1.a = 0;
-        OUT.m_color2.a = 0;
     }
 
     return OUT;

@@ -200,6 +200,11 @@ namespace AzToolsFramework
             return;
         }
 
+        if (!AllowsDrop())
+        {
+            return;
+        }
+
         const bool isValidDropTarget = IsCorrectMimeData(event->mimeData()) &&
             EntityIdsFromMimeData(*event->mimeData());
 
@@ -214,6 +219,11 @@ namespace AzToolsFramework
     void PropertyEntityIdCtrl::dropEvent(QDropEvent* event)
     {
         AzQtComponents::LineEdit::removeDropTargetStyle(m_entityIdLineEdit);
+
+        if (!AllowsDrop())
+        {
+            return;
+        }
 
         if (event == nullptr)
         {
@@ -345,6 +355,15 @@ namespace AzToolsFramework
         m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride);
         m_componentsSatisfyingServices.clear();
 
+        if (!HasPickButton())
+        {
+            m_pickButton->hide();
+        }
+        else
+        {
+            m_pickButton->show();
+        }
+
         if (!m_requiredServices.empty() || !m_incompatibleServices.empty())
         {
             bool servicesMismatch = false;
@@ -354,7 +373,7 @@ namespace AzToolsFramework
 
             if (entity)
             {
-                AZStd::vector<AZ::ComponentServiceType> unmatchedServices(m_requiredServices);
+                AZ::ComponentDescriptor::DependencyArrayType unmatchedServices(m_requiredServices);
                 bool foundIncompatibleService = false;
                 const auto& components = entity->GetComponents();
                 for (const AZ::Component* component : components)
@@ -446,14 +465,14 @@ namespace AzToolsFramework
         return tooltip;
     }
 
-    void PropertyEntityIdCtrl::SetRequiredServices(const AZStd::vector<AZ::ComponentServiceType>& requiredServices)
+    void PropertyEntityIdCtrl::SetRequiredServices(AZStd::span<const AZ::ComponentServiceType> requiredServices)
     {
-        m_requiredServices = requiredServices;
+        m_requiredServices.assign(requiredServices.begin(), requiredServices.end());
     }
 
-    void PropertyEntityIdCtrl::SetIncompatibleServices(const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices)
+    void PropertyEntityIdCtrl::SetIncompatibleServices(AZStd::span<const AZ::ComponentServiceType> incompatibleServices)
     {
-        m_incompatibleServices = incompatibleServices;
+        m_incompatibleServices.assign(incompatibleServices.begin(), incompatibleServices.end());
     }
 
     void PropertyEntityIdCtrl::SetMismatchedServices(bool mismatchedServices)
@@ -508,10 +527,10 @@ namespace AzToolsFramework
         if (attrib == AZ::Edit::Attributes::RequiredService)
         {
             AZ::ComponentServiceType requiredService = 0;
-            AZStd::vector<AZ::ComponentServiceType> requiredServices;
+            AZ::ComponentDescriptor::DependencyArrayType requiredServices;
             if (attrValue->template Read<AZ::ComponentServiceType>(requiredService))
             {
-                GUI->SetRequiredServices(AZStd::vector<AZ::ComponentServiceType>({ requiredService }));
+                GUI->SetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType({ requiredService }));
             }
             else if (attrValue->template Read<decltype(requiredServices)>(requiredServices))
             {
@@ -521,10 +540,10 @@ namespace AzToolsFramework
         else if (attrib == AZ::Edit::Attributes::IncompatibleService)
         {
             AZ::ComponentServiceType incompatibleService = 0;
-            AZStd::vector<AZ::ComponentServiceType> incompatibleServices;
+            AZ::ComponentDescriptor::DependencyArrayType incompatibleServices;
             if (attrValue->template Read<AZ::ComponentServiceType>(incompatibleService))
             {
-                GUI->SetIncompatibleServices(AZStd::vector<AZ::ComponentServiceType>({ incompatibleService }));
+                GUI->SetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType({ incompatibleService }));
             }
             else if (attrValue->template Read<decltype(incompatibleServices)>(incompatibleServices))
             {
@@ -537,6 +556,22 @@ namespace AzToolsFramework
             if (attrValue->Read<bool>(value))
             {
                 GUI->SetHasClearButton(value);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::ShowPickButton)
+        {
+            bool value;
+            if (attrValue->Read<bool>(value))
+            {
+                GUI->SetHasPickButton(value);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::AllowDrop)
+        {
+            bool value;
+            if (attrValue->Read<bool>(value))
+            {
+                GUI->SetAllowsDrop(value);
             }
         }
     }

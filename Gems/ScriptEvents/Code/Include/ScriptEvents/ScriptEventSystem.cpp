@@ -36,7 +36,6 @@ namespace ScriptEvents
         return m_scriptEvents[key];
     }
 
-
     void ScriptEventsSystemComponentImpl::RegisterScriptEventFromDefinition(const ScriptEvents::ScriptEvent& definition)
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
@@ -162,5 +161,10 @@ namespace ScriptEvents
         {
             return AZ::Success();
         }
+    }
+
+    void ScriptEventsSystemComponentImpl::CleanUp()
+    {
+        m_scriptEvents.clear(); // invoking this will cause event busses to activate as destructors are called.
     }
 }

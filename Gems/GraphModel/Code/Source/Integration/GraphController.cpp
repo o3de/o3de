@@ -302,34 +302,29 @@ namespace GraphModelIntegration
 
         GraphCanvasMetadata* graphCanvasMetadata = GetGraphMetadata();
 
+        // Connect the EntitySaveDataRequestBus using a router. This will allow the graph controller to inject custom selection save
+        // data for all graph canvas objects. This should only be connected while serializing save data for the current graph.
+        GraphCanvas::EntitySaveDataRequestBus::Router::BusRouterConnect();
+
         // Create UI for all the Nodes
         for (const auto& pair : m_graph->GetNodes())
         {
             const NodeId nodeId = pair.first;
             NodePtr node = pair.second;
 
-            // Search the metadata to find the saved position of the Node
-            auto getScenePosition = [this, nodeId, graphCanvasMetadata](AZ::EntityId nodeUiId)
+            AZStd::shared_ptr<GraphCanvas::EntitySaveDataContainer> container;
+            auto metadataIter = graphCanvasMetadata->m_nodeMetadata.find(nodeId);
+            if (metadataIter != graphCanvasMetadata->m_nodeMetadata.end() && metadataIter->second)
             {
-                AZ::Vector2 position(0, 0);
+                container = metadataIter->second;
+            }
 
-                const auto metadataIter = graphCanvasMetadata->m_nodeMetadata.find(nodeId);
-                if (metadataIter != graphCanvasMetadata->m_nodeMetadata.end() && metadataIter->second)
-                {
-                    GraphCanvas::EntitySaveDataRequestBus::Event(
-                        nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *metadataIter->second);
-                }
-                else
-                {
-                    AZ_UNUSED(this); // Prevent unused warning in release builds
-                    AZ_Error(m_graph->GetSystemName(), false, "Failed to load position information for node [%d]", nodeId);
-                }
+            AZ::EntityId nodeUiId = CreateNodeUi(nodeId, node, AZ::Vector2::CreateZero());
 
-                GraphCanvas::GeometryRequestBus::EventResult(position, nodeUiId, &GraphCanvas::GeometryRequests::GetPosition);
-                return position;
-            };
-
-            CreateNodeUi(nodeId, node, getScenePosition);
+            if (container)
+            {
+                GraphCanvas::EntitySaveDataRequestBus::Event(nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *container);
+            }
         }
 
         // Wrap any nodes stored in the node wrappings
@@ -347,14 +342,17 @@ namespace GraphModelIntegration
             CreateConnectionUi(connection);
         }
 
-        // Load graph canvas metadata for the scene
+        // Load graph canvas metadata for the scene. This will recreate all of the utility types like comments, bookmarks, groups, etc. 
         if (graphCanvasMetadata->m_sceneMetadata)
         {
             GraphCanvas::EntitySaveDataRequestBus::Event(
                 GetGraphCanvasSceneId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *graphCanvasMetadata->m_sceneMetadata);
         }
 
-        // After the graph has been reconstructed, this signal will Inform the scene, node groups, and other types to update their state
+        // Disconnect the EntitySaveDataRequestBus after save data serialization as completed
+        GraphCanvas::EntitySaveDataRequestBus::Router::BusRouterDisconnect();
+
+        // After the graph has been reconstructed, this signal will inform the scene, node groups, and other types to update their state
         // after all of the graph elements are in place. This is necessary for node groups to reclaim nodes that were contained within them
         // when the graph was saved.
         GraphCanvas::SceneRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::SignalLoadEnd);
@@ -415,9 +413,7 @@ namespace GraphModelIntegration
     }
 
     AZ::EntityId GraphController::CreateNodeUi(
-        [[maybe_unused]] GraphModel::NodeId nodeId,
-        GraphModel::NodePtr node,
-        AZStd::function<AZ::Vector2(AZ::EntityId /*nodeUiId*/)> getScenePosition)
+        [[maybe_unused]] GraphModel::NodeId nodeId, GraphModel::NodePtr node, const AZ::Vector2& scenePosition)
     {
         using namespace GraphModel;
 
@@ -515,24 +511,8 @@ namespace GraphModelIntegration
             }
         }
 
-        // Add the node to the scene at a specific position...
-        //     We have to use a callback function (getScenePosition) to do this because:
-        //     At some point, we need to get the node's position from GraphCanvasMetadataMap. It would be nice if we could do this either
-        //     before or after CreateNodeUi(). But we can't because of two ordering issues: 1) We have to use the GraphCanvas node EntityId
-        //     to get the position data from GraphCanvasMetadataMap. This EntityId isn't available until the
-        //        GraphCanvas node is created (a couple lines up).
-        //     2) We have to call AddNodeUiToScene() before creating all the GraphCavnas slots (below), because there's a bug where creating
-        //     the slots
-        //        first will cause the node to be stretched way too wide.
-        AddNodeUiToScene(nodeUiId, getScenePosition(nodeUiId));
-
-        return nodeUiId;
-    }
-
-    void GraphController::AddNodeUiToScene(AZ::EntityId nodeUiId, const AZ::Vector2& scenePosition)
-    {
         GraphCanvas::SceneRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::AddNode, nodeUiId, scenePosition, false);
-        GraphCanvas::SceneMemberUIRequestBus::Event(nodeUiId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
+        return nodeUiId;
     }
 
     void GraphController::CreateConnectionUi(GraphModel::ConnectionPtr connection)
@@ -564,19 +544,17 @@ namespace GraphModelIntegration
 
         const GraphModel::NodeId nodeId = m_graph->AddNode(node);
 
-        AZ::EntityId graphCanvasNodeId = CreateNodeUi(
-            nodeId,
-            node,
-            [sceneDropPosition](AZ::EntityId)
-            {
-                return sceneDropPosition;
-            });
+        AZ::EntityId graphCanvasNodeId = CreateNodeUi(nodeId, node, sceneDropPosition);
+
+        GraphCanvas::SceneMemberUIRequestBus::Event(graphCanvasNodeId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
+
+        SaveMetadata(graphCanvasNodeId);
 
         // Offset the sceneDropPosition so if multiple nodes are dragged into the scene at the same time, the don't stack exactly on top of
         // each other
         AZ::EntityId gridId;
         GraphCanvas::SceneRequestBus::EventResult(gridId, GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::GetGrid);
-        AZ::Vector2 offset;
+        AZ::Vector2 offset = AZ::Vector2::CreateZero();
         GraphCanvas::GridRequestBus::EventResult(offset, gridId, &GraphCanvas::GridRequests::GetMinorPitch);
         sceneDropPosition += offset;
 
@@ -705,7 +683,6 @@ namespace GraphModelIntegration
         {
             CreateConnectionUi(newConnection);
         }
-
         return newConnection;
     }
 
@@ -844,6 +821,7 @@ namespace GraphModelIntegration
             if (nodeId.IsValid())
             {
                 GraphCanvas::SceneMemberUIRequestBus::Event(nodeId, &GraphCanvas::SceneMemberUIRequests::SetSelected, selected);
+                SaveMetadata(nodeId);
             }
         }
     }
@@ -953,15 +931,25 @@ namespace GraphModelIntegration
         }
     }
 
+    void GraphController::OnConnectionAdded(const AZ::EntityId& connectionUiId)
+    {
+        if (const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId))
+        {
+            GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetSourceNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+            GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetTargetNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+        }
+    }
+
     void GraphController::OnConnectionRemoved(const AZ::EntityId& connectionUiId)
     {
         if (const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId))
         {
-            m_graph->RemoveConnection(connection);
-            m_elementMap.Remove(connection);
-
             GraphControllerNotificationBus::Event(
                 m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionRemoved, connection);
+            GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetSourceNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+            GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetTargetNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+            m_graph->RemoveConnection(connection);
+            m_elementMap.Remove(connection);
         }
     }
 
@@ -1114,6 +1102,65 @@ namespace GraphModelIntegration
         }
     }
 
+    void GraphController::OnSelectionChanged()
+    {
+        bool loading = false;
+        GraphCanvas::SceneRequestBus::EventResult(loading, GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::IsLoading);
+        bool pasting = false;
+        GraphCanvas::SceneRequestBus::EventResult(pasting, GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::IsPasting);
+        if (loading || pasting)
+        {
+            return;
+        }
+
+        // Save selection save data and other metadata every time the selection changes unless this is during a reload or a face operation
+        SaveMetadata(GetGraphCanvasSceneId());
+        GraphCanvas::SceneRequestBus::Event(
+            GetGraphCanvasSceneId(),
+            [&](GraphCanvas::SceneRequests* scene)
+            {
+                for (const auto& element : scene->GetNodes())
+                {
+                    SaveMetadata(element);
+                }
+                for (const auto& element : scene->GetConnections())
+                {
+                    SaveMetadata(element);
+                }
+            });
+    }
+
+    void GraphController::WriteSaveData(GraphCanvas::EntitySaveDataContainer& saveDataContainer) const
+    {
+        // Store selection save data for the current graph element
+        const AZ::EntityId nodeUiId = *GraphCanvas::EntitySaveDataRequestBus::GetCurrentBusId();
+
+        // Save data will only be stored for selected items to minimize file size
+        bool selected = false;
+        GraphCanvas::SceneMemberUIRequestBus::EventResult(selected, nodeUiId, &GraphCanvas::SceneMemberUIRequests::IsSelected);
+        if (selected)
+        {
+            auto data = saveDataContainer.FindCreateSaveData<GraphCanvasSelectionData>();
+            data->m_selected = selected;
+        }
+    }
+
+    void GraphController::ReadSaveData(const GraphCanvas::EntitySaveDataContainer& saveDataContainer)
+    {
+        // Restore selection and position data for the current graph element
+        const AZ::EntityId nodeUiId = *GraphCanvas::EntitySaveDataRequestBus::GetCurrentBusId();
+
+        if (auto data = saveDataContainer.FindSaveData<GraphCanvasSelectionData>())
+        {
+            GraphCanvas::SceneMemberUIRequestBus::Event(nodeUiId, &GraphCanvas::SceneMemberUIRequests::SetSelected, data->m_selected);
+        }
+
+        if (auto data = saveDataContainer.FindSaveData<GraphCanvas::GeometrySaveData>())
+        {
+            GraphCanvas::GeometryRequestBus::Event(nodeUiId, &GraphCanvas::GeometryRequests::SetPosition, data->m_position);
+        }
+    }
+
     GraphModel::ConnectionPtr GraphController::CreateConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot)
     {
         if (!sourceSlot || !targetSlot)
@@ -1128,10 +1175,12 @@ namespace GraphModelIntegration
             // No need to clean up the maps here because the OnConnectionRemoved() callback will handle that
         }
 
-        GraphModel::ConnectionPtr newConnection = m_graph->AddConnection(sourceSlot, targetSlot);
+        GraphModel::ConnectionPtr connection = m_graph->AddConnection(sourceSlot, targetSlot);
         GraphControllerNotificationBus::Event(
-            m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionAdded, newConnection);
-        return newConnection;
+            m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionAdded, connection);
+        GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetSourceNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+        GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetTargetNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+        return connection;
     }
 
     bool GraphController::CreateConnection(
@@ -1549,9 +1598,21 @@ namespace GraphModelIntegration
 
     void GraphController::SaveMetadata(const AZ::EntityId& graphCanvasElement)
     {
-        using namespace GraphModel;
+        bool loading = false;
+        GraphCanvas::SceneRequestBus::EventResult(loading, GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::IsLoading);
+        bool pasting = false;
+        GraphCanvas::SceneRequestBus::EventResult(pasting, GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::IsPasting);
+        if (loading || pasting)
+        {
+            return;
+        }
 
+        using namespace GraphModel;
         GraphCanvasMetadata* graphCanvasMetadata = GetGraphMetadata();
+
+        // Connect the EntitySaveDataRequestBus using a router. This will allow the graph controller to inject custom selection save
+        // data for all graph canvas objects. This should only be connected while serializing save data for the current graph.
+        GraphCanvas::EntitySaveDataRequestBus::Router::BusRouterConnect();
 
         // Save into m_nodeMetadata
         if (const auto node = m_elementMap.Find<Node>(graphCanvasElement))
@@ -1575,6 +1636,9 @@ namespace GraphModelIntegration
 
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, nullptr);
         }
+
+        // Disconnect the EntitySaveDataRequestBus after save data serialization as completed
+        GraphCanvas::EntitySaveDataRequestBus::Router::BusRouterDisconnect();
     }
 
     QGraphicsLinearLayout* GraphController::GetLayoutFromNode(GraphModel::NodePtr node)

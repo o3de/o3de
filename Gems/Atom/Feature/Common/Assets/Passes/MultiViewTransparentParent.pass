@@ -43,7 +43,7 @@
                         "$type": "RasterPassData",
                         "DrawListTag": "multiviewTransparent",
                         "DrawListSortType": "KeyThenReverseDepth",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/ForwardPassSrg.shader"
                         }

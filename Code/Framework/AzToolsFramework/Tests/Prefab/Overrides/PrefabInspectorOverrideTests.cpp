@@ -17,7 +17,7 @@ namespace UnitTest
     // These index paths depend on multiple factors like the data in the component, how its reflected to serialize and edit contexts,
     // how different DPE adapters likes ReflectionAdapter and PrefabAdapter construct the DPE DOM etc. Therefore, these may
     // change in the future if the data stored in the DPE DOM itself changes and need to be modified accordingly to prevent test failures.
-    constexpr AZStd::string_view pathToTranslateRow = "/0/3/2";
+    constexpr AZStd::string_view pathToTranslateRow = "/1/2";
 
     TEST_F(PrefabInspectorOverrideTest, ValidatePresenceOfOverrideProperty)
     {
@@ -43,10 +43,11 @@ namespace UnitTest
 
             AZ::Dom::Value labelPropertyEditor = translateRow[0];
             EXPECT_EQ(labelPropertyEditor[PropertyEditor::Type.GetName()].GetString(), PrefabOverrideLabel::Name);
-            EXPECT_EQ(labelPropertyEditor[PrefabOverrideLabel::Text.GetName()].GetString(), "Translate");
+            EXPECT_EQ(labelPropertyEditor[PrefabOverrideLabel::Value.GetName()].GetString(), "Translate");
             EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::RelativePath.GetName()].GetString().empty());
-            EXPECT_TRUE(labelPropertyEditor[PrefabOverrideLabel::IsOverridden.GetName()].GetBool());
             EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::RevertOverride.GetName()].IsNull());
+
+            EXPECT_TRUE(labelPropertyEditor[PrefabOverrideLabel::IsOverridden.GetName()].GetBool());
 
             AZ::Dom::Value valuePropertyEditor = translateRow[1];
             EXPECT_EQ(valuePropertyEditor[PropertyEditor::Value.GetName()][0].GetDouble(), 10.0);
@@ -80,10 +81,11 @@ namespace UnitTest
 
             AZ::Dom::Value labelPropertyEditor = translateRow[0];
             EXPECT_EQ(labelPropertyEditor[PropertyEditor::Type.GetName()].GetString(), PrefabOverrideLabel::Name);
-            EXPECT_EQ(labelPropertyEditor[PrefabOverrideLabel::Text.GetName()].GetString(), "Translate");
+            EXPECT_EQ(labelPropertyEditor[PrefabOverrideLabel::Value.GetName()].GetString(), "Translate");
             EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::RelativePath.GetName()].GetString().empty());
+            EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::RevertOverride.GetName()].IsNull());
+
             EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::IsOverridden.GetName()].GetBool());
-            EXPECT_TRUE(labelPropertyEditor[PrefabOverrideLabel::RevertOverride.GetName()].IsNull());
 
             AZ::Dom::Value valuePropertyEditor = translateRow[1];
             EXPECT_EQ(valuePropertyEditor[PropertyEditor::Value.GetName()][0].GetDouble(), 10.0);

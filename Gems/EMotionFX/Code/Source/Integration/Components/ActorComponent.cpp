@@ -32,8 +32,6 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/AttachmentNode.h>
 
-#include <MCore/Source/AzCoreConversions.h>
-
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace EMotionFX
@@ -146,7 +144,7 @@ namespace EMotionFX
                 ActorRenderFlagsReflect(*serializeContext);
 
                 serializeContext->Class<Configuration>()
-                    ->Version(6)
+                    ->Version(8)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
@@ -155,6 +153,9 @@ namespace EMotionFX
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
                     ->Field("RenderFlags", &Configuration::m_renderFlags)
+                    ->Field("ExcludeFromReflectionCubeMaps", &Configuration::m_excludeFromReflectionCubeMaps)
+                    ->Field("LightingChannelConfig", &Configuration::m_lightingChannelConfig)
+                    ->Field("RayTracingEnabled", &Configuration::m_rayTracingEnabled)
                 ;
             }
         }
@@ -193,6 +194,7 @@ namespace EMotionFX
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
                     ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
+                    ->Event("SetRayTracingEnabled", &ActorComponentRequestBus::Events::SetRayTracingEnabled)
                     ->Event("EnableInstanceUpdate", &ActorComponentRequestBus::Events::EnableInstanceUpdate)
                     ->VirtualProperty("RenderCharacter", "GetRenderCharacter", "SetRenderCharacter")
                 ;
@@ -371,6 +373,17 @@ namespace EMotionFX
             }
             return false;
         }
+
+        //////////////////////////////////////////////////////////////////////////
+        void ActorComponent::SetRayTracingEnabled(bool enabled)
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->SetRayTracingEnabled(enabled);
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
         SkinningMethod ActorComponent::GetSkinningMethod() const
         {
             return m_configuration.m_skinningMethod;
@@ -430,6 +443,7 @@ namespace EMotionFX
                 m_actorInstance.get());
 
             m_actorInstance->SetLODLevel(m_configuration.m_lodLevel);
+            m_actorInstance->SetLightingChannelMask(m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
 
             // Setup initial transform and listen for transform changes.
             AZ::Transform transform = AZ::Transform::CreateIdentity();
@@ -438,7 +452,7 @@ namespace EMotionFX
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
 
             m_actorInstance->UpdateWorldTransform();
-            // Set bounds update mode and compute bbox first time 
+            // Set bounds update mode and compute bbox first time
             m_configuration.m_bboxConfig.SetAndUpdate(m_actorInstance.get());
             m_actorInstance->UpdateBounds(0, ActorInstance::EBoundsType::BOUNDS_STATIC_BASED);
 
@@ -455,11 +469,13 @@ namespace EMotionFX
                     m_actorInstance,
                     m_configuration.m_actorAsset,
                     m_configuration.m_skinningMethod,
-                    transform));
+                    transform,
+                    m_configuration.m_rayTracingEnabled));
 
                 if (m_renderActorInstance)
                 {
                     m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
+                    m_renderActorInstance->SetExcludeFromReflectionCubeMaps(m_configuration.m_excludeFromReflectionCubeMaps);
                 }
             }
 
@@ -778,17 +794,17 @@ namespace EMotionFX
             {
             case Space::LocalSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetLocalSpaceTransform(index));
+                return currentPose->GetLocalSpaceTransform(index).ToAZTransform();
             }
 
             case Space::ModelSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetModelSpaceTransform(index));
+                return currentPose->GetModelSpaceTransform(index).ToAZTransform();
             }
 
             case Space::WorldSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetWorldSpaceTransform(index));
+                return currentPose->GetWorldSpaceTransform(index).ToAZTransform();
             }
 
             default:

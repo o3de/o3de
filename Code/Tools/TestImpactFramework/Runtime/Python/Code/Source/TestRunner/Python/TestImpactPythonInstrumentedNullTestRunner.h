@@ -22,7 +22,7 @@ namespace TestImpact
         using PythonInstrumentedTestRunnerBase::PythonInstrumentedTestRunnerBase;
 
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
-            const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
+            const TestJobRunner::JobInfos& jobInfos,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,

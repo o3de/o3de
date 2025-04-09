@@ -448,7 +448,7 @@ def register_gem_path(json_data: dict,
         # because most gems depend on engine gems which would not be found
         if project_path and manifest.get_project_engine_path(project_path):
             # note this check includes engine and manifest gems
-            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path)
+            incompatible_objects = compatibility.get_gems_project_incompatible_objects([gem_path], [gem_json_data['gem_name']], project_path)
             if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:\n  '+
@@ -538,6 +538,13 @@ def register_project_path(json_data: dict,
             if not manifest.save_o3de_manifest(project_json_data, project_json_path):
                 return 1
 
+        if not dry_run:
+            # If the project.json engine is being updated, also update the user/engine/CMakePresets.json
+            # file to include the location CMakePresets.json in the engine for the local user
+            cmake.update_cmake_presets_for_project(preset_path=project_path / cmake.PROJECT_ENGINE_PRESET_RELATIVE_PATH,
+                                                   engine_name=project_json_data['engine'],
+                                                   engine_version=project_json_data['engine_version'])
+
     if dry_run:
         logger.info('Project path was not registered because --dry-run option was specified')
 
@@ -579,6 +586,7 @@ def register_restricted_path(json_data: dict,
 def register_repo(json_data: dict,
                   repo_uri: str,
                   remove: bool = False) -> int:
+    repo_uri = repo.sanitized_repo_uri(repo_uri)
     manifest_uri = repo.get_repo_manifest_uri(repo_uri)
 
     if not manifest_uri:
@@ -592,6 +600,7 @@ def register_repo(json_data: dict,
         while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)
     else:
+        # this will fail if repo_uri is a file://uri
         repo_uri = pathlib.Path(repo_uri).resolve().as_posix()
         while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)
@@ -610,9 +619,9 @@ def register_repo(json_data: dict,
             json_data.setdefault('repos', []).insert(0, repo_uri)
 
         return result
-
+    else:
+        logger.error(f'Failed to download repo_manifest {manifest_uri}.')
     return 1
-
 
 def register_default_o3de_object_folder(json_data: dict,
                                         default_o3de_object_folder: pathlib.Path,

@@ -15,7 +15,7 @@
 #define LightingData        LightingData_BasePBR
 #endif
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/Debug.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
@@ -25,65 +25,74 @@ class LightingData_BasePBR
 {
     LightCullingTileIterator tileIterator;
     
+    uint lightingChannels;
+    
     // Lighting outputs
-    float3 diffuseLighting;
-    float3 specularLighting;
+    real3 diffuseLighting;
+    real3 specularLighting;
 
     // Factors for the amount of diffuse and specular lighting applied
-    float3 diffuseResponse;
+    real3 diffuseResponse;
    
     // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
-    float shrinkFactor;
+    real shrinkFactor;
 
     // Normalized direction from surface to camera
     float3 dirToCamera;
     
     // Scaling term to approximate multiscattering contribution in specular BRDF
-    float3 multiScatterCompensation;
+    real3 multiScatterCompensation;
 
     // Lighting emitted from the surface
-    float3 emissiveLighting;
+    real3 emissiveLighting;
 
     // BRDF texture values
-    float2 brdf;
+    real2 brdf;
 
     // Normal . View
     float NdotV;
 
 #if ENABLE_TRANSMISSION
-    float3 translucentBackLighting;
+    real3 translucentBackLighting;
 #endif
 
     // Occlusion factors (0 = dark, 1 = light)
-    float diffuseAmbientOcclusion;
-    float specularOcclusion;
+    real diffuseAmbientOcclusion;
+    real specularOcclusion;
 
-    void Init(float3 positionWS, float3 normal, float roughnessLinear);
-    void CalculateMultiscatterCompensation(float3 specularF0, bool enabled);
+    void Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition);
+    void CalculateMultiscatterCompensation(real3 specularF0, bool enabled);
     void FinalizeLighting(Surface surface);
+    float GetSpecularNdotV() { return NdotV; }
 };
 
-void LightingData_BasePBR::Init(float3 positionWS, float3 normal, float roughnessLinear)
+void LightingData_BasePBR::Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition)
 {
-    diffuseLighting = float3(0.0, 0.0, 0.0);
-    specularLighting = float3(0.0, 0.0, 0.0);
-    multiScatterCompensation = float3(1.0f, 1.0f, 1.0f);
-    emissiveLighting = float3(0.0f, 0.0f, 0.0f);
+    diffuseLighting = real3(0.0, 0.0, 0.0);
+    specularLighting = real3(0.0, 0.0, 0.0);
+    multiScatterCompensation = real3(1.0, 1.0, 1.0);
+    emissiveLighting = real3(0.0, 0.0, 0.0);
 #if ENABLE_TRANSMISSION
-    translucentBackLighting = float3(0.0f, 0.0f, 0.0f);
+    translucentBackLighting = real3(0.0, 0.0, 0.0);
 #endif
-    diffuseAmbientOcclusion = 1.0f;
-    specularOcclusion = 1.0f;
+    diffuseAmbientOcclusion = 1.0;
+    specularOcclusion = 1.0;
+        
+    lightingChannels = 0xFFFFFFFF;
 
-    dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
+    dirToCamera = normalize(viewPosition - positionWS);
 
     // sample BRDF map (indexed by smoothness values rather than roughness)
-    NdotV = saturate(dot(normal, dirToCamera));
-    float2 brdfUV = float2(NdotV, (1.0f - roughnessLinear));
-    brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+    NdotV = saturate(dot(specularNormal, dirToCamera));
+    float2 brdfUV = float2(NdotV, (1.0 - roughnessLinear));
+    #ifdef CS_SAMPLERS
+    brdf = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, brdfUV, 0).rg);
+    #else
+    brdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg);
+    #endif
 }
 
-void LightingData_BasePBR::CalculateMultiscatterCompensation(float3 specularF0, bool enabled)
+void LightingData_BasePBR::CalculateMultiscatterCompensation(real3 specularF0, bool enabled)
 {
     multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, enabled);
 }
@@ -91,14 +100,15 @@ void LightingData_BasePBR::CalculateMultiscatterCompensation(float3 specularF0, 
 void LightingData_BasePBR::FinalizeLighting(Surface surface)
 {
     specularLighting *= specularOcclusion;
+    diffuseLighting *= diffuseAmbientOcclusion;
 
     if(!IsSpecularLightingEnabled())
     {
-        specularLighting = float3(0, 0, 0);
+        specularLighting = real3(0, 0, 0);
     }
     if(!IsDiffuseLightingEnabled())
     {
-        diffuseLighting = float3(0, 0, 0);
+        diffuseLighting = real3(0, 0, 0);
     }
 
     // Transmitted light

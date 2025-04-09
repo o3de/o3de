@@ -93,7 +93,9 @@ namespace AssetProcessor
                 bool canProcessJob = true;
                 for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
                 {
-                    if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::Order || jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
+                    if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::Order ||
+                        jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce ||
+                        jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnly)
                     {
                         const AssetBuilderSDK::JobDependency& jobDependency = jobDependencyInternal.m_jobDependency;
                         AZ_Assert(

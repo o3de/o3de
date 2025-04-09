@@ -72,11 +72,12 @@ namespace SerializeContextTools
         AZ_Printf("Help", R"(    example: 'convert-ini --files=AssetProcessorPlatformConfig.ini;bootstrap.cfg --ext=setreg)" "\n");
         AZ_Printf("Help", "  'convert-slice': Converts ObjectStream-based slice files or legacy levels to a JSON-based prefab.\n");
         AZ_Printf("Help", "    [arg] -files=<path>: <comma or semicolon>-separated list of files to convert. Supports wildcards.\n");
+        AZ_Printf("Help", "    [opt] -slices=<path>: <comma or semicolon>-separated list of .slice files that you converted files depends on. Supports wildcards. Use this if you cannot use the asset processor on the target project (like o3de converting lumberyard)\n");
         AZ_Printf("Help", "    [opt] -dryrun: Processes as normal, but doesn't write files.\n");
         AZ_Printf("Help", "    [opt] -keepdefaults: Fields are written if a default value was found.\n");
         AZ_Printf("Help", "    [opt] -verbose: Report additional details during the conversion process.\n");
         AZ_Printf("Help", "    example: 'convert-slice -files=*.slice -specializations=editor\n");
-        AZ_Printf("Help", "    example: 'convert-slice -files=Levels/TestLevel/TestLevel.ly -specializations=editor\n");
+        AZ_Printf("Help", "    example: 'convert-slice -files=Levels/TestLevel/TestLevel.ly -project-path=F:/lmbr-fork/dev/StarterGame -slices=Gems/*.slice -specializations=editor\n");
         AZ_Printf("Help", "\n");
         AZ_Printf("Help", "  'createtype': Create a default constructed object using Json Serialization and output the contents.\n");
         AZ_Printf("Help", "    [arg] --type-name=<string>: Name of type to construct and output.\n");
@@ -93,6 +94,33 @@ namespace SerializeContextTools
         AZ_Printf("Help", R"(    example: 'createtype --type-name="AZ::Entity" --json-prefix="/My/Anchor"')" "\n");
         AZ_Printf("Help", R"(    example: 'createtype --type-name="AZ::Entity" --output-file=object.json)" "\n");
         AZ_Printf("Help", "\n");
+        AZ_Printf("Help", "  'createuuid': Create a UUID using a SHA1 hash from a string and output the contents to stdout or a file.\n");
+        AZ_Printf("Help", "    [arg] --values=<string...>: One or more strings to convert to UUID.\n");
+        AZ_Printf("Help", "        Multiple strings can be specified by either using multiple `--values` option or with a single `--values` option by separating them by a comma without any quotes.\n");
+        AZ_Printf("Help", R"(        Ex. --values "engine.json" --values "project.json")" "\n");
+        AZ_Printf("Help", R"(        Ex. --values engine.json,project.json)" "\n");
+        AZ_Printf("Help", R"(        Ex. --values engine.json,project.json --values gem.json)" "\n");
+        AZ_Printf("Help", "    [opt] --values-file=<filepath>: Path to file containing linefeed delimited strings to convert to UUD.\n");
+        AZ_Printf("Help", "          specifying an argument of dash '-' reads input from stdin\n");
+        AZ_Printf("Help", "    [opt] --output-file=<filepath>: Path to the file to output constructed uuids.\n");
+        AZ_Printf("Help", "          If not supplied, output is written to stdout.\n");
+        AZ_Printf("Help", "          specifying an argument of dash '-' writes output to stdout\n");
+        AZ_Printf("Help", "    [opt] --with-curly-braces=<true|false> Outputs the Uuid with curly braces. Defaults to true\n");
+        AZ_Printf("Help", "         Ex. when true = {0123456789abcdef0123456789abcdef}\n");
+        AZ_Printf("Help", "         Ex. when false = 0123456789abcdef0123456789abcdef\n");
+        AZ_Printf("Help", "    [opt] --with-dashes=<true|false> Outputs the Uuid with dashes. Defaults to true\n");
+        AZ_Printf("Help", "         Ex. when true = 01234567-89ab-cdef-0123-456789abcdef\n");
+        AZ_Printf("Help", "         Ex. when false = 0123456789abcdef0123456789abcdef\n");
+        AZ_Printf("Help", "    [opt] -q --quiet suppress output of string used to generate the Uuid\n");
+        AZ_Printf("Help", "         Ex. when set = 01234567-89ab-cdef-0123-456789abcdef\n");
+        AZ_Printf("Help", "         Ex. when not set = 01234567-89ab-cdef-0123-456789abcdef <uuid-string>\n");
+        AZ_Printf("Help", R"(    example: 'createuuid --values="engine.json"')" "\n");
+        AZ_Printf("Help", R"(        output: {3B28A661-E723-5EBE-AB52-EC5829D88C31} engine.json)" "\n");
+        AZ_Printf("Help", R"(    example: 'createuuid --values="engine.json" --values="project.json"')" "\n");
+        AZ_Printf("Help", R"(        output: {3B28A661-E723-5EBE-AB52-EC5829D88C31} engine.json)" "\n");
+        AZ_Printf("Help", R"(        output: {B076CDDC-14DF-50F4-A5E9-7518ABB3E851} project.json)" "\n");
+        AZ_Printf("Help", R"(    example: 'createtype --values=engine.json,project.json --output-file=uuids.txt')" "\n");
+        AZ_Printf("Help", "\n");
         AZ_Printf("Help", "  Miscellaneous Options:\n");
         AZ_Printf("Help", "  This options can be used with any of the above actions:\n");
         AZ_Printf("Help", "    [opt] --regset <setreg_key>=<setreg_value>: Set setreg_value at key setreg_key within the settings registry.\n");
@@ -107,18 +135,15 @@ namespace SerializeContextTools
         constexpr int StdoutDescriptor = 1;
         AZ::IO::FileDescriptorCapturer stdoutCapturer(StdoutDescriptor);
 
-        // Send stdout output to stderr if the executed command returned a failure
-        bool suppressStderr = false;
-        auto SendStdoutToError = [&suppressStderr](AZStd::span<AZStd::byte const> outputBytes)
+        // Capture command output of command that executed
+        // If a failure occured write the output to stderr, otherwise write the output to stdout
+        AZStd::string commandOutput;
+        auto CaptureStdout = [&commandOutput](AZStd::span<AZStd::byte const> outputBytes)
         {
-            if (!suppressStderr)
-            {
-                constexpr int StderrDescriptor = 2;
-                AZ::IO::PosixInternal::Write(StderrDescriptor, outputBytes.data(), aznumeric_cast<int>(outputBytes.size()));
-            }
+            commandOutput += AZStd::string_view(reinterpret_cast<const char*>(outputBytes.data()), outputBytes.size());
         };
 
-        stdoutCapturer.Start();
+        stdoutCapturer.Start(CaptureStdout);
         Application application(argc, argv, &stdoutCapturer);
         AZ::ComponentApplication::StartupParameters startupParameters;
         application.Start({}, startupParameters);
@@ -160,26 +185,28 @@ namespace SerializeContextTools
             {
                 result = Dumper::CreateType(application);
             }
+            else if (AZ::StringFunc::Equal("createuuid", action))
+            {
+                result = Dumper::CreateUuid(application);
+            }
             else
             {
                 commandExecuted = false;
             }
         }
 
-        // If a command was executed, display the help options
+        // If a command was not executed, display the help options
         if (!commandExecuted)
         {
             // Stop capture of stdout to allow the help command to output to stdout
-            // stderr messages are suppressed in this case
             fflush(stdout);
-            suppressStderr = true;
-            stdoutCapturer.Stop(SendStdoutToError);
+            stdoutCapturer.Stop();
             PrintHelp();
             result = true;
             // Flush stdout stream before restarting the capture to make sure
             // all the help text is output
             fflush(stdout);
-            stdoutCapturer.Start();
+            stdoutCapturer.Start(AZStd::move(CaptureStdout));
         }
 
         if (!result)
@@ -189,15 +216,18 @@ namespace SerializeContextTools
 
         application.Stop();
 
-        // Write out any stdout to stderr at this point
-
         // Because the FILE* stream is buffered, make sure to flush
         // it before stopping the capture of stdout.
         fflush(stdout);
+        stdoutCapturer.Stop();
 
-        suppressStderr = result;
-        stdoutCapturer.Stop(SendStdoutToError);
+        // Write out any error output if the command result is non-zero
+        if (!result)
+        {
+            fwrite(commandOutput.data(), 1, commandOutput.size(), stderr);
+            return -1;
+        }
 
-        return result ? 0 : -1;
+        return 0;
     }
 }

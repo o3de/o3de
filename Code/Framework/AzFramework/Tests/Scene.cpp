@@ -111,7 +111,9 @@ namespace SceneUnitTest
             m_app.RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
 
             AZ::ComponentApplication::Descriptor desc;
-            m_systemEntity = m_app.Create(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_systemEntity = m_app.Create(desc, startupParameters);
             m_systemEntity->Init();
 
             m_systemEntity->CreateComponent<SceneSystemComponent>();
@@ -202,7 +204,8 @@ namespace SceneUnitTest
         size_t index = 0;
         m_sceneSystem->IterateActiveScenes([&index, &scenes](const AZStd::shared_ptr<Scene>& scene)
             {
-                EXPECT_EQ(scenes[index++], scene);
+                AZStd::shared_ptr<Scene> newscene = scenes[index++];
+                EXPECT_EQ(newscene, scene);
                 return true;
             });
     }
@@ -235,7 +238,8 @@ namespace SceneUnitTest
         index = 0;
         m_sceneSystem->IterateZombieScenes([&index, &scenes](Scene& scene)
             {
-                EXPECT_EQ(scenes[index++].get(), &scene);
+                AZStd::shared_ptr<Scene> zombieScene = scenes[index++];
+                EXPECT_EQ(zombieScene.get(), &scene);
                 return true;
             });
 

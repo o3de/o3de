@@ -21,7 +21,7 @@ namespace AZ
             return aznew BufferView();
         }
 
-        RHI::ResultCode BufferView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode BufferView::InitInternal(RHI::Device& deviceBase, const RHI::DeviceResource& resourceBase)
         {
             const Buffer& buffer = static_cast<const Buffer&>(resourceBase);
             const RHI::BufferViewDescriptor& viewDescriptor = GetDescriptor();
@@ -54,14 +54,13 @@ namespace AZ
                                                                  resourceOptions : mtlBuffer.resourceOptions
                                                                            usage : textureUsage];
                 mtlTextureDesc.textureType = MTLTextureTypeTextureBuffer;
-
                 [[maybe_unused]] uint32_t bytesPerRow = viewDescriptor.m_elementCount * bytesPerPixel;
                 AZ_Assert(bytesPerRow == (viewDescriptor.m_elementCount * viewDescriptor.m_elementSize), "Mismatch for bytesPerRow");
                 id<MTLTexture> mtlTexture = [mtlBuffer newTextureWithDescriptor : mtlTextureDesc
                                                                          offset : m_memoryView.GetOffset()
                                                                     bytesPerRow : (viewDescriptor.m_elementCount * bytesPerPixel)];
                 AZ_Assert(mtlTexture, "Failed to create texture");
-
+                
                 RHI::Ptr<MetalResource> textureViewResource = MetalResource::Create(MetalResourceDescriptor{ mtlTexture, ResourceType::MtlTextureType });
                 m_imageBufferMemoryView = MemoryView(textureViewResource, 0, (viewDescriptor.m_elementCount * bytesPerPixel), 0);
             }
@@ -70,8 +69,9 @@ namespace AZ
             const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? viewDescriptor.m_overrideBindFlags : buffer.GetDescriptor().m_bindFlags;
             bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
             bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
+
             // Cache the read and readwrite index of the view within the global Bindless Argument buffer
-            if (shaderRead || shaderReadWrite)
+            if (device.GetBindlessArgumentBuffer().IsInitialized() && (shaderRead || shaderReadWrite))
             {
                 if (shaderRead)
                 {
@@ -115,14 +115,16 @@ namespace AZ
         void BufferView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
-
-            if (m_readIndex != InvalidBindlessIndex)
+            if (device.GetBindlessArgumentBuffer().IsInitialized())
             {
-                device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
-            }
-            if (m_readWriteIndex != InvalidBindlessIndex)
-            {
-                device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                if (m_readIndex != InvalidBindlessIndex)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadBuffer(m_readIndex);
+                }
+                if (m_readWriteIndex != InvalidBindlessIndex)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadWriteBuffer(m_readWriteIndex);
+                }
             }
         }
 

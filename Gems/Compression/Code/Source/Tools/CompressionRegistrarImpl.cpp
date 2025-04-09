@@ -11,8 +11,15 @@
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 
+#include <Compression/CompressionTypeIds.h>
+
 namespace Compression
 {
+    AZ_TYPE_INFO_WITH_NAME_IMPL(CompressionRegistrarImpl, "CompressionRegistrarImpl",
+        CompressionRegistrarImplTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(CompressionRegistrarImpl, CompressionRegistrarInterface);
+    AZ_CLASS_ALLOCATOR_IMPL(CompressionRegistrarImpl, AZ::SystemAllocator);
+
     CompressionRegistrarImpl::CompressionInterfaceDeleter::CompressionInterfaceDeleter() = default;
     CompressionRegistrarImpl::CompressionInterfaceDeleter::CompressionInterfaceDeleter(bool shouldDelete)
         : m_delete(shouldDelete)
@@ -111,6 +118,30 @@ namespace Compression
         AZStd::scoped_lock lock(m_compressionInterfaceMutex);
         auto compressionIter = FindCompressionInterfaceImpl(compressionAlgorithmId);
         return compressionIter != m_compressionInterfaces.end() ? compressionIter->m_compressionInterface.get() : nullptr;
+    }
+
+
+    ICompressionInterface* CompressionRegistrarImpl::FindCompressionInterface(AZStd::string_view algorithmName) const
+    {
+        // Potentially the entire vector is iterated over
+        ICompressionInterface* resultInterface{};
+        auto FindCompressionInterfaceByName = [algorithmName, &resultInterface](const ICompressionInterface& compressionInterface)
+        {
+            if (compressionInterface.GetCompressionAlgorithmName() == algorithmName)
+            {
+                // const_cast is being used here to avoid making a second visitor overload
+                // NOTE: this is function is internal to the implementation of the Compression Registrar
+                resultInterface = const_cast<ICompressionInterface*>(&compressionInterface);
+                // The matching interface has been found, halt visitation.
+                return false;
+            }
+
+            return true;
+        };
+        AZStd::scoped_lock lock(m_compressionInterfaceMutex);
+
+        VisitCompressionInterfaces(FindCompressionInterfaceByName);
+        return resultInterface;
     }
 
     bool CompressionRegistrarImpl::IsRegistered(CompressionAlgorithmId compressionAlgorithmId) const

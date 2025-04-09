@@ -121,9 +121,7 @@ namespace AssetProcessor
     {
         if (m_tracePrinter)
         {
-            // flush both STDOUT and STDERR
-            m_tracePrinter->WriteCurrentString(true);
-            m_tracePrinter->WriteCurrentString(false);
+            m_tracePrinter->Flush();
         }
     }
 
@@ -162,7 +160,11 @@ namespace AssetProcessor
             return AZ::Failure(AZStd::string::format("Failed to start process watcher for Builder %.*s.", AZ_STRING_ARG(UuidString())));
         }
 
-        m_tracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_processWatcher->GetCommunicator(), "AssetBuilder");
+        // Currently, this uses polling for managing the trace printing output because the job log redirections rely on thread local
+        // storage to route different jobs to different logs. If the trace printing spins up a new thread for printing, it won't
+        // redirect to the correct job logs.
+        m_tracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(
+            m_processWatcher->GetCommunicator(), "AssetBuilder", ProcessCommunicatorTracePrinter::TraceProcessing::Poll);
 
         return WaitForConnection();
     }

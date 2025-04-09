@@ -14,6 +14,7 @@ add_subdirectory(fbx_tests)
 add_subdirectory(scene_settings_tests)
 add_subdirectory(scene_tests)
 add_subdirectory(asset_bundler_tests)
+add_subdirectory(metadata_relocation_tests)
 
     ly_add_pytest(
         NAME AssetPipelineTests.Periodic

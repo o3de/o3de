@@ -277,9 +277,19 @@ def exit() -> None:
     azlmbr.atomtools.general.exit()
 
 
-def disable_material_canvas_file_writes() -> None:
+def disable_document_message_box_settings() -> None:
     """
-    Modifies some registry settings to disable MaterialCanvas graph compilation on open/edit/save.
+    Modifies some registry settings to disable warning and error message boxes that block test progression.
+
+    :return: None
+    """
+    azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs", False)
+    azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs", False)
+
+
+def disable_graph_compiler_settings() -> None:
+    """
+    Modifies some registry settings to disable automatic graph compilation on open/edit/save.
     This is because some tests (i.e. main suite) need to avoid file writing/saving during the test run.
 
     :return: None

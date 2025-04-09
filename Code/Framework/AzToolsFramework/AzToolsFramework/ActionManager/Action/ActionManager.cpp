@@ -10,6 +10,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QShortcutEvent>
 
+#include <AzQtComponents/Components/StyledDockWidget.h>
+
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
@@ -29,6 +31,36 @@ namespace AzToolsFramework
         case QEvent::ShortcutOverride:
         {
             m_shortcutWasTriggered = false;
+
+            // Handle the case where the shortcut might've been passed directly to the dock widget that owns
+            // the actual widget/action context if the user had tried to focus part of the widget that
+            // doesn't accept focus.
+            auto* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(watched);
+            if (dockWidget)
+            {
+                auto watchedWidget = dockWidget->widget();
+                auto contextIdentifierVariant = watchedWidget->property(ActionManager::ActionContextWidgetIdentifier.data());
+
+                if (contextIdentifierVariant.isValid())
+                {
+                    QString contextIdentifier = contextIdentifierVariant.toString();
+                    auto actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
+                    auto widgetWatcher = actionManagerInternalInterface->GetActionContextWidgetWatcher(contextIdentifier.toUtf8().constData());
+
+                    AZ_Assert(widgetWatcher, "Unable to find widget watcher for action context: %s", contextIdentifier.toUtf8().constData());
+
+                    // Check if the widget has any actions that could accept the shortcut event
+                    auto keyEvent = static_cast<QKeyEvent*>(event);
+                    if (widgetWatcher->TriggerActiveActionsForWidget(watchedWidget, keyEvent))
+                    {
+                        // We need to accept the event in addition to return true on this event filter to ensure the event doesn't get propagated
+                        // to any parent widgets. Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
+                        SetShortcutTriggeredFlag();
+                        event->accept();
+                        return true;
+                    }
+                }
+            }
             break;
         }
         case QEvent::KeyPress:
@@ -72,29 +104,9 @@ namespace AzToolsFramework
             }
 
             auto keyEvent = static_cast<QKeyEvent*>(event);
-            int keyCode = keyEvent->key();
-            Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
-            if (modifiers & Qt::ShiftModifier)
-            {
-                keyCode += Qt::SHIFT;
-            }
-            if (modifiers & Qt::ControlModifier)
-            {
-                keyCode += Qt::CTRL;
-            }
-            if (modifiers & Qt::AltModifier)
-            {
-                keyCode += Qt::ALT;
-            }
-            if (modifiers & Qt::MetaModifier)
-            {
-                keyCode += Qt::META;
-            }
-
-            QKeySequence keySequence(keyCode);
             QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
 
-            if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), keySequence))
+            if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), keyEvent))
             {
                 // We need to accept the event in addition to return true on this event filter to ensure the event doesn't get propagated
                 // to any parent widgets. Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
@@ -164,6 +176,38 @@ namespace AzToolsFramework
 
         // Return whether any action was triggered.
         return !matchingActions.isEmpty();
+    }
+
+    bool ActionContextWidgetWatcher::TriggerActiveActionsWithShortcut(
+        const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeyEvent* shortcutKeyEvent)
+    {
+        int keyCode = shortcutKeyEvent->key();
+        Qt::KeyboardModifiers modifiers = shortcutKeyEvent->modifiers();
+        if (modifiers & Qt::ShiftModifier)
+        {
+            keyCode += Qt::SHIFT;
+        }
+        if (modifiers & Qt::ControlModifier)
+        {
+            keyCode += Qt::CTRL;
+        }
+        if (modifiers & Qt::AltModifier)
+        {
+            keyCode += Qt::ALT;
+        }
+        if (modifiers & Qt::MetaModifier)
+        {
+            keyCode += Qt::META;
+        }
+
+        QKeySequence keySequence(keyCode);
+
+        return TriggerActiveActionsWithShortcut(contextActions, widgetActions, keySequence);
+    }
+
+    bool ActionContextWidgetWatcher::TriggerActiveActionsForWidget(const QWidget* watchedWidget, const QKeyEvent* keyEvent)
+    {
+        return TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), keyEvent);
     }
 
     ActionManager::ActionManager()

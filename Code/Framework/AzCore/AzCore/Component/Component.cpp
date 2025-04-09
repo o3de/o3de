@@ -14,14 +14,12 @@
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/Math/Crc.h>
 
-
-DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(ComponentDescriptor, ComponentDescriptorBusTraits);
-
 namespace AZ
 {
     // Add definition for type info and runtime type information to component
     AZ_TYPE_INFO_WITH_NAME_IMPL(Component, "AZ::Component", "{EDFCB2CF-F75D-43BE-B26B-F35821B29247}");
     AZ_RTTI_NO_TYPE_INFO_IMPL(AZ::Component);
+    AZ_CLASS_ALLOCATOR_IMPL(AZ::Component, ComponentAllocator);
 
     //=========================================================================
     // Component
@@ -161,6 +159,10 @@ namespace AZ
                 m_id = InvalidComponentId;
             }
         }
+    }
+
+    void Component::OnAfterEntitySet()
+    {
     }
 
     AZStd::string Component::GetSerializedIdentifier() const

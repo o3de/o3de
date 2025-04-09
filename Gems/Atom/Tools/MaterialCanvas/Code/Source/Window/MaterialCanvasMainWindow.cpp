@@ -23,8 +23,21 @@ namespace MaterialCanvas
         , m_graphViewSettingsPtr(graphViewSettingsPtr)
         , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
-        m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
-        m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->ClearTypeFilter();
+        m_assetBrowser->GetSearchWidget()->SetTypeFilterVisible(false);
+        m_assetBrowser->SetFileTypeFilters({
+            { "Material", { "material" }, true },
+            { "Material Graph", { "materialgraph", "materialgraphtemplate" }, true },
+            { "Material Graph Node", { "materialgraphnode", "materialgraphnodetemplate" }, true },
+            { "Material Type", { "materialtype" }, true },
+            { "Material Pipeline", { "materialpipeline" }, true },
+            { "Shader", { "shader" }, true },
+            { "Shader Template", { "shader.template" }, true },
+            { "Shader Variant List", { "shadervariantlist" }, true },
+            { "Image", { "tif", "tiff", "png", "bmp", "jpg", "jpeg", "tga", "gif", "dds", "exr" }, true },
+            { "Lua", { "lua" }, true },
+            { "AZSL", { "azsl", "azsli", "srgi" }, true },
+        });
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/DocumentInspector");
@@ -161,6 +174,20 @@ namespace MaterialCanvas
                   "placed in the user/Registry folder for the current project.",
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/ForceDeleteGeneratedFiles",
+                  "Delete Files On Compile",
+                  "This option forces files previously generated from the current graph to be deleted before creating new ones.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/ForceClearAssetFingerprints",
+                  "Clear Asset Fingerprints On Compile",
+                  "This option forces the AP to reprocess generated files even if no differences were detected since last generated. This "
+                  "guarantees that notifications are sent for assets like materials that may not be changed even if their dependent "
+                  "material types or shaders are. This setting is most useful to ensure that other systems or applications are able to "
+                  "recognize and not reload yeah materials after shaders are modified. Enabling this setting may affect the time it takes "
+                  "for the viewport to reflect shader and material changes.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen",
                   "Enable Compile On Open",
                   "If enabled, shaders and materials will automatically be generated whenever a material graph is opened.",
@@ -198,8 +225,15 @@ namespace MaterialCanvas
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart",
                   "Create Untitled Graph Document On Start",
-                  "Create a default, untitled graph document when Material Canvas starts",
-                  true) });
+                  "Create a default, untitled graph document when Material Canvas starts.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/QueueGraphCompileIntervalMs",
+                  "Queue Graph Compile Interval Ms",
+                  "The delay (in milliseconds) before the graph is recompiled after changes.",
+                  aznumeric_cast<AZ::s64>(500),
+                  aznumeric_cast<AZ::s64>(0),
+                  aznumeric_cast<AZ::s64>(1000)) });
 
         inspector->AddGroup(
             m_materialCanvasCompileSettingsGroup->m_name,
@@ -226,23 +260,9 @@ namespace MaterialCanvas
         Base::OnSettingsDialogClosed();
     }
 
-    AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const
+    AZStd::string MaterialCanvasMainWindow::GetHelpUrl() const
     {
-        return R"(<html><head/><body>
-            <p><h3><u>Shader Build Settings</u></h3></p>
-            <p>Shaders, materials, and other assets will be generated as changes are applied to the graph.
-            The viewport will update and display the generated materials and shaders once they have been
-            compiled by the Asset Processor. This can take a few seconds. Compilation times and preview
-            responsiveness can be improved by enabling the Minimal Shader Build settings in the Tools->Settings
-            menu. Changing the settings will require restarting Material Canvas and the Asset Processor.</p>
-            <p><h3><u>Camera Controls</u></h3></p>
-            <p><b>LMB</b> - rotate camera</p>
-            <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
-            <p><b>MMB</b> - pan camera on its xy plane</p>
-            <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
-            <p><b>Ctrl+LMB</b> - rotate model</p>
-            <p><b>Shift+LMB</b> - rotate environment</p>
-            </body></html>)";
+        return "https://docs.o3de.org/docs/atom-guide/look-dev/tools/material-canvas/";
     }
 } // namespace MaterialCanvas
 

@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME VideoPlaybackFramework.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         videoplaybackframework_files.cmake
@@ -25,7 +25,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME VideoPlaybackFramework ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         videoplaybackframework_shared_files.cmake
@@ -36,20 +36,29 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::VideoPlaybackFramework.Static
+            Gem::${gem_name}.Static
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/VideoPlaybackFrameworkModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the video playback framework makes sense in everything but servers:
-ly_create_alias(NAME VideoPlaybackFramework.Clients  NAMESPACE Gem TARGETS Gem::VideoPlaybackFramework)
-ly_create_alias(NAME VideoPlaybackFramework.Tools    NAMESPACE Gem TARGETS Gem::VideoPlaybackFramework)
-ly_create_alias(NAME VideoPlaybackFramework.Builders NAMESPACE Gem TARGETS Gem::VideoPlaybackFramework)
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME VideoPlaybackFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             videoplaybackframework_tests_files.cmake
@@ -60,9 +69,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::VideoPlaybackFramework.Static
+                Gem::${gem_name}.Static
     )
     ly_add_googletest(
-        NAME Gem::VideoPlaybackFramework.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

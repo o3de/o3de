@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QStandardItemModel>
 #include <GemRepo/GemRepoInfo.h>
-#include <GemCatalog/GemModel.h>
+#include <TagWidget.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
@@ -38,16 +38,16 @@ namespace O3DE::ProjectManager
         static QString GetRepoUri(const QModelIndex& modelIndex);
         static QDateTime GetLastUpdated(const QModelIndex& modelIndex);
         static QString GetPath(const QModelIndex& modelIndex);
+        static GemRepoInfo::BadgeType GetBadgeType(const QModelIndex& modelIndex);
 
-        static QStringList GetIncludedGemUris(const QModelIndex& modelIndex);
         static QVector<Tag> GetIncludedGemTags(const QModelIndex& modelIndex);
-        static QVector<GemInfo> GetIncludedGemInfos(const QModelIndex& modelIndex);
+        static QVector<Tag> GetIncludedProjectTags(const QModelIndex& modelIndex);
+        static QVector<Tag> GetIncludedProjectTemplateTags(const QModelIndex& modelIndex);
 
         static bool IsEnabled(const QModelIndex& modelIndex);
         static void SetEnabled(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isEnabled);
         static bool HasAdditionalInfo(const QModelIndex& modelIndex);
 
-    private:
         enum UserRole
         {
             RoleName = Qt::UserRole,
@@ -60,10 +60,18 @@ namespace O3DE::ProjectManager
             RolePath,
             RoleAdditionalInfo,
             RoleIncludedGems,
+            RoleIncludedProjects,
+            RoleIncludedProjectTemplates,
+            RoleBadgeType
         };
 
-        QItemSelectionModel* m_selectionModel = nullptr;
+        void SetRepoEnabled(const QModelIndex& modelIndex, bool isEnabled);
+        QPersistentModelIndex FindModelIndexByRepoUri(const QString& repoUri);
 
-        GemModel* m_gemModel = nullptr;
+    signals:
+        void ShowToastNotification(const QString& notification);
+
+    private:
+        QItemSelectionModel* m_selectionModel = nullptr;
     };
 } // namespace O3DE::ProjectManager

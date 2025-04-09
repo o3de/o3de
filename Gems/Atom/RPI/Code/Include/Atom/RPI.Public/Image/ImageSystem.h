@@ -18,6 +18,7 @@
 #include <Atom/RPI.Reflect/Asset/BuiltInAssetHandler.h>
 #include <Atom/RPI.Reflect/Image/ImageSystemDescriptor.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
@@ -36,7 +37,7 @@ namespace AZ
 
     namespace RPI
     {
-        class ImageSystem final
+        class ATOM_RPI_PUBLIC_API ImageSystem final
             : public ImageSystemInterface
         {
         public:
@@ -54,6 +55,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // ImageSystemInterface
             const Data::Instance<Image>& GetSystemImage(SystemImage systemImage) const override;
+            const Data::Instance<AttachmentImage>& GetSystemAttachmentImage(RHI::Format format) override;
             const Data::Instance<StreamingImagePool>& GetSystemStreamingPool() const override;
             const Data::Instance<AttachmentImagePool>& GetSystemAttachmentPool() const override;
             const Data::Instance<StreamingImagePool>& GetStreamingPool() const override;
@@ -76,6 +78,9 @@ namespace AZ
             Data::Instance<StreamingImagePool> m_assetStreamingPool;
 
             AZStd::fixed_vector<Data::Instance<Image>, static_cast<uint32_t>(SystemImage::Count)> m_systemImages;
+
+            AZStd::shared_mutex m_systemAttachmentImagesUpdateMutex;
+            AZStd::unordered_map<RHI::Format, Data::Instance<AttachmentImage>> m_systemAttachmentImages;
 
             bool m_initialized = false;
 

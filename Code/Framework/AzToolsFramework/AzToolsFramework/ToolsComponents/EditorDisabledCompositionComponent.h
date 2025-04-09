@@ -10,17 +10,34 @@
 #include "EditorComponentBase.h"
 #include "EditorDisabledCompositionBus.h"
 
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+
 namespace AzToolsFramework
 {
     namespace Components
     {
-        /**
-        * Contains Disabled components to be added to the entity we are attached to.
-        */
+        //! Custom serializer to handle component data in the composition component.
+        class EditorDisabledCompositionComponentSerializer
+            : public AZ::BaseJsonSerializer
+        {
+        public:
+            AZ_RTTI(EditorDisabledCompositionComponentSerializer, "{D6A44ED5-2B3B-422C-A4F2-DDDAE48ED04C}", BaseJsonSerializer);
+            AZ_CLASS_ALLOCATOR_DECL;
+            
+            AZ::JsonSerializationResult::Result Load(
+                void* outputValue,
+                const AZ::Uuid& outputValueTypeId,
+                const rapidjson::Value& inputValue,
+                AZ::JsonDeserializerContext& context) override;
+        };
+
+        //! Contains Disabled components to be added to the entity we are attached to.
         class EditorDisabledCompositionComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorDisabledCompositionRequestBus::Handler
         {
+            friend class EditorDisabledCompositionComponentSerializer;
+
         public:
             AZ_COMPONENT(EditorDisabledCompositionComponent, "{E77AE6AC-897D-4035-8353-637449B6DCFB}", EditorComponentBase);
             static void Reflect(AZ::ReflectContext* context);
@@ -28,9 +45,10 @@ namespace AzToolsFramework
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
             ////////////////////////////////////////////////////////////////////
             // EditorDisabledCompositionRequestBus
-            void GetDisabledComponents(AZStd::vector<AZ::Component*>& components) override;
+            void GetDisabledComponents(AZ::Entity::ComponentArrayType& components) override;
             void AddDisabledComponent(AZ::Component* componentToAdd) override;
             void RemoveDisabledComponent(AZ::Component* componentToRemove) override;
+            bool IsComponentDisabled(const AZ::Component* componentToCheck) override;
             ////////////////////////////////////////////////////////////////////
 
             ~EditorDisabledCompositionComponent() override;
@@ -42,7 +60,8 @@ namespace AzToolsFramework
             void Deactivate() override;
             ////////////////////////////////////////////////////////////////////
 
-            AZStd::vector<AZ::Component*> m_disabledComponents;
+            // Map that stores a pair of component alias (serialized identifier) and component pointer.
+            AZStd::unordered_map<AZStd::string, AZ::Component*> m_disabledComponents;
         };
     } // namespace Components
 } // namespace AzToolsFramework

@@ -21,6 +21,7 @@
 // AzToolsFramework
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // Editor
@@ -28,7 +29,6 @@
 #include "GameEngine.h"
 #include "ViewManager.h"
 #include "GenericSelectItemDialog.h"
-#include "Objects/BaseObject.h"
 #include "Commands/CommandManager.h"
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);

@@ -48,12 +48,12 @@ namespace AssetValidation
 
     void AssetValidationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AssetValidationService"));
+        provided.push_back(AZ_CRC_CE("AssetValidationService"));
     }
 
     void AssetValidationSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AssetValidationService"));
+        incompatible.push_back(AZ_CRC_CE("AssetValidationService"));
     }
 
     void AssetValidationSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

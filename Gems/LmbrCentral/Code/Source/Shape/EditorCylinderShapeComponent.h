@@ -9,6 +9,10 @@
 
 #include "EditorBaseShapeComponent.h"
 #include "CylinderShapeComponent.h"
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzToolsFramework/Manipulators/RadiusManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/CylinderManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 
@@ -17,6 +21,9 @@ namespace LmbrCentral
     class EditorCylinderShapeComponent
         : public EditorBaseShapeComponent
         , private AzFramework::EntityDebugDisplayEventBus::Handler
+        , private AzToolsFramework::RadiusManipulatorRequestBus::Handler
+        , private AzToolsFramework::CylinderManipulatorRequestBus::Handler
+        , private AzToolsFramework::ShapeManipulatorRequestBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorCylinderShapeComponent, EditorCylinderShapeComponentTypeId, EditorBaseShapeComponent);
@@ -33,7 +40,7 @@ namespace LmbrCentral
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             EditorBaseShapeComponent::GetProvidedServices(provided);
-            provided.push_back(AZ_CRC("CylinderShapeService", 0x507c688e));
+            provided.push_back(AZ_CRC_CE("CylinderShapeService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
@@ -44,6 +51,20 @@ namespace LmbrCentral
     private:
         AZ_DISABLE_COPY_MOVE(EditorCylinderShapeComponent)
 
+        // AzToolsFramework::CylinderManipulatorRequestBus overrides ...
+        float GetHeight() const override;
+        void SetHeight(float height) override;
+
+        // AzToolsFramework::RadiusManipulatorRequestBus overrides ...
+        float GetRadius() const override;
+        void SetRadius(float radius) override;
+
+        // AzToolsFramework::ShapeManipulatorRequestBus overrides ...
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
+        AZ::Transform GetManipulatorSpace() const override;
+        AZ::Quaternion GetRotationOffset() const override;
+
         // AzFramework::EntityDebugDisplayEventBus
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo,
@@ -52,5 +73,8 @@ namespace LmbrCentral
         void ConfigurationChanged();
 
         CylinderShape m_cylinderShape; ///< Stores underlying cylinder representation for this component.
+
+        //! Responsible for detecting ComponentMode activation and creating a concrete ComponentMode.
+        AzToolsFramework::ComponentModeFramework::ComponentModeDelegate m_componentModeDelegate;
     };
 } // namespace LmbrCentral

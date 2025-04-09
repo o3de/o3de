@@ -59,8 +59,6 @@ namespace AtomToolsFramework
         m_frameworkScene->SetSubsystem(m_scene);
         m_frameworkScene->SetSubsystem(m_entityContext.get());
 
-        ActivateRenderPipeline(defaultRenderPipelineAssetPath);
-
         // Create the BRDF texture generation pipeline
         AZ::RPI::RenderPipelineDescriptor brdfPipelineDesc;
         brdfPipelineDesc.m_mainViewTagName = "MainCamera";
@@ -74,6 +72,10 @@ namespace AtomToolsFramework
         m_scene->Activate();
 
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
+
+        // activate the render pipeline
+        // Note: this is done after the scene is registered in order to properly update the MSAA state
+        ActivateRenderPipeline(defaultRenderPipelineAssetPath);
     }
 
     EntityPreviewViewportScene::~EntityPreviewViewportScene()
@@ -108,25 +110,26 @@ namespace AtomToolsFramework
         {
             return m_renderPipelines.emplace(pipelineAssetId, renderPipeline).first;
         }
-        else
-        {
-            return m_renderPipelines.end();
-        }
+
+        return m_renderPipelines.end();
     }
 
     bool EntityPreviewViewportScene::ActivateRenderPipeline(const AZ::Data::AssetId& pipelineAssetId)
     {
-        auto iter = m_renderPipelines.find(pipelineAssetId);
+        if (!pipelineAssetId.IsValid())
+        {
+            return false;
+        }
 
+        auto iter = m_renderPipelines.find(pipelineAssetId);
         if (iter == m_renderPipelines.end())
         {
             iter = AddRenderPipeline(pipelineAssetId);
-        }
-
-        if (iter == m_renderPipelines.end())
-        {
-            // The pipeline was not found and could not be loaded
-            return false;
+            if (iter == m_renderPipelines.end())
+            {
+                // The pipeline was not found and could not be loaded
+                return false;
+            }
         }
 
         if (iter->first != m_activeRenderPipelineId)
@@ -155,14 +158,7 @@ namespace AtomToolsFramework
     {
         using namespace AZ::RPI;
         AZ::Data::AssetId assetId = AssetUtils::GetAssetIdForProductPath(pipelineAssetPath.c_str(), AssetUtils::TraceLevel::Error);
-        if (assetId.IsValid())
-        {
-            return ActivateRenderPipeline(assetId);
-        }
-        else
-        {
-            return false;
-        }
+        return ActivateRenderPipeline(assetId);
     }
 
     AZ::RPI::ScenePtr EntityPreviewViewportScene::GetScene() const

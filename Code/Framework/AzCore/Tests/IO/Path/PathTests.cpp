@@ -186,14 +186,17 @@ namespace UnitTest
         EXPECT_EQ(path2, pathView2);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         ComparePaths,
         PathParamFixture,
         ::testing::Values(
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo", "test/foo"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo", "test\\foo"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test////foo", "test///foo"),
-            AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/bar/baz//foo", "test/bar/baz\\\\\\foo")
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/bar/baz//foo", "test/bar/baz\\\\\\foo"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("/home/foo/ros_ws/install/foo_robot/./meshes/bar.dae", "/home/foo/ros_ws/install/foo_robot/meshes/bar.dae"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("/./boo/far/./faz", "/boo/./././././far/././faz"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo/.", "test/foo")
         ));
 
     TEST_F(PathFixture, ComparisonOperators_Succeeds)
@@ -230,7 +233,7 @@ namespace UnitTest
         EXPECT_EQ(path1, path2);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CompareWindowsPaths,
         WindowsPathCompareParamFixture,
         ::testing::Values(
@@ -279,7 +282,7 @@ namespace UnitTest
             path1.c_str(), path2.c_str()).c_str();
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         HashPaths,
         PathHashParamFixture,
         ::testing::Values(
@@ -315,7 +318,7 @@ AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         HashPathCompareValidation,
         PathHashCompareFixture,
         ::testing::Values(
@@ -377,7 +380,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_TRUE(testPath.IsRelative());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         RelativePaths,
         WindowsPathRelativeParamFixture,
         ::testing::Values(
@@ -406,7 +409,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_TRUE(testPath.IsAbsolute());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         AbsolutePaths,
         WindowsPathAbsoluteParamFixture,
         ::testing::Values(
@@ -435,7 +438,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_TRUE(testPath.IsRelative());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         RelativePaths,
         PosixPathRelativeParamFixture,
         ::testing::Values(
@@ -465,7 +468,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_TRUE(testPath.IsAbsolute());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         AbsolutePaths,
         PosixPathAbsoluteParamFixture,
         ::testing::Values(
@@ -507,7 +510,7 @@ AZ_POP_DISABLE_WARNING
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         AppendPaths,
         PathAppendTest,
         ::testing::Values(
@@ -538,7 +541,7 @@ AZ_POP_DISABLE_WARNING
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         AppendPaths,
         WindowsPathAppendTest,
         ::testing::Values(
@@ -590,7 +593,7 @@ AZ_POP_DISABLE_WARNING
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         AppendPaths,
         PosixPathAppendTest,
         ::testing::Values(
@@ -660,7 +663,7 @@ AZ_POP_DISABLE_WARNING
 
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathIterator,
         PathIteratorFixture,
         ::testing::Values(
@@ -717,7 +720,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_STREQ(testParams.m_expectedResult, resultPath.c_str());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathLexicallyNormal,
         PathLexicallyNormalFixture,
         ::testing::Values(
@@ -747,7 +750,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_STREQ(testParams.m_expectedResult, testPath.c_str());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathLexicallyRelative,
         PathLexicallyRelativeFixture,
         ::testing::Values(
@@ -787,7 +790,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_EQ(testParams.m_expectedIsRelativeTo, testPath.IsRelativeTo(AZ::IO::PathView{ testParams.m_testBasePath, testParams.m_preferredSeparator }));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathLexicallyProximate,
         PathViewLexicallyProximateFixture,
         ::testing::Values(
@@ -826,7 +829,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_EQ(testParams.m_expectedMatch, testPath.Match(testParams.m_testPattern));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathMatch,
         PathViewMatchFixture,
         ::testing::Values(
@@ -854,7 +857,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_STREQ(testParams.m_expectedResult, testPath.c_str());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathMakePreferred,
         PathMakePreferredFixture,
         ::testing::Values(
@@ -884,7 +887,7 @@ AZ_POP_DISABLE_WARNING
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         ReplaceFilenames,
         PathReplaceFilenameTest,
         ::testing::Values(
@@ -911,7 +914,7 @@ AZ_POP_DISABLE_WARNING
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         RemoveFilenames,
         PathRemoveFilenameTest,
         ::testing::Values(
@@ -936,7 +939,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_EQ(testParams.m_expectedResult, prefixIter == testPath.end());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathPrefix,
         PathPrefixFixture,
         ::testing::Values(
@@ -986,7 +989,7 @@ AZ_POP_DISABLE_WARNING
         EXPECT_EQ(AZ::IO::PathView(testParams.m_expectedExtension, testParams.m_preferredSeparator), testPath.Extension());
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathExtractComponents,
         PathDecompositionFixture,
         ::testing::Values(

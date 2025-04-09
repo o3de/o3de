@@ -10,6 +10,8 @@
 
 #include <ScriptAutomationScriptBindings.h>
 
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -20,20 +22,79 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/IO/Path/Path.h>
 
 #include <AzFramework/Components/ConsoleBus.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
-namespace ScriptAutomation
+#include <ScriptAutomation_Traits.h>
+
+AZ_CVAR(AZ::CVarFixedString, sa_image_compare_app_path, AZ_TRAIT_SCRIPTAUTOMATION_DEFAULT_IMAGE_COMPARE_PATH, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default image compare app path");
+AZ_CVAR(AZ::CVarFixedString, sa_image_compare_arguments, AZ_TRAIT_SCRIPTAUTOMATION_DEFAULT_IMAGE_COMPARE_ARGUMENTS, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default image compare arguments");
+AZ_CVAR(bool, sa_launch_image_compare_for_failed_baseline_compare, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should ScriptAutomation launch an image compare for every failed screenshot baseline compare");
+/* sa_launch_image_compare_for_failed_baseline_compare can be set to true for local work by adding a setreg file containing the below json
+ * {
+ *      "Amazon": {
+ *          "AzCore": {
+ *              "Runtime": {
+ *                  "ConsoleCommands": {
+ *                      "sa_launch_image_compare_for_failed_baseline_compare": 1
+ *                  }
+ *              }
+ *          }
+ *      }
+ *  }
+ */
+namespace AZ::Platform
 {
-    namespace Utils
+    bool LaunchProgram(const AZStd::string& progPath, const AZStd::string& arguments);
+}
+
+namespace AZ::ScriptAutomation
+{
+    static constexpr char NewScreenshotPlaceholder[] = "{NewScreenshotPath}";
+    static constexpr char ExpectedScreenshotPlaceholder[] = "{ExpectedScreenshotPath}";
+    static constexpr char TestNamePlaceholder[] = "{TestName}";
+    static constexpr char ImageNamePlaceholder[] = "{ImageName}";
+    static constexpr char PlaceholderEndChar[] = "}";
+
+   namespace Utils
     {
+        void ReplacePlaceholder(AZStd::string& string, const char* placeholderName, const AZStd::string& newValue)
+        {
+            for (auto index = string.find(placeholderName); index != AZStd::string::npos; index = string.find(placeholderName))
+            {
+                auto endIndex = string.find(PlaceholderEndChar, index);
+                string.erase(index, endIndex - index + 1);
+                string.insert(index, newValue);
+            }
+        }
+        void RunImageDiff(
+            const AZStd::string& newImagePath, 
+            const AZStd::string& compareImagePath, 
+            const AZStd::string& testName,
+            const AZStd::string& imageName)
+        {
+            AZStd::string appPath = static_cast<AZStd::string_view>(static_cast<AZ::CVarFixedString>(sa_image_compare_app_path));
+            AZStd::string arguments = static_cast<AZStd::string_view>(static_cast<AZ::CVarFixedString>(sa_image_compare_arguments));
+            ReplacePlaceholder(arguments, NewScreenshotPlaceholder, newImagePath);
+            ReplacePlaceholder(arguments, ExpectedScreenshotPlaceholder, compareImagePath);
+            ReplacePlaceholder(arguments, TestNamePlaceholder, testName);
+            ReplacePlaceholder(arguments, ImageNamePlaceholder, imageName);
+
+            if (!Platform::LaunchProgram(appPath, arguments))
+            {
+                AZ_Error("ScriptAutomation", false, "Failed to launch image diff - \"%s %s\"", appPath.c_str(), arguments.c_str());
+            }
+        }
+
         bool SupportsResizeClientAreaOfDefaultWindow()
         {
             return AzFramework::NativeWindow::SupportsClientAreaResizeOfDefaultWindow();
@@ -90,40 +151,44 @@ namespace ScriptAutomation
 
     namespace Bindings
     {
+        void RunScript(const AZStd::string& scriptFilePath)
+        {
+            // Unlike other Script_ callback functions, we process immediately instead of pushing onto the m_scriptOperations queue.
+            // This function is special because running the script is what adds more commands onto the m_scriptOperations queue.
+            ScriptAutomationInterface::Get()->ExecuteScript(scriptFilePath.c_str());
+        }
+
         void Print(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef _RELEASE //AZ_TracePrintf does nothing in release, ignore this call
             auto func = [message]()
             {
-                AZ_TracePrintf("ScriptAutomation", "Script: %s\n", message.c_str());
+                AZ_UNUSED(message); // mark explicitly captured variable `message` as used because AZ_Error is a nop in release builds
+                AZ_Info("ScriptAutomation", "Script: %s\n", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
         }
 
         void Warning(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef _RELEASE //AZ_Warning does nothing in release, ignore this call
             auto func = [message]()
             {
+                AZ_UNUSED(message); // mark explicitly captured variable `message` as used because AZ_Error is a nop in release builds
                 AZ_Warning("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
         }
 
         void Error(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef _RELEASE //AZ_Error does nothing in release, ignore this call
             auto func = [message]()
             {
+                AZ_UNUSED(message); // mark explicitly captured variable `message` as used because AZ_Error is a nop in release builds
                 AZ_Error("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
         }
 
         void ExecuteConsoleCommand(const AZStd::string& command)
@@ -179,6 +244,33 @@ namespace ScriptAutomation
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
+
+        void SetCamera(const AZStd::string& entityName)
+        {
+            auto operation = [entityName]()
+            {
+                // Find all Component Entity Cameras
+                AZ::EBusAggregateResults<AZ::EntityId> cameraComponentEntities;
+                Camera::CameraBus::BroadcastResult(cameraComponentEntities, &Camera::CameraRequests::GetCameras);
+
+                // add names of all found entities with Camera Components
+                for (int i = 0; i < cameraComponentEntities.values.size(); i++)
+                {
+                    AZ::Entity* entity = nullptr;
+                    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, cameraComponentEntities.values[i]);
+                    if (entity)
+                    {
+                        if (entity->GetName() == entityName)
+                        {
+                            Camera::CameraRequestBus::Event(cameraComponentEntities.values[i], &Camera::CameraRequestBus::Events::MakeActiveView);
+                        }
+                    }
+                }            
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
 
         void CapturePassTimestamp(const AZStd::string& outputFilePath)
         {
@@ -258,6 +350,17 @@ namespace ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
+        AZStd::vector<AZStd::string> SplitStringImmediate(const AZStd::string& source, const AZStd::string& delimiter)
+        {
+            AZStd::vector<AZStd::string> splitStringList;
+            auto SplitString = [&splitStringList](AZStd::string_view token)
+            {
+                splitStringList.emplace_back(token);
+            };
+            AZ::StringFunc::TokenizeVisitor(source, SplitString, delimiter, false, false);
+            return splitStringList;
+        }
+
         AZStd::string ResolvePath(const AZStd::string& path)
         {
             return Utils::ResolvePath(AZ::IO::PathView(path)).String();
@@ -269,9 +372,35 @@ namespace ScriptAutomation
             return rpiSystem->GetRenderApiName().GetCStr();
         }
 
+        AZStd::string GetRenderPipelineName()
+        {
+            AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+            AZStd::string renderPipelinePath;
+            console->GetCvarValue("r_renderPipelinePath", renderPipelinePath);
+            AZ_Assert(renderPipelinePath.size() > 0, "Invalid render pipeline path obtained from r_renderPipelinePath CVAR");
+            return AZ::IO::PathView(renderPipelinePath).Stem().String();
+        }
+
+        AZStd::string GetPlatformName()
+        {
+            return AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER;
+        }
+
         AZStd::string GetProfilingOutputPath(bool normalized)
         {
             return Utils::GetProfilingPath(normalized).String();
+        }
+
+        void LoadLevel(const AZStd::string& levelName)
+        {
+            auto operation = [levelName]()
+            {
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+
+                scriptAutomationInterface->LoadLevel(levelName.c_str());
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
         bool PrepareForScreenCapture(const AZStd::string& imageName)
@@ -540,10 +669,18 @@ namespace ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
-        void CompareScreenshots(const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
+        void CompareScreenshots(const AZStd::string& compareName, const AZStd::string& comparisonLevel, const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
         {
-            auto operation = [filePathA, filePathB, minDiffFilter]()
+            // capture strings by copy or risk them being deleted before we access them.
+            auto operation = [=]()
             {
+
+                const ImageComparisonToleranceLevel* toleranceLevel = ScriptAutomationInterface::Get()->FindToleranceLevel(comparisonLevel);
+                if (!toleranceLevel)
+                {
+                    AZ_Error("ScriptAutomation", false, "Failed to find image comparison level named %s", comparisonLevel.c_str());
+                    return;
+                }
                 AZStd::string resolvedPathA = ResolvePath(filePathA);
                 AZStd::string resolvedPathB = ResolvePath(filePathB);
 
@@ -555,22 +692,145 @@ namespace ScriptAutomation
                     resolvedPathB,
                     minDiffFilter);
 
-                AZ_Error("ScriptAutomation", compareOutcome.IsSuccess(),
-                    "Image comparison failed. %s", compareOutcome.GetError().m_errorMessage.c_str());
+                AZ_Error(
+                    "ScriptAutomation", 
+                    compareOutcome.IsSuccess(),
+                    "%s screenshot compare error. Error \"%s\"", 
+                    compareName.c_str(),
+                    compareOutcome.GetError().m_errorMessage.c_str()
+                );
                 if (compareOutcome.IsSuccess())
                 {
-                    AZ_Printf(
-                        "ScriptAutomation",
-                        "Diff score is %.5f from %s and %s.",
-                        compareOutcome.GetValue().m_diffScore,
-                        resolvedPathA.c_str(),
-                        resolvedPathB.c_str());
-                    AZ_Printf(
-                        "ScriptAutomation",
-                        "Filtered diff score is %.5f from %s and %s.",
-                        compareOutcome.GetValue().m_filteredDiffScore,
-                        resolvedPathA.c_str(),
-                        resolvedPathB.c_str());
+                    float diffScore = toleranceLevel->m_filterImperceptibleDiffs
+                        ? compareOutcome.GetValue().m_diffScore
+                        : compareOutcome.GetValue().m_filteredDiffScore;
+
+                    if (diffScore > toleranceLevel->m_threshold)
+                    {
+                        AZ_Error(
+                            "ScriptAutomation", 
+                            false,
+                            "%s screenshot compare failed. Diff score %.5f exceeds threshold of %.5f ('%s').",
+                            compareName.c_str(),
+                            diffScore,
+                            toleranceLevel->m_threshold,
+                            toleranceLevel->m_name.c_str()
+                        );
+
+                        // TODO: open image compare app if CVAR is set
+                    }
+                    else
+                    {
+                        AZ_Printf(
+                            "ScriptAutomation",
+                            "%s screenshot compare passed. Diff score is %.5f, threshold of %.5f ('%s').",
+                            compareName.c_str(),
+                            diffScore,
+                            toleranceLevel->m_threshold,
+                            toleranceLevel->m_name.c_str()
+                        );
+                    }
+                }
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+
+        void CompareScreenshotToBaseline(const AZStd::string& compareName, const AZStd::string& comparisonLevel, const AZStd::string& imageName, float minDiffFilter)
+        {
+            // capture strings by copy or risk them being deleted before we access them.
+            auto operation = [=]()
+            {
+
+                const ImageComparisonToleranceLevel* toleranceLevel = ScriptAutomationInterface::Get()->FindToleranceLevel(comparisonLevel);
+                if (!toleranceLevel)
+                {
+                    AZ_Error("ScriptAutomation", false, "Failed to find image comparison level named %s", comparisonLevel.c_str());
+                    return;
+                }
+
+                // build test image filepath
+                AZ::Render::FrameCapturePathOutcome pathOutcome;
+                AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                    pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
+                if (!pathOutcome.IsSuccess())
+                {
+                    AZ_Error(
+                        "ScriptAutomation", 
+                        false, 
+                        "%s screenshot compare error. Failed to build screenshot file path for image name %s",
+                        compareName.c_str(),
+                        imageName.c_str());
+                }
+                AZStd::string screenshotFilePath = pathOutcome.GetValue();
+
+                // build official comparison image filepath
+                AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                    pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildOfficialBaselineFilePath, imageName, true);
+
+                if (!pathOutcome.IsSuccess())
+                {
+                    AZ_Error(
+                        "ScriptAutomation", 
+                        false, 
+                        "%s screenshot compare error. Failed to build official baseline file path for image name %s",
+                        compareName.c_str(),
+                        imageName.c_str());
+                }
+                AZStd::string baselineFilePath = pathOutcome.GetValue();
+
+                // compare test image against the official baseline
+                AZ::Render::FrameCaptureComparisonOutcome compareOutcome;
+                AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                    compareOutcome,
+                    &AZ::Render::FrameCaptureTestRequestBus::Events::CompareScreenshots,
+                    screenshotFilePath,
+                    baselineFilePath,
+                    minDiffFilter);
+
+                AZ_Error(
+                    "ScriptAutomation", 
+                    compareOutcome.IsSuccess(),
+                    "%s screenshot compare error. Error \"%s\"", 
+                    compareName.c_str(),
+                    compareOutcome.GetError().m_errorMessage.c_str()
+                );
+                if (compareOutcome.IsSuccess())
+                {
+                    float diffScore = toleranceLevel->m_filterImperceptibleDiffs
+                        ? compareOutcome.GetValue().m_diffScore
+                        : compareOutcome.GetValue().m_filteredDiffScore;
+
+                    if (diffScore > toleranceLevel->m_threshold)
+                    {
+                        AZ_Error(
+                            "ScriptAutomation", 
+                            false,
+                            "%s screenshot compare failed. Diff score %.5f exceeds threshold of %.5f ('%s').",
+                            compareName.c_str(),
+                            diffScore,
+                            toleranceLevel->m_threshold,
+                            toleranceLevel->m_name.c_str()
+                        );
+
+                        if (sa_launch_image_compare_for_failed_baseline_compare)
+                        {
+                            Utils::RunImageDiff(screenshotFilePath, baselineFilePath, compareName, imageName);
+                        }
+                    }
+                    else
+                    {
+                        AZ_Printf(
+                            "ScriptAutomation",
+                            "%s screenshot compare passed. Diff score is %.5f, threshold of %.5f ('%s').\n",
+                            compareName.c_str(),
+                            diffScore,
+                            toleranceLevel->m_threshold,
+                            toleranceLevel->m_name.c_str()
+                        );
+                    }
                 }
             };
 
@@ -583,6 +843,7 @@ namespace ScriptAutomation
         AZ::MathReflect(behaviorContext);
         AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
 
+        behaviorContext->Method("RunScript", &Bindings::RunScript);
         behaviorContext->Method("Print", &Bindings::Print);
         behaviorContext->Method("Warning", &Bindings::Warning);
         behaviorContext->Method("Error", &Bindings::Error);
@@ -592,12 +853,18 @@ namespace ScriptAutomation
         behaviorContext->Method("IdleFrames", &Bindings::IdleFrames);
         behaviorContext->Method("IdleSeconds", &Bindings::IdleSeconds);
         behaviorContext->Method("ResizeViewport", &Bindings::ResizeViewport);
+        behaviorContext->Method("SetCamera", &Bindings::SetCamera);
 
+        behaviorContext->Method("SplitString", &Bindings::SplitStringImmediate);
         behaviorContext->Method("ResolvePath", &Bindings::ResolvePath);
         behaviorContext->Method("NormalizePath", [](AZStd::string_view path) -> AZStd::string { return AZ::IO::PathView(path).LexicallyNormal().String(); });
         behaviorContext->Method("DegToRad", &AZ::DegToRad);
         behaviorContext->Method("GetRenderApiName", &Bindings::GetRenderApiName);
+        behaviorContext->Method("GetRenderPipelineName", &Bindings::GetRenderPipelineName);
+        behaviorContext->Method("GetPlatformName", &Bindings::GetPlatformName);
         behaviorContext->Method("GetProfilingOutputPath", &Bindings::GetProfilingOutputPath);
+
+        behaviorContext->Method("LoadLevel", &Bindings::LoadLevel);
 
         // Screenshots...
         behaviorContext->Method("SetScreenshotFolder", &Bindings::SetScreenshotFolder);
@@ -608,6 +875,8 @@ namespace ScriptAutomation
         behaviorContext->Method("CaptureScreenshotWithPreview", &Bindings::CaptureScreenshotWithPreview);
         behaviorContext->Method("CapturePassAttachment", &Bindings::CapturePassAttachment);
         behaviorContext->Method("CompareScreenshots", &Bindings::CompareScreenshots);
+        behaviorContext->Method("CompareScreenshotToBaseline", &Bindings::CompareScreenshotToBaseline);
+
 
         // Profiling data...
         behaviorContext->Method("CapturePassTimestamp", &Bindings::CapturePassTimestamp);
@@ -616,4 +885,4 @@ namespace ScriptAutomation
         behaviorContext->Method("CaptureCpuProfilingStatistics", &Bindings::CaptureCpuProfilingStatistics);
         behaviorContext->Method("CaptureBenchmarkMetadata", &Bindings::CaptureBenchmarkMetadata);
     }
-} // namespace ScriptAutomation
+} // namespace AZ::ScriptAutomation

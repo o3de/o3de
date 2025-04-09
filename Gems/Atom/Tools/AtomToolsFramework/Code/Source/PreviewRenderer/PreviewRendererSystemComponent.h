@@ -10,6 +10,7 @@
 
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererSystemRequestBus.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Application/Application.h>
 #include <PreviewRenderer/PreviewRenderer.h>
 
@@ -19,6 +20,7 @@ namespace AtomToolsFramework
     class PreviewRendererSystemComponent final
         : public AZ::Component
         , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
+        , public AZ::SystemTickBus::Handler
         , public PreviewRendererSystemRequestBus::Handler
     {
     public:
@@ -39,6 +41,9 @@ namespace AtomToolsFramework
     private:
         // AzFramework::ApplicationLifecycleEvents overrides...
         void OnApplicationAboutToStop() override;
+
+        // AZ::SystemTickBus::Handler overrides...
+        void OnSystemTick() override;
 
         AZStd::unique_ptr<AtomToolsFramework::PreviewRenderer> m_previewRenderer;
     };

@@ -9,6 +9,7 @@
 set(FILES
     Include/TestImpactFramework/Python/TestImpactPythonRuntime.h
     Include/TestImpactFramework/Python/TestImpactPythonConfiguration.h
+    Include/TestImpactFramework/Python/TestImpactPythonRuntimeConfigurationFactory.h
     Source/Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.cpp
     Source/Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.h
     Source/Artifact/Static/TestImpactPythonTestTargetMeta.h
@@ -35,4 +36,9 @@ set(FILES
     Source/TestEngine/Python/TestImpactPythonTestEngine.cpp
     Source/TestEngine/Python/TestImpactPythonTestEngine.h
     Source/TestImpactPythonRuntime.cpp
+    Source/TestImpactPythonRuntimeConfigurationFactory.cpp
 )
+
+# Remove this file from unity builds because with VS2019, the include of AzCore/std/string/regex.h can sometimes
+# trigger an invalid warning about a mismatched #pragma warning(push) in xlocinfo.h.
+list(APPEND SKIP_UNITY_BUILD_INCLUSION_FILES Source/TestImpactPythonRuntime.cpp)

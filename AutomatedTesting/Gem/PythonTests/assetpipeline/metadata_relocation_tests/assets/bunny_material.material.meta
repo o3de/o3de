@@ -1,0 +1,13 @@
+{
+    "FileVersion": 1,
+    "UUID": {
+        "uuid": "{C414F8CF-C48D-43E9-ABC3-B185EBBB78A3}",
+        "legacyUuids": [
+            "{5B9FC7E4-4745-523A-866C-B1D988F6F1E4}",
+            "{A3A66571-47BA-5EC6-9B25-328658C2B243}"
+        ],
+        "originalPath": "Assets/bunny_material.material",
+        "creationUnixEpochMS": 1676933474901,
+        "__version": 0
+    }
+}

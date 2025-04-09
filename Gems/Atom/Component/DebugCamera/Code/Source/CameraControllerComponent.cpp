@@ -25,13 +25,13 @@ namespace AZ
 
         void CameraControllerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-            required.push_back(AZ_CRC("CameraService", 0x1dd1caa4));
+            required.push_back(AZ_CRC_CE("TransformService"));
+            required.push_back(AZ_CRC_CE("CameraService"));
         }
 
         void CameraControllerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("CameraControllerService", 0xc35788f9));
+            provided.push_back(AZ_CRC_CE("CameraControllerService"));
         }
 
         void CameraControllerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

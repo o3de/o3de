@@ -322,7 +322,7 @@ namespace WhiteBox
         const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         // edge selection test - ensure an edge is selected before allowing this shortcut
-        if (auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier))
+        if ([[maybe_unused]] auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier))
         {
             return AZStd::vector<AzToolsFramework::ActionOverride>{
                 AzToolsFramework::ActionOverride()
@@ -340,7 +340,7 @@ namespace WhiteBox
                 };
         }
         // vertex selection test - ensure a vertex is selected before allowing this shortcut
-        else if (auto modifier2 = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier))
+        else if ([[maybe_unused]] auto modifier2 = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier))
         {
             return AZStd::vector<AzToolsFramework::ActionOverride>{
                 AzToolsFramework::ActionOverride()

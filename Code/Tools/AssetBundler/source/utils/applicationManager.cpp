@@ -37,11 +37,25 @@
 
 namespace AssetBundler
 {
+    // Added a declaration of GetBuildTargetName which retrieves the name of the build target
+    // The build target changes depending on which shared library/executable applicationManager.cpp
+    // is linked to 
+    AZStd::string_view GetBuildTargetName();
+
     const char compareVariablePrefix = '$';
 
     ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+        : ApplicationManager(argc, argv, parent, {})
+    {
+    }
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : ApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
+
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
         : QObject(parent)
-        , AzToolsFramework::ToolsApplication(argc, argv)
+        , AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
     {
     }
 
@@ -59,7 +73,7 @@ namespace AssetBundler
         startupParameters.m_loadDynamicModules = false;
         Start(AzFramework::Application::Descriptor(), startupParameters);
 
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialize context");
         AzToolsFramework::AssetSeedManager::Reflect(context);
@@ -189,7 +203,7 @@ namespace AssetBundler
     void ApplicationManager::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
     {
         AzToolsFramework::ToolsApplication::SetSettingsRegistrySpecializations(specializations);
-        specializations.Append("assetbundler");
+        specializations.Append(GetBuildTargetName());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////

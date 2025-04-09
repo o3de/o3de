@@ -113,8 +113,7 @@ namespace AzNetworking
         AZ_Assert(size > 0, "Invalid data size for send");
         AZ_Assert(data != nullptr, "NULL data pointer passed to send");
 
-        AZ_Assert(address.GetAddress(ByteOrder::Host) != 0, "Invalid address");
-        AZ_Assert(address.GetPort(ByteOrder::Host) != 0, "Invalid address");
+        AZ_Assert(address.IsValid(), "Invalid address");
 
         if (!IsOpen())
         {

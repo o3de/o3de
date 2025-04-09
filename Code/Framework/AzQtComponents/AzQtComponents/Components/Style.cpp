@@ -75,6 +75,7 @@ AZ_POP_DISABLE_WARNING
 #include <QtWidgets/private/qstylehelper_p.h>
 
 #include <limits>
+#include <QListWidget>
 
 namespace AzQtComponents
 {
@@ -789,7 +790,8 @@ namespace AzQtComponents
 
     QPixmap Style::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option) const
     {
-        if (qobject_cast<const TableView*>(m_drawControlWidget) && iconMode == QIcon::Mode::Selected)
+        if ((qobject_cast<const TableView*>(m_drawControlWidget) ||
+            qobject_cast<const QListWidget*>(m_drawControlWidget)) && iconMode == QIcon::Mode::Selected)
         {
             return QProxyStyle::generatedIconPixmap(QIcon::Mode::Active, pixmap, option);
         }
@@ -1314,13 +1316,10 @@ namespace AzQtComponents
 
     int Style::styleHint(QStyle::StyleHint hint, const QStyleOption* option, const QWidget* widget, QStyleHintReturn* returnData) const
     {
-#if QT_VERSION >= QT_VERSION_CHECK(5,11,1)
         if (hint == QStyle::SH_SpinBox_StepModifier)
         {
-            // This was introduced in 5.12 but we backported it to 5.11
             return Qt::ShiftModifier;
         }
-#endif
 
         if (!hasStyle(widget))
         {

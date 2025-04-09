@@ -90,7 +90,7 @@ namespace AZ
         AZStd::binary_semaphore m_semaphore;
         AZStd::atomic_int       m_waitCount = 0;
         TaskExecutor*           m_executor = nullptr;
-        const char* m_label;
+        [[maybe_unused]] const char* m_label = nullptr;
     };
 
     // The TaskGraph encapsulates a set of tasks and their interdependencies. After adding

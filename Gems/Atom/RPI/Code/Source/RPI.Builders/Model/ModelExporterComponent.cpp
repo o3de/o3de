@@ -7,7 +7,6 @@
  */
 
 #include <Model/ModelExporterComponent.h>
-#include <Model/ModelExporterContexts.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -30,6 +29,7 @@
 
 #include <cinttypes>
 
+#include <Atom/RPI.Builders/Model/ModelExporterContexts.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
@@ -107,7 +107,7 @@ namespace AZ
                     relativeMaterialFileName,
                     MaterialAsset::Extension,
                     sourceSceneUuid,
-                    DataStream::ST_XML
+                    DataStream::ST_BINARY
                 };
 
                 if (!ExportAsset(asset, materialExportContext, exportEventContext, "Material"))
@@ -147,6 +147,17 @@ namespace AZ
                 Data::Asset<MorphTargetMetaAsset> morphTargetMetaAsset;
                 ModelAssetBuilderContext modelContext(exportEventContext.GetScene(), meshGroup, coordSysConverter, materialsByUid, modelAsset, skinMetaAsset, morphTargetMetaAsset);
                 combinerResult = SceneAPI::Events::Process<ModelAssetBuilderContext>(modelContext);
+                if (combinerResult.GetResult() != SceneAPI::Events::ProcessingResult::Success)
+                {
+                    return combinerResult.GetResult();
+                }
+                ModelAssetPostBuildContext modelAssetPostBuildContext(
+                    exportEventContext.GetScene(),
+                    exportEventContext.GetOutputDirectory(),
+                    exportEventContext.GetProductList(),
+                    meshGroup,
+                    modelAsset);
+                combinerResult = SceneAPI::Events::Process<ModelAssetPostBuildContext>(modelAssetPostBuildContext);
                 if (combinerResult.GetResult() != SceneAPI::Events::ProcessingResult::Success)
                 {
                     return combinerResult.GetResult();
@@ -290,7 +301,8 @@ namespace AZ
             [[maybe_unused]] const char* assetTypeDebugName) const
         {
             const AZStd::string assetFileName = SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
-                assetContext.m_relativeFileName, context.GetOutputDirectory(), assetContext.m_extension);
+                assetContext.m_relativeFileName, context.GetOutputDirectory(), assetContext.m_extension,
+                context.GetScene().GetSourceExtension());
 
             if (!Utils::SaveObjectToFile(assetFileName, assetContext.m_dataStreamType, asset.Get()))
             {
@@ -337,7 +349,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelExporterComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(3);
+                    ->Version(4);
             }
         }
 

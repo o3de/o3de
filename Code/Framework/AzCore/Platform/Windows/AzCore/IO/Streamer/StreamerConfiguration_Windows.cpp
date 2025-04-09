@@ -34,7 +34,7 @@ namespace AZ::IO
         return value;
     }
 
-    static void CollectIoAdaptor(HANDLE deviceHandle, DriveInformation& info, const char* driveName, bool reportHardware)
+    static void CollectIoAdaptor(HANDLE deviceHandle, DriveInformation& info, [[maybe_unused]] const char* driveName, bool reportHardware)
     {
         STORAGE_ADAPTER_DESCRIPTOR adapterDescriptor{};
         STORAGE_PROPERTY_QUERY query{};
@@ -73,7 +73,7 @@ namespace AZ::IO
 
             if (reportHardware)
             {
-                AZ_Printf(
+                AZ_Trace(
                     "Streamer",
                     "Adapter for drive '%s':\n"
                     "    Bus: %s %i.%i\n"
@@ -112,7 +112,7 @@ namespace AZ::IO
             if (reportHardware)
             {
 
-                AZ_Printf("Streamer",
+                AZ_Trace("Streamer",
                     "    Drive type: %s\n",
                     trimDescriptor.TrimEnabled ? "SSD" : "HDD");
             }
@@ -121,7 +121,7 @@ namespace AZ::IO
         {
             if (reportHardware)
             {
-                AZ_Printf("Streamer", "    Drive type couldn't be determined.");
+                AZ_Trace("Streamer", "    Drive type couldn't be determined.");
             }
         }
     }
@@ -141,7 +141,7 @@ namespace AZ::IO
             information.m_logicalSectorSize = aznumeric_caster(alignmentDescriptor.BytesPerLogicalSector);
             if (reportHardware)
             {
-                AZ_Printf(
+                AZ_Trace(
                     "Streamer",
                     "    Physical sector size: %i bytes\n"
                     "    Logical sector size: %i bytes\n",
@@ -151,7 +151,7 @@ namespace AZ::IO
         }
     }
 
-    static void CollectDriveInfo(HANDLE deviceHandle, const char* driveName, bool reportHardware)
+    static void CollectDriveInfo(HANDLE deviceHandle, [[maybe_unused]] const char* driveName, bool reportHardware)
     {
         STORAGE_DEVICE_DESCRIPTOR sizeRequest{};
         STORAGE_PROPERTY_QUERY query{};
@@ -170,8 +170,8 @@ namespace AZ::IO
             {
                 if (reportHardware)
                 {
-                    auto deviceDescriptor = reinterpret_cast<STORAGE_DEVICE_DESCRIPTOR*>(buffer.get());
-                    AZ_Printf("Streamer",
+                    [[maybe_unused]] auto deviceDescriptor = reinterpret_cast<STORAGE_DEVICE_DESCRIPTOR*>(buffer.get());
+                    AZ_Trace("Streamer",
                         "Drive info for '%s':\n"
                         "    Id: %s%s%s%s%s\n",
                         driveName,
@@ -199,7 +199,7 @@ namespace AZ::IO
             information.m_ioChannelCount = aznumeric_caster(capabilityDescriptor.LunMaxIoCount);
             if (reportHardware)
             {
-                AZ_Printf(
+                AZ_Trace(
                     "Streamer",
                     "    Max IO count (LUN): %i\n"
                     "    Max IO count (Adapter): %i\n",
@@ -224,7 +224,7 @@ namespace AZ::IO
             information.m_hasSeekPenalty = seekPenaltyDescriptor.IncursSeekPenalty ? true : false;
             if (reportHardware)
             {
-                AZ_Printf("Streamer",
+                AZ_Trace("Streamer",
                     "    Has seek penalty: %s\n",
                     information.m_hasSeekPenalty ? "Yes" : "No");
             }
@@ -277,7 +277,7 @@ namespace AZ::IO
                     {
                         if (reportHardware)
                         {
-                            AZ_Printf("Streamer", "Skipping drive '%s' because no paths make use of it.\n", driveIt);
+                            AZ_Trace("Streamer", "Skipping drive '%s' because no paths make use of it.\n", driveIt);
                         }
                         while (*driveIt++);
                         continue;
@@ -322,14 +322,14 @@ namespace AZ::IO
 
                                     if (reportHardware)
                                     {
-                                        AZ_Printf("Streamer", "\n");
+                                        AZ_Trace("Streamer", "\n");
                                     }
                                 }
                                 else
                                 {
                                     if (reportHardware)
                                     {
-                                        AZ_Printf(
+                                        AZ_Trace(
                                             "Streamer", "Skipping drive '%s' because device does not support queuing requests.\n", driveIt);
                                     }
                                 }
@@ -338,7 +338,7 @@ namespace AZ::IO
                             {
                                 if (reportHardware)
                                 {
-                                    AZ_Printf(
+                                    AZ_Trace(
                                         "Streamer", "Drive '%s' is on the same storage drive as '%s'.\n",
                                         driveIt, driveInformationEntry->second.m_paths[0].c_str());
                                 }
@@ -349,7 +349,7 @@ namespace AZ::IO
                         {
                             if (reportHardware)
                             {
-                                AZ_Printf(
+                                AZ_Trace(
                                     "Streamer", "Skipping drive '%s' because device is not registered with OS as a storage device.\n",
                                     driveIt);
                             }
@@ -366,7 +366,7 @@ namespace AZ::IO
                 {
                     if (reportHardware)
                     {
-                        AZ_Printf("Streamer", "Skipping drive '%s', as it the type of drive is not supported.\n", driveIt);
+                        AZ_Trace("Streamer", "Skipping drive '%s', as it the type of drive is not supported.\n", driveIt);
                     }
                 }
 

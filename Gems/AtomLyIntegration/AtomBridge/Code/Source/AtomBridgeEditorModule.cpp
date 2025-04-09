@@ -46,7 +46,8 @@ namespace AZ
     }
 } // namespace AZ
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_Atom_AtomBridge.Editor, AZ::AtomBridge::EditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), AZ::AtomBridge::EditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Atom_AtomBridge_Editor, AZ::AtomBridge::EditorModule)
+#endif

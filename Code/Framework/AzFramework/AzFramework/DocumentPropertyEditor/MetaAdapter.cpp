@@ -39,15 +39,17 @@ namespace AZ::DocumentPropertyEditor
         HandleReset();
     }
 
+    ExpanderSettings* MetaAdapter::CreateExpanderSettings(
+        DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
+    {
+        AZ_Assert(m_sourceAdapter, "MetaAdapter::CreateExpanderSettings called before source adapter was specified!");
+        return m_sourceAdapter->CreateExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
+    }
+
     void MetaAdapter::HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, [[maybe_unused]] Dom::Value& value)
     {
         // forward all messages unaltered
         DocumentAdapter::SendAdapterMessage(message);
-    }
-
-    bool MetaAdapter::IsRow(const Dom::Value& domValue)
-    {
-        return (domValue.IsNode() && domValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>());
     }
 
     bool MetaAdapter::IsRow(const Dom::Path& sourcePath) const

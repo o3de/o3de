@@ -84,6 +84,9 @@ def enable_gem_in_project(gem_name: str = None,
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
 
+    # include the version specifier if provided e.g. gem==1.2.3
+    gem_name = gem_name or gem_json_data['gem_name']
+
     # check compatibility
     if force:
         logger.info(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
@@ -93,7 +96,7 @@ def enable_gem_in_project(gem_name: str = None,
         if manifest.get_project_engine_path(project_path):
             # Note: we don't remove gems that are not active or dependencies
             # because they will be implicitly found and activated via cmake 
-            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path, gem_name=gem_name)
+            incompatible_objects = compatibility.get_gems_project_incompatible_objects([gem_path], [gem_name], project_path)
             if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} has the following dependency compatibility issues and '
                     'requires the --force parameter to activate:\n  '+ 
@@ -103,9 +106,6 @@ def enable_gem_in_project(gem_name: str = None,
         if dry_run:
             logger.info(f'{gem_json_data["gem_name"]} is compatible with this project')
             return 0
-
-    # include the version specifier if provided e.g. gem==1.2.3
-    gem_name = gem_name or gem_json_data['gem_name']
 
     return project_properties.edit_project_props(proj_path=project_path,
                                                  new_gem_names=gem_name,

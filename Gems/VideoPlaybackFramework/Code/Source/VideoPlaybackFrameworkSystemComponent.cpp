@@ -110,12 +110,12 @@ namespace VideoPlaybackFramework
 
     void VideoPlaybackFrameworkSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("VideoPlaybackFrameworkService"));
+        provided.push_back(AZ_CRC_CE("VideoPlaybackFrameworkService"));
     }
 
     void VideoPlaybackFrameworkSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("VideoPlaybackFrameworkService"));
+        incompatible.push_back(AZ_CRC_CE("VideoPlaybackFrameworkService"));
     }
 
     void VideoPlaybackFrameworkSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

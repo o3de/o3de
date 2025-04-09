@@ -263,6 +263,8 @@ namespace UnitTest
         // note: WindowRequests is used internally by ViewportManipulatorController
         ON_CALL(mockWindowRequests, GetClientAreaSize())
             .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
+        ON_CALL(mockWindowRequests, GetRenderResolution())
+            .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
 
         EditorInteractionViewportSelectionFake editorInteractionViewportFake;
         editorInteractionViewportFake.m_internalHandleMouseManipulatorInteraction = [](const MouseInteractionEvent&)

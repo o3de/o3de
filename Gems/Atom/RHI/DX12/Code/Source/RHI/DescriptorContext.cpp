@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/DescriptorContext.h>
+#include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
+#include <AtomCore/std/containers/small_vector.h>
 #include <RHI/Buffer.h>
 #include <RHI/Conversions.h>
+#include <RHI/DescriptorContext.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ShaderResourceGroupPool.h>
-#include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
 
 namespace AZ
 {
@@ -104,7 +105,6 @@ namespace AZ
 
             AZ_Assert(platformLimitsDescriptor.get(), "Platform limits information is missing");
             m_platformLimitsDescriptor = platformLimitsDescriptor;
-            m_allowDescriptorHeapCompaction = m_platformLimitsDescriptor->m_allowDescriptorHeapCompaction;
             for (const auto& itr : platformLimitsDescriptor->m_descriptorHeapLimits)
             {
                 for (uint32_t shaderVisibleIdx = 0; shaderVisibleIdx < PlatformLimitsDescriptor::NumHeapFlags; ++shaderVisibleIdx)
@@ -122,18 +122,7 @@ namespace AZ
                             m_staticDescriptorOffset < descriptorCountMax,
                             "DX12 shader visible dynamic descriptor offset invalid: %" PRIu32, m_staticDescriptorOffset);
 
-                        if (m_allowDescriptorHeapCompaction && IsShaderVisibleCbvSrvUavHeap(type, flags))
-                        {
-                            //Init the two heaps to help support compaction after fragmentation
-                            m_shaderVisibleCbvSrvUavPools[0].Init(
-                                m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
-                                descriptorCountMax, platformLimitsDescriptor->m_numShaderVisibleCbvSrvUavStaticHandles);
-
-                            m_shaderVisibleCbvSrvUavPools[1].Init(
-                                m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
-                                descriptorCountMax, platformLimitsDescriptor->m_numShaderVisibleCbvSrvUavStaticHandles);
-                        }
-                        else if (IsShaderVisibleCbvSrvUavHeap(type, flags))
+                        if (IsShaderVisibleCbvSrvUavHeap(type, flags))
                         {
                             // The shader-visible CBV_SRV_UAV heap is divided into a dynamic region and a static region. The static region
                             // stores pinned copies of all unique resource views and is bound via m_staticTable for bindless shader access.
@@ -145,6 +134,7 @@ namespace AZ
                             dynamicPool.Init(m_device.get(), type, flags, descriptorCountMax, m_staticDescriptorOffset);
 
                             // The remaining elements are assigned to a second pool sharing the same descriptor heap as the first
+                            // We assume that unbounded array is always supported on dx12 and can ignore the case when it is not 
                             uint32_t staticDescriptorCount = descriptorCountMax - m_staticDescriptorOffset;
                             m_staticPool.InitPooledRange(dynamicPool, m_staticDescriptorOffset, staticDescriptorCount);
                             m_staticTable =
@@ -157,14 +147,6 @@ namespace AZ
                         }
                     }
                 }
-            }
-
-            if (m_allowDescriptorHeapCompaction)
-            {
-                m_backupStaticHandles.Init(
-                    m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
-                    platformLimitsDescriptor->m_numShaderVisibleCbvSrvUavStaticHandles,
-                    platformLimitsDescriptor->m_numShaderVisibleCbvSrvUavStaticHandles);
             }
 
             CreateNullDescriptors();
@@ -197,6 +179,14 @@ namespace AZ
             if (shaderResourceView.IsNull())
             {
                 shaderResourceView = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 1);
+                if (shaderResourceView.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the first value of "
+                        "DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
+                    return;
+                }
             }
             D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle = GetCpuPlatformHandle(shaderResourceView);
 
@@ -206,7 +196,15 @@ namespace AZ
             bool isRayTracingAccelerationStructure = RHI::CheckBitsAll(buffer.GetDescriptor().m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure);
             ID3D12Resource* resource = isRayTracingAccelerationStructure ? nullptr : buffer.GetMemoryView().GetMemory();
             m_device->CreateShaderResourceView(resource, &viewDesc, descriptorHandle);
-            staticView = AllocateStaticDescriptor(descriptorHandle);
+
+            staticView = m_staticPool.AllocateHandle(1);
+            AZ_Assert(!staticView.IsNull(), "Failed to allocate static descriptor from shader-visible CBV_SRV_UAV heap");
+            D3D12_SHADER_RESOURCE_VIEW_DESC staticViewDesc;
+            RHI::BufferViewDescriptor rawDesc = RHI::BufferViewDescriptor::CreateRaw(
+                bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
+                bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize);
+            ConvertBufferView(buffer, rawDesc, staticViewDesc);
+            m_device->CreateShaderResourceView(resource, &staticViewDesc, m_staticPool.GetCpuPlatformHandle(staticView));
         }
 
         void DescriptorContext::CreateUnorderedAccessView(
@@ -219,6 +217,14 @@ namespace AZ
             if (unorderedAccessView.IsNull())
             {
                 unorderedAccessView = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 1);
+                if (unorderedAccessView.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the first value of "
+                        "DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
+                    return;
+                }
             }
             D3D12_CPU_DESCRIPTOR_HANDLE unorderedAccessDescriptor = GetCpuPlatformHandle(unorderedAccessView);
 
@@ -235,21 +241,22 @@ namespace AZ
                 {
                     AZ_Assert(
                         false,
-                        "Descriptor heap ran out of memory for static handles. Please consider increasing the value of NumShaderVisibleCbvSrvUavStaticHandles"
-                        "within platformlimits.azasset file for dx12.");
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the second value of "
+                        "DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
                     return;
-                }
-
-                if (m_allowDescriptorHeapCompaction)
-                {
-                    //We make a copy of static handles in case we need to compact and recreate the shader visible heap
-                    m_device->CopyDescriptorsSimple(
-                        1, m_backupStaticHandles.GetCpuPlatformHandle(unorderedAccessViewClear), unorderedAccessDescriptor,
-                        unorderedAccessViewClear.m_type);
                 }
             }
             CopyDescriptor(unorderedAccessViewClear, unorderedAccessView);
-            staticView = AllocateStaticDescriptor(unorderedAccessDescriptor);
+
+            staticView = m_staticPool.AllocateHandle(1);
+            AZ_Assert(!staticView.IsNull(), "Failed to allocate static descriptor from shader-visible CBV_SRV_UAV heap");
+            D3D12_UNORDERED_ACCESS_VIEW_DESC staticViewDesc;
+            RHI::BufferViewDescriptor rawDesc = RHI::BufferViewDescriptor::CreateRaw(
+                bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
+                bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize);
+            ConvertBufferView(buffer, rawDesc, staticViewDesc);
+            m_device->CreateUnorderedAccessView(
+                buffer.GetMemoryView().GetMemory(), nullptr, &staticViewDesc, m_staticPool.GetCpuPlatformHandle(staticView));
         }
 
         void DescriptorContext::CreateShaderResourceView(
@@ -261,6 +268,14 @@ namespace AZ
             if (shaderResourceView.IsNull())
             {
                 shaderResourceView = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 1);
+                if (shaderResourceView.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the first value of "
+                        "DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
+                    return;
+                }
             }
             D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle = GetCpuPlatformHandle(shaderResourceView);
 
@@ -290,6 +305,14 @@ namespace AZ
             if (unorderedAccessView.IsNull())
             {
                 unorderedAccessView = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 1);
+                if (unorderedAccessView.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the first value of "
+                        "DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
+                    return;
+                }
             }
             D3D12_CPU_DESCRIPTOR_HANDLE unorderedAccessDescriptor = GetCpuPlatformHandle(unorderedAccessView);
 
@@ -306,17 +329,9 @@ namespace AZ
                 {
                     AZ_Assert(
                         false,
-                        "Descriptor heap ran out of memory for static handles. Please consider increasing the value of "
-                        "NumShaderVisibleCbvSrvUavStaticHandles within platformlimits.azasset file for dx12.");
+                        "Descriptor heap ran out of memory for static handles. Please consider increasing the second value of "
+                        "DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV within platformlimits.azasset file for dx12.");
                     return;
-                }
-
-                if (m_allowDescriptorHeapCompaction)
-                {
-                    // We make a copy of static handles in case we need to compact and recreate the shader visible heap
-                    m_device->CopyDescriptorsSimple(
-                        1, m_backupStaticHandles.GetCpuPlatformHandle(unorderedAccessViewClear), unorderedAccessDescriptor,
-                        unorderedAccessViewClear.m_type);
                 }
             }
             CopyDescriptor(unorderedAccessViewClear, unorderedAccessView);
@@ -340,6 +355,14 @@ namespace AZ
             if (renderTargetView.IsNull())
             {
                 renderTargetView = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 1);
+                if (renderTargetView.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the first value of "
+                        "DESCRIPTOR_HEAP_TYPE_RTV within platformlimits.azasset file for dx12.");
+                    return;
+                }
             }
             D3D12_CPU_DESCRIPTOR_HANDLE renderTargetDescriptor = GetCpuPlatformHandle(renderTargetView);
 
@@ -357,12 +380,28 @@ namespace AZ
             if (depthStencilView.IsNull())
             {
                 depthStencilView = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 1);
+                if (depthStencilView.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the first value of "
+                        "DESCRIPTOR_HEAP_TYPE_DSV within platformlimits.azasset file for dx12.");
+                    return;
+                }
             }
             D3D12_CPU_DESCRIPTOR_HANDLE depthStencilDescriptor = GetCpuPlatformHandle(depthStencilView);
 
             if (depthStencilReadView.IsNull())
             {
                 depthStencilReadView = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 1);
+                if (depthStencilReadView.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the first value of "
+                        "DESCRIPTOR_HEAP_TYPE_DSV within platformlimits.azasset file for dx12.");
+                    return;
+                }
             }
             D3D12_CPU_DESCRIPTOR_HANDLE depthStencilReadDescriptor = GetCpuPlatformHandle(depthStencilReadView);
 
@@ -386,6 +425,14 @@ namespace AZ
             if (samplerHandle.IsNull())
             {
                 samplerHandle = AllocateHandle(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 1);
+                if (samplerHandle.IsNull())
+                {
+                    AZ_Assert(
+                        false,
+                        "Descriptor heap ran out of memory for descriptor handles. Please consider increasing the first value of "
+                        "D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER within platformlimits.azasset file for dx12.");
+                    return;
+                }
             }
 
             D3D12_SAMPLER_DESC samplerDesc;
@@ -410,23 +457,8 @@ namespace AZ
         }
 
         DescriptorTable DescriptorContext::CreateDescriptorTable(
-            D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType, uint32_t descriptorCount, ShaderResourceGroup* srg)
+            D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType, uint32_t descriptorCount)
         {
-            if (m_allowDescriptorHeapCompaction  && !m_compactionInProgress)
-            {
-                // Track active SRGs in case we need to compact the shader visible cbv_srv_uav heap
-                AZStd::scoped_lock lock{ m_srgMapMutex };
-                auto iter = m_srgAllocations.find(srg);
-                if (iter == m_srgAllocations.end())
-                {
-                    m_srgAllocations.emplace(srg, 1);
-                }
-                else
-                {
-                    m_srgAllocations[srg]++;
-                }
-            }
-
             return GetPool(descriptorHeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE).AllocateTable(descriptorCount);
         }
 
@@ -435,24 +467,11 @@ namespace AZ
             return m_staticPool.GetGpuPlatformHandleForTable(m_staticTable);
         }
 
-        void DescriptorContext::ReleaseDescriptorTable(DescriptorTable table, ShaderResourceGroup* srg)
+        void DescriptorContext::ReleaseDescriptorTable(DescriptorTable table)
         {
-            if (m_allowDescriptorHeapCompaction && !m_compactionInProgress)
-            {
-                //Track active SRGs in case we need to compact the shader visible cbv_srv_uav heap
-                AZStd::scoped_lock lock{ m_srgMapMutex };
-                [[maybe_unused]] auto iter = m_srgAllocations.find(srg);
-                AZ_Assert(iter != m_srgAllocations.end(), "Srg entry not found");
-                m_srgAllocations[srg]--;
-                if (m_srgAllocations[srg] == 0)
-                {
-                    m_srgAllocations.erase(srg);
-                }
-            }
-
             GetPool(table.GetType(), table.GetFlags()).ReleaseTable(table);
         }
-        
+
         void DescriptorContext::UpdateDescriptorTableRange(
             DescriptorTable gpuDestinationTable,
             const DescriptorHandle* cpuSourceDescriptors,
@@ -461,7 +480,8 @@ namespace AZ
             const uint32_t DescriptorCount = gpuDestinationTable.GetSize();
 
             // Resolve source descriptors to platform handles.
-            AZStd::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpuSourceHandles;
+            constexpr size_t FixedSize = 16;
+            AZStd::small_vector<D3D12_CPU_DESCRIPTOR_HANDLE, FixedSize> cpuSourceHandles;
             cpuSourceHandles.reserve(DescriptorCount);
             for (uint32_t i = 0; i < DescriptorCount; ++i)
             {
@@ -472,16 +492,17 @@ namespace AZ
             D3D12_CPU_DESCRIPTOR_HANDLE gpuDestinationHandle = GetCpuPlatformHandleForTable(gpuDestinationTable);
 
             // An array of descriptor sizes for each range. We just want N ranges with 1 descriptor each.
-            AZStd::vector<uint32_t> rangeCounts(DescriptorCount, 1);
+            AZStd::small_vector<uint32_t, FixedSize> rangeCountsFixed;
+            rangeCountsFixed.resize(DescriptorCount, 1);
 
             //We are gathering N source descriptors into a contiguous destination table.
             m_device->CopyDescriptors(
-                1,                      // Number of destination ranges.
-                &gpuDestinationHandle,  // Destination range array.
-                &DescriptorCount,       // Number of destination table elements in each range.
-                DescriptorCount,        // Number of source ranges.
-                cpuSourceHandles.data(),// Source range array
-                rangeCounts.data(),     // Number of elements in each source range.
+                1, // Number of destination ranges.
+                &gpuDestinationHandle, // Destination range array.
+                &DescriptorCount, // Number of destination table elements in each range.
+                DescriptorCount, // Number of source ranges.
+                cpuSourceHandles.span().data(), // Source range array
+                rangeCountsFixed.span().data(), // Number of elements in each source range.
                 heapType);
         }
 
@@ -519,11 +540,6 @@ namespace AZ
             }
 
             m_staticPool.GarbageCollect();
-
-            if (m_allowDescriptorHeapCompaction)
-            {
-                m_backupStaticHandles.GarbageCollect();
-            }
         }
 
         DescriptorTable DescriptorContext::AllocateTable(
@@ -612,83 +628,14 @@ namespace AZ
         {
             AZ_Assert(type < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES, "Trying to get pool with invalid type: [%d]", type);
             AZ_Assert(flag < NumHeapFlags, "Trying to get pool with invalid flag: [%d]", flag);
-
-            if (m_allowDescriptorHeapCompaction && IsShaderVisibleCbvSrvUavHeap(type, flag))
-            {
-                return m_shaderVisibleCbvSrvUavPools[m_currentHeapIndex];
-            }
-            else
-            {
-                return m_pools[type][flag];
-            }
+            return m_pools[type][flag];
         }
 
         const DescriptorPool& DescriptorContext::GetPool(uint32_t type, uint32_t flag) const
         {
             AZ_Assert(type < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES, "Trying to get pool with invalid type: [%d]", type);
             AZ_Assert(flag < NumHeapFlags, "Trying to get pool with invalid flag: [%d]", flag);
-            if (m_allowDescriptorHeapCompaction && IsShaderVisibleCbvSrvUavHeap(type, flag))
-            {
-                return m_shaderVisibleCbvSrvUavPools[m_currentHeapIndex];
-            }
-            else
-            {
-                return m_pools[type][flag];
-            }
-        }
-
-        RHI::ResultCode DescriptorContext::CompactDescriptorHeap()
-        {
-            //Check if heap compaction is enabled by the user. Since there is an overhead associated with heap compaction it is not enabled by default
-            if(!m_allowDescriptorHeapCompaction)
-            {
-                AZ_Assert(
-                    false,
-                    "Descriptor heap Compaction not allowed. Please consider increasing number of handles allowed for the second value"
-                    "of DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV or enabling AllowDescriptorHeapCompaction within platformlimits.azasset file for dx12.");
-                return RHI::ResultCode::OutOfMemory;
-            }
-
-            //We need to ping-pong between two heaps as we cannot compact the active heap without updating it and that is not allowed as
-            //we need to keep that gpu memory untouched until GPU is finished consuming which can take up to 3 frames. 
-            m_compactionInProgress = true;
-            DescriptorPool& srcPool = GetPool(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-
-            //Update the currently active heap index
-            m_currentHeapIndex = !m_currentHeapIndex; 
-            DescriptorPool& destPool = GetPool(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-
-            //Copy over all the static handles first
-            for (size_t i = 0; i < m_platformLimitsDescriptor->m_numShaderVisibleCbvSrvUavStaticHandles; i++)
-            {
-                DescriptorHandle srcHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, static_cast<uint32_t>(i));
-                DescriptorHandle destHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE, static_cast<uint32_t>(i));
-                m_device->CopyDescriptorsSimple(1, destPool.GetCpuPlatformHandle(destHandle), m_backupStaticHandles.GetCpuPlatformHandle(srcHandle), destHandle.m_type);
-            }
-
-            //Clone the allocator of the source pool into the destination pool
-            srcPool.CloneAllocator(destPool.GetAllocator());
-
-            {
-                //The mutex is here 'just in case' Compaction is called from more than one thread.
-                AZStd::scoped_lock lock{ m_srgMapMutex };
-                //Re-update all the descriptor tables associated with active SRGs
-                for (const auto& [srg, numAllocations] : m_srgAllocations)
-                {
-                    RHI::ResultCode resultCode = static_cast<ShaderResourceGroupPool*>(srg->GetPool())->UpdateDescriptorTableAfterCompaction(*srg, srg->GetData());
-                    if (resultCode != RHI::ResultCode::Success)
-                    {
-                        return resultCode;
-                    }
-                }
-            }
-
-            //Clear the allocator of the source pool
-            srcPool.ClearAllocator();
-
-            m_compactionInProgress = false;
-
-            return RHI::ResultCode::Success;
+            return m_pools[type][flag];
         }
 
         bool DescriptorContext::IsShaderVisibleCbvSrvUavHeap(uint32_t type, uint32_t flag) const

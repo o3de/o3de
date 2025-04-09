@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/Outcome/Outcome.h>
+
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <ProjectInfo.h>
@@ -46,7 +48,8 @@ namespace O3DE::ProjectManager
         void NextScreen();
         void PreviousScreen();
 
-        bool CurrentScreenIsValid();
+        
+        AZ::Outcome<void, QString> CurrentScreenIsValid();
         void CreateProject();
 
         QStackedWidget* m_stack = nullptr;

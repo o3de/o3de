@@ -6,16 +6,22 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 #include <Atom/Features/PostProcessing/Aces.azsli>
+#include <Atom/Features/PostProcessing/Tonemap.azsli>
+#include <Atom/Features/PostProcessing/Shapers.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    Texture2D<float4> m_framebuffer;
+    [[input_attachment_index(0)]]
+    SubpassInput m_framebuffer;
+
+    Texture3D<float4> m_lut;
     Sampler LinearSampler
     {
         MinFilter = Linear;
@@ -28,19 +34,19 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
     // Reference white and black luminance values
     float2 m_cinemaLimits;
+
+    // LDR color grading
+    int m_shaperType;
+    float m_shaperBias;
+    float m_shaperScale;
 }
 
 // Option shader variable to select tone mapper feature.
-option enum class ToneMapperType {None, Reinhard} o_tonemapperType = ToneMapperType::None;
+option enum class ToneMapperType {None, Reinhard, AcesFitted, AcesFilmic, Filmic} o_tonemapperType = ToneMapperType::None;
 // Option shader variable to select transfer function.
 option enum class TransferFunctionType {None, Gamma22, PerceptualQuantizer} o_transferFunctionType = TransferFunctionType::None;
-
-// Simple reinhard tone mapping algorithm based on below paper.
-// http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
-float3 TonemapReinhard(const float3 inputColor)
-{
-    return inputColor / (1.0 + inputColor);
-}
+// Option to enable color grading
+option bool o_colorGradingEnabled = false;
 
 float3 NormalizedToCinemaLimits(const float3 inputColor)
 {
@@ -60,25 +66,41 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     // Fetch the pixel color from the input texture
-    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
-    
+    float3 color = PassSrg::m_framebuffer.SubpassLoad(int3(IN.m_position.x, IN.m_position.y, 0)).rgb;
+#if MERGE_MANUAL_EXPOSURE
+    // Apply manual exposure compensation
+    color = ApplyManualExposure(color, float(ViewSrg::GetExposureValueCompensation()));
+#endif
+
     // Applying tone mapper.
     switch (o_tonemapperType)
     {
         case ToneMapperType::Reinhard:
-            color = TonemapReinhard(color);
+            color = TonemapReinhard(AcesCg_To_LinearSrgb(color));
+            break;
+        case ToneMapperType::AcesFitted:
+            color = AcesCg_To_LinearSrgb(TonemapAcesFitted(color));
+            break;
+        case ToneMapperType::AcesFilmic:
+            color = TonemapAcesFilmic(AcesCg_To_LinearSrgb(color));
+            break;
+        case ToneMapperType::Filmic:
+            color = TonemapFilmic(AcesCg_To_LinearSrgb(color));
             break;
         default:
             break;
-    }
+    } 
 
+    // Aplying transfer function to go from linear srgb to gamma srgb 
     switch (o_transferFunctionType)
     {
         case TransferFunctionType::Gamma22:
             color = pow(color, 1.0 / 2.2);
             break;
         case TransferFunctionType::PerceptualQuantizer:
-            if (o_tonemapperType == ToneMapperType::Reinhard)
+            if (o_tonemapperType == ToneMapperType::Reinhard ||
+                o_tonemapperType == ToneMapperType::AcesFitted ||
+                o_tonemapperType == ToneMapperType::AcesFilmic)
             {
                 color = NormalizedToCinemaLimits(color);
             }
@@ -87,6 +109,11 @@ PSOutput MainPS(VSOutput IN)
             break;
         default:
             break;
+    }
+
+    if(o_colorGradingEnabled)
+    {
+        color.rgb = ApplyShaperLookupTable(ShaperType::ShaperLinear, color, PassSrg::m_shaperBias, PassSrg::m_shaperScale, PassSrg::m_lut, PassSrg::LinearSampler);
     }
 
     OUT.m_color.rgb = color;

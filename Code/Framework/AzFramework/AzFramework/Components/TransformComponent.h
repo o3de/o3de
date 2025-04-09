@@ -136,6 +136,8 @@ namespace AzFramework
         AZStd::vector<AZ::EntityId> GetAllDescendants() override;
         AZStd::vector<AZ::EntityId> GetEntityAndAllDescendants() override;
         bool IsStaticTransform() override;
+        AZ::OnParentChangedBehavior GetOnParentChangedBehavior() override;
+        void SetOnParentChangedBehavior(AZ::OnParentChangedBehavior onParentChangedBehavior) override;
 
         //! Methods implementing parent support.
         //! @{
@@ -186,5 +188,7 @@ namespace AzFramework
         bool m_parentActive = false; ///< Keeps track of the state of the parent entity.
         bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
+        /// Behavior for this entity's transform when its parent's transform changes.
+        AZ::OnParentChangedBehavior m_onParentChangedBehavior = AZ::OnParentChangedBehavior::Update;
     };
 }   // namespace AZ

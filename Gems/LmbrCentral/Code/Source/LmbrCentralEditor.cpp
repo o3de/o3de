@@ -24,6 +24,7 @@
 
 #include "Editor/EditorCommentComponent.h"
 #include "Shape/EditorAxisAlignedBoxShapeComponent.h"
+#include "Shape/EditorAxisAlignedBoxShapeComponentMode.h"
 #include "Shape/EditorBoxShapeComponent.h"
 #include "Shape/EditorCapsuleShapeComponent.h"
 #include "Shape/EditorCylinderShapeComponent.h"
@@ -127,6 +128,7 @@ namespace LmbrCentral
         EditorSplineComponentMode::BindActionsToModes();
         EditorTubeShapeComponentMode::BindActionsToModes();
         AzToolsFramework::BoxComponentMode::BindActionsToModes();
+        EditorAxisAlignedBoxShapeComponentMode::BindActionsToModes();
     }
 
     void LmbrCentralEditorModule::OnMenuBindingHook()
@@ -143,4 +145,8 @@ namespace LmbrCentral
 
 } // namespace LmbrCentral
 
-AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentralEditor, LmbrCentral::LmbrCentralEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), LmbrCentral::LmbrCentralEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentral_Editor, LmbrCentral::LmbrCentralEditorModule)
+#endif

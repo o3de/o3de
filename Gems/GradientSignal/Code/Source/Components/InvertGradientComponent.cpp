@@ -49,12 +49,12 @@ namespace GradientSignal
 
     void InvertGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void InvertGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void InvertGradientComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

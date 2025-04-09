@@ -375,9 +375,9 @@ namespace EMotionFX
                 ->EnumAttribute(FUNCTION_NOTALL,    s_functionOneOrMoreInactive)
                 ->EnumAttribute(FUNCTION_ONEORMORE, s_functionOneOrMoreActive)
                 ->EnumAttribute(FUNCTION_NONE,      s_functionNoTagActive)
-            ->DataElement(AZ_CRC("AnimGraphTags", 0x05dc9a94), &AnimGraphTagCondition::m_tags, "Tags", "The tags to watch.")
+            ->DataElement(AZ_CRC_CE("AnimGraphTags"), &AnimGraphTagCondition::m_tags, "Tags", "The tags to watch.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphTagCondition::Reinit)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphTagCondition::GetAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphTagCondition::GetAnimGraph)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
             ;

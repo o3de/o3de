@@ -78,7 +78,7 @@ namespace AZ::Settings
 
     ParseOutcome ParseConfigFile(AZ::IO::GenericStream& configStream, const ConfigParserSettings& configParserSettings)
     {
-        // The trace system is not being used here as this function INI system is available
+        // The trace system is not being used here as this function is available
         // before any allocators or initialization of any systems take place
 
         ParseOutcome parseOutcome;
@@ -196,6 +196,11 @@ namespace AZ::Settings
                 memmove(configBuffer.begin(), frontIter, readOffset);
             }
 
+            if (remainingFileLength == 0)
+            {
+                // There are no more bytes to read, no need to attempt to read from the stream
+                break;
+            }
             // Read up to minimum of remaining file length or 4K in the configBuffer
             readSize = (AZStd::min)(configBuffer.max_size() - readOffset, remainingFileLength);
             bytesRead = configStream.Read(readSize, configBuffer.data() + readOffset);

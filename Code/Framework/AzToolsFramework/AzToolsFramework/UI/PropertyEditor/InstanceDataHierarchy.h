@@ -86,6 +86,7 @@ namespace AzToolsFramework
         /// Check if have more than one instance for this node.
         bool    IsMultiInstance() const             { return m_instances.size() > 1; }
         size_t  GetNumInstances() const             { return m_instances.size(); }
+        bool    HasInstances() const                { return !m_instances.empty(); }
         void*   GetInstance(size_t idx) const;
         void**  GetInstanceAddress(size_t idx) const;
         void*   FirstInstance() const { return GetInstance(0); }

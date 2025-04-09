@@ -115,7 +115,9 @@ public:
 
         m_application = aznew SpawnerApplication();
 
-        m_application->Start(appDescriptor, AZ::ComponentApplication::StartupParameters());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_application->Start(appDescriptor, startupParameters);
 
         // create a dynamic slice in the asset system
         AZ::Entity* sliceAssetEntity = aznew AZ::Entity();

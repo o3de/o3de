@@ -12,6 +12,10 @@
 #define VsInput         VsInput_DepthCommon
 #endif
 
+#ifndef VsSystemValues
+#define VsSystemValues  VsSystemValues_DepthCommon
+#endif
+
 #ifndef VsOutput
 #define VsOutput        VsOutput_DepthCommon
 #endif
@@ -28,6 +32,11 @@ struct VsInput_DepthCommon
     // Vertex position of last frame to capture small scale motion due to vertex animation
     float3 m_optional_prevPosition : POSITIONT;
 #endif
+};
+
+struct VsSystemValues_DepthCommon
+{
+    uint m_instanceId;
 };
 
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
@@ -48,5 +57,6 @@ struct VsOutput_DepthCommon
     float3 m_worldPos : TEXCOORD0;
     float3 m_worldPosPrev: TEXCOORD1;
 #endif
+    uint m_instanceId : SV_InstanceID;
 };
 

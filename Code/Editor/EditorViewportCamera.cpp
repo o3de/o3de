@@ -136,6 +136,43 @@ namespace SandboxEditor
         }
     }
 
+    AZStd::optional<AZ::Transform> CalculateGoToEntityTransform(
+        const AZ::Transform& cameraTransform, const float fovRadians, const AZ::Vector3& center, const float radius)
+    {
+        // do not attempt to interpolate to where we currently are
+        if (cameraTransform.GetTranslation().IsClose(center))
+        {
+            return AZStd::nullopt;
+        }
+
+        const AZ::Vector3 forward = [&center, &cameraTransform]
+        {
+            const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
+            // if the camera is looking directly up or down, pitch the camera down or up respectively to avoid
+            // a singularity when creating the lookat transformation below
+            if (const float forwardDot = forward.Dot(AZ::Vector3::CreateAxisZ()); AZ::IsCloseMag(AZ::Abs(forwardDot), 1.0f, 0.001f))
+            {
+                return AZ::Transform::CreateFromQuaternion(
+                           AZ::Quaternion::CreateFromAxisAngle(cameraTransform.GetBasisX(), AZ::DegToRad(5.0f) * -AZ::GetSign(forwardDot)))
+                    .TransformVector(AZ::Vector3::CreateAxisZ() * AZ::GetSign(forwardDot));
+            }
+            return forward;
+        }();
+
+        // minimum center size is 40cm, maxium center size is 25m
+        const float MinSelectionRadius = 0.4f;
+        const float MaxSelectionRadius = 25.0f;
+        const float selectionSize = AZ::GetClamp(radius, MinSelectionRadius, MaxSelectionRadius);
+
+        // move camera 25% further back than required
+        const float centerScale = 1.25f;
+        // compute new camera transform
+        const float fovScale = 1.0f / AZStd::tan(fovRadians * 0.5f);
+        const float distanceToLookAt = selectionSize * fovScale * centerScale;
+
+        return AZ::Transform::CreateLookAt(center - (forward * distanceToLookAt), center);
+    }
+
     AZ::Transform GetViewportCameraTransform(const AzFramework::ViewportId viewportId)
     {
         AZ::Transform cameraTransform = AZ::Transform::CreateIdentity();

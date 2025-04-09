@@ -32,18 +32,20 @@
 
 namespace AssetProcessor
 {
-    const char* const DebugChannel = "Debug"; //Use this channel name if you want to write the message to the log file only.
-    const char* const ConsoleChannel = "AssetProcessor";// Use this channel name if you want to write the message to both the console and the log file.
-    const char* const FENCE_FILE_EXTENSION = "fence"; //fence file extension
-    const char* const AutoFailReasonKey = "failreason"; // the key to look in for auto-fail reason.
-    const char* const AutoFailLogFile = "faillogfile"; // if this is provided, this is a complete log of the failure and will be added after the failreason.
-    const char* const AutoFailOmitFromDatabaseKey = "failreason_omitFromDatabase"; // if set in your job info hash, your job will not be tracked by the database.
+    constexpr const char* DebugChannel = "Debug"; //Use this channel name if you want to write the message to the log file only.
+    constexpr const char* ConsoleChannel = "AssetProcessor";// Use this channel name if you want to write the message to both the console and the log file.
+    constexpr const char* FENCE_FILE_EXTENSION = "fence"; //fence file extension
+    constexpr const char* AutoFailReasonKey = "failreason"; // the key to look in for auto-fail reason.
+    constexpr const char* AutoFailLogFile = "faillogfile"; // if this is provided, this is a complete log of the failure and will be added after the failreason.
+    constexpr const char* AutoFailOmitFromDatabaseKey = "failreason_omitFromDatabase"; // if set in your job info hash, your job will not be tracked by the database.
     const unsigned int g_RetriesForFenceFile = 5; // number of retries for fencing
     constexpr int RetriesForJobLostConnection = ASSETPROCESSOR_TRAIT_ASSET_BUILDER_LOST_CONNECTION_RETRIES; // number of times to retry a job when a network error due to network issues or a crashed AssetBuilder process is determined to have caused a job failure
-    constexpr const char* IntermediateAssetsFolderName = "Intermediate Assets"; // name of the intermediate assets folder
+    [[maybe_unused]] constexpr const char* IntermediateAssetsFolderName = "Intermediate Assets"; // name of the intermediate assets folder
+
     // Even though AP can handle files with path length greater than window's legacy path length limit, we have some 3rdparty sdk's
-    // which do not handle this case ,therefore we will make AP fail any jobs whose either source file or output file name exceeds the windows legacy path length limit
-#define AP_MAX_PATH_LEN 260
+    // which do not handle this case, therefore we will make AP warn about jobs whose either source file or output file name exceeds the windows legacy path length limit
+    // on all platforms
+#define ASSETPROCESSOR_WARN_PATH_LEN 260
 
     //! a shared convenience typedef for requests that have come over the network
     //! The first element is the connection id it came from and the second element is the serial number
@@ -57,6 +59,9 @@ namespace AssetProcessor
     //! A map which is used to keep absolute paths --> Database Paths of source files.
     //! This is intentionally a map (not unordered_map) in order to ensure order is stable, and to eliminate duplicates.
     typedef AZStd::map<AZStd::string, AZStd::string> SourceFilesForFingerprintingContainer;
+
+    //! A shared convenience typedef for tracking a source path and a scan folder ID together.
+    typedef AZStd::pair<AZStd::string, AZ::s64> SourceAndScanID;
 
     enum AssetScanningStatus
     {
@@ -126,6 +131,8 @@ namespace AssetProcessor
         AZ::u32 m_computedFingerprint = 0;     // what the fingerprint was at the time of job creation.
         qint64 m_computedFingerprintTimeStamp = 0; // stores the number of milliseconds since the universal coordinated time when the fingerprint was computed.
         AZ::u64 m_jobRunKey = 0;
+        AZ::s64 m_failureCauseSourceId = AzToolsFramework::AssetDatabase::InvalidEntryId; // Id of the source that caused this job to fail (typically due to a conflict).
+        AZ::u32 m_failureCauseFingerprint = 0; // Fingerprint of the job that caused this job to fail.  Used to prevent infinite retry loops.
         bool m_checkExclusiveLock = true;      ///< indicates whether we need to check the input file for exclusive lock before we process this job
         bool m_addToDatabase = true; ///< If false, this is just a UI job, and should not affect the database.
 

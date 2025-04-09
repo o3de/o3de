@@ -79,11 +79,11 @@ def update_manifest(scene):
     # Add an EditorMeshComponent to the entity
     editor_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName", entity_id, "AZ::Render::EditorMeshComponent")
     # Set the ModelAsset assetHint to the relative path of the input asset + the name of the MeshGroup we just created + the azmodel extension
-    # The MeshGroup we created will be output as a product in the asset's path named mesh_group_name.azmodel
+    # The MeshGroup we created will be output as a product in the asset's path named mesh_group_name.fbx.azmodel
     # The assetHint will be converted to an AssetId later during prefab loading
     json_update = json.dumps({
         "Controller": { "Configuration": { "ModelAsset": {
-            "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel" }}}
+            "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".fbx.azmodel" }}}
         });
     # Apply the JSON above to the component we created
     result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, editor_mesh_component, json_update)

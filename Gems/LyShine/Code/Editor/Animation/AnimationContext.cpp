@@ -15,9 +15,6 @@
 #include <LyShine/Animation/IUiAnimation.h>
 #include "GameEngine.h"
 
-#include "Objects/SelectionGroup.h"
-#include "Objects/EntityObject.h"
-
 #include "Animation/UiAnimViewSequence.h"
 #include "Animation/UiAnimViewDialog.h"
 #include "Animation/UiAnimViewUndo.h"

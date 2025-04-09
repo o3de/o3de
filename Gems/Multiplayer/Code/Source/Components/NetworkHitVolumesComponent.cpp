@@ -140,6 +140,7 @@ namespace Multiplayer
 
     void NetworkHitVolumesComponent::OnCharacterDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
+        DestroyHitVolumes();
         m_physicsCharacter = nullptr;
     }
 
@@ -240,6 +241,7 @@ namespace Multiplayer
 
     void NetworkHitVolumesComponent::OnActorInstanceDestroyed([[maybe_unused]] EMotionFX::ActorInstance* actorInstance)
     {
+        DestroyHitVolumes();
         m_actorComponent = nullptr;
     }
 

@@ -158,6 +158,17 @@ namespace O3DE::ProjectManager
         connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &NewProjectSettingsScreen::HandleDownloadProgress);
     }
 
+    bool NewProjectSettingsScreen::IsDownloadingTemplate() const
+    {
+        if (m_selectedTemplateIndex < 0 || (m_selectedTemplateIndex > m_templates.size() - 1))
+        {
+            return false;
+        }
+
+        const ProjectTemplateInfo& templateInfo = m_templates.at(m_selectedTemplateIndex);
+        return m_downloadController->IsDownloadingObject(templateInfo.m_name, DownloadController::Template);
+    }
+
     void NewProjectSettingsScreen::HandleDownloadResult(const QString& templateName, bool succeeded)
     {
         auto foundButton = AZStd::ranges::find_if(
@@ -324,7 +335,15 @@ namespace O3DE::ProjectManager
     {
         AZ_Assert(m_selectedTemplateIndex == m_projectTemplateButtonGroup->checkedButton()->property(k_templateIndexProperty).toInt(),
             "Selected template index not in sync with the currently checked project template button.");
-        return m_templates.at(m_selectedTemplateIndex).m_path;
+        const ProjectTemplateInfo& templateInfo = m_templates.at(m_selectedTemplateIndex);
+
+        if (templateInfo.m_isRemote)
+        {
+            // if this is a remote template that has not been downloaded we cannot return a path
+            return "";
+        }
+
+        return templateInfo.m_path;
     }
 
     QFrame* NewProjectSettingsScreen::CreateTemplateDetails(int margin)
@@ -394,22 +413,46 @@ namespace O3DE::ProjectManager
         }
     }
 
+    const ProjectTemplateInfo NewProjectSettingsScreen::GetSelectedProjectTemplateInfo() const
+    {
+       if(m_selectedTemplateIndex < 0 || m_selectedTemplateIndex >= m_templates.size())
+       {
+           return {};
+       }
+
+       return m_templates[m_selectedTemplateIndex];
+    }
+
+    void NewProjectSettingsScreen::ShowDownloadTemplateDialog(const ProjectTemplateInfo& templateInfo)
+    {
+        ProjectTemplateInfo resolvedTemplateInfo = templateInfo.IsValid() ? templateInfo : GetSelectedProjectTemplateInfo();
+        if (!resolvedTemplateInfo.IsValid())
+        {
+            QMessageBox::critical(this, tr("Failed to find project template"), tr("The remote project template info for %1 could not be found or is invalid.\n\nPlease try refreshing the remote repository it came from, or download the template and register it through the o3de CLI.").arg(templateInfo.m_name));
+            return;
+        }
+
+        DownloadRemoteTemplateDialog* dialog = new DownloadRemoteTemplateDialog(resolvedTemplateInfo, this);
+        if (dialog->exec() == QDialog::DialogCode::Accepted)
+        {
+            StartTemplateDownload(resolvedTemplateInfo.m_name, dialog->GetInstallPath());
+        }
+    }
+
     void NewProjectSettingsScreen::UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo)
     {
         m_templateDisplayName->setText(templateInfo.m_displayName);
         m_templateSummary->setText(templateInfo.m_summary);
         m_templateIncludedGems->Update(templateInfo.m_includedGems);
+
         m_downloadTemplateButton->setVisible(templateInfo.m_isRemote);
         m_downloadTemplateButton->disconnect();
         connect(m_downloadTemplateButton, &QPushButton::clicked, this, [&, templateInfo]()
-                {
-                    DownloadRemoteTemplateDialog* downloadRemoteTemplateDialog = new DownloadRemoteTemplateDialog(templateInfo, this);
-                    if (downloadRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)
-                    {
-                        StartTemplateDownload(templateInfo.m_name, downloadRemoteTemplateDialog->GetInstallPath());
-                    }
-                });
+        {
+            ShowDownloadTemplateDialog(templateInfo);
+        });
     }
+
 
     void NewProjectSettingsScreen::SelectProjectTemplate(int index, bool blockSignals)
     {
@@ -438,7 +481,7 @@ namespace O3DE::ProjectManager
     {
         if (m_selectedTemplateIndex != -1 && m_templates[m_selectedTemplateIndex].m_isRemote)
         {
-            return AZ::Failure<QString>(tr("You cannot create a new project with a template that has not been downloaded. Please download it before proceeding."));
+            return AZ::Failure<QString>(tr("You cannot create a new project or configure gems with a template that has not been downloaded. Please download it before proceeding."));
         }
 
         return ProjectSettingsScreen::Validate();

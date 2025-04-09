@@ -21,6 +21,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
@@ -54,8 +55,43 @@
 
 static constexpr AZStd::string_view TransformModeChangedUpdaterIdentifier = "o3de.updater.onTransformModeChanged";
 
+
 namespace AzToolsFramework
 {
+    namespace EditorTransformComponentSelectionInternal
+    {
+        // The EditorTransformComponentSelection is a singleton but
+        // gets destroyed and created repeatedly.
+        // It is responsible for menu items and hotkeys that are global to the editor.
+        // This function is used to ensure that the menu items and hotkey callbacks can tell when
+        // this object is alive and can get to it if it is, or disable them if it is not, since you only
+        // get one shot (at the beginning of the app) to register them.
+
+        static AZ::EnvironmentVariable<EditorTransformComponentSelection*> g_globalInstance;
+        static const char* s_globalInstanceName = "EditorTransformComponentSelection";
+
+        EditorTransformComponentSelection* GetCurrentInstance()
+        {
+            if (!g_globalInstance)
+            {
+                g_globalInstance = AZ::Environment::FindVariable<EditorTransformComponentSelection*>(s_globalInstanceName);
+            }
+
+            return g_globalInstance ? (*g_globalInstance) : nullptr;
+        }
+
+        void SetCurrentInstance(EditorTransformComponentSelection* instance)
+        {
+            if (!g_globalInstance)
+            {
+                g_globalInstance = AZ::Environment::CreateVariable<EditorTransformComponentSelection*>(s_globalInstanceName);
+                (*g_globalInstance) = nullptr;
+            }
+
+            (*g_globalInstance) = instance;
+        }
+    }
+
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator)
 
     AZ_CVAR(
@@ -102,7 +138,6 @@ namespace AzToolsFramework
         "Display the position of the manipulator to the viewport as debug text");
 
     // strings related to new viewport interaction model (EditorTransformComponentSelection)
-    static const char* const TogglePivotTitleRightClick = "Toggle pivot";
     static const char* const TogglePivotTitleEditMenu = "Toggle Pivot Location";
     static const char* const TogglePivotDesc = "Toggle pivot location";
     static const char* const ManipulatorUndoRedoName = "Manipulator Adjustment";
@@ -1026,13 +1061,7 @@ namespace AzToolsFramework
 
         m_editorHelpers = AZStd::make_unique<EditorHelpers>(entityDataCache);
 
-        // New Action Manager registers an action to handle Escape.
-        if (!IsNewActionManagerEnabled())
-        {
-            EditorEventsBus::Handler::BusConnect();
-        }
-
-        ActionManagerRegistrationNotificationBus::Handler::BusConnect();        
+        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusConnect(entityContextId);
         ToolsApplicationNotificationBus::Handler::BusConnect();
         Camera::EditorCameraNotificationBus::Handler::BusConnect();
@@ -1041,7 +1070,6 @@ namespace AzToolsFramework
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
-        EditorContextMenuBus::Handler::BusConnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
         ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
 
@@ -1050,24 +1078,17 @@ namespace AzToolsFramework
         CreateSpaceSelectionCluster();
         CreateSnappingCluster();
 
-        if (IsNewActionManagerEnabled())
-        {
-            m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-            AZ_Assert(
-                m_actionManagerInterface, "PrefabCould not get ActionManagerInterface on EditorTransformComponentSelection construction.");
+        m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+        AZ_Assert(
+            m_actionManagerInterface, "PrefabCould not get ActionManagerInterface on EditorTransformComponentSelection construction.");
 
-            m_hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get();
-            AZ_Assert(
-                m_hotKeyManagerInterface, "PrefabCould not get HotKeyManagerInterface on EditorTransformComponentSelection construction.");
+        m_hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get();
+        AZ_Assert(
+            m_hotKeyManagerInterface, "PrefabCould not get HotKeyManagerInterface on EditorTransformComponentSelection construction.");
 
-            m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
-            AZ_Assert(
-                m_menuManagerInterface, "PrefabCould not get MenuManagerInterface on EditorTransformComponentSelection construction.");
-        }
-        else
-        {
-            RegisterActions();
-        }
+        m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+        AZ_Assert(
+            m_menuManagerInterface, "PrefabCould not get MenuManagerInterface on EditorTransformComponentSelection construction.");
 
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
@@ -1084,6 +1105,8 @@ namespace AzToolsFramework
                 return timeNow;
             }
         );
+
+        EditorTransformComponentSelectionInternal::SetCurrentInstance(this);
     }
 
     EditorTransformComponentSelection::~EditorTransformComponentSelection()
@@ -1095,16 +1118,10 @@ namespace AzToolsFramework
         DestroyCluster(m_spaceCluster.m_clusterId);
         DestroyCluster(m_snappingCluster.m_clusterId);
 
-        if (!IsNewActionManagerEnabled())
-        {
-            UnregisterActions();
-        }
-
         m_pivotOverrideFrame.Reset();
 
         ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
-        EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
@@ -1115,10 +1132,7 @@ namespace AzToolsFramework
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
         ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 
-        if (!IsNewActionManagerEnabled())
-        {
-            EditorEventsBus::Handler::BusDisconnect();
-        }
+        EditorTransformComponentSelectionInternal::SetCurrentInstance(nullptr);
     }
 
     void EditorTransformComponentSelection::SetupBoxSelect()
@@ -2202,11 +2216,6 @@ namespace AzToolsFramework
         EditorActionRequestBus::Broadcast(&EditorActionRequests::AddActionViaBusCrc, actionId, actions.back().get());
     }
 
-    void EditorTransformComponentSelection::OnEscape()
-    {
-        DeselectEntities();
-    }
-
     // helper to enumerate all scene/level entities (will filter out system entities)
     template<typename Func>
     static void EnumerateEditorEntities(const Func& func)
@@ -2243,308 +2252,36 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::RegisterActions()
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        const auto lockUnlock = [this](const bool lock)
-        {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-            ScopedUndoBatch undoBatch(LockSelectionUndoRedoDesc);
-
-            if (m_entityIdManipulators.m_manipulators)
-            {
-                CreateEntityManipulatorDeselectCommand(undoBatch);
-            }
-
-            // make a copy of selected entity ids
-            const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
-            for (AZ::EntityId entityId : selectedEntityIds)
-            {
-                ScopedUndoBatch::MarkEntityDirty(entityId);
-                SetEntityLockState(entityId, lock);
-            }
-
-            RegenerateManipulators();
-        };
-
-        // lock selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_L) }, LockSelection, LockSelectionTitle, LockSelectionDesc,
-            [lockUnlock]
-            {
-                lockUnlock(true);
-            });
-
-        // unlock selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) }, UnlockSelection, LockSelectionTitle, LockSelectionDesc,
-            [lockUnlock]
-            {
-                lockUnlock(false);
-            });
-
-        const auto showHide = [this](const bool show)
-        {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-            ScopedUndoBatch undoBatch(HideSelectionUndoRedoDesc);
-
-            if (m_entityIdManipulators.m_manipulators)
-            {
-                CreateEntityManipulatorDeselectCommand(undoBatch);
-            }
-
-            // make a copy of selected entity ids
-            const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
-            for (AZ::EntityId entityId : selectedEntityIds)
-            {
-                ScopedUndoBatch::MarkEntityDirty(entityId);
-                SetEntityVisibility(entityId, show);
-            }
-
-            RegenerateManipulators();
-        };
-
-        // hide selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_H) }, HideSelection, HideSelectionTitle, HideSelectionDesc,
-            [showHide]
-            {
-                showHide(false);
-            });
-
-        // show selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) }, ShowSelection, HideSelectionTitle, HideSelectionDesc,
-            [showHide]
-            {
-                showHide(true);
-            });
-
-        // unlock all entities in the level/scene
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, UnlockAll, UnlockAllTitle, UnlockAllDesc,
-            []
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(UnlockAllUndoRedoDesc);
-
-                EnumerateEditorEntities(
-                    [](AZ::EntityId entityId)
-                    {
-                        ScopedUndoBatch::MarkEntityDirty(entityId);
-                        SetEntityLockState(entityId, false);
-                    });
-            });
-
-        // show all entities in the level/scene
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, ShowAll, ShowAllTitle, ShowAllDesc,
-            []
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(ShowAllEntitiesUndoRedoDesc);
-
-                EnumerateEditorEntities(
-                    [](const AZ::EntityId entityId)
-                    {
-                        ScopedUndoBatch::MarkEntityDirty(entityId);
-                        SetEntityVisibility(entityId, true);
-                    });
-            });
-
-        // select all entities in the level/scene
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) }, SelectAll, SelectAllTitle, SelectAllDesc,
-            [this]
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(SelectAllEntitiesUndoRedoDesc);
-
-                if (m_entityIdManipulators.m_manipulators)
-                {
-                    auto manipulatorCommand =
-                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
-
-                    // note, nothing will change that the manipulatorCommand needs to keep track
-                    // for after so no need to call SetManipulatorAfter
-
-                    manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
-                    manipulatorCommand.release();
-                }
-
-                EnumerateEditorEntities(
-                    [this](AZ::EntityId entityId)
-                    {
-                        if (IsSelectableInViewport(entityId))
-                        {
-                            AddEntityToSelection(entityId);
-                        }
-                    });
-
-                auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
-
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, SelectAllEntitiesUndoRedoDesc);
-                selectionCommand->SetParent(undoBatch.GetUndoBatch());
-                selectionCommand.release();
-
-                SetSelectedEntities(nextEntityIds);
-                RegenerateManipulators();
-            });
-
-        // invert current selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) }, InvertSelect, InvertSelectionTitle, InvertSelectionDesc,
-            [this]
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(InvertSelectionUndoRedoDesc);
-
-                if (m_entityIdManipulators.m_manipulators)
-                {
-                    auto manipulatorCommand =
-                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
-
-                    // note, nothing will change that the manipulatorCommand needs to keep track
-                    // for after so no need to call SetManipulatorAfter
-
-                    manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
-                    manipulatorCommand.release();
-                }
-
-                EntityIdSet entityIds;
-                EnumerateEditorEntities(
-                    [this, &entityIds](AZ::EntityId entityId)
-                    {
-                        const auto entityIdIt = AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), entityId);
-                        if (entityIdIt == m_selectedEntityIds.end())
-                        {
-                            if (IsSelectableInViewport(entityId))
-                            {
-                                entityIds.insert(entityId);
-                            }
-                        }
-                    });
-
-                m_selectedEntityIds = entityIds;
-
-                auto nextEntityIds = EntityIdVectorFromContainer(entityIds);
-
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, InvertSelectionUndoRedoDesc);
-                selectionCommand->SetParent(undoBatch.GetUndoBatch());
-                selectionCommand.release();
-
-                SetSelectedEntities(nextEntityIds);
-                RegenerateManipulators();
-            });
-
-        // duplicate selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) }, DuplicateSelect, DuplicateTitle, DuplicateDesc,
-            []
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(DuplicateUndoRedoDesc);
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), DuplicateUndoRedoDesc);
-                selectionCommand->SetParent(undoBatch.GetUndoBatch());
-                selectionCommand.release();
-
-                bool handled = false;
-                EditorRequestBus::Broadcast(&EditorRequests::CloneSelection, handled);
-
-                // selection update handled in AfterEntitySelectionChanged
-            });
-
-        // delete selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_Delete) }, DeleteSelect, DeleteTitle, DeleteDesc,
-            [this]
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(DeleteUndoRedoDesc);
-
-                CreateEntityManipulatorDeselectCommand(undoBatch);
-
-                ToolsApplicationRequestBus::Broadcast(
-                    &ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, EntityIdVectorFromContainer(m_selectedEntityIds));
-
-                m_selectedEntityIds.clear();
-                m_pivotOverrideFrame.Reset();
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_Space) }, EditEscaspe, "", "",
-            [this]
-            {
-                DeselectEntities();
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_P) }, EditPivot, TogglePivotTitleEditMenu, TogglePivotDesc,
-            [this]
-            {
-                ToggleCenterPivotSelection();
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_R) }, EditReset, ResetEntityTransformTitle, ResetEntityTransformDesc,
-            [this]
-            {
-                switch (m_mode)
-                {
-                case Mode::Rotation:
-                    ResetOrientationForSelectedEntitiesLocal();
-                    break;
-                case Mode::Scale:
-                    CopyScaleToSelectedEntitiesIndividualLocal(1.0f);
-                    break;
-                case Mode::Translation:
-                    ResetTranslationForSelectedEntitiesLocal();
-                    break;
-                }
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) }, EditResetManipulator, ResetManipulatorTitle, ResetManipulatorDesc,
-            [this]
-            {
-                DelegateClearManipulatorOverride();
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_U) }, ViewportUiVisible, "Toggle Viewport UI", "Hide/Show Viewport UI",
-            [this]
-            {
-                SetAllViewportUiVisible(!m_viewportUiVisible);
-            });
-
-        EditorMenuRequestBus::Broadcast(&EditorMenuRequests::RestoreEditMenuToDefault);
-    }
-
     void EditorTransformComponentSelection::OnActionUpdaterRegistrationHook()
     {
-        if (!IsNewActionManagerEnabled())
-        {
-            return;
-        }
-
         m_actionManagerInterface->RegisterActionUpdater(TransformModeChangedUpdaterIdentifier);
     }
 
     void EditorTransformComponentSelection::OnActionRegistrationHook()
     {
-        if (!IsNewActionManagerEnabled())
+        RegisterActions();
+    }
+    
+    void EditorTransformComponentSelection::RegisterActions()
+    {
+        using namespace EditorTransformComponentSelectionInternal;
+
+        auto actionManager = AZ::Interface<ActionManagerInterface>::Get();
+        auto hotkeyManager = AZ::Interface<HotKeyManagerInterface>::Get();
+
+        auto IsInEditorPickMode = []() -> bool
         {
-            return;
-        }
+            if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+            {
+                auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+                if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        };
 
         // Duplicate
         {
@@ -2554,7 +2291,7 @@ namespace AzToolsFramework
             actionProperties.m_description = DuplicateDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -2596,7 +2333,7 @@ namespace AzToolsFramework
                 }
             );
 
-            m_actionManagerInterface->InstallEnabledStateCallback(
+            actionManager->InstallEnabledStateCallback(
                 actionIdentifier,
                 []() -> bool
                 {
@@ -2627,12 +2364,12 @@ namespace AzToolsFramework
             );
 
             // Trigger update whenever entity selection changes.
-            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+            actionManager->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+D");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "Ctrl+D");
         }
 
         // Delete
@@ -2643,30 +2380,48 @@ namespace AzToolsFramework
             actionProperties.m_description = DeleteDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                [IsInEditorPickMode]()
                 {
                     AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+
+                    // Don't allow users to delete entities while in Entity Picker mode.
+                    if (IsInEditorPickMode())
+                    {
+                        return;
+                    }
+
                     ScopedUndoBatch undoBatch(DeleteUndoRedoDesc);
 
-                    CreateEntityManipulatorDeselectCommand(undoBatch);
+                    instance->CreateEntityManipulatorDeselectCommand(undoBatch);
 
                     ToolsApplicationRequestBus::Broadcast(
-                        &ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, EntityIdVectorFromContainer(m_selectedEntityIds));
+                        &ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, EntityIdVectorFromContainer(instance->m_selectedEntityIds));
 
-                    m_selectedEntityIds.clear();
-                    m_pivotOverrideFrame.Reset();
+                    instance->m_selectedEntityIds.clear();
+                    instance->m_pivotOverrideFrame.Reset();
                 }
             );
 
-            m_actionManagerInterface->InstallEnabledStateCallback(
+            actionManager->InstallEnabledStateCallback(
                 actionIdentifier,
-                []() -> bool
+                [IsInEditorPickMode]() -> bool
                 {
+                    // Disable this action in Entity Picker mode.
+                    if (IsInEditorPickMode())
+                    {
+                        return false;
+                    }
+
                     auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
                     if (!readOnlyEntityPublicInterface)
                     {
@@ -2693,13 +2448,14 @@ namespace AzToolsFramework
                 }
             );
 
-            // Trigger update whenever entity selection changes.
-            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+            // Update this action's enabled state whenever entity selection changes, or entity pick mode is triggered.
+            actionManager->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+            actionManager->AddActionToUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Delete");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "Delete");
         }
 
         // Select All
@@ -2710,20 +2466,26 @@ namespace AzToolsFramework
             actionProperties.m_description = SelectAllDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                []()
                 {
                     AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+
                     ScopedUndoBatch undoBatch(SelectAllEntitiesUndoRedoDesc);
 
-                    if (m_entityIdManipulators.m_manipulators)
+                    if (instance->m_entityIdManipulators.m_manipulators)
                     {
                         auto manipulatorCommand =
-                            AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
+                            AZStd::make_unique<EntityManipulatorCommand>(instance->CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
                         // note, nothing will change that the manipulatorCommand needs to keep track
                         // for after so no need to call SetManipulatorAfter
@@ -2733,30 +2495,30 @@ namespace AzToolsFramework
                     }
 
                     EnumerateEditorEntities(
-                        [this](AZ::EntityId entityId)
+                        [instance](AZ::EntityId entityId)
                         {
                             if (IsSelectableInViewport(entityId))
                             {
-                                AddEntityToSelection(entityId);
+                                instance->AddEntityToSelection(entityId);
                             }
                         }
                     );
 
-                    auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
+                    auto nextEntityIds = EntityIdVectorFromContainer(instance->m_selectedEntityIds);
 
                     auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, SelectAllEntitiesUndoRedoDesc);
                     selectionCommand->SetParent(undoBatch.GetUndoBatch());
                     selectionCommand.release();
 
-                    SetSelectedEntities(nextEntityIds);
-                    RegenerateManipulators();
+                    instance->SetSelectedEntities(nextEntityIds);
+                    instance->RegenerateManipulators();
                 }
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+A");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "Ctrl+A");
         }
 
         // Deselect All
@@ -2767,20 +2529,22 @@ namespace AzToolsFramework
             actionProperties.m_description = "Deselect All Entities";
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                []()
                 {
-                    DeselectEntities();
+                    AzToolsFramework::EditorTransformComponentSelectionRequestBus::Event(
+                        AzToolsFramework::GetEntityContextId(),
+                        &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::DeselectEntities);
                 }
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "Esc");
         }
 
         // Invert Selection
@@ -2791,20 +2555,26 @@ namespace AzToolsFramework
             actionProperties.m_description = InvertSelectionDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                []()
                 {
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+
                     AZ_PROFILE_FUNCTION(AzToolsFramework);
 
                     ScopedUndoBatch undoBatch(InvertSelectionUndoRedoDesc);
 
-                    if (m_entityIdManipulators.m_manipulators)
+                    if (instance->m_entityIdManipulators.m_manipulators)
                     {
                         auto manipulatorCommand =
-                            AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
+                            AZStd::make_unique<EntityManipulatorCommand>(instance->CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
 
                         // note, nothing will change that the manipulatorCommand needs to keep track
                         // for after so no need to call SetManipulatorAfter
@@ -2815,10 +2585,10 @@ namespace AzToolsFramework
 
                     EntityIdSet entityIds;
                     EnumerateEditorEntities(
-                        [this, &entityIds](AZ::EntityId entityId)
+                        [instance, &entityIds](AZ::EntityId entityId)
                         {
-                            const auto entityIdIt = AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), entityId);
-                            if (entityIdIt == m_selectedEntityIds.end())
+                            const auto entityIdIt = AZStd::find(instance->m_selectedEntityIds.begin(), instance->m_selectedEntityIds.end(), entityId);
+                            if (entityIdIt == instance->m_selectedEntityIds.end())
                             {
                                 if (IsSelectableInViewport(entityId))
                                 {
@@ -2827,7 +2597,7 @@ namespace AzToolsFramework
                             }
                         });
 
-                    m_selectedEntityIds = entityIds;
+                    instance->m_selectedEntityIds = entityIds;
 
                     auto nextEntityIds = EntityIdVectorFromContainer(entityIds);
 
@@ -2835,17 +2605,17 @@ namespace AzToolsFramework
                     selectionCommand->SetParent(undoBatch.GetUndoBatch());
                     selectionCommand.release();
 
-                    SetSelectedEntities(nextEntityIds);
-                    RegenerateManipulators();
+                    instance->SetSelectedEntities(nextEntityIds);
+                    instance->RegenerateManipulators();
                 }
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+I");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "Ctrl+Shift+I");
         }
-        
+
         // Toggle Pivot Location
         {
             const AZStd::string_view actionIdentifier = "o3de.action.edit.togglePivot";
@@ -2854,20 +2624,26 @@ namespace AzToolsFramework
             actionProperties.m_description = TogglePivotDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [&]()
+                []()
                 {
-                    ToggleCenterPivotSelection();
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+
+                    instance->ToggleCenterPivotSelection();
                 }
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "P");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "P");
         }
 
         // Reset Entity Transform
@@ -2878,31 +2654,36 @@ namespace AzToolsFramework
             actionProperties.m_description = ResetEntityTransformDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]
+                []
                 {
-                    switch (m_mode)
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+                    switch (instance->m_mode)
                     {
                     case Mode::Rotation:
-                        ResetOrientationForSelectedEntitiesLocal();
+                        instance->ResetOrientationForSelectedEntitiesLocal();
                         break;
                     case Mode::Scale:
-                        CopyScaleToSelectedEntitiesIndividualLocal(1.0f);
+                        instance->CopyScaleToSelectedEntitiesIndividualLocal(1.0f);
                         break;
                     case Mode::Translation:
-                        ResetTranslationForSelectedEntitiesLocal();
+                        instance->ResetTranslationForSelectedEntitiesLocal();
                         break;
                     }
                 }
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "R");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "R");
         }
 
         // Reset Manipulator
@@ -2913,42 +2694,52 @@ namespace AzToolsFramework
             actionProperties.m_description = ResetManipulatorDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                []()
                 {
-                    DelegateClearManipulatorOverride();
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+                    instance->DelegateClearManipulatorOverride();
                 }
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+R");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "Ctrl+R");
         }
 
-        const auto showHide = [this](const bool show)
+        const auto showHide = [](const bool show)
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
+            EditorTransformComponentSelection* instance = GetCurrentInstance();
+            if (!instance)
+            {
+                return;
+            }
 
             ScopedUndoBatch undoBatch(HideSelectionUndoRedoDesc);
 
-            if (m_entityIdManipulators.m_manipulators)
+            if (instance->m_entityIdManipulators.m_manipulators)
             {
-                CreateEntityManipulatorDeselectCommand(undoBatch);
+                instance->CreateEntityManipulatorDeselectCommand(undoBatch);
             }
 
             // make a copy of selected entity ids
-            const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
+            const auto selectedEntityIds = EntityIdVectorFromContainer(instance->m_selectedEntityIds);
             for (AZ::EntityId entityId : selectedEntityIds)
             {
                 ScopedUndoBatch::MarkEntityDirty(entityId);
                 SetEntityVisibility(entityId, show);
             }
 
-            RegenerateManipulators();
+            instance->RegenerateManipulators();
         };
 
         // Show Selection
@@ -2959,7 +2750,7 @@ namespace AzToolsFramework
             actionProperties.m_description = ShowSelectionDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -2970,7 +2761,7 @@ namespace AzToolsFramework
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
         }
 
         // Hide Selection
@@ -2981,7 +2772,7 @@ namespace AzToolsFramework
             actionProperties.m_description = HideSelectionDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -2992,9 +2783,9 @@ namespace AzToolsFramework
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "H");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "H");
         }
 
         // Show All
@@ -3005,7 +2796,7 @@ namespace AzToolsFramework
             actionProperties.m_description = ShowAllDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -3026,31 +2817,37 @@ namespace AzToolsFramework
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+H");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "Ctrl+Shift+H");
         }
 
-        const auto lockUnlock = [this](const bool lock)
+        const auto lockUnlock = [](const bool lock)
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+            EditorTransformComponentSelection* instance = GetCurrentInstance();
+            if (!instance)
+            {
+                return;
+            }
+
             ScopedUndoBatch undoBatch(LockSelectionUndoRedoDesc);
 
-            if (m_entityIdManipulators.m_manipulators)
+            if (instance->m_entityIdManipulators.m_manipulators)
             {
-                CreateEntityManipulatorDeselectCommand(undoBatch);
+                instance->CreateEntityManipulatorDeselectCommand(undoBatch);
             }
 
             // make a copy of selected entity ids
-            const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
+            const auto selectedEntityIds = EntityIdVectorFromContainer(instance->m_selectedEntityIds);
             for (AZ::EntityId entityId : selectedEntityIds)
             {
                 ScopedUndoBatch::MarkEntityDirty(entityId);
                 SetEntityLockState(entityId, lock);
             }
 
-            RegenerateManipulators();
+            instance->RegenerateManipulators();
         };
 
         // Lock Selection
@@ -3061,7 +2858,7 @@ namespace AzToolsFramework
             actionProperties.m_description = LockSelectionDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -3072,9 +2869,9 @@ namespace AzToolsFramework
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "L");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "L");
         }
 
         // Unlock Selection
@@ -3085,7 +2882,7 @@ namespace AzToolsFramework
             actionProperties.m_description = UnlockSelectionDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -3096,7 +2893,7 @@ namespace AzToolsFramework
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
         }
 
         // Unlock All Entities
@@ -3107,7 +2904,7 @@ namespace AzToolsFramework
             actionProperties.m_description = UnlockAllDesc;
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -3128,9 +2925,9 @@ namespace AzToolsFramework
             );
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+L");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "Ctrl+Shift+L");
         }
 
         // Transform Mode - Move
@@ -3142,27 +2939,39 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Move.svg";
 
-            m_actionManagerInterface->RegisterCheckableAction(
+            actionManager->RegisterCheckableAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                []()
                 {
-                    SetTransformMode(Mode::Translation);
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+
+                    instance->SetTransformMode(Mode::Translation);
                 },
-                [this]() -> bool
+                []() -> bool
                 {
-                    return GetTransformMode() == Mode::Translation;
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return false;
+                    }
+
+                    return instance->GetTransformMode() == Mode::Translation;
                 }
             );
 
             // Update when the transform mode changes.
-            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
+            actionManager->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "1");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "1");
         }
 
         // Transform Mode - Rotate
@@ -3174,31 +2983,42 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Rotate.svg";
 
-            m_actionManagerInterface->RegisterCheckableAction(
+            actionManager->RegisterCheckableAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                []()
                 {
-                    SetTransformMode(Mode::Rotation);
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+
+                    instance->SetTransformMode(Mode::Rotation);
                 },
-                [this]() -> bool
+                []() -> bool
                 {
-                    return GetTransformMode() == Mode::Rotation;
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return false;
+                    }
+                    return instance->GetTransformMode() == Mode::Rotation;
                 }
             );
 
             // Update when the transform mode changes.
-            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
+            actionManager->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "2");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "2");
         }
 
         // Transform Mode - Scale
-        {      
+        {
             AZStd::string actionIdentifier = "o3de.action.edit.transform.scale";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Scale";
@@ -3206,27 +3026,38 @@ namespace AzToolsFramework
             actionProperties.m_category = "Edit";
             actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
 
-            m_actionManagerInterface->RegisterCheckableAction(
+            actionManager->RegisterCheckableAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                []()
                 {
-                    SetTransformMode(Mode::Scale);
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+
+                    instance->SetTransformMode(Mode::Scale);
                 },
-                [this]() -> bool
+                []() -> bool
                 {
-                    return GetTransformMode() == Mode::Scale;
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return false;
+                    }
+                    return instance->GetTransformMode() == Mode::Scale;
                 }
             );
 
             // Update when the transform mode changes.
-            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
+            actionManager->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
 
-            m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "3");
+            hotkeyManager->SetActionHotKey(actionIdentifier, "3");
         }
 
         // Move Up
@@ -3237,7 +3068,7 @@ namespace AzToolsFramework
             actionProperties.m_description = "Move the current selection up one row.";
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -3264,7 +3095,7 @@ namespace AzToolsFramework
                 }
             );
 
-            m_actionManagerInterface->InstallEnabledStateCallback(
+            actionManager->InstallEnabledStateCallback(
                 actionIdentifier,
                 []() -> bool
                 {
@@ -3292,10 +3123,10 @@ namespace AzToolsFramework
             );
 
             // Trigger update whenever entity selection changes.
-            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+            actionManager->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
         }
 
         // Move Down
@@ -3306,7 +3137,7 @@ namespace AzToolsFramework
             actionProperties.m_description = "Move the current selection down one row.";
             actionProperties.m_category = "Edit";
 
-            m_actionManagerInterface->RegisterAction(
+            actionManager->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
@@ -3334,7 +3165,7 @@ namespace AzToolsFramework
                 }
             );
 
-            m_actionManagerInterface->InstallEnabledStateCallback(
+            actionManager->InstallEnabledStateCallback(
                 actionIdentifier,
                 []() -> bool
                 {
@@ -3362,10 +3193,10 @@ namespace AzToolsFramework
             );
 
             // Trigger update whenever entity selection changes.
-            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+            actionManager->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
-            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
         }
     }
 
@@ -3405,16 +3236,6 @@ namespace AzToolsFramework
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.duplicate", 40100);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.delete", 40200);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.togglePivot", 60200);
-    }
-
-    void EditorTransformComponentSelection::UnregisterActions()
-    {
-        for (auto& action : m_actions)
-        {
-            EditorActionRequestBus::Broadcast(&EditorActionRequests::RemoveActionViaBus, action.get());
-        }
-
-        m_actions.clear();
     }
 
     void EditorTransformComponentSelection::UnregisterManipulator()
@@ -4221,49 +4042,6 @@ namespace AzToolsFramework
             RefreshUiAfterChange(manipulatorEntityIds.m_entityIds);
 
             ClearManipulatorTranslationOverride();
-        }
-    }
-
-    int EditorTransformComponentSelection::GetMenuPosition() const
-    {
-        return aznumeric_cast<int>(EditorContextMenuOrdering::BOTTOM);
-    }
-
-    AZStd::string EditorTransformComponentSelection::GetMenuIdentifier() const
-    {
-        return "Transform Component";
-    }
-
-    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(
-        QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
-    {
-        // Don't show the Toggle Pivot option if any read-only entities are in the current selection
-        // We need to request the selected entities instead of just using the m_selectedEntities variable
-        // because we filter out any read-only entities from the m_selectedEntities so that the manipulators
-        // will be hidden
-        EntityIdList selectedEntityIds;
-        ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-
-        auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
-        bool readOnlyEntityInSelection = false;
-        for (const auto& entityId : selectedEntityIds)
-        {
-            if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
-            {
-                readOnlyEntityInSelection = true;
-                break;
-            }
-        }
-
-        if (!readOnlyEntityInSelection)
-        {
-            QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
-            QObject::connect(
-                action, &QAction::triggered, action,
-                [this]
-                {
-                    ToggleCenterPivotSelection();
-                });
         }
     }
 

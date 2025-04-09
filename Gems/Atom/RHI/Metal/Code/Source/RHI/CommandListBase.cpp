@@ -87,8 +87,16 @@ namespace AZ
                 }
                 
                 //Call UseResource on all resources cached for Graphics work
-                for(size_t i = 0; i < RHI::ShaderStageGraphicsCount; i++)
+                for(int i = 0; i < RHI::ShaderStageGraphicsCount; i++)
                 {
+                    if(i != static_cast<int>(RHI::ShaderStage::Vertex) && i != static_cast<int>(RHI::ShaderStage::Fragment))
+                    {
+                        continue;
+                    }
+                    
+                    MTLRenderStages mtlRenderStage = i==static_cast<int>(RHI::ShaderStage::Vertex)?
+                                                            MTLRenderStageVertex:MTLRenderStageFragment;
+                    
                     if(m_untrackedResourcesGfxRead[i].size() > 0)
                     {
                         AZStd::vector<id <MTLResource>> resourcesToProcessVec(m_untrackedResourcesGfxRead[i].begin(), m_untrackedResourcesGfxRead[i].end());
@@ -96,7 +104,7 @@ namespace AZ
                         [renderEncoder useResources:&resourcesToProcessVec[0]
                                               count:m_untrackedResourcesGfxRead[i].size()
                                               usage:MTLResourceUsageRead
-                                             stages:MTLRenderStages(1u << i)];
+                                             stages:mtlRenderStage];
                     }
                     
                     if(m_untrackedResourcesGfxReadWrite[i].size() > 0)
@@ -106,7 +114,7 @@ namespace AZ
                         [renderEncoder useResources:&resourcesToProcessVec[0]
                                               count:m_untrackedResourcesGfxReadWrite[i].size()
                                               usage:MTLResourceUsageRead|MTLResourceUsageWrite
-                                             stages:MTLRenderStages(1u << i)];
+                                             stages:mtlRenderStage];
                     }
 
                     m_untrackedResourcesGfxRead[i].clear();
@@ -117,6 +125,7 @@ namespace AZ
                 m_untrackedResourcesComputeReadWrite.clear();
 
                 [m_encoder endEncoding];
+                [m_encoder release];
                 m_encoder = nil;
                 m_isNullDescHeapBound = false;
 
@@ -173,6 +182,7 @@ namespace AZ
             //No need to create one if it exists already from previous calls or from ParallelRendercommandEncoder
             if(m_encoder != nil)
             {
+                AZ_Assert(m_commandEncoderType == encoderType, "Could not create encoder of type %d because encoder %d alread exists.", encoderType, m_commandEncoderType);
                 return;
             }
            
@@ -202,7 +212,8 @@ namespace AZ
                     AZ_Assert(false, "Encoder Type not supported");
                 }
             }
-            
+            // We need the encoder to survive the autorelease pool when using a parallel encoder
+            [m_encoder retain];
             m_encoder.label = m_encoderScopeName;
             AZ_Assert(m_encoder != nil, "Could not create the encoder");
             m_isEncoded = true;
@@ -225,7 +236,10 @@ namespace AZ
         
         void CommandListBase::SetNameInternal(const AZStd::string_view& name)
         {
-            m_encoderScopeName = [NSString stringWithCString:name.data() encoding:NSUTF8StringEncoding];
+            if (RHI::Validation::IsEnabled())
+            {
+                m_encoderScopeName = [NSString stringWithCString:name.data() encoding:NSUTF8StringEncoding];
+            }
         }
         
         void CommandListBase::SetRenderPassInfo(MTLRenderPassDescriptor* renderPassDescriptor,

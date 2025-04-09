@@ -6,51 +6,50 @@
  *
  */
 
-
-#include "CrySystem_precompiled.h"
 #include "DebugCallStack.h"
+#include "CrySystem_precompiled.h"
 
 #if defined(WIN32) || defined(WIN64)
 
-#include <IConsole.h>
-#include <CryPath.h>
 #include "System.h"
 
+#include <CryPath.h>
+#include <IConsole.h>
+
 #include <AzCore/Debug/StackTracer.h>
-#include <AzCore/std/parallel/spin_mutex.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Utils/Utils.h>
-
-#define VS_VERSION_INFO                 1
-#define IDD_CRITICAL_ERROR              101
-#define IDB_CONFIRM_SAVE                102
-#define IDB_DONT_SAVE                   103
-#define IDD_CONFIRM_SAVE_LEVEL          127
-#define IDB_CRASH_FACE                  128
-#define IDD_EXCEPTION                   245
-#define IDC_CALLSTACK                   1001
-#define IDC_EXCEPTION_CODE              1002
-#define IDC_EXCEPTION_ADDRESS           1003
-#define IDC_EXCEPTION_MODULE            1004
-#define IDC_EXCEPTION_DESC              1005
-#define IDB_EXIT                        1008
-#define IDB_IGNORE                      1010
-__pragma(comment(lib, "version.lib"))
-
-//! Needs one external of DLL handle.
-extern HMODULE gDLLHandle;
+#include <AzCore/std/parallel/spin_mutex.h>
 
 #include <DbgHelp.h>
+#include <Shellapi.h>
 
 #define MAX_PATH_LENGTH 1024
-#define MAX_SYMBOL_LENGTH 512
 
 static HWND hwndException = 0;
-static bool g_bUserDialog = true;         // true=on crash show dialog box, false=supress user interaction
+static bool g_bUserDialog = true; // true=on crash show dialog box, false=supress user interaction
+
+static constexpr const char* SettingKey_IssueReportLink = "/O3DE/Settings/Links/Issue/Create";
+static constexpr const char* IssueReportLinkFallback = "https://github.com/o3de/o3de/issues/new/choose";
+
+extern int prev_sys_float_exceptions;
+
+DWORD g_idDebugThreads[10];
+const char* g_nameDebugThreads[10];
+int g_nDebugThreads = 0;
+AZStd::spin_mutex g_lockThreadDumpList;
 
 static bool IsFloatingPointException(EXCEPTION_POINTERS* pex);
 
 extern LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPointers);
-extern LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExceptionPointers, const char* szDumpPath, MINIDUMP_TYPE mdumpValue);
+extern LONG WINAPI
+CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExceptionPointers, const char* szDumpPath, MINIDUMP_TYPE mdumpValue);
+
+void MarkThisThreadForDebugging(const char* name);
+void UnmarkThisThreadFromDebugging();
+void UpdateFPExceptionsMaskForThreads();
 
 //=============================================================================
 CONTEXT CaptureCurrentContext()
@@ -68,11 +67,7 @@ LONG __stdcall CryUnhandledExceptionHandler(EXCEPTION_POINTERS* pex)
     return DebugCallStack::instance()->handleException(pex);
 }
 
-
-BOOL CALLBACK EnumModules(
-    PCSTR   ModuleName,
-    DWORD64 BaseOfDll,
-    PVOID   UserContext)
+BOOL CALLBACK EnumModules(PCSTR ModuleName, DWORD64 BaseOfDll, PVOID UserContext)
 {
     DebugCallStack::TModules& modules = *static_cast<DebugCallStack::TModules*>(UserContext);
     modules[(void*)BaseOfDll] = ModuleName;
@@ -139,6 +134,8 @@ void DebugCallStack::installErrorHandler(ISystem* pSystem)
 {
     m_pSystem = pSystem;
     prevExceptionHandler = (void*)SetUnhandledExceptionFilter(CryUnhandledExceptionHandler);
+
+    MarkThisThreadForDebugging("main");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,12 +143,6 @@ void DebugCallStack::SetUserDialogEnable(const bool bUserDialogEnable)
 {
     g_bUserDialog = bUserDialogEnable;
 }
-
-
-DWORD g_idDebugThreads[10];
-const char* g_nameDebugThreads[10];
-int g_nDebugThreads = 0;
-AZStd::spin_mutex g_lockThreadDumpList;
 
 void MarkThisThreadForDebugging(const char* name)
 {
@@ -188,7 +179,6 @@ void UnmarkThisThreadFromDebugging()
     }
 }
 
-extern int prev_sys_float_exceptions;
 void UpdateFPExceptionsMaskForThreads()
 {
     int mask = -iszero(g_cvars.sys_float_exceptions);
@@ -206,7 +196,7 @@ void UpdateFPExceptionsMaskForThreads()
             (*(WORD*)(ctx.ExtendedRegisters + 24) |= 0x280) &= ~0x280 | mask;
 #else
             (ctx.FltSave.ControlWord |= 7) &= ~5 | mask;
-            (ctx.FltSave.MxCsr |= 0x280) &= ~0x280  | mask;
+            (ctx.FltSave.MxCsr |= 0x280) &= ~0x280 | mask;
 #endif
             SetThreadContext(hThread, &ctx);
             ResumeThread(hThread);
@@ -288,9 +278,9 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
 
     firstTime = false;
 
-    const int ret = SubmitBug(exception_pointer);
+    const UserPostExceptionChoice ret = SubmitBugAndAskToRecoverOrCrash(exception_pointer);
 
-    if (ret != IDB_IGNORE)
+    if (ret != UserPostExceptionChoice::Recover)
     {
         CryEngineExceptionFilterWER(exception_pointer);
     }
@@ -303,20 +293,17 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
         exit(exception_pointer->ExceptionRecord->ExceptionCode);
     }
 
-    //typedef long (__stdcall *ExceptionFunc)(EXCEPTION_POINTERS*);
-    //ExceptionFunc prevFunc = (ExceptionFunc)prevExceptionHandler;
-    //return prevFunc( (EXCEPTION_POINTERS*)exception_pointer );
-    if (ret == IDB_EXIT)
+    if (ret == UserPostExceptionChoice::Exit)
     {
         // Immediate exit.
         // on windows, exit() and _exit() do all sorts of things, unfortuantely
         // TerminateProcess is the only way to die.
-        TerminateProcess(GetCurrentProcess(), exception_pointer->ExceptionRecord->ExceptionCode);  // we crashed, so don't return a zero exit code!
-        // on linux based systems, _exit will not call ATEXIT and other things, which makes it more suitable for termination in an emergency such
-        // as an unhandled exception.
-        // however, this function is a windows exception handler.
+        TerminateProcess(
+            GetCurrentProcess(), exception_pointer->ExceptionRecord->ExceptionCode); // we crashed, so don't return a zero exit code!
+        // on linux based systems, _exit will not call ATEXIT and other things, which makes it more suitable for termination in an emergency
+        // such as an unhandled exception. however, this function is a windows exception handler.
     }
-    else if (ret == IDB_IGNORE)
+    else if (ret == UserPostExceptionChoice::Recover)
     {
 #ifndef WIN64
         exception_pointer->ContextRecord->FloatSave.StatusWord &= ~31;
@@ -344,11 +331,11 @@ void DebugCallStack::ReportBug(const char* szErrorMessage)
 
     m_szBugMessage = szErrorMessage;
     m_context = CaptureCurrentContext();
-    SubmitBug(NULL);
+    SubmitBugAndAskToRecoverOrCrash(NULL);
     m_szBugMessage = NULL;
 }
 
-void DebugCallStack::dumpCallStack(std::vector<AZStd::string>& funcs)
+void DebugCallStack::dumpCallStack(AZStd::vector<AZStd::string>& funcs)
 {
     WriteLineToLog("=============================================================================");
     int len = (int)funcs.size();
@@ -360,9 +347,8 @@ void DebugCallStack::dumpCallStack(std::vector<AZStd::string>& funcs)
     WriteLineToLog("=============================================================================");
 }
 
-
 //////////////////////////////////////////////////////////////////////////
-void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
+void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTERS* pex)
 {
     AZStd::string path("");
     if ((gEnv) && (gEnv->pFileIO))
@@ -375,7 +361,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         if (logAlias)
         {
             path = logAlias;
-            path += "/";
+            path += "\\";
         }
     }
 
@@ -448,7 +434,6 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         azstrcpy(desc, AZ_ARRAY_SIZE(desc), "");
         sprintf_s(excDesc, "%s\r\n%s", excName, desc);
 
-
         if (pex->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
         {
             if (pex->ExceptionRecord->NumberParameters > 1)
@@ -467,27 +452,29 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         }
     }
 
-
     WriteLineToLog("Exception Code: %s", excCode);
     WriteLineToLog("Exception Addr: %s", excAddr);
     WriteLineToLog("Exception Module: %s", m_excModule);
     WriteLineToLog("Exception Name  : %s", excName);
     WriteLineToLog("Exception Description: %s", desc);
 
-
     azstrcpy(m_excDesc, AZ_ARRAY_SIZE(m_excDesc), excDesc);
     azstrcpy(m_excAddr, AZ_ARRAY_SIZE(m_excAddr), excAddr);
     azstrcpy(m_excCode, AZ_ARRAY_SIZE(m_excCode), excCode);
 
-
     char errs[32768];
-    sprintf_s(errs, "Exception Code: %s\nException Addr: %s\nException Module: %s\nException Description: %s, %s\n",
-        excCode, excAddr, m_excModule, excName, desc);
-
+    sprintf_s(
+        errs,
+        "Exception Code: %s\nException Addr: %s\nException Module: %s\nException Description: %s, %s\n",
+        excCode,
+        excAddr,
+        m_excModule,
+        excName,
+        desc);
 
     azstrcat(errs, AZ_ARRAY_SIZE(errs), "\nCall Stack Trace:\n");
 
-    std::vector<AZStd::string> funcs;
+    AZStd::vector<AZStd::string> funcs;
     {
         AZ::Debug::StackFrame frames[25];
         AZ::Debug::SymbolStorage::StackLine lines[AZ_ARRAY_SIZE(frames)];
@@ -609,45 +596,55 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         }
     }
 
-    //if no crash dialog don't even submit the bug
+    // if no crash dialog don't even submit the bug
     if (m_postBackupProcess && g_cvars.sys_no_crash_dialog == 0 && g_bUserDialog)
     {
         m_postBackupProcess();
     }
-    else
+    else if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
     {
-        // lawsonn: Disabling the JIRA-based crash reporter for now
-        // we'll need to deal with it our own way, pending QA.
-        // if you're customizing the engine this is also your opportunity to deal with it.
-        if (g_cvars.sys_no_crash_dialog != 0 || !g_bUserDialog)
+        AZStd::string msg = AZStd::string::format(
+            "O3DE has encountered an unexpected error.\n\nDo you want to manually report the issue on Github ?\nInformation about the "
+            "crash are located in %s via error.log and error.dmp",
+            path.c_str());
+        constexpr bool showCancel = false;
+        AZStd::string res = nativeUI->DisplayYesNoDialog("O3DE unexpected error", msg, showCancel);
+        if (res == "Yes")
         {
-            // ------------ place custom crash handler here ---------------------
-            // it should launch an executable!
-            /// by  this time, error.bmp will be in the engine root folder
-            // error.log and error.dmp will also be present in the engine root folder
-            // if your error dumper wants those, it should zip them up and send them or offer to do so.
-            // ------------------------------------------------------------------
+            AZStd::wstring arg(path.begin(), path.end());
+            ShellExecuteW(nullptr, L"open", arg.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+            AZStd::string reportIssueUrl;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                settingsRegistry->Get(reportIssueUrl, SettingKey_IssueReportLink);
+
+            if (reportIssueUrl.empty())
+                reportIssueUrl = IssueReportLinkFallback;
+
+            arg = AZStd::wstring(reportIssueUrl.begin(), reportIssueUrl.end());
+            ShellExecuteW(nullptr, L"open", arg.c_str(), NULL, NULL, SW_SHOWNORMAL);
         }
     }
+
     const bool bQuitting = !gEnv || !gEnv->pSystem || gEnv->pSystem->IsQuitting();
 
-    //[AlexMcC|16.04.10] When the engine is shutting down, MessageBox doesn't display a box
-    // and immediately returns IDYES. Avoid this by just not trying to save if we're quitting.
-    // Don't ask to save if this isn't a real crash (a real crash has exception pointers)
     if (g_cvars.sys_no_crash_dialog == 0 && g_bUserDialog && gEnv->IsEditor() && !bQuitting && pex)
     {
         BackupCurrentLevel();
 
-        const INT_PTR res = DialogBoxParam(gDLLHandle, MAKEINTRESOURCE(IDD_CONFIRM_SAVE_LEVEL), NULL, DebugCallStack::ConfirmSaveDialogProc, NULL);
-        if (res == IDB_CONFIRM_SAVE)
+        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
         {
-            if (SaveCurrentLevel())
+            constexpr bool showCancel = false;
+            AZStd::string res = nativeUI->DisplayYesNoDialog(
+                "Save your changes?",
+                "Do you want to try to save your changes?\nAs O3DE is in a panic state, it might corrupt your data",
+                showCancel);
+            if (res == "Yes")
             {
-                MessageBoxW(NULL, L"Level has been successfully saved!\r\nPress Ok to terminate Editor.", L"Save", MB_OK);
-            }
-            else
-            {
-                MessageBoxW(NULL, L"Error saving level.\r\nPress Ok to terminate Editor.", L"Save", MB_OK | MB_ICONWARNING);
+                if (SaveCurrentLevel())
+                    nativeUI->DisplayOkDialog("Save", "Level has been successfully saved!\r\nPress Ok to proceed.", showCancel);
+                else
+                    nativeUI->DisplayOkDialog("Save", "Error saving level.\r\nPress Ok to proceed.", showCancel);
             }
         }
     }
@@ -658,114 +655,6 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         // calling exit will only cause further death down the line...
         TerminateProcess(GetCurrentProcess(), pex->ExceptionRecord->ExceptionCode);
     }
-}
-
-
-INT_PTR CALLBACK DebugCallStack::ExceptionDialogProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    static EXCEPTION_POINTERS* pex;
-
-    switch (message)
-    {
-    case WM_INITDIALOG:
-    {
-        pex = (EXCEPTION_POINTERS*)lParam;
-        HWND h;
-
-        if (pex->ExceptionRecord->ExceptionFlags & EXCEPTION_NONCONTINUABLE)
-        {
-            // Disable continue button for non continuable exceptions.
-            //h = GetDlgItem( hwndDlg,IDB_CONTINUE );
-            //if (h) EnableWindow( h,FALSE );
-        }
-
-        DebugCallStack* pDCS = static_cast<DebugCallStack*>(DebugCallStack::instance());
-
-        h = GetDlgItem(hwndDlg, IDC_EXCEPTION_DESC);
-        if (h)
-        {
-            SendMessage(h, EM_REPLACESEL, FALSE, (LONG_PTR)pDCS->m_excDesc);
-        }
-
-        h = GetDlgItem(hwndDlg, IDC_EXCEPTION_CODE);
-        if (h)
-        {
-            SendMessage(h, EM_REPLACESEL, FALSE, (LONG_PTR)pDCS->m_excCode);
-        }
-
-        h = GetDlgItem(hwndDlg, IDC_EXCEPTION_MODULE);
-        if (h)
-        {
-            SendMessage(h, EM_REPLACESEL, FALSE, (LONG_PTR)pDCS->m_excModule);
-        }
-
-        h = GetDlgItem(hwndDlg, IDC_EXCEPTION_ADDRESS);
-        if (h)
-        {
-            SendMessage(h, EM_REPLACESEL, FALSE, (LONG_PTR)pDCS->m_excAddr);
-        }
-
-        // Fill call stack.
-        HWND callStack = GetDlgItem(hwndDlg, IDC_CALLSTACK);
-        if (callStack)
-        {
-            SendMessage(callStack, WM_SETTEXT, FALSE, (LPARAM)pDCS->m_excCallstack);
-        }
-
-        if (hwndException)
-        {
-            DestroyWindow(hwndException);
-            hwndException = 0;
-        }
-
-        if (IsFloatingPointException(pex))
-        {
-            EnableWindow(GetDlgItem(hwndDlg, IDB_IGNORE), TRUE);
-        }
-    }
-    break;
-
-    case WM_COMMAND:
-        switch (LOWORD(wParam))
-        {
-        case IDB_EXIT:
-        case IDB_IGNORE:
-            // Fall through.
-
-            EndDialog(hwndDlg, wParam);
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-
-INT_PTR CALLBACK DebugCallStack::ConfirmSaveDialogProc(HWND hwndDlg, UINT message, WPARAM wParam, [[maybe_unused]] LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_INITDIALOG:
-    {
-        // The user might be holding down the spacebar while the engine crashes.
-        // If we don't remove keyboard focus from this dialog, the keypress will
-        // press the default button before the dialog actually appears, even if
-        // the user has already released the key, which is bad.
-        SetFocus(NULL);
-    } break;
-    case WM_COMMAND:
-    {
-        switch (LOWORD(wParam))
-        {
-        case IDB_CONFIRM_SAVE:         // Fall through
-        case IDB_DONT_SAVE:
-        {
-            EndDialog(hwndDlg, wParam);
-            return TRUE;
-        }
-        }
-    } break;
-    }
-
-    return FALSE;
 }
 
 bool DebugCallStack::BackupCurrentLevel()
@@ -790,9 +679,9 @@ bool DebugCallStack::SaveCurrentLevel()
     return false;
 }
 
-int DebugCallStack::SubmitBug(EXCEPTION_POINTERS* exception_pointer)
+DebugCallStack::UserPostExceptionChoice DebugCallStack::SubmitBugAndAskToRecoverOrCrash(EXCEPTION_POINTERS* exception_pointer)
 {
-    int ret = IDB_EXIT;
+    UserPostExceptionChoice ret = UserPostExceptionChoice::Exit;
 
     assert(!hwndException);
 
@@ -800,12 +689,11 @@ int DebugCallStack::SubmitBug(EXCEPTION_POINTERS* exception_pointer)
 
     AZ::Debug::Trace::Instance().PrintCallstack("", 2);
 
-    LogExceptionInfo(exception_pointer);
+    SaveExceptionInfoAndShowUserReportDialogs(exception_pointer);
 
     if (IsFloatingPointException(exception_pointer))
     {
-        //! Print exception dialog.
-        ret = PrintException(exception_pointer);
+        ret = AskUserToRecoverOrCrash(exception_pointer);
     }
 
     return ret;
@@ -838,7 +726,7 @@ AZStd::string DebugCallStack::GetModuleNameForAddr(void* addr)
 
     TModules::const_iterator it = m_modules.begin();
     TModules::const_iterator end = m_modules.end();
-    for (; ++it != end; )
+    for (; ++it != end;)
     {
         if (addr < it->first)
         {
@@ -846,7 +734,7 @@ AZStd::string DebugCallStack::GetModuleNameForAddr(void* addr)
         }
     }
 
-    //if address is higher than the last module, we simply assume it is in the last module.
+    // if address is higher than the last module, we simply assume it is in the last module.
     return m_modules.rbegin()->second;
 }
 
@@ -890,13 +778,44 @@ static bool IsFloatingPointException(EXCEPTION_POINTERS* pex)
     }
 }
 
-int DebugCallStack::PrintException(EXCEPTION_POINTERS* exception_pointer)
+DebugCallStack::UserPostExceptionChoice DebugCallStack::AskUserToRecoverOrCrash(EXCEPTION_POINTERS* exception_pointer)
 {
-    return (int)DialogBoxParam(gDLLHandle, MAKEINTRESOURCE(IDD_CRITICAL_ERROR), NULL, DebugCallStack::ExceptionDialogProc, (LPARAM)exception_pointer);
+    if (exception_pointer->ExceptionRecord->ExceptionFlags & EXCEPTION_NONCONTINUABLE)
+    {
+        return UserPostExceptionChoice::Exit;
+    }
+
+    UserPostExceptionChoice res = UserPostExceptionChoice::Exit;
+    if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+    {
+        DebugCallStack* pDCS = static_cast<DebugCallStack*>(DebugCallStack::instance());
+        AZStd::string msg = AZStd::string::format(
+            "O3DE encountered an error but can recover from it.\nDo you want to try to recover ?\n\nException Code: %s\nException Addr: "
+            "%s\nException Module: %s\nException Description: %s\nCallstack:\n%.600s",
+            pDCS->m_excCode,
+            pDCS->m_excAddr,
+            pDCS->m_excModule,
+            pDCS->m_excDesc,
+            pDCS->m_excCallstack);
+
+        constexpr bool showCancel = false;
+        AZStd::string dialogRes = nativeUI->DisplayYesNoDialog("Try to recover?", msg, showCancel);
+        if (dialogRes == "Yes")
+        {
+            res = UserPostExceptionChoice::Recover;
+        }
+    }
+    return res;
 }
 
 #else
-void MarkThisThreadForDebugging(const char*) {}
-void UnmarkThisThreadFromDebugging() {}
-void UpdateFPExceptionsMaskForThreads() {}
-#endif //WIN32
+void MarkThisThreadForDebugging(const char*)
+{
+}
+void UnmarkThisThreadFromDebugging()
+{
+}
+void UpdateFPExceptionsMaskForThreads()
+{
+}
+#endif // WIN32

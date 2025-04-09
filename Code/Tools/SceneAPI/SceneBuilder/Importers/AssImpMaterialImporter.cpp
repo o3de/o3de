@@ -98,6 +98,7 @@ namespace AZ
                         material->SetSpecularColor(assImpMaterial->GetSpecularColor());
                         material->SetEmissiveColor(assImpMaterial->GetEmissiveColor());
                         material->SetShininess(assImpMaterial->GetShininess());
+                        material->SetOpacity(assImpMaterial->GetOpacity());
 
                         material->SetUseColorMap(assImpMaterial->GetUseColorMap());
                         material->SetBaseColor(assImpMaterial->GetBaseColor());
@@ -143,33 +144,35 @@ namespace AZ
                         }
 
                         materialMap[materialIndex] = material;
+
+                        Events::ProcessingResult materialResult;
+                        Containers::SceneGraph::NodeIndex newIndex =
+                            context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, materialName.c_str());
+
+                        AZ_Assert(newIndex.IsValid(), "Failed to create SceneGraph node for attribute.");
+                        if (!newIndex.IsValid())
+                        {
+                            combinedMaterialImportResults += Events::ProcessingResult::Failure;
+                            continue;
+                        }
+
+                        AssImpSceneAttributeDataPopulatedContext dataPopulated(context, material, newIndex, materialName);
+                        materialResult = Events::Process(dataPopulated);
+
+                        if (materialResult != Events::ProcessingResult::Failure)
+                        {
+                            materialResult = SceneAPI::SceneBuilder::AddAttributeDataNodeWithContexts(dataPopulated);
+                        }
+
+                        combinedMaterialImportResults += materialResult;
                     }
                     else
                     {
                         material = matFound->second;
                         materialName = material.get()->GetMaterialName();
+                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Duplicate material references to %s from node %s",
+                            materialName.c_str(), context.m_sourceNode.GetName());
                     }
-
-                    Events::ProcessingResult materialResult;
-                    Containers::SceneGraph::NodeIndex newIndex =
-                        context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, materialName.c_str());
-
-                    AZ_Assert(newIndex.IsValid(), "Failed to create SceneGraph node for attribute.");
-                    if (!newIndex.IsValid())
-                    {
-                        combinedMaterialImportResults += Events::ProcessingResult::Failure;
-                        continue;
-                    }
-
-                    AssImpSceneAttributeDataPopulatedContext dataPopulated(context, material, newIndex, materialName);
-                    materialResult = Events::Process(dataPopulated);
-
-                    if (materialResult != Events::ProcessingResult::Failure)
-                    {
-                        materialResult = SceneAPI::SceneBuilder::AddAttributeDataNodeWithContexts(dataPopulated);
-                    }
-
-                    combinedMaterialImportResults += materialResult;
                 }
 
                 return combinedMaterialImportResults.GetResult();

@@ -23,8 +23,8 @@ namespace PassCanvas
         , m_graphViewSettingsPtr(graphViewSettingsPtr)
         , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
-        m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
-        m_assetBrowser->SetFilterState("", AZ::RPI::PassAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->SetFilterState("", AZ::RPI::PassAsset::Group, true);
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/PassCanvas/DocumentInspector");
@@ -180,17 +180,9 @@ namespace PassCanvas
         Base::OnSettingsDialogClosed();
     }
 
-    AZStd::string PassCanvasMainWindow::GetHelpDialogText() const
+    AZStd::string PassCanvasMainWindow::GetHelpUrl() const
     {
-        return R"(<html><head/><body>
-            <p><h3><u>Camera Controls</u></h3></p>
-            <p><b>LMB</b> - rotate camera</p>
-            <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
-            <p><b>MMB</b> - pan camera on its xy plane</p>
-            <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
-            <p><b>Ctrl+LMB</b> - rotate model</p>
-            <p><b>Shift+LMB</b> - rotate environment</p>
-            </body></html>)";
+        return "https://docs.o3de.org/docs/atom-guide/look-dev/tools/";
     }
 } // namespace PassCanvas
 

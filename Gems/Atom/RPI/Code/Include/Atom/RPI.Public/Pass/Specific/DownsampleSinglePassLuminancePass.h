@@ -7,16 +7,19 @@
  */
 #pragma once
 
-#include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RHI/ImageView.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
+
 
 namespace AZ::RPI
 {
     //! This pass takes a texture without auxiliary mip slices as input
     //! a texture with mip slices as output.
     //! It then recursively downsamples that mip to lower mip levels using single dispatch of compute shader.
-    class DownsampleSinglePassLuminancePass final
+    class ATOM_RPI_PUBLIC_API DownsampleSinglePassLuminancePass final
         : public ComputePass
     {
         AZ_RPI_PASS(DownsampleSinglePassMipChainPass);

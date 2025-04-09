@@ -30,14 +30,17 @@ namespace TestImpact
                 "testcase"
             };
 
-            enum
+            enum Fields
             {
                 TestSuitesKey,
                 TestSuiteKey,
                 NameKey,
-                TestCaseKey
+                TestCaseKey,
+                // Checksum
+                _CHECKSUM_
             };
 
+            static_assert(Fields::_CHECKSUM_ == AZStd::size(Keys));
             AZ_TestImpact_Eval(!testEnumerationData.empty(), ArtifactException, "Cannot parse enumeration, string is empty");
             AZStd::vector<TestEnumerationSuite> testSuites;
             AZStd::vector<char> rawData(testEnumerationData.begin(), testEnumerationData.end());

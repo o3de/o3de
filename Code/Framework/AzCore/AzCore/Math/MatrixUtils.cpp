@@ -128,7 +128,7 @@ namespace AZ
     Vector3 MatrixTransformPosition(const Matrix4x4& matrix, const Vector3& inPosition)
     {
         Vector4 result;
-        result = matrix * Vector4(Simd::Vec4::ReplaceFourth(Simd::Vec4::FromVec3(inPosition.GetSimdValue()), 1.0f));
+        result = matrix * Vector4(Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(inPosition.GetSimdValue()), 1.0f));
         AZ_Assert(!IsClose(result.GetW(), 0, FloatEpsilon), "w is too close to 0.f");
         return result.GetHomogenized();
     }

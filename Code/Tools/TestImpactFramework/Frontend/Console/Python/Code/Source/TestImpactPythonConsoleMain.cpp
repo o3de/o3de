@@ -12,10 +12,10 @@
 #include <TestImpactFramework/TestImpactConfigurationException.h>
 #include <TestImpactFramework/TestImpactSequenceReportException.h>
 #include <TestImpactFramework/Python/TestImpactPythonRuntime.h>
+#include <TestImpactFramework/Python/TestImpactPythonRuntimeConfigurationFactory.h>
 
 #include <TestImpactConsoleUtils.h>
 #include <TestImpactPythonCommandLineOptions.h>
-#include <TestImpactPythonRuntimeConfigurationFactory.h>
 
 namespace TestImpact::Console
 {

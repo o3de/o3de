@@ -22,6 +22,9 @@
                 },
                 "Exclude Scene Tests": {
                     "glob": "*/scene_tests/assets/*"
+                },
+                "Exclude Metadata Tests": {
+                    "glob": "*/metadata_relocation_tests/assets/*"
                 }
             }
         }

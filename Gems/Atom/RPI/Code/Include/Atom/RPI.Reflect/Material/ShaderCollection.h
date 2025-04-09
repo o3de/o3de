@@ -9,6 +9,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RHI/DrawList.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <AtomCore/std/containers/vector_set.h>
@@ -27,7 +28,7 @@ namespace AZ
         //! Each shader item may be reconfigured at runtime, but items cannot be added
         //! or removed (this restriction helps simplify overall material system code,
         //! especially around material functors).
-        class ShaderCollection
+        class ATOM_RPI_REFLECT_API ShaderCollection
         {
             friend class MaterialTypeAssetCreator;
         public:
@@ -36,7 +37,7 @@ namespace AZ
 
             //! Contains shader asset and configures how that shader should be used
             //! at runtime, especially which variant of the shader to use.
-            class Item
+            class ATOM_RPI_REFLECT_API Item
             {
                 friend class MaterialTypeAssetCreator;
                 friend class ShaderVariantReferenceSerializationEvents;
@@ -92,6 +93,15 @@ namespace AZ
                 //! Returns the shader tag used to identify this item
                 const AZ::Name& GetShaderTag() const;
 
+                //! If the AssetId of @newShaderAsset matches the AssetId of @m_shaderAsset,
+                //! then @m_shaderAsset will be updated to @newShaderAsset, AND m_shaderOptionGroup
+                //! will be updated too.
+                void TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset);
+
+                // Returns true if was able to initialized the non-serialized @m_shaderOptionGroup.
+                // Only returns false if @m_shaderAsset is not ready.
+                bool InitializeShaderOptionGroup();
+
             private:
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;       //!< Temporarily holds the ShaderVariantId, used for serialization. This will be copied to/from m_shaderOptionGroup.
@@ -118,6 +128,16 @@ namespace AZ
             bool HasShaderTag(const AZ::Name& shaderTag) const;
             Item& operator[](const AZ::Name& shaderTag);
             const Item& operator[](const AZ::Name& shaderTag) const;
+
+            //! Convenience function that loops through all @m_shaderItems
+            //! and calls TryReplaceShaderAsset on all of them.
+            void TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset);
+
+            //! Loops through all items in the collection and calls Item::InitializeShaderOptionGroup().
+            //! Returns true if all Item::InitializeShaderOptionGroup() return true,
+            //! otherwise returns false.
+            bool InitializeShaderOptionGroups();
+
         private:
             using NameReflectionMapForIndex = RHI::NameIdReflectionMap<RHI::Handle<uint32_t>>;
 

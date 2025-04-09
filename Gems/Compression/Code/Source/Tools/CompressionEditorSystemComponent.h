@@ -18,7 +18,7 @@ namespace Compression
     {
         using BaseSystemComponent = CompressionSystemComponent;
     public:
-        AZ_COMPONENT(CompressionEditorSystemComponent, "{82C6760D-5C0C-435F-BC1B-F7B9632DE7C5}", BaseSystemComponent);
+        AZ_COMPONENT_DECL(CompressionEditorSystemComponent);
         static void Reflect(AZ::ReflectContext* context);
 
         CompressionEditorSystemComponent();

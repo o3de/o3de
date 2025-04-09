@@ -29,11 +29,11 @@ namespace AZ
             m_meshFeatureProcessor = scene->GetFeatureProcessor<Render::MeshFeatureProcessorInterface>();
 
             // load visualization plane model and material
-            m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-                "Models/OcclusionCullingPlane.azmodel",
+            m_visualizationModelAsset = AZ::RPI::AssetUtils::LoadCriticalAsset<AZ::RPI::ModelAsset>(
+                "Models/OcclusionCullingPlane.fbx.azmodel",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
 
-            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(MeshHandleDescriptor{ m_visualizationModelAsset });
+            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(MeshHandleDescriptor(m_visualizationModelAsset));
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_visualizationMeshHandle, true);
             m_meshFeatureProcessor->SetRayTracingEnabled(m_visualizationMeshHandle, false);
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, AZ::Transform::CreateIdentity());
@@ -54,7 +54,7 @@ namespace AZ
             }
 
             RPI::AssetUtils::TraceLevel traceLevel = AZ::RPI::AssetUtils::TraceLevel::Assert;
-            m_visualizationMaterialAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::MaterialAsset>(materialAssetPath.c_str(), traceLevel);
+            m_visualizationMaterialAsset = AZ::RPI::AssetUtils::LoadCriticalAsset<AZ::RPI::MaterialAsset>(materialAssetPath.c_str(), traceLevel);
             m_visualizationMaterialAsset.QueueLoad();
             Data::AssetBus::MultiHandler::BusConnect(m_visualizationMaterialAsset.GetId());
         }
@@ -67,7 +67,7 @@ namespace AZ
                 Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
 
                 m_visualizationMaterial = AZ::RPI::Material::FindOrCreate(m_visualizationMaterialAsset);
-                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_visualizationMeshHandle, m_visualizationMaterial);
+                m_meshFeatureProcessor->SetCustomMaterials(m_visualizationMeshHandle, m_visualizationMaterial);
             }
         }
 

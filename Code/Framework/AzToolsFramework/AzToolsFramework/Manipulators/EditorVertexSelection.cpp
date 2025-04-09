@@ -26,6 +26,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
@@ -96,12 +97,9 @@ namespace AzToolsFramework
 
     void OnVertexSelectionCountChanged()
     {
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-            AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
-            actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
-        }
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
+        actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
     }
 
     void EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions()
@@ -277,7 +275,9 @@ namespace AzToolsFramework
         OnEntityComponentPropertyChanged(entityComponentIdPair);
 
         // ensure property grid values are refreshed
-        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
+        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
+            entityComponentIdPair,
+            Refresh_EntireTree);
     }
 
     template<typename Vertex>
@@ -338,7 +338,10 @@ namespace AzToolsFramework
         OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
 
         // ensure property grid values are refreshed
-        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationNotificationBus::Broadcast(
+            &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent, 
+            GetEntityComponentIdPair(),
+            Refresh_Values);
     }
 
     // iterate over all vertices currently associated with the translation manipulator and update their

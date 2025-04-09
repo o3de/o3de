@@ -94,8 +94,11 @@ def AssetBrowser_SearchFiltering():
         editor_window = pyside_utils.get_editor_main_window()
         app = QtWidgets.QApplication.instance()
 
-        # 3) Type the name of an asset in the search bar and make sure it is filtered to and selectable
+        # 3) Switch to list view, type the name of an asset in the search bar and make sure it is filtered to and selectable
         asset_browser = editor_window.findChild(QtWidgets.QDockWidget, "Asset Browser")
+        tree_view_button = asset_browser.findChild(QtWidgets.QToolButton, "m_treeViewButton")
+        tree_view_button.click()
+        general.idle_wait(1.0)
         search_bar = asset_browser.findChild(QtWidgets.QLineEdit, "textSearch")
 
         # Add a small pause when typing in the search bar in order to check that the entries are updated properly
@@ -105,21 +108,21 @@ def AssetBrowser_SearchFiltering():
         general.idle_wait(0.5)
 
         asset_browser_tree = asset_browser.findChild(QtWidgets.QTreeView, "m_assetBrowserTreeViewWidget")
-        asset_browser_table = asset_browser.findChild(QtWidgets.QTreeView, "m_assetBrowserTableViewWidget")
-        found = await pyside_utils.wait_for_condition(lambda: pyside_utils.find_child_by_pattern(asset_browser_table, "cedar.fbx"), 5.0)
+        found = await pyside_utils.wait_for_condition(lambda: pyside_utils.find_child_by_pattern(asset_browser_tree, "cedar.fbx"), 5.0)
         if found:
-            model_index = pyside_utils.find_child_by_pattern(asset_browser_table, "cedar.fbx")
+            model_index = pyside_utils.find_child_by_pattern(asset_browser_tree, "cedar.fbx")
         else:
             Report.result(Tests.asset_filtered, found)
-        pyside_utils.item_view_index_mouse_click(asset_browser_table, model_index)
+        asset_browser_tree.scrollTo(model_index)
+        pyside_utils.item_view_index_mouse_click(asset_browser_tree, model_index)
         is_filtered = await pyside_utils.wait_for_condition(
-            lambda: asset_browser_table.currentIndex() == model_index, 5.0)
+            lambda: asset_browser_tree.currentIndex() == model_index, 5.0)
         Report.result(Tests.asset_filtered, is_filtered)
 
         # 4) Click the "X" in the search bar.
         clear_search = asset_browser.findChild(QtWidgets.QToolButton, "ClearToolButton")
         clear_search.click()
-
+        
         # 5) Select an asset type to filter by (Animation)
         tool_button = asset_browser.findChild(QtWidgets.QToolButton, "assetTypeSelector")
         pyside_utils.click_button_async(tool_button)
@@ -130,7 +133,7 @@ def AssetBrowser_SearchFiltering():
         tree.model().setData(animation_model_index, 2, Qt.CheckStateRole)
         general.idle_wait(1.0)
         # check asset types after clicking on Animation filter
-        asset_type_filter = verify_files_appeared(asset_browser_tree.model(), ["i_caf", "fbx", "xml", "animgraph", "motionset"])
+        asset_type_filter = verify_files_appeared(asset_browser_tree.model(), ["i_caf", "fbx", "xml", "animgraph", "motionset", "actor", "motion"])
         Report.result(Tests.asset_type_filtered, asset_type_filter)
 
         # 6) Add additional filter(FileTag) from the filter menu
@@ -140,13 +143,14 @@ def AssetBrowser_SearchFiltering():
         general.idle_wait(1.0)
         # check asset types after clicking on FileTag filter
         more_types_filtered = verify_files_appeared(
-                asset_browser_tree.model(), ["i_caf", "fbx", "xml", "animgraph", "motionset", "filetag"]
+                asset_browser_tree.model(), ["i_caf", "fbx", "xml", "animgraph", "motionset", "filetag", "actor", "motion"]
         )
         Report.result(Tests.asset_type_filtered, more_types_filtered)
 
         # 7) Remove one of the filtered asset types from the list of applied filters
-        filter_layout = asset_browser.findChild(QtWidgets.QFrame, "filteredLayout")
-        animation_close_button = filter_layout.children()[1]
+        filter_layout = asset_browser.findChild(QtWidgets.QFrame, "containerLayout")
+        
+        animation_close_button = filter_layout.children()[4]
         first_close_button = animation_close_button.findChild(QtWidgets.QPushButton, "closeTag")
         first_close_button.click()
         general.idle_wait(1.0)
@@ -155,7 +159,7 @@ def AssetBrowser_SearchFiltering():
         Report.result(Tests.asset_type_filtered, remove_filtered)
 
         # 8) Remove all of the filter asset types from the list of filters
-        filetag_close_button = filter_layout.children()[1]
+        filetag_close_button = filter_layout.children()[3]
         second_close_button = filetag_close_button.findChild(QtWidgets.QPushButton, "closeTag")
         second_close_button.click()
 

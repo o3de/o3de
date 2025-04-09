@@ -30,7 +30,8 @@ namespace AZ
                 const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<EMotionFX::Integration::ActorAsset>& asset,
                 EMotionFX::Integration::SkinningMethod skinningMethod,
-                const AZ::Transform& worldTransform) override;
+                const AZ::Transform& worldTransform,
+                bool raytracingEnabled) override;
         };
     } // namespace Render
 } // namespace AZ

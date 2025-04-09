@@ -21,6 +21,7 @@ namespace AzToolsFramework
     using MenuManagerOperationResult = AZ::Outcome<void, AZStd::string>;
     using MenuManagerIntegerResult = AZ::Outcome<int, AZStd::string>;
     using MenuManagerStringResult = AZ::Outcome<AZStd::string, AZStd::string>;
+    using MenuManagerPositionResult = AZ::Outcome<QPoint, AZStd::string>;
 
     //! Provides additional properties to initialize a Menu upon registration.
     struct MenuProperties
@@ -166,12 +167,17 @@ namespace AzToolsFramework
         //! @param menuIdentifier The identifier for the menu to display.
         //! @param screenPosition The position where the menu should appear.
         //! @return A successful outcome object if the menu could be displayed, or a string with a message detailing the error in case of failure.
-        virtual MenuManagerOperationResult DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition) const = 0;
+        virtual MenuManagerOperationResult DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition) = 0;
 
         //! Show the menu under the mouse cursor.
         //! @param menuIdentifier The identifier for the menu to display.
         //! @return A successful outcome object if the menu could be displayed, or a string with a message detailing the error in case of failure.
-        virtual MenuManagerOperationResult DisplayMenuUnderCursor(const AZStd::string& menuIdentifier) const = 0;
+        virtual MenuManagerOperationResult DisplayMenuUnderCursor(const AZStd::string& menuIdentifier) = 0;
+
+        //! Returns the position of the last context menu displayed with the DisplayMenu functions.
+        //! Note that the menu must still be active.
+        //! @return A successful outcome object containing the position of the last context menu, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerPositionResult GetLastContextMenuPosition() const = 0;
         
     };
 

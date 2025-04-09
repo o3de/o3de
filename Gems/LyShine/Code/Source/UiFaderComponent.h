@@ -73,20 +73,20 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiFaderService", 0x3c5847e9));
-        provided.push_back(AZ_CRC("UiRenderControlService", 0x4e302454));
+        provided.push_back(AZ_CRC_CE("UiFaderService"));
+        provided.push_back(AZ_CRC_CE("UiRenderControlService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiFaderService", 0x3c5847e9));
-        incompatible.push_back(AZ_CRC("UiRenderControlService", 0x4e302454));
+        incompatible.push_back(AZ_CRC_CE("UiFaderService"));
+        incompatible.push_back(AZ_CRC_CE("UiRenderControlService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

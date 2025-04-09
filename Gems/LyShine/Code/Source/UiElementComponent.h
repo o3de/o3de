@@ -161,12 +161,12 @@ public: // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
+        provided.push_back(AZ_CRC_CE("UiElementService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
+        incompatible.push_back(AZ_CRC_CE("UiElementService"));
     }
 
     static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)

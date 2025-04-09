@@ -1,0 +1,66 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+    Texture2D<float4> m_grain;
+
+    Sampler m_sampler
+    {
+        AddressU = Mirror;
+        AddressV = Mirror;
+        AddressW = Mirror;
+    };
+
+    // Must match the struct in FilmGrainPass.cpp
+    struct Constants
+    {
+        uint2 m_outputSize; // texture size of output
+        uint2 m_grainTextureSize; // texture size of grain noise
+        float m_intensity; // intensity of effect (0 to 1)
+        float m_luminanceDampening; // factor for dampening effect in areas of high and low luminance
+        float m_tilingScale; // scaling factor for tiling
+        [[pad_to(16)]]
+    };
+    Constants m_constants;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    if (dispatchThreadID.x >= PassSrg::m_constants.m_outputSize.x || dispatchThreadID.y >= PassSrg::m_constants.m_outputSize.y)
+    {
+        return;
+    }
+
+    float3 rgb = PassSrg::m_inputColor[dispatchThreadID.xy].rgb;
+
+    // Determine UV wrt tiling scale and vary UV according to time
+    // The float2 is random and acts as a way of "skipping" across the grain texture
+    // The multiplier is equivalent to dividing by 1/24, mimicking a frame rate of 24fps as found in many films
+    float2 grainUV = PassSrg::m_constants.m_tilingScale * dispatchThreadID.xy / PassSrg::m_constants.m_grainTextureSize;
+    grainUV += float2(0.6379, 1.7358) * trunc(SceneSrg::m_time * 24);
+
+    // Determine grain
+    float grain = PassSrg::m_grain.SampleLevel(PassSrg::m_sampler, grainUV, 0).r;
+
+    // Apply dampening
+    // Note: magic numbers correspond to the contribution of each channel to luminance
+    // Note: dampening is applied based on the formula y = 4x(1-x^2), which means that y=1 when x=0.5 and drops off to y=0 at x=0 and x=1
+    float lum = dot(rgb, float3(0.21, 0.72, 0.07));
+    grain *= lerp(1, (lum - lum * lum) * 4, PassSrg::m_constants.m_luminanceDampening);
+
+    // Apply intensity
+    rgb = lerp(rgb, grain, PassSrg::m_constants.m_intensity);
+
+    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(rgb.r, rgb.g, rgb.b, PassSrg::m_inputColor[dispatchThreadID.xy].a);
+}

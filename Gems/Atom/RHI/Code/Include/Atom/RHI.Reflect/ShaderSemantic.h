@@ -11,40 +11,37 @@
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/Casting/numeric_cast.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! Describes a shader semantic (name + index). This should match the semantic declared in AZSL.
+    class ShaderSemantic
     {
-         //! Describes a shader semantic (name + index). This should match the semantic declared in AZSL.
-        class ShaderSemantic
-        {
-        public:
-            AZ_TYPE_INFO(ShaderSemantic, "{C6FFF25F-FE52-4D08-8D96-D04C14048816}");
-            static void Reflect(AZ::ReflectContext* context);
+    public:
+        AZ_TYPE_INFO(ShaderSemantic, "{C6FFF25F-FE52-4D08-8D96-D04C14048816}");
+        static void Reflect(AZ::ReflectContext* context);
 
-            //! The prefix keyword to extract UV shader inputs, so that we can stream different UV sets.
-            static constexpr const char UvStreamSemantic[] = "UV";
+        //! The prefix keyword to extract UV shader inputs, so that we can stream different UV sets.
+        static constexpr const char UvStreamSemantic[] = "UV";
 
-            static ShaderSemantic Parse(AZStd::string_view semantic);
+        static ShaderSemantic Parse(AZStd::string_view semantic);
 
-            ShaderSemantic() = default;
-            explicit ShaderSemantic(const Name& name, size_t index = 0);
-            explicit ShaderSemantic(AZStd::string_view name, size_t index = 0);
+        ShaderSemantic() = default;
+        explicit ShaderSemantic(const Name& name, size_t index = 0);
+        explicit ShaderSemantic(AZStd::string_view name, size_t index = 0);
 
-            bool operator==(const ShaderSemantic& rhs) const;
+        bool operator==(const ShaderSemantic& rhs) const;
 
-            HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
+        HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            AZStd::string ToString() const;
+        AZStd::string ToString() const;
 
-            //! Name of the binding.
-            Name m_name;
+        //! Name of the binding.
+        Name m_name;
 
-            //! Index of the binding with this semantic.
-            uint32_t m_index = 0;
-        };
-    } // namespace RHI
-} // namespace AZ
+        //! Index of the binding with this semantic.
+        uint32_t m_index = 0;
+    };
+}
 
 namespace AZStd
 {

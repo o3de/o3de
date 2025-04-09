@@ -72,6 +72,7 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = m_dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         m_applyButton = m_dialogButtons->addButton(tr("Add"), QDialogButtonBox::ApplyRole);
+        m_applyButton->setProperty("primary", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(m_applyButton, &QPushButton::clicked, this, &AddRemoteTemplateDialog::AddTemplateSource);

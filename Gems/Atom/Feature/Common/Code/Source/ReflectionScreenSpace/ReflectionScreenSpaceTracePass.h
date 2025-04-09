@@ -35,9 +35,20 @@ namespace AZ
             explicit ReflectionScreenSpaceTracePass(const RPI::PassDescriptor& descriptor);
 
             // Pass behavior overrides...
-            virtual void BuildInternal() override;
+            void BuildInternal() override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             Data::Instance<RPI::AttachmentImage> m_previousFrameImageAttachment;
+
+            RHI::ShaderInputNameIndex m_invOutputScaleNameIndex = "m_invOutputScale";
+            RHI::ShaderInputNameIndex m_outputWidthNameIndex = "m_outputWidth";
+            RHI::ShaderInputNameIndex m_outputHeightNameIndex = "m_outputHeight";
+            RHI::ShaderInputNameIndex m_rayTracingEnabledNameIndex = "m_rayTracingEnabled";
+            RHI::ShaderInputNameIndex m_rayTraceFallbackDataNameIndex = "m_rayTraceFallbackData";
+            RHI::ShaderInputNameIndex m_maxRayDistanceNameIndex = "m_maxRayDistance";
+            RHI::ShaderInputNameIndex m_maxDepthThresholdNameIndex = "m_maxDepthThreshold";
+            RHI::ShaderInputNameIndex m_maxRoughnessNameIndex = "m_maxRoughness";
+            RHI::ShaderInputNameIndex m_roughnessBiasNameIndex = "m_roughnessBias";
         };
     }   // namespace RPI
 }   // namespace AZ

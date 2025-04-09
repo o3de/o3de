@@ -19,7 +19,6 @@
 #include <EMotionFX/Source/Velocity.h>
 
 #include <MCore/Source/AzCoreConversions.h>
-#include <MCore/Source/Color.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

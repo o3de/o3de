@@ -40,7 +40,7 @@ namespace AZ
         {
             AZ_TYPE_INFO_WITH_NAME_DECL(HashedVariantInfoSourceData);
 
-            static constexpr const char* Extension = "hashedvariantinfo";
+            static constexpr const char* Extension = "hashedvariantbatch";
 
             AZ::RPI::ShaderVariantListSourceData::VariantInfo m_variantInfo;
             size_t m_hash = 0; // Hash of all the data in @m_variantInfo
@@ -73,6 +73,11 @@ namespace AZ
             static constexpr uint32_t SubId = 0;
 
             static void Reflect(ReflectContext* context);
+
+            // Original, and absolute, path of the corresponsing *.shader file.
+            // This needs to be stored to preserve the casing. Without this Linux
+            // won't work.
+            AZStd::string m_shaderPath;
 
             AZStd::vector<HashedVariantInfoSourceData> m_hashedVariants;
         };

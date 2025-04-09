@@ -12,6 +12,7 @@
 #include <Atom/RHI/DrawFilterTagRegistry.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/PipelinePassChanges.h>
 #include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -81,7 +82,7 @@ namespace AZ
         //! RenderPipeline describes how to render a scene. It has all the passes and views for rendering.
         //! A scene may have several pipelines. Each pipeline have its own render frequency. 
         //! Pipeline can be disabled and it won't be rendered if it's disabled.
-        class RenderPipeline
+        class ATOM_RPI_PUBLIC_API RenderPipeline
         {
             friend class Pass;
             friend class PassSystem;
@@ -98,6 +99,12 @@ namespace AZ
                                                                    const ViewType viewType = ViewType::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
+            // Anti-aliasing
+            bool SetActiveAAMethod(AZStd::string aaMethodName);
+            static AntiAliasingMode GetAAMethodByName(AZStd::string aaMethodName);
+            static AZStd::string GetAAMethodNameByIndex(AntiAliasingMode aaMethodIndex);            
+            AntiAliasingMode GetActiveAAMethod();
+
             //! Create a render pipeline which renders to the specified attachment image
             //! The render pipeline's root pass is created from the pass template specified from RenderPipelineDescriptor::m_rootPassTemplate
             //! The input AttachmentImageAsset is used to connect to first output attachment of the root pass template
@@ -108,7 +115,11 @@ namespace AZ
             using PipelineViewMap = AZStd::unordered_map<PipelineViewTag, PipelineViews>;
             using ViewToViewTagMap = AZStd::map<const View*, PipelineViewTag>;
 
-            //! Assign a view for a PipelineViewTag used in this pipeline. 
+            // Removes a registered view from the pipeline, either transient or persistent
+            // This is only needed if you want to re-register a view with another viewtag
+            void UnregisterView(ViewPtr view);
+
+            //! Assign a view for a PipelineViewTag used in this pipeline.
             //! This reference of this view will be saved until it's replaced in another SetPersistentView call.
             void SetPersistentView(const PipelineViewTag& viewId, ViewPtr view);
 
@@ -129,6 +140,10 @@ namespace AZ
             //! It's the same as GetViews(GetMainViewTag()) and using first element.
             ViewPtr GetDefaultView();
 
+            //! Get the frist view for the view tag.
+            //! It's the same as GetViews("tag") and using first element.
+            ViewPtr GetFirstView(const PipelineViewTag& viewTag);
+
             //! Set default view from an entity which should have a ViewProvider handler.
             void SetDefaultViewFromEntity(EntityId entityId);
 
@@ -136,7 +151,7 @@ namespace AZ
             bool HasViewTag(const PipelineViewTag& viewTag) const;
 
             //! Get the main view tag (the tag used for the default view).
-            PipelineViewTag GetMainViewTag() const;
+            const PipelineViewTag& GetMainViewTag() const;
 
             //! Get views that are associated with specified view tag.
             const AZStd::vector<ViewPtr>& GetViews(const PipelineViewTag& viewTag) const;
@@ -233,6 +248,12 @@ namespace AZ
             //! Return the view type associated with this pipeline.
             ViewType GetViewType() const;
 
+            //! Update viewport and scissor based on pass tree's output
+            void UpdateViewportScissor();
+
+            //! Return true if the pipeline allows merging of passes as subpasses.
+            bool SubpassMergingSupported() const;
+
         private:
             RenderPipeline() = default;
 
@@ -248,6 +269,10 @@ namespace AZ
 
             // Checks if the view is already registered with a different viewTag
             bool CanRegisterView(const PipelineViewTag& allowedViewTag, const View* view) const;
+
+            // Removes a registered view from the pipeline
+            void RemoveTransientView(const PipelineViewTag viewId, ViewPtr view);
+            void ResetPersistentView(const PipelineViewTag viewId, ViewPtr view);
 
             // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
             // This is called from the pipeline root pass during the pass reset phase
@@ -286,11 +311,14 @@ namespace AZ
             void SetDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry);
             void ReleaseDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry);
 
+            // AA method
+            static bool SetAAMethod(RenderPipeline* pipeline, AZStd::string aaMethodName);
+            static bool SetAAMethod(RenderPipeline* pipeline, AntiAliasingMode aaMethod);
+            static bool EnablePass(RenderPipeline* pipeline, Name& passName, bool enable);
+
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
 
-            // update viewport and scissor based on pass tree's output
-            void UpdateViewportScissor();
 
             RenderMode m_renderMode = RenderMode::RenderEveryTick;
 
@@ -342,12 +370,17 @@ namespace AZ
             // The descriptor used to created this render pipeline
             RenderPipelineDescriptor m_descriptor;
 
+            AntiAliasingMode m_activeAAMethod = AntiAliasingMode::MSAA;
+
             // View type associated with the Render Pipeline.
             ViewType m_viewType = ViewType::Default;
 
             // viewport and scissor for frame update
             RHI::Viewport m_viewport;
             RHI::Scissor m_scissor;
+
+            // Supports merging of passes as subpasses.
+            bool m_allowSubpassMerging = false;
         };
 
     } // namespace RPI

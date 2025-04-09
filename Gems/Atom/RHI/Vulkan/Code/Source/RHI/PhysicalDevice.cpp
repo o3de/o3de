@@ -17,6 +17,10 @@ namespace AZ
 {
     namespace Vulkan
     {
+        [[maybe_unused]] static constexpr uint32_t VendorID_Nvidia = 0x10DE;
+        [[maybe_unused]] static constexpr uint32_t VendorID_AMD = 0x1002;
+        [[maybe_unused]] static constexpr uint32_t VendorID_Intel = 0x8086;
+
         RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
         {
             RHI::PhysicalDeviceList physicalDeviceList;
@@ -177,6 +181,16 @@ namespace AZ
             return m_bufferDeviceAddressFeatures;
         }
 
+        const VkPhysicalDeviceTimelineSemaphoreFeatures& PhysicalDevice::GetPhysicalDeviceTimelineSemaphoreFeatures() const
+        {
+            return m_timelineSemaphoreFeatures;
+        }
+
+        const VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT& PhysicalDevice::GetPhysicalSubpassMergeFeedbackFeatures() const
+        {
+            return m_subpassMergeFeedbackFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -268,8 +282,8 @@ namespace AZ
 
         void PhysicalDevice::LoadSupportedFeatures(const GladVulkanContext& context)
         {
-            uint32_t majorVersion = VK_VERSION_MAJOR(m_deviceProperties.apiVersion);
-            uint32_t minorVersion = VK_VERSION_MINOR(m_deviceProperties.apiVersion);
+            uint32_t majorVersion = VK_VERSION_MAJOR(GetVulkanVersion());
+            uint32_t minorVersion = VK_VERSION_MINOR(GetVulkanVersion());
 
             m_features.reset();
             m_features.set(static_cast<size_t>(DeviceFeature::Compatible2dArrayTexture), (majorVersion >= 1 && minorVersion >= 1) || VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_maintenance1));
@@ -284,39 +298,50 @@ namespace AZ
                 (m_vulkan12Features.separateDepthStencilLayouts));
             m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_descriptor_indexing));
             m_features.set(static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_buffer_device_address));
+            // Disable memory budget extension for now since it's crashing the driver when the VkPhysicalDeviceMemoryBudgetPropertiesEXT structure
+            // is included in the pNext chain of VkPhysicalDeviceMemoryProperties2
+            m_features.set(
+                static_cast<size_t>(DeviceFeature::MemoryBudget),
+                VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget) && m_deviceProperties.vendorID != VendorID_Intel);
             m_features.set(static_cast<size_t>(DeviceFeature::SubgroupOperation), (majorVersion >= 1 && minorVersion >= 1));
+            m_features.set(static_cast<size_t>(DeviceFeature::LoadNoneOp), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_load_store_op_none));
+            m_features.set(
+                static_cast<size_t>(DeviceFeature::StoreNoneOp),
+                VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_load_store_op_none) || (majorVersion >= 1 && minorVersion >= 3));
         }
 
         RawStringList PhysicalDevice::FilterSupportedOptionalExtensions()
         {
             // The order must match the enum OptionalDeviceExtensions
-            RawStringList optionalExtensions = { {
-                VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
-                VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
-                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
-                VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
-                VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
-                VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
-                VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
-                VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
-                VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME,
-                VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME,
+            RawStringList optionalExtensions = { { VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
+                                                   VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
+                                                   VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
+                                                   VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
+                                                   VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
+                                                   VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
+                                                   VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
+                                                   VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+                                                   VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
+                                                   VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME,
+                                                   VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME,
 
-                // ray tracing extensions
-                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-                VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-                VK_KHR_RAY_QUERY_EXTENSION_NAME,
-                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-                VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
+                                                   // ray tracing extensions
+                                                   VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                                                   VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+                                                   VK_KHR_RAY_QUERY_EXTENSION_NAME,
+                                                   VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                                                   VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+                                                   VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                                                   VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+                                                   VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
 
-                VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
-                VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
-                VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
-            } };
+                                                   VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+                                                   VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME,
+                                                   VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
+                                                   VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+                                                   VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME,
+                                                   VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME,
+                                                   VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
 
@@ -343,28 +368,29 @@ namespace AZ
             return filteredOptionalExtensions;
         }
 
-        void PhysicalDevice::CompileMemoryStatistics(const GladVulkanContext& context, RHI::MemoryStatisticsBuilder& builder) const
+        AZStd::vector<VkTimeDomainEXT> PhysicalDevice::GetCalibratedTimeDomains(const GladVulkanContext& context) const
         {
-            if (VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2) && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget))
+            AZStd::vector<VkTimeDomainEXT> time_domains;
+
+            // Initialize time domain count:
+            auto time_domain_count{ 0u };
+            // Update time domain count:
+            auto result = context.GetPhysicalDeviceCalibrateableTimeDomainsEXT(m_vkPhysicalDevice, &time_domain_count, nullptr);
+
+            if (result == VK_SUCCESS)
             {
-                VkPhysicalDeviceMemoryBudgetPropertiesEXT budget = {};
-                budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
-
-                VkPhysicalDeviceMemoryProperties2 properties = {};
-                properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
-                properties.pNext = &budget;
-                Instance::GetInstance().GetContext().GetPhysicalDeviceMemoryProperties2KHR(m_vkPhysicalDevice, &properties);
-
-                for (uint32_t i = 0; i < properties.memoryProperties.memoryHeapCount; ++i)
-                {
-                    RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
-                    heapStats->m_name = AZStd::string::format("Heap %d", static_cast<int>(i));
-                    heapStats->m_heapMemoryType = RHI::CheckBitsAll(properties.memoryProperties.memoryHeaps[i].flags, static_cast<VkMemoryHeapFlags>(VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
-                    heapStats->m_memoryUsage.m_budgetInBytes = budget.heapBudget[i];
-                    heapStats->m_memoryUsage.m_totalResidentInBytes = budget.heapUsage[i];
-                    heapStats->m_memoryUsage.m_usedResidentInBytes = 0;
-                }
+                // Resize time domains vector:
+                time_domains.resize(time_domain_count);
+                // Update time_domain vector:
+                result = context.GetPhysicalDeviceCalibrateableTimeDomainsEXT(m_vkPhysicalDevice, &time_domain_count, time_domains.data());
             }
+
+            return time_domains;
+        }
+
+        uint32_t PhysicalDevice::GetVulkanVersion() const
+        {
+            return m_vulkanVersion;
         }
 
         void PhysicalDevice::Init(VkPhysicalDevice vkPhysicalDevice)
@@ -374,100 +400,64 @@ namespace AZ
 
             if (VK_INSTANCE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2))
             {
-                // features
-                VkPhysicalDeviceDescriptorIndexingFeaturesEXT& descriptorIndexingFeatures = m_descriptorIndexingFeatures;
-                descriptorIndexingFeatures = {};
-                descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
-
-                VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& bufferDeviceAddressFeatures = m_bufferDeviceAddressFeatures;
-                bufferDeviceAddressFeatures = {};
-                bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
-                descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
-
-                VkPhysicalDeviceDepthClipEnableFeaturesEXT& dephClipEnableFeatures = m_dephClipEnableFeatures;
-                dephClipEnableFeatures = {};
-                dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
-                bufferDeviceAddressFeatures.pNext = &dephClipEnableFeatures;
-
-                VkPhysicalDeviceShaderAtomicInt64Features& shaderAtomicInt64Features = m_shaderAtomicInt64Features;
-                shaderAtomicInt64Features = {};
-                shaderAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
-                dephClipEnableFeatures.pNext = &shaderAtomicInt64Features;
-
-                VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& shaderImageAtomicInt64Features = m_shaderImageAtomicInt64Features;
-                shaderImageAtomicInt64Features = {};
-                shaderImageAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
-                shaderAtomicInt64Features.pNext = &shaderImageAtomicInt64Features;
-
-                VkPhysicalDeviceRayQueryFeaturesKHR& rayQueryFeatures = m_rayQueryFeatures;
-                rayQueryFeatures = {};
-                rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
-                shaderImageAtomicInt64Features.pNext = &rayQueryFeatures;
-
-                VkPhysicalDeviceRobustness2FeaturesEXT& robustness2Feature = m_robutness2Features;
-                robustness2Feature = {};
-                robustness2Feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
-                rayQueryFeatures.pNext = &robustness2Feature;
-
-                VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& float16Int8Features = m_float16Int8Features;
-                float16Int8Features = {};
-                float16Int8Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
-                robustness2Feature.pNext = &float16Int8Features;
-
-                VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& separateDepthStencilFeatures = m_separateDepthStencilFeatures;
-                separateDepthStencilFeatures = {};
-                separateDepthStencilFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
-                float16Int8Features.pNext = &separateDepthStencilFeatures;
-
-                VkPhysicalDeviceVulkan12Features& vulkan12Features = m_vulkan12Features;
-                vulkan12Features = {};
-                vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-                separateDepthStencilFeatures.pNext = &vulkan12Features;
-
-                VkPhysicalDeviceAccelerationStructureFeaturesKHR& accelerationStructureFeatures = m_accelerationStructureFeatures;
-                accelerationStructureFeatures = {};
-                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-                vulkan12Features.pNext = &accelerationStructureFeatures;
-
-                VkPhysicalDeviceRayTracingPipelineFeaturesKHR& rayTracingPipelineFeatures = m_rayTracingPipelineFeatures;
-                rayTracingPipelineFeatures = {};
-                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-                accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
-
-                VkPhysicalDeviceFragmentShadingRateFeaturesKHR& shadingRateFeatures = m_shadingRateFeatures;
-                shadingRateFeatures = {};
-                shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
-                rayTracingPipelineFeatures.pNext = &shadingRateFeatures;
-
-                VkPhysicalDeviceFragmentDensityMapFeaturesEXT& densityMapFeatures = m_fragmentDensityMapFeatures;
-                densityMapFeatures = {};
-                densityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
-                shadingRateFeatures.pNext = &densityMapFeatures;
+                // Features
+                m_descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+                m_bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
+                m_dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
+                m_shaderAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
+                m_shaderImageAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
+                m_rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
+                m_robutness2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
+                m_float16Int8Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
+                m_separateDepthStencilFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
+                m_vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+                m_accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                m_rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+                m_shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+                m_fragmentDensityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+                m_timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+                m_subpassMergeFeedbackFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT;
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-                deviceFeatures2.pNext = &descriptorIndexingFeatures;
+                AppendVkStruct(
+                    deviceFeatures2,
+                    { &m_descriptorIndexingFeatures,
+                      &m_bufferDeviceAddressFeatures,
+                      &m_dephClipEnableFeatures,
+                      &m_shaderAtomicInt64Features,
+                      &m_shaderImageAtomicInt64Features,
+                      &m_rayQueryFeatures,
+                      &m_robutness2Features,
+                      &m_float16Int8Features,
+                      &m_separateDepthStencilFeatures,
+                      &m_vulkan12Features,
+                      &m_accelerationStructureFeatures,
+                      &m_rayTracingPipelineFeatures,
+                      &m_shadingRateFeatures,
+                      &m_fragmentDensityMapFeatures,
+                      &m_timelineSemaphoreFeatures,
+                      &m_subpassMergeFeedbackFeatures });
 
                 context.GetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;
 
-                // properties
-                VkPhysicalDeviceProperties2 deviceProps2 = {};
+                // Properties
                 m_conservativeRasterProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT;
-                deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-                deviceProps2.pNext = &m_conservativeRasterProperties;
-
                 m_rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
-                m_conservativeRasterProperties.pNext = &m_rayTracingPipelineProperties;
-
                 m_accelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
-                m_rayTracingPipelineProperties.pNext = &m_accelerationStructureProperties;
-
                 m_fragmentDensityMapProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
-                m_accelerationStructureProperties.pNext = &m_fragmentDensityMapProperties;
-
                 m_fragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
-                m_fragmentDensityMapProperties.pNext = &m_fragmentShadingRateProperties;
+                
+                VkPhysicalDeviceProperties2 deviceProps2 = {};
+                deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+                AppendVkStruct(
+                    deviceProps2,
+                    { &m_conservativeRasterProperties,
+                      &m_rayTracingPipelineProperties,
+                      &m_accelerationStructureProperties,
+                      &m_fragmentDensityMapProperties,
+                      &m_fragmentShadingRateProperties });
 
                 context.GetPhysicalDeviceProperties2KHR(vkPhysicalDevice, &deviceProps2);
                 m_deviceProperties = deviceProps2.properties;
@@ -542,6 +532,9 @@ namespace AZ
 
             m_descriptor.m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Device)] = static_cast<size_t>(memsize_device);
             m_descriptor.m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Host)] = static_cast<size_t>(memsize_host);
+            // We need to consider the application's vulkan version, since we cannot use a higher version than that, even though
+            // the physical device might support a higher one.
+            m_vulkanVersion = AZStd::min(Instance::GetInstance().GetVkAppInfo().apiVersion, m_deviceProperties.apiVersion);
         }
 
         void PhysicalDevice::Shutdown()
@@ -561,6 +554,13 @@ namespace AZ
             uint32_t index = static_cast<uint32_t>(optionalDeviceExtension);
             AZ_Assert(index < m_optionalExtensions.size(), "Invalid feature %d", index);
             return m_optionalExtensions.test(index);
+        }
+
+        void PhysicalDevice::DisableOptionalDeviceExtension(OptionalDeviceExtension optionalDeviceExtension)
+        {
+            uint32_t index = static_cast<uint32_t>(optionalDeviceExtension);
+            AZ_Assert(index < m_optionalExtensions.size(), "Invalid feature %d", index);
+            m_optionalExtensions.set(index, false);
         }
     }
 }

@@ -65,6 +65,10 @@
             "isTemplated": true
         },
         {
+            "file": "Code/Include/${Name}/${Name}TypeIds.h",
+            "isTemplated": true
+        },
+        {
             "file": "Code/Platform/Android/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
@@ -154,6 +158,10 @@
         },
         {
             "file": "Code/Platform/iOS/PAL_ios.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.cpp",
             "isTemplated": true
         },
         {

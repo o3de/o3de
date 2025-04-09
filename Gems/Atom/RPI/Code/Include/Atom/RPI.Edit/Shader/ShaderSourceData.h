@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/PipelineStateDescriptor.h>
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/ShaderBuildArguments.h>
 #include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
@@ -30,7 +31,7 @@ namespace AZ
     {
         //! This is a simple data structure that represents a .shader file.
         //! Provides configuration data about how to compile AZSL code.
-        struct ShaderSourceData
+        struct ATOM_RPI_EDIT_API ShaderSourceData
         {
             AZ_TYPE_INFO(AZ::RPI::ShaderSourceData, "{B7F00402-872B-4F82-A210-E1A79A366686}");
             AZ_CLASS_ALLOCATOR(ShaderSourceData, AZ::SystemAllocator);
@@ -105,6 +106,15 @@ namespace AZ
 
             //! Optional list of supervariants.
             AZStd::vector<SupervariantInfo> m_supervariants;
+
+            //! Typically the AssetProcessor always removes the Temp folder when
+            //! an asset compiles successfully.
+            //! By setting this flag to true, the Temp folder used to compile this shader won't be deleted
+            //! if the shader compiles successfully.
+            //! Also, if the ShaderBuildArguments enables shader debug symbols, the Temp
+            //! folder won't be removed so it becomes easier to debug shaders with tools like
+            //! RenderDoc or Pix. 
+            bool m_keepTempFolder = false;
         };
         
     } // namespace RPI

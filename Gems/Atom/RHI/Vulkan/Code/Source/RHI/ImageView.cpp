@@ -6,6 +6,7 @@
  *
  */
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/ImageViewDescriptor.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
@@ -31,6 +32,11 @@ namespace AZ
             return m_format;
         }
 
+        RHI::ImageAspectFlags ImageView::GetAspectFlags() const
+        {
+            return m_aspectFlags;
+        }
+
         const RHI::ImageSubresourceRange& ImageView::GetImageSubresourceRange() const
         {
             return m_imageSubresourceRange;
@@ -54,12 +60,18 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::DeviceResource& resourceBase)
         {
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
             const auto& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+
+            ImageComponentMapping componentMapping{};
+            if (const auto* descriptor = azrtti_cast<const ImageViewDescriptor*>(&viewDescriptor))
+            {
+                componentMapping = descriptor->m_componentMapping;
+            }
 
             // this can happen when image has been invalidated/released right before re-compiling the image
             if (image.GetNativeImage() == VK_NULL_HANDLE)
@@ -76,7 +88,8 @@ namespace AZ
             }
             m_format = viewFormat;
 
-            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags()));
+            m_aspectFlags = RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags());
+            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(m_aspectFlags);
             VkImageViewCreateFlags createFlags = 0;
             if (RHI::CheckBitsAll(image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT)) &&
                 device.GetFeatures().m_dynamicShadingRateImage)
@@ -101,7 +114,7 @@ namespace AZ
             createInfo.image = image.GetNativeImage();
             createInfo.viewType = imageViewType;
             createInfo.format = ConvertFormat(m_format);
-            createInfo.components = VkComponentMapping{}; // identity mapping
+            createInfo.components = ConvertComponentMapping(componentMapping);
             createInfo.subresourceRange = vkRange;
 
             const VkResult result =
@@ -118,16 +131,26 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
-            if (!viewDescriptor.m_isArray && !viewDescriptor.m_isCubemap && !isDSRendertarget)
+            if (device.GetBindlessDescriptorPool().IsInitialized() && !viewDescriptor.m_isArray && !isDSRendertarget)
             {
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                if (!viewDescriptor.m_isCubemap)
                 {
-                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
-                }
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
+                    }
 
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    }
+                }
+                else
                 {
-                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadCubeMapImage(this);
+                    }
                 }
             }
 
@@ -160,10 +183,22 @@ namespace AZ
         void ImageView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            if (m_readIndex != InvalidBindlessIndex)
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+            if (device.GetBindlessDescriptorPool().IsInitialized())
             {
-                device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
-                m_readIndex = InvalidBindlessIndex;
+                if (m_readIndex != InvalidBindlessIndex)
+                {
+                    if (!viewDescriptor.m_isCubemap)
+                    {
+                        device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                    }
+                    else
+                    {
+                        device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
+                    }
+
+                    m_readIndex = InvalidBindlessIndex;
+                }
             }
 
             if (m_readWriteIndex != InvalidBindlessIndex)
@@ -284,6 +319,7 @@ namespace AZ
             const RHI::ImageViewDescriptor& descriptor = GetDescriptor();
 
             RHI::ImageSubresourceRange& range = m_imageSubresourceRange;
+            range.m_aspectFlags = ConvertImageAspectFlags(aspectFlags);
             range.m_mipSliceMin = AZStd::max(descriptor.m_mipSliceMin, image.GetStreamedMipLevel());
             range.m_mipSliceMax = AZStd::min(descriptor.m_mipSliceMax, static_cast<uint16_t>(imageDesc.m_mipLevels - 1));
             if (imageDesc.m_dimension != RHI::ImageDimension::Image3D)

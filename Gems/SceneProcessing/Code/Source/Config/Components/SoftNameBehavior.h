@@ -27,10 +27,12 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
 
-            void GetVirtualTypes(AZStd::set<Crc32>& types, const SceneAPI::Containers::Scene& scene,
+            void GetVirtualTypes(
+                SceneAPI::Events::GraphMetaInfo::VirtualTypesSet& types,
+                const SceneAPI::Containers::Scene& scene,
                 SceneAPI::Containers::SceneGraph::NodeIndex node) override;
             void GetVirtualTypeName(AZStd::string& name, Crc32 type) override;
-            void GetAllVirtualTypes(AZStd::set<Crc32>& types) override;
+            void GetAllVirtualTypes(SceneAPI::Events::GraphMetaInfo::VirtualTypesSet& types) override;
 
             static void Reflect(ReflectContext* context);
         };

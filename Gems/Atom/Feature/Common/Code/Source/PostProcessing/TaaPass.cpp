@@ -73,34 +73,17 @@ namespace AZ::Render
         Base::CompileResources(context);
     }
 
-    void TaaPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
-    {
-        Base::BuildCommandListInternal(context);
-        if (ShouldCopyHistoryBuffer)
-        {
-            context.GetCommandList()->Submit(m_copyItem);
-        }
-    }
-
-    void TaaPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
-    {
-        Base::SetupFrameGraphDependencies(frameGraph);
-        if (ShouldCopyHistoryBuffer)
-        {
-            // Override the estimated item count to include the copy item.
-            frameGraph.SetEstimatedItemCount(2);
-        }
-    }
-
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
         Vector2 rcpInputSize = Vector2(1.0f / inputSize.m_width, 1.0f / inputSize.m_height);
-
-        RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
-        m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
-        Offset offset = m_subPixelOffsets.at(m_offsetIndex);
-        view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
+        RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
+        if (view)
+        {
+            m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
+            Offset offset = m_subPixelOffsets.at(m_offsetIndex);
+            view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
+        }
 
         if (!ShouldCopyHistoryBuffer)
         {
@@ -163,13 +146,6 @@ namespace AZ::Render
         m_outputColorBinding = FindAttachmentBinding(Name("OutputColor"));
         AZ_Error("TaaPass", m_outputColorBinding, "TaaPass requires a slot for OutputColor.");
 
-        RHI::CopyImageDescriptor desc;
-        desc.m_sourceImage = m_attachmentImages[1]->GetRHIImage();
-        desc.m_destinationImage = m_attachmentImages[0]->GetRHIImage();
-        desc.m_sourceSize = desc.m_sourceImage->GetDescriptor().m_size;
-
-        m_copyItem = RHI::CopyItem(desc);
-
         // Set up the attachment for last frame accumulation and output color if it's never been done to
         // ensure SRG indices are set up correctly by the pass system.
         if (m_lastFrameAccumulationBinding->GetAttachment() == nullptr)
@@ -184,50 +160,7 @@ namespace AZ::Render
     bool TaaPass::UpdateAttachmentImage(uint32_t attachmentIndex)
     {
         RPI::Ptr<RPI::PassAttachment>& attachment = m_accumulationAttachments[attachmentIndex];
-        if (!attachment)
-        {
-            return false;
-        }
-
-        // update the image attachment descriptor to sync up size and format
-        attachment->Update(true);
-        RHI::ImageDescriptor& imageDesc = attachment->m_descriptor.m_image;
-
-        // The Format Source had no valid attachment
-        if (imageDesc.m_format == RHI::Format::Unknown)
-        {
-            return false;
-        }
-
-        RPI::AttachmentImage* currentImage = azrtti_cast<RPI::AttachmentImage*>(attachment->m_importedResource.get());
-
-        if (attachment->m_importedResource && imageDesc.m_size == currentImage->GetDescriptor().m_size)
-        {
-            // If there's a resource already and the size didn't change, just keep using the old AttachmentImage.
-            return true;
-        }
-        
-        Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-
-        // set the bind flags
-        imageDesc.m_bindFlags |= RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
-        
-        // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
-        RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDesc.m_format, 0, 0);
-        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
-
-        // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
-        AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);
-        auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(imageName), nullptr, &viewDesc);
-
-        if (attachmentImage)
-        {
-            attachment->m_path = attachmentImage->GetAttachmentId();
-            attachment->m_importedResource = attachmentImage;
-            m_attachmentImages[attachmentIndex] = attachmentImage;
-            return true;
-        }
-        return false;
+        return UpdateImportedAttachmentImage(attachment);
     }
 
     void TaaPass::SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length)

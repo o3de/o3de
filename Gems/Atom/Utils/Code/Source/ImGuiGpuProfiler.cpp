@@ -9,6 +9,8 @@
 #include <Atom/Utils/ImGuiGpuProfiler.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -146,6 +148,7 @@ namespace AZ
             m_path = pass->GetPathName();
             m_parent = parent;
             m_enabled = pass->IsEnabled();
+            m_deviceIndex = pass->GetDeviceIndex() == -1 ? RHI::MultiDevice::DefaultDeviceIndex : pass->GetDeviceIndex();
             m_timestampEnabled = pass->IsTimestampQueryEnabled();
             m_pipelineStatisticsEnabled = pass->IsPipelineStatisticsQueryEnabled();
             m_isParent = pass->AsParent() != nullptr;
@@ -180,6 +183,15 @@ namespace AZ
             }
 
             childEntry->m_linked = true;
+        }
+
+        void PassEntry::PropagateDeviceIndex(int deviceIndex)
+        {
+            m_childrenDeviceIndices.insert(deviceIndex);
+            if (m_parent)
+            {
+                m_parent->PropagateDeviceIndex(deviceIndex);
+            }
         }
 
         bool PassEntry::IsTimestampEnabled() const
@@ -576,86 +588,178 @@ namespace AZ
                 return;
             }
 
+            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+
             // Clear the references from the previous frame.
             m_passEntryReferences.clear();
 
-            // pass entry grid based on its timestamp
-            AZStd::vector<PassEntry*> sortedPassEntries;
-            AZStd::vector<AZStd::vector<PassEntry*>> sortedPassGrid;
+            struct PerDevicePassData
+            {
+                // pass entry grid based on its timestamp
+                AZStd::vector<PassEntry*> sortedPassEntries;
+                AZStd::vector<AZStd::vector<PassEntry*>> sortedPassGrid;
+                RPI::TimestampResult gpuTimestamp;
+                int64_t deviceReferenceDuration{};
+                int64_t hostReferenceDuration{};
+            };
+
+            AZStd::map<int, PerDevicePassData> passEntriesMap;
 
             // Set the child of the parent, only if it passes the filter.
-            for (auto& passEntryIt : timestampEntryDatabase)
+            for (auto& [passName, passEntry] : timestampEntryDatabase)
             {
-                PassEntry* passEntry = &passEntryIt.second;
-
                 // Collect all pass entries with non-zero durations
-                if (passEntry->m_timestampResult.GetDurationInTicks() > 0)
+                if (passEntry.m_timestampResult.GetDurationInTicks() > 0)
                 {
-                    sortedPassEntries.push_back(passEntry);
+                    auto it{ passEntriesMap.find(passEntry.m_deviceIndex) };
+                    if (it == passEntriesMap.end())
+                    {
+                        it = passEntriesMap.insert({ passEntry.m_deviceIndex, PerDevicePassData{} }).first;
+                    }
+                    it->second.sortedPassEntries.push_back(&passEntry);
                 }
 
                 // Skip the pass if the pass' timestamp duration is 0
-                if (m_hideZeroPasses && (!passEntry->m_isParent) && passEntry->m_timestampResult.GetDurationInTicks() == 0)
+                if (m_hideZeroPasses && (!passEntry.m_isParent) && passEntry.m_timestampResult.GetDurationInTicks() == 0)
                 {
                     continue;
                 }
 
                 // Only add pass if it pass the filter.
-                if (m_passFilter.PassFilter(passEntry->m_name.GetCStr()))
+                if (m_passFilter.PassFilter(passEntry.m_name.GetCStr()))
                 {
-                    if (passEntry->m_parent && !passEntry->m_linked)
+                    if (passEntry.m_parent && !passEntry.m_linked)
                     {
-                        passEntry->m_parent->LinkChild(passEntry);
+                        passEntry.m_parent->LinkChild(&passEntry);
+                        passEntry.m_parent->PropagateDeviceIndex(passEntry.m_deviceIndex);
                     }
 
                     AZ_Assert(
                         m_passEntryReferences.size() < TimestampEntryCount,
                         "Too many PassEntry references. Increase the size of the array.");
-                    m_passEntryReferences.push_back(passEntry);
+                    m_passEntryReferences.push_back(&passEntry);
                 }
             }
 
-            // Sort the pass entries based on their starting time and duration
-            AZStd::sort(sortedPassEntries.begin(), sortedPassEntries.end(), [](const PassEntry* passEntry1, const PassEntry* passEntry2) {
-                if (passEntry1->m_timestampResult.GetTimestampBeginInTicks() == passEntry2->m_timestampResult.GetTimestampBeginInTicks())
-                {
-                    return passEntry1->m_timestampResult.GetDurationInTicks() < passEntry2->m_timestampResult.GetDurationInTicks();
-                }
-                return passEntry1->m_timestampResult.GetTimestampBeginInTicks() < passEntry2->m_timestampResult.GetTimestampBeginInTicks();
-            });
+            /*
+                In order to compare timestamps recorded on multiple devices to one another, they need to be related to a common reference
+               frame. To this end, calibrated timestamps are recorded for each device, which represent a "simultaneous" timestamp on both
+               CPU and a specified GPU. With these timestamps at hand at hand, device timestamps are first related to the common CPU time
+               reference frame to allow for proper positioning and scaling of the resulting timestamp bars. The final values are again
+               displayed as device timestamps in the end.
+            */
+            int64_t minimumHostTime{ INT64_MAX };
+            int64_t maximumHostTime{ INT64_MIN };
 
-            // calculate the total GPU duration.
-            RPI::TimestampResult gpuTimestamp;
-            if (sortedPassEntries.size() > 0)
+            for (auto& [deviceIndex, passEntries] : passEntriesMap)
             {
-                gpuTimestamp = sortedPassEntries.front()->m_timestampResult;
-                gpuTimestamp.Add(sortedPassEntries.back()->m_timestampResult);
+                // Only calibrate when taking new measurements to prevent flickering
+                if (!m_paused || m_calibratedTimestamps[deviceIndex] == m_lastCalibratedTimestamps[deviceIndex])
+                {
+                    m_calibratedTimestamps[deviceIndex] = rhiSystem->GetDevice(deviceIndex)->GetCalibratedTimestamp();
+                }
+
+                if (m_lastCalibratedTimestamps.find(deviceIndex) == m_lastCalibratedTimestamps.end())
+                {
+                    m_lastCalibratedTimestamps[deviceIndex] = { 0, 0 };
+                }
+
+                auto& [calibratedTimestampDevice, calibratedTimestampHost] = m_calibratedTimestamps[deviceIndex];
+                auto& [lastCalibratedTimestampDevice, lastCalibratedTimestampHost] = m_lastCalibratedTimestamps[deviceIndex];
+
+                // Calculate the scaling factor to go from a host to a device timestamp
+                passEntries.deviceReferenceDuration = calibratedTimestampDevice - lastCalibratedTimestampDevice;
+                passEntries.hostReferenceDuration = calibratedTimestampHost - lastCalibratedTimestampHost;
+
+                // Sort the pass entries based on their starting time and duration
+                AZStd::sort(
+                    passEntries.sortedPassEntries.begin(),
+                    passEntries.sortedPassEntries.end(),
+                    [](const PassEntry* passEntry1, const PassEntry* passEntry2)
+                    {
+                        if (passEntry1->m_timestampResult.GetTimestampBeginInTicks() ==
+                            passEntry2->m_timestampResult.GetTimestampBeginInTicks())
+                        {
+                            return passEntry1->m_timestampResult.GetDurationInTicks() < passEntry2->m_timestampResult.GetDurationInTicks();
+                        }
+                        return passEntry1->m_timestampResult.GetTimestampBeginInTicks() <
+                            passEntry2->m_timestampResult.GetTimestampBeginInTicks();
+                    });
+
+                uint64_t lastTimestamp{ 0 };
+                PassEntry* lastPassEntry{ nullptr };
+
+                // find the maximum length, since the pass that starts last could end earlier than another pass, so the sorting doesn't help
+                for (const auto& passEntry : passEntries.sortedPassEntries)
+                {
+                    uint64_t endTimestamp{ passEntry->m_timestampResult.GetTimestampBeginInTicks() +
+                                           passEntry->m_timestampResult.GetDurationInTicks() };
+
+                    if (endTimestamp > lastTimestamp)
+                    {
+                        lastPassEntry = passEntry;
+                        lastTimestamp = endTimestamp;
+                    }
+                }
+
+                // calculate the total GPU duration.
+                if (passEntries.sortedPassEntries.size() > 0)
+                {
+                    passEntries.gpuTimestamp = passEntries.sortedPassEntries.front()->m_timestampResult;
+                    passEntries.gpuTimestamp.Add(lastPassEntry->m_timestampResult);
+                }
+
+                // Convert a device timestamp to a host timestamp so that all timestamps are in one reference frame and hence comparable
+                auto convertToHostTime{ [lastDeviceTimestamp = lastCalibratedTimestampDevice,
+                                         lastHostTimeStamp = lastCalibratedTimestampHost,
+                                         deviceReferenceDuration = passEntries.deviceReferenceDuration,
+                                         hostReferenceDuration = passEntries.hostReferenceDuration](int64_t timestamp)
+                                        {
+                                            return (((timestamp - int64_t(lastDeviceTimestamp)) * hostReferenceDuration) /
+                                                    deviceReferenceDuration) +
+                                                int64_t(lastHostTimeStamp);
+                                        } };
+
+                int64_t hostStartTime{ convertToHostTime(passEntries.gpuTimestamp.GetTimestampBeginInTicks()) };
+                int64_t hostEndTime{ convertToHostTime(lastTimestamp) };
+
+                if (hostStartTime < minimumHostTime)
+                {
+                    minimumHostTime = hostStartTime;
+                }
+
+                if (hostEndTime > maximumHostTime)
+                {
+                    maximumHostTime = hostEndTime;
+                }
+
+                // Add a pass to the pass grid which none of the pass's timestamp range won't overlap each other.
+                // Search each row until the pass can be added to the end of row without overlap the previous one.
+                for (auto& passEntry : passEntries.sortedPassEntries)
+                {
+                    auto row = passEntries.sortedPassGrid.begin();
+                    for (; row != passEntries.sortedPassGrid.end(); row++)
+                    {
+                        if (row->empty())
+                        {
+                            break;
+                        }
+                        auto last = (*row).back();
+                        if (passEntry->m_timestampResult.GetTimestampBeginInTicks() >=
+                            last->m_timestampResult.GetTimestampBeginInTicks() + last->m_timestampResult.GetDurationInTicks())
+                        {
+                            row->push_back(passEntry);
+                            break;
+                        }
+                    }
+                    if (row == passEntries.sortedPassGrid.end())
+                    {
+                        passEntries.sortedPassGrid.emplace_back().push_back(passEntry);
+                    }
+                }
             }
 
-            // Add a pass to the pass grid which none of the pass's timestamp range won't overlap each other.
-            // Search each row until the pass can be added to the end of row without overlap the previous one.
-            for (auto& passEntry : sortedPassEntries)
-            {
-                auto row = sortedPassGrid.begin();
-                for (; row != sortedPassGrid.end(); row++)
-                {
-                    if (row->empty())
-                    {
-                        break;
-                    }
-                    auto last = (*row).back();
-                    if (passEntry->m_timestampResult.GetTimestampBeginInTicks() >=
-                        last->m_timestampResult.GetTimestampBeginInTicks() + last->m_timestampResult.GetDurationInTicks())
-                    {
-                        row->push_back(passEntry);
-                        break;
-                    }
-                }
-                if (row == sortedPassGrid.end())
-                {
-                    sortedPassGrid.emplace_back().push_back(passEntry);
-                }
-            }
+            auto hostDuration{ maximumHostTime - minimumHostTime };
 
             // Refresh timestamp query
             bool needEnable = false;
@@ -681,7 +785,7 @@ namespace AZ
                 rootPass->SetTimestampQueryEnabled(needEnable);
             }
 
-            const ImVec2 windowSize(680.0f, 620.0f);
+            const ImVec2 windowSize(1240.0f, 620.0f);
             ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
             if (ImGui::Begin("Timestamp View", &draw, ImGuiWindowFlags_None))
             {
@@ -694,9 +798,14 @@ namespace AZ
                     }
 
                     // Draw the frame time (GPU).
-                    const AZStd::string formattedTimestamp = FormatTimestampLabel(gpuTimestamp.GetDurationInNanoseconds());
-                    const AZStd::string headerFrameTime = AZStd::string::format("Total frame duration (GPU): %s", formattedTimestamp.c_str());
-                    ImGui::Text("%s", headerFrameTime.c_str());
+                    for (auto& [deviceIndex, passEntries] : passEntriesMap)
+                    {
+                        const AZStd::string formattedTimestamp =
+                            FormatTimestampLabel(passEntriesMap[deviceIndex].gpuTimestamp.GetDurationInNanoseconds());
+                        const AZStd::string headerFrameTime =
+                            AZStd::string::format("Total frame duration (GPU %d): %s", deviceIndex, formattedTimestamp.c_str());
+                        ImGui::Text("%s", headerFrameTime.c_str());
+                    }
 
                     // Draw the viewing option.
                     ImGui::RadioButton("Hierarchical", reinterpret_cast<int32_t*>(&m_viewType), static_cast<int32_t>(ProfilerViewType::Hierarchical));
@@ -736,53 +845,131 @@ namespace AZ
                 ImGui::Separator();
 
                 // Draw the pass entry grid
-                if (!sortedPassEntries.empty() && m_showTimeline)
+                for (auto& [deviceIndex, passEntries] : passEntriesMap)
                 {
-                    const float passBarHeight = 20.f;
-                    const float passBarSpace = 3.f;
-                    float areaWidth = ImGui::GetContentRegionAvail().x - 20.f;
-
-                    if (ImGui::BeginChild("Timeline", ImVec2(areaWidth, (passBarHeight + passBarSpace) * sortedPassGrid.size()), false))
+                    if (!passEntries.sortedPassEntries.empty() && m_showTimeline)
                     {
-                        // start tick and end tick for the area
-                        uint64_t areaStartTick = sortedPassEntries.front()->m_timestampResult.GetTimestampBeginInTicks();
-                        uint64_t areaEndTick = sortedPassEntries.back()->m_timestampResult.GetTimestampBeginInTicks() +
-                            sortedPassEntries.back()->m_timestampResult.GetDurationInTicks();
-                        uint64_t areaDurationInTicks = areaEndTick - areaStartTick;
+                        const float passBarHeight = 20.f;
+                        const float passBarSpace = 3.f;
+                        float areaWidth = ImGui::GetContentRegionAvail().x - 20.f;
 
-                        float rowStartY = 0.f;
-                        for (auto& row : sortedPassGrid)
+                        auto& [lastCalibratedTimestampDevice, lastCalibratedTimestampHost] = m_lastCalibratedTimestamps[deviceIndex];
+
+                        ImGui::Text("GPU %d", deviceIndex);
+                        AZStd::string childID{ "Timeline" + AZStd::to_string(deviceIndex) };
+                        if (ImGui::BeginChild(
+                                childID.c_str(),
+                                ImVec2(areaWidth, (passBarHeight + passBarSpace) * passEntries.sortedPassGrid.size()),
+                                false))
                         {
-                            // row start y 
-                            for (auto passEntry : row)
+                            // To compute the correct minimum time per device, shift the minimum host time to the start of its
+                            // host time and compute the start tick and end tick for the area for device measurements
+                            auto shiftedHostTime = minimumHostTime - int64_t(lastCalibratedTimestampHost);
+                            auto areaStartTick =
+                                ((shiftedHostTime * passEntries.deviceReferenceDuration) / passEntries.hostReferenceDuration) +
+                                int64_t(lastCalibratedTimestampDevice);
+                            auto areaDurationInTicks =
+                                (hostDuration * passEntries.deviceReferenceDuration) / passEntries.hostReferenceDuration;
+
+                            auto offset = static_cast<int64_t>(static_cast<double>(areaDurationInTicks) * m_timelineOffset);
+                            areaStartTick += offset;
+                            auto scaledAreaDurationInTicks =
+                                static_cast<int64_t>(static_cast<double>(areaDurationInTicks) * m_timelineWindowWidth);
+
+                            float rowStartY = 0.f;
+                            for (auto& row : passEntries.sortedPassGrid)
                             {
-                                // button start and end
-                                float buttonStartX = (passEntry->m_timestampResult.GetTimestampBeginInTicks() - areaStartTick) * areaWidth /
-                                    areaDurationInTicks;
-                                float buttonWidth =  passEntry->m_timestampResult.GetDurationInTicks() * areaWidth / areaDurationInTicks;
-                                ImGui::SetCursorPosX(buttonStartX);
-                                ImGui::SetCursorPosY(rowStartY);
-
-                                // Adds a button and the hover colors.
-                                ImGui::Button(passEntry->m_name.GetCStr(), ImVec2(buttonWidth, passBarHeight));
-
-                                if (ImGui::IsItemHovered())
+                                // row start y
+                                for (auto passEntry : row)
                                 {
-                                    ImGui::BeginTooltip();
-                                    ImGui::Text("Name: %s", passEntry->m_name.GetCStr());
-                                    ImGui::Text("Path: %s", passEntry->m_path.GetCStr());
-                                    ImGui::Text("Duration in ticks: %llu", static_cast<AZ::u64>(passEntry->m_timestampResult.GetDurationInTicks()));
-                                    ImGui::Text("Duration in microsecond: %.3f us", passEntry->m_timestampResult.GetDurationInNanoseconds()/1000.f);
-                                    ImGui::EndTooltip();
+                                    // button start and width
+                                    float buttonStartX =
+                                        (int64_t(passEntry->m_timestampResult.GetTimestampBeginInTicks()) - areaStartTick) * areaWidth /
+                                        scaledAreaDurationInTicks;
+                                    float buttonWidth =
+                                        passEntry->m_timestampResult.GetDurationInTicks() * areaWidth / scaledAreaDurationInTicks;
+
+                                    // If pass duration is too small, it is not visible in the timeline
+                                    // Increase the size to at least 1.5f and color them to denote this change
+                                    bool tooNarrow{ false };
+                                    if (buttonWidth < 1.5f)
+                                    {
+                                        buttonWidth = 1.5f;
+                                        tooNarrow = true;
+                                    }
+
+                                    ImGui::SetCursorPosX(buttonStartX);
+                                    ImGui::SetCursorPosY(rowStartY);
+
+                                    // If the size or position needed to be modified, color it red to make this clear
+                                    if (tooNarrow)
+                                    {
+                                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 1.0f, 0.0f, 0.0f, 1.0f });
+                                    }
+
+                                    // Adds a button and the hover colors.
+                                    ImGui::Button(passEntry->m_name.GetCStr(), ImVec2(buttonWidth, passBarHeight));
+
+                                    if (tooNarrow)
+                                    {
+                                        ImGui::PopStyleColor(1);
+                                    }
+
+                                    if (ImGui::IsItemHovered())
+                                    {
+                                        ImGui::BeginTooltip();
+                                        ImGui::Text("Name: %s", passEntry->m_name.GetCStr());
+                                        ImGui::Text("Path: %s", passEntry->m_path.GetCStr());
+                                        ImGui::Text(
+                                            "Duration in ticks: %llu",
+                                            static_cast<AZ::u64>(passEntry->m_timestampResult.GetDurationInTicks()));
+                                        ImGui::Text(
+                                            "Duration in microsecond: %.3f us",
+                                            passEntry->m_timestampResult.GetDurationInNanoseconds() / 1000.f);
+                                        ImGui::Text("Relative starting position (0-1): %.3f", buttonStartX / areaWidth);
+                                        ImGui::EndTooltip();
+                                    }
+                                }
+
+                                rowStartY += passBarHeight + passBarSpace;
+                            }
+                        }
+                        ImGui::EndChild();
+
+                        // Control the timeline offset and scale
+                        ImGuiIO& io = ImGui::GetIO();
+                        if (ImGui::IsWindowFocused() && ImGui::IsItemHovered())
+                        {
+                            io.WantCaptureMouse = true;
+                            static constexpr float STEP_SIZE{ 0.1f };
+                            auto timelineXOffsetScale{ (ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x) / areaWidth };
+                            if (io.MouseWheel)
+                            {
+                                auto stepSize{ STEP_SIZE * m_timelineWindowWidth };
+                                if (io.MouseWheel > 0.f)
+                                {
+                                    m_timelineWindowWidth = AZStd::max(m_timelineWindowWidth - stepSize, 0.f);
+                                    m_timelineOffset = AZStd::min(m_timelineOffset + (stepSize * timelineXOffsetScale), 1.f);
+                                }
+                                else
+                                {
+                                    m_timelineWindowWidth = AZStd::min(m_timelineWindowWidth + stepSize, 1.f);
+                                    m_timelineOffset = AZStd::max(m_timelineOffset - (stepSize * timelineXOffsetScale), 0.f);
                                 }
                             }
-
-                            rowStartY += passBarHeight + passBarSpace;
                         }
-                    }
-                    ImGui::EndChild();
 
-                    ImGui::Separator();
+                        ImGui::Separator();
+                    }
+                }
+
+                // Reset m_lastCalibratedTimestamps every frame if not paused
+                if (!m_paused)
+                {
+                    for (auto& [deviceIndex, timestamps] : m_calibratedTimestamps)
+                    {
+                        m_lastCalibratedTimestamps[deviceIndex] = timestamps;
+                    }
                 }
 
                 // Draw the timestamp view.
@@ -805,87 +992,97 @@ namespace AZ
 
                     m_passFilter.Draw("Pass Name Filter");
 
-                    if (ImGui::BeginChild("Passes"))
+                    float areaWidth = ImGui::GetContentRegionAvail().x / passEntriesMap.size();
+                    for (auto& [deviceIndex, passEntries] : passEntriesMap)
                     {
-                        // Set column settings.
-                        ImGui::Columns(3, "view", false);
-                        ImGui::SetColumnWidth(0, 340.0f);
-                        ImGui::SetColumnWidth(1, 100.0f);
+                        AZStd::string childID{ "Passes" + AZStd::to_string(deviceIndex) };
 
-                        if (m_viewType == ProfilerViewType::Hierarchical)
+                        if (ImGui::BeginChild(childID.c_str(), ImVec2(areaWidth, 0)))
                         {
-                            // Set the tab header.
-                            {
-                                ImGui::Text("Pass Names");
-                                ImGui::NextColumn();
+                            // Set column settings.
+                            ImGui::Columns(3, "view", false);
+                            ImGui::SetColumnWidth(0, 340.0f);
+                            ImGui::SetColumnWidth(1, 100.0f);
 
-                                // Render the text depending on the metric unit.
+                            if (m_viewType == ProfilerViewType::Hierarchical)
+                            {
+                                // Set the tab header.
                                 {
-                                    const int32_t timestampMetricUnitNumeric = static_cast<int32_t>(m_timestampMetricUnit);
-                                    const AZStd::string metricUnitText = AZStd::string::format("Time in %s", MetricUnitText[timestampMetricUnitNumeric]);
-                                    ImGui::Text("%s", metricUnitText.c_str());
+                                    ImGui::Text("Pass Names");
                                     ImGui::NextColumn();
+
+                                    // Render the text depending on the metric unit.
+                                    {
+                                        const int32_t timestampMetricUnitNumeric = static_cast<int32_t>(m_timestampMetricUnit);
+                                        const AZStd::string metricUnitText =
+                                            AZStd::string::format("Time in %s", MetricUnitText[timestampMetricUnitNumeric]);
+                                        ImGui::Text("%s", metricUnitText.c_str());
+                                        ImGui::NextColumn();
+                                    }
+
+                                    // Render the text depending on the metric unit.
+                                    {
+                                        const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
+                                        const AZStd::string frameWorkloadViewText =
+                                            AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
+                                        ImGui::Text("%s", frameWorkloadViewText.c_str());
+                                        ImGui::NextColumn();
+                                    }
+
+                                    ImGui::Separator();
                                 }
 
-                                // Render the text depending on the metric unit.
+                                // Draw the hierarchical view.
+                                DrawHierarchicalView(rootPassEntry, deviceIndex);
+                            }
+                            else if (m_viewType == ProfilerViewType::Flat)
+                            {
+                                // Set the tab header.
                                 {
+                                    // Check whether it should be sorted by name.
+                                    const uint32_t sortType = static_cast<uint32_t>(m_sortType);
+                                    AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
+                                    bool sortByName =
+                                        (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
+                                         (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
+                                    AZ_POP_DISABLE_WARNING
+
+                                    if (ImGui::Selectable("Pass Names", sortByName))
+                                    {
+                                        ToggleOrSwitchSortType(ProfilerSortType::Alphabetical, ProfilerSortType::AlphabeticalCount);
+                                    }
+                                    ImGui::NextColumn();
+
+                                    if (ImGui::Selectable("Time in ms", !sortByName))
+                                    {
+                                        ToggleOrSwitchSortType(ProfilerSortType::Timestamp, ProfilerSortType::TimestampCount);
+                                    }
+                                    ImGui::NextColumn();
+
                                     const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
-                                    const AZStd::string frameWorkloadViewText = AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
+                                    const AZStd::string frameWorkloadViewText =
+                                        AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
                                     ImGui::Text("%s", frameWorkloadViewText.c_str());
                                     ImGui::NextColumn();
                                 }
 
                                 ImGui::Separator();
-                            }
 
-                            // Draw the hierarchical view.
-                            DrawHierarchicalView(rootPassEntry);
-                        }
-                        else if (m_viewType == ProfilerViewType::Flat)
-                        {
-                            // Set the tab header.
+                                // Create the sorting buttons.
+                                SortFlatView();
+                                DrawFlatView(deviceIndex);
+                            }
+                            else
                             {
-                                // Check whether it should be sorted by name.
-                                const uint32_t sortType = static_cast<uint32_t>(m_sortType);
-                                AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
-                                bool sortByName = (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
-                                    (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
-                                AZ_POP_DISABLE_WARNING
-
-                                if (ImGui::Selectable("Pass Names", sortByName))
-                                {
-                                    ToggleOrSwitchSortType(ProfilerSortType::Alphabetical, ProfilerSortType::AlphabeticalCount);
-                                }
-                                ImGui::NextColumn();
-
-                                if (ImGui::Selectable("Time in ms", !sortByName))
-                                {
-                                    ToggleOrSwitchSortType(ProfilerSortType::Timestamp, ProfilerSortType::TimestampCount);
-                                }
-                                ImGui::NextColumn();
-
-                                const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
-                                const AZStd::string frameWorkloadViewText = AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
-                                ImGui::Text("%s", frameWorkloadViewText.c_str());
-                                ImGui::NextColumn();
+                                AZ_Assert(false, "Invalid ViewType.");
                             }
 
-                            ImGui::Separator();
-
-                            // Create the sorting buttons.
-                            SortFlatView();
-                            DrawFlatView();
+                            // Set back to default.
+                            ImGui::Columns(1, "view", false);
                         }
-                        else
-                        {
-                            AZ_Assert(false, "Invalid ViewType.");
-                        }
-
-                        // Set back to default.
-                        ImGui::Columns(1, "view", false);
+                        ImGui::EndChild();
+                        ImGui::SameLine();
                     }
-                    ImGui::EndChild();
-
                 }
             }
             ImGui::End();
@@ -906,7 +1103,7 @@ namespace AZ
             ImGui::PopStyleColor(1);
         }
 
-        void ImGuiTimestampView::DrawHierarchicalView(const PassEntry* entry) const
+        void ImGuiTimestampView::DrawHierarchicalView(const PassEntry* entry, int deviceIndex) const
         {
             const AZStd::string entryTime = FormatTimestampLabel(entry->m_interpolatedTimestampInNanoseconds);
 
@@ -937,7 +1134,7 @@ namespace AZ
                 }
             };
 
-            if (entry->m_children.empty())
+            if (entry->m_children.empty() && entry->m_deviceIndex == deviceIndex)
             {
                 // Draw the workload bar when it doesn't have children.
                 ImGui::Text("%s", entry->m_name.GetCStr());
@@ -946,25 +1143,28 @@ namespace AZ
 
                 drawWorkloadBar(entryTime, entry);
             }
-            else
+            else if (entry->m_childrenDeviceIndices.contains(deviceIndex))
             {
                 // Recursively create another tree node.
                 const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen;
-                GpuProfilerImGuiHelper::TreeNode(entry->m_name.GetCStr(), flags, [&drawWorkloadBar, &entryTime, entry, this](bool unrolled)
-                {
-                    // Show a HoverMarker if the text is bigger than the column.
-                    createHoverMarker(entry->m_name.GetCStr());
-
-                    drawWorkloadBar(entryTime, entry);
-
-                    if (unrolled)
+                GpuProfilerImGuiHelper::TreeNode(
+                    entry->m_name.GetCStr(),
+                    flags,
+                    [&drawWorkloadBar, &entryTime, entry, this, deviceIndex](bool unrolled)
                     {
-                        for (const PassEntry* child : entry->m_children)
+                        // Show a HoverMarker if the text is bigger than the column.
+                        createHoverMarker(entry->m_name.GetCStr());
+
+                        drawWorkloadBar(entryTime, entry);
+
+                        if (unrolled)
                         {
-                            DrawHierarchicalView(child);
+                            for (const PassEntry* child : entry->m_children)
+                            {
+                                DrawHierarchicalView(child, deviceIndex);
+                            }
                         }
-                    }
-                });
+                    });
             }
         }
 
@@ -993,12 +1193,12 @@ namespace AZ
             AZStd::sort(m_passEntryReferences.begin(), m_passEntryReferences.end(), it->second);
         }
 
-        void ImGuiTimestampView::DrawFlatView() const
+        void ImGuiTimestampView::DrawFlatView(int deviceIndex) const
         {
             // Draw the flat view.
             for (const PassEntry* entry : m_passEntryReferences)
             {
-                if (entry->m_isParent)
+                if (entry->m_isParent || entry->m_deviceIndex != deviceIndex)
                 {
                     continue;
                 }
@@ -1382,8 +1582,8 @@ namespace AZ
         void ImGuiGpuMemoryView::PerformCapture()
         {
             // Collect and save new GPU memory usage data
-            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-            const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
+            RHI::RHIMemoryStatisticsInterface* rhiMemStats = RHI::RHIMemoryStatisticsInterface::Get();
+            const auto* memoryStatistics = rhiMemStats->GetMemoryStatistics();
             if (memoryStatistics)
             {
                 m_savedPools = memoryStatistics->m_pools;
@@ -1708,43 +1908,6 @@ namespace AZ
             }
         }
 
-        // POOL attributes
-        using JsonStringRef = rapidjson::Value::StringRefType;
-        static const char PoolNameAttribStr[] = "PoolName";
-        static const char HostMemoryTypeValueStr[] = "Host";
-        static const char DeviceMemoryTypeValueStr[] = "Device";
-        static const char MemoryTypeAttribStr[] = "MemoryType";
-        static const char BudgetInBytesAttribStr[] = "BudgetInBytes";
-        static const char TotalResidentInBytesAttribStr[] = "TotalResidentInBytes";
-        static const char UsedResidentInBytesAttribStr[] = "UsedResidentInBytes";
-        static const char FragmentationAttribStr[] = "Fragmentation";
-        static const char UniqueAllocationsInBytesAttribStr[] = "UniqueAllocationsInBytes";
-        static const char BufferCountAttribStr[] = "BufferCount";
-        static const char ImageCountAttribStr[] = "ImageCount";
-        static const char BuffersListAttribStr[] = "BuffersList";
-        static const char ImagesListAttribStr[] = "ImagesList";
-
-        // Buffer and Image attributes
-        static const char BufferNameAttribStr[] = "BufferName";
-        static const char ImageNameAttribStr[] = "ImageName";
-        static const char SizeInBytesAttribStr[] = "SizeInBytes";
-        static const char BindFlagsAttribStr[] = "BindFlags";
-
-        // Top level attributes
-        static const char PoolsAttribStr[] = "Pools";
-        static const char MemoryDataVersionMajorAttribStr[] = "MemoryDataVersionMajor";
-        static const char MemoryDataVersionMinorAttribStr[] = "MemoryDataVersionMinor";
-        static const char MemoryDataVersionRevisionAttribStr[] = "MemoryDataVersionRevision";
-
-        int GetIntMember(const rapidjson::Value& object, const char* memberName, int defaultValue)
-        {
-            if (object.HasMember(memberName))
-            {
-                return object[memberName].GetInt();
-            }
-            return defaultValue;
-        }
-
         void ImGuiGpuMemoryView::SaveToJSON()
         {
             time_t ltime;
@@ -1768,65 +1931,8 @@ namespace AZ
             }
 
             rapidjson::Document doc;
-            rapidjson::Value& root = doc.SetObject();
-            rapidjson::Value poolsArray(rapidjson::kArrayType);
 
-            for (const auto& pool : m_savedPools)
-            {
-                rapidjson::Value poolObject(rapidjson::kObjectType);
-                poolObject.AddMember(PoolNameAttribStr, rapidjson::StringRef(!pool.m_name.IsEmpty()?pool.m_name.GetCStr():"Unnamed Pool"), doc.GetAllocator());
-                if (const auto& heapMemoryUsageHost = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host); heapMemoryUsageHost.m_totalResidentInBytes > 0)
-                {
-                    poolObject.AddMember(MemoryTypeAttribStr, HostMemoryTypeValueStr, doc.GetAllocator());
-                    poolObject.AddMember(BudgetInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_budgetInBytes), doc.GetAllocator());
-                    poolObject.AddMember(TotalResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_totalResidentInBytes.load()), doc.GetAllocator());
-                    poolObject.AddMember(UsedResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_usedResidentInBytes.load()), doc.GetAllocator());
-                    poolObject.AddMember(FragmentationAttribStr, heapMemoryUsageHost.m_fragmentation, doc.GetAllocator());
-                    poolObject.AddMember(UniqueAllocationsInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_uniqueAllocationBytes.load()), doc.GetAllocator());
-                }
-                else if (const auto& heapMemoryUsageDevice = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device); heapMemoryUsageDevice.m_totalResidentInBytes > 0)
-                {
-                    poolObject.AddMember(MemoryTypeAttribStr,               DeviceMemoryTypeValueStr, doc.GetAllocator());
-                    poolObject.AddMember(BudgetInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_budgetInBytes), doc.GetAllocator());
-                    poolObject.AddMember(TotalResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_totalResidentInBytes.load()), doc.GetAllocator());
-                    poolObject.AddMember(UsedResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_usedResidentInBytes.load()), doc.GetAllocator());
-                    poolObject.AddMember(FragmentationAttribStr, heapMemoryUsageDevice.m_fragmentation, doc.GetAllocator());
-                    poolObject.AddMember(UniqueAllocationsInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_uniqueAllocationBytes.load()), doc.GetAllocator());
-                }
-                else
-                {
-                    continue;
-                }
-
-                poolObject.AddMember(BufferCountAttribStr, static_cast<uint64_t>(pool.m_buffers.size()), doc.GetAllocator());
-                poolObject.AddMember(ImageCountAttribStr,  static_cast<uint64_t>(pool.m_images.size()),  doc.GetAllocator());
-                rapidjson::Value buffersArray(rapidjson::kArrayType);
-                for (const auto& buffer : pool.m_buffers)
-                {
-                    rapidjson::Value bufferObject(rapidjson::kObjectType);
-                    bufferObject.AddMember(BufferNameAttribStr, rapidjson::StringRef(!buffer.m_name.IsEmpty()?buffer.m_name.GetCStr():"Unnamed Buffer"), doc.GetAllocator());
-                    bufferObject.AddMember(SizeInBytesAttribStr, static_cast<uint64_t>(buffer.m_sizeInBytes), doc.GetAllocator());
-                    bufferObject.AddMember(BindFlagsAttribStr, static_cast<uint32_t>(buffer.m_bindFlags), doc.GetAllocator());
-                    buffersArray.PushBack(bufferObject, doc.GetAllocator());
-                }
-                poolObject.AddMember(BuffersListAttribStr, buffersArray, doc.GetAllocator());
-
-                rapidjson::Value imagesArray(rapidjson::kArrayType);
-                for (const auto& image : pool.m_images)
-                {
-                    rapidjson::Value imageObject(rapidjson::kObjectType);
-                    imageObject.AddMember(ImageNameAttribStr, rapidjson::StringRef(!image.m_name.IsEmpty()?image.m_name.GetCStr():"Unnamed Image"), doc.GetAllocator());
-                    imageObject.AddMember(SizeInBytesAttribStr, static_cast<uint64_t>(image.m_sizeInBytes), doc.GetAllocator());
-                    imageObject.AddMember(BindFlagsAttribStr, static_cast<uint32_t>(image.m_bindFlags), doc.GetAllocator());
-                    imagesArray.PushBack(imageObject, doc.GetAllocator());
-                }
-                poolObject.AddMember(ImagesListAttribStr, imagesArray, doc.GetAllocator());
-                poolsArray.PushBack(poolObject, doc.GetAllocator());
-            }
-            root.AddMember(PoolsAttribStr, poolsArray, doc.GetAllocator());
-            root.AddMember(MemoryDataVersionMajorAttribStr, 1, doc.GetAllocator());
-            root.AddMember(MemoryDataVersionMinorAttribStr, 0, doc.GetAllocator());
-            root.AddMember(MemoryDataVersionRevisionAttribStr, 0, doc.GetAllocator());
+            AZ::RHI::RHIMemoryStatisticsInterface::Get()->WriteResourcePoolInfoToJson(m_savedPools, doc);
 
             rapidjson::StringBuffer jsonStringBuffer;
             rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(jsonStringBuffer);
@@ -1842,156 +1948,28 @@ namespace AZ
         {
             m_loadedCapturePath.clear();
 
-            auto outcome = JsonSerializationUtils::ReadJsonFile(fileName);
+            auto serializeOutcome = JsonSerializationUtils::ReadJsonFile(fileName);
 
-            if (!outcome.IsSuccess())
+            if (!serializeOutcome.IsSuccess())
             {
-                m_captureMessage = AZStd::string::format("Failed to load memory data from %s, error message = \"%s\"", fileName.c_str(), outcome.GetError().c_str());
+                m_captureMessage = AZStd::string::format("Failed to load memory data from %s, error message = \"%s\"", 
+                                                        fileName.c_str(), serializeOutcome.GetError().c_str());
                 AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                 return;
             }
 
             m_loadedCapturePath = fileName;
-            m_savedHeaps.clear();
-            m_savedHeaps.resize(2);
-            m_savedHeaps[0].m_name = AZ::Name{ "Host Heap" };
-            m_savedHeaps[0].m_heapMemoryType = RHI::HeapMemoryLevel::Host;
-            m_savedHeaps[1].m_name = AZ::Name{ "Device Heap" };
-            m_savedHeaps[1].m_heapMemoryType = RHI::HeapMemoryLevel::Device;
+            rapidjson::Document& doc = serializeOutcome.GetValue();
 
-            m_savedPools.clear();
-            AZStd::unordered_map<AZ::Name, AZ::RHI::MemoryStatistics::Pool> pools;
-
-            rapidjson::Document& doc = outcome.GetValue();
-            if (!doc.IsObject() || !doc.HasMember(PoolsAttribStr) )
+            auto loadOutcome = AZ::RHI::RHIMemoryStatisticsInterface::Get()->LoadResourcePoolInfoFromJson(
+                                                m_savedPools, m_savedHeaps, doc, fileName);
+            if (!loadOutcome.IsSuccess())
             {
-                m_captureMessage = AZStd::string::format("File %s doesn't contain saved memory state", fileName.c_str());
-                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
+                m_captureMessage = loadOutcome.GetError();
                 return;
             }
 
-            rapidjson::Value& poolsData = doc[PoolsAttribStr];
-            int dataVersionMajor = GetIntMember(doc, MemoryDataVersionMajorAttribStr, 1);
-            int dataVersionMinor = GetIntMember(doc, MemoryDataVersionMinorAttribStr, 0);
-            int dataVersionRevision = GetIntMember(doc, MemoryDataVersionRevisionAttribStr, 0);
-
-            if (dataVersionMajor == 1 && dataVersionMinor == 0 && dataVersionRevision >= 0)
-            {
-                if (!poolsData.IsArray())
-                {
-                    m_captureMessage = AZStd::string::format("File %s doesn't contain saved memory state", fileName.c_str());
-                    AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                    return;
-                }
-                
-                for (auto poolItr = poolsData.Begin(); poolItr != poolsData.End(); ++poolItr)
-                {
-                    if (!poolItr->IsObject())
-                    {
-                        m_captureMessage = AZStd::string::format(
-                            "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
-                            "format)",
-                            fileName.c_str());
-                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                        return;
-                    }
-                    rapidjson::Value& poolData = *poolItr;
-                    RHI::MemoryStatistics::Pool pool;
-                    pool.m_name = poolData[PoolNameAttribStr].GetString();
-                    AZStd::string poolHeapType = poolData[MemoryTypeAttribStr].GetString();
-                    RHI::HeapMemoryUsage* heapMemUsage = nullptr;
-                    RHI::MemoryStatistics::Heap* globalHeapStats = nullptr;
-                    if (poolHeapType == "Host")
-                    {
-                        heapMemUsage = &pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Host);
-                        globalHeapStats = &m_savedHeaps[0];
-                    }
-                    else if (poolHeapType == "Device")
-                    {
-                        heapMemUsage = &pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Device);
-                        globalHeapStats = &m_savedHeaps[1];
-                    }
-                    else
-                    {
-                        m_captureMessage = AZStd::string::format(
-                            "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
-                            "format) at pool %s",
-                            fileName.c_str(), pool.m_name.GetCStr());
-                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                        return;
-                    }
-                    heapMemUsage->m_budgetInBytes = poolData[BudgetInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_totalResidentInBytes = poolData[TotalResidentInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_usedResidentInBytes = poolData[UsedResidentInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_fragmentation = poolData[FragmentationAttribStr].GetFloat();
-                    heapMemUsage->m_uniqueAllocationBytes = poolData[UniqueAllocationsInBytesAttribStr].GetUint64();
-
-                    globalHeapStats->m_memoryUsage.m_totalResidentInBytes += heapMemUsage->m_totalResidentInBytes;
-                    globalHeapStats->m_memoryUsage.m_usedResidentInBytes += heapMemUsage->m_usedResidentInBytes;
-
-                    rapidjson::Value& buffersList = poolData[BuffersListAttribStr];
-                    if (!buffersList.IsArray())
-                    {
-                        m_captureMessage = AZStd::string::format(
-                            "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
-                            "format) at pool %s",
-                            fileName.c_str(), pool.m_name.GetCStr());
-                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                        return;
-                    }
-                    pool.m_buffers.reserve(buffersList.Size());
-                    for (auto bufferItr = buffersList.Begin(); bufferItr != buffersList.End(); ++bufferItr)
-                    {
-                        if (!bufferItr->IsObject())
-                        {
-                            m_captureMessage = AZStd::string::format(
-                                "Attempted to load buffer memory data from %s but a parse error occurred (indicating invalid file "
-                                "format) at pool %s",
-                                fileName.c_str(), pool.m_name.GetCStr());
-                            AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                            return;
-                        }
-                        rapidjson::Value& bufferData = *bufferItr;
-                        RHI::MemoryStatistics::Buffer buffer;
-                        buffer.m_name = bufferData[BufferNameAttribStr].GetString();
-                        buffer.m_sizeInBytes = bufferData[SizeInBytesAttribStr].GetUint64();
-                        buffer.m_bindFlags = static_cast<RHI::BufferBindFlags>(bufferData[BindFlagsAttribStr].GetUint());
-                        pool.m_buffers.push_back(AZStd::move(buffer));
-                    }
-
-                    rapidjson::Value& imagesList = poolData[ImagesListAttribStr];
-                    if (!imagesList.IsArray())
-                    {
-                        m_captureMessage = AZStd::string::format(
-                            "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
-                            "format) at pool %s",
-                            fileName.c_str(), pool.m_name.GetCStr());
-                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                        return;
-                    }
-                    pool.m_images.reserve(imagesList.Size());
-                    for (auto imageItr = imagesList.Begin(); imageItr != imagesList.End(); ++imageItr)
-                    {
-                        if (!imageItr->IsObject())
-                        {
-                            m_captureMessage = AZStd::string::format(
-                                "Attempted to load buffer memory data from %s but a parse error occurred (indicating invalid file "
-                                "format) at pool %s",
-                                fileName.c_str(), pool.m_name.GetCStr());
-                            AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                            return;
-                        }
-                        rapidjson::Value& imageData = *imageItr;
-                        RHI::MemoryStatistics::Image image;
-                        image.m_name = imageData[ImageNameAttribStr].GetString();
-                        image.m_sizeInBytes = imageData[SizeInBytesAttribStr].GetUint64();
-                        image.m_bindFlags = static_cast<RHI::ImageBindFlags>(imageData[BindFlagsAttribStr].GetUint());
-                        pool.m_images.push_back(AZStd::move(image));
-                    }
-
-                    m_savedPools.push_back(AZStd::move(pool));
-                }
-            }
+            // load from json here
             UpdateTableRows();
             UpdateTreemaps();
         }
@@ -2264,6 +2242,12 @@ namespace AZ
             // NOTE: Write it all out, can't have recursive functions for lambdas.
             const AZStd::function<void(const RPI::Pass*, PassEntry*)> getPassEntryRecursive = [&addPassEntry, &getPassEntryRecursive](const RPI::Pass* pass, PassEntry* parent) -> void
             {
+                if (pass->GetRenderPipeline() && pass->GetRenderPipeline()->GetRenderMode() == RPI::RenderPipeline::RenderMode::NoRender)
+                {
+                    // Ignore passes from render pipelines that are currently not rendering
+                    // E.g. the Preview pipeline
+                    return;
+                }
                 // Add new entry to the timestamp map.
                 if (pass->IsEnabled())
                 {

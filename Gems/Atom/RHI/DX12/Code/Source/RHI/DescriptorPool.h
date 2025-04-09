@@ -52,18 +52,10 @@ namespace AZ
             //Get native pointers from the heap
             virtual D3D12_CPU_DESCRIPTOR_HANDLE GetCpuPlatformHandleForTable(DescriptorTable handle) const;
             virtual D3D12_GPU_DESCRIPTOR_HANDLE GetGpuPlatformHandleForTable(DescriptorTable handle) const;
-            //Clear the tracking allocator
-            virtual void ClearAllocator();
-
-
             D3D12_CPU_DESCRIPTOR_HANDLE GetCpuPlatformHandle(DescriptorHandle handle) const;
             D3D12_GPU_DESCRIPTOR_HANDLE GetGpuPlatformHandle(DescriptorHandle handle) const;
 
-            //Clone the tracking allocator
-            void CloneAllocator(RHI::Allocator* newAllocator);
-            RHI::Allocator* GetAllocator() const;
-            
-         protected:
+        protected:
             D3D12_DESCRIPTOR_HEAP_DESC m_desc;
             AZStd::mutex m_mutex;
             D3D12_CPU_DESCRIPTOR_HANDLE m_cpuStart = {};
@@ -77,36 +69,6 @@ namespace AZ
             // Allocator used to manage the whole native heap. In the case of DescriptorPoolShaderVisibleCbvSrvUav this allocator
             // is used to manage the part of the heap that only manages static handles. 
             AZStd::unique_ptr<RHI::Allocator> m_allocator;
-        };
-
-        //! A specialized pool that specifically handles Descriptor tables for Cbv/Srv/Uav views and allows for Compaction
-        //! Specifically this pool handles the dynamic part of the heap 
-        class DescriptorPoolShaderVisibleCbvSrvUav : public DescriptorPool
-        {
-            using Base = DescriptorPool;
-
-        public:
-            void Init(
-                ID3D12DeviceX* device,
-                D3D12_DESCRIPTOR_HEAP_TYPE type,
-                D3D12_DESCRIPTOR_HEAP_FLAGS flags,
-                uint32_t descriptorCount,
-                uint32_t staticHandlesCount);
-
-            DescriptorTable AllocateTable(uint32_t count = 1) override;
-            void ReleaseTable(DescriptorTable table) override;
-            void GarbageCollect() override;
-
-            D3D12_CPU_DESCRIPTOR_HANDLE GetCpuPlatformHandleForTable(DescriptorTable handle) const override;
-            D3D12_GPU_DESCRIPTOR_HANDLE GetGpuPlatformHandleForTable(DescriptorTable handle) const override;
-            void ClearAllocator() override;
-            
-        private:
-
-            // A separate allocator that handles descriptor tables which are dynamic in nature and may fragment and require compaction
-            AZStd::unique_ptr<RHI::Allocator> m_unboundedArrayAllocator;
-            //Starting index of the dynamic part of the heap
-            uint32_t m_startingHandleIndex = 0;
         };
     }
 }

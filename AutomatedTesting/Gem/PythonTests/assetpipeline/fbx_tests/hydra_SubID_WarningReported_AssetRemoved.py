@@ -62,7 +62,7 @@ def SubID_WarningReported_AssetRemoved():
     dst = os.path.join(dirpath, 'Objects', 'shaderball_simple.fbx.assetinfo')
 
     # Test Setup: Find the asset by asset path - Use azmaterial as we will be removing the azmodels during the test.
-    model_path = os.path.join('objects', 'shaderball_simple_phong_0_17699592688871882463.azmaterial')
+    model_path = os.path.join('objects', 'shaderball_simple_phong_0_17699592688871882463.fbx.azmaterial')
     model = Asset.find_asset_by_path(model_path)
     checkModel = OnModelReloaded()
 

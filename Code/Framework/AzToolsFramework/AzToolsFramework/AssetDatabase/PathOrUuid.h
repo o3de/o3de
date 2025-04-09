@@ -30,6 +30,8 @@ namespace AzToolsFramework::AssetDatabase
         const AZStd::string& ToString() const;
 
         bool operator==(const PathOrUuid& rhs) const;
+        // Returns true if a non-empty path or non-null UUID has been set
+        explicit operator bool() const;
 
     private:
         AZ::Uuid m_uuid;

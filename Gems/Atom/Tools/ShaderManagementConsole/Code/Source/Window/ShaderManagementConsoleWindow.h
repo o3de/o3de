@@ -13,6 +13,8 @@
 
 namespace ShaderManagementConsole
 {
+    struct DocumentVerificationResult;
+
     //! ShaderManagementConsoleWindow is the main class. Its responsibility is limited to initializing and connecting
     //! its panels, managing selection of assets, and performing high-level actions like saving. It contains...
     class ShaderManagementConsoleWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
@@ -32,7 +34,19 @@ namespace ShaderManagementConsole
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const override;
 
+        // AtomToolsMainWindowRequestBus::Handler overrides...
+        void CreateMenus(QMenuBar* menuBar) override;
+
+        void GenerateStatisticView();
+
+        void ShowContextMenu(const QPoint& pos);
+
+        void ErrorMessageBoxesForDocumentVerification(const DocumentVerificationResult& verification);
+
     private:
+        void closeEvent(QCloseEvent* closeEvent) override;
+
         AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
+        QWidget* m_statisticView = nullptr;
     };
 } // namespace ShaderManagementConsole

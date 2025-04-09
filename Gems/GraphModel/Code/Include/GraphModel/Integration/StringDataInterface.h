@@ -17,8 +17,7 @@
 namespace GraphModelIntegration
 {
     //! Satisfies GraphCanvas API requirements for showing string property widgets in nodes.
-    class StringDataInterface
-        : public GraphCanvas::StringDataInterface
+    class StringDataInterface : public GraphCanvas::StringDataInterface
     {
     public:
         AZ_CLASS_ALLOCATOR(StringDataInterface, AZ::SystemAllocator);
@@ -32,4 +31,4 @@ namespace GraphModelIntegration
     private:
         AZStd::weak_ptr<GraphModel::Slot> m_slot;
     };
-}
+} // namespace GraphModelIntegration

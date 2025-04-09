@@ -9,35 +9,18 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
-
-AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class 'QImageIOHandler::d_ptr': class 'QScopedPointer<QImageIOHandlerPrivate,QScopedPointerDeleter<T>>' needs to have dll-interface to be used by clients of class 'QImageIOHandler'
-#include <QMovie>
 #endif
-AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        class LoadingThumbnail
-            : public Thumbnail
-            , public AZ::TickBus::Handler
+        class LoadingThumbnail : public Thumbnail
         {
             Q_OBJECT
         public:
             LoadingThumbnail();
-            ~LoadingThumbnail() override;
-
-            void UpdateTime(float /*deltaTime*/) override;
-
-            //////////////////////////////////////////////////////////////////////////
-            // TickBus
-            //////////////////////////////////////////////////////////////////////////
-            //! LoadingThumbnail is not part pf any thumbnail cache, so it needs to be updated manually
-            void OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/) override;
-
-        private:
-            QMovie m_loadingMovie;
+            ~LoadingThumbnail() override = default;
         };
     } // namespace Thumbnailer
 } // namespace AzToolsFramework

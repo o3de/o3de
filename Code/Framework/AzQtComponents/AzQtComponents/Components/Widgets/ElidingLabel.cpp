@@ -208,6 +208,11 @@ namespace AzQtComponents
         m_filterRegex = QRegExp(m_filterString, Qt::CaseInsensitive);
     }
 
+    bool ElidingLabel::TextMatchesFilter() const
+    {
+        return m_filterString.isEmpty() || m_text.contains(m_filterRegex);
+    }
+
     void ElidingLabel::paintEvent(QPaintEvent* event)
     {
         if (m_filterString.isEmpty())
@@ -248,9 +253,18 @@ namespace AzQtComponents
 
     void ElidingLabel::timerEvent([[maybe_unused]] QTimerEvent* event)
     {
-        handleElision();
-        killTimer(m_elideTimerId);
-        m_elideTimerId = 0;
+        if (m_elideDeferred)
+        {
+            // do the elision, but keep the timer running in case another request comes in too quickly
+            handleElision();
+            m_elideDeferred = false;
+        }
+        else
+        {
+            // s_minTimeBetweenUpdates has elapsed since the last elide, and no new requests have come in
+            killTimer(m_elideTimerId);
+            m_elideTimerId = 0;
+        }
     }
 
     void ElidingLabel::requestElide(bool updateGeometry)
@@ -259,14 +273,16 @@ namespace AzQtComponents
         {
             m_updateGeomentry = true;
         }
-
-        // if there's already a timer set, we can ignore this request
         if (!m_elideTimerId)
         {
-            /*! minimum number of milliseconds between elided text updates
-             *  this prevents the reasonably expensive method of handleElision() being called too often */
-            constexpr int minTimeBetweenUpdates = 100;
-            m_elideTimerId = startTimer(minTimeBetweenUpdates);
+            // do the elision immediately, but start a timer to make sure we don't elide again too quickly
+            handleElision();
+            m_elideTimerId = startTimer(s_minTimeBetweenUpdates);
+        }
+        else
+        {
+            // the timer's already running
+            m_elideDeferred = true;
         }
     }
 

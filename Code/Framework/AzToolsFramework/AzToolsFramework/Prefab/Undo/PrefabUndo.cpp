@@ -45,9 +45,6 @@ namespace AzToolsFramework
         {
             m_templateId = templateId;
 
-            m_redoPatch.SetArray();
-            m_undoPatch.SetArray();
-
             for (const AZ::Entity* entity : entityList)
             {
                 if (entity)
@@ -73,9 +70,6 @@ namespace AzToolsFramework
             const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList, TemplateId templateId)
         {
             m_templateId = templateId;
-
-            m_redoPatch.SetArray();
-            m_undoPatch.SetArray();
 
             for (const auto& entityDomAndPath : entityDomAndPathList)
             {
@@ -119,8 +113,8 @@ namespace AzToolsFramework
 
             //generate undo/redo patches
             const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
-            PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch, initialState, endState, entityAliasPath);
-            PrefabUndoUtils::GenerateUpdateEntityPatch(m_undoPatch, endState, initialState, entityAliasPath);
+            PrefabUndoUtils::GenerateAndAppendPatch(m_redoPatch, initialState, endState, entityAliasPath);
+            PrefabUndoUtils::GenerateAndAppendPatch(m_undoPatch, endState, initialState, entityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             if (updateCache)
@@ -128,7 +122,7 @@ namespace AzToolsFramework
                 PrefabDomReference cachedOwningInstanceDom = instance.GetCachedInstanceDom();
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom, endState, entityAliasPath);
+                    PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, endState, entityAliasPath);
                 }
             }
         }

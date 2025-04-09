@@ -5,14 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -329,6 +329,14 @@ namespace AZ
                     CreatePerPassResources();
                     return true;
                 }
+                // check if the reference pass of insert position exist
+                Name opaquePassName = Name("OpaquePass");
+                if (renderPipeline->FindFirstPass(opaquePassName) == nullptr)
+                {
+                    AZ_Warning("HairFeatureProcessor", false, "Can't find %s in the render pipeline. Atom TressFX won't be rendered", opaquePassName.GetCStr());
+                    return false;
+                }
+
                 const char* passRequestAssetFilePath = "Passes/AtomTressFX_PassRequest.azasset";
                 m_hairPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                     passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);

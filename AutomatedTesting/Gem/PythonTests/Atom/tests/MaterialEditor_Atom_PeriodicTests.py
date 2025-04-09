@@ -192,6 +192,9 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
         second_material_document_copy = os.path.join(
             atom_tools_utils.TEST_DATA_MATERIALS_PATH, "second_material_document.material")
 
+        # Disable registry settings to prevent message boxes from blocking test progression.
+        atom_tools_utils.disable_document_message_box_settings()
+
         # 1. Open an existing material document referred to as "original_material_document".
         original_material_document_id = atom_tools_utils.open_document(original_material_document)
         Report.result(

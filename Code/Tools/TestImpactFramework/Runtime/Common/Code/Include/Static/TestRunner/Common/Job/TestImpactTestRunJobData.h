@@ -18,6 +18,12 @@ namespace TestImpact
     public:
         TestRunJobData(const RepoPath& resultsArtifact);
 
+        //! Copy and move constructors/assignment operators.
+        TestRunJobData(const TestRunJobData& other);
+        TestRunJobData(TestRunJobData&& other);
+        TestRunJobData& operator=(const TestRunJobData& other);
+        TestRunJobData& operator=(TestRunJobData&& other);
+
         //! Returns the path to the test run artifact produced by the test target.
         const RepoPath& GetRunArtifactPath() const;
 

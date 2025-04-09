@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/Origin.h>
 
@@ -18,7 +19,7 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the CopyPass. Should be specified in the PassRequest.
-        struct CopyPassData
+        struct ATOM_RPI_REFLECT_API CopyPassData
             : public PassData
         {
             AZ_RTTI(CopyPassData, "{A0E4DBBF-2FE7-4027-B6B1-4F15AEB03B04}", PassData);
@@ -50,6 +51,10 @@ namespace AZ
             // Image Destination
             RHI::ImageSubresource m_imageDestinationSubresource;
             RHI::Origin m_imageDestinationOrigin;
+
+            // Device indices
+            int m_sourceDeviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
+            int m_destinationDeviceIndex = RHI::MultiDevice::InvalidDeviceIndex; //@TODO maybe a mask so we can broadcast?
 
             // If set to true, pass will automatically create a transient output attachment based on input
             // If false, the output target of the copy will need to be specified

@@ -47,7 +47,7 @@ namespace UnitTest
         Disconnect();
     }
 
-    void ComponentModeTestFixture::GetDisabledComponents(AZStd::vector<AZ::Component*>& components)
+    void ComponentModeTestFixture::GetDisabledComponents(AZ::Entity::ComponentArrayType& components)
     {
          if (m_disabledComponent != nullptr)
          {
@@ -65,4 +65,8 @@ namespace UnitTest
 
     void ComponentModeTestFixture::AddDisabledComponent([[maybe_unused]] AZ::Component* componentToAdd){};
     void ComponentModeTestFixture::RemoveDisabledComponent([[maybe_unused]] AZ::Component* componentToRemove){};
+    bool ComponentModeTestFixture::IsComponentDisabled([[maybe_unused]] const AZ::Component* component)
+    {
+        return false;
+    };
 } // namespace UnitTest

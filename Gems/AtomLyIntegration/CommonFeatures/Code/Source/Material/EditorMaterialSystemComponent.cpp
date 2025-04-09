@@ -183,7 +183,7 @@ namespace AZ
                 arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
             }
 
-            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas (Preview)");
+            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas");
             AtomToolsFramework::LaunchTool("MaterialCanvas", arguments);
         }
 
@@ -366,20 +366,31 @@ namespace AZ
             const char* fullSourceFileName)
         {
             const AZStd::string_view path(fullSourceFileName);
+            if (path.ends_with("physxmaterial") || path.ends_with("physicsmaterial"))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/PhysXMaterial_80.svg");
+            }
             if (path.ends_with(AZ::RPI::MaterialSourceData::Extension))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/material.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/Material_80.svg");
             }
             if (path.ends_with(AZ::RPI::MaterialTypeSourceData::Extension))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/materialtype.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/MaterialType_80.svg");
             }
-
             if (path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphNodeExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Menu/material_canvas.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/MaterialGraph_80.svg");
+            }
+            if (path.ends_with(AZ::RPI::BufferAsset::Extension))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/BufferAsset_80.svg");
+            }
+            if (path.ends_with(AZ::RPI::ShaderAsset::Extension))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/Shader_80.svg");
             }
             return AzToolsFramework::AssetBrowser::SourceFileDetails();
         }
@@ -408,12 +419,12 @@ namespace AZ
                 );
                 AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialEditorActionIdentifier.data());
 
-                hotKeyManagerInterface->SetActionHotKey(MaterialEditorActionIdentifier, "M");
+                hotKeyManagerInterface->SetActionHotKey(MaterialEditorActionIdentifier, "Ctrl+M");
             }
 
             {
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Material Canvas (Preview)";
+                actionProperties.m_name = "Material Canvas";
                 actionProperties.m_iconPath = ":/Menu/material_canvas.svg";
 
                 auto outcome = actionManagerInterface->RegisterAction(

@@ -88,6 +88,7 @@ namespace UnitTest
             {
                 m_numWorkerThreads = AZStd::thread::hardware_concurrency();
             }
+            m_numWorkerThreads = desc.GetWorkerThreadCount(m_numWorkerThreads);
 
             for (unsigned int i = 0; i < m_numWorkerThreads; ++i)
             {
@@ -1608,7 +1609,7 @@ namespace Benchmark
             threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
 #endif // AZ_TRAIT_SET_JOB_PROCESSOR_ID
 
-            const AZ::u32 numWorkerThreads = AZStd::thread::hardware_concurrency();
+            const AZ::u32 numWorkerThreads = desc.GetWorkerThreadCount(AZStd::thread::hardware_concurrency());
             for (AZ::u32 i = 0; i < numWorkerThreads; ++i)
             {
                 desc.m_workerThreads.push_back(threadDesc);

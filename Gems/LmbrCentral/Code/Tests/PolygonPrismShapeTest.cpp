@@ -231,7 +231,7 @@ namespace UnitTest
         }
         {
             bool inside;
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, AZ::Vector3(502.0f, 585.0f, 32.0f));
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, AZ::Vector3(502.0f, 585.1f, 32.0f));
             EXPECT_TRUE(inside);
         }
         {

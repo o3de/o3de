@@ -79,10 +79,10 @@ class Tests:
         "Mesh component removed successfully",
         "P1: Mesh component was not correctly removed from the entity")
     model_asset_is_optimized = (
-        "tube.azmodel has <= 66 vertices",
+        "tube.fbx.azmodel has <= 66 vertices",
         "P0: Model has not been fully optimized")
     model_different_bone_ids_same_position_should_weld_vertices = (
-        "sameposition_differentboneIds_shouldnotweldvertices.azmodel has 48 vertices",
+        "sameposition_differentboneIds_shouldnotweldvertices.fbx.azmodel has 48 vertices",
         "P0: Vertices were welded when they shouldnt be")
 
 
@@ -215,7 +215,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         Report.result(Tests.creation_redo, mesh_entity.exists())
 
         # 5. Set Mesh component asset property
-        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.azmodel')
+        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.fbx.azmodel')
         model = Asset.find_asset_by_path(model_path)
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
         Report.result(Tests.model_asset_specified,
@@ -296,9 +296,9 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
         # 16. Set Mesh component Add Material Component and confirm a Material component added
         # Make sure the Entity Inspector is open and trigger the "Add Material Component" button
-        general.open_pane("Entity Inspector")
+        general.open_pane("Inspector")
         editor_window = pyside_utils.get_editor_main_window()
-        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
         add_material_component_button = pyside_utils.find_child_by_pattern(entity_inspector, "Add Material Component")
         add_material_component_button.click()
         Report.result(Tests.has_material, mesh_entity.has_component(AtomComponentProperties.material()))
@@ -326,7 +326,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         Report.result(Tests.is_visible, mesh_entity.is_visible() is True)
         
         # 21. Test that vertex welding is functioning
-        model_path = os.path.join('testdata', 'objects', 'tube.azmodel')
+        model_path = os.path.join('testdata', 'objects', 'tube.fbx.azmodel')
         model = Asset.find_asset_by_path(model_path)
         onModelReadyHelper = OnModelReadyHelper()
         onModelReadyHelper.wait_for_on_model_ready(mesh_entity.id, mesh_component, model.id)
@@ -339,7 +339,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
                           AtomComponentProperties.mesh('Vertex Count LOD0')) <= 66)
 
         # 22. Test that vertices with the same position but different boneId's aren't unintentionally welded
-        model_path = os.path.join('testdata', 'objects', 'skinnedmesh', 'meshoptimization', 'sameposition_differentjointids_shouldnotweldvertices.azmodel')
+        model_path = os.path.join('testdata', 'objects', 'skinnedmesh', 'meshoptimization', 'sameposition_differentjointids_shouldnotweldvertices.fbx.azmodel')
         model = Asset.find_asset_by_path(model_path)
         onModelReadyHelper = OnModelReadyHelper()
         onModelReadyHelper.wait_for_on_model_ready(mesh_entity.id, mesh_component, model.id)

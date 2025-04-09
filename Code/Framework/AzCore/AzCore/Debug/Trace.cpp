@@ -449,9 +449,9 @@ namespace AZ::Debug
         }
 
         using namespace DebugInternal;
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
 
         char message[g_maxMessageLength];
@@ -465,7 +465,7 @@ namespace AZ::Debug
 
         va_list mark;
         va_start(mark, format);
-        azvsnprintf(message, g_maxMessageLength-1, format, mark); // -1 to make room for the "/n" that will be appended below
+        azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below
         va_end(mark);
 
         TraceMessageResult result;
@@ -496,8 +496,7 @@ namespace AZ::Debug
     // Warning
     // [8/3/2009]
     //=========================================================================
-    void
-    Trace::Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+    void Trace::Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
     {
         if (!IsTraceLoggingEnabledForLevel(LogLevel::Warnings))
         {
@@ -533,12 +532,11 @@ namespace AZ::Debug
     // Printf
     // [8/3/2009]
     //=========================================================================
-    void
-    Trace::Printf(const char* window, const char* format, ...)
+    void Trace::Printf(const char* window, const char* format, ...)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
 
         char message[g_maxMessageLength];
@@ -564,12 +562,10 @@ namespace AZ::Debug
     //=========================================================================
     void Trace::Output(const char* window, const char* message)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
-
-        Platform::OutputToDebugger(window, message);
 
         if (!DebugInternal::g_suppressEBusCalls)
         {
@@ -584,29 +580,45 @@ namespace AZ::Debug
             }
         }
 
+        OutputToRawAndDebugger(window, message);
+    }
+
+    void Trace::OutputToRawAndDebugger(const char* window, const char* message)
+    {
+        if (window == nullptr)
+        {
+            window = NoWindow;
+        }
+
+        Platform::OutputToDebugger(window, message);
         RawOutput(window, message);
     }
 
     void Trace::RawOutput(const char* window, const char* message)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
-
 
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
         // Therefore fwrite is used directly to write the window and message to stdout or stderr
+
+        // Wrapping the NoWindow constant in a string_view to allow use of string_view::operator== for string compare
         AZStd::string_view windowView{ window };
         AZStd::string_view messageView{ message };
         constexpr AZStd::string_view windowMessageSeparator{ ": " };
 
         // If the raw output stream environment variable is set to a non-nullptr FILE* stream
         // write to that stream, otherwise write stdout
-        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdout; rawOutputStream != nullptr)
+        FILE* stdoutStream = stdout;
+        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdoutStream; rawOutputStream != nullptr)
         {
-            fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
-            fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            if (!windowView.empty())
+            {
+                fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
+                fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            }
             fwrite(messageView.data(), 1, messageView.size(), rawOutputStream);
         }
     }
@@ -643,7 +655,9 @@ namespace AZ::Debug
                     continue;
                 }
 
-                azstrcat(lines[i], AZ_ARRAY_SIZE(lines[i]), "\n");
+                const size_t endOfStr = AZStd::min(strlen(lines[i]), AZ_ARRAY_SIZE(lines[i]) - 2);
+                lines[i][endOfStr] = '\n';
+                lines[i][endOfStr + 1] = '\0';
 
                 // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
                 // this accidentally being suppressed as a normal message

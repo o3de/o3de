@@ -8,6 +8,7 @@
 
 #include "MultiLineTextEditHandler.h"
 #include <AzToolsFramework/Debug/TraceContext.h>
+#include <QSignalBlocker>
 
 namespace AzToolsFramework
 {
@@ -27,6 +28,16 @@ namespace AzToolsFramework
         return textEdit;
     }
 
+    bool MultiLineTextEditHandler::ResetGUIToDefaults(GrowTextEdit* GUI)
+    {
+        QSignalBlocker blocker(GUI);
+        QString blankString;
+        GUI->setPlaceholderText(blankString);
+        GUI->setText(blankString);
+        GUI->setReadOnly(false);
+        return true;
+    }
+
     AZ::u32 MultiLineTextEditHandler::GetHandlerName() const
     {
         return AZ::Edit::UIHandlers::MultiLineEdit;
@@ -41,7 +52,7 @@ namespace AzToolsFramework
     {
         AZ_TraceContext("Attribute name", debugName);
 
-        if (attrib == AZ_CRC("PlaceholderText", 0xa23ec278))
+        if (attrib == AZ::Edit::Attributes::PlaceholderText)
         {
             AZStd::string placeholderText;
             if (attrValue->Read<AZStd::string>(placeholderText))
@@ -59,9 +70,8 @@ namespace AzToolsFramework
             AZStd::string valueText;
             if (attrValue->Read<AZStd::string>(valueText))
             {
-                GUI->blockSignals(true);
+                QSignalBlocker blocker(GUI);
                 GUI->SetText(valueText.c_str());
-                GUI->blockSignals(false);
             }
             else
             {
@@ -91,9 +101,8 @@ namespace AzToolsFramework
 
     bool MultiLineTextEditHandler::ReadValuesIntoGUI(size_t /*index*/, GrowTextEdit* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* /*node*/)
     {
-        GUI->blockSignals(true);
+        QSignalBlocker blocker(GUI);
         GUI->SetText(instance);
-        GUI->blockSignals(false);
         return true;
     }
 

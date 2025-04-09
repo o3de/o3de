@@ -314,7 +314,7 @@ void UiTooltipDisplayComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTooltipDisplay.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiTooltipDisplay.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTooltipDisplayComponent::m_triggerMode, "Trigger Mode",
@@ -324,7 +324,7 @@ void UiTooltipDisplayComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiTooltipDisplayInterface::TriggerMode::OnClick, "On Click");
             editInfo->DataElement(0, &UiTooltipDisplayComponent::m_autoPosition, "Auto position",
                 "Whether the element will automatically be positioned.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTooltipDisplayComponent::m_autoPositionMode, "Positioning",
                 "Sets the positioning behavior of the element.")
                 ->EnumAttribute(UiTooltipDisplayInterface::AutoPositionMode::OffsetFromMouse, "Offset from mouse")

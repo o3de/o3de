@@ -39,7 +39,7 @@ namespace AZ
             bool m_scrolling = false;
             bool m_edgeBlendIbl = true;
             uint32_t m_frameUpdateCount = 1;
-            DiffuseProbeGridTransparencyMode m_transparencyMode = DiffuseProbeGridTransparencyMode::Full;
+            DiffuseProbeGridTransparencyMode m_transparencyMode = DefaultDiffuseProbeGridTransparencyMode;
             float m_emissiveMultiplier = DefaultDiffuseProbeGridEmissiveMultiplier;
 
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
@@ -124,6 +124,7 @@ namespace AZ
 
             // Bake the diffuse probe grid textures to assets
             void BakeTextures(DiffuseProbeGridBakeTexturesCallback callback);
+            bool CanBakeTextures();
 
             // Update the baked texture assets from the configuration
             void UpdateBakedTextures();

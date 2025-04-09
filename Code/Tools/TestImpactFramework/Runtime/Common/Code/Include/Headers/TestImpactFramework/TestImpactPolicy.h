@@ -77,13 +77,6 @@ namespace TestImpact
             Update //!< Update the dynamic dependency map with the coverage data produced by test sequences.
         };
 
-        //! Policy for sharding test targets that have been marked for test sharding.
-        enum class TestSharding : AZ::u8
-        {
-            Never, //!< Do not shard any test targets.
-            Always //!< Shard all test targets that have been marked for test sharding.
-        };
-
         //! Standard output capture of test target runs.
         enum class TargetOutputCapture : AZ::u8
         {

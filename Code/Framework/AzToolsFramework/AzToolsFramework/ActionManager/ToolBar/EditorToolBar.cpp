@@ -13,14 +13,109 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 
+#include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/Widgets/ToolBar.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <QMenu>
 #include <QToolBar>
 #include <QToolButton>
+#include <QWidgetAction>
 
 namespace AzToolsFramework
 {
+    ToolBarExpanderWatcher::ToolBarExpanderWatcher(QObject* parent)
+        : QObject(parent)
+    {
+    }
+
+    void ToolBarExpanderWatcher::Initialize()
+    {
+        s_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+        AZ_Assert(s_actionManagerInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInterface");
+
+        s_actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
+        AZ_Assert(s_actionManagerInternalInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInternalInterface");
+
+        s_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+        AZ_Assert(s_menuManagerInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInterface");
+
+        s_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
+        AZ_Assert(s_menuManagerInternalInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInternalInterface");
+    }
+
+    bool ToolBarExpanderWatcher::eventFilter(QObject* obj, QEvent* event)
+    {
+        switch (event->type())
+        {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+            {
+                if (qobject_cast<QToolButton*>(obj))
+                {
+                    auto mouseEvent = static_cast<QMouseEvent*>(event);
+                    auto expander = qobject_cast<QToolButton*>(obj);
+                    expander->setPopupMode(QToolButton::InstantPopup);
+
+                    auto toolbar = qobject_cast<QToolBar*>(expander->parentWidget());
+                    auto menu = new QMenu(expander);
+
+                    // Create a parent widget to more easily delete widget action widgets.
+                    auto parentWidget = new QWidget();
+
+                    for (auto action : toolbar->actions())
+                    {
+                        // Only show actions that are not visible in the toolbar.
+                        if (toolbar->widgetForAction(action)->isVisible())
+                        {
+                            continue;
+                        }
+
+                        if (auto widgetAction = qobject_cast<QWidgetAction*>(action))
+                        {
+                            if (auto toolButton = qobject_cast<QToolButton*>(widgetAction->defaultWidget());
+                                toolButton && toolButton->menu())
+                            {
+                                menu->addMenu(s_menuManagerInternalInterface->GetMenu(action->objectName().toStdString().c_str()));
+                            }
+                            else if (QWidget* widget =
+                                s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(action->objectName().toStdString().c_str()))
+                            {
+                                widget->setParent(parentWidget);
+
+                                QWidgetAction* w = new QWidgetAction(parentWidget);
+                                w->setDefaultWidget(widget);
+
+                                menu->addAction(w);
+                            }
+                        }
+                        else if (action->isSeparator())
+                        {
+                            menu->addSeparator();
+                        }
+                        else
+                        {
+                            menu->addAction(s_actionManagerInternalInterface->GetAction(action->objectName().toStdString().c_str()));
+                        }
+                    }
+
+                    menu->exec(mouseEvent->globalPos());
+
+                    delete menu;
+                    delete parentWidget;
+
+                    return true;
+                }
+
+                break;
+            }
+        }
+
+        return QObject::eventFilter(obj, event);
+    }
+
     EditorToolBar::EditorToolBar()
     {
     }
@@ -121,6 +216,11 @@ namespace AzToolsFramework
     {
         QToolBar* toolBar = new QToolBar(m_name.c_str(), s_defaultParentWidget);
         toolBar->setMovable(false);
+
+        if (QToolButton* expander = AzQtComponents::ToolBar::getToolBarExpansionButton(toolBar))
+        {
+            expander->installEventFilter(new ToolBarExpanderWatcher(toolBar));
+        }
 
         m_toolBars.insert(toolBar);
 
@@ -239,6 +339,7 @@ namespace AzToolsFramework
                     {
                         m_widgetAction = new QWidgetAction(nullptr);
                         m_widgetAction->setDefaultWidget(widget);
+                        m_widgetAction->setObjectName(m_identifier.c_str());
                     }
                 }
                 break;
@@ -259,6 +360,7 @@ namespace AzToolsFramework
 
                         m_widgetAction = new QWidgetAction(s_defaultParentWidget);
                         m_widgetAction->setDefaultWidget(toolButton);
+                        m_widgetAction->setObjectName(m_subMenuIdentifier.c_str());
                     }
                 }
                 break;

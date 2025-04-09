@@ -16,12 +16,13 @@
 #endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+#include <Atom/Features/InstancedTransforms.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_BasePBR(
     float3 positionWS,
-    float3 normalWS,
-    float3 tangentWS,
-    float3 bitangentWS,
+    real3 normalWS,
+    real3 tangentWS,
+    real3 bitangentWS,
     float2 uvs[UvSetCount],
     bool isFrontFace)
 {
@@ -47,11 +48,11 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(
 
 PixelGeometryData EvaluatePixelGeometry_BasePBR(VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
-    float3 normalWS, tangentWS, bitangentWS;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_BasePBR(
         IN.worldPosition,

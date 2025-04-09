@@ -129,6 +129,7 @@ namespace AssetProcessor
             bool m_isDelete = false;
             bool m_isFromScanner = false;
             AZStd::chrono::steady_clock::time_point m_initialProcessTime{};
+            QString m_fromDependencyChain;
 
             FileEntry() = default;
 
@@ -249,10 +250,13 @@ namespace AssetProcessor
         //! This is used to prevent AP generating new metadata files while someone is trying to rename an existing file.
         void SetMetaCreationDelay(AZ::u32 milliseconds);
 
+        //! Gets the maximum amount of time to wait before generating a metadata file.
+        AZ::u32 GetMetaCreationDelay() const { return m_metaCreationDelayMs; }
+
         void PrepareForFileMove(AZ::IO::PathView oldPath, AZ::IO::PathView newPath) override;
 
     Q_SIGNALS:
-        void NumRemainingJobsChanged(int newNumJobs);
+        void NumRemainingJobsChanged(int newNumJobs, QString extraInfo = "");
 
         void AssetToProcess(JobDetails jobDetails);
 
@@ -287,7 +291,7 @@ namespace AssetProcessor
 
         void JobComplete(JobEntry jobEntry, AzToolsFramework::AssetSystem::JobStatus status);
         void JobProcessDurationChanged(JobEntry jobEntry, int durationMs);
-        void CreateJobsDurationChanged(QString sourceName);
+        void CreateJobsDurationChanged(QString sourceName, AZ::s64 scanFolderID);
 
         void IntermediateAssetCreated(QString newFileAbsolutePath);
 
@@ -305,6 +309,8 @@ namespace AssetProcessor
 
         //! Fired when a previously-delayed file has begun processing.
         void ProcessingResumed(QString filePath);
+
+        void FileCacheIsReady();
 
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
@@ -366,7 +372,7 @@ namespace AssetProcessor
     private:
         template <class R>
         bool Recv(unsigned int connId, QByteArray payload, R& request);
-        void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false);
+        void AssessFileInternal(QString fullFile, bool isDelete, bool fromScanner = false, QString fromDependencyChain = "");
         void CheckSource(const FileEntry& source);
         void CheckMissingJobs(const SourceAssetReference& sourceAsset, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
@@ -389,7 +395,12 @@ namespace AssetProcessor
             AZStd::string_view autoFailReason,
             JobEntry jobEntry,
             AZStd::string_view jobLog = "");
-        void AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
+        void AutoFailJob(
+            AZStd::string_view consoleMsg,
+            AZStd::string_view autoFailReason,
+            const AZStd::vector<AssetProcessedEntry>::iterator& assetIter,
+            AZ::s64 failureCauseSourceId = AzToolsFramework::AssetDatabase::InvalidEntryId,
+            AZ::u32 failureCauseFingerprint = 0);
 
         using ProductInfoList = AZStd::vector<AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>>;
 
@@ -462,7 +473,7 @@ namespace AssetProcessor
         *   If there's a problem that makes it unusable (such as no fields being filled in), the string will be blank
         *     and this function will return false.
         */
-        bool ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceNames, QStringList& resolvedDependencyList);
+        bool ResolveSourceFileDependencyPath(AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceNames, QStringList& resolvedDependencyList);
         //! Updates the database with all the changes related to source dependency / job dependency:
         void UpdateSourceFileDependenciesDatabase(JobToProcessEntry& entry);
 
@@ -519,6 +530,15 @@ namespace AssetProcessor
         ThreadController<AssetCatalog>* m_assetCatalog;
         typedef QHash<QString, FileEntry> FileExamineContainer;
         FileExamineContainer m_filesToExamine; // order does not actually matter in this (yet)
+
+        QString AnalysisExtraInfo() const;
+        int m_totalScannerFilesToAssess = 0;
+        int m_scannerFilesAssessed = 0;
+        int m_assetsNeedingProcessing_BuildersChanged = 0;
+        int m_assetsNeedingProcessing_NewFile = 0;
+        int m_assetsNeedingProcessing_TimeStampChanged = 0;
+        int m_assetsNeedingProcessing_DependenciesChanged = 0;
+
 
         // Set of files which are metadata-enabled but don't have a metadata file.
         // These files will be delayed for processing for a short time to wait for a metadata file to show up.
@@ -664,6 +684,7 @@ namespace AssetProcessor
         int m_numSourcesNeedingFullAnalysis = 0;
         int m_numSourcesNotHandledByAnyBuilder = 0;
         bool m_reportedAnalysisMetrics = false;
+        int m_numOverrides = 0;
 
         // cache these so we don't have to check them each time during analysis:
         QSet<QString> m_metaFilesWhichActuallyExistOnDisk;
@@ -681,6 +702,11 @@ namespace AssetProcessor
         bool m_builderDebugFlag = false;
 
         AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
+
+        // Cache of source -> list of dependencies for startup
+        AZStd::unordered_map<AZ::Uuid, AZStd::vector<AzToolsFramework::AssetDatabase::PathOrUuid>> m_dependencyCache;
+        // Cache is turned off after initial idle, it is not meant to handle invalidation or mixed dependency type queries.
+        bool m_dependencyCacheEnabled = true;
 
 protected Q_SLOTS:
         void FinishAnalysis(SourceAssetReference sourceAsset);

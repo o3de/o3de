@@ -94,7 +94,7 @@ namespace AzToolsFramework
 
                     if (entityDomInTopTemplate)
                     {
-                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             overridePatches, *entityDomInTopTemplate, entityDomAfterUpdate, entityPathFromTopInstance);
                     }
                     else if (auto overrideType = m_prefabOverridePublicInterface->GetEntityOverrideType(entity->GetId());
@@ -122,7 +122,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom, entityDomAfterUpdate, entityAliasPath);
+                    PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, entityDomAfterUpdate, entityAliasPath);
                 }
             }
 

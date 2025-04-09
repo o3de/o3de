@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 #include <AzCore/std/containers/map.h>
@@ -21,16 +22,12 @@ namespace AZ
 
     namespace RPI
     {
-        class ShaderAssetCreator
+        class ATOM_RPI_REFLECT_API ShaderAssetCreator
             : public AssetCreator<ShaderAsset>
         {
         public:
             //! Begins creation of a shader asset.
             void Begin(const Data::AssetId& assetId);
-
-            //! [Optional] Set the timestamp for when the ShaderAsset build process began.
-            //! This is needed to synchronize between the ShaderAsset and ShaderVariantTreeAsset when hot-reloading shaders.
-            void SetShaderAssetBuildTimestamp(AZStd::sys_time_t shaderAssetBuildTimestamp);
 
             //! [Optional] Sets the name of the shader asset from content.
             void SetName(const Name& name);
@@ -76,6 +73,9 @@ namespace AZ
 
             //! [Required] There's always a root variant for each supervariant.
             void SetRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+
+            //! Set if the supervariant uses specialization constants for shader options.
+            void SetUseSpecializationConstants(bool value);
 
             bool EndSupervariant();
 

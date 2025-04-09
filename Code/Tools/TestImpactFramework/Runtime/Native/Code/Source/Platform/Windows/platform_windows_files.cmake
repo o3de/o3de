@@ -9,4 +9,5 @@
 set(FILES
     TestEngine/Native/TestImpactWin32_NativeErrorCodeChecker.cpp
     TestEngine/Native/Job/TestImpactWin32_NativeTestTargetExtension.cpp
+    TestRunner/Native/Job/TestImpactWin32_NativeTestJobInfoUtils.cpp
 )

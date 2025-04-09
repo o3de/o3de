@@ -33,12 +33,12 @@ namespace FastNoiseGem
 
     void FastNoiseSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("FastNoiseService", 0x93845780));
+        provided.push_back(AZ_CRC_CE("FastNoiseService"));
     }
 
     void FastNoiseSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("FastNoiseService", 0x93845780));
+        incompatible.push_back(AZ_CRC_CE("FastNoiseService"));
     }
 
     void FastNoiseSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

@@ -150,11 +150,6 @@ IFileUtil::ECopyTreeResult CFileUtil_impl::MoveTree(const QString& strSourceDire
     return CFileUtil::MoveTree(strSourceDirectory, strTargetDirectory, boRecurse, boConfirmOverwrite);
 }
 
-void CFileUtil_impl::GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase, bool bMakeUnixPath)
-{
-    CFileUtil::GatherAssetFilenamesFromLevel(rOutFilenames, bMakeLowerCase, bMakeUnixPath);
-}
-
 uint32 CFileUtil_impl::GetAttributes(const char* filename, bool bUseSourceControl)
 {
     return CFileUtil::GetAttributes(filename, bUseSourceControl);

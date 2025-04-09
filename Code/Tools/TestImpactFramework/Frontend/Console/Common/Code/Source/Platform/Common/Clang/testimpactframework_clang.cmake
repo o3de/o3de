@@ -6,4 +6,11 @@
 #
 #
 
-set(LY_COMPILE_OPTIONS PUBLIC -fexceptions)
+if(MSVC)
+    set(LY_COMPILE_OPTIONS PRIVATE /EHsc)
+else()
+    set(LY_COMPILE_OPTIONS
+    PRIVATE
+        -fexceptions
+    )
+endif()

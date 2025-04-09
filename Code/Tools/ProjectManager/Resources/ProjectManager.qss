@@ -17,6 +17,52 @@ QPushButton:focus {
     border:1px solid #1e70eb;
 }
 
+QPushButton[primary="true"] {
+    qproperty-flat: true;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0095f2, stop: 1.0 #1e70eb);
+}
+QPushButton[primary="true"]:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #10A5f2, stop: 1.0 #2e80eb);
+}
+QPushButton[primary="true"]:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0085e2, stop: 1.0 #0e60db);
+}
+QPushButton[primary="true"]:disabled {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #777777, stop: 1.0 #444444);
+}
+
+QPushButton[secondary="true"] {
+    qproperty-flat: true;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+}
+QPushButton[secondary="true"]:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+QPushButton[secondary="true"]:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
+}
+
+QPushButton[danger="true"] {
+    qproperty-flat: true;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #E32C27, stop: 1.0 #951D21);
+}
+QPushButton[danger="true"]:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+}
+QPushButton[danger="true"]:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #951D1F, stop: 1.0 #C92724);
+}
+
 QTabBar {
     background-color: transparent;
 }
@@ -108,7 +154,6 @@ QTabBar::tab:focus {
 #formFrame QComboBox {
     subcontrol-origin: padding;
     subcontrol-position: top right;
-    color:red;
     min-width:810px;
     max-width:810px;
     line-height: 26px;
@@ -273,7 +318,6 @@ QTabBar::tab:focus {
 #formFrame QComboBox {
     subcontrol-origin: padding;
     subcontrol-position: top right;
-    color:red;
     min-width:810px;
     max-width:810px;
     line-height: 26px;
@@ -297,8 +341,6 @@ QTabBar::tab:focus {
     font-size: 18px;
     height: 40px;
 }
-
-
 
 #formErrorLabel {
     color: #ec3030;
@@ -427,37 +469,14 @@ QTabBar::tab:focus {
 }
 
 #footer > QPushButton {
-    qproperty-flat: true;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #0095f2, stop: 1.0 #1e70eb);
     border-radius: 3px;
     min-height: 28px;
     max-height: 28px;
     min-width: 150px;
     margin-right:30px;
-}
-#footer > QPushButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #10A5f2, stop: 1.0 #2e80eb);
-}
-#footer > QPushButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #0085e2, stop: 1.0 #0e60db);
+    font-weight: 600px;
 }
 
-#footer > QPushButton[secondary="true"] {
-    margin-right: 10px;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
-}
-#footer > QPushButton[secondary="true"]:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
-}
-#footer > QPushButton[secondary="true"]:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
-}
 
 #dialogSubTitle {
     font-size:14px;
@@ -470,6 +489,12 @@ QTabBar::tab:focus {
 
 #verticalSeparatingLine {
     color: #888888;
+}
+
+#ExternalLinkDialog #externalLink {
+    color: #94D2FF;
+    margin:5px 0 30px 0;
+    font-size:12px;
 }
 
 /************** Project Settings **************/
@@ -571,9 +596,6 @@ QTabBar::tab:focus {
 }
 
 #projectSettingsTab::tab-bar > QPushButton {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
-    qproperty-flat: true;
     margin-right:30px;
     margin-bottom:12px;
     margin-top:0px;
@@ -584,14 +606,6 @@ QTabBar::tab:focus {
     border-radius: 3px;
     text-align:center;
     font-size:13px;
-}
-#projectSettingsTab::tab-bar > QPushButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
-}
-#projectSettingsTab::tab-bar > QPushButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
 }
 
 #projectSettingsTopFrame {
@@ -721,19 +735,8 @@ QTabBar::tab:focus {
 }
 
 #labelButton #projectActionCancelButton{
-    qproperty-flat: true;
     border-radius: 3px;
     margin-left: 1px;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #E32C27, stop: 1.0 #951D21);
-}
-#labelButton #projectActionCancelButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #FD3129, stop: 1.0 #AF2221);
-}
-#labelButton #projectActionCancelButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #951D1F, stop: 1.0 #C92724);
 }
 
 #labelButtonOverlay {
@@ -844,6 +847,21 @@ QProgressBar::chunk {
     min-height:24px;
 }
 
+/* be specific here to override the general QLabel margins */
+#GemCatalogInspector #GemCatalogRequirements,
+#GemCatalogInspector #GemCatalogCompatibilityWarning {
+   margin:0 0 10px 0; 
+   padding-left:34px;
+   min-height: 34px;
+   font-size:10px;
+   color:#ddd;
+   background:transparent url(:/Info.svg) no-repeat left center;
+}
+
+#GemCatalogInspector #GemCatalogCompatibilityWarning {
+   background:transparent url(:/Warning.svg) no-repeat left center;
+}
+
 #GemCatalogCartOverlayGemDownloadHeader {
     margin:0;
     padding: 0px;
@@ -883,7 +901,7 @@ QProgressBar::chunk {
     margin-top:5px;
 }
 
-#gemCatalogUpdateGemButton,
+#GemCatalogInspector QPushButton,
 #gemCatalogUninstallGemButton 
 {
     qproperty-flat: true;
@@ -895,34 +913,6 @@ QProgressBar::chunk {
     font-weight:600;
 }
 
-#gemCatalogUpdateGemButton {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
-}
-#gemCatalogUpdateGemButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
-}
-#gemCatalogUpdateGemButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
-}
-
-#footer > #gemCatalogUninstallGemButton,
-#gemCatalogUninstallGemButton {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #E32C27, stop: 1.0 #951D21);
-}
-#footer > #gemCatalogUninstallGemButton:hover,
-#gemCatalogUninstallGemButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #FD3129, stop: 1.0 #AF2221);
-}
-#footer > #gemCatalogUninstallGemButton:pressed,
-#gemCatalogUninstallGemButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #951D1F, stop: 1.0 #C92724);
-}
 
 /************** Filter Tag widget **************/
 
@@ -935,8 +925,8 @@ QProgressBar::chunk {
     background-color: #333333;
     padding:3px;
     font-size:12px;
+    text-align:center;
     border-radius: 3px;
-    margin-right: 3px;
 }
 
 /************** Gems SubWidget **************/
@@ -956,6 +946,35 @@ QProgressBar::chunk {
 #GemCatalogInspector {
     background-color: #444444;
 }
+
+/* IMPORTANT DO NOT REMOVE min/max-width 
+ * FlowLayout inside TagWidgetContainer can provide 
+ * incorrect height when the width isn't static and the
+ * tag widgets have padding (see #TagWidget)
+ * resulting in bottom widgets getting cut off
+ */
+#GemCatalogInspector #TagWidgetContainer {
+    min-width:210px;
+    max-width:210px;
+}
+
+#GemCatalogInspector QLabel {
+    margin:0;
+}
+
+#GemCatalogInspector QLabel[class="title"] {
+    font-size: 16px;
+}
+
+#GemCatalogInspector QLabel[class="label"] {
+    min-width:50px;
+    max-width:50px;
+}
+
+#GemCatalogVersion QPushButton {
+    margin:5px 0 5px 0;
+}
+
 
 /************** Gem Catalog (Filter/left pane) **************/
 
@@ -1040,9 +1059,6 @@ QProgressBar::chunk {
 }
 
 #gemRepoAddButton {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
-    qproperty-flat: true;
     min-width:120px;
     max-width:120px;
     min-height:24px;
@@ -1051,18 +1067,6 @@ QProgressBar::chunk {
     text-align:center;
     font-size:12px;
     font-weight:600;
-}
-#gemRepoAddButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
-}
-#gemRepoAddButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
-}
-
-#gemRepoInspector {
-    background: #444444;
 }
 
 #gemRepoAddDialogInstructionTitleLabel {
@@ -1081,6 +1085,26 @@ QProgressBar::chunk {
 
 /************** Gem Repo Inspector **************/
 
+#gemRepoInspector {
+    background: #444444;
+}
+
+#gemRepoInspector QLabel {
+    margin:0;
+}
+
+/* IMPORTANT DO NOT REMOVE min/max-width 
+ * FlowLayout inside TagWidgetContainer can provide 
+ * incorrect height when the width isn't static and the
+ * tag widgets have padding (see #TagWidget)
+ * resulting in bottom widgets getting cut off
+ */
+#gemRepoInspector #TagWidgetContainer {
+    min-width:210px;
+    max-width:210px;
+    margin:0;
+}
+
 #gemRepoInspectorNameLabel {
     font-size: 18px;
     color: #FFFFFF;
@@ -1094,6 +1118,17 @@ QProgressBar::chunk {
 #gemRepoInspectorAddInfoTitleLabel {
     font-size: 16px;
     color: #FFFFFF;
+}
+
+#gemRepoInspector QPushButton {
+    qproperty-flat: true;
+    min-height:24px;
+    max-height:24px;
+    border-radius: 3px;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+    margin-top:10px;
 }
 
 /************** Download object dialogs **************/

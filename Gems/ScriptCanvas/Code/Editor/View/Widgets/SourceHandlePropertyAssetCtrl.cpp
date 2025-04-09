@@ -162,7 +162,12 @@ namespace ScriptCanvasEditor
         GUI->blockSignals(true);
 
         GUI->SetSelectedSourcePath(instance.RelativePath());
-        GUI->SetEditNotifyTarget(node->GetParent()->GetInstance(0));
+
+        const AzToolsFramework::InstanceDataNode* parentNode = node->GetParent();
+        AZ_Assert(parentNode && parentNode->HasInstances(), "Configuration instance is missing.");
+
+        // Set notify target to the parent configuration instance.
+        GUI->SetEditNotifyTarget(parentNode->FirstInstance());
 
         GUI->blockSignals(false);
         return false;

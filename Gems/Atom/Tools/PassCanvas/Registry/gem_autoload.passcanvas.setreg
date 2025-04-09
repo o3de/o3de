@@ -34,6 +34,19 @@
                     }
                 }
             },
+            "VirtualGamepad": {
+                "Targets": {
+                    "VirtualGamepad": {
+                        "AutoLoad": false
+                    },
+                    "VirtualGamepad.Clients": {
+                        "AutoLoad": false
+                    },
+                    "VirtualGamepad.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "LyShine": {
                 "Targets": {
                     "LyShine": {
@@ -149,6 +162,13 @@
                     }
                 }
             },
+            "MotionMatching": {
+                "Targets": {
+                    "MotionMatching.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "EMotionFX": {
                 "Targets": {
                     "EMotionFX.Editor": {
@@ -159,13 +179,6 @@
             "EMotionFX_Atom": {
                 "Targets": {
                     "EMotionFX_Atom.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
-            "AWSGameLift": {
-                "Targets": {
-                    "AWSGameLift.Editor": {
                         "AutoLoad": false
                     }
                 }
@@ -211,16 +224,6 @@
                     }
                 }
             },
-            "Metastream": {
-                "Targets": {
-                    "Metastream": {
-                        "AutoLoad": false
-                    },
-                    "Metastream.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
             "PhysX": {
                 "Targets": {
                     "PhysX.Editor": {
@@ -231,6 +234,20 @@
             "PhysXDebug": {
                 "Targets": {
                     "PhysXDebug.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysX5": {
+                "Targets": {
+                    "PhysX5.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysX5Debug": {
+                "Targets": {
+                    "PhysX5Debug.Editor": {
                         "AutoLoad": false
                     }
                 }
@@ -280,13 +297,6 @@
                     }
                 }
             },
-            "HttpRequestor": {
-                "Targets": {
-                    "HttpRequestor.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
             "WhiteBox": {
                 "Targets": {
                     "WhiteBox.Editor": {
@@ -297,36 +307,6 @@
             "PythonAssetBuilder": {
                 "Targets": {
                     "PythonAssetBuilder.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
-            "AWSCore": {
-                "Targets": {
-                    "AWSCore": {
-                        "AutoLoad": false
-                    },
-                    "AWSCore.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
-            "AWSClientAuth": {
-                "Targets": {
-                    "AWSClientAuth": {
-                        "AutoLoad": false
-                    },
-                    "AWSClientAuth.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
-            "AWSMetrics": {
-                "Targets": {
-                    "AWSMetrics": {
-                        "AutoLoad": false
-                    },
-                    "AWSMetrics.Editor": {
                         "AutoLoad": false
                     }
                 }

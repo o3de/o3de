@@ -12,7 +12,7 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
-                        "LoadAction": "DontCare",
+                        "LoadAction": "Load",
                         "StoreAction": "Store"
                     }
                 },
@@ -39,7 +39,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/ScreenSpace/DeferredFog.shader"
                 },
-                "PipelineViewTag": "MainCamera",
+                "BindViewSrg": true,
                 "ShaderDataMappings": {
                     "Float3Mappings": [
                         {

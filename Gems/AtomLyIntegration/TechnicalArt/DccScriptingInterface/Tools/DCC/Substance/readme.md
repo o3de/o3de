@@ -82,7 +82,7 @@ Many DCC applications such as Substance Designer also come with a managed python
 
 - O3DE doesn't use a user or system installed python interpreter, nor do most DCC apps we are aware of.
 
-- The DCC apps python version may be different then O3DE e.g. python 3.10.5 vs 3.9.9.
+- The DCC apps python version may be different then O3DE e.g. python 3.10.13 vs 3.9.9.
 
 - O3DE and most DCC apps we are aware of don't make use of virtual environments, which is a common way to manage package dependencies for different versions of python.
 

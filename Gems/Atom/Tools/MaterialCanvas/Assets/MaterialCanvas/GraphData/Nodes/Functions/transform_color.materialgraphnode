@@ -1,0 +1,148 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{AFA4A2E7-C685-4F0F-BBD9-2EF7F74ED35E}",
+        "category": "Math Functions",
+        "title": "Transform Color Space",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Transform color or vector values from one color space to another",
+        "slotDataTypeGroups": [
+            "inColor|outColor"
+        ],
+        "settings": {
+            "includePaths": [
+                "Atom/Features/ColorManagement/TransformColor.azsli"
+            ],
+            "instructions": [
+                "SLOTTYPE(outColor) outColor = TransformColor4((float4)inColor, inColorSpaceFrom, inColorSpaceTo);"
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inColorSpaceFrom",
+                "displayName": "Color Space From",
+                "description": "Indicates the source color space.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "ColorSpaceId::LinearSRGB"
+                },
+                "enumValues": [
+                    "ColorSpaceId::SRGB",
+                    "ColorSpaceId::LinearSRGB",
+                    "ColorSpaceId::ACEScc",
+                    "ColorSpaceId::ACEScg",
+                    "ColorSpaceId::ACES2065",
+                    "ColorSpaceId::XYZ"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "const ColorSpaceId SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inColorSpaceTo",
+                "displayName": "Color Space To",
+                "description": "Indicates the target color space.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "ColorSpaceId::ACEScg"
+                },
+                "enumValues": [
+                    "ColorSpaceId::SRGB",
+                    "ColorSpaceId::LinearSRGB",
+                    "ColorSpaceId::ACEScc",
+                    "ColorSpaceId::ACEScg",
+                    "ColorSpaceId::ACES2065",
+                    "ColorSpaceId::XYZ"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "const ColorSpaceId SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "inputSlots": [
+            {
+                "name": "inColor",
+                "displayName": "Color",
+                "description": "Color",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outColor",
+                "displayName": "Color",
+                "description": "Color",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color"
+            },
+            {
+                "name": "outR",
+                "displayName": "R",
+                "description": "R",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.r;"
+                    ]
+                }
+            },
+            {
+                "name": "outG",
+                "displayName": "G",
+                "description": "G",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.g;"
+                    ]
+                }
+            },
+            {
+                "name": "outB",
+                "displayName": "B",
+                "description": "B",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.b;"
+                    ]
+                }
+            },
+            {
+                "name": "outA",
+                "displayName": "A",
+                "description": "A",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.a;"
+                    ]
+                }
+            }
+        ]
+    }
+}

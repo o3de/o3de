@@ -25,18 +25,62 @@ namespace Multiplayer
     using namespace ::UnitTest;
 
     /*
+     * Test NetBindComponent creation / destruction without activation. This must work before more complicated tests.
+     */
+    TEST_F(HierarchyTests, On_Client_NetBindComponent_Init)
+    {
+        auto multiplayer = AZ::Interface<IMultiplayer>::Get();
+        auto networkEntityManager = multiplayer->GetNetworkEntityManager();
+        auto netTracker = networkEntityManager->GetNetworkEntityTracker();
+
+        // At the start, there shouldn't be anything in the Network Entity Manager.
+        EXPECT_EQ(networkEntityManager->GetEntityCount(), 0);
+
+        AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
+        AZ::Entity* rawEntityPtr = entity.get();
+        auto netBindComponent = entity->CreateComponent<NetBindComponent>();
+        SetupEntity(entity, NetEntityId{ 1 }, NetEntityRole::Client);
+
+        // After the netBindComponent is initialized, it should appear in the NetworkEntityManager and the NetworkEntityTracker.
+        EXPECT_EQ(networkEntityManager->GetEntityCount(), 1);
+        EXPECT_EQ(netBindComponent, netTracker->GetNetBindComponent(rawEntityPtr));
+
+        StopEntity(entity);
+        entity.reset();
+
+        // After the entity is destroyed, it should no longer appear in the NetworkEntityManager and the NetworkEntityTracker.
+        // This should be true whether or not the entity was ever activated.
+        EXPECT_EQ(networkEntityManager->GetEntityCount(), 0);
+        EXPECT_EQ(netTracker->GetNetBindComponent(rawEntityPtr), nullptr);
+    }
+
+    /*
      * Test NetBindComponent activation. This must work before more complicated tests.
      */
     TEST_F(HierarchyTests, On_Client_NetBindComponent_Activate)
     {
+        auto multiplayer = AZ::Interface<IMultiplayer>::Get();
+        auto networkEntityManager = multiplayer->GetNetworkEntityManager();
+        auto netTracker = networkEntityManager->GetNetworkEntityTracker();
+
+        // At the start, there shouldn't be anything in the Network Entity Manager.
+        EXPECT_EQ(networkEntityManager->GetEntityCount(), 0);
+
         AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
+        AZ::Entity* rawEntityPtr = entity.get();
         entity->CreateComponent<NetBindComponent>();
+
         SetupEntity(entity, NetEntityId{ 1 }, NetEntityRole::Client);
         entity->Activate();
 
         StopEntity(entity);
-
         entity->Deactivate();
+        entity.reset();
+
+        // After the entity is destroyed, it should no longer appear in the NetworkEntityManager and the NetworkEntityTracker.
+        // This should be true whether or not the entity was ever activated.
+        EXPECT_EQ(networkEntityManager->GetEntityCount(), 0);
+        EXPECT_EQ(netTracker->GetNetBindComponent(rawEntityPtr), nullptr);
     }
 
     /*
@@ -461,7 +505,8 @@ namespace Multiplayer
         {
             NetEntityIdSet inputProcessedEntities;
             size_t processInputCallCounter = 0;
-            auto processInputCallback = [&inputProcessedEntities, &processInputCallCounter](NetEntityId netEntityId)
+            auto processInputCallback = [&inputProcessedEntities, &processInputCallCounter](
+                NetEntityId netEntityId, [[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
             {
                 inputProcessedEntities.insert(netEntityId);
                 processInputCallCounter++;

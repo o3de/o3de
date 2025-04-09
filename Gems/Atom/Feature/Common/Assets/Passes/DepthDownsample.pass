@@ -59,8 +59,8 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DepthDownsample.shader"
                 },
-                "Make Fullscreen Pass": true,
-                "PipelineViewTag": "MainCamera"
+                "FullscreenDispatch": true,
+                "BindViewSrg": true
             }
         }
     }

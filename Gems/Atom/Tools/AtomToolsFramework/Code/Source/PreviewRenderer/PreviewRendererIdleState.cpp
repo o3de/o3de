@@ -14,15 +14,13 @@ namespace AtomToolsFramework
     PreviewRendererIdleState::PreviewRendererIdleState(PreviewRenderer* renderer)
         : PreviewRendererState(renderer)
     {
-        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     PreviewRendererIdleState::~PreviewRendererIdleState()
     {
-        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void PreviewRendererIdleState::OnSystemTick()
+    void PreviewRendererIdleState::Update()
     {
         m_renderer->ProcessCaptureRequests();
     }

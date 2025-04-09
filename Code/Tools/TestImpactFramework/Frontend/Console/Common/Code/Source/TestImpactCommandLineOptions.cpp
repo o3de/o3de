@@ -15,9 +15,9 @@
 
 namespace TestImpact
 {
-    namespace
+    namespace CommonOptions
     {
-        enum CommonOptions
+        enum Fields
         {
             // Options
             ConfigKey,
@@ -55,9 +55,11 @@ namespace TestImpact
             File,
             Discard,
             Keep,
+            // Checksum
+            _CHECKSUM_
         };
 
-        constexpr const char* OptionKeys[] = {
+        constexpr const char* Keys[] = {
             // Options
             "config",
             "datafile",
@@ -95,202 +97,203 @@ namespace TestImpact
             "discard",
             "keep",
         };
+    } // namespace CommonOptions
 
-        RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
-        {
-            return ParsePathOption(OptionKeys[ConfigKey], cmd).value_or(LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
-        }
+    RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
+    {
+        return ParsePathOption(CommonOptions::Keys[CommonOptions::ConfigKey], cmd).value_or(LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
+    }
 
-        AZStd::optional<RepoPath> ParseDataFile(const AZ::CommandLine& cmd)
-        {
-            return ParsePathOption(OptionKeys[DataFileKey], cmd);
-        }
+    AZStd::optional<RepoPath> ParseDataFile(const AZ::CommandLine& cmd)
+    {
+        return ParsePathOption(CommonOptions::Keys[CommonOptions::DataFileKey], cmd);
+    }
 
-        AZStd::optional<RepoPath> ParsePreviousRunDataFile(const AZ::CommandLine& cmd)
-        {
-            return ParsePathOption(OptionKeys[PreviousRunDataFileKey], cmd);
-        }
+    AZStd::optional<RepoPath> ParsePreviousRunDataFile(const AZ::CommandLine& cmd)
+    {
+        return ParsePathOption(CommonOptions::Keys[CommonOptions::PreviousRunDataFileKey], cmd);
+    }
 
-        AZStd::optional<RepoPath> ParseChangeListFile(const AZ::CommandLine& cmd)
-        {
-            return ParsePathOption(OptionKeys[ChangeListKey], cmd);
-        }
+    AZStd::optional<RepoPath> ParseChangeListFile(const AZ::CommandLine& cmd)
+    {
+        return ParsePathOption(CommonOptions::Keys[CommonOptions::ChangeListKey], cmd);
+    }
 
-        AZStd::optional<RepoPath> ParseSequenceReportFile(const AZ::CommandLine& cmd)
-        {
-            return ParsePathOption(OptionKeys[SequenceReportKey], cmd);
-        }
+    AZStd::optional<RepoPath> ParseSequenceReportFile(const AZ::CommandLine& cmd)
+    {
+        return ParsePathOption(CommonOptions::Keys[CommonOptions::SequenceReportKey], cmd);
+    }
 
-        TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
+    TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
+    {
+        const AZStd::vector<AZStd::pair<AZStd::string, TestSequenceType>> states =
         {
-            const AZStd::vector<AZStd::pair<AZStd::string, TestSequenceType>> states =
+            {CommonOptions::Keys[CommonOptions::None], TestSequenceType::None},
+            {CommonOptions::Keys[CommonOptions::Seed], TestSequenceType::Seed},
+            {CommonOptions::Keys[CommonOptions::Regular], TestSequenceType::Regular},
+            {CommonOptions::Keys[CommonOptions::ImpactAnalysis], TestSequenceType::ImpactAnalysis},
+            {CommonOptions::Keys[CommonOptions::ImpactAnalysisNoWrite], TestSequenceType::ImpactAnalysisNoWrite},
+            {CommonOptions::Keys[CommonOptions::ImpactAnalysisOrSeed], TestSequenceType::ImpactAnalysisOrSeed}
+        };
+
+        return ParseMultiStateOption(CommonOptions::Keys[CommonOptions::SequenceKey], states, cmd).value_or(TestSequenceType::None);
+    }
+
+    Policy::TestPrioritization ParseTestPrioritizationPolicy(const AZ::CommandLine& cmd)
+    {
+        const BinaryStateOption<Policy::TestPrioritization> states =
+        {
+            {CommonOptions::Keys[CommonOptions::None], Policy::TestPrioritization::None},
+            {CommonOptions::Keys[CommonOptions::Locality], Policy::TestPrioritization::DependencyLocality}
+        };
+
+        return ParseBinaryStateOption(CommonOptions::Keys[CommonOptions::TestPrioritizationPolicyKey], states, cmd).value_or(Policy::TestPrioritization::None);
+    }
+
+    Policy::ExecutionFailure ParseExecutionFailurePolicy(const AZ::CommandLine& cmd)
+    {
+        const AZStd::vector<AZStd::pair<AZStd::string, Policy::ExecutionFailure>> states =
+        {
+            {CommonOptions::Keys[CommonOptions::Abort], Policy::ExecutionFailure::Abort},
+            {CommonOptions::Keys[CommonOptions::Continue], Policy::ExecutionFailure::Continue},
+            {CommonOptions::Keys[CommonOptions::Ignore], Policy::ExecutionFailure::Ignore}
+        };
+        return ParseMultiStateOption(CommonOptions::Keys[CommonOptions::ExecutionFailurePolicyKey], states, cmd).value_or(Policy::ExecutionFailure::Continue);
+    }
+
+    Policy::FailedTestCoverage ParseFailedTestCoveragePolicy(const AZ::CommandLine& cmd)
+    {
+        const AZStd::vector<AZStd::pair<AZStd::string, Policy::FailedTestCoverage>> states =
+        {
+            {CommonOptions::Keys[CommonOptions::Discard], Policy::FailedTestCoverage::Discard},
+            {CommonOptions::Keys[CommonOptions::Keep], Policy::FailedTestCoverage::Keep}
+        };
+
+        return ParseMultiStateOption(CommonOptions::Keys[CommonOptions::FailedTestCoveragePolicyKey], states, cmd).value_or(Policy::FailedTestCoverage::Keep);
+    }
+
+    Policy::TestFailure ParseTestFailurePolicy(const AZ::CommandLine& cmd)
+    {
+        const BinaryStateValue<Policy::TestFailure> states =
+        {
+            Policy::TestFailure::Abort,
+            Policy::TestFailure::Continue
+        };
+
+        return ParseAbortContinueOption(CommonOptions::Keys[CommonOptions::TestFailurePolicyKey], states, cmd).value_or(Policy::TestFailure::Abort);
+    }
+
+    Policy::IntegrityFailure ParseIntegrityFailurePolicy(const AZ::CommandLine& cmd)
+    {
+        const BinaryStateValue<Policy::IntegrityFailure> states =
+        {
+            Policy::IntegrityFailure::Abort,
+            Policy::IntegrityFailure::Continue
+        };
+
+        return ParseAbortContinueOption(CommonOptions::Keys[CommonOptions::IntegrityFailurePolicyKey], states, cmd).value_or(Policy::IntegrityFailure::Abort);
+    }
+
+    Policy::TestRunner ParseTestRunnerPolicy(const AZ::CommandLine& cmd)
+    {
+        const BinaryStateValue<Policy::TestRunner> states = { Policy::TestRunner::UseLiveTestRunner, Policy::TestRunner::UseNullTestRunner };
+
+        return ParseLiveNullOption(CommonOptions::Keys[CommonOptions::TestRunnerPolicy], states, cmd).value_or(Policy::TestRunner::UseLiveTestRunner);
+    }
+
+    Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
+    {
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(CommonOptions::Keys[CommonOptions::TargetOutputCaptureKey]);
+            numSwitchValues)
+        {
+            AZ_TestImpact_Eval(
+                numSwitchValues <= 2, CommandLineOptionsException, "Unexpected parameters for target output capture option");
+
+            Policy::TargetOutputCapture targetOutputCapture = Policy::TargetOutputCapture::None;
+            for (auto i = 0; i < numSwitchValues; i++)
             {
-                {OptionKeys[None], TestSequenceType::None},
-                {OptionKeys[Seed], TestSequenceType::Seed},
-                {OptionKeys[Regular], TestSequenceType::Regular},
-                {OptionKeys[ImpactAnalysis], TestSequenceType::ImpactAnalysis},
-                {OptionKeys[ImpactAnalysisNoWrite], TestSequenceType::ImpactAnalysisNoWrite},
-                {OptionKeys[ImpactAnalysisOrSeed], TestSequenceType::ImpactAnalysisOrSeed}
-            };
-
-            return ParseMultiStateOption(OptionKeys[SequenceKey], states, cmd).value_or(TestSequenceType::None);
-        }
-
-        Policy::TestPrioritization ParseTestPrioritizationPolicy(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateOption<Policy::TestPrioritization> states =
-            {
-                {OptionKeys[None], Policy::TestPrioritization::None},
-                {OptionKeys[Locality], Policy::TestPrioritization::DependencyLocality}
-            };
-
-            return ParseBinaryStateOption(OptionKeys[TestPrioritizationPolicyKey], states, cmd).value_or(Policy::TestPrioritization::None);
-        }
-
-        Policy::ExecutionFailure ParseExecutionFailurePolicy(const AZ::CommandLine& cmd)
-        {
-            const AZStd::vector<AZStd::pair<AZStd::string, Policy::ExecutionFailure>> states =
-            {
-                {OptionKeys[Abort], Policy::ExecutionFailure::Abort},
-                {OptionKeys[Continue], Policy::ExecutionFailure::Continue},
-                {OptionKeys[Ignore], Policy::ExecutionFailure::Ignore}
-            };
-            return ParseMultiStateOption(OptionKeys[ExecutionFailurePolicyKey], states, cmd).value_or(Policy::ExecutionFailure::Continue);
-        }
-
-        Policy::FailedTestCoverage ParseFailedTestCoveragePolicy(const AZ::CommandLine& cmd)
-        {
-            const AZStd::vector<AZStd::pair<AZStd::string, Policy::FailedTestCoverage>> states =
-            {
-                {OptionKeys[Discard], Policy::FailedTestCoverage::Discard},
-                {OptionKeys[Keep], Policy::FailedTestCoverage::Keep}
-            };
-
-            return ParseMultiStateOption(OptionKeys[FailedTestCoveragePolicyKey], states, cmd).value_or(Policy::FailedTestCoverage::Keep);
-        }
-
-        Policy::TestFailure ParseTestFailurePolicy(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateValue<Policy::TestFailure> states =
-            {
-                Policy::TestFailure::Abort,
-                Policy::TestFailure::Continue
-            };
-
-            return ParseAbortContinueOption(OptionKeys[TestFailurePolicyKey], states, cmd).value_or(Policy::TestFailure::Abort);
-        }
-
-        Policy::IntegrityFailure ParseIntegrityFailurePolicy(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateValue<Policy::IntegrityFailure> states =
-            {
-                Policy::IntegrityFailure::Abort,
-                Policy::IntegrityFailure::Continue
-            };
-
-            return ParseAbortContinueOption(OptionKeys[IntegrityFailurePolicyKey], states, cmd).value_or(Policy::IntegrityFailure::Abort);
-        }
-
-        Policy::TestRunner ParseTestRunnerPolicy(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateValue<Policy::TestRunner> states = { Policy::TestRunner::UseLiveTestRunner, Policy::TestRunner::UseNullTestRunner };
-
-            return ParseLiveNullOption(OptionKeys[TestRunnerPolicy], states, cmd).value_or(Policy::TestRunner::UseLiveTestRunner);
-        }
-
-        Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
-        {
-            if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[TargetOutputCaptureKey]);
-                numSwitchValues)
-            {
-                AZ_TestImpact_Eval(
-                    numSwitchValues <= 2, CommandLineOptionsException, "Unexpected parameters for target output capture option");
-
-                Policy::TargetOutputCapture targetOutputCapture = Policy::TargetOutputCapture::None;
-                for (auto i = 0; i < numSwitchValues; i++)
+                const auto option = cmd.GetSwitchValue(CommonOptions::Keys[CommonOptions::TargetOutputCaptureKey], i);
+                if (option == CommonOptions::Keys[CommonOptions::StdOut])
                 {
-                    const auto option = cmd.GetSwitchValue(OptionKeys[TargetOutputCaptureKey], i);
-                    if (option == OptionKeys[StdOut])
+                    if (targetOutputCapture == Policy::TargetOutputCapture::File)
                     {
-                        if (targetOutputCapture == Policy::TargetOutputCapture::File)
-                        {
-                            targetOutputCapture = Policy::TargetOutputCapture::StdOutAndFile;
-                        }
-                        else
-                        {
-                            targetOutputCapture = Policy::TargetOutputCapture::StdOut;
-                        }
-                    }
-                    else if (option == OptionKeys[File])
-                    {
-                        if (targetOutputCapture == Policy::TargetOutputCapture::StdOut)
-                        {
-                            targetOutputCapture = Policy::TargetOutputCapture::StdOutAndFile;
-                        }
-                        else
-                        {
-                            targetOutputCapture = Policy::TargetOutputCapture::File;
-                        }
+                        targetOutputCapture = Policy::TargetOutputCapture::StdOutAndFile;
                     }
                     else
                     {
-                        throw CommandLineOptionsException(
-                            AZStd::string::format("Unexpected value for target output capture option: %s", option.c_str()));
+                        targetOutputCapture = Policy::TargetOutputCapture::StdOut;
                     }
                 }
-
-                return targetOutputCapture;
+                else if (option == CommonOptions::Keys[CommonOptions::File])
+                {
+                    if (targetOutputCapture == Policy::TargetOutputCapture::StdOut)
+                    {
+                        targetOutputCapture = Policy::TargetOutputCapture::StdOutAndFile;
+                    }
+                    else
+                    {
+                        targetOutputCapture = Policy::TargetOutputCapture::File;
+                    }
+                }
+                else
+                {
+                    throw CommandLineOptionsException(
+                        AZStd::string::format("Unexpected value for target output capture option: %s", option.c_str()));
+                }
             }
 
-            return Policy::TargetOutputCapture::None;
+            return targetOutputCapture;
         }
 
-        AZStd::optional<AZStd::chrono::milliseconds> ParseTestTargetTimeout(const AZ::CommandLine& cmd)
+        return Policy::TargetOutputCapture::None;
+    }
+
+    AZStd::optional<AZStd::chrono::milliseconds> ParseTestTargetTimeout(const AZ::CommandLine& cmd)
+    {
+        return ParseSecondsOption(CommonOptions::Keys[CommonOptions::TestTargetTimeoutKey], cmd);
+    }
+
+    AZStd::optional<AZStd::chrono::milliseconds> ParseGlobalTimeout(const AZ::CommandLine& cmd)
+    {
+        return ParseSecondsOption(CommonOptions::Keys[CommonOptions::GlobalTimeoutKey], cmd);
+    }
+
+    bool ParseDraftFailingTests(const AZ::CommandLine& cmd)
+    {
+        const BinaryStateValue<bool> states = { false, true };
+        return ParseOnOffOption(CommonOptions::Keys[CommonOptions::DraftFailingTestsKey], states, cmd).value_or(false);
+    }
+
+    SuiteSet ParseSuiteSet(const AZ::CommandLine& cmd)
+    {
+        return ParseMultiValueOption(CommonOptions::Keys[CommonOptions::SuiteSetKey], cmd);
+    }
+
+    SuiteLabelExcludeSet ParseSuiteLabelExcludeSet(const AZ::CommandLine& cmd)
+    {
+        return ParseMultiValueOption(CommonOptions::Keys[CommonOptions::SuiteLabelExcludeKey], cmd);
+    }
+
+    AZStd::vector<ExcludedTarget> ParseExcludedTestsFile(const AZ::CommandLine& cmd)
+    {
+        AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(CommonOptions::Keys[CommonOptions::ExcludedTestsKey], cmd);
+        if (excludeFilePath.has_value())
         {
-            return ParseSecondsOption(OptionKeys[TestTargetTimeoutKey], cmd);
+            return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
         }
 
-        AZStd::optional<AZStd::chrono::milliseconds> ParseGlobalTimeout(const AZ::CommandLine& cmd)
-        {
-            return ParseSecondsOption(OptionKeys[GlobalTimeoutKey], cmd);
-        }
+        return {};
+    }
 
-        bool ParseDraftFailingTests(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateValue<bool> states = { false, true };
-            return ParseOnOffOption(OptionKeys[DraftFailingTestsKey], states, cmd).value_or(false);
-        }
-
-        SuiteSet ParseSuiteSet(const AZ::CommandLine& cmd)
-        {
-            return ParseMultiValueOption(OptionKeys[SuiteSetKey], cmd);
-        }
-
-        SuiteLabelExcludeSet ParseSuiteLabelExcludeSet(const AZ::CommandLine& cmd)
-        {
-            return ParseMultiValueOption(OptionKeys[SuiteLabelExcludeKey], cmd);
-        }
-
-        AZStd::vector<ExcludedTarget> ParseExcludedTestsFile(const AZ::CommandLine& cmd)
-        {
-            AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludedTestsKey], cmd);
-            if (excludeFilePath.has_value())
-            {
-                return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
-            }
-
-            return {};
-        }
-
-        bool ParseSafeMode(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateValue<bool> states = { false, true };
-            return ParseOnOffOption(OptionKeys[SafeModeKey], states, cmd).value_or(false);
-        }
-    } // namespace
+    bool ParseSafeMode(const AZ::CommandLine& cmd)
+    {
+        const BinaryStateValue<bool> states = { false, true };
+        return ParseOnOffOption(CommonOptions::Keys[CommonOptions::SafeModeKey], states, cmd).value_or(false);
+    }
 
     CommandLineOptions::CommandLineOptions(int argc, char** argv)
     {
+        static_assert(CommonOptions::Fields::_CHECKSUM_ == AZStd::size(CommonOptions::Keys));
         AZ::CommandLine cmd;
         cmd.Parse(argc, argv);
 

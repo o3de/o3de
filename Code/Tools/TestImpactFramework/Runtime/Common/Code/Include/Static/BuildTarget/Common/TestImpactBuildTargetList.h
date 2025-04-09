@@ -12,6 +12,7 @@
 #include <BuildTarget/Common/TestImpactBuildTargetException.h>
 #include <Target/Common/TestImpactTargetList.h>
 
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>

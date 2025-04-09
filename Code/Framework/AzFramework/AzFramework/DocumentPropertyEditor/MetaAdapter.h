@@ -21,13 +21,18 @@ namespace AZ::DocumentPropertyEditor
         virtual Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) const = 0;
         virtual Dom::Path MapToSourcePath(const Dom::Path& filterPath) const = 0;
 
+        ExpanderSettings* CreateExpanderSettings(
+            DocumentAdapter* referenceAdapter,
+            const AZStd::string& settingsRegistryKey = AZStd::string(),
+            const AZStd::string& propertyEditorName = AZStd::string()) override;
+
     protected:
         // handlers for source adapter's messages
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, Dom::Value& value);
         virtual void HandleReset() = 0;
         virtual void HandleDomChange(const Dom::Patch& patch) = 0;
 
-        static bool IsRow(const Dom::Value& domValue);
+        using DocumentAdapter::IsRow;
         bool IsRow(const Dom::Path& sourcePath) const;
         
         //! returns the first path in the ancestry of sourcePath that is of type Row, including self

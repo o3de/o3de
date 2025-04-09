@@ -28,7 +28,7 @@ Texture2D prefix##m_baseColorMap;
 option bool prefix##o_baseColor_useTexture; \
 option TextureBlendMode prefix##o_baseColorTextureBlendMode = TextureBlendMode::Multiply;
 
-float3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, float3 baseColor, bool useTexture)
+real3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, real3 baseColor, bool useTexture, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
     if(OverrideBaseColorEnabled())
     {
@@ -37,13 +37,27 @@ float3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, float3 ba
 
     if(useTexture)
     {
-        float3 sampledAbledo = map.Sample(mapSampler, uv).rgb;
-        return TransformColor(sampledAbledo, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        real3 sampledAbledo;
+        if (customDerivatives)
+        {
+            sampledAbledo = real3(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).rgb);
+        }
+        else
+        {
+            #ifdef CS_SAMPLERS
+            sampledAbledo = real3(map.SampleLevel(mapSampler, uv, 0).rgb);
+            #else
+            sampledAbledo = real3(map.Sample(mapSampler, uv).rgb);
+            #endif
+        }
+        //Convert to ACEScg as that is our intermediate working space. 
+        //Todo - We should data drive this color space
+        return LinearSrgb_To_AcesCg(sampledAbledo);
     }
     return baseColor;
 }
 
-float3 BlendBaseColor(float3 sampledBaseColor, float3 baseColor, float factor, TextureBlendMode blendMode, bool useTexture)
+real3 BlendBaseColor(real3 sampledBaseColor, real3 baseColor, real factor, TextureBlendMode blendMode, bool useTexture)
 {
     if(OverrideBaseColorEnabled())
     {

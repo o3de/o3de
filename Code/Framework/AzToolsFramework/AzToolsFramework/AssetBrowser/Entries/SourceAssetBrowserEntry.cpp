@@ -68,6 +68,13 @@ namespace AzToolsFramework
             return extension;
         };
 
+        const AZStd::string SourceAssetBrowserEntry::GetFileName() const
+        {
+            AZStd::string stem;
+            AZ::StringFunc::Path::GetFileName(GetFullPath().c_str(), stem);
+            return stem;
+        };
+
         AZ::s64 SourceAssetBrowserEntry::GetFileID() const
         {
             return m_fileId;
@@ -138,10 +145,10 @@ namespace AzToolsFramework
         {
             if (m_sourceControlThumbnailKey)
             {
-                disconnect(m_sourceControlThumbnailKey.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &AssetBrowserEntry::ThumbnailUpdated);
+                disconnect(m_sourceControlThumbnailKey.data(), nullptr, this, nullptr);
             }
             m_sourceControlThumbnailKey = MAKE_TKEY(SourceControlThumbnailKey, m_fullPath.c_str());
-            connect(m_sourceControlThumbnailKey.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &AssetBrowserEntry::ThumbnailUpdated);
+            connect(m_sourceControlThumbnailKey.data(), &ThumbnailKey::ThumbnailUpdated, this, &AssetBrowserEntry::SetThumbnailDirty);
         }
 
         SharedThumbnailKey SourceAssetBrowserEntry::CreateThumbnailKey()

@@ -49,7 +49,11 @@ namespace AzToolsFramework::AssetUtils
     //! @param root a trusted already-case-correct path (will not be case corrected). If empty it will be set to appRoot.
     //! @param relativePathFromRoot a non-trusted (may be incorrect case) path relative to rootPath,
     //!        which will be normalized and updated to be correct casing.
+    //! @param checkEntirePath Optimization - set this to false if the caller is absolutely sure the path
+    //!                             is correct and only the last element (file name or extension) is potentially incorrect, this can happen
+    //!                             when for example taking a real file found from a real file directory that is already correct and
+    //!                             replacing the file extension or file name only.
     //! @return if such a file does NOT exist, it returns FALSE, else returns TRUE.
     //! @note A very expensive function!  Call sparingly.
-    bool UpdateFilePathToCorrectCase(AZStd::string_view root, AZStd::string& relativePathFromRoot);
+    bool UpdateFilePathToCorrectCase(AZStd::string_view root, AZStd::string& relativePathFromRoot, bool checkEntirePath = true);
 } //namespace AzToolsFramework::AssetUtils

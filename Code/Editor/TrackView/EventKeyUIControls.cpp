@@ -14,8 +14,7 @@
 
 #include <CryCommon/Maestro/Types/AnimParamType.h>  // AnimParamType
 
-//////////////////////////////////////////////////////////////////////////
-bool CEventKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CEventKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {

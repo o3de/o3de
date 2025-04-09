@@ -149,7 +149,7 @@ namespace AtomToolsFramework
             GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PostOnActiveGraphChanged);
         }
 
-        // Update all of the main window menus with commands from this view what are you doing.
+        // Update main window menus with commands from this view.
         AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, true);
     }
 
@@ -275,7 +275,7 @@ namespace AtomToolsFramework
         }, {});
 
         makeSeperator("menuView");
-        m_actionPresetEditor = makeAction("menuView", tr("Preset Editor"), [this](){ OpenPresetsEditor(); }, {});
+        m_actionPresetEditor = makeAction("menuView", tr("Presets Editor"), [this](){ OpenPresetsEditor(); }, {});
 
         makeSeperator("menuView");
         m_actionShowEntireGraph = makeAction("menuView", tr("Show Entire Graph"), [this](){
@@ -672,7 +672,7 @@ namespace AtomToolsFramework
                     {
                         GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::ClearSelection);
                         GraphCanvas::VisualRequestBus::Event(nodeId, &GraphCanvas::VisualRequests::SetVisible, true);
-
+                        GraphCanvas::SceneMemberUIRequestBus::Event(nodeId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
                         GraphCanvas::SceneNotificationBus::Event(m_activeGraphId, &GraphCanvas::SceneNotifications::PostCreationEvent);
                     }
                 }

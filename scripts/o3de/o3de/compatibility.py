@@ -44,16 +44,18 @@ def get_most_compatible_project_engine_path(project_path:pathlib.Path,
             'Please verify the path is correct, the file exists and is formatted correctly.')
         return None
     
-    # take into account any user project.json overrides 
+    # look for user project.json overrides if none are provided
     if not isinstance(user_project_json_data, dict):
         user_project_json_path = pathlib.Path(project_path) / 'user' / 'project.json'
         if user_project_json_path.is_file():
             user_project_json_data = manifest.get_json_data_file(user_project_json_path, 'project', validation.always_valid)
-            if user_project_json_data:
-                project_json_data.update(user_project_json_data)
-                user_engine_path = project_json_data.get('engine_path', '')
-                if user_engine_path:
-                    return pathlib.Path(user_engine_path)
+
+    # take into account any user project.json overrides 
+    if user_project_json_data:
+        project_json_data.update(user_project_json_data)
+        user_engine_path = project_json_data.get('engine_path', '')
+        if user_engine_path:
+            return pathlib.Path(user_engine_path)
 
     project_engine = project_json_data.get('engine')
     if not project_engine:
@@ -73,7 +75,15 @@ def get_most_compatible_project_engine_path(project_path:pathlib.Path,
             engine_version = '0.0.0'
 
         if has_compatible_version([project_engine], engine_name, engine_version):
-            if not most_compatible_engine_path:
+
+            # prefer the engine this project or template resides in if it is compatible
+            if pathlib.PurePath(project_path).is_relative_to(pathlib.PurePath(engine_path)):
+                most_compatible_engine_path = pathlib.Path(engine_path)
+                most_compatible_engine_version = Version(engine_version)
+                # don't consider other engines, if a user wants to override 
+                # they can set the engine_path or engine in user/project.json 
+                break
+            elif not most_compatible_engine_path:
                 most_compatible_engine_path = pathlib.Path(engine_path)
                 most_compatible_engine_version = Version(engine_version)
             elif Version(engine_version) > most_compatible_engine_version:
@@ -139,18 +149,12 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, all_gems_json_data:dic
     return get_incompatible_gem_version_specifiers(gem_json_data, all_gems_json_data, checked_specifiers=set())
 
 
-def get_gem_project_incompatible_objects(gem_path:pathlib.Path, 
-                                        gem_json_data:dict, 
-                                        project_path:pathlib.Path,
-                                        gem_name:str = None
-                                        ) -> set:
+def get_gems_project_incompatible_objects(gem_paths:list, gem_names:list, project_path:pathlib.Path) -> set():
     """
-    Returns any incompatible objects for this gem and project.
-    :param gem_json_data: gem json data dictionary
+    Returns any incompatible objects for the gem names provided and project.
+    :param gem_names: names of all the gems to add or replace 
+    :param gem_paths: paths of all the gems 
     :param project_path: path to the project
-    :param all_gems_json_data: optional dictionary containing data for all gems to use in compatibility checks. 
-    If not provided, uses all gems from the manifest, engine and project.
-    :param gem_name: optional gem name with version specifier to use for gem dependency resolution 
     """
     # early out if this project has no assigned engine
     engine_path = manifest.get_project_engine_path(project_path=project_path)
@@ -168,30 +172,23 @@ def get_gem_project_incompatible_objects(gem_path:pathlib.Path,
         logger.error('Failed to load engine.json data based on the engine field in project.json or detect the engine from the current folder')
         return set(f'engine.json (missing)') 
 
-    # Include the gem_path for the gem we are adding so it 
-    # and any gems in 'external_subdirectories' it has will be considered 
+    # include the gem_paths for the gems we are adding so their
+    # 'external_subdirectories' will be considered 
     all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path, project_path, 
-        external_subdirectories=[gem_path], include_manifest_gems=True)
-    
+        external_subdirectories=gem_paths, include_manifest_gems=True)
+
     # Verify we can resolve all dependencies after adding this new gem
     active_gem_names = engine_json_data.get('gem_names',[])
     active_gem_names.extend(project_json_data.get('gem_names',[]))
     enabled_gems_file = manifest.get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gems_file and enabled_gems_file.is_file():
         active_gem_names.extend(manifest.get_enabled_gems(enabled_gems_file))
-    active_gem_names = utils.get_gem_names_set(active_gem_names)
 
-    if not gem_name:
-        gem_name = gem_json_data['gem_name']
-        gem_version = gem_json_data.get('version')
-        if gem_version:
-            # try to match the name and version from this specific gem json data
-            gem_name = f'{gem_name}=={gem_version}'
-        else:
-            # match any gem with this name
-            gem_name = f'{gem_name}>=0.0.0'
+    # convert the list into a set of strings that removes any dictionaries and optional gems
+    active_gem_names = utils.get_gem_names_set(active_gem_names, include_optional=False)
 
-    active_gem_names.add(gem_name)
+    # gem_names will add new gems or replace any existing gems
+    active_gem_names = utils.add_or_replace_object_names(active_gem_names, gem_names)
 
     # Dependency resolution takes into account gem and engine requirements so if 
     # it succeeds, all is well
@@ -373,7 +370,7 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
 
 class GemRequirement(namedtuple("GemRequirement", ["name", "specifier"])):
     def __repr__(self):
-        return f"<GemRequirement({self.name}{self.specifier})>"
+        return f'<GemRequirement({self.name}{self.specifier if self.specifier else ""})>'
 
     def identify(self):
         # IMPORTANT don't use the specifier or we will get multiple mappings
@@ -381,7 +378,7 @@ class GemRequirement(namedtuple("GemRequirement", ["name", "specifier"])):
         return f"GemRequirement:{self.name}"
 
     def failure_reason(self, object_name):
-        return f'{object_name} requires {self.name}{self.specifier}'
+        return f'{object_name} requires {self.name}{self.specifier if self.specifier else ""}'
 
 class EngineRequirement(namedtuple("EngineRequirement", ["gem_json_data"])):
     def __repr__(self):
@@ -457,7 +454,9 @@ class GemDependencyProvider(AbstractProvider):
         elif isinstance(candidate, GemCandidate) and isinstance(requirement,GemRequirement):
             return (
                 candidate.name == requirement.name
-                and candidate.version in requirement.specifier
+                # It's much faster to check if specifier is None
+                # than to check if candidate.version in ">=0.0.0"
+                and (requirement.specifier is None or candidate.version in requirement.specifier)
             )
         else:
             # GemCandidates do no satisfy EngineRequirements
@@ -467,17 +466,20 @@ class GemDependencyProvider(AbstractProvider):
     def get_dependencies(self, candidate):
         return candidate.requirements
 
-def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json_data:dict, include_optional=False) -> bool:
+def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json_data:dict, include_optional=False) -> tuple:
     # Start with the engine candidate using a version of 0.0.0 for any
     # engine that has no version field (older engine)
     candidates = [
         EngineCandidate(engine_json_data.get('engine_name'), engine_json_data.get('version','0.0.0'), [], engine_json_data)
-    ] 
+    ]
+
+    provided_unique_service_gem_map = {}
 
     # Add all gem candidates and their requirements
     for gem_name, gem_versions_json_data in all_gem_json_data.items():
         for gem_json_data in gem_versions_json_data:
-            requirements = [] 
+
+            requirements = []
 
             # If the version field exists but is empty use '0.0.0'
             # This gives us a preference for gems with version fields
@@ -492,10 +494,10 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
             gem_dependency_names = utils.get_gem_names_set(gem_dependencies, include_optional=include_optional)
             for gem_dependency in gem_dependency_names:
                 dep_name, dep_version_specifier = utils.get_object_name_and_optional_version_specifier(gem_dependency)
-                if not dep_version_specifier:
-                    dep_version_specifier = ">=0.0.0"
+                if dep_version_specifier:
+                    dep_version_specifier = SpecifierSet(dep_version_specifier)
 
-                requirements.append(GemRequirement(dep_name, SpecifierSet(dep_version_specifier)))
+                requirements.append(GemRequirement(dep_name, dep_version_specifier))
             
             # Add engine requirements. Technically "compatible_engines" should not
             # be used for incompatibility, and this should be addressed in the future.
@@ -515,24 +517,37 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
     project_gem_requirements = set()
     for gem_name in gem_names:
         dep_name, dep_version_specifier = utils.get_object_name_and_optional_version_specifier(gem_name)
-        if not dep_version_specifier:
-            dep_version_specifier = ">=0.0.0"
-        project_gem_requirements.add(GemRequirement(dep_name, SpecifierSet(dep_version_specifier)))
+        if dep_version_specifier:
+            dep_version_specifier = SpecifierSet(dep_version_specifier)
+        project_gem_requirements.add(GemRequirement(dep_name, dep_version_specifier))
+
+        # Track all the identified unique service providers and the gems that provide it
+        gem_spec_list = all_gem_json_data.get(dep_name, [])
+        for gem_spec in gem_spec_list:
+            provided_unique_service = gem_spec.get('provided_unique_service', None)
+            if provided_unique_service:
+                provided_unique_service_gem_map.setdefault(provided_unique_service, []).append(gem_spec.get('display_name',gem_name))
 
     result_mapping = None
-    errors = None
+    errors = set()
+
+    # the resolver uses a single "round" to try and pin a single dependency
+    # so we need at least enough rounds as we have gems in the dependency tree
+    # for comparison, pypip uses 2 million rounds
+    # https://github.com/pypa/pip/blob/main/src/pip/_internal/resolution/resolvelib/resolver.py#L91
+    num_gems = sum(len(gem_versions) for _,gem_versions in all_gem_json_data.items()) 
+    try_to_avoid_resolution_too_deep = max(2000000, num_gems)
     try:
-        result = resolver.resolve(requirements=project_gem_requirements)
+        result = resolver.resolve(requirements=project_gem_requirements, max_rounds=try_to_avoid_resolution_too_deep)
 
         # Remove any EngineCandidates that may appear in the mappings
         result_mapping = {k: v for k, v in result.mapping.items() if isinstance(v, GemCandidate)}
     except InconsistentCandidate as e:
         # An error exists in our dependency resolver provider
         # need to fix find_matches() and/or is_satisfied_by().
-        errors = set([f'An error exists in the dependency resolver provider resulting in an inconsistent candidate {e.candidate} with criterion {e.criterion}'])
+        errors.add(f'An error exists in the dependency resolver provider resulting in an inconsistent candidate {e.candidate} with criterion {e.criterion}')
     except ResolutionImpossible as e:
         reason = 'The following dependency requirements could not be satisfied:'
-        errors = set()
         for cause in e.causes:
             reason += '\n'
             if isinstance(cause.requirement, EngineRequirement):
@@ -541,6 +556,13 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
                 # If cause.parent isn't set it's a project gem dependency
                 reason += cause.requirement.failure_reason(cause.parent if cause.parent else 'The project')
 
-        errors.add(reason) 
+        errors.add(reason)
+
+    # Finally, check if there are multiple gems enabled that provide duplicate unique services
+    for unique_service, gem_provider_list in provided_unique_service_gem_map.items():
+        if len(gem_provider_list) > 1:
+            errors.add(f"Multiple gems enabled ({', '.join(gem_provider_list)}) that provide the "
+                       f"same unique service '{unique_service}' detected. This will cause failures "
+                       f"during Gem loading and initialization.")
 
     return result_mapping, errors

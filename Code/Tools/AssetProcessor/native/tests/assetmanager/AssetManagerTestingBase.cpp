@@ -57,9 +57,19 @@ namespace UnitTests
         m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
         AZ::SettingsRegistry::Register(m_settingsRegistry.get());
 
-        auto projectPathKey =
-            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        m_settingsRegistry->Set(projectPathKey, m_databaseLocationListener.GetAssetRootDir().c_str());
+        // Make sure that the entire system doesn't somehow find the "real" project but instead finds our fake project folder. 
+        m_settingsRegistry->Set("/O3DE/Runtime/Internal/project_root_scan_up_path", assetRootDir.c_str());
+
+        // The engine is actually pretty good at finding the real project folder and tries to do so a number of ways, including
+        // overwriting all the keys we're about to set if we allow it to.
+        auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        m_settingsRegistry->Set(projectPathKey, assetRootDir.c_str());
+
+        // we need to also set up the cache root:
+        auto cacheRootPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+        m_settingsRegistry->Set(cacheRootPathKey, (assetRootDir / "Cache").c_str());
+
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
         // We need a QCoreApplication set up in order for QCoreApplication::processEvents to function
@@ -81,8 +91,7 @@ namespace UnitTests
         m_platformConfig->PopulatePlatformsForScanFolder(platforms);
         m_platformConfig->ReadMetaDataFromSettingsRegistry();
 
-        m_platformConfig->AddScanFolder(
-            AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder").c_str(), "folder", "folder", false, true, platforms });
+        SetupScanfolders(assetRootDir, platforms);
 
         m_platformConfig->AddIntermediateScanFolder();
 
@@ -202,6 +211,12 @@ namespace UnitTests
         LeakDetectionFixture::TearDown();
     }
 
+    void AssetManagerTestingBase::SetupScanfolders(AZ::IO::Path assetRootDir, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& platforms)
+    {
+        m_platformConfig->AddScanFolder(
+            AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder").c_str(), "folder", "folder", false, true, platforms });
+    }
+
     void AssetManagerTestingBase::RunFile(int expectedJobCount, int expectedFileCount, int dependencyFileCount)
     {
         m_jobDetailsList.clear();
@@ -278,12 +293,12 @@ namespace UnitTests
     }
 
     AssetBuilderSDK::CreateJobFunction AssetManagerTestingBase::CreateJobStage(
-        const AZStd::string& name, bool commonPlatform, const AZStd::string& sourceDependencyPath)
+        const AZStd::string& name, bool commonPlatform, const AzToolsFramework::AssetDatabase::PathOrUuid& sourceDependency)
     {
         using namespace AssetBuilderSDK;
 
         // Note: capture by copy because we need these to stay around for a long time
-        return [name, commonPlatform, sourceDependencyPath]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
+        return [name, commonPlatform, sourceDependency]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
         {
             if (commonPlatform)
             {
@@ -297,9 +312,10 @@ namespace UnitTests
                 }
             }
 
-            if (!sourceDependencyPath.empty())
+            if (sourceDependency)
             {
-                response.m_sourceFileDependencyList.push_back(SourceFileDependency{ sourceDependencyPath, AZ::Uuid::CreateNull() });
+                response.m_sourceFileDependencyList.push_back(
+                    SourceFileDependency{ sourceDependency.IsUuid() ? "" : sourceDependency.GetPath(), sourceDependency.IsUuid() ? sourceDependency.GetUuid() : AZ::Uuid::CreateNull() });
             }
 
             response.m_result = CreateJobsResultCode::Success;
@@ -307,12 +323,12 @@ namespace UnitTests
     }
 
     AssetBuilderSDK::ProcessJobFunction AssetManagerTestingBase::ProcessJobStage(
-        const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile)
+        const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile, AZ::Data::AssetId dependencyId)
     {
         using namespace AssetBuilderSDK;
 
         // Capture by copy because we need these to stay around a long time
-        return [outputExtension, flags, outputExtraFile](const ProcessJobRequest& request, ProcessJobResponse& response)
+        return [outputExtension, flags, outputExtraFile, dependencyId](const ProcessJobRequest& request, ProcessJobResponse& response)
         {
             // If tests put the text "FAIL_JOB" at the beginning of the source file, then fail this job instead.
             // This lets tests easily handle cases where they want job processing to fail.
@@ -327,16 +343,23 @@ namespace UnitTests
                 }
             }
 
-            AZ::IO::Path outputFile = request.m_sourceFile;
+            AZ::IO::FixedMaxPath outputFile = AZ::IO::FixedMaxPath(request.m_sourceFile);
             outputFile.ReplaceExtension(outputExtension.c_str());
+            outputFile = outputFile.Filename();
 
-            AZ::IO::LocalFileIO::GetInstance()->Copy(
-                request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
+            AZ::IO::Result result = AZ::IO::FileIOBase::GetInstance()->Copy(
+                request.m_fullPath.c_str(), (AZ::IO::FixedMaxPath(request.m_tempDirPath) / outputFile).c_str());
+
+            EXPECT_TRUE(result);
 
             auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), AssetSubId };
 
             product.m_outputFlags = flags;
             product.m_dependenciesHandled = true;
+            if (dependencyId.IsValid())
+            {
+                product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(dependencyId, {}));
+            }
             response.m_outputProducts.push_back(product);
 
             if (outputExtraFile)
@@ -463,16 +486,14 @@ namespace UnitTests
     }
 
     void AssetManagerTestingBase::ProcessFileMultiStage(
-        int endStage, bool doProductOutputCheck, const char* file, int startStage, bool expectAutofail, bool hasExtraFile)
+        int endStage, bool doProductOutputCheck, AssetProcessor::SourceAssetReference sourceAsset, int startStage, bool expectAutofail, bool hasExtraFile)
     {
-        auto intermediatesDir = GetIntermediateAssetsDir();
-
-        if (file == nullptr)
+        if (!sourceAsset)
         {
-            file = m_testFilePath.c_str();
+            sourceAsset = AssetProcessor::SourceAssetReference(m_testFilePath.c_str());
         }
 
-        QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, file));
+        QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, sourceAsset.AbsolutePath().c_str()));
         QCoreApplication::processEvents();
 
         for (int i = startStage; i <= endStage; ++i)
@@ -503,7 +524,8 @@ namespace UnitTests
 
             if (i < endStage)
             {
-                auto expectedIntermediatePath = intermediatesDir / AZStd::string::format("test.stage%d", i + 1);
+                auto expectedIntermediatePath =
+                    MakePath(sourceAsset.RelativePath().ReplaceExtension(AZStd::string::format("stage%d", i + 1).c_str()).c_str(), true);
                 EXPECT_TRUE(AZ::IO::SystemFile::Exists(expectedIntermediatePath.c_str())) << expectedIntermediatePath.c_str();
             }
 
@@ -517,7 +539,7 @@ namespace UnitTests
 
         if (doProductOutputCheck)
         {
-            CheckProduct(AZStd::string::format("test.stage%d", endStage + 1).c_str());
+            CheckProduct(sourceAsset.RelativePath().ReplaceExtension(AZStd::string::format("stage%d", endStage + 1).c_str()).c_str());
         }
     }
 } // namespace UnitTests

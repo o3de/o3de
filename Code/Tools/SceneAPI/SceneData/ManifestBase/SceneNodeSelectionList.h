@@ -10,9 +10,8 @@
 
 
 #include <AzCore/JSON/document.h>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
 #include <SceneAPI/SceneData/SceneDataConfiguration.h>
 
@@ -41,16 +40,15 @@ namespace AZ
                 ~SceneNodeSelectionList() override;
 
                 SCENE_DATA_API size_t GetSelectedNodeCount() const override;
-                SCENE_DATA_API const AZStd::string& GetSelectedNode(size_t index) const override;
-                SCENE_DATA_API size_t AddSelectedNode(const AZStd::string& name) override;
-                SCENE_DATA_API size_t AddSelectedNode(AZStd::string&& name) override;
-                SCENE_DATA_API void RemoveSelectedNode(size_t index) override;
+                SCENE_DATA_API void AddSelectedNode(const AZStd::string& name) override;
+                SCENE_DATA_API void AddSelectedNode(AZStd::string&& name) override;
                 SCENE_DATA_API void RemoveSelectedNode(const AZStd::string& name) override;
                 SCENE_DATA_API void ClearSelectedNodes() override;
+                SCENE_DATA_API bool IsSelectedNode(const AZStd::string& name) const override;
+                SCENE_DATA_API void EnumerateSelectedNodes(const EnumerateNodesCallback& callback) const override;
 
-                SCENE_DATA_API size_t GetUnselectedNodeCount() const override;
-                SCENE_DATA_API const AZStd::string& GetUnselectedNode(size_t index) const override;
                 SCENE_DATA_API void ClearUnselectedNodes() override;
+                SCENE_DATA_API void EnumerateUnselectedNodes(const EnumerateNodesCallback& callback) const override;
 
                 SCENE_DATA_API AZStd::unique_ptr<DataTypes::ISceneNodeSelectionList> Copy() const override;
                 SCENE_DATA_API void CopyTo(DataTypes::ISceneNodeSelectionList& other) const override;
@@ -58,8 +56,8 @@ namespace AZ
                 static void Reflect(AZ::ReflectContext* context);
                 
             protected:
-                AZStd::vector<AZStd::string> m_selectedNodes;
-                AZStd::vector<AZStd::string> m_unselectedNodes;
+                AZStd::unordered_set<AZStd::string> m_selectedNodes;
+                AZStd::unordered_set<AZStd::string> m_unselectedNodes;
             };
             
             inline SceneNodeSelectionList::~SceneNodeSelectionList() = default;

@@ -316,25 +316,30 @@ namespace AzFramework
 
     void XcbInputDeviceMouse::SetSystemCursorState(SystemCursorState systemCursorState)
     {
-        if (systemCursorState != m_systemCursorState)
-        {
-            m_systemCursorState = systemCursorState;
+        if (m_captureCursor) {
+            if (systemCursorState != m_systemCursorState) {
+                m_systemCursorState = systemCursorState;
 
-            m_focusWindow = GetSystemCursorFocusWindow(s_xcbConnection);
+                m_focusWindow = GetSystemCursorFocusWindow(s_xcbConnection);
 
-            HandleCursorState(m_focusWindow, systemCursorState);
+                HandleCursorState(m_focusWindow, systemCursorState);
+            }
+
         }
     }
 
     void XcbInputDeviceMouse::HandleCursorState(xcb_window_t window, SystemCursorState systemCursorState)
     {
-        const bool confined = (systemCursorState == SystemCursorState::ConstrainedAndHidden) ||
-            (systemCursorState == SystemCursorState::ConstrainedAndVisible);
-        const bool cursorShown = (systemCursorState == SystemCursorState::ConstrainedAndVisible) ||
-            (systemCursorState == SystemCursorState::UnconstrainedAndVisible);
+        if (m_captureCursor)
+        {
+            const bool confined = (systemCursorState == SystemCursorState::ConstrainedAndHidden) ||
+                (systemCursorState == SystemCursorState::ConstrainedAndVisible);
+            const bool cursorShown = (systemCursorState == SystemCursorState::ConstrainedAndVisible) ||
+                (systemCursorState == SystemCursorState::UnconstrainedAndVisible);
 
-        CreateBarriers(window, confined);
-        ShowCursor(window, cursorShown);
+            CreateBarriers(window, confined);
+            ShowCursor(window, cursorShown);
+        }
     }
 
     SystemCursorState XcbInputDeviceMouse::GetSystemCursorState() const
@@ -499,6 +504,35 @@ namespace AzFramework
         case XCB_INPUT_RAW_MOTION:
             {
                 const xcb_input_raw_motion_event_t* mouseMotionEvent = reinterpret_cast<const xcb_input_raw_motion_event_t*>(event);
+
+                // Valuators in XCB are things that don't have a binary set of states but rather a range of values.
+                // In this case, they represent an axis of motion.
+
+                // The valuator mask is a bitset of which axes have changed and have values in this motion event.
+                //  For every bit set in the valuator mask, there will be a corresponding entry in the axis values, 
+                // and the length of the axis values array will be the number of bits that are set in this valuator mask.
+
+                // For example, x and y movement mouse axis movement will have bits 0x1 (x) or 0x2 (y), or 0x3 if both.
+                // In testing, I always saw 'both' (so 0x3) for all mouse movements.  There are no constants for these
+                // that I can find since each bit just represents a possible axis with the convention being the first two
+                // being the first two axes of the device, which for mice, is going to be the normal x and y axes.
+
+                // Anything beyond that is a completely different axis, such as the mouse wheel, z axis, other things
+                // special mice can do.
+                uint32_t *mask = xcb_input_raw_button_press_valuator_mask(mouseMotionEvent);
+                if (!mask)
+                {
+                    // something is broken with this event - at the very least, it cannot contain mouse movement.
+                    break;
+                }
+
+                if ((mask[0] & 0x3) == 0)
+                {
+                    // x and y movement are not present in the mask.  This is not necessarily a wheel roll,
+                    // but its also not x and y movement.  What it is depends on how many axes the device actually has.
+                    // Since we capture wheel roll as button presses (above), ignore this.
+                    break;
+                }
 
                 int axisLen = xcb_input_raw_button_press_axisvalues_length(mouseMotionEvent);
                 const xcb_input_fp3232_t* axisvalues = xcb_input_raw_button_press_axisvalues_raw(mouseMotionEvent);

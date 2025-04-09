@@ -29,5 +29,11 @@ namespace AssetProcessor
         virtual const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const = 0;
 
         virtual const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const = 0;
+
+        // Get the scan folder ID for the intermediate asset path.
+        virtual const AZ::s64 GetIntermediateAssetScanFolderId() const
+        {
+            return -1;
+        }
     };
 }

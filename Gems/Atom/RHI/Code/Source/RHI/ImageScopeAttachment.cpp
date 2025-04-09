@@ -11,87 +11,91 @@
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
-namespace AZ
+
+namespace AZ::RHI
 {
-    namespace RHI
+    ImageScopeAttachment::ImageScopeAttachment(
+        Scope& scope,
+        FrameAttachment& attachment,
+        ScopeAttachmentUsage usage,
+        ScopeAttachmentAccess access,
+        ScopeAttachmentStage stage,
+        const ImageScopeAttachmentDescriptor& descriptor)
+        : ScopeAttachment(scope, attachment, usage, access, stage)
+        , m_descriptor{ descriptor }
     {
-        ImageScopeAttachment::ImageScopeAttachment(
-            Scope& scope,
-            FrameAttachment& attachment,
-            ScopeAttachmentUsage usage,
-            ScopeAttachmentAccess access,
-            const ImageScopeAttachmentDescriptor& descriptor)
-            : ScopeAttachment(scope, attachment, usage, access)
-            , m_descriptor{ descriptor }
+        if (m_descriptor.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear ||
+            m_descriptor.m_loadStoreAction.m_loadActionStencil == AttachmentLoadAction::Clear)
         {
-            if (m_descriptor.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear ||
-                m_descriptor.m_loadStoreAction.m_loadActionStencil == AttachmentLoadAction::Clear)
-            {
-                AZ_Error("FrameScheduler", CheckBitsAny(access, ScopeAttachmentAccess::Write), "Attempting to clear an attachment that is read-only");
-            }
+            AZ_Error("FrameScheduler", CheckBitsAny(access, ScopeAttachmentAccess::Write), "Attempting to clear an attachment that is read-only");
         }
+    }
 
-        const ImageScopeAttachmentDescriptor& ImageScopeAttachment::GetDescriptor() const
+    const ImageScopeAttachmentDescriptor& ImageScopeAttachment::GetDescriptor() const
+    {
+        return m_descriptor;
+    }
+
+    const ImageView* ImageScopeAttachment::GetImageView() const
+    {
+        return static_cast<const ImageView*>(GetResourceView());
+    }
+
+    void ImageScopeAttachment::SetImageView(ConstPtr<ImageView> imageView)
+    {
+        SetResourceView(AZStd::move(imageView));
+    }
+
+    bool ImageScopeAttachment::IsBeingResolved() const
+    {
+        if(GetUsage() != ScopeAttachmentUsage::RenderTarget)
         {
-            return m_descriptor;
-        }
-
-        const ImageView* ImageScopeAttachment::GetImageView() const
-        {
-            return static_cast<const ImageView*>(GetResourceView());
-        }
-
-        void ImageScopeAttachment::SetImageView(ConstPtr<ImageView> imageView)
-        {
-            SetResourceView(AZStd::move(imageView));
-        }
-
-        bool ImageScopeAttachment::IsBeingResolved() const
-        {
-            if(!HasUsage(ScopeAttachmentUsage::RenderTarget))
-            {
-                return false;
-            }
-
-            for (auto& resolveScope : GetScope().GetResolveAttachments())
-            {
-                if (resolveScope->GetDescriptor().m_resolveAttachmentId == m_descriptor.m_attachmentId)
-                {
-                    return true;
-                }
-            }
-
             return false;
         }
 
-        const ImageFrameAttachment& ImageScopeAttachment::GetFrameAttachment() const
+        for (auto& resolveScope : GetScope().GetResolveAttachments())
         {
-            return static_cast<const ImageFrameAttachment&>(ScopeAttachment::GetFrameAttachment());
+            if (resolveScope->GetDescriptor().m_resolveAttachmentId == m_descriptor.m_attachmentId)
+            {
+                return true;
+            }
         }
 
-        ImageFrameAttachment& ImageScopeAttachment::GetFrameAttachment()
-        {
-            return static_cast<ImageFrameAttachment&>(ScopeAttachment::GetFrameAttachment());
-        }
+        return false;
+    }
 
-        const ImageScopeAttachment* ImageScopeAttachment::GetPrevious() const
-        {
-            return static_cast<const ImageScopeAttachment*>(ScopeAttachment::GetPrevious());
-        }
+    const ImageFrameAttachment& ImageScopeAttachment::GetFrameAttachment() const
+    {
+        return static_cast<const ImageFrameAttachment&>(ScopeAttachment::GetFrameAttachment());
+    }
 
-        ImageScopeAttachment* ImageScopeAttachment::GetPrevious()
-        {
-            return static_cast<ImageScopeAttachment*>(ScopeAttachment::GetPrevious());
-        }
+    ImageFrameAttachment& ImageScopeAttachment::GetFrameAttachment()
+    {
+        return static_cast<ImageFrameAttachment&>(ScopeAttachment::GetFrameAttachment());
+    }
 
-        const ImageScopeAttachment* ImageScopeAttachment::GetNext() const
-        {
-            return static_cast<const ImageScopeAttachment*>(ScopeAttachment::GetNext());
-        }
+    const ImageScopeAttachment* ImageScopeAttachment::GetPrevious() const
+    {
+        return static_cast<const ImageScopeAttachment*>(ScopeAttachment::GetPrevious());
+    }
 
-        ImageScopeAttachment* ImageScopeAttachment::GetNext()
-        {
-            return static_cast<ImageScopeAttachment*>(ScopeAttachment::GetNext());
-        }
+    ImageScopeAttachment* ImageScopeAttachment::GetPrevious()
+    {
+        return static_cast<ImageScopeAttachment*>(ScopeAttachment::GetPrevious());
+    }
+
+    const ImageScopeAttachment* ImageScopeAttachment::GetNext() const
+    {
+        return static_cast<const ImageScopeAttachment*>(ScopeAttachment::GetNext());
+    }
+
+    ImageScopeAttachment* ImageScopeAttachment::GetNext()
+    {
+        return static_cast<ImageScopeAttachment*>(ScopeAttachment::GetNext());
+    }
+
+    const ScopeAttachmentDescriptor& ImageScopeAttachment::GetScopeAttachmentDescriptor() const
+    {
+        return GetDescriptor();
     }
 }

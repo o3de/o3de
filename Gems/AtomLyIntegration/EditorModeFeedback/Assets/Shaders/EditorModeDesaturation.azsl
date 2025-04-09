@@ -7,13 +7,6 @@
  */
  
 #include <EditorModeCommon.azsli>
-#include <EditorModeDepthTransition.azsli>
- 
-partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{ 
-    //! Amount of desaturation to apply.
-    float m_desaturationAmount;
-}
 
 PSOutput MainPS(VSOutput IN)
 {

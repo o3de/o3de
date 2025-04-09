@@ -45,17 +45,17 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual DiskShapeConfig GetDiskConfiguration() = 0;
+        virtual const DiskShapeConfig& GetDiskConfiguration() const = 0;
 
         //! @brief Returns the radius for the disk shape component.
-        virtual float GetRadius() = 0;
+        virtual float GetRadius() const = 0;
 
         //! @brief Sets the radius for the disk shape component.
         //! @param radius new Radius of the disk shape.
         virtual void SetRadius(float radius) = 0;
 
         //! @brief Convenience function that returns the facing normal for the disk determined by the transform component.
-        virtual const AZ::Vector3& GetNormal() = 0;
+        virtual const AZ::Vector3& GetNormal() const = 0;
 
     };
 

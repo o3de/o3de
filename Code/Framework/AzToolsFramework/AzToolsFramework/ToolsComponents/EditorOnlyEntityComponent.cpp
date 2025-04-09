@@ -40,12 +40,12 @@ namespace AzToolsFramework
 
         void EditorOnlyEntityComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorOnlyEntityService", 0x7010c39d));
+            services.push_back(AZ_CRC_CE("EditorOnlyEntityService"));
         }
 
         void EditorOnlyEntityComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorOnlyEntityService", 0x7010c39d));
+            services.push_back(AZ_CRC_CE("EditorOnlyEntityService"));
         }
 
         EditorOnlyEntityComponent::EditorOnlyEntityComponent()

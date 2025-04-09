@@ -979,72 +979,6 @@ class TestsAssetBundlerBatch(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.test_case_id("C16877175")
-    @pytest.mark.test_case_id("C16877177")
-    def test_AP_BundleProcessing_BundleProcessedAtRuntime(self, workspace, bundler_batch_helper, asset_processor,
-                                                          ap_setup_fixture, request):
-        """
-        Test to make sure the AP GUI will process a newly created bundle file
-
-        Test Steps:
-        1. Make asset list file (used for bundle creation)
-        2. Start Asset Processor GUI
-        3. Make bundle in <project_folder>/Bundles
-        4. Validate file was created in Bundles folder
-        5. Make sure bundle now exists in cache
-        """
-        # Set up helpers and variables
-        test_folder_name = "asset_bundler_test_assets"
-        helper = bundler_batch_helper
-        self.ap_prepare_test_environment(test_folder_name, asset_processor, ap_setup_fixture, helper)
-        seed_asset = os.path.join(asset_processor.project_test_cache_folder(), "txtfile_0.txt")
-
-        # Make sure file gets deleted on teardown
-        request.addfinalizer(lambda: fs.delete([bundle_result_path], True, False))
-
-        bundles_folder = os.path.join(bundler_batch_helper["project_path"], "Bundles")
-        bundle_request_path = os.path.join(bundles_folder, "bundle.pak")
-        bundle_result_path = os.path.join(bundles_folder,
-                                          helper.platform_file_name("bundle.pak", workspace.asset_processor_platform))
-
-        bundle_cache_path = os.path.join(helper["cache"], ASSET_PROCESSOR_PLATFORM_MAP.get(workspace.asset_processor_platform), "Bundles",
-                                         helper.platform_file_name("bundle.pak", workspace.asset_processor_platform))
-        # Create target 'Bundles' folder if DNE
-        if not os.path.exists(bundles_folder):
-            os.mkdir(bundles_folder)
-        # Delete target bundle file if it already exists
-        if os.path.exists(bundle_result_path):
-            fs.delete([bundle_result_path], True, False)
-
-        # Make asset list file (used for bundle creation)
-        helper.call_assetLists(
-            addSeed=seed_asset,
-            assetListFile=helper["asset_info_file_request"],
-        )
-
-        # Run Asset Processor GUI
-        result, _ = asset_processor.gui_process()
-        assert result, "AP GUI failed"
-
-        asset_processor.wait_for_idle(timeout=5)
-
-        # Make bundle in <project_folder>/Bundles
-        helper.call_bundles(
-            assetListFile=helper["asset_info_file_result"],
-            outputBundlePath=bundle_request_path,
-            maxSize="2048",
-        )
-
-        # Ensure file was created
-        assert os.path.exists(bundle_result_path), f"Bundle was not created at location: {bundle_result_path}"
-
-        waiter.wait_for(lambda: os.path.exists(bundle_cache_path), timeout=10)
-
-        # Make sure bundle now exists in cache
-        assert os.path.exists(bundle_cache_path), f"{bundle_cache_path} not found"
-
-    @pytest.mark.BAT
-    @pytest.mark.assetpipeline
     @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14630")
     def test_FilesMarkedSkip_FilesAreSkipped(self, workspace, asset_processor, ap_setup_fixture, bundler_batch_helper):
         """
@@ -1190,8 +1124,8 @@ class TestsAssetBundlerBatch(object):
 
         asset_processor.batch_process(platforms=workspace.asset_processor_platform)
         expected_assets = [
-            "objects/cube_lod0.azlod",
-            "objects/cube_lod0_index.azbuffer",
+            "objects/cube_lod0.fbx.azlod",
+            "objects/cube_lod0_index.fbx.azbuffer",
             "resourcepools/defaultvertexbufferpool.pool"
         ]
         # Test Asset Structure:
@@ -1204,10 +1138,10 @@ class TestsAssetBundlerBatch(object):
         # Even if we exclude all parents besides "ParentA", we should still have "CommonChild" since it is a product dependency of "ParentA"
         bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
-            addSeed="objects/cube_lod0.azlod",
-            skip="objects/cube_lod0_position0.azbuffer, objects/cube_lod0_tangent0.azbuffer,"
-                 "objects/cube_lod0_normal0.azbuffer, objects/cube_lod0_bitangent0.azbuffer,"
-                 "objects/cube_lod0_uv0.azbuffer",
+            addSeed="objects/cube_lod0.fbx.azlod",
+            skip="objects/cube_lod0_position0.fbx.azbuffer, objects/cube_lod0_tangent0.fbx.azbuffer,"
+                 "objects/cube_lod0_normal0.fbx.azbuffer, objects/cube_lod0_bitangent0.fbx.azbuffer,"
+                 "objects/cube_lod0_uv0.fbx.azbuffer",
             platform=workspace.asset_processor_platform
         )
         assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])

@@ -13,6 +13,39 @@
 
 namespace TestImpact
 {
+    Timer::Timer()
+        : m_startTime(AZStd::chrono::steady_clock::now())
+    {
+    }
+
+    AZStd::chrono::steady_clock::time_point Timer::GetStartTimePoint() const
+    {
+        return m_startTime;
+    }
+
+    AZStd::chrono::steady_clock::time_point Timer::GetStartTimePointRelative(const Timer& start) const
+    {
+        return AZStd::chrono::steady_clock::time_point() +
+            AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(m_startTime - start.GetStartTimePoint());
+    }
+
+    AZStd::chrono::milliseconds Timer::GetElapsedMs() const
+    {
+        const auto endTime = AZStd::chrono::steady_clock::now();
+        return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - m_startTime);
+    }
+
+    AZStd::chrono::steady_clock::time_point Timer::GetElapsedTimepoint() const
+    {
+        const auto endTime = AZStd::chrono::steady_clock::now();
+        return m_startTime + AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - m_startTime);
+    }
+
+    void Timer::ResetStartTimePoint()
+    {
+        m_startTime = AZStd::chrono::steady_clock::now();
+    }
+
     size_t DeleteFiles(const RepoPath& path, const AZStd::string& pattern)
     {
         size_t numFilesDeleted = 0;
@@ -220,20 +253,6 @@ namespace TestImpact
         default:
             throw(Exception(AZStd::string::format(
                 "Unexpected dynamic dependency map policy: %u", aznumeric_cast<AZ::u32>(dynamicDependencyMapPolicy))));
-        }
-    }
-
-    AZStd::string TestShardingPolicyAsString(Policy::TestSharding testShardingPolicy)
-    {
-        switch (testShardingPolicy)
-        {
-        case Policy::TestSharding::Always:
-            return "always";
-        case Policy::TestSharding::Never:
-            return "never";
-        default:
-            throw(Exception(
-                AZStd::string::format("Unexpected test sharding policy: %u", aznumeric_cast<AZ::u32>(testShardingPolicy))));
         }
     }
 

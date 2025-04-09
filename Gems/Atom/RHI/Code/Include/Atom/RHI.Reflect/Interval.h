@@ -12,22 +12,26 @@
 namespace AZ
 {
     class ReflectContext;
+}
 
-    namespace RHI
+namespace AZ::RHI
+{
+    struct Interval
     {
-        struct Interval
-        {
-            AZ_TYPE_INFO(Interval, "{B121C9FE-1C23-4721-9C3E-6BE036612743}");
-            static void Reflect(AZ::ReflectContext* context);
+        AZ_TYPE_INFO(Interval, "{B121C9FE-1C23-4721-9C3E-6BE036612743}");
+        static void Reflect(AZ::ReflectContext* context);
 
-            Interval() = default;
-            Interval(uint32_t min, uint32_t max);
+        Interval() = default;
+        Interval(uint32_t min, uint32_t max);
 
-            uint32_t m_min = 0;
-            uint32_t m_max = 0;
+        uint32_t m_min = 0;
+        uint32_t m_max = 0;
 
-            bool operator == (const Interval& rhs) const;
-            bool operator != (const Interval& rhs) const;
-        };
-    }
+        bool operator == (const Interval& rhs) const;
+        bool operator != (const Interval& rhs) const;
+
+        //! Return true if it overlaps with an interval.
+        //! Overlapping m_min or m_max counts as interval overlap (e.g. [0, 3] overlaps with [3, 4])
+        bool Overlaps(const Interval& rhs) const;
+    };
 }

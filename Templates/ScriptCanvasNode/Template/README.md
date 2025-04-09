@@ -10,7 +10,7 @@ This guide will assume that you have created a gem called `YourGem` using the co
 ```
 
 
-## Instanciate the template
+## Instantiate the template
 From your gems folder call this command:
 
 ```

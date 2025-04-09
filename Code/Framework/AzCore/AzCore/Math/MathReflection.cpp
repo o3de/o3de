@@ -20,6 +20,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/VectorN.h>
 #include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/MathVectorSerializer.h>
 #include <AzCore/Math/Color.h>
@@ -30,6 +31,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/MatrixMxN.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Plane.h>
@@ -371,10 +373,12 @@ namespace AZ
             Vector2::Reflect(context);
             Vector3::Reflect(context);
             Vector4::Reflect(context);
+            VectorN::Reflect(context);
             Quaternion::Reflect(context);
             Matrix3x3::Reflect(context);
             Matrix3x4::Reflect(context);
             Matrix4x4::Reflect(context);
+            MatrixMxN::Reflect(context);
             Frustum::Reflect(context);
             Plane::Reflect(context);
             Transform::Reflect(context);

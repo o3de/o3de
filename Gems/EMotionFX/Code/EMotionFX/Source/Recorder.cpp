@@ -92,8 +92,20 @@ namespace EMotionFX
             ;
     }
 
+    Recorder::EventHistoryItem::EventHistoryItem():
+        m_eventIndex(InvalidIndex),
+        m_trackIndex(InvalidIndex),
+        m_emitterNodeId(AnimGraphNodeId()),
+        m_animGraphId(MCORE_INVALIDINDEX32),
+        m_color(AnimGraph::RandomGraphColor()),
+        m_startTime(),
+        m_endTime(),
+        m_isTickEvent() {
+
+    }
+
     Recorder::Recorder()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_isInPlayMode   = false;
         m_isRecording    = false;

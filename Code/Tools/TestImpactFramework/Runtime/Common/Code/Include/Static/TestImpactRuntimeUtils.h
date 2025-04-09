@@ -30,28 +30,6 @@ namespace TestImpact
 {
     static inline constexpr const char* const LogCallSite = "TestImpact";
 
-    //! Simple helper class for tracking basic timing information.
-    class Timer
-    {
-    public:
-        Timer();
-
-        //! Returns the time point that the timer was instantiated.
-        AZStd::chrono::steady_clock::time_point GetStartTimePoint() const;
-
-        //! Returns the time point that the timer was instantiated relative to the specified starting time point.
-        AZStd::chrono::steady_clock::time_point GetStartTimePointRelative(const Timer& start) const;
-
-        //! Returns the time elapsed (in milliseconds) since the timer was instantiated.
-        AZStd::chrono::milliseconds GetElapsedMs() const;
-
-        //! Returns the current time point relative to the time point the timer was instantiated.
-        AZStd::chrono::steady_clock::time_point GetElapsedTimepoint() const;
-
-    private:
-        AZStd::chrono::steady_clock::time_point m_startTime;
-    };
-
     //! Attempts to read all of the target descriptor files from the specified configuration directories.
     AZStd::vector<TargetDescriptor> ReadTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig);
 

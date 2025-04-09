@@ -605,55 +605,14 @@ namespace AZ
         }
 
         AZ::Uuid typeUuid = AzTypeInfo<T>::Uuid();
-        AZ_Assert(!typeUuid.IsNull(), "Type %s has no AZ_TYPE_INFO or AZ_RTTI.  Please use an AZ_RTTI or AZ_TYPE_INFO declaration before trying to use it in reflection contexts.", name ? name : "<Unknown class>");
-        if (typeUuid.IsNull())
-        {
-            return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
-        }
+        BehaviorClass* behaviorClass = ClassImpl(name, typeUuid, GetRttiHelper<T>(), AZStd::alignment_of<T>::value, sizeof(T));
 
-        auto classTypeIt = m_typeToClassMap.find(typeUuid);
-        if (IsRemovingReflection())
+        if (behaviorClass == nullptr)
         {
-            if (classTypeIt != m_typeToClassMap.end())
-            {
-                // find it in the name category
-                auto nameIt = m_classes.find(name);
-                while (nameIt != m_classes.end())
-                {
-                    if (nameIt->second == classTypeIt->second)
-                    {
-                        m_classes.erase(nameIt);
-                        break;
-                    }
-                }
-                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveClass, name, classTypeIt->second);
-                delete classTypeIt->second;
-                m_typeToClassMap.erase(classTypeIt);
-            }
             return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
         }
         else
         {
-            if (classTypeIt != m_typeToClassMap.end())
-            {
-                AZ_Error("Reflection", false, "Class '%s' is already registered using Uuid: %s!", name, classTypeIt->first.ToFixedString().c_str());
-                return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
-            }
-
-            // TODO: make it a set and use the name inside the class
-            if (m_classes.find(name) != m_classes.end())
-            {
-                AZ_Error("Reflection", false, "A class with name '%s' is already registered!", name);
-                return ClassBuilder<T>(this, static_cast<BehaviorClass*>(nullptr));
-            }
-
-            BehaviorClass* behaviorClass = aznew BehaviorClass();
-            behaviorClass->m_typeId = AzTypeInfo<T>::Uuid();
-            behaviorClass->m_azRtti = GetRttiHelper<T>();
-            behaviorClass->m_alignment = AZStd::alignment_of<T>::value;
-            behaviorClass->m_size = sizeof(T);
-            behaviorClass->m_name = name;
-
             // enumerate all base classes (RTTI), we store only the IDs to allow for our of order reflection
             // At runtime it will be more efficient to have the pointers to the classes. Analyze in practice and cache them if needed.
             AZ::RttiEnumHierarchy<T>(

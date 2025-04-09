@@ -15,6 +15,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TrackDataWidget.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 #include <EMotionFX/Source/MotionEventTrack.h>
+
 #include <QAction>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -30,6 +31,8 @@
 #include <QKeySequence>
 #include <QDragEnterEvent>
 #include <QToolBar>
+
+#include <AzQtComponents/Utilities/Conversions.h>
 
 
 namespace EMStudio
@@ -171,7 +174,7 @@ namespace EMStudio
 
             // create table items
             QPixmap colorPixmap(16, 16);
-            const QColor eventColor(motionEventPreset->GetEventColor());
+            const QColor eventColor(AzQtComponents::toQColor(motionEventPreset->GetEventColor()));
             colorPixmap.fill(eventColor);
             QIcon icon;
             icon.addPixmap(colorPixmap);

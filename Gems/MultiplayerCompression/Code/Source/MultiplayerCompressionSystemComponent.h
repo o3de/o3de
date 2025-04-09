@@ -25,21 +25,22 @@ namespace MultiplayerCompression
     public:
         AZ_COMPONENT(MultiplayerCompressionSystemComponent, "{C3099AC9-47A6-41D2-8928-F38F904BAC1B}");
 
-        MultiplayerCompressionSystemComponent();
-        ~MultiplayerCompressionSystemComponent() override;
+        MultiplayerCompressionSystemComponent() = default;
+        ~MultiplayerCompressionSystemComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override {}
-        void Activate() override {}
-        void Deactivate() override {}
+        void Activate() override;
+        void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
     private:
-        MultiplayerCompressionFactory* m_multiplayerCompressionFactory;
+        AZStd::string_view m_multiplayerCompressionFactoryName;
     };
 }

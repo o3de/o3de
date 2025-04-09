@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobileDisplayMapperTemplate",
+            "PassClass": "DisplayMapperPass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "Input",
+                    "Output" : "Output"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/DisplayMapper.shader"
+                }
+            }
+        }
+    }
+}

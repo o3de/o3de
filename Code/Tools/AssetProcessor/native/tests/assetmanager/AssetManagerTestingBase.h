@@ -100,6 +100,8 @@ namespace UnitTests
         void SetUp() override;
         void TearDown() override;
 
+        virtual void SetupScanfolders(AZ::IO::Path assetRootDir, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& platforms);
+
         static constexpr int AssetSubId = 1;
         static constexpr int ExtraAssetSubId = 2;
         static constexpr int MetadataProcessingDelayMs = 1;
@@ -118,16 +120,19 @@ namespace UnitTests
         void ProcessFileMultiStage(
             int endStage,
             bool doProductOutputCheck,
-            const char* file = nullptr,
+            AssetProcessor::SourceAssetReference = {},
             int startStage = 1,
             bool expectAutofail = false,
             bool hasExtraFile = false);
 
         AssetBuilderSDK::CreateJobFunction CreateJobStage(
-            const AZStd::string& name, bool commonPlatform, const AZStd::string& sourceDependencyPath = "");
+            const AZStd::string& name, bool commonPlatform, const AzToolsFramework::AssetDatabase::PathOrUuid& sourceDependency = {});
 
         AssetBuilderSDK::ProcessJobFunction ProcessJobStage(
-            const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile);
+            const AZStd::string& outputExtension,
+            AssetBuilderSDK::ProductOutputFlags flags,
+            bool outputExtraFile,
+            AZ::Data::AssetId productDependency = {});
 
         void CreateBuilder(
             const char* name,

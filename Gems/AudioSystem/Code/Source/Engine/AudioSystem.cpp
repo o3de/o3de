@@ -240,7 +240,7 @@ namespace Audio
         if (!handleBlockingRequest)
         {
             auto endUpdateTime = AZStd::chrono::steady_clock::now();      // stamp the end time
-            auto elapsedUpdateTime = AZStd::chrono::duration_cast<duration_ms>(endUpdateTime - startUpdateTime);
+            auto elapsedUpdateTime = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(endUpdateTime - startUpdateTime);
             if (elapsedUpdateTime < m_targetUpdatePeriod)
             {
                 AZ_PROFILE_SCOPE(Audio, "Wait Remaining Time in Update Period");
@@ -277,6 +277,10 @@ namespace Audio
     {
         AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::Release - called from a non-Main thread!");
 
+        // Mark the system as uninitialized before we destroy the audio proxies so that we can avoid
+        // recycling them on system shutdown.
+        m_bSystemInitialized = false;
+
         for (auto audioProxy : m_apAudioProxies)
         {
             azdestroy(audioProxy, Audio::AudioSystemAllocator);
@@ -296,7 +300,6 @@ namespace Audio
 
         m_audioSystemThread.Deactivate();
         m_oATL.ShutDown();
-        m_bSystemInitialized = false;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -431,6 +434,12 @@ namespace Audio
     {
         AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::RecycleAudioProxy - called from a non-Main thread!");
         auto const audioProxy = static_cast<CAudioProxy*>(audioProxyI);
+
+        // If the system is shutting down, don't recycle the audio proxies.
+        if (!m_bSystemInitialized)
+        {
+            return;
+        }
 
         if (AZStd::find(m_apAudioProxiesToBeFreed.begin(), m_apAudioProxiesToBeFreed.end(), audioProxy) != m_apAudioProxiesToBeFreed.end()
             || AZStd::find(m_apAudioProxies.begin(), m_apAudioProxies.end(), audioProxy) != m_apAudioProxies.end())

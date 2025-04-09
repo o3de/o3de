@@ -27,10 +27,10 @@ namespace AZ
                 streamingImagePoolAsset);
         }
 
-        Data::Instance<StreamingImagePool> StreamingImagePool::CreateInternal(RHI::Device& device, StreamingImagePoolAsset& streamingImagePoolAsset)
+        Data::Instance<StreamingImagePool> StreamingImagePool::CreateInternal(StreamingImagePoolAsset& streamingImagePoolAsset)
         {
             Data::Instance<StreamingImagePool> streamingImagePool = aznew StreamingImagePool();
-            const RHI::ResultCode resultCode = streamingImagePool->Init(device, streamingImagePoolAsset);
+            const RHI::ResultCode resultCode = streamingImagePool->Init(streamingImagePoolAsset);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -40,7 +40,7 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode StreamingImagePool::Init(RHI::Device& device, StreamingImagePoolAsset& poolAsset)
+        RHI::ResultCode StreamingImagePool::Init(StreamingImagePoolAsset& poolAsset)
         {
             AZ_PROFILE_FUNCTION(RPI);
 
@@ -53,9 +53,8 @@ namespace AZ
                 }
             }
 
-            RHI::Ptr<RHI::StreamingImagePool> pool = RHI::Factory::Get().CreateStreamingImagePool();
-
-            const RHI::ResultCode resultCode = pool->Init(device, poolAsset.GetPoolDescriptor());
+            RHI::Ptr<RHI::StreamingImagePool> pool = aznew RHI::StreamingImagePool;
+            const RHI::ResultCode resultCode = pool->Init(poolAsset.GetPoolDescriptor());
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -74,7 +73,6 @@ namespace AZ
             // Add image to controller only if the image is streamable 
             if (image->IsStreamable())
             {
-                m_streamableImageCount++;
                 m_controller->AttachImage(image);
             }
         }
@@ -83,7 +81,6 @@ namespace AZ
         {
             if (image->IsStreamable())
             {
-                m_streamableImageCount--;
                 m_controller->DetachImage(image);
             }
         }
@@ -110,7 +107,7 @@ namespace AZ
 
         uint32_t StreamingImagePool::GetStreamableImageCount() const
         {
-            return m_streamableImageCount;
+            return m_controller->GetStreamableImageCount();
         }
 
         bool StreamingImagePool::SetMemoryBudget(size_t newBudgetInBytes)

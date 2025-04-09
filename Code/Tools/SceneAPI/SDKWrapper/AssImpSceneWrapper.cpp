@@ -11,7 +11,6 @@
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
@@ -48,7 +47,7 @@ namespace AZ
         }
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName)
+        bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName, const AZ::SceneAPI::SceneImportSettings& importSettings)
         {
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "AssImpSceneWrapper::LoadSceneFromFile %s", fileName);
             AZ_TraceContext("Filename", fileName);
@@ -72,6 +71,13 @@ namespace AZ
             // aiProcess_JoinIdenticalVertices is not enabled because O3DE has a mesh optimizer that also does this,
             // this flag is disabled to keep AssImp output similar to FBX SDK to reduce downstream bugs for the initial AssImp release.
             // There's currently a minimum of properties and flags set to maximize compatibility with the existing node graph.
+            unsigned int importFlags =
+                aiProcess_Triangulate                                               // Triangulates all faces of all meshes
+                | static_cast<unsigned long>(aiProcess_GenBoundingBoxes)            // Generate bounding boxes
+                | aiProcess_GenNormals                                              // Generate normals for meshes
+                | (importSettings.m_optimizeScene ? aiProcess_OptimizeGraph : 0)    // Merge excess scene nodes together
+                | (importSettings.m_optimizeMeshes ? aiProcess_OptimizeMeshes : 0)  // Combines meshes in the scene together
+                ;
 
             // aiProcess_LimitBoneWeights is not enabled because it will remove bones which are not associated with a mesh.
             // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
@@ -82,9 +88,7 @@ namespace AZ
             // This is here as a bread crumb to save others times investigating issues with empty bones.
             // m_importer.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
             m_sceneFileName = fileName;
-            m_assImpScene = m_importer->ReadFile(fileName,
-                aiProcess_Triangulate //Triangulates all faces of all meshes
-                | aiProcess_GenNormals); //Generate normals for meshes
+            m_assImpScene = m_importer->ReadFile(fileName, importFlags);
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
             // Reset abort behavior for anything else that may call abort.
@@ -100,21 +104,51 @@ namespace AZ
                 return false;
             }
 
+            CalculateAABBandVertices(m_assImpScene, m_aabb, m_vertices);
+
             return true;
         }
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const AZStd::string& fileName)
+        bool AssImpSceneWrapper::LoadSceneFromFile(const AZStd::string& fileName, const AZ::SceneAPI::SceneImportSettings& importSettings)
         {
-            return LoadSceneFromFile(fileName.c_str());
+            return LoadSceneFromFile(fileName.c_str(), importSettings);
         }
 
         const std::shared_ptr<SDKNode::NodeWrapper> AssImpSceneWrapper::GetRootNode() const
         {
             return std::shared_ptr<SDKNode::NodeWrapper>(new AssImpNodeWrapper(m_assImpScene->mRootNode));
         }
+
         std::shared_ptr<SDKNode::NodeWrapper> AssImpSceneWrapper::GetRootNode()
         {
             return std::shared_ptr<SDKNode::NodeWrapper>(new AssImpNodeWrapper(m_assImpScene->mRootNode));
+        }
+
+        void AssImpSceneWrapper::CalculateAABBandVertices(const aiScene* scene, aiAABB& aabb, uint32_t& vertices)
+        {
+            if (scene->HasMeshes())
+            {
+                aabb = scene->mMeshes[0]->mAABB;
+                vertices = scene->mMeshes[0]->mNumVertices;
+
+                for (unsigned int i = 1; i < scene->mNumMeshes; ++i)
+                {
+                    const aiAABB& thisAabb = scene->mMeshes[i]->mAABB;
+                    if (thisAabb.mMin.x < aabb.mMin.x)
+                        aabb.mMin.x = thisAabb.mMin.x;
+                    if (thisAabb.mMin.y < aabb.mMin.y)
+                        aabb.mMin.y = thisAabb.mMin.y;
+                    if (thisAabb.mMin.z < aabb.mMin.z)
+                        aabb.mMin.z = thisAabb.mMin.z;
+                    if (thisAabb.mMax.x > aabb.mMax.x)
+                        aabb.mMax.x = thisAabb.mMax.x;
+                    if (thisAabb.mMax.y > aabb.mMax.y)
+                        aabb.mMax.y = thisAabb.mMax.y;
+                    if (thisAabb.mMax.z > aabb.mMax.z)
+                        aabb.mMax.z = thisAabb.mMax.z;
+                    vertices += scene->mMeshes[i]->mNumVertices;
+                }
+            }
         }
 
         void AssImpSceneWrapper::Clear()

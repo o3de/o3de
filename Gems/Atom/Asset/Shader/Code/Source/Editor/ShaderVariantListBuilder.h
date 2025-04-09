@@ -38,11 +38,6 @@ namespace AZ
         public:
             AZ_TYPE_INFO_WITH_NAME_DECL(ShaderVariantListBuilder);
 
-            // TODO. Because we are merging this code in phases, we start with the "shadervariantlist2"
-            // extension which is the same "shadervariantlist" file format the we all know and love.
-            // Later we'll do another PR that actually referenced the "shadervariantlist" extension.
-            static constexpr char Extension[] = "shadervariantlist2";
-
             static constexpr char JobKey[] = "HashedShaderVariantList";
 
             ShaderVariantListBuilder() = default;

@@ -1,0 +1,48 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_VectorNFunctions_GetClamp",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Get Clamp"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_VectorNFunctions_GetClamp",
+                    "details": {
+                        "name": "Get Clamp"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "Min"
+                            }
+                        },
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "Max"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "VectorN"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

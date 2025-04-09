@@ -41,7 +41,6 @@ namespace AZ
 
         private:
 
-            AZ::Data::Asset<MaterialAsset> CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const;
             bool ShouldReportMaterialAssetWarningsAsErrors() const;
             AZStd::string GetBuilderSettingsFingerprint() const;
             

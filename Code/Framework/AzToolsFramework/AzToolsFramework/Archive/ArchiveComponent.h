@@ -75,7 +75,6 @@ namespace AzToolsFramework
     private:
         AZ::IO::FileIOBase* m_fileIO = nullptr;
         AZ::IO::IArchive* m_archive = nullptr;
-        AZStd::vector<AZStd::thread> m_threads;
 
         bool CheckParamsForAdd(const AZStd::string& directory, const AZStd::string& file);
         bool CheckParamsForExtract(const AZStd::string& archive, const AZStd::string& directory);

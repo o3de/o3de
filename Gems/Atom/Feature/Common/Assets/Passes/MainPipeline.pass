@@ -314,7 +314,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/ScreenSpace/DeferredFog.shader"
                         },
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {
@@ -388,7 +388,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "auxgeom",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {

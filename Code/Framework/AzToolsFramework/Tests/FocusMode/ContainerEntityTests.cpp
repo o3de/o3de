@@ -255,7 +255,7 @@ namespace UnitTest
         m_containerEntityInterface->SetContainerOpen(m_entityMap[SportsCarEntityName], true);
 
         AZ::EntityId selectedEntityId = m_containerEntityInterface->FindHighestSelectableEntity(m_entityMap[Passenger2EntityName]);
-        EXPECT_EQ(selectedEntityId, m_entityMap[Passenger2EntityName]);
+        EXPECT_EQ(selectedEntityId, m_entityMap[SportsCarEntityName]);
 
         // Restore default state for other tests.
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[SportsCarEntityName]);
@@ -283,7 +283,7 @@ namespace UnitTest
         m_containerEntityInterface->SetContainerOpen(m_entityMap[StreetEntityName], true);
 
         AZ::EntityId selectedEntityId = m_containerEntityInterface->FindHighestSelectableEntity(m_entityMap[Passenger2EntityName]);
-        EXPECT_EQ(selectedEntityId, m_entityMap[SportsCarEntityName]);
+        EXPECT_EQ(selectedEntityId, m_entityMap[StreetEntityName]);
 
         // Restore default state for other tests.
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);

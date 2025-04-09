@@ -127,34 +127,150 @@ static_assert(AZ_VA_NUM_ARGS(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
 
 #endif // AZ_VA_NUM_ARGS
 
-// Joins two macro paramters together
-#define AZ_JOIN(X, Y) AZSTD_DO_JOIN(X, Y)
-#define AZSTD_DO_JOIN(X, Y) AZSTD_DO_JOIN2(X, Y)
-#define AZSTD_DO_JOIN2(X, Y) X##Y
+// Macro which does nothing with its argument
+// It can be used as a unary predicate for the AZ_FOR_EACH* macros
+#define AZ_IDENITY_MACRO(X) X
+
+// The following is used to join the AZ_JOIN_EACH_<N> function in order to implement
+// the AZ_JOIN function which can join 2 or more parameters
+#define AZ_JOIN_TWO_INTERNAL_II(X, Y) X##Y
+#define AZ_JOIN_TWO_INTERNAL_I(X, Y) AZ_JOIN_TWO_INTERNAL_II(X, Y)
+#define AZ_JOIN_TWO_INTERNAL(X, Y) AZ_JOIN_TWO_INTERNAL_I(X, Y)
+
+// For each macro where with no bound arguments
+#define AZ_JOIN_EACH_0(  param)
+#define AZ_JOIN_EACH_1(  param)      param
+#define AZ_JOIN_EACH_2(  param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_1(__VA_ARGS__))
+#define AZ_JOIN_EACH_3(  param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_2(__VA_ARGS__))
+#define AZ_JOIN_EACH_4(  param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_3(__VA_ARGS__))
+#define AZ_JOIN_EACH_5(  param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_4(__VA_ARGS__))
+#define AZ_JOIN_EACH_6(  param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_5(__VA_ARGS__))
+#define AZ_JOIN_EACH_7(  param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_6(__VA_ARGS__))
+#define AZ_JOIN_EACH_8(  param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_7(__VA_ARGS__))
+#define AZ_JOIN_EACH_9(  param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_8(__VA_ARGS__))
+#define AZ_JOIN_EACH_10( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_9(__VA_ARGS__))
+#define AZ_JOIN_EACH_11( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_10(__VA_ARGS__))
+#define AZ_JOIN_EACH_12( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_11(__VA_ARGS__))
+#define AZ_JOIN_EACH_13( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_12(__VA_ARGS__))
+#define AZ_JOIN_EACH_14( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_13(__VA_ARGS__))
+#define AZ_JOIN_EACH_15( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_14(__VA_ARGS__))
+#define AZ_JOIN_EACH_16( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_15(__VA_ARGS__))
+#define AZ_JOIN_EACH_17( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_16(__VA_ARGS__))
+#define AZ_JOIN_EACH_18( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_17(__VA_ARGS__))
+#define AZ_JOIN_EACH_19( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_18(__VA_ARGS__))
+#define AZ_JOIN_EACH_20( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_19(__VA_ARGS__))
+#define AZ_JOIN_EACH_21( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_20(__VA_ARGS__))
+#define AZ_JOIN_EACH_22( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_21(__VA_ARGS__))
+#define AZ_JOIN_EACH_23( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_22(__VA_ARGS__))
+#define AZ_JOIN_EACH_24( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_23(__VA_ARGS__))
+#define AZ_JOIN_EACH_25( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_24(__VA_ARGS__))
+#define AZ_JOIN_EACH_26( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_25(__VA_ARGS__))
+#define AZ_JOIN_EACH_27( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_26(__VA_ARGS__))
+#define AZ_JOIN_EACH_28( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_27(__VA_ARGS__))
+#define AZ_JOIN_EACH_29( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_28(__VA_ARGS__))
+#define AZ_JOIN_EACH_30( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_29(__VA_ARGS__))
+#define AZ_JOIN_EACH_31( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_30(__VA_ARGS__))
+#define AZ_JOIN_EACH_32( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_31(__VA_ARGS__))
+#define AZ_JOIN_EACH_33( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_32(__VA_ARGS__))
+#define AZ_JOIN_EACH_34( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_33(__VA_ARGS__))
+#define AZ_JOIN_EACH_35( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_34(__VA_ARGS__))
+#define AZ_JOIN_EACH_36( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_35(__VA_ARGS__))
+#define AZ_JOIN_EACH_37( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_36(__VA_ARGS__))
+#define AZ_JOIN_EACH_38( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_37(__VA_ARGS__))
+#define AZ_JOIN_EACH_39( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_38(__VA_ARGS__))
+#define AZ_JOIN_EACH_40( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_39(__VA_ARGS__))
+#define AZ_JOIN_EACH_41( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_40(__VA_ARGS__))
+#define AZ_JOIN_EACH_42( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_41(__VA_ARGS__))
+#define AZ_JOIN_EACH_43( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_42(__VA_ARGS__))
+#define AZ_JOIN_EACH_44( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_43(__VA_ARGS__))
+#define AZ_JOIN_EACH_45( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_44(__VA_ARGS__))
+#define AZ_JOIN_EACH_46( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_45(__VA_ARGS__))
+#define AZ_JOIN_EACH_47( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_46(__VA_ARGS__))
+#define AZ_JOIN_EACH_48( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_47(__VA_ARGS__))
+#define AZ_JOIN_EACH_49( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_48(__VA_ARGS__))
+#define AZ_JOIN_EACH_50( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_49(__VA_ARGS__))
+#define AZ_JOIN_EACH_51( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_50(__VA_ARGS__))
+#define AZ_JOIN_EACH_52( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_51(__VA_ARGS__))
+#define AZ_JOIN_EACH_53( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_52(__VA_ARGS__))
+#define AZ_JOIN_EACH_54( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_53(__VA_ARGS__))
+#define AZ_JOIN_EACH_55( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_54(__VA_ARGS__))
+#define AZ_JOIN_EACH_56( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_55(__VA_ARGS__))
+#define AZ_JOIN_EACH_57( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_56(__VA_ARGS__))
+#define AZ_JOIN_EACH_58( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_57(__VA_ARGS__))
+#define AZ_JOIN_EACH_59( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_58(__VA_ARGS__))
+#define AZ_JOIN_EACH_60( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_59(__VA_ARGS__))
+#define AZ_JOIN_EACH_61( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_60(__VA_ARGS__))
+#define AZ_JOIN_EACH_62( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_61(__VA_ARGS__))
+#define AZ_JOIN_EACH_63( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_62(__VA_ARGS__))
+#define AZ_JOIN_EACH_64( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_63(__VA_ARGS__))
+#define AZ_JOIN_EACH_65( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_64(__VA_ARGS__))
+#define AZ_JOIN_EACH_66( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_65(__VA_ARGS__))
+#define AZ_JOIN_EACH_67( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_66(__VA_ARGS__))
+#define AZ_JOIN_EACH_68( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_67(__VA_ARGS__))
+#define AZ_JOIN_EACH_69( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_68(__VA_ARGS__))
+#define AZ_JOIN_EACH_70( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_69(__VA_ARGS__))
+#define AZ_JOIN_EACH_71( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_70(__VA_ARGS__))
+#define AZ_JOIN_EACH_72( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_71(__VA_ARGS__))
+#define AZ_JOIN_EACH_73( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_72(__VA_ARGS__))
+#define AZ_JOIN_EACH_74( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_73(__VA_ARGS__))
+#define AZ_JOIN_EACH_75( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_74(__VA_ARGS__))
+#define AZ_JOIN_EACH_76( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_75(__VA_ARGS__))
+#define AZ_JOIN_EACH_77( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_76(__VA_ARGS__))
+#define AZ_JOIN_EACH_78( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_77(__VA_ARGS__))
+#define AZ_JOIN_EACH_79( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_78(__VA_ARGS__))
+#define AZ_JOIN_EACH_80( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_79(__VA_ARGS__))
+#define AZ_JOIN_EACH_81( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_80(__VA_ARGS__))
+#define AZ_JOIN_EACH_82( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_81(__VA_ARGS__))
+#define AZ_JOIN_EACH_83( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_82(__VA_ARGS__))
+#define AZ_JOIN_EACH_84( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_83(__VA_ARGS__))
+#define AZ_JOIN_EACH_85( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_84(__VA_ARGS__))
+#define AZ_JOIN_EACH_86( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_85(__VA_ARGS__))
+#define AZ_JOIN_EACH_87( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_86(__VA_ARGS__))
+#define AZ_JOIN_EACH_88( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_87(__VA_ARGS__))
+#define AZ_JOIN_EACH_89( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_88(__VA_ARGS__))
+#define AZ_JOIN_EACH_90( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_89(__VA_ARGS__))
+#define AZ_JOIN_EACH_91( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_90(__VA_ARGS__))
+#define AZ_JOIN_EACH_92( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_91(__VA_ARGS__))
+#define AZ_JOIN_EACH_93( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_92(__VA_ARGS__))
+#define AZ_JOIN_EACH_94( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_93(__VA_ARGS__))
+#define AZ_JOIN_EACH_95( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_94(__VA_ARGS__))
+#define AZ_JOIN_EACH_96( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_95(__VA_ARGS__))
+#define AZ_JOIN_EACH_97( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_96(__VA_ARGS__))
+#define AZ_JOIN_EACH_98( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_97(__VA_ARGS__))
+#define AZ_JOIN_EACH_99( param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_98(__VA_ARGS__))
+#define AZ_JOIN_EACH_100(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_99(__VA_ARGS__))
+#define AZ_JOIN_EACH_101(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_100(__VA_ARGS__))
+#define AZ_JOIN_EACH_102(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_101(__VA_ARGS__))
+#define AZ_JOIN_EACH_103(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_102(__VA_ARGS__))
+#define AZ_JOIN_EACH_104(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_103(__VA_ARGS__))
+#define AZ_JOIN_EACH_105(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_104(__VA_ARGS__))
+#define AZ_JOIN_EACH_106(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_105(__VA_ARGS__))
+#define AZ_JOIN_EACH_107(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_106(__VA_ARGS__))
+#define AZ_JOIN_EACH_108(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_107(__VA_ARGS__))
+#define AZ_JOIN_EACH_109(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_108(__VA_ARGS__))
+#define AZ_JOIN_EACH_110(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_109(__VA_ARGS__))
+#define AZ_JOIN_EACH_111(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_110(__VA_ARGS__))
+#define AZ_JOIN_EACH_112(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_111(__VA_ARGS__))
+#define AZ_JOIN_EACH_113(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_112(__VA_ARGS__))
+#define AZ_JOIN_EACH_114(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_113(__VA_ARGS__))
+#define AZ_JOIN_EACH_115(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_114(__VA_ARGS__))
+#define AZ_JOIN_EACH_116(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_115(__VA_ARGS__))
+#define AZ_JOIN_EACH_117(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_116(__VA_ARGS__))
+#define AZ_JOIN_EACH_118(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_117(__VA_ARGS__))
+#define AZ_JOIN_EACH_119(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_118(__VA_ARGS__))
+#define AZ_JOIN_EACH_120(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_119(__VA_ARGS__))
+#define AZ_JOIN_EACH_121(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_120(__VA_ARGS__))
+#define AZ_JOIN_EACH_122(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_121(__VA_ARGS__))
+#define AZ_JOIN_EACH_123(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_122(__VA_ARGS__))
+#define AZ_JOIN_EACH_124(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_123(__VA_ARGS__))
+#define AZ_JOIN_EACH_125(param, ...) AZ_JOIN_TWO_INTERNAL(param, AZ_JOIN_EACH_124(__VA_ARGS__))
+
 
 // Joins 2 or more macro parameters together
-#define AZ_JOIN_VA_ARGS_IMPL(X, ...) X ## __VA_ARGS__
-#define AZ_JOIN_VA_ARGS(X, ...) AZ_JOIN_VA_ARGS_IMPL(X, __VA_ARGS__)
-
-
-// Out of all supported compilers, mwerks is the only one
-// that requires variadic macros to have at least 1 param.
-// This is a pain they we use macros to call functions (with no params).
-
-// we implement functions for up to 10 params
-#define AZ_FUNCTION_CALL_1(_1)                                          _1()
-#define AZ_FUNCTION_CALL_2(_1, _2)                                      _1(_2)
-#define AZ_FUNCTION_CALL_3(_1, _2, _3)                                  _1(_2, _3)
-#define AZ_FUNCTION_CALL_4(_1, _2, _3, _4)                              _1(_2, _3, _4)
-#define AZ_FUNCTION_CALL_5(_1, _2, _3, _4, _5)                          _1(_2, _3, _4, _5)
-#define AZ_FUNCTION_CALL_6(_1, _2, _3, _4, _5, _6)                      _1(_2, _3, _4, _5, _6)
-#define AZ_FUNCTION_CALL_7(_1, _2, _3, _4, _5, _6, _7)                  _1(_2, _3, _4, _5, _6, _7)
-#define AZ_FUNCTION_CALL_8(_1, _2, _3, _4, _5, _6, _7, _8)              _1(_2, _3, _4, _5, _6, _7, _8)
-#define AZ_FUNCTION_CALL_9(_1, _2, _3, _4, _5, _6, _7, _8, _9)          _1(_2, _3, _4, _5, _6, _7, _8, _9)
-#define AZ_FUNCTION_CALL_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10)    _1(_2, _3, _4, _5, _6, _7, _8, _9, _10)
-
-// We require at least 1 param FunctionName
-#define AZ_FUNCTION_CALL(...)           AZ_MACRO_SPECIALIZE(AZ_FUNCTION_CALL_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
+#define AZ_JOIN_EACH_CALL_II(macro, ...) macro(__VA_ARGS__)
+#define AZ_JOIN_EACH_CALL_I(macro, ...) AZ_JOIN_EACH_CALL_II(macro, __VA_ARGS__)
+#define AZ_JOIN_EACH_CALL(macro, ...) AZ_JOIN_EACH_CALL_I(macro, __VA_ARGS__)
+#define AZ_JOIN(...) AZ_JOIN_EACH_CALL(AZ_JOIN_TWO_INTERNAL(AZ_JOIN_EACH_, AZ_VA_NUM_ARGS(__VA_ARGS__)),__VA_ARGS__)
 
 // Based on boost macro expansion fix...
 #define AZ_PREVENT_MACRO_SUBSTITUTION
@@ -454,7 +570,13 @@ static_assert(AZ_VA_NUM_ARGS(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
 #define AZ_WRAP_I(...) (__VA_ARGS__)
 #define AZ_WRAP(...) AZ_WRAP_I(__VA_ARGS__)
 
+// Extracts the first argument from a list of variadic arguments
+#define AZ_USE_FIRST_ARG_1(_1, ...) _1
+#define AZ_USE_FIRST_ARG(...) AZ_USE_FIRST_ARG_1(__VA_ARGS__)
 
+// Removes the first arguments from a list of variardic arguments
+#define AZ_SKIP_FIRST_ARG_I(_1, ...)  __VA_ARGS__
+#define AZ_SKIP_FIRST_ARG(...) AZ_SKIP_FIRST_ARG_I(__VA_ARGS__)
 
 // Provides a level of indirection for a macro function like call to allow expansion to occur
 // This will invoke the macro in the second pass over the macro arguments
@@ -467,3 +589,75 @@ static_assert(AZ_VA_NUM_ARGS(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
 #define AZ_MACRO_CALL_FIRST_PASS(macro, ...) macro(__VA_ARGS__)
 #define AZ_MACRO_CALL_INDEX(prefix, ...) AZ_MACRO_CALL(AZ_JOIN(prefix, AZ_VA_NUM_ARGS(AZ_UNWRAP(__VA_ARGS__))), AZ_UNWRAP(__VA_ARGS__))
 #define AZ_MACRO_CALL_WRAP(macro, ...)  AZ_MACRO_CALL(macro, __VA_ARGS__)
+
+
+// Provides macro call expansion solely for the AZ_SIMPLE_TEMPLATE_ID_<N> and AZ_TEMPLATE_ARGUMENT_LIST_<N> macros below
+#define AZ_TEMPLATE_MACRO_CALL_II(macro, nparams, params) macro##nparams params
+#define AZ_TEMPLATE_MACRO_CALL_I(macro, nparams, params) AZ_TEMPLATE_MACRO_CALL_II(macro, nparams, params)
+#define AZ_TEMPLATE_MACRO_CALL(macro, nparams, params) AZ_TEMPLATE_MACRO_CALL_I(macro, nparams, params)
+
+#define AZ_TEMPLATE_MACRO_EXPANSION_CALL_II(macro, nparams, params) macro##nparams params
+#define AZ_TEMPLATE_MACRO_EXPANSION_CALL_I(macro, nparams, params) AZ_TEMPLATE_MACRO_EXPANSION_CALL_II(macro, nparams, params)
+#define AZ_TEMPLATE_MACRO_EXPANSION_CALL(macro, nparams, params) AZ_TEMPLATE_MACRO_EXPANSION_CALL_I(macro, nparams, params)
+
+#define AZ_CLASS_TYPE class
+#define AZ_CLASS_ARG(A) A
+
+#define AZ_CLASS_VARARGS_TYPE class...
+#define AZ_CLASS_VARARGS_ARG(A) A...
+
+#define AZ_AUTO_TYPE auto
+#define AZ_AUTO_ARG(A) A
+
+#define AZ_TEMPLATE_TYPE_EXPANSION_0(_1)
+#define AZ_TEMPLATE_TYPE_EXPANSION_1(_1) AZ_JOIN(_1, _TYPE) T1
+#define AZ_TEMPLATE_TYPE_EXPANSION_2(_1, _2) AZ_TEMPLATE_TYPE_EXPANSION_1(_1),             AZ_JOIN(_2, _TYPE) T2
+#define AZ_TEMPLATE_TYPE_EXPANSION_3(_1, _2, _3) AZ_TEMPLATE_TYPE_EXPANSION_2(_1, _2),         AZ_JOIN(_3, _TYPE) T3
+#define AZ_TEMPLATE_TYPE_EXPANSION_4(_1, _2, _3, _4) AZ_TEMPLATE_TYPE_EXPANSION_3(_1, _2, _3),     AZ_JOIN(_4, _TYPE) T4
+#define AZ_TEMPLATE_TYPE_EXPANSION_5(_1, _2, _3, _4, _5) AZ_TEMPLATE_TYPE_EXPANSION_4(_1, _2, _3, _4), AZ_JOIN(_5, _TYPE) T5
+#define AZ_TEMPLATE_TYPE_EXPANSION(...) AZ_TEMPLATE_MACRO_EXPANSION_CALL(AZ_TEMPLATE_TYPE_EXPANSION_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
+
+#define AZ_TEMPLATE_ARGUMENT_EXPANSION_0(_1)
+#define AZ_TEMPLATE_ARGUMENT_EXPANSION_1(_1) AZ_JOIN(_1, _ARG)(T1)
+#define AZ_TEMPLATE_ARGUMENT_EXPANSION_2(_1, _2) AZ_TEMPLATE_ARGUMENT_EXPANSION_1(_1),             AZ_JOIN(_2, _ARG)(T2)
+#define AZ_TEMPLATE_ARGUMENT_EXPANSION_3(_1, _2, _3) AZ_TEMPLATE_ARGUMENT_EXPANSION_2(_1, _2),         AZ_JOIN(_3, _ARG)(T3)
+#define AZ_TEMPLATE_ARGUMENT_EXPANSION_4(_1, _2, _3, _4) AZ_TEMPLATE_ARGUMENT_EXPANSION_3(_1, _2, _3),     AZ_JOIN(_4, _ARG)(T4)
+#define AZ_TEMPLATE_ARGUMENT_EXPANSION_5(_1, _2, _3, _4, _5) AZ_TEMPLATE_ARGUMENT_EXPANSION_4(_1, _2, _3, _4), AZ_JOIN(_5, _ARG)(T5)
+#define AZ_TEMPLATE_ARGUMENT_EXPANSION(...) AZ_TEMPLATE_MACRO_EXPANSION_CALL(AZ_TEMPLATE_ARGUMENT_EXPANSION_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
+
+#define AZ_SIMPLE_TEMPLATE_ID_0(...)
+#define AZ_SIMPLE_TEMPLATE_ID_1(...) template< AZ_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__) >
+#define AZ_SIMPLE_TEMPLATE_ID_2(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_3(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_4(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_5(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_6(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_7(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_8(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_9(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_10(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_11(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_12(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_13(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_14(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID_15(...) AZ_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_SIMPLE_TEMPLATE_ID(...) AZ_TEMPLATE_MACRO_CALL(AZ_SIMPLE_TEMPLATE_ID_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
+
+
+#define AZ_TEMPLATE_ARGUMENT_LIST_0(...)
+#define AZ_TEMPLATE_ARGUMENT_LIST_1(...) < AZ_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__) >
+#define AZ_TEMPLATE_ARGUMENT_LIST_2(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_3(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_4(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_5(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_6(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_7(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_8(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_9(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_10(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_11(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_12(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_13(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_14(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST_15(...) AZ_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TEMPLATE_ARGUMENT_LIST(...) AZ_TEMPLATE_MACRO_CALL(AZ_TEMPLATE_ARGUMENT_LIST_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))

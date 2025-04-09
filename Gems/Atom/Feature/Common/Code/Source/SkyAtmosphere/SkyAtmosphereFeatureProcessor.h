@@ -40,6 +40,8 @@ namespace AZ::Render
         AtmosphereId CreateAtmosphere() override;
         void ReleaseAtmosphere(AtmosphereId id) override;
         void SetAtmosphereParams(AtmosphereId id, const SkyAtmosphereParams& params) override;
+        void SetAtmosphereEnabled(AtmosphereId id, bool enabled) override;
+        bool GetAtmosphereEnabled(AtmosphereId id) override;
 
     private:
 
@@ -52,8 +54,6 @@ namespace AZ::Render
             
         struct SkyAtmosphere
         {
-            ~SkyAtmosphere();
-
             AtmosphereId m_id;
             SkyAtmosphereParams m_params;
             bool m_passNeedsUpdate = false;
@@ -61,6 +61,6 @@ namespace AZ::Render
         };
 
         SparseVector<SkyAtmosphere> m_atmospheres;
-        AZStd::vector<SkyAtmosphereParentPass*> m_skyAtmosphereParentPasses;
+        AZStd::map<RPI::RenderPipeline*, AZStd::vector<SkyAtmosphereParentPass*>> m_renderPipelineToSkyAtmosphereParentPasses;
     };
 }

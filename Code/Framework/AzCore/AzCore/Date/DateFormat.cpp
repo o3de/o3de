@@ -12,7 +12,7 @@ namespace AZ::Date
 {
     bool GetIso8601ExtendedFormatNow(Iso8601TimestampString& utcTimestamp)
     {
-        return GetIso8601ExtendedFormatTime(utcTimestamp, AZStd::chrono::utc_clock::now());
+        return GetIso8601ExtendedFormat(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
 
     bool GetIso8601ExtendedFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp)
@@ -27,7 +27,7 @@ namespace AZ::Date
 
     bool GetIso8601BasicFormatNow(Iso8601TimestampString& utcTimestamp)
     {
-        return GetIso8601BasicFormatTime(utcTimestamp, AZStd::chrono::utc_clock::now());
+        return GetIso8601BasicFormat(utcTimestamp, AZStd::chrono::utc_clock::now());
     }
 
     bool GetIso8601BasicFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp)

@@ -109,6 +109,17 @@ namespace SandboxEditor
     //! @param transform The transform of the camera in world space.
     SANDBOX_API void HandleDefaultViewportCameraTransitionFromSetting(const AZ::Transform& transform);
 
+    //! Returns a transform that will aim to have the entity fill the screen (determined by the current
+    //! camera transform, field of view and position and radius of the entity).
+    //! @param cameraTransform The current transform of the camera.
+    //! @param fovRadians The field of view of the camera (in radians).
+    //! @param center The entity position in world space.
+    //! @param radius The radius of the bounding sphere of the entity (usually calculated from the entity Aabb).
+    //! @return Returns the new transform for the camera to fill the screen with the entity. If the cameraTransform
+    //! and center match, an empty optional is returned.
+    SANDBOX_API AZStd::optional<AZ::Transform> CalculateGoToEntityTransform(
+        const AZ::Transform& cameraTransform, float fovRadians, const AZ::Vector3& center, float radius);
+
     //! Returns a quaternion representing a pitch/yaw rotation for a camera.
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.

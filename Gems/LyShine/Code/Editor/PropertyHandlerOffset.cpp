@@ -22,7 +22,7 @@ void PropertyHandlerOffset::ConsumeAttribute(AzQtComponents::VectorInput* GUI, A
 {
     UIVectorPropertyHandlerBase::ConsumeAttribute(GUI, attrib, attrValue, debugName);
 
-    if (attrib == AZ_CRC("LayoutFitterType", 0x7c009203))
+    if (attrib == AZ_CRC_CE("LayoutFitterType"))
     {
         UiLayoutFitterInterface::FitType fitType = UiLayoutFitterInterface::FitType::None;
         if (attrValue->Read<UiLayoutFitterInterface::FitType>(fitType))

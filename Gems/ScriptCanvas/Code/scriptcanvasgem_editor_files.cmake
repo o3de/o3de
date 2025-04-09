@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Editor/ScriptCanvasContextIdentifiers.h
     Editor/ScriptCanvasEditorGem.cpp
     Editor/Settings.h
     Editor/Settings.cpp

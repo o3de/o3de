@@ -49,10 +49,5 @@ namespace AZ
             , m_name(name)
         {
         }
-
-        const float MaterialPropertySourceData::DefaultMin = std::numeric_limits<float>::lowest();
-        const float MaterialPropertySourceData::DefaultMax = std::numeric_limits<float>::max();
-        const float MaterialPropertySourceData::DefaultStep = 0.1f;
-
     } // namespace RPI
 } // namespace AZ

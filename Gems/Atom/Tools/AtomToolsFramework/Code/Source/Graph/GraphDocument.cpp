@@ -24,6 +24,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <GraphCanvas/Components/GraphCanvasPropertyBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphModel/Model/Connection.h>
@@ -86,6 +88,40 @@ namespace AtomToolsFramework
         GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_graphId);
         GraphDocumentRequestBus::Handler::BusConnect(m_id);
         AZ::SystemTickBus::Handler::BusConnect();
+
+        m_graphCompiler->SetStateChangeHandler(
+            [toolId, documentId = m_id](const GraphCompiler* graphCompiler)
+            {
+                AZ::SystemTickBus::QueueFunction(
+                    [toolId, documentId, state = graphCompiler->GetState(), generatedFiles = graphCompiler->GetGeneratedFilePaths()]()
+                    {
+                        switch (state)
+                        {
+                        case GraphCompiler::State::Idle:
+                            break;
+                        case GraphCompiler::State::Compiling:
+                            GraphDocumentRequestBus::Event(
+                                documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, AZStd::vector<AZStd::string>{});
+                            GraphDocumentNotificationBus::Event(
+                                toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
+                            break;
+                        case GraphCompiler::State::Processing:
+                            break;
+                        case GraphCompiler::State::Complete:
+                            GraphDocumentRequestBus::Event(
+                                documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
+                            GraphDocumentNotificationBus::Event(
+                                toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphCompleted, documentId);
+                            break;
+                        case GraphCompiler::State::Failed:
+                            GraphDocumentNotificationBus::Event(
+                                toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphFailed, documentId);
+                            break;
+                        case GraphCompiler::State::Canceled:
+                            break;
+                        }
+                    });
+            });
     }
 
     GraphDocument::~GraphDocument()
@@ -136,6 +172,12 @@ namespace AtomToolsFramework
     DocumentObjectInfoVector GraphDocument::GetObjectInfo() const
     {
         DocumentObjectInfoVector objects = AtomToolsDocument::GetObjectInfo();
+
+        // Build a container of reflected object info specifically for the specialized graph canvas nodes that are not covered by graph model.
+        DocumentObjectInfoVector objectInfoForGraphCanvasNodes = GetObjectInfoForGraphCanvasNodes();
+        objects.insert(objects.end(), objectInfoForGraphCanvasNodes.begin(), objectInfoForGraphCanvasNodes.end());
+
+        // Reserve and register reflected objects for all of the property group in the document.
         objects.reserve(objects.size() + m_groups.size());
 
         for (const auto& group : m_groups)
@@ -149,11 +191,6 @@ namespace AtomToolsFramework
                 objectInfo.m_description = group->m_description;
                 objectInfo.m_objectType = azrtti_typeid<DynamicPropertyGroup>();
                 objectInfo.m_objectPtr = const_cast<DynamicPropertyGroup*>(group.get());
-                objectInfo.m_nodeIndicatorFunction = [](const AzToolsFramework::InstanceDataNode* /*node*/)
-                {
-                    // There are currently no indicators for graph nodes.
-                    return nullptr;
-                };
                 objects.emplace_back(AZStd::move(objectInfo));
             }
         }
@@ -341,9 +378,7 @@ namespace AtomToolsFramework
         AZ::IO::ByteContainerStream<decltype(graphBuffer)> graphBufferStream(&graphBuffer);
         AZ::Utils::SaveObjectToStream(graphBufferStream, AZ::ObjectStream::ST_BINARY, m_graph.get());
 
-        auto compileJobFn = [toolId = m_toolId,
-                             documentId = m_id,
-                             graphBuffer,
+        auto compileJobFn = [graphBuffer,
                              graphCompiler = m_graphCompiler,
                              graphContext = m_graphContext,
                              graphName = GetGraphName(),
@@ -353,31 +388,6 @@ namespace AtomToolsFramework
             GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(graphContext);
             AZ::Utils::LoadObjectFromBufferInPlace(graphBuffer.data(), graphBuffer.size(), *graph.get());
             graph->PostLoadSetup(graphContext);
-
-            graphCompiler->SetStateChangeHandler([toolId, documentId](const GraphCompiler* graphCompiler){
-                AZ::SystemTickBus::QueueFunction([toolId, documentId, state = graphCompiler->GetState(), generatedFiles = graphCompiler->GetGeneratedFilePaths()]() {
-                    switch (state)
-                    {
-                    case GraphCompiler::State::Idle:
-                        break;
-                    case GraphCompiler::State::Compiling:
-                        GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, AZStd::vector<AZStd::string>{});
-                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
-                        break;
-                    case GraphCompiler::State::Processing:
-                        break;
-                    case GraphCompiler::State::Complete:
-                        GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
-                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphCompleted, documentId);
-                        break;
-                    case GraphCompiler::State::Failed:
-                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphFailed, documentId);
-                        break;
-                    case GraphCompiler::State::Canceled:
-                        break;
-                    }
-                });
-            });
 
             graphCompiler->CompileGraph(graph, graphName, graphPath);
         };
@@ -406,7 +416,15 @@ namespace AtomToolsFramework
 
         if (IsCompileGraphQueued())
         {
-            CompileGraph();
+            if (m_compileGraphQueueTime <= AZStd::chrono::steady_clock::now())
+            {
+                if (CompileGraph())
+                {
+                    const AZ::u64 intervalMs =
+                        GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/QueueGraphCompileIntervalMs", (AZ::u64)500);
+                    m_compileGraphQueueTime = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(intervalMs);
+                }
+            }
         }
     }
 
@@ -559,9 +577,21 @@ namespace AtomToolsFramework
                         // Set up the change call back to apply the value of the property from the inspector to the slot. This could
                         // also send a document modified notifications and queue regeneration of shader and material assets but the
                         // compilation process and going through the ap is not responsive enough for this to matter.
-                        propertyConfig.m_dataChangeCallback = [currentSlot](const AZStd::any& value)
+                        propertyConfig.m_dataChangeCallback = [currentSlot, graphId = m_graphId](const AZStd::any& value)
                         {
                             currentSlot->SetValue(value);
+
+                            // Retrieve and refresh the node property displays with the updated slot value.
+                            GraphCanvas::SlotId slotId{};
+                            GraphModelIntegration::GraphControllerRequestBus::EventResult(
+                                slotId, graphId, &GraphModelIntegration::GraphControllerRequests::GetSlotIdBySlot, currentSlot);
+
+                            GraphCanvas::NodePropertyRequestBus::Event(slotId, [](GraphCanvas::NodePropertyRequests* nodePropertyRequests) {
+                                if (auto display = nodePropertyRequests->GetNodePropertyDisplay())
+                                {
+                                    display->UpdateDisplay();
+                                }
+                            });
                             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
                         };
 
@@ -574,5 +604,91 @@ namespace AtomToolsFramework
         }
 
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
-    };
+    }
+
+    DocumentObjectInfoVector GraphDocument::GetObjectInfoForGraphCanvasNodes() const
+    {
+        DocumentObjectInfoVector objects;
+
+        // Reserve and register reflected objects for all of the selected graph canvas nodes that do not mirror any of the graph model nodes
+        // that have been added to the graph. This should cover bookmarks, comments, and groups.
+        AZStd::vector<AZ::EntityId> selectedItems;
+        GraphCanvas::SceneRequestBus::EventResult(selectedItems, m_graphId, &GraphCanvas::SceneRequests::GetSelectedItems);
+
+        // Optimizing the container to only have nodes with property components before sorting.
+        AZStd::erase_if(
+            selectedItems,
+            [](const auto& selectedItem)
+            {
+                return GraphCanvas::GraphCanvasPropertyBus::FindFirstHandler(selectedItem) == nullptr;
+            });
+
+        objects.reserve(objects.size() + selectedItems.size());
+
+        // The order that selected nodes appear in the container is not deterministic. To compensate for this, we sort by position to ensure
+        // that nodes always appear in the inspector in a consistent order.
+        AZStd::sort(
+            selectedItems.begin(),
+            selectedItems.end(),
+            [](const auto& selectedItem1, const auto& selectedItem2)
+            {
+                AZ::Vector2 selectedItemPosition1{};
+                GraphCanvas::GeometryRequestBus::EventResult(
+                    selectedItemPosition1, selectedItem1, &GraphCanvas::GeometryRequests::GetPosition);
+
+                AZ::Vector2 selectedItemPosition2{};
+                GraphCanvas::GeometryRequestBus::EventResult(
+                    selectedItemPosition2, selectedItem2, &GraphCanvas::GeometryRequests::GetPosition);
+
+                return selectedItemPosition1.IsLessThan(selectedItemPosition2);
+            });
+
+        // Some graph canvas node property components do not have any visible properties, like the bookmark anchor visual component. These
+        // will not be added to the graph document inspector.
+        const AZStd::unordered_set<AZ::Uuid> ignoredTypeIds{
+            AZ::Uuid("{AD921E77-962B-417F-88FB-500FA679DFDF}") // BookmarkAnchorVisualComponent
+        };
+
+        // After all of the selected graph canvas nodes have been sorted, search for those with editable property components and add them to
+        // the list of reflected objects.
+        for (const auto& selectedItem : selectedItems)
+        {
+            // Some graph canvas nodes have multiple editable property components, like groups and bookmarks. All of the property components
+            // will be added in relative order except for those in the ignore list.
+            DocumentObjectInfoVector selectedItemObjects;
+            GraphCanvas::GraphCanvasPropertyBus::EnumerateHandlersId(
+                selectedItem,
+                [&](GraphCanvas::GraphCanvasPropertyInterface* propertyInterface) -> bool
+                {
+                    AZ::Component* component = propertyInterface->GetPropertyComponent();
+                    if (AzToolsFramework::ShouldInspectorShowComponent(component) && !ignoredTypeIds.contains(component->RTTI_GetType()))
+                    {
+                        DocumentObjectInfo objectInfo;
+                        objectInfo.m_visible = true;
+                        objectInfo.m_name = GetSymbolNameFromText(component->RTTI_GetTypeName());
+                        objectInfo.m_displayName = objectInfo.m_description = GetDisplayNameFromText(component->RTTI_GetTypeName());
+                        objectInfo.m_objectType = component->RTTI_GetType();
+                        objectInfo.m_objectPtr = component;
+                        selectedItemObjects.emplace_back(AZStd::move(objectInfo));
+                    }
+
+                    // Continue enumeration.
+                    return true;
+                });
+
+            // In addition to presorting nodes by position we will sort all of the property components by name to guarantee a consistent
+            // order in the inspector.
+            AZStd::sort(
+                selectedItemObjects.begin(),
+                selectedItemObjects.end(),
+                [](const auto& objectInfo1, const auto& objectInfo2)
+                {
+                    return objectInfo1.m_displayName < objectInfo2.m_displayName;
+                });
+
+            objects.insert(objects.end(), selectedItemObjects.begin(), selectedItemObjects.end());
+        }
+
+        return objects;
+    }
 } // namespace AtomToolsFramework

@@ -59,6 +59,10 @@ set(FILES
     Source/ProjectBuilderWorker.cpp
     Source/ProjectBuilderController.h
     Source/ProjectBuilderController.cpp
+    Source/ProjectExportWorker.h
+    Source/ProjectExportWorker.cpp
+    Source/ProjectExportController.h
+    Source/ProjectExportController.cpp
     Source/UpdateProjectSettingsScreen.h
     Source/UpdateProjectSettingsScreen.cpp
     Source/NewProjectSettingsScreen.h
@@ -156,4 +160,6 @@ set(FILES
     Source/GemRepo/GemRepoListView.cpp
     Source/GemRepo/GemRepoModel.h
     Source/GemRepo/GemRepoModel.cpp
+    Source/GemRepo/GemRepoProxyModel.h
+    Source/GemRepo/GemRepoProxyModel.cpp
 )

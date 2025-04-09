@@ -9,10 +9,10 @@
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 ly_add_target(
-    NAME GraphCanvas ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
-        GraphCanvas_game_files.cmake
+        ${gem_name}_game_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -22,8 +22,17 @@ ly_add_target(
             AZ::AzCore
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/GraphCanvasGameModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 ly_add_target(
-    NAME GraphCanvasWidgets STATIC
+    NAME ${gem_name}Widgets STATIC
     NAMESPACE Gem
     AUTOMOC
     AUTOUIC
@@ -50,7 +59,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME GraphCanvas.Editor GEM_MODULE
+    NAME ${gem_name}.Editor GEM_MODULE
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
@@ -69,15 +78,24 @@ ly_add_target(
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
-            Gem::GraphCanvasWidgets
+            Gem::${gem_name}Widgets
     RUNTIME_DEPENDENCIES
         3rdParty::Qt::Xml
         AZ::AzQtComponents
 )
 
-# Load the "Gem::GraphCanvas" module in Builders and Tools
-ly_create_alias(NAME GraphCanvas.Builders NAMESPACE Gem TARGETS Gem::GraphCanvas.Editor)
-ly_create_alias(NAME GraphCanvas.Tools    NAMESPACE Gem TARGETS Gem::GraphCanvas.Editor)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/GraphCanvasEditorModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Load the "Gem::${gem_name}" module in Builders and Tools
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 
@@ -88,7 +106,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
         ly_add_target(
-            NAME GraphCanvas.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 graphcanvas_tests_files.cmake
@@ -99,10 +117,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
-                    Gem::GraphCanvasWidgets
+                    Gem::${gem_name}Widgets
         )
         ly_add_googletest(
-            NAME Gem::GraphCanvas.Tests
+            NAME Gem::${gem_name}.Tests
+            LABELS REQUIRES_tiaf
         )
 
     endif()

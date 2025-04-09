@@ -263,7 +263,8 @@ namespace AZ::SceneAPI
     bool DefaultProceduralPrefabGroup::AddEditorMeshComponent(
         const AZ::EntityId& entityId,
         const AZStd::string& relativeSourcePath,
-        const AZStd::string& meshGroupName) const
+        const AZStd::string& meshGroupName,
+        const AZStd::string& sourceFileExtension) const
     {
         // Since the mesh component lives in a gem, then create it by name
         AzFramework::BehaviorComponentId editorMeshComponent;
@@ -280,15 +281,14 @@ namespace AZ::SceneAPI
         }
 
         // assign mesh asset id hint using JSON
-        AZStd::string modelAssetPath;
-        modelAssetPath = relativeSourcePath;
-        AZ::StringFunc::Path::ReplaceFullName(modelAssetPath, meshGroupName.c_str());
-        AZ::StringFunc::Replace(modelAssetPath, "\\", "/"); // asset paths use forward slashes
+        AZ::IO::Path modelAssetPath(relativeSourcePath, '/');
+        modelAssetPath.ReplaceFilename(AZ::IO::PathView(meshGroupName));
+        modelAssetPath.ReplaceExtension(AZ::IO::PathView(sourceFileExtension));
 
         auto meshAssetJson = AZStd::string::format(
             R"JSON(
                    {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
-             )JSON", modelAssetPath.c_str());
+             )JSON", modelAssetPath.LexicallyNormal().String().c_str());
 
         bool result = false;
         AzToolsFramework::EntityUtilityBus::BroadcastResult(
@@ -313,7 +313,7 @@ namespace AZ::SceneAPI
         AZStd::shared_ptr<SceneData::MeshGroup> meshGroup(BuildMeshGroupForNode(scene, nodeData, nodeDataMap));
         manifestUpdates.emplace_back(meshGroup);
 
-        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroup->GetName()) == false)
+        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroup->GetName(), scene.GetSourceExtension()) == false)
         {
             return false;
         }
@@ -458,23 +458,23 @@ namespace AZ::SceneAPI
                 }
             }
 
-            nodeEntityMap.insert({ thisNodeIndex, entityId });
+            nodeEntityMap.emplace(thisNodeIndex, AZStd::make_pair(entityId, nodeNameForEntity.GetName()));
         }
 
         return nodeEntityMap;
     }
 
-    DefaultProceduralPrefabGroup::EntityIdList DefaultProceduralPrefabGroup::FixUpEntityParenting(
+    DefaultProceduralPrefabGroup::EntityIdMap DefaultProceduralPrefabGroup::FixUpEntityParenting(
         const NodeEntityMap& nodeEntityMap,
         const Containers::SceneGraph& graph,
         const NodeDataMap& nodeDataMap) const
     {
-        EntityIdList entities;
-        entities.reserve(nodeEntityMap.size());
+        EntityIdMap entities;
 
         for (const auto& nodeEntity : nodeEntityMap)
         {
-            entities.emplace_back(nodeEntity.second);
+            const AZStd::pair<AZ::EntityId, AzToolsFramework::Prefab::EntityAlias>& entityIdAliasPair = nodeEntity.second;
+            entities.emplace(entityIdAliasPair.first, entityIdAliasPair.second);
 
             // find matching parent EntityId (if any)
             AZ::EntityId parentEntityId;
@@ -488,7 +488,7 @@ namespace AZ::SceneAPI
                     auto parentEntiyIterator = nodeEntityMap.find(parentNodeIterator->first);
                     if (nodeEntityMap.end() != parentEntiyIterator)
                     {
-                        parentEntityId = parentEntiyIterator->second;
+                        parentEntityId = parentEntiyIterator->second.first;
                         break;
                     }
                 }
@@ -502,7 +502,7 @@ namespace AZ::SceneAPI
                 }
             }
 
-            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(nodeEntity.second);
+            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityIdAliasPair.first);
             auto* entityTransform = entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
             if (!entityTransform)
             {
@@ -530,7 +530,7 @@ namespace AZ::SceneAPI
                 entityTransform->SetLocalTM(AZ::Transform::CreateUniformScale(1.0f));
             }
 
-            PrefabGroupNotificationBus::Broadcast(&PrefabGroupNotificationBus::Events::OnUpdatePrefabEntity, nodeEntity.second);
+            PrefabGroupNotificationBus::Broadcast(&PrefabGroupNotificationBus::Events::OnUpdatePrefabEntity, entityIdAliasPair.first);
         }
 
         return entities;
@@ -539,7 +539,7 @@ namespace AZ::SceneAPI
     bool DefaultProceduralPrefabGroup::CreatePrefabGroupManifestUpdates(
         ManifestUpdates& manifestUpdates,
         const Containers::Scene& scene,
-        const EntityIdList& entities,
+        const EntityIdMap& entities,
         const AZStd::string& filenameOnly,
         const AZStd::string& relativeSourcePath) const
     {
@@ -560,7 +560,7 @@ namespace AZ::SceneAPI
         // create prefab group for entire stack
         AzToolsFramework::Prefab::PrefabSystemScriptingBus::BroadcastResult(
             prefabTemplateId,
-            &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplate,
+            &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplateWithCustomEntityAliases,
             entities,
             prefabTemplateName);
 

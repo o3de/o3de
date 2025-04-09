@@ -19,13 +19,17 @@
 #define FORCE_OPAQUE 1
 #define OUTPUT_SUBSURFACE 0
 #define ENABLE_TRANSMISSION 0
-#define ENABLE_SHADER_DEBUGGING 1
-#define ENABLE_CLEAR_COAT 1
+#define ENABLE_SHADER_DEBUGGING 0
+#define ENABLE_CLEAR_COAT 0
 #define ENABLE_SHADOWS 0
 #define ENABLE_LIGHT_CULLING 0
 #define ENABLE_AREA_LIGHTS 0
 #define ENABLE_PHYSICAL_SKY 0
 #define ENABLE_MERGE_FILMIC_TONEMAP 1
+#define ENABLE_DECALS 0
+#define ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION 0
+#define ENABLE_REFLECTIONPROBE_BLENDING 0
+#define ENABLE_SPECULARAA 0
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +37,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 // TODO(MaterialPipeline): I don't like how this file #includes something from BasePBR. I'd rather it include a file

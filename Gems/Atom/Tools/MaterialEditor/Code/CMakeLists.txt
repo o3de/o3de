@@ -19,7 +19,7 @@ if(NOT PAL_TRAIT_ATOM_MATERIAL_EDITOR_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME MaterialEditor EXECUTABLE
+    NAME MaterialEditor APPLICATION
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
@@ -37,7 +37,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AtomLyIntegration_CommonFeatures.Static
+            Gem::CommonFeaturesAtom.Static
             Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
     RUNTIME_DEPENDENCIES
