@@ -19,12 +19,7 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
-<<<<<<< HEAD:Gems/HttpRequestor/gem.json
-    "documentation_url": "https://www.o3de.org/docs/user-guide/gems/reference/network/http-requestor/",
-    "dependencies": []
-=======
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/audio/miniaudio/",
+    "documentation_url": "https://www.o3de.org/docs/user-guide/gems/reference/audio/miniaudio/",
     "dependencies": [],
     "restricted": "MiniAudio"
->>>>>>> development:Gems/MiniAudio/gem.json
 }
