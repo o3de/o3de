@@ -56,7 +56,7 @@ __pragma(comment(lib, "Winmm.lib"))
 #endif
 
 #if defined(APPLE)
-#include <AzFramework/Utils/SystemUtilsApple.h>
+#include <AzCore/Utils/SystemUtilsApple_Platform.h>
 #endif
 
 // this is the list of modules that can be loaded into the game process
@@ -109,7 +109,8 @@ const char* CSystem::GetUserName()
 #elif defined(APPLE)
     static const int iNameBufferSize = 1024;
     static char szNameBuffer[iNameBufferSize];
-    if(SystemUtilsApple::GetUserName(szNameBuffer, iNameBufferSize))
+    if (auto resultOutcome = AZ::SystemUtilsApple::GetUserName(AZStd::span(szNameBuffer));
+        resultOutcome)
     {
         return szNameBuffer;
     }
@@ -301,7 +302,7 @@ void CSystem::FatalError(const char* format, ...)
 #endif
 
     // app can not continue
-    AZ::Debug::Trace::Break();
+    AZ::Debug::Trace::Instance().Break();
 
 #ifdef _DEBUG
     #if defined(WIN32) || defined(WIN64)

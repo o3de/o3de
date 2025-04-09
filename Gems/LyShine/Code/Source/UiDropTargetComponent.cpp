@@ -75,23 +75,23 @@ void UiDropTargetComponent::SetOnDropActionName(const LyShine::ActionName& actio
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiDropTargetComponent::HandleDropHoverStart(AZ::EntityId draggable)
 {
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDropTargetNotificationBus, OnDropHoverStart, draggable);
+    UiDropTargetNotificationBus::QueueEvent(GetEntityId(), &UiDropTargetNotificationBus::Events::OnDropHoverStart, draggable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiDropTargetComponent::HandleDropHoverEnd(AZ::EntityId draggable)
 {
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDropTargetNotificationBus, OnDropHoverEnd, draggable);
+    UiDropTargetNotificationBus::QueueEvent(GetEntityId(), &UiDropTargetNotificationBus::Events::OnDropHoverEnd, draggable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiDropTargetComponent::HandleDrop(AZ::EntityId draggable)
 {
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDropTargetNotificationBus, OnDrop, draggable);
+    UiDropTargetNotificationBus::QueueEvent(GetEntityId(), &UiDropTargetNotificationBus::Events::OnDrop, draggable);
 
     // Check to see if the draggable is a proxy
     bool isProxy = false;
-    EBUS_EVENT_ID_RESULT(isProxy, draggable, UiDraggableBus, IsProxy);
+    UiDraggableBus::EventResult(isProxy, draggable, &UiDraggableBus::Events::IsProxy);
 
     // Tell any action listeners about the event
     // Don't do this for proxy draggables though. A proxy draggable always calls HandleDrop on the original
@@ -99,8 +99,8 @@ void UiDropTargetComponent::HandleDrop(AZ::EntityId draggable)
     if (!m_onDropActionName.empty() && !isProxy)
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_onDropActionName);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_onDropActionName);
     }
 }
 
@@ -186,7 +186,7 @@ void UiDropTargetComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDropTarget.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDropTarget.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Navigation settings
@@ -243,9 +243,12 @@ LyShine::EntityArray UiDropTargetComponent::GetNavigableDropTargets(AZ::EntityId
 {
     // Get a list of all navigable elements
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, entityId, UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, entityId, &UiElementBus::Events::GetCanvasEntityId);
     LyShine::EntityArray navigableElements;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElements,
+
+    UiCanvasBus::Event(
+        canvasEntityId,
+        &UiCanvasBus::Events::FindElements,
         [entityId](const AZ::Entity* entity)
         {
             bool navigable = false;
@@ -254,7 +257,7 @@ LyShine::EntityArray UiDropTargetComponent::GetNavigableDropTargets(AZ::EntityId
                 if (UiDropTargetBus::FindFirstHandler(entity->GetId()))
                 {
                     UiNavigationInterface::NavigationMode navigationMode = UiNavigationInterface::NavigationMode::None;
-                    EBUS_EVENT_ID_RESULT(navigationMode, entity->GetId(), UiNavigationBus, GetNavigationMode);
+                    UiNavigationBus::EventResult(navigationMode, entity->GetId(), &UiNavigationBus::Events::GetNavigationMode);
                     navigable = (navigationMode != UiNavigationInterface::NavigationMode::None);
                 }
             }

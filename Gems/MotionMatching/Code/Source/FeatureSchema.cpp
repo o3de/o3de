@@ -15,7 +15,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FeatureSchema, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureSchema, MotionMatchAllocator)
 
     FeatureSchema::~FeatureSchema()
     {
@@ -41,7 +41,7 @@ namespace EMotionFX::MotionMatching
 
         if (iterator != m_featuresById.end())
         {
-            AZ_Assert(false, "Cannot add feature. Feature with id '%s' has already been registered.", feature->GetId().data);
+            AZ_Assert(false, "Cannot add feature. Feature with id '%s' has already been registered.", feature->GetId().ToFixedString().c_str());
             return;
         }
 
@@ -96,6 +96,22 @@ namespace EMotionFX::MotionMatching
         return featureObject;
     }
 
+    AZStd::vector<AZStd::string> FeatureSchema::CollectColumnNames() const
+    {
+        AZStd::vector<AZStd::string> columnNames;
+
+        for (Feature* feature : m_features)
+        {
+            const size_t numDimensions = feature->GetNumDimensions();
+            for (size_t dimension = 0; dimension < numDimensions; ++dimension)
+            {
+                columnNames.push_back(feature->GetDimensionName(dimension));
+            }
+        }
+
+        return columnNames;
+    }
+
     void FeatureSchema::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -116,6 +132,8 @@ namespace EMotionFX::MotionMatching
 
         editContext->Class<FeatureSchema>("FeatureSchema", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureSchema::m_features, "Features", "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ;

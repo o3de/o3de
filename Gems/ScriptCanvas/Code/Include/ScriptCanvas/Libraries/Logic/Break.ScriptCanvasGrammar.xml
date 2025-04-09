@@ -2,14 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/Break.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Break"
-           QualifiedName="ScriptCanvas::Nodes::Logic::Break"
-           PreferredClassName="Break"
-           Uuid="{931A68D0-E3AD-44A7-A7BB-126A8F39C02F}"
-           Base="ScriptCanvas::Node"
-           Category="Logic"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="Used to exit a looping structure">
+        QualifiedName="ScriptCanvas::Nodes::Logic::Break"
+        PreferredClassName="Break"
+        Uuid="{931A68D0-E3AD-44A7-A7BB-126A8F39C02F}"
+        Category="Logic"
+        Description="Used to exit a looping structure">
         <In Name="In" Description=""/>
         <Out Name="Out 0" Description="Output 0"/>
     </Class>

@@ -15,17 +15,18 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagSelector, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagHandler, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagSelector, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagHandler, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagSelector, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagHandler, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagSelector, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagHandler, AZ::SystemAllocator)
 
     SimulatedObjectColliderTagSelector::SimulatedObjectColliderTagSelector(QWidget* parent)
         : TagSelector(parent)
     {
         connect(this, &SimulatedObjectColliderTagSelector::TagsChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
             });
     }
@@ -72,7 +73,7 @@ namespace EMotionFX
 
     AZ::u32 SimulatedObjectColliderTagHandler::GetHandlerName() const
     {
-        return AZ_CRC("SimulatedObjectColliderTags", 0x80cfa635);
+        return AZ_CRC_CE("SimulatedObjectColliderTags");
     }
 
     QWidget* SimulatedObjectColliderTagHandler::CreateGUI(QWidget* parent)
@@ -123,7 +124,8 @@ namespace EMotionFX
     {
         connect(this, &SimulatedJointColliderExclusionTagSelector::TagsChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
             });
     }
@@ -164,7 +166,7 @@ namespace EMotionFX
 
     AZ::u32 SimulatedJointColliderExclusionTagHandler::GetHandlerName() const
     {
-        return AZ_CRC("SimulatedJointColliderExclusionTags", 0x27b61cea);
+        return AZ_CRC_CE("SimulatedJointColliderExclusionTags");
     }
 
     QWidget* SimulatedJointColliderExclusionTagHandler::CreateGUI(QWidget* parent)
@@ -183,7 +185,7 @@ namespace EMotionFX
             }
         }
 
-        if (attrib == AZ_CRC("SimulatedObject", 0x2076ba91))
+        if (attrib == AZ_CRC_CE("SimulatedObject"))
         {
             attrValue->Read<SimulatedObject*>(m_simulatedObject);
             GUI->SetSimulatedObject(m_simulatedObject);

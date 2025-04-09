@@ -10,6 +10,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/ranges/elements_view.h>
+#include <Editor/Framework/Configuration.h>
+#include <Editor/Framework/Interpreter.h>
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/ReflectComponent.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
@@ -32,15 +34,15 @@ namespace CoreCpp
     {
         if (rootDataElementNode.GetVersion() == 0)
         {
-            int scriptCanvasEntityIndex = rootDataElementNode.FindElement(AZ_CRC("m_scriptCanvas", 0xfcd20d85));
+            int scriptCanvasEntityIndex = rootDataElementNode.FindElement(AZ_CRC_CE("m_scriptCanvas"));
             if (scriptCanvasEntityIndex == -1)
             {
                 AZ_Error("Script Canvas", false, "Version Converter failed, The Script Canvas Entity is missing");
                 return false;
             }
 
-            auto scComponentElements = AZ::Utils::FindDescendantElements(context, rootDataElementNode, AZStd::vector<AZ::Crc32>{AZ_CRC("m_scriptCanvas", 0xfcd20d85),
-                AZ_CRC("element", 0x41405e39), AZ_CRC("Components", 0xee48f5fd)});
+            auto scComponentElements = AZ::Utils::FindDescendantElements(context, rootDataElementNode, AZStd::vector<AZ::Crc32>{AZ_CRC_CE("m_scriptCanvas"),
+                AZ_CRC_CE("element"), AZ_CRC_CE("Components")});
             if (!scComponentElements.empty())
             {
                 scComponentElements.front()->AddElementWithData(context, "element", ScriptCanvasEditor::EditorGraphVariableManagerComponent());
@@ -50,7 +52,7 @@ namespace CoreCpp
         if (rootDataElementNode.GetVersion() < 4)
         {
             auto scEntityElements = AZ::Utils::FindDescendantElements(context, rootDataElementNode,
-                AZStd::vector<AZ::Crc32>{AZ_CRC("m_scriptCanvas", 0xfcd20d85), AZ_CRC("element", 0x41405e39)});
+                AZStd::vector<AZ::Crc32>{AZ_CRC_CE("m_scriptCanvas"), AZ_CRC_CE("element")});
             if (scEntityElements.empty())
             {
                 AZ_Error("Script Canvas", false, "Version Converter failed, The Script Canvas Entity is missing");
@@ -108,7 +110,8 @@ namespace ScriptCanvasEditor
 {
     void ReflectComponent::Reflect(AZ::ReflectContext* context)
     {
-        SourceHandle::Reflect(context);
+        Configuration::Reflect(context);
+        Interpreter::Reflect(context);
         ScriptCanvas::ScriptCanvasData::Reflect(context);
         Deprecated::ScriptCanvasAssetHolder::Reflect(context);
         EditorSettings::EditorWorkspace::Reflect(context);        
@@ -154,7 +157,6 @@ namespace ScriptCanvasEditor
                 ec->Class<ReflectComponent>("Script Canvas Reflections", "Script Canvas Reflect Component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ;
             }
         }
@@ -162,17 +164,17 @@ namespace ScriptCanvasEditor
 
     void ReflectComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasReflectService", 0xb3bfe139));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasReflectService"));
     }
 
     void ReflectComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptCanvasReflectService", 0xb3bfe139));
+        incompatible.push_back(AZ_CRC_CE("ScriptCanvasReflectService"));
     }
 
     void ReflectComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+        required.push_back(AZ_CRC_CE("ScriptCanvasService"));
     }
 
     void ReflectComponent::Activate()

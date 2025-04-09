@@ -15,9 +15,17 @@
 #include "ImGuiLYAssetExplorer.h"
 #include "ImGuiLYCameraMonitor.h"
 #include "ImGuiLYEntityOutliner.h"
+#include "ImGuiInputMonitor.h"
 
 namespace ImGui
 {
+    //! ImGuiDropDownState refers to the state of dropdowns of the main menu bar.
+    enum class ImGuiDropdownState
+    {
+        Shown,
+        Hidden
+    };
+
     class ImGuiLYCommonMenu
         : public ImGuiUpdateListenerBus::Handler
         , public AZ::TickBus::Handler
@@ -50,8 +58,15 @@ namespace ImGui
         ImGuiLYAssetExplorer m_assetExplorer;
         ImGuiLYCameraMonitor m_cameraMonitor;
         ImGuiLYEntityOutliner m_entityOutliner;
+        ImGuiInputMonitor m_inputMonitor;
         bool m_showDeltaTimeGraphs = false;
         ImGui::LYImGuiUtils::HistogramContainer m_deltaTimeHistogram;
+        ImGuiDropdownState m_dropdownState = ImGuiDropdownState::Hidden; //!< Keeps the state of the ImGui main menu dropdowns.
+        //! Mark the dropdown for being hidden - this is used to prevent broadcasting that the dropdowns have been hidden
+        //! in the case that the ImGui dropdown context has switched options.
+        bool m_markedForHiding = false; 
+        bool m_showImGuiDemo = false;
+
     };
 }
 

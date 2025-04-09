@@ -8,11 +8,13 @@
 #include "Sprite.h"
 #include <CryPath.h>
 #include <ISerialize.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <LyShine/Bus/Sprite/UiSpriteBus.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
@@ -102,7 +104,7 @@ namespace
         // NOTE: it should not be a full path at this point. If called from the UI editor it will
         // have been transformed to a game path. If being called with a hard coded path it should be a
         // game path already - it is not good for code to be using full paths.
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, sourcePathname);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, sourcePathname);
 
         // check the extension and work out the pathname of the sprite file and the texture file
         // currently it works if the input path is either a sprite file or a texture file
@@ -143,6 +145,8 @@ namespace
     //! Example XML string data: "1.0 2.0"
     void SerializeAzVector2(TSerialize ser, const char* attributeName, AZ::Vector2& azVec2)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
         if (ser.IsReading())
         {
             AZStd::string stringVal;
@@ -196,7 +200,10 @@ CSprite::CSprite()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite::~CSprite()
 {
-    s_loadedSprites->erase(m_pathname);
+    if (s_loadedSprites)
+    {
+        s_loadedSprites->erase(m_pathname);
+    }
     TextureAtlasNamespace::TextureAtlasNotificationBus::Handler::BusDisconnect();
 }
 
@@ -684,10 +691,17 @@ CSprite* CSprite::LoadSprite(const AZStd::string& pathname)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
+CSprite* CSprite::CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
+    auto attachmentImage = AZ::RPI::AttachmentImage::FindOrCreate(attachmentImageAsset);
+    if (!attachmentImage)
+    {
+        AZ_Warning("UI", false, "Failed to find or create render target");
+        return nullptr;
+    }
+
     // test if the sprite is already loaded, if so return loaded sprite
-    auto result = s_loadedSprites->find(renderTargetName);
+    auto result = s_loadedSprites->find(attachmentImage->GetAttachmentId().GetCStr());
     CSprite* loadedSprite = (result == s_loadedSprites->end()) ? nullptr : result->second;
 
     if (loadedSprite)
@@ -699,17 +713,8 @@ CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
     // create Sprite object
     CSprite* sprite = new CSprite;
 
-#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
-    // the render target texture may not exist yet in which case we will need to load it later
-    sprite->m_texture = gEnv->pRenderer->EF_GetTextureByName(renderTargetName.c_str());
-    if (sprite->m_texture)
-    {
-        // increase the reference count on this render target texture so it doesn't get deleted
-        // while we are using it
-        sprite->m_texture->AddRef();
-    }
-#endif
-    sprite->m_pathname = renderTargetName;
+    sprite->m_image = attachmentImage;
+    sprite->m_pathname = attachmentImage->GetAttachmentId().GetCStr();
     sprite->m_texturePathname.clear();
 
     // add sprite to list of loaded sprites
@@ -748,7 +753,9 @@ bool CSprite::DoesSpriteTextureAssetExist(const AZStd::string& pathname)
     }
 
     // Check if the texture asset exists
-    bool textureExists = CheckIfFileExists(spritePath, texturePath);
+    const AZStd::string cacheRelativePath = AZStd::string::format("%s.%s", texturePath.c_str(), streamingImageExtension);
+    bool textureExists = CheckIfFileExists(texturePath, cacheRelativePath);
+
     return textureExists;
 }
 
@@ -920,5 +927,5 @@ bool CSprite::LoadFromXmlFile()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CSprite::NotifyChanged()
 {
-    EBUS_EVENT_ID(this, UiSpriteSettingsChangeNotificationBus, OnSpriteSettingsChanged);
+    UiSpriteSettingsChangeNotificationBus::Event(this, &UiSpriteSettingsChangeNotificationBus::Events::OnSpriteSettingsChanged);
 }

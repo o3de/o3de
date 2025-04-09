@@ -4,7 +4,7 @@
     "propertyLayout": {
         "propertyGroups": [
             {
-                "name": "iris", 
+                "name": "iris",
                 "shaderInputsPrefix": "m_iris_",
                 "shaderOptionsPrefix": "o_iris_",
                 "displayName":  "Iris",
@@ -16,13 +16,13 @@
                     {
                         "$import": "MaterialInputs/NormalPropertyGroup.json"
                     },
-                    { 
+                    {
                         "$import": "MaterialInputs/RoughnessPropertyGroup.json"
                     }
                 ]
             },
             {
-                "name": "sclera", 
+                "name": "sclera",
                 "shaderInputsPrefix": "m_sclera_",
                 "shaderOptionsPrefix": "o_sclera_",
                 "displayName":  "Sclera",
@@ -34,7 +34,7 @@
                     {
                         "$import": "MaterialInputs/NormalPropertyGroup.json"
                     },
-                    { 
+                    {
                         "$import": "MaterialInputs/RoughnessPropertyGroup.json"
                     }
                 ]
@@ -49,9 +49,9 @@
                         "displayName": "Iris Depth",
                         "description": "Distance from the object origin to the plane (XZ) where the iris lays.",
                         "type": "float",
-                        "defaultValue": 0.48,
+                        "defaultValue": 0.423,
                         "min": 0.0,
-                        "softMax": 1.0,
+                        "softMax": 0.5,
                         "connection": {
                             "type": "ShaderInput",
                             "name": "m_irisDepth"
@@ -62,12 +62,25 @@
                         "displayName": "Iris Radius",
                         "description": "Radius of the iris. It extends the iris/sclera mask to get more samples from one or the other (no UV deformation/stretching).",
                         "type": "float",
-                        "defaultValue": 0.2,
+                        "defaultValue": 0.19,
                         "min": 0.0,
                         "softMax": 0.5,
                         "connection": {
                             "type": "ShaderInput",
                             "name": "m_eyeIrisRadius"
+                        }
+                    },
+                    {
+                        "name": "irisUvScale",
+                        "displayName": "Iris UV Scale",
+                        "description": "UV multiplier for the Iris Texture",
+                        "type": "float",
+                        "defaultValue": 1,
+                        "min": 0.0,
+                        "softMax": 10,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_irisUvScale"
                         }
                     },
                     {
@@ -98,35 +111,23 @@
                     }
                 ]
             },
-            { 
+            {
                 "$import": "MaterialInputs/SpecularPropertyGroup.json"
             },
-            { 
+            {
+                "$import": "MaterialInputs/DualSpecularPropertyGroup.json"
+            },
+            {
                 "$import": "MaterialInputs/SubsurfaceAndTransmissionPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "./Eye.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        }
-    ],
+    // Skin lighting model works well because it supports subsurface scattering, and Eye doesn't need all the other stuff in the Enhanced lighting model.
+    "lightingModel": "Skin",
+    "materialShaderCode": "Eye.azsli",
     "uvNameMap": {
         "UV0": "Tiled",
         "UV1": "Unwrapped"

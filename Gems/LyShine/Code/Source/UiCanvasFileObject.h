@@ -21,7 +21,7 @@ class UiCanvasFileObject
 {
 public:
     ~UiCanvasFileObject() override { }
-    AZ_CLASS_ALLOCATOR(UiCanvasFileObject, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UiCanvasFileObject, AZ::SystemAllocator);
     AZ_RTTI(UiCanvasFileObject, "{1F02632F-F113-49B1-85AD-8CD0FA78B8AA}");
 
     // Load canvas from stream with an optional asset filter. No asset references are ignored by default

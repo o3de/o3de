@@ -80,7 +80,7 @@ namespace AZ
             uint16_t GetNumMipLevels(const DecalMapType mapType) const;
             RHI::Size GetImageDimensions(const DecalMapType mapType) const;
             RHI::Format GetFormat(const DecalMapType mapType) const;
-            RHI::ImageSubresourceLayout GetLayout(const DecalMapType mapType, int mip) const;
+            RHI::DeviceImageSubresourceLayout GetLayout(const DecalMapType mapType, int mip) const;
             AZStd::span<const uint8_t> GetRawImageData(const AZ::Name& mapName, int arrayLevel, int mip) const;
 
             bool AreAllAssetsReady() const;

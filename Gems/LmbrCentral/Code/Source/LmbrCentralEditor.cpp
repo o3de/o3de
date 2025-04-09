@@ -9,8 +9,6 @@
 
 #include "LmbrCentralEditor.h"
 
-#include "Ai/EditorNavigationAreaComponent.h"
-#include "Ai/EditorNavigationSeedComponent.h"
 #include "Audio/EditorAudioAreaEnvironmentComponent.h"
 #include "Audio/EditorAudioEnvironmentComponent.h"
 #include "Audio/EditorAudioListenerComponent.h"
@@ -24,30 +22,33 @@
 #include "Scripting/EditorSpawnerComponent.h"
 #include "Scripting/EditorTagComponent.h"
 
-#include "Shape/EditorAxisAlignedBoxShapeComponent.h"
-#include "Shape/EditorBoxShapeComponent.h"
-#include "Shape/EditorQuadShapeComponent.h"
-#include "Shape/EditorSphereShapeComponent.h"
-#include "Shape/EditorDiskShapeComponent.h"
-#include "Shape/EditorCylinderShapeComponent.h"
-#include "Shape/EditorCapsuleShapeComponent.h"
-#include "Shape/EditorSplineComponent.h"
-#include "Shape/EditorTubeShapeComponent.h"
-#include "Shape/EditorPolygonPrismShapeComponent.h"
-#include "Shape/EditorReferenceShapeComponent.h"
 #include "Editor/EditorCommentComponent.h"
+#include "Shape/EditorAxisAlignedBoxShapeComponent.h"
+#include "Shape/EditorAxisAlignedBoxShapeComponentMode.h"
+#include "Shape/EditorBoxShapeComponent.h"
+#include "Shape/EditorCapsuleShapeComponent.h"
+#include "Shape/EditorCylinderShapeComponent.h"
+#include "Shape/EditorDiskShapeComponent.h"
+#include "Shape/EditorPolygonPrismShapeComponent.h"
+#include "Shape/EditorQuadShapeComponent.h"
+#include "Shape/EditorReferenceShapeComponent.h"
+#include "Shape/EditorSphereShapeComponent.h"
+#include "Shape/EditorSplineComponent.h"
+#include "Shape/EditorSplineComponentMode.h"
+#include "Shape/EditorTubeShapeComponent.h"
+#include "Shape/EditorTubeShapeComponentMode.h"
 
 #include "Shape/EditorCompoundShapeComponent.h"
 
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.h>
 #include <Builders/LevelBuilder/LevelBuilderComponent.h>
 #include <Builders/LuaBuilder/LuaBuilderComponent.h>
 #include <Builders/SliceBuilder/SliceBuilderComponent.h>
 #include <Builders/TranslationBuilder/TranslationBuilderComponent.h>
 #include "Builders/CopyDependencyBuilder/CopyDependencyBuilderComponent.h"
-#include <Builders/DependencyBuilder/DependencyBuilderComponent.h>
 
 namespace LmbrCentral
 {
@@ -78,12 +79,9 @@ namespace LmbrCentral
             EditorSplineComponent::CreateDescriptor(),
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
-            EditorNavigationAreaComponent::CreateDescriptor(),
-            EditorNavigationSeedComponent::CreateDescriptor(),
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
             EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
-            DependencyBuilder::DependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
             TranslationBuilder::BuilderPluginComponent::CreateDescriptor(),
@@ -92,18 +90,21 @@ namespace LmbrCentral
             BenchmarkAssetBuilder::BenchmarkAssetBuilderComponent::CreateDescriptor(),
         });
 
-        // This is internal Amazon code, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
         AZStd::vector<AZ::Uuid> typeIds;
         typeIds.reserve(m_descriptors.size());
         for (AZ::ComponentDescriptor* descriptor : m_descriptors)
         {
             typeIds.emplace_back(descriptor->GetUuid());
         }
-        EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
+        AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+            &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, typeIds);
+
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     LmbrCentralEditorModule::~LmbrCentralEditorModule()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 
     AZ::ComponentTypeList LmbrCentralEditorModule::GetRequiredSystemComponents() const
@@ -114,6 +115,38 @@ namespace LmbrCentral
 
         return requiredComponents;
     }
+
+    void LmbrCentralEditorModule::OnActionRegistrationHook()
+    {
+        EditorSplineComponentMode::RegisterActions();
+        EditorTubeShapeComponentMode::RegisterActions();
+        AzToolsFramework::BoxComponentMode::RegisterActions();
+    }
+
+    void LmbrCentralEditorModule::OnActionContextModeBindingHook()
+    {
+        EditorSplineComponentMode::BindActionsToModes();
+        EditorTubeShapeComponentMode::BindActionsToModes();
+        AzToolsFramework::BoxComponentMode::BindActionsToModes();
+        EditorAxisAlignedBoxShapeComponentMode::BindActionsToModes();
+    }
+
+    void LmbrCentralEditorModule::OnMenuBindingHook()
+    {
+        EditorSplineComponentMode::BindActionsToMenus();
+        EditorTubeShapeComponentMode::BindActionsToMenus();
+        AzToolsFramework::BoxComponentMode::BindActionsToMenus();
+    }
+
+    void LmbrCentralEditorModule::OnPostActionManagerRegistrationHook()
+    {
+        AzToolsFramework::EditorVertexSelectionActionManagement::DisableComponentModeEndOnVertexSelection();
+    }
+
 } // namespace LmbrCentral
 
-AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentralEditor, LmbrCentral::LmbrCentralEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), LmbrCentral::LmbrCentralEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentral_Editor, LmbrCentral::LmbrCentralEditorModule)
+#endif

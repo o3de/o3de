@@ -20,10 +20,10 @@ namespace AZ::DocumentPropertyEditor
     public:
         //! Resets the contents of this adapter with a new DOM.
         void SetContents(Dom::Value contents);
-        Dom::Value GetContents() const override;
         Dom::PatchOutcome RequestContentChange(const Dom::Patch& patch);
 
     private:
+        Dom::Value GenerateContents() override;
         Dom::Value m_value;
     };
 } // namespace AZ::DocumentPropertyEditor

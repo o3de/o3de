@@ -27,7 +27,7 @@ namespace MaterialEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MaterialEditorMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialEditorMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
@@ -41,14 +41,11 @@ namespace MaterialEditor
 
         // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
-        void OnDocumentCleared(const AZ::Uuid& documentId) override;
-        void OnDocumentError(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
-        void OpenSettings() override;
-        void OpenHelp() override;
+        AZStd::string GetHelpUrl() const override;
 
-        AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
+        AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};

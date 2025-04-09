@@ -19,5 +19,5 @@ Q_DECLARE_METATYPE(AZ::Uuid);
 Q_DECLARE_METATYPE(AZ::Data::AssetId);
 Q_DECLARE_METATYPE(ScriptCanvas::Data::Type);
 Q_DECLARE_METATYPE(ScriptCanvas::VariableId);
-Q_DECLARE_METATYPE(ScriptCanvasEditor::SourceHandle);
+Q_DECLARE_METATYPE(ScriptCanvas::SourceHandle);
 

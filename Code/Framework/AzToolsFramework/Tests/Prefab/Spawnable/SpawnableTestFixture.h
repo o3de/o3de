@@ -20,7 +20,7 @@ namespace AZ
 
 namespace UnitTest
 {
-    class SpawnableTestFixture : public ToolsApplicationFixture
+    class SpawnableTestFixture : public ToolsApplicationFixture<>
     {
     public:
         constexpr static const char* PathString = "path/to/template";

@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/details_1k_basecolor.png",
         "clearCoat.factor": 0.5,
@@ -9,6 +9,7 @@
         "general.applySpecularAA": true,
         "metallic.textureMap": "../Textures/details_1k_metallic.png",
         "normal.textureMap": "../Textures/details_1k_normal.png",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/details_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.02500000037252903,

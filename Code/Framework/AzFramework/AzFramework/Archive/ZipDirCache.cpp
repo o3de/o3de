@@ -9,6 +9,7 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/conversions.h>
 
 #include <AzFramework/Archive/ZipFileFormat.h>
@@ -35,27 +36,11 @@ namespace AZ::IO::ZipDir
 
     namespace ZipDirCacheInternal
     {
-        static AZStd::intrusive_ptr<AZ::IO::MemoryBlock> CreateMemoryBlock(size_t size, const char* usage)
+        [[nodiscard]] static AZStd::intrusive_ptr<AZ::IO::MemoryBlock> CreateMemoryBlock(size_t size)
         {
-            if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                AZ_Error("Archive", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
-                return {};
-            }
-            AZ::IAllocator* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-            AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
-            auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
-            {
-                return reinterpret_cast<uint8_t*>(AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(byteSize, byteAlignment, 0, name));
-            };
-            auto DeleterFunc = [](uint8_t* ptrArray)
-            {
-                if (ptrArray)
-                {
-                    AZ::AllocatorInstance<AZ::OSAllocator>::Get().DeAllocate(ptrArray);
-                }
-            };
-            memoryBlock->m_address = AZ::IO::MemoryBlock::AddressPtr{ CreateFunc(size, alignof(uint8_t), usage), AZ::IO::MemoryBlock::AddressDeleter{DeleterFunc} };
+            AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ aznew AZ::IO::MemoryBlock{} };
+
+            memoryBlock->m_address.reset(reinterpret_cast<uint8_t*>(azmalloc(size, alignof(uint8_t))));
             memoryBlock->m_size = size;
 
             return memoryBlock;
@@ -137,20 +122,7 @@ namespace AZ::IO::ZipDir
         bool m_bCommitted;
     };
 
-    Cache::Cache()
-        : Cache{ !AZ::AllocatorInstance<AZ::OSAllocator>::IsReady() ? &AZ::AllocatorInstance<AZ::OSAllocator>::Get() : nullptr }
-    {
-    }
-
-    Cache::Cache(AZ::IAllocator* allocator)
-        : m_fileHandle(AZ::IO::InvalidHandle)
-        , m_nFlags(0)
-        , m_lCDROffset(0)
-        , m_encryptedHeaders(ZipFile::HEADERS_NOT_ENCRYPTED)
-        , m_allocator{ allocator }
-    {
-        AZ_Assert(allocator, "IAllocator object is required in order to allocated memory for the ZipDir Cache operations");
-    }
+    Cache::Cache() = default;
 
     void Cache::Close()
     {
@@ -178,7 +150,6 @@ namespace AZ::IO::ZipDir
                 m_fileHandle = AZ::IO::InvalidHandle;
             }
         }
-        m_allocator = nullptr;
         m_treeDir.Clear();
     }
 
@@ -215,7 +186,7 @@ namespace AZ::IO::ZipDir
         const size_t maxChunk = 1 << 20;
         size_t sizeLeft = size;
         size_t sizeToWrite;
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(maxChunk, "ZipDir::Cache::WriteNullData");
+        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(maxChunk);
         if (memoryBlock)
         {
             return ZD_ERROR_IO_FAILED;
@@ -272,7 +243,7 @@ namespace AZ::IO::ZipDir
         {
         case ZipFile::METHOD_DEFLATE:
             nSizeCompressed = GetCompressedSizeEstimate(nSize, codec);
-            memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(nSizeCompressed, "Cache::UpdateFile");
+            memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(nSizeCompressed);
             pCompressed = memoryBlock->m_address.get();
             dataBuffer = pCompressed;
 
@@ -718,7 +689,7 @@ namespace AZ::IO::ZipDir
                 return ZD_ERROR_INVALID_CALL;
             }
 
-            memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(pFileEntry->desc.lSizeCompressed, "Cache::ReadFile");
+            memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(pFileEntry->desc.lSizeCompressed);
             pBuffer = memoryBlock->m_address.get();
         }
 
@@ -811,7 +782,7 @@ namespace AZ::IO::ZipDir
         FileRecordList arrFiles(GetRoot());
         //arrFiles.SortByFileOffset();
         size_t nSizeCDR = arrFiles.GetStats().nSizeCDR;
-        void* pCDR = m_allocator->Allocate(nSizeCDR, alignof(uint8_t), 0, "Cache::WriteCDR");
+        void* pCDR = azmalloc(nSizeCDR, alignof(uint8_t));
         [[maybe_unused]] size_t nSizeCDRSerialized = arrFiles.MakeZipCDR(m_lCDROffset, pCDR);
         AZ_Assert(nSizeCDRSerialized == nSizeCDR, "Serialized CDR size %zu does not match size in memory %zu", nSizeCDRSerialized, nSizeCDR);
         if (m_encryptedHeaders == ZipFile::HEADERS_ENCRYPTED_TEA)
@@ -902,7 +873,7 @@ namespace AZ::IO::ZipDir
             }
 
             // allocate memory for the file compressed data
-            FileDataRecordPtr pFile = FileDataRecord::New(*it, m_allocator);
+            FileDataRecordPtr pFile = aznew FileDataRecord(*it);
 
             if (!pFile)
             {

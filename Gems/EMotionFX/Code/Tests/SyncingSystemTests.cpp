@@ -129,7 +129,6 @@ namespace EMotionFX
         }
 
     public:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         AnimGraphObject::ESyncMode m_syncMode;
         AnimGraphMotionNode* m_motionNodeA = nullptr;
         AnimGraphMotionNode* m_motionNodeB = nullptr;
@@ -263,6 +262,6 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(SyncingSystem, SyncingSystemFixture,
+    INSTANTIATE_TEST_SUITE_P(SyncingSystem, SyncingSystemFixture,
         ::testing::ValuesIn(SyncTestData));
 } // end namespace EMotionFX

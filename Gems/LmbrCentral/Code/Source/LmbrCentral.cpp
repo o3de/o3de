@@ -11,7 +11,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/containers/list.h>
-#include <AzCore/Memory/AllocatorScope.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
@@ -28,13 +27,11 @@
 #include "Audio/AudioSystemComponent.h"
 #include "Audio/AudioTriggerComponent.h"
 #include "Bundling/BundlingSystemComponent.h"
-#include "Ai/NavigationComponent.h"
 #include "Scripting/TagComponent.h"
 #include "Scripting/SimpleStateComponent.h"
 #include "Scripting/SpawnerComponent.h"
 #include "Scripting/LookAtComponent.h"
 #include "Scripting/RandomTimedSpawnerComponent.h"
-#include "Ai/NavigationSystemComponent.h"
 #include "Geometry/GeometrySystemComponent.h"
 #include <Asset/AssetSystemDebugComponent.h>
 
@@ -58,8 +55,7 @@
 
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -80,12 +76,9 @@
 
 namespace LmbrCentral
 {
-    using LmbrCentralAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
-
     // This component boots the required allocators for LmbrCentral everywhere but AssetBuilders
     class LmbrCentralAllocatorComponent
         : public AZ::Component
-        , protected LmbrCentralAllocatorScope
     {
     public:
         AZ_COMPONENT(LmbrCentralAllocatorComponent, "{B0512A75-AC4A-423A-BB55-C3355C0B186A}", AZ::Component);
@@ -95,17 +88,15 @@ namespace LmbrCentral
 
         void Activate() override
         {
-            LmbrCentralAllocatorScope::ActivateAllocators();
         }
 
         void Deactivate() override
         {
-            LmbrCentralAllocatorScope::DeactivateAllocators();
         }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MemoryAllocators", 0xd59acbcc));
+            provided.push_back(AZ_CRC_CE("MemoryAllocators"));
         }
 
         static void Reflect(AZ::ReflectContext* context)
@@ -121,7 +112,6 @@ namespace LmbrCentral
                         "LmbrCentral Allocator Component", "Manages initialization of memory allocators required by LmbrCentral")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ;
                 }
             }
@@ -140,7 +130,7 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MemoryAllocators", 0xd59acbcc));
+            provided.push_back(AZ_CRC_CE("MemoryAllocators"));
         }
 
         static void Reflect(AZ::ReflectContext* context)
@@ -149,7 +139,7 @@ namespace LmbrCentral
             if (serializeContext)
             {
                 serializeContext->Class<LmbrCentralAssetBuilderAllocatorComponent, LmbrCentralAllocatorComponent>()->Version(1)
-                    ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }));
+                    ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }));
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
@@ -157,7 +147,6 @@ namespace LmbrCentral
                         "LmbrCentral Asset Builder Allocator Component", "Manages initialization of memory allocators required by LmbrCentral during asset building")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ;
                 }
             }
@@ -189,7 +178,6 @@ namespace LmbrCentral
             LmbrCentralAllocatorComponent::CreateDescriptor(),
             LmbrCentralAssetBuilderAllocatorComponent::CreateDescriptor(),
             LmbrCentralSystemComponent::CreateDescriptor(),
-            NavigationComponent::CreateDescriptor(),
             SimpleStateComponent::CreateDescriptor(),
             SpawnerComponent::CreateDescriptor(),
             LookAtComponent::CreateDescriptor(),
@@ -206,7 +194,6 @@ namespace LmbrCentral
             ReferenceShapeComponent::CreateDescriptor(),
             SplineComponent::CreateDescriptor(),
             PolygonPrismShapeComponent::CreateDescriptor(),
-            NavigationSystemComponent::CreateDescriptor(),
             GeometrySystemComponent::CreateDescriptor(),
             RandomTimedSpawnerComponent::CreateDescriptor(),
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
@@ -229,7 +216,8 @@ namespace LmbrCentral
         {
             typeIds.emplace_back(descriptor->GetUuid());
         }
-        EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
+        AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+            &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, typeIds);
     }
 
     //! Request system components on the system entity.
@@ -240,7 +228,6 @@ namespace LmbrCentral
                    azrtti_typeid<LmbrCentralAllocatorComponent>(),
                    azrtti_typeid<LmbrCentralAssetBuilderAllocatorComponent>(),
                    azrtti_typeid<LmbrCentralSystemComponent>(),
-                   azrtti_typeid<NavigationSystemComponent>(),
                    azrtti_typeid<GeometrySystemComponent>(),
                    azrtti_typeid<AudioSystemComponent>(),
                    azrtti_typeid<BundlingSystemComponent>(),
@@ -255,25 +242,9 @@ namespace LmbrCentral
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // Allow loading of Material and Texture Assets which explicitly specialized AzTypeInfo instead of using
-            // the AZ_RTTI Uuid from SimpleAssetReference<T>
-            serializeContext->ClassDeprecate("SimpleAssetReference_MaterialAsset", "{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}",
-                [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-                {
-                    AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-                    for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-                    {
-                        childNodeElements.push_back(rootElement.GetSubElement(index));
-                    }
-                    // Convert the rootElement now, the existing child DataElmentNodes are now removed
-                    rootElement.Convert<AzFramework::SimpleAssetReference<MaterialAsset>>(context);
-                    for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-                    {
-                        rootElement.AddElement(AZStd::move(childNodeElement));
-                    }
-                    return true;
-                });
-            serializeContext->ClassDeprecate("SimpleAssetReference_TextureAsset", "{68E92460-5C0C-4031-9620-6F1A08763243}",
+            serializeContext->ClassDeprecate(
+                "SimpleAssetReference_TextureAsset",
+                AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
                 {
                     AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
@@ -289,7 +260,6 @@ namespace LmbrCentral
                     }
                     return true;
                 });
-            AzFramework::SimpleAssetReference<MaterialAsset>::Register(*serializeContext);
             AzFramework::SimpleAssetReference<TextureAsset>::Register(*serializeContext);
 
             serializeContext->Class<LmbrCentralSystemComponent, AZ::Component>()
@@ -302,7 +272,6 @@ namespace LmbrCentral
                     "LmbrCentral", "Coordinates initialization of systems within LmbrCentral")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Game")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
             }
         }
@@ -312,50 +281,35 @@ namespace LmbrCentral
 
     void LmbrCentralSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LmbrCentralService", 0xc3a02410));
+        provided.push_back(AZ_CRC_CE("LmbrCentralService"));
     }
 
     void LmbrCentralSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LmbrCentralService", 0xc3a02410));
+        incompatible.push_back(AZ_CRC_CE("LmbrCentralService"));
     }
 
     void LmbrCentralSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     void LmbrCentralSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("MemoryAllocators", 0xd59acbcc));
-        dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        dependent.push_back(AZ_CRC_CE("MemoryAllocators"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     void LmbrCentralSystemComponent::Activate()
     {
-        if (!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-            m_allocatorShutdowns.push_back([]() { AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy(); });
-        }
-
         // Register asset handlers. Requires "AssetDatabaseService"
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         if (auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler(); assetCatalog)
         {
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MeshAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<CharacterDefinitionAsset>::Uuid());
-
-            assetCatalog->AddExtension("cgf");
-            assetCatalog->AddExtension("chr");
-            assetCatalog->AddExtension("cdf");
-            assetCatalog->AddExtension("dds");
-            assetCatalog->AddExtension("caf");
-            assetCatalog->AddExtension("xml");
+            // Sprite files are only used by LyShine and should be moved there at some point
             assetCatalog->AddExtension("sprite");
-            assetCatalog->AddExtension("cax");
         }
 
         AZ::Data::AssetManagerNotificationBus::Handler::BusConnect();
@@ -432,5 +386,9 @@ namespace LmbrCentral
 } // namespace LmbrCentral
 
 #if !defined(LMBR_CENTRAL_EDITOR)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), LmbrCentral::LmbrCentralModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentral, LmbrCentral::LmbrCentralModule)
+#endif
 #endif

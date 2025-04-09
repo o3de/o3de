@@ -1,9 +1,0 @@
-{
-    "description": "A simple default base material for Atom testing.",
-    "version": 1,
-    "shaders": [
-        {
-            "file": "Shaders/PostProcessing/EditorModeMask.shader"
-        }
-    ]
-}

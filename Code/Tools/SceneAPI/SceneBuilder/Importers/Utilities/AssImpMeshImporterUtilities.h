@@ -36,9 +36,9 @@ namespace AZ
         namespace SceneBuilder
         {
             bool BuildSceneMeshFromAssImpMesh(const aiNode* currentNode, const aiScene* scene, const SceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
-                const AZStd::function<AZStd::shared_ptr<SceneData::GraphData::MeshData>()>& makeMeshFunc);
+                const AZStd::function<AZStd::shared_ptr<AZ::SceneData::GraphData::MeshData>()>& makeMeshFunc);
 
-            typedef AZ::Outcome<const SceneData::GraphData::MeshData* const, Events::ProcessingResult> GetMeshDataFromParentResult;
+            typedef AZ::Outcome<const AZ::SceneData::GraphData::MeshData*, Events::ProcessingResult> GetMeshDataFromParentResult;
             GetMeshDataFromParentResult GetMeshDataFromParent(AssImpSceneNodeAppendedContext& context);
 
             // If a node in the original scene file has a mesh with multiple materials on it, the associated AssImp

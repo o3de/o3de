@@ -13,11 +13,13 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Script/ScriptContextDebug.h>
 
@@ -35,7 +37,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AttributeDynamicScriptValue, "{46803928-11c9-4176-b2fe-2f0aed99bfeb}", Attribute); 
-            AZ_CLASS_ALLOCATOR(AttributeDynamicScriptValue, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(AttributeDynamicScriptValue, AZ::SystemAllocator)
 
             AttributeDynamicScriptValue(const DynamicSerializableField& value)
                 : m_value(value) {}
@@ -233,7 +235,7 @@ namespace AzToolsFramework
 
                     // Create an EntityId instance
                     const AZ::SerializeContext* context = nullptr;
-                    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+                    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                     const AZ::SerializeContext::ClassData* entityIdClassData = context->FindClassData(azrtti_typeid<AZ::EntityId>());
                     AZ_Assert(entityIdClassData && entityIdClassData->m_factory, "AZ::EntityId is missing ClassData or factory in the SerializeContext");
                     AZ::EntityId* entityId = static_cast<AZ::EntityId*>(entityIdClassData->m_factory->Create(name));
@@ -772,9 +774,20 @@ namespace AzToolsFramework
                 pausedBreakpoints = true;
             }
 
+            AzToolsFramework::UndoSystem::URSequencePoint* undoPoint = nullptr;
+            bool wasInsideAnotherUndo = false;
             if (m_scriptComponent.LoadInContext())
             {
-                LoadProperties();
+                if (LoadProperties()) // returns true if changed.
+                {
+                    ToolsApplicationRequests::Bus::BroadcastResult(undoPoint, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Update Script Properties");
+                    wasInsideAnotherUndo = (undoPoint) && (undoPoint->GetParent());
+                    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
+                    // If the undo point has a parent, it means its part of a bigger undo that was likely user-initiated like assigning
+                    // the script, in which case, there is no need to notify the user as they will expect the change and will save the
+                    // level. If it has no parent, this means it is a spontaneous fixup that happens during level loading or prefab loading,
+                    // and the user will need notification.
+                }
             }
 
             if (pausedBreakpoints)
@@ -782,13 +795,44 @@ namespace AzToolsFramework
                 m_scriptComponent.m_context->GetDebugContext()->ConnectHook();
             }
 
-            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
-            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
+            InvalidatePropertyDisplay(Refresh_EntireTree);
+            if (undoPoint)
+            {
+                bool wasKept = false;
+                ToolsApplicationRequests::Bus::BroadcastResult(wasKept, &ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+
+                // Empty undos are discarded.  If this happens it means that there were no changes applied, we don't need to tell the user
+                // We also don't have to tell them if we asynchronously update the script properties when loading a new script from asset assignment
+                // since the entity will already be marked dirty / for save.
+                if ((wasKept)&&(!wasInsideAnotherUndo)&&(!m_loadingNewScript))
+                {
+                    AZ_Warning(
+                        "ScriptComponent",
+                        false,
+                        "While loading a Lua Script Component, some properties (from the Properties section in the assigned lua script file) were\n"
+                        "missing or incorrect in the saved file.  (Entity:  %s)\n"
+                        "This has automatically been repaired.\nPlease save the level, to apply it permanently.\n"
+                        "If the problem was inside a prefab inside the level, the fix has been applied as an override.  If you want to apply it to\n"
+                        "every instance of the prefab, push these overrides to the prefab file itself by left clicking the Script component's icon in\n"
+                        "the component inspector for this entity.",
+                        GetEntity()->GetName().c_str());
+                }
+            }
+
+            m_loadingNewScript = false;
         }
 
-        void ScriptEditorComponent::LoadProperties()
+        bool ScriptEditorComponent::LoadProperties()
         {
             ClearDataElements();
+
+            // cache the old properties for comparison.
+            AZStd::string oldProperties;
+            oldProperties.reserve(1024);
+            {
+                AZ::IO::ByteContainerStream<AZStd::string> byteStream(&oldProperties);
+                AZ::JsonSerializationUtils::SaveObjectToStream(&m_scriptComponent.m_properties, byteStream);
+            }
 
             AZ::ScriptContext* context = m_scriptComponent.m_context;
             LSV_BEGIN(context->NativeContext(), -1);
@@ -798,7 +842,7 @@ namespace AzToolsFramework
 
             if (!success)
             {
-                return;
+                return false;
             }
 
             AZ::ScriptDataContext stackContext;
@@ -842,7 +886,20 @@ namespace AzToolsFramework
 
             SortProperties(m_scriptComponent.m_properties);
 
-            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+            // compare with the old properties.
+            AZStd::string newProperties;
+            newProperties.reserve(1024);
+            {
+                AZ::IO::ByteContainerStream<AZStd::string> byteStream(&newProperties);
+                AZ::JsonSerializationUtils::SaveObjectToStream(&m_scriptComponent.m_properties, byteStream);
+            }
+
+            if (oldProperties.compare(newProperties) != 0)
+            {
+                InvalidatePropertyDisplay(Refresh_EntireTree);
+                return true;
+            }
+            return false;
         }
 
         void ScriptEditorComponent::ClearDataElements()
@@ -862,9 +919,7 @@ namespace AzToolsFramework
             // edited, so a refresh is at best superfluous, and at worst could cause a feedback loop of infinite refreshes.
             if (GetEntity())
             {
-                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, 
-                    AzToolsFramework::Refresh_EntireTree);
+                InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
             }
         }
 
@@ -891,7 +946,10 @@ namespace AzToolsFramework
                 return;
             }
 
-            gameEntity->AddComponent(context->CloneObject(&m_scriptComponent));
+            auto scriptComponent = context->CloneObject(&m_scriptComponent);
+            // guarantee that the script is set to Preload
+            scriptComponent->SetScript(scriptComponent->GetScript());
+            gameEntity->AddComponent(scriptComponent);
         }
 
         void ScriptEditorComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
@@ -901,7 +959,8 @@ namespace AzToolsFramework
             {
                 SetScript(asset);
                 ScriptHasChanged();
-                EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, AddDirtyEntity, GetEntityId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
             }
         }
 
@@ -911,6 +970,7 @@ namespace AzToolsFramework
 
             // Only clear properties and data elements if the asset we're changing to is not the same one we already had set on our scriptComponent
             // The only time we shouldn't do this is when someone has set the same script on the component through the editor
+            m_loadingNewScript = true;
             if (m_scriptAsset != m_scriptComponent.GetScript())
             {
                 m_scriptComponent.m_properties.Clear();
@@ -937,9 +997,11 @@ namespace AzToolsFramework
             AZStd::string scriptFilename;
             if (assetId.IsValid())
             {
-                EBUS_EVENT_RESULT(scriptFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(scriptFilename,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
             }
-            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, LaunchLuaEditor, scriptFilename.c_str());
+            AzToolsFramework::EditorRequests::Bus::Broadcast(
+                &AzToolsFramework::EditorRequests::Bus::Events::LaunchLuaEditor, scriptFilename.c_str());
         }
 
         void ScriptEditorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -1008,6 +1070,7 @@ namespace AzToolsFramework
                 AzFramework::ScriptComponent::Reflect(context);
 
                 serializeContext->Class<ScriptEditorComponent, EditorComponentBase>()
+                    ->Version(2)
                     ->Field("ScriptComponent", &ScriptEditorComponent::m_scriptComponent)
                     ->Field("ScriptAsset", &ScriptEditorComponent::m_scriptAsset);
 
@@ -1016,9 +1079,9 @@ namespace AzToolsFramework
                 {
                     ec->Class<ScriptEditorComponent>("Lua Script", "The Lua Script component allows you to add arbitrary Lua logic to an entity in the form of a Lua script")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("CanvasUI", 0xe1e05605))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("CanvasUI"))
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &ScriptEditorComponent::m_customName)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
@@ -1027,7 +1090,7 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid())
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Script.png")
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/scripting/lua-script/")
-                        ->DataElement("AssetRef", &ScriptEditorComponent::m_scriptAsset, "Script", "Which script to use")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEditorComponent::m_scriptAsset, "Script", "Which script to use")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ScriptEditorComponent::ScriptHasChanged)
                             ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                             ->Attribute("EditButton", "")
@@ -1051,6 +1114,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AzFramework::ScriptPropertyGroup::m_name)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(nullptr, &AzFramework::ScriptPropertyGroup::m_properties, "m_properties", "Properties in this property group")->
+                            Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
                         DataElement(nullptr, &AzFramework::ScriptPropertyGroup::m_groups, "m_groups", "Subgroups in this property group")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);

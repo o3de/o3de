@@ -138,7 +138,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(VisualExtensionSlotConfiguration, "{3EA2D6DB-1B8F-451B-A6CE-D5779E56F4A8}");
-        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator);
 
         enum class VisualExtensionType
         {
@@ -217,7 +217,7 @@ namespace ScriptCanvas
     {
     public:
 
-        AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
+        AZ_RTTI((TypedNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
         virtual ~TypedNodePropertyInterface() = default;
@@ -283,7 +283,7 @@ namespace ScriptCanvas
 
         // The this-> method calls are here to deal with clang quirkiness with dependent template classes. Don't remove them.
 
-        AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
+        AZ_RTTI((TypedComboBoxNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
         virtual ~TypedComboBoxNodePropertyInterface() = default;
@@ -434,7 +434,10 @@ namespace ScriptCanvas
         using ExploredDynamicGroupCache = AZStd::unordered_map<AZ::EntityId, AZStd::unordered_set< AZ::Crc32 >>;
 
     private:
-
+        AZStd::string m_name = "";
+        AZStd::string m_toolTip = "";
+        AZStd::string m_nodeStyle = "";
+        AZ::Crc32 m_nodeLexicalId;
         struct IteratorCache
         {
         public:
@@ -486,6 +489,7 @@ namespace ScriptCanvas
 
         AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}", SerializationListener);
         static void Reflect(AZ::ReflectContext* reflection);
+        static int GetNodeVersion();
 
         Node();
         ~Node() override;
@@ -538,6 +542,13 @@ namespace ScriptCanvas
         virtual AZStd::string GetNodeTypeName() const;
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
+        virtual const AZStd::string& GetNodeToolTip() const;
+        virtual const AZStd::string& GetNodeStyle() const;
+
+        virtual void SetNodeName(const AZStd::string& name);
+        virtual void SetNodeToolTip(const AZStd::string& toolTip);
+        virtual void SetNodeStyle(const AZStd::string& nodeStyle);
+        virtual void SetNodeLexicalId(const AZ::Crc32& nodeLexicalId);
 
         AZStd::string GetSlotName(const SlotId& slotId) const;
 
@@ -580,6 +591,8 @@ namespace ScriptCanvas
         const ScriptCanvasId& GetOwningScriptCanvasId() const override { return m_scriptCanvasId; }
         AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const override;
         Data::Type GetSlotDataType(const SlotId& slotId) const override;
+
+        Data::Type GetUnderlyingSlotDataType(const SlotId& slotId) const;
 
         VariableId GetSlotVariableId(const SlotId& slotId) const override;
         void SetSlotVariableId(const SlotId& slotId, const VariableId& variableId) override;
@@ -659,6 +672,7 @@ namespace ScriptCanvas
         // Hook here to allow CodeGen to override this
         virtual bool IsDeprecated() const { return false; };
         virtual size_t GenerateFingerprint() const { return 0; }
+        // Use following function to backup node replacement configuration
         virtual NodeReplacementConfiguration GetReplacementNodeConfiguration() const { return {}; };
         virtual AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const { return {}; };
 
@@ -821,6 +835,12 @@ namespace ScriptCanvas
 
         AZ::Outcome<AZStd::string> GetLatentOutKey(const SlotExecution::Map& map, const Slot& slot) const;
 
+        // Returns the provided slot's corresponding execution slot
+        const Slot* GetCorrespondingExecutionSlot(const Slot* slot) const;
+
+        // Returns the provided slot's corresponding data slots
+        AZStd::vector<const Slot*> GetCorrespondingDataSlots(const Slot* slot) const;
+
         void ClearDisplayType(const SlotId& slotId);
         void SetDisplayType(const SlotId& slotId, const Data::Type& dataType);
 
@@ -869,10 +889,6 @@ namespace ScriptCanvas
         //! returns a list of all slots, regardless of type
         SlotList& ModSlots() { return m_slots; }
         
-        // \todo make fast query to the system debugger
-        AZ_INLINE static bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier);
-        AZ_INLINE static bool IsVariableObserved(const VariableId& variableId);
-
         const Datum* FindDatumByIndex(size_t index) const;
         void FindModifiableDatumViewByIndex(size_t index, ModifiableDatumView& controller);
 
@@ -912,13 +928,6 @@ protected:
 
         SlotDataMap CreateInputMap() const;
         SlotDataMap CreateOutputMap() const;
-
-        Signal CreateNodeInputSignal(const SlotId& slotId) const;
-        Signal CreateNodeOutputSignal(const SlotId& slotId) const;
-
-        NodeStateChange CreateNodeStateUpdate() const;
-        VariableChange CreateVariableChange(const GraphVariable& graphVariable) const;
-        VariableChange CreateVariableChange(const Datum& variableDatum, const VariableId& variableId) const;
 
         void ClearDisplayType(const AZ::Crc32& dynamicGroup)
         {
@@ -1071,24 +1080,7 @@ protected:
 
         template<typename ResultType, typename t_Traits, typename>
         friend struct Internal::OutputSlotHelper;
-
-        template<size_t... inputDatumIndices>
-        friend struct SetDefaultValuesByIndex;
     };
-
-    bool Node::IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier)
-    {
-        bool isObserved{};
-        ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsGraphObserved, entityId, identifier);
-        return isObserved;
-    }
-
-    bool Node::IsVariableObserved(const VariableId& variableId)
-    {
-        bool isObserved{};
-        ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsVariableObserved, variableId);
-        return isObserved;
-    }
 
     namespace Internal
     {

@@ -92,7 +92,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(TestShaderStageFunction, "{1BAEE536-96CA-4AEB-BA73-D5D72EE35B45}", AZ::RHI::ShaderStageFunction);
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestShaderStageFunction, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -133,6 +133,16 @@ namespace UnitTest
         : public RPITestFixture
     {
     protected:
+        enum class SpecializationType
+        {
+            None = 0,
+            Partial,
+            Full,
+            Count
+        };
+
+        static const uint32_t SpecializationTypeCount = static_cast<uint32_t>(SpecializationType::Count);
+
         void SetUp() override
         {
             using namespace AZ;
@@ -219,10 +229,35 @@ namespace UnitTest
                                                           Name("Off") };
             bitOffset = m_bindings[3].GetBitOffset() + m_bindings[3].GetBitCount();
 
+            AZStd::vector<RPI::ShaderOptionValuePair> idList4;
+            idList4.push_back({ Name("True"), RPI::ShaderOptionValue(0) }); // 1+ bit
+            idList4.push_back({ Name("False"), RPI::ShaderOptionValue(1) }); // ...
+
+            for (uint32_t i = 0; i < m_bindingsFullSpecialization.size(); ++i)
+            {
+                m_bindingsFullSpecialization[i] = RPI::ShaderOptionDescriptor{
+                    Name{ AZStd::to_string(i) }, RPI::ShaderOptionType::Boolean, i, i, idList4, Name("True"), 0,
+                                                 aznumeric_caster(i) };
+            }
+
+            for (uint32_t i = 0; i < m_bindingsPartialSpecialization.size(); ++i)
+            {
+                m_bindingsPartialSpecialization[i] = RPI::ShaderOptionDescriptor{ Name{ AZStd::to_string(i) },
+                                                                                  RPI::ShaderOptionType::Boolean,
+                                                                                  i,
+                                                                                  i,
+                                                                                  idList4,
+                                                                                  Name("True"),
+                                                                                  0,
+                                                                                  aznumeric_caster(i % 2) ? aznumeric_caster(i) : -1 };
+            }
+
             m_name = Name("TestName");
             m_drawListName = Name("DrawListTagName");
             m_pipelineLayoutDescriptor = TestPipelineLayoutDescriptor::Create();
             m_shaderOptionGroupLayoutForAsset = CreateShaderOptionLayout();
+            m_shaderOptionGroupLayoutForAssetPartialSpecialization = CreateShaderOptionLayout({}, SpecializationType::Partial);
+            m_shaderOptionGroupLayoutForAssetFullSpecialization = CreateShaderOptionLayout({}, SpecializationType::Full);
             m_shaderOptionGroupLayoutForVariants = m_shaderOptionGroupLayoutForAsset;
 
             // Just set up a couple values, not the whole struct, for some basic checking later that the struct is copied.
@@ -253,27 +288,46 @@ namespace UnitTest
             for (size_t i = 0; i < m_bindings.size(); ++i)
             {
                 m_bindings[i] = {};
+                m_bindingsFullSpecialization[i] = {};
+                m_bindingsPartialSpecialization[i] = {};
             }
 
             m_srgLayouts.clear();
             m_pipelineLayoutDescriptor = nullptr;
             m_shaderOptionGroupLayoutForAsset = nullptr;
+            m_shaderOptionGroupLayoutForAssetPartialSpecialization = nullptr;
+            m_shaderOptionGroupLayoutForAssetFullSpecialization = nullptr;
             m_shaderOptionGroupLayoutForVariants = nullptr;
 
             RPITestFixture::TearDown();
         }
 
-        AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> CreateShaderOptionLayout(AZ::RHI::Handle<size_t> indexToOmit = {})
+        const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(SpecializationType specializationType, uint32_t index)
+        {
+            switch (specializationType)
+            {
+            case SpecializationType::Partial:
+                return m_bindingsPartialSpecialization[index];
+            case SpecializationType::Full:
+                return m_bindingsFullSpecialization[index];
+            case SpecializationType::None:
+            default:
+                return m_bindings[index];            
+            }
+        }
+
+        AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> CreateShaderOptionLayout(
+            AZ::RHI::Handle<size_t> indexToOmit = {}, SpecializationType specializationType = SpecializationType::None)
         {
             using namespace AZ;
 
             RPI::Ptr<RPI::ShaderOptionGroupLayout> layout = RPI::ShaderOptionGroupLayout::Create();
-            for (size_t i = 0; i < m_bindings.size(); ++i)
+            for (uint32_t i = 0; i < m_bindings.size(); ++i)
             {
                 // Allows omitting a single option to test for missing options.
                 if (indexToOmit.GetIndex() != i)
                 {
-                    layout->AddShaderOption(m_bindings[i]);
+                    layout->AddShaderOption(GetShaderOptionDescriptor(specializationType, i));
                 }
             }
             layout->Finalize();
@@ -300,7 +354,7 @@ namespace UnitTest
             srgLayout->SetName(srgId);
             srgLayout->SetBindingSlot(aznumeric_caster(index));
             srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
-                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index) });
+                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index), static_cast<uint32_t>(index)});
 
             EXPECT_TRUE(srgLayout->Finalize());
 
@@ -311,7 +365,7 @@ namespace UnitTest
         {
             Name srgId = CreateShaderResourceGroupId(index);
             AZ::RHI::ShaderResourceGroupBindingInfo bindingInfo;
-            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index)} });
+            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index), static_cast<uint32_t>(index)} });
             return bindingInfo;
         }
 
@@ -345,16 +399,15 @@ namespace UnitTest
             while (nextValue != optionValues.end() &&
                 nextOption != m_shaderOptionGroupLayoutForVariants->GetShaderOptions().end())
             {
-                AZStd::string optionNameStr(nextOption->GetName().GetCStr());
                 if (nextValue->empty())
                 {
                     // TODO (To consider) If we decide to support gaps (unqualified options) in the lookup key
                     //  we can actually remove this check
-                    variantInfo.m_options[optionNameStr] = nextOption->GetDefaultValue().GetCStr();
+                    variantInfo.m_options[nextOption->GetName()] = nextOption->GetDefaultValue();
                 }
                 else
                 {
-                    variantInfo.m_options[optionNameStr] = *nextValue;
+                    variantInfo.m_options[nextOption->GetName()] = Name{*nextValue};
                 }
                 nextValue++;
                 nextOption++;
@@ -397,7 +450,6 @@ namespace UnitTest
         {
             RPI::ShaderVariantAssetCreator shaderVariantAssetCreator;
             shaderVariantAssetCreator.Begin(Uuid::CreateRandom(), id, stableId, isFullyBaked);
-            shaderVariantAssetCreator.SetBuildTimestamp(AZStd::sys_time_t(1)); //Make non-zero
 
             for (RHI::ShaderStage rhiStage : stagesToActivate)
             {
@@ -411,15 +463,31 @@ namespace UnitTest
             return shaderVariantAsset;
         }
 
+        AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> GetShaderOptionGroupForAssets(SpecializationType specializationType)
+        {
+            switch (specializationType)
+            {
+            case SpecializationType::None:
+                return m_shaderOptionGroupLayoutForAsset;
+            case SpecializationType::Partial:
+                return m_shaderOptionGroupLayoutForAssetPartialSpecialization;
+            case SpecializationType::Full:
+                return m_shaderOptionGroupLayoutForAssetFullSpecialization;
+            default:
+                return nullptr;
+            }
+        }
+
         void BeginCreatingTestShaderAsset(AZ::RPI::ShaderAssetCreator& creator,
-            const AZStd::vector<RHI::ShaderStage>& stagesToActivate = {RHI::ShaderStage::Vertex, RHI::ShaderStage::Fragment} )
+            const AZStd::vector<RHI::ShaderStage>& stagesToActivate = {RHI::ShaderStage::Vertex, RHI::ShaderStage::Fragment},
+            SpecializationType specializationType = SpecializationType::None)
         {
             using namespace AZ;
 
             creator.Begin(Uuid::CreateRandom());
             creator.SetName(m_name);
             creator.SetDrawListName(m_drawListName);
-            creator.SetShaderOptionGroupLayout(m_shaderOptionGroupLayoutForAsset);
+            creator.SetShaderOptionGroupLayout(GetShaderOptionGroupForAssets(specializationType));
 
             creator.BeginAPI(RHI::Factory::Get().GetType());
 
@@ -431,6 +499,8 @@ namespace UnitTest
             creator.SetRenderStates(m_renderStates);
             creator.SetInputContract(CreateSimpleShaderInputContract());
             creator.SetOutputContract(CreateSimpleShaderOutputContract());
+
+            creator.SetUseSpecializationConstants(specializationType != SpecializationType::None);
 
             RHI::ShaderStageAttributeMapList attributeMaps;
             attributeMaps.resize(RHI::ShaderStageCount);
@@ -523,7 +593,8 @@ namespace UnitTest
 
             for (size_t i = 0; i < shaderAsset->GetShaderResourceGroupLayouts().size(); ++i)
             {
-                auto& srgLayout = shaderAsset->GetShaderResourceGroupLayouts()[i];
+                auto srgLayouts = shaderAsset->GetShaderResourceGroupLayouts();
+                auto& srgLayout = srgLayouts[i];
                 EXPECT_EQ(srgLayout->GetHash(), m_srgLayouts[i]->GetHash());
                 EXPECT_EQ(shaderAsset->FindShaderResourceGroupLayout(CreateShaderResourceGroupId(i))->GetHash(), srgLayout->GetHash());
             }
@@ -543,19 +614,19 @@ namespace UnitTest
             ShaderResourceGroupLayoutSpan shaderAssetResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
             EXPECT_EQ(shaderResourceGroupLayoutSpan.data(), shaderAssetResourceGroupLayoutSpan.data());
             EXPECT_EQ(shaderResourceGroupLayoutSpan.size(), shaderAssetResourceGroupLayoutSpan.size());
-            
+
             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant( RPI::ShaderVariantStableId{0} );
-            
+
             RHI::PipelineStateDescriptorForDraw descriptorForDraw;
             rootShaderVariant.ConfigurePipelineState(descriptorForDraw);
-            
+
             EXPECT_EQ(descriptorForDraw.m_pipelineLayoutDescriptor->GetHash(), m_pipelineLayoutDescriptor->GetHash());
             EXPECT_NE(descriptorForDraw.m_vertexFunction, nullptr);
             EXPECT_NE(descriptorForDraw.m_fragmentFunction, nullptr);
             EXPECT_EQ(descriptorForDraw.m_renderStates.GetHash(), m_renderStates.GetHash());
             EXPECT_EQ(descriptorForDraw.m_inputStreamLayout.GetHash(), HashValue64{ 0 }); // ConfigurePipelineState shouldn't touch descriptorForDraw.m_inputStreamLayout
             EXPECT_EQ(descriptorForDraw.m_renderAttachmentConfiguration.GetHash(), RHI::RenderAttachmentConfiguration().GetHash()); // ConfigurePipelineState shouldn't touch descriptorForDraw.m_outputAttachmentLayout
-            
+
             // Actual layout content doesn't matter for this test, it just needs to be set up to pass validation inside AcquirePipelineState().
             descriptorForDraw.m_inputStreamLayout.SetTopology(RHI::PrimitiveTopology::TriangleList);
             descriptorForDraw.m_inputStreamLayout.Finalize();
@@ -570,11 +641,16 @@ namespace UnitTest
         }
 
         AZStd::array<AZ::RPI::ShaderOptionDescriptor, 4> m_bindings;
+        AZStd::array<AZ::RPI::ShaderOptionDescriptor, 4> m_bindingsFullSpecialization;
+        AZStd::array<AZ::RPI::ShaderOptionDescriptor, 4> m_bindingsPartialSpecialization;
+
 
         AZ::Name m_name;
         AZ::Name m_drawListName;
         AZ::RHI::Ptr<AZ::RHI::PipelineLayoutDescriptor> m_pipelineLayoutDescriptor;
         AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> m_shaderOptionGroupLayoutForAsset;
+        AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> m_shaderOptionGroupLayoutForAssetPartialSpecialization;
+        AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> m_shaderOptionGroupLayoutForAssetFullSpecialization;
         AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> m_shaderOptionGroupLayoutForVariants;
 
         AZ::RHI::RenderStates m_renderStates;
@@ -754,7 +830,7 @@ namespace UnitTest
         success = shaderOptionGroupLayout->AddShaderOption(AZ::RPI::ShaderOptionDescriptor{ Name{"Invalid"}, intRangeType, RPI::ShaderVariantKeyBitCount - 4, order++, list1, Name("0") });
         EXPECT_FALSE(success);
         errorMessageFinder.CheckExpectedErrorsFound();
-        
+
         // Add shader option with empty name.
         errorMessageFinder.Reset();
         errorMessageFinder.AddExpectedErrorMessage("empty name");
@@ -876,7 +952,63 @@ namespace UnitTest
 
         EXPECT_FALSE(shaderOptionGroupLayout->FindShaderOptionIndex(Name{ "Invalid" }).IsValid());
     }
-    
+
+    TEST_F(ShaderTests, ShaderOptionGroupLayoutSpecializationTest)
+    {
+        using namespace AZ;
+        AZStd::vector<RPI::ShaderOptionValuePair> idList4;
+        idList4.push_back({ Name("True"), RPI::ShaderOptionValue(0) });
+        idList4.push_back({ Name("False"), RPI::ShaderOptionValue(1) });
+
+        {
+            RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
+            bool success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized1" }, RPI::ShaderOptionType::Boolean, 0, 0, idList4, Name("False"), 0, 0 });
+            EXPECT_TRUE(success);
+            success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized2" }, RPI::ShaderOptionType::Boolean, 1, 1, idList4, Name("False"), 0, 1 });
+            EXPECT_TRUE(success);
+            success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized3" }, RPI::ShaderOptionType::Boolean, 2, 2, idList4, Name("False"), 0, 2 });
+            EXPECT_TRUE(success);
+            shaderOptionGroupLayout->Finalize();
+            EXPECT_TRUE(shaderOptionGroupLayout->IsFullySpecialized());
+            EXPECT_TRUE(shaderOptionGroupLayout->UseSpecializationConstants());
+        }
+
+        {
+            RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
+            bool success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized1" }, RPI::ShaderOptionType::Boolean, 0, 0, idList4, Name("False"), 0, 0 });
+            EXPECT_TRUE(success);
+            success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized2" }, RPI::ShaderOptionType::Boolean, 1, 1, idList4, Name("False"), 0, -1 });
+            EXPECT_TRUE(success);
+            success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized3" }, RPI::ShaderOptionType::Boolean, 2, 2, idList4, Name("False"), 0, 1 });
+            EXPECT_TRUE(success);
+            shaderOptionGroupLayout->Finalize();
+            EXPECT_FALSE(shaderOptionGroupLayout->IsFullySpecialized());
+            EXPECT_TRUE(shaderOptionGroupLayout->UseSpecializationConstants());
+        }
+
+        {
+            RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
+            bool success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized1" }, RPI::ShaderOptionType::Boolean, 0, 0, idList4, Name("False"), 0, -1 });
+            EXPECT_TRUE(success);
+            success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized2" }, RPI::ShaderOptionType::Boolean, 1, 1, idList4, Name("False"), 0, -1 });
+            EXPECT_TRUE(success);
+            success = shaderOptionGroupLayout->AddShaderOption(
+                RPI::ShaderOptionDescriptor{ Name{ "Specialized3" }, RPI::ShaderOptionType::Boolean, 2, 2, idList4, Name("False"), 0, -1 });
+            EXPECT_TRUE(success);
+            shaderOptionGroupLayout->Finalize();
+            EXPECT_FALSE(shaderOptionGroupLayout->IsFullySpecialized());
+            EXPECT_FALSE(shaderOptionGroupLayout->UseSpecializationConstants());
+        }
+    }
+
     TEST_F(ShaderTests, ImplicitDefaultValue)
     {
         // Add shader option with no default value.
@@ -1180,11 +1312,11 @@ namespace UnitTest
     }
 
     TEST_F(ShaderTests, ShaderAsset_PipelineStateType_VertexImpliesDraw)
-    {    
+    {
         AZ::RPI::ShaderAssetCreator creator;
         BeginCreatingTestShaderAsset(creator, {RHI::ShaderStage::Vertex});
         AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
-    
+
         EXPECT_TRUE(shaderAsset);
         EXPECT_EQ(shaderAsset->GetPipelineStateType(), RHI::PipelineStateType::Draw);
     }
@@ -1194,7 +1326,7 @@ namespace UnitTest
         AZ::RPI::ShaderAssetCreator creator;
         BeginCreatingTestShaderAsset(creator, {AZ::RHI::ShaderStage::Compute});
         AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
-    
+
         EXPECT_TRUE(shaderAsset);
         EXPECT_EQ(shaderAsset->GetPipelineStateType(), RHI::PipelineStateType::Dispatch);
     }
@@ -1204,13 +1336,13 @@ namespace UnitTest
         ErrorMessageFinder messageFinder("both Draw functions and Dispatch functions");
         messageFinder.AddExpectedErrorMessage("Invalid root variant");
         messageFinder.AddExpectedErrorMessage("Cannot continue building ShaderAsset because 1 error(s) reported");
-    
+
         AZ::RPI::ShaderAssetCreator creator;
         BeginCreatingTestShaderAsset(creator,
             {AZ::RHI::ShaderStage::Vertex, AZ::RHI::ShaderStage::Fragment, AZ::RHI::ShaderStage::Compute});
 
         AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
-    
+
         EXPECT_FALSE(shaderAsset);
     }
 
@@ -1222,27 +1354,27 @@ namespace UnitTest
 
         AZ::RPI::ShaderAssetCreator creator;
         BeginCreatingTestShaderAsset(creator, {AZ::RHI::ShaderStage::Fragment});
-  
+
         AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
-    
+
         messageFinder.CheckExpectedErrorsFound();
-    
+
         EXPECT_FALSE(shaderAsset);
     }
 
-    TEST_F(ShaderTests, ShaderAsset_Error_TessellationFunctionRequiresVertexFunction)
+    TEST_F(ShaderTests, ShaderAsset_Error_GeometryFunctionRequiresVertexFunction)
     {
-        ErrorMessageFinder messageFinder("tessellation function but no vertex function");
+        ErrorMessageFinder messageFinder("geometry function but no vertex function");
         messageFinder.AddExpectedErrorMessage("Invalid root variant");
         messageFinder.AddExpectedErrorMessage("Cannot continue building ShaderAsset because 1 error(s) reported");
 
         AZ::RPI::ShaderAssetCreator creator;
-        BeginCreatingTestShaderAsset(creator, { AZ::RHI::ShaderStage::Tessellation });
+        BeginCreatingTestShaderAsset(creator, { AZ::RHI::ShaderStage::Geometry });
 
         AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
 
         messageFinder.CheckExpectedErrorsFound();
-    
+
         EXPECT_FALSE(shaderAsset);
     }
 
@@ -1292,13 +1424,33 @@ namespace UnitTest
         EXPECT_FALSE(shaderVariantTreeAsset);
     }
 
+    TEST_F(ShaderTests, ShaderAsset_DefaultShaderOptions)
+    {
+        using namespace AZ;
+
+        RPI::ShaderAssetCreator creator;
+        BeginCreatingTestShaderAsset(creator);
+        // Override two of the default values. The others will maintain the default value from the shader options layout, see SetUp().
+        creator.SetShaderOptionDefaultValue(Name{"Quality"}, Name{"Quality::Average"});
+        creator.SetShaderOptionDefaultValue(Name{"Raytracing"}, Name{"On"});
+        Data::Asset<RPI::ShaderAsset> shaderAssetWithShaderOptionOverrides = EndCreatingTestShaderAsset(creator);
+
+        // These options were overridden
+        EXPECT_EQ(3, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Quality"}).GetIndex());
+        EXPECT_EQ(1, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Raytracing"}).GetIndex());
+
+        // These options maintain their original default values
+        EXPECT_EQ(13, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Color"}).GetIndex());
+        EXPECT_EQ(50, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"NumberSamples"}).GetIndex());
+    }
+
     TEST_F(ShaderTests, Shader_Baseline_Test)
     {
         using namespace AZ;
 
-        
+
         Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(CreateShaderAsset());
-      
+
         ValidateShader(shader);
     }
 
@@ -1672,7 +1824,7 @@ namespace UnitTest
            All searches so far found exactly the node we were looking for
            The next couple of searches will not find the requested node
             and will instead default to its parent, up the tree to the root
-          
+
            []                       [Root]
                                     /    \
            [Color]              [Teal]  [Fuchsia]
@@ -1807,6 +1959,41 @@ namespace UnitTest
         EXPECT_EQ(resultG.GetStableId().GetIndex(), stableId5);
     }
 
+    TEST_F(ShaderTests, ShaderAsset_SpecializationConstants)
+    {
+        {
+            AZ::RPI::ShaderAssetCreator creator;
+            BeginCreatingTestShaderAsset(creator, { RHI::ShaderStage::Compute }, SpecializationType::None);
+            AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
+            EXPECT_FALSE(shaderAsset->UseSpecializationConstants());
+            EXPECT_FALSE(shaderAsset->IsFullySpecialized());
+        }
+
+        {
+            AZ::RPI::ShaderAssetCreator creator;
+            BeginCreatingTestShaderAsset(creator, { RHI::ShaderStage::Compute }, SpecializationType::Partial);
+            AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
+            EXPECT_TRUE(shaderAsset->UseSpecializationConstants());
+            EXPECT_FALSE(shaderAsset->IsFullySpecialized());
+        }
+
+        {
+            AZ::RPI::ShaderAssetCreator creator;
+            BeginCreatingTestShaderAsset(creator, { RHI::ShaderStage::Compute }, SpecializationType::Full);
+            AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
+            EXPECT_TRUE(shaderAsset->UseSpecializationConstants());
+            EXPECT_TRUE(shaderAsset->IsFullySpecialized());
+        }
+
+        m_shaderOptionGroupLayoutForAssetFullSpecialization = m_shaderOptionGroupLayoutForAsset;
+        {
+            AZ::RPI::ShaderAssetCreator creator;
+            BeginCreatingTestShaderAsset(creator, { RHI::ShaderStage::Compute }, SpecializationType::Full);
+            AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
+            EXPECT_FALSE(shaderAsset->UseSpecializationConstants());
+            EXPECT_FALSE(shaderAsset->IsFullySpecialized());
+        }
+    }
 
     TEST_F(ShaderTests, ShaderVariantAsset_IsFullyBaked)
     {
@@ -1833,6 +2020,45 @@ namespace UnitTest
         shaderVariantAsset = CreateTestShaderVariantAsset(shaderOptions.GetShaderVariantId(), RPI::ShaderVariantStableId{0}, false);
         EXPECT_FALSE(shaderVariantAsset->IsFullyBaked());
         EXPECT_FALSE(ShaderOptionGroup(m_shaderOptionGroupLayoutForAsset, shaderVariantAsset->GetShaderVariantId()).IsFullySpecified());
+    }
+
+    TEST_F(ShaderTests, ShaderVariantAsset_IsFullySpecialized)
+    {
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+         {
+            AZ::RPI::ShaderAssetCreator creator;
+            BeginCreatingTestShaderAsset(creator, { RHI::ShaderStage::Compute }, SpecializationType::None);
+            AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
+            Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
+            const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant(RPI::ShaderVariantStableId{ 0 });
+            EXPECT_TRUE(rootShaderVariant.UseKeyFallback());
+            EXPECT_FALSE(rootShaderVariant.IsFullySpecialized());
+            EXPECT_FALSE(rootShaderVariant.UseSpecializationConstants());
+         }
+
+         {
+             AZ::RPI::ShaderAssetCreator creator;
+             BeginCreatingTestShaderAsset(creator, { RHI::ShaderStage::Compute }, SpecializationType::Partial);
+             AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
+             Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
+             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant(RPI::ShaderVariantStableId{ 0 });
+             EXPECT_TRUE(rootShaderVariant.UseKeyFallback());
+             EXPECT_FALSE(rootShaderVariant.IsFullySpecialized());
+             EXPECT_TRUE(rootShaderVariant.UseSpecializationConstants());
+         }
+
+         {
+             AZ::RPI::ShaderAssetCreator creator;
+             BeginCreatingTestShaderAsset(creator, { RHI::ShaderStage::Compute }, SpecializationType::Full);
+             AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = EndCreatingTestShaderAsset(creator);
+             Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
+             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant(RPI::ShaderVariantStableId{ 0 });
+             EXPECT_FALSE(rootShaderVariant.UseKeyFallback());
+             EXPECT_TRUE(rootShaderVariant.IsFullySpecialized());
+             EXPECT_TRUE(rootShaderVariant.UseSpecializationConstants());
+         }
     }
 }
 

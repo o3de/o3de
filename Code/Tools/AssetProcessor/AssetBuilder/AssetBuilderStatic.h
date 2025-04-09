@@ -21,7 +21,7 @@ namespace AssetBuilder
     class BuilderHelloRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(BuilderHelloRequest, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BuilderHelloRequest, AZ::OSAllocator);
         AZ_RTTI(BuilderHelloRequest, "{5fab5962-a1d8-42a5-bf7a-fb1a8c5a9588}", BaseAssetProcessorMessage);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -38,7 +38,7 @@ namespace AssetBuilder
     class BuilderHelloResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(BuilderHelloResponse, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BuilderHelloResponse, AZ::OSAllocator);
         AZ_RTTI(BuilderHelloResponse, "{5f3d7c11-6639-4c6f-980a-32be546903c2}", BaseAssetProcessorMessage);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -55,7 +55,7 @@ namespace AssetBuilder
     class CreateJobsNetRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateJobsNetRequest, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateJobsNetRequest, AZ::OSAllocator);
         AZ_RTTI(CreateJobsNetRequest, "{97fa717d-3a09-4d21-95c6-b2eafd773f1c}", BaseAssetProcessorMessage);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -69,7 +69,7 @@ namespace AssetBuilder
     class CreateJobsNetResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateJobsNetResponse, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateJobsNetResponse, AZ::OSAllocator);
         AZ_RTTI(CreateJobsNetResponse, "{b2c7c2d3-b60e-4b27-b699-43e0ba991c33}", BaseAssetProcessorMessage);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -82,7 +82,7 @@ namespace AssetBuilder
     class ProcessJobNetRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ProcessJobNetRequest, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProcessJobNetRequest, AZ::OSAllocator);
         AZ_RTTI(ProcessJobNetRequest, "{05288de1-020b-48db-b9de-715f17284efa}", BaseAssetProcessorMessage);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -96,7 +96,7 @@ namespace AssetBuilder
     class ProcessJobNetResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ProcessJobNetResponse, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProcessJobNetResponse, AZ::OSAllocator);
         AZ_RTTI(ProcessJobNetResponse, "{26ddf882-246c-4cfb-912f-9b8e389df4f6}", BaseAssetProcessorMessage);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -109,7 +109,7 @@ namespace AssetBuilder
     //////////////////////////////////////////////////////////////////////////
     struct BuilderRegistration
     {
-        AZ_CLASS_ALLOCATOR(BuilderRegistration, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BuilderRegistration, AZ::OSAllocator);
         AZ_TYPE_INFO(BuilderRegistration, "{36E785C3-5046-4568-870A-336C8249E453}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -127,7 +127,7 @@ namespace AssetBuilder
     class BuilderRegistrationRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(BuilderRegistrationRequest, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BuilderRegistrationRequest, AZ::OSAllocator);
         AZ_RTTI(BuilderRegistrationRequest, "{FA9CF2D5-C847-47F3-979D-6C3AE061715C}", BaseAssetProcessorMessage);
         static void Reflect(AZ::ReflectContext* context);
         static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::BuilderRegistrationRequest");

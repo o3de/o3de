@@ -22,7 +22,8 @@
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
+#include <QObject>
 
 namespace AZ
 {
@@ -35,13 +36,13 @@ class QApplication;
 class QDockWidget;
 class QMainWindow;
 class QMenu;
+class QString;
 class QWidget;
 
 namespace AzToolsFramework
 {
     struct ViewPaneOptions;
     class EntityPropertyEditor;
-    class PreemptiveUndoCache;
 
     namespace UndoSystem
     {
@@ -58,6 +59,16 @@ namespace AzToolsFramework
 
     //! Return true to accept this type of component.
     using ComponentFilter = AZStd::function<bool(const AZ::SerializeContext::ClassData&)>;
+
+    //! Controls how much to rebuild the property display when a change is made
+    enum PropertyModificationRefreshLevel : int
+    {
+        Refresh_None,                   //! No refresh is required
+        Refresh_Values,                 //! Repopulate the values from components into the UI
+        Refresh_AttributesAndValues,    //! In addition to the above, also check if attributes such as visibility have changed
+        Refresh_EntireTree,             //! Discard the entire UI and rebuild it from scratch
+        Refresh_EntireTree_NewContent,  //! In addition to the above, scroll to the bottom of the view.
+    };
 
     /**
      * Bus owned by the ToolsApplication. Listen for general ToolsApplication events.
@@ -124,6 +135,8 @@ namespace AzToolsFramework
 
         /*!
          * Fired just after applying a requested undo or redo operation.
+         * Note that prefab propagation will not have occurred at this point, so data may not yet be updated.
+         * Consider listening to OnPrefabInstancePropagationEnd on PrefabPublicNotificationBus instead.
          */
         virtual void AfterUndoRedo() {}
 
@@ -141,9 +154,18 @@ namespace AzToolsFramework
         virtual void OnEndUndo(const char* /*label*/, bool /*changed*/) {}
 
         /*!
-         * Notify property UI to refresh the property tree.
+         * Notify property UI to refresh the property tree.  Note that this will go out to every
+         * property UI control in every window in the entire application.
+         * Use InvalidatePropertyDisplayForComponent() instead when possible for faster results.
          */
         virtual void InvalidatePropertyDisplay(PropertyModificationRefreshLevel /*level*/) {}
+
+        /*!
+         * Notify property UI to refresh the properties displayed for a specific component.
+         * You should prefer to use this call over the above one, except in circumstances where
+         * you need to refresh every UI element in every property tree in every window in the entire application.
+         */
+        virtual void InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair /*entityComponentIdPair*/, PropertyModificationRefreshLevel /*level*/) {}
 
         /*!
          * Process source control status for the specified file.
@@ -234,6 +256,24 @@ namespace AzToolsFramework
         virtual void ClearDirtyEntities() = 0;
 
         /*!
+         * Marks an entity as ignored suppressing entity addition to the dirty entity set.
+         * \param target - The Id of the entity to mark as ignored.
+         */
+        virtual void AddIgnoredEntity(AZ::EntityId target) = 0;
+
+        /*!
+         * Removes an entity from the ignored entity set.
+         * \param target - The Id of the entity to remove
+         * \return 1 if target EntityId was removed successfully, otherwise 0
+         */
+        virtual int RemoveIgnoredEntity(AZ::EntityId target) = 0;
+
+        /*!
+         * Clears the ignored entity set.
+         */
+        virtual void ClearIgnoredEntities() = 0;
+
+        /*!
          * \return true if an undo/redo operation is in progress.
          */
         virtual bool IsDuringUndoRedo() = 0;
@@ -312,13 +352,9 @@ namespace AzToolsFramework
         /*!
          * Completes the current undo batch.
          * It's still possible to resume the batch as long as it's still the most recent one.
+         * Returns false if the undo batch was discarded because it was empty, true in all other cases.
          */
-        virtual void EndUndoBatch() = 0;
-
-        /*!
-         * Retrieves the preemptive undo cache for the application.
-         */
-        virtual PreemptiveUndoCache* GetUndoCache() = 0;
+        virtual bool EndUndoBatch() = 0;
 
         /*!
          * \return true if the entity (or entities) can be edited/modified.
@@ -438,18 +474,6 @@ namespace AzToolsFramework
         * Deletes all entities in the provided list, as well as their transform descendants.
         */
         virtual void DeleteEntitiesAndAllDescendants(const EntityIdList& entities) = 0;
-
-        virtual bool DetachEntities(const AZStd::vector<AZ::EntityId>& entitiesToDetach, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) = 0;
-
-        /*!
-        * \brief Detaches the supplied subslices from their owning slice instance
-        * \param subsliceRootList A list of SliceInstanceAddresses paired with a mapping from the sub slices asset entityId's to the owing slice instance's live entityIds
-                                  See SliceComponent::GetMappingBetweenSubsliceAndSourceInstanceEntityIds for a helper to acquire this mapping
-        * \param restoreInfos A list of EntityRestoreInfo's to be filled with information on how to restore the entities in the subslices back to their original state before this operation
-        * \return Returns true on operation success, false otherwise
-        */
-        virtual bool DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList,
-            AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>& restoreInfos) = 0;
 
         /*!
         * \brief Finds the Common root of an entity list; Also finds the top level entities in a given list of active entities (who share the common root)
@@ -627,7 +651,9 @@ namespace AzToolsFramework
             {
                 AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
                 EntityIdList selectedEntities;
-                EBUS_EVENT_RESULT(selectedEntities, ToolsApplicationRequests::Bus, GetSelectedEntities);
+                ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities,
+                    &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
                 if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), id) != selectedEntities.end())
                 {
                     handler->OnSelected();
@@ -761,11 +787,8 @@ namespace AzToolsFramework
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
-        /// Creates editor-side representation of an underlying entity.
-        virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) { }
-
-        /// Destroys editor-side representation of a given entity.
-        virtual bool DestroyEditorRepresentation(AZ::EntityId /*entityId*/, bool /*deleteAZEntity*/) { return false; }
+        /// Adds the components that are required for editor representation to the entity.
+        virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) {}
 
         /// Clone selected entities/slices.
         virtual void CloneSelection(bool& /*handled*/) {}
@@ -821,7 +844,7 @@ namespace AzToolsFramework
 
         /// Return path to icon for component.
         /// Path will be empty if component should have no icon.
-        virtual AZStd::string GetComponentEditorIcon(const AZ::Uuid& /*componentType*/, AZ::Component* /*component*/) { return AZStd::string(); }
+        virtual AZStd::string GetComponentEditorIcon(const AZ::Uuid& /*componentType*/, const AZ::Component* /*component*/) { return AZStd::string(); }
 
         //! Return path to icon for component type.
         //! Path will be empty if component type should have no icon.
@@ -833,7 +856,7 @@ namespace AzToolsFramework
          * \param componentIconAttrib   edit attribute describing where the icon is used, it could be one of Icon, Viewport and HidenIcon
          * \return the path of the icon image
          */
-        virtual AZStd::string GetComponentIconPath(const AZ::Uuid& /*componentType*/, AZ::Crc32 /*componentIconAttrib*/, AZ::Component* /*component*/) { return AZStd::string(); }
+        virtual AZStd::string GetComponentIconPath(const AZ::Uuid& /*componentType*/, AZ::Crc32 /*componentIconAttrib*/, const AZ::Component* /*component*/) { return AZStd::string(); }
 
         /**
          * Calculate the navigation 2D radius in units of an agent given its Navigation Type Name
@@ -867,14 +890,12 @@ namespace AzToolsFramework
         /// Returns the world-space position under the center of the render viewport.
         virtual AZ::Vector3 GetWorldPositionAtViewportCenter() { return AZ::Vector3::CreateZero(); }
 
-        virtual void InstantiateSliceFromAssetId(const AZ::Data::AssetId& /*assetId*/) {}
+        //! Retrieves the position in world space corresponding to the point interacted with by the user.
+        //! Will take context menus and cursor position into account as appropriate.
+        virtual AZ::Vector3 GetWorldPositionAtViewportInteraction() const { return AZ::Vector3::CreateZero(); };
 
         /// Clears current redo stack
         virtual void ClearRedoStack() {}
-        
-        /// Return the icon texture id (from internal IconManager) for a given entity icon path.
-        /// This can be passed to DrawTextureLabel to draw an entity icon.
-        virtual int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) = 0;
     };
 
     using EditorRequestBus = AZ::EBus<EditorRequests>;
@@ -926,6 +947,12 @@ namespace AzToolsFramework
 
         /// Signal that an asset should be highlighted / selected
         virtual void SelectAsset(const QString& /* assetPath */) {}
+
+        // Notify that a viewpane has just been opened.
+        virtual void OnViewPaneOpened(const char* /*viewPaneName*/) {}
+
+        // Notify that a viewpane has just been closed.
+        virtual void OnViewPaneClosed(const char* /*viewPaneName*/) {}
     };
 
     using EditorEventsBus = AZ::EBus<EditorEvents>;
@@ -957,29 +984,13 @@ namespace AzToolsFramework
     class ScopedUndoBatch
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScopedUndoBatch, AZ::SystemAllocator, 0);
-
-        explicit ScopedUndoBatch(const char* batchName)
-        {
-            ToolsApplicationRequests::Bus::BroadcastResult(
-                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, batchName);
-        }
-
-        ~ScopedUndoBatch()
-        {
-            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
-        }
+        AZ_CLASS_ALLOCATOR(ScopedUndoBatch, AZ::SystemAllocator);
+        explicit ScopedUndoBatch(const char* batchName);
+        ~ScopedUndoBatch();
 
         // utility/convenience function for adding dirty entity
-        static void MarkEntityDirty(const AZ::EntityId& id)
-        {
-            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, id);
-        }
-
-        UndoSystem::URSequencePoint* GetUndoBatch() const
-        {
-            return m_undoBatch;
-        }
+        static void MarkEntityDirty(const AZ::EntityId& id);
+        UndoSystem::URSequencePoint* GetUndoBatch() const;
 
     private:
         AZ_DISABLE_COPY_MOVE(ScopedUndoBatch);
@@ -1028,10 +1039,7 @@ namespace AzToolsFramework
     /// Any currently open view panes of this type will be closed before the view pane handlers are unregistered.
     ///
     /// \param viewPaneName - name of the pane to unregister. Must be the same as the name previously registered with RegisterViewPane.
-    inline void UnregisterViewPane(const char* viewPaneName)
-    {
-        EditorRequests::Bus::Broadcast(&EditorRequests::UnregisterViewPane, viewPaneName);
-    }
+    void UnregisterViewPane(const char* viewPaneName);
 
     /// Returns the widget contained/wrapped in a view pane.
     /// \param name - the name of the pane which contains the widget to be retrieved. This must match the name used for registration.
@@ -1047,41 +1055,25 @@ namespace AzToolsFramework
     /// Opens a view pane if not already open, and activating the view pane if it was already opened.
     ///
     /// \param viewPaneName - name of the pane to open/activate. Must be the same as the name previously registered with RegisterViewPane.
-    inline void OpenViewPane(const char* viewPaneName)
-    {
-        EditorRequests::Bus::Broadcast(&EditorRequests::OpenViewPane, viewPaneName);
-    }
+    void OpenViewPane(const char* viewPaneName);
 
     /// Opens a view pane if not already open, and activating the view pane if it was already opened.
     ///
     /// \param viewPaneName - name of the pane to open/activate. Must be the same as the name previously registered with RegisterViewPane.
-    inline QDockWidget* InstanceViewPane(const char* viewPaneName)
-    {
-        QDockWidget* ret = nullptr;
-        EditorRequests::Bus::BroadcastResult(ret, &EditorRequests::InstanceViewPane, viewPaneName);
-
-        return ret;
-    }
+    QDockWidget* InstanceViewPane(const char* viewPaneName);
 
     /// Closes a view pane if it is currently open.
     ///
     /// \param viewPaneName - name of the pane to open/activate. Must be the same as the name previously registered with RegisterViewPane.
-    inline void CloseViewPane(const char* viewPaneName)
-    {
-        EditorRequests::Bus::Broadcast(&EditorRequests::CloseViewPane, viewPaneName);
-    }
+    void CloseViewPane(const char* viewPaneName);
 
     /**
      * Helper to wrap checking if an undo/redo operation is in progress.
      */
-    inline bool UndoRedoOperationInProgress()
-    {
-        bool isDuringUndoRedo = false;
-        ToolsApplicationRequestBus::BroadcastResult(
-            isDuringUndoRedo, &ToolsApplicationRequests::IsDuringUndoRedo);
-        return isDuringUndoRedo;
-    }
+    bool UndoRedoOperationInProgress();
 } // namespace AzToolsFramework
 
 AZ_DECLARE_BUDGET(AzToolsFramework);
-
+DECLARE_EBUS_EXTERN(AzToolsFramework::EditorRequests);
+DECLARE_EBUS_EXTERN(AzToolsFramework::ToolsApplicationEvents);
+DECLARE_EBUS_EXTERN(AzToolsFramework::EntitySelectionEvents);

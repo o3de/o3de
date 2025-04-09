@@ -19,6 +19,11 @@ struct ICVar;
 class ITexture;
 struct ISystem;
 
+namespace AZ
+{
+    class Name;
+}
+
 #define     CVAR_INT              1
 #define     CVAR_FLOAT          2
 #define     CVAR_STRING         3
@@ -265,23 +270,6 @@ struct IConsole
     // @param sCmd console command that must be executed
     // @param sRes name of the key to invoke the command
     virtual void CreateKeyBind(const char* sCmd, const char* sRes) = 0;
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Sets the background-image
-    // @param pImage background-image
-    virtual void    SetImage(ITexture* pImage, bool bDeleteCurrent) = 0;
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Retrieves the background-image
-    // @return background-image
-    virtual ITexture* GetImage() = 0;
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Sets static/scroll background-mode
-    // @param bStatic true if static
-    virtual void StaticBackground(bool bStatic) = 0;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Sets the loading-background-image
-    // @param pImage background-image
-    virtual void    SetLoadingImage(const char* szFilename) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Iterate through the lines - used for dedicated server (truncated if needed)
@@ -318,11 +306,11 @@ struct IConsole
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Print a string in the console and go to the new line
     // @param s the string to print
-    virtual void PrintLine(const char* s) = 0;
+    virtual void PrintLine(AZStd::string_view s) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Append a string in the last console line
     // @param s the string to print
-    virtual void PrintLinePlus(const char* s) = 0;
+    virtual void PrintLineAppendWithPrevLine(AZStd::string_view s) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Retrieve the status of the console (active/not active)
     // @return the variable value(true = active/false = not active)
@@ -334,9 +322,6 @@ struct IConsole
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Update the console
     virtual void    Update() = 0;
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Draw the console
-    virtual void    Draw() = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Description:
@@ -412,11 +397,6 @@ struct IConsole
     virtual void ResetAutoCompletion() = 0;
     //////////////////////////////////////////////////////////////////////////
 
-    // Function related to progress bar
-    virtual void ResetProgressBar(int nProgressRange) = 0;
-    // Function related to progress bar
-    virtual void TickProgressBar() = 0;
-
     // Arguments:
     //   szLine - must not be 0
     virtual void SetInputLine(const char* szLine) = 0;
@@ -483,9 +463,9 @@ struct IRemoteConsole
     virtual void Stop() = 0;
     virtual bool IsStarted() const = 0;
 
-    virtual void AddLogMessage(const char* log) = 0;
-    virtual void AddLogWarning(const char* log) = 0;
-    virtual void AddLogError(const char* log) = 0;
+    virtual void AddLogMessage(AZStd::string_view log) = 0;
+    virtual void AddLogWarning(AZStd::string_view log) = 0;
+    virtual void AddLogError(AZStd::string_view log) = 0;
 
     virtual void Update() = 0;
 
@@ -597,7 +577,7 @@ struct ICVar
     // Adds a new on change functor to the list.
     // It will add from index 1 on (0 is reserved).
     // Returns an ID to use when getting or removing the functor
-    virtual uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) = 0;
+    virtual bool AddOnChangeFunctor(AZ::Name functorName, const AZStd::function<void()>& pChangeFunctor) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Get the current callback function.

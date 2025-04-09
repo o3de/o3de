@@ -30,7 +30,7 @@ namespace ImageProcessingAtomEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ResolutionSettingWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ResolutionSettingWidget, AZ::SystemAllocator);
         explicit ResolutionSettingWidget(ResoultionWidgetType type, EditorTextureSetting& texureSetting, QWidget* parent = nullptr);
         ~ResolutionSettingWidget();
 

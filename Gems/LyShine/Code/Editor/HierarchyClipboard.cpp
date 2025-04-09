@@ -150,10 +150,7 @@ void HierarchyClipboard::CopySelectedItemsToClipboard(HierarchyWidget* widget,
     // XML -> Clipboard.
     if (!xml.empty())
     {
-        IEditor* pEditor = GetIEditor();
-        AZ_Assert(pEditor, "Failed to get IEditor");
-
-        QMimeData* mimeData = pEditor->CreateQMimeData();
+        QMimeData* mimeData = new QMimeData();
         {
             // Concatenate all the data we need into a single QByteArray.
             QByteArray data(xml.c_str(), static_cast<int>(xml.size()));
@@ -220,7 +217,7 @@ AZStd::string HierarchyClipboard::GetXml(HierarchyWidget* widget,
 AZStd::string HierarchyClipboard::GetXmlForDiff(AZ::EntityId canvasEntityId)
 {
     AZStd::string xmlString;
-    EBUS_EVENT_ID_RESULT(xmlString, canvasEntityId, UiCanvasBus, SaveToXmlString);
+    UiCanvasBus::EventResult(xmlString, canvasEntityId, &UiCanvasBus::Events::SaveToXmlString);
     return xmlString;
 }
 
@@ -241,7 +238,7 @@ void HierarchyClipboard::EndUndoableEntitiesChange(EditorWindow* editorWindow, c
     // Before saving the current entity state, make sure that all marked layouts are recomputed.
     // Otherwise they will be recomputed on the next update which will be after the entity state is saved.
     // An example where this is needed is when changing the properties of a layout fitter component
-    EBUS_EVENT_ID(editorWindow->GetActiveCanvasEntityId(), UiCanvasBus, RecomputeChangedLayouts);
+    UiCanvasBus::Event(editorWindow->GetActiveCanvasEntityId(), &UiCanvasBus::Events::RecomputeChangedLayouts);
 
     // This is used to save the "after" undo data. It puts a command on the undo stack with the given name.
     CommandPropertiesChange::Push(editorWindow->GetActiveStack(),
@@ -254,7 +251,7 @@ void HierarchyClipboard::EndUndoableEntitiesChange(EditorWindow* editorWindow, c
             editorWindow->GetHierarchy(), editorWindow->GetHierarchy()->selectedItems());
     for (auto element : selectedElements)
     {
-        EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+        UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
     }
 }
 

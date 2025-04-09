@@ -19,7 +19,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ChromaticAberrationPass, "{557EF771-7D60-4EF1-BD61-E2446237B85B}", AZ::RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(ChromaticAberrationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ChromaticAberrationPass, SystemAllocator);
 
             ~ChromaticAberrationPass() = default;
             static RPI::Ptr<ChromaticAberrationPass> Create(const RPI::PassDescriptor& descriptor);

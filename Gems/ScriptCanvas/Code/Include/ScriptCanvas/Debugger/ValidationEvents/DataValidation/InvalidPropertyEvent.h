@@ -26,7 +26,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(InvalidPropertyEvent, "{85F7836A-FAAF-4BD5-A181-4E0CF9798FA0}", HighlightEntityEffect, ValidationEvent, FocusOnEntityEffect);
-        AZ_CLASS_ALLOCATOR(InvalidPropertyEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InvalidPropertyEvent, AZ::SystemAllocator);
         
         InvalidPropertyEvent(const AZ::EntityId& nodeId, const AZStd::string& parseError)
             : ValidationEvent(ValidationSeverity::Error)

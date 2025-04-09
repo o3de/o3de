@@ -10,12 +10,19 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/osstring.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace AZ
 {
+    //! Type alias for a non-dynamic allocating string type
+    //! that can be used to format messages to send to the JsonIssueCallback.
+    //! NOTE: Any string type that is convertible to AZStd::string_view can be used.
+    //! This alias is provided for convenience.
+    using ReporterString = AZStd::fixed_string<1024>;
+
     namespace JsonSerializationResult
     {
         // Note the order of the various components is important since the Json Serializer will return

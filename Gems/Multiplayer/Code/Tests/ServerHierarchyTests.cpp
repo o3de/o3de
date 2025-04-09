@@ -14,6 +14,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzNetworking/Serialization/StringifySerializer.h>
 #include <AzTest/AzTest.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
@@ -306,6 +307,10 @@ namespace Multiplayer
                 m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[2],
                 m_childOfChild->m_entity.get()
             );
+            EXPECT_EQ(
+                m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalEntities()[2],
+                m_childOfChild->m_entity.get()
+            );
         }
     }
 
@@ -458,6 +463,12 @@ namespace Multiplayer
 
         m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
         m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
+    }
+
+    TEST_F(ServerDeepHierarchyTests, SerializeHierarchyCorrection)
+    {
+        AzNetworking::StringifySerializer serializer;
+        EXPECT_TRUE(m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->SerializeEntityCorrection(serializer));
     }
 
     /*

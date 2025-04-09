@@ -19,7 +19,8 @@ namespace GraphCanvas
     // NodePaletteAutoCompleteModel
     /////////////////////////////////
 
-    NodePaletteAutoCompleteModel::NodePaletteAutoCompleteModel()
+    NodePaletteAutoCompleteModel::NodePaletteAutoCompleteModel(QObject* parent)
+        : QAbstractItemModel(parent)
     {
     }
 
@@ -82,7 +83,7 @@ namespace GraphCanvas
     {
         if (signalAdd)
         {
-            beginInsertRows(QModelIndex(), aznumeric_cast<int>(m_availableItems.size() - 1), aznumeric_cast<int>(m_availableItems.size() - 1));
+            beginInsertRows(QModelIndex(), aznumeric_cast<int>(m_availableItems.size()), aznumeric_cast<int>(m_availableItems.size()));
         }
 
         m_availableItems.push_back(treeItem);
@@ -112,8 +113,8 @@ namespace GraphCanvas
 
     NodePaletteSortFilterProxyModel::NodePaletteSortFilterProxyModel(QObject* parent)
         : QSortFilterProxyModel(parent)
-        , m_unfilteredAutoCompleteModel(aznew NodePaletteAutoCompleteModel())
-        , m_sourceSlotAutoCompleteModel(aznew NodePaletteAutoCompleteModel())
+        , m_unfilteredAutoCompleteModel(aznew NodePaletteAutoCompleteModel(this))
+        , m_sourceSlotAutoCompleteModel(aznew NodePaletteAutoCompleteModel(this))
         , m_hasSourceSlotFilter(false)
     {
         m_unfilteredCompleter.setModel(m_unfilteredAutoCompleteModel);
@@ -190,27 +191,33 @@ namespace GraphCanvas
     bool NodePaletteSortFilterProxyModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
     {
         QAbstractItemModel* model = sourceModel();
-        QString left = model->data(source_left).toString();
-        QString right = model->data(source_right).toString();
-
         if (m_filter.isEmpty())
         {
-            return left < right;
+            // When item has no children, put it at front
+            if (model->hasChildren(source_left) && !model->hasChildren(source_right))
+            {
+                return false;
+            }
+            else if (!model->hasChildren(source_left) && model->hasChildren(source_right))
+            {
+                return true;
+            }
         }
         else
         {
-            int leftScore = CalculateSortingScore(source_left);
-            int rightScore = CalculateSortingScore(source_right);
-            // When sorting score is equal, follow alphabetical order instead
-            if (leftScore == rightScore)
-            {
-                return left < right;
-            }
-            else
+            // Calculate a sorting score based on the filter
+            const int leftScore = CalculateSortingScore(source_left);
+            const int rightScore = CalculateSortingScore(source_right);
+            if (leftScore != rightScore)
             {
                 return leftScore < rightScore;
             }
         }
+
+        // Fall back to a case insensitive alphabetical sort
+        const QString left = model->data(source_left).toString();
+        const QString right = model->data(source_right).toString();
+        return left.compare(right, Qt::CaseInsensitive) < 0;
     }
 
     int NodePaletteSortFilterProxyModel::CalculateSortingScore(const QModelIndex& source) const
@@ -335,13 +342,13 @@ namespace GraphCanvas
         // Then ignore all whitespace by adding \s* (regex optional whitespace match) in between every other character.
         // We use \s* instead of simply removing all whitespace from the filter and node-names in order to preserve the node-name and accurately highlight the matching portion.
         // Example: "OnGraphStart" or "On Graph Start"
-        m_filter = QRegExp::escape(filter.simplified().replace(" ", ""));
+        m_filter = filter.simplified().replace(" ", "");
         
-        QString regExIgnoreWhitespace(m_filter[0]);
+        QString regExIgnoreWhitespace = QRegExp::escape(QString(m_filter[0]));
         for (int i = 1; i < m_filter.size(); ++i)
         {
             regExIgnoreWhitespace.append("\\s*");
-            regExIgnoreWhitespace.append(m_filter[i]);
+            regExIgnoreWhitespace.append(QRegExp::escape(QString(m_filter[i])));
         }
         
         m_filterRegex = QRegExp(regExIgnoreWhitespace, Qt::CaseInsensitive);

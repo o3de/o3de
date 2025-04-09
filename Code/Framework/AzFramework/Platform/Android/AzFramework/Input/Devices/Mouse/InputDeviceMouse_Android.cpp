@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -69,7 +70,7 @@ namespace AzFramework
         , public RawMouseConnectionNotificationsBusAndroid::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(InputDeviceMouseAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMouseAndroid, AZ::SystemAllocator);
 
 
         InputDeviceMouseAndroid(InputDeviceMouse& inputDevice);
@@ -358,9 +359,21 @@ namespace AzFramework
         }
     }
 
-
-    InputDeviceMouse::Implementation* InputDeviceMouse::Implementation::Create(InputDeviceMouse& inputDevice)
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class AndroidDeviceMouseImplFactory
+        : public InputDeviceMouse::ImplementationFactory
     {
-        return aznew InputDeviceMouseAndroid(inputDevice);
+    public:
+        AZStd::unique_ptr<InputDeviceMouse::Implementation> Create(InputDeviceMouse& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceMouseAndroid>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
+    {
+        m_deviceMouseImplFactory = AZStd::make_unique<AndroidDeviceMouseImplFactory>();
+        AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory.get());
     }
 } // namespace AzFramework

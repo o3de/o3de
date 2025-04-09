@@ -16,7 +16,6 @@
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
@@ -38,19 +37,15 @@ namespace ScriptEventsTests
     class ScriptEventsTestFixture
         : public ::testing::Test
     {
-        static const bool s_enableMemoryLeakChecking;
-
         static ScriptEventsTests::Application* GetApplication();
 
     protected:
 
         static ScriptEventsTests::Application* s_application;
-        static UnitTest::AllocatorsBase s_allocatorSetup;
+        static inline UnitTest::LeakDetectionBase s_leakDetection{};
 
         static void SetUpTestCase()
         {
-            s_allocatorSetup.SetupAllocator();
-
             if (s_application == nullptr)
             {
                 AZ::ComponentApplication::StartupParameters appStartup;
@@ -97,7 +92,7 @@ namespace ScriptEventsTests
                 s_application = nullptr;
             }
 
-            s_allocatorSetup.TeardownAllocator();
+            s_leakDetection.CheckAllocatorsForLeaks();
         }
 
         void SetUp() override

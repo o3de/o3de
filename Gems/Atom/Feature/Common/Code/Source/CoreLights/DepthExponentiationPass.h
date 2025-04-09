@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <CoreLights/Shadow.h>
 
@@ -24,7 +24,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DepthExponentiationPass, "9B91DE5C-0842-4CF8-AA30-B024277E0FAB", Base);
-            AZ_CLASS_ALLOCATOR(DepthExponentiationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthExponentiationPass, SystemAllocator);
 
             ~DepthExponentiationPass() = default;
             static RPI::Ptr<DepthExponentiationPass> Create(const RPI::PassDescriptor& descriptor);

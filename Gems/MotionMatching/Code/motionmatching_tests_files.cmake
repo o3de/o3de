@@ -10,5 +10,7 @@ set(FILES
     Tests/Fixture.h
     Tests/FeatureMatrixTests.cpp
     Tests/FeatureSchemaTests.cpp
+    Tests/MinMaxScalerTests.cpp
     Tests/MotionMatchingTest.cpp
+    Tests/StandardScalerTests.cpp
 )

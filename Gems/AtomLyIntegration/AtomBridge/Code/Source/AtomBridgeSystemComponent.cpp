@@ -50,7 +50,6 @@ namespace AZ
                 {
                     ec->Class<AtomBridgeSystemComponent>("AtomBridge", "[Description of functionality provided by this System Component]")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;
                 }
@@ -67,20 +66,20 @@ namespace AZ
 
         void AtomBridgeSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
+            provided.push_back(AZ_CRC_CE("AtomBridgeService"));
         }
 
         void AtomBridgeSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
+            incompatible.push_back(AZ_CRC_CE("AtomBridgeService"));
         }
 
         void AtomBridgeSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ::RHI::Factory::GetComponentService());
-            required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-            required.push_back(AZ_CRC("RPISystem", 0xf2add773));
-            required.push_back(AZ_CRC("BootstrapSystemComponent", 0xb8f32711));
+            required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+            required.push_back(AZ_CRC_CE("RPISystem"));
+            required.push_back(AZ_CRC_CE("BootstrapSystemComponent"));
         }
 
         void AtomBridgeSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
@@ -157,6 +156,14 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {
+            // If the pointer is not reset before being assigned, the destructor of the old instance of AtomDebugDisplayViewportInterface
+            // would disconnect from DebugDisplayRequestBus immediately after the new instance was connected, since they both use the same
+            // id.
+            if (auto it = m_activeViewportsList.find(AzFramework::g_defaultSceneEntityDebugDisplayId); it != m_activeViewportsList.end())
+            {
+                it->second.reset();
+            }
+
             // Make default AtomDebugDisplayViewportInterface
             AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay =
                 AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId, bootstrapScene);

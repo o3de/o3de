@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector4Functions_FromValues",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Values",
+                "category": "Math/Vector4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector4Functions_FromValues",
+                    "details": {
+                        "name": "From Values",
+                        "tooltip": "Returns a vector from elements."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "X"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Y"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Z"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "W"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

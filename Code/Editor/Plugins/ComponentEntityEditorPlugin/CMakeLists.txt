@@ -15,7 +15,6 @@ ly_add_target(
     NAMESPACE Legacy
     OUTPUT_SUBDIRECTORY EditorPlugins
     AUTOMOC
-    AUTOUIC
     AUTORCC
     FILES_CMAKE
         componententityeditorplugin_files.cmake
@@ -43,36 +42,3 @@ ly_add_target(
 
 ly_add_dependencies(Editor ComponentEntityEditorPlugin)
 set_property(GLOBAL APPEND PROPERTY LY_EDITOR_PLUGINS $<TARGET_FILE_NAME:Legacy::ComponentEntityEditorPlugin>)
-
-################################################################################
-# Tests
-################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-
-    ly_add_target(
-        NAME ComponentEntityEditorPlugin.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE Legacy
-        AUTOMOC
-        FILES_CMAKE
-            componententityeditorplugin_test_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                .
-        BUILD_DEPENDENCIES
-            PRIVATE
-                3rdParty::Qt::Core
-                3rdParty::Qt::Gui
-                3rdParty::Qt::Widgets
-                AZ::AzTest
-                AZ::AzToolsFramework
-                AZ::AzToolsFrameworkTestCommon
-                Legacy::CryCommon
-                Legacy::EditorLib
-                Gem::LmbrCentral.Editor
-        RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral.Editor
-    )
-    ly_add_googletest(
-        NAME Legacy::ComponentEntityEditorPlugin.Tests
-    )
-endif()

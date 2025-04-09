@@ -10,6 +10,7 @@
 
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <AtomCore/Instance/InstanceData.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 
@@ -34,13 +35,15 @@ namespace AZ
          *
          * User code should not need to access this pool directly; RPI::ShaderResourceGroup uses it internally.
          */
-        class ShaderResourceGroupPool final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ShaderResourceGroupPool final
             : public Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(ShaderResourceGroupPool, "{D75561AF-C10A-41BC-BABF-63DBFA160388}");
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
 
             /**
              * Instantiates or returns an existing runtime pool for a given ShaderResourceGroup.

@@ -73,7 +73,7 @@ UiElementComponent::~UiElementComponent()
         // Note we do not rely on the m_parent pointer because if the canvas is being unloaded for example the
         // parent entity could already have been deleted. So we use the parent entity Id to try to find the parent.
         AZ::Entity* parent = nullptr;
-        EBUS_EVENT_RESULT(parent, AZ::ComponentApplicationBus, FindEntity, m_parentId);
+        AZ::ComponentApplicationBus::BroadcastResult(parent, &AZ::ComponentApplicationBus::Events::FindEntity, m_parentId);
 
         // If the parent is found and it is active that suggests something is wrong. When unloading a canvas we
         // deactivate all of the UI elements before any are deleted
@@ -132,7 +132,7 @@ void UiElementComponent::RenderElement(LyShine::IRenderGraph* renderGraph, bool 
         // Use the UiEditorBus to query any UiEditorComponent on this element to see if this element is
         // hidden in the editor
         bool isVisible = true;
-        EBUS_EVENT_ID_RESULT(isVisible, GetEntityId(), UiEditorBus, GetIsVisible);
+        UiEditorBus::EventResult(isVisible, GetEntityId(), &UiEditorBus::Events::GetIsVisible);
         if (!isVisible)
         {
             return;
@@ -211,7 +211,8 @@ AZ::Entity* UiElementComponent::GetChildElement(int index)
         }
         else
         {
-            EBUS_EVENT_RESULT(childEntity, AZ::ComponentApplicationBus, FindEntity, m_childEntityIdOrder[index].m_entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(
+                childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childEntityIdOrder[index].m_entityId);
         }
     }
     return childEntity;
@@ -286,7 +287,8 @@ LyShine::EntityArray UiElementComponent::GetChildElements()
         for (auto& childOrderEntry : m_childEntityIdOrder)
         {
             AZ::Entity* childEntity = nullptr;
-            EBUS_EVENT_RESULT(childEntity, AZ::ComponentApplicationBus, FindEntity, childOrderEntry.m_entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(
+                childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, childOrderEntry.m_entityId);
             if (childEntity)
             {
                 children.push_back(childEntity);
@@ -312,10 +314,11 @@ AZStd::vector<AZ::EntityId> UiElementComponent::GetChildEntityIds()
 AZ::Entity* UiElementComponent::CreateChildElement(const LyShine::NameType& name)
 {
     AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-    EBUS_EVENT_ID_RESULT(contextId, GetEntityId(), AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+    AzFramework::EntityIdContextQueryBus::EventResult(
+        contextId, GetEntityId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
 
     AZ::Entity* child = nullptr;
-    EBUS_EVENT_ID_RESULT(child, contextId, UiEntityContextRequestBus, CreateUiEntity, name.c_str());
+    UiEntityContextRequestBus::EventResult(child, contextId, &UiEntityContextRequestBus::Events::CreateUiEntity, name.c_str());
     AZ_Assert(child, "Failed to create child entity");
 
     child->Deactivate();    // deactivate so that we can add components
@@ -408,14 +411,14 @@ void UiElementComponent::ReparentByEntityId(AZ::EntityId newParent, AZ::EntityId
     AZ::Entity* newParentEntity = nullptr;
     if (newParent.IsValid())
     {
-        EBUS_EVENT_RESULT(newParentEntity, AZ::ComponentApplicationBus, FindEntity, newParent);
+        AZ::ComponentApplicationBus::BroadcastResult(newParentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, newParent);
         AZ_Assert(newParentEntity, "Entity for newParent not found");
     }
 
     AZ::Entity* insertBeforeEntity = nullptr;
     if (insertBefore.IsValid())
     {
-        EBUS_EVENT_RESULT(insertBeforeEntity, AZ::ComponentApplicationBus, FindEntity, insertBefore);
+        AZ::ComponentApplicationBus::BroadcastResult(insertBeforeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, insertBefore);
         AZ_Assert(insertBeforeEntity, "Entity for insertBefore not found");
     }
 
@@ -489,7 +492,7 @@ AZ::Entity* UiElementComponent::FindFrontmostChildContainingPoint(AZ::Vector2 po
             // Use the UiEditorBus to query any UiEditorComponent on this element to see if this element is
             // hidden in the editor
             bool isVisible = true;
-            EBUS_EVENT_ID_RESULT(isVisible, child, UiEditorBus, GetIsVisible);
+            UiEditorBus::EventResult(isVisible, child, &UiEditorBus::Events::GetIsVisible);
             if (!isVisible)
             {
                 continue;
@@ -510,7 +513,7 @@ AZ::Entity* UiElementComponent::FindFrontmostChildContainingPoint(AZ::Vector2 po
                 // We are in editing mode (not running the game)
                 // Use the UiEditorBus to query any UiEditorComponent on this element to see if this element
                 // can be selected in the editor
-                EBUS_EVENT_ID_RESULT(isSelectable, child, UiEditorBus, GetIsSelectable);
+                UiEditorBus::EventResult(isSelectable, child, &UiEditorBus::Events::GetIsSelectable);
             }
 
             if (isSelectable)
@@ -549,7 +552,7 @@ LyShine::EntityArray UiElementComponent::FindAllChildrenIntersectingRect(const A
             // Use the UiEditorBus to query any UiEditorComponent on this element to see if this element is
             // hidden in the editor
             bool isVisible = true;
-            EBUS_EVENT_ID_RESULT(isVisible, child, UiEditorBus, GetIsVisible);
+            UiEditorBus::EventResult(isVisible, child, &UiEditorBus::Events::GetIsVisible);
             if (!isVisible)
             {
                 continue;
@@ -569,7 +572,7 @@ LyShine::EntityArray UiElementComponent::FindAllChildrenIntersectingRect(const A
             // We are in editing mode (not running the game)
             // Use the UiEditorBus to query any UiEditorComponent on this element to see if this element
             // can be selected in the editor
-            EBUS_EVENT_ID_RESULT(isSelectable, child, UiEditorBus, GetIsSelectable);
+            UiEditorBus::EventResult(isSelectable, child, &UiEditorBus::Events::GetIsSelectable);
         }
 
         if (isSelectable)
@@ -601,7 +604,7 @@ AZ::EntityId UiElementComponent::FindInteractableToHandleEvent(AZ::Vector2 point
     {
         // if this element is masking children at this point then don't check the children
         bool isMasked = false;
-        EBUS_EVENT_ID_RESULT(isMasked, GetEntityId(), UiInteractionMaskBus, IsPointMasked, point);
+        UiInteractionMaskBus::EventResult(isMasked, GetEntityId(), &UiInteractionMaskBus::Events::IsPointMasked, point);
         if (!isMasked)
         {
             for (int i = static_cast<int>(m_childEntityIdOrder.size() - 1); !result.IsValid() && i >= 0; i--)
@@ -622,7 +625,7 @@ AZ::EntityId UiElementComponent::FindInteractableToHandleEvent(AZ::Vector2 point
             {
                 // check if this interactable component is in a state where it can handle an event at the given point
                 bool canHandle = false;
-                EBUS_EVENT_ID_RESULT(canHandle, GetEntityId(), UiInteractableBus, CanHandleEvent, point);
+                UiInteractableBus::EventResult(canHandle, GetEntityId(), &UiInteractableBus::Events::CanHandleEvent, point);
                 if (canHandle)
                 {
                     result = GetEntityId();
@@ -646,12 +649,12 @@ AZ::EntityId UiElementComponent::FindParentInteractableSupportingDrag(AZ::Vector
 
         // if the parent supports drag hand off then return it
         bool supportsDragOffset = false;
-        EBUS_EVENT_ID_RESULT(supportsDragOffset, parentEntity, UiInteractableBus, DoesSupportDragHandOff, point);
+        UiInteractableBus::EventResult(supportsDragOffset, parentEntity, &UiInteractableBus::Events::DoesSupportDragHandOff, point);
         if (supportsDragOffset)
         {
             // Make sure the parent is also handling events
             bool handlingEvents = false;
-            EBUS_EVENT_ID_RESULT(handlingEvents, parentEntity, UiInteractableBus, IsHandlingEvents);
+            UiInteractableBus::EventResult(handlingEvents, parentEntity, &UiInteractableBus::Events::IsHandlingEvents);
             supportsDragOffset = handlingEvents;
         }
 
@@ -692,7 +695,7 @@ AZ::Entity* UiElementComponent::FindChildByName(const LyShine::NameType& name)
         for (auto& child : m_childEntityIdOrder)
         {
             AZ::Entity* childEntity = nullptr;
-            EBUS_EVENT_RESULT(childEntity, AZ::ComponentApplicationBus, FindEntity, child.m_entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, child.m_entityId);
             if (childEntity && name == childEntity->GetName())
             {
                 matchElem = childEntity;
@@ -735,7 +738,7 @@ AZ::Entity* UiElementComponent::FindDescendantByName(const LyShine::NameType& na
         for (auto& child : m_childEntityIdOrder)
         {
             AZ::Entity* childEntity = nullptr;
-            EBUS_EVENT_RESULT(childEntity, AZ::ComponentApplicationBus, FindEntity, child.m_entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, child.m_entityId);
 
             if (childEntity && name == childEntity->GetName())
             {
@@ -743,7 +746,7 @@ AZ::Entity* UiElementComponent::FindDescendantByName(const LyShine::NameType& na
                 break;
             }
 
-            EBUS_EVENT_ID_RESULT(matchElem, child.m_entityId, UiElementBus, FindDescendantByName, name);
+            UiElementBus::EventResult(matchElem, child.m_entityId, &UiElementBus::Events::FindDescendantByName, name);
             if (matchElem)
             {
                 break;
@@ -784,7 +787,7 @@ AZ::Entity* UiElementComponent::FindChildByEntityId(AZ::EntityId id)
             }
             else
             {
-                EBUS_EVENT_RESULT(matchElem, AZ::ComponentApplicationBus, FindEntity, id);
+                AZ::ComponentApplicationBus::BroadcastResult(matchElem, &AZ::ComponentApplicationBus::Events::FindEntity, id);
             }
             break;
         }
@@ -815,7 +818,7 @@ AZ::Entity* UiElementComponent::FindDescendantById(LyShine::ElementId id)
     {
         for (auto iter = m_childEntityIdOrder.begin(); !match && iter != m_childEntityIdOrder.end(); iter++)
         {
-            EBUS_EVENT_ID_RESULT(match, iter->m_entityId, UiElementBus, FindDescendantById, id);
+            UiElementBus::EventResult(match, iter->m_entityId, &UiElementBus::Events::FindDescendantById, id);
         }
     }
 
@@ -846,13 +849,13 @@ void UiElementComponent::FindDescendantElements(AZStd::function<bool(const AZ::E
         for (auto& child : m_childEntityIdOrder)
         {
             AZ::Entity* childEntity = nullptr;
-            EBUS_EVENT_RESULT(childEntity, AZ::ComponentApplicationBus, FindEntity, child.m_entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, child.m_entityId);
             if (childEntity && predicate(childEntity))
             {
                 result.push_back(childEntity);
             }
 
-            EBUS_EVENT_ID(child.m_entityId, UiElementBus, FindDescendantElements, predicate, result);
+            UiElementBus::Event(child.m_entityId, &UiElementBus::Events::FindDescendantElements, predicate, result);
         }
     }
 }
@@ -875,7 +878,7 @@ void UiElementComponent::CallOnDescendantElements(AZStd::function<void(const AZ:
         for (auto& child : m_childEntityIdOrder)
         {
             callFunction(child.m_entityId);
-            EBUS_EVENT_ID(child.m_entityId, UiElementBus, CallOnDescendantElements, callFunction);
+            UiElementBus::Event(child.m_entityId, &UiElementBus::Events::CallOnDescendantElements, callFunction);
         }
     }
 }
@@ -910,7 +913,7 @@ void UiElementComponent::SetIsEnabled(bool isEnabled)
         m_isEnabled = isEnabled;
 
         // Tell any listeners that the enabled state has changed
-        EBUS_EVENT_ID(GetEntityId(), UiElementNotificationBus, OnUiElementEnabledChanged, m_isEnabled);
+        UiElementNotificationBus::Event(GetEntityId(), &UiElementNotificationBus::Events::OnUiElementEnabledChanged, m_isEnabled);
 
         // If the ancestors are not enabled then changing the local flag has no effect on the effective
         // enabled state.
@@ -918,7 +921,8 @@ void UiElementComponent::SetIsEnabled(bool isEnabled)
         if (areAncestorsEnabled)
         {
             // Tell any listeners that the effective enabled state has changed
-            EBUS_EVENT_ID(GetEntityId(), UiElementNotificationBus, OnUiElementAndAncestorsEnabledChanged, m_isEnabled);
+            UiElementNotificationBus::Event(
+                GetEntityId(), &UiElementNotificationBus::Events::OnUiElementAndAncestorsEnabledChanged, m_isEnabled);
 
             DoRecursiveEnabledNotification(m_isEnabled);
         }
@@ -1023,7 +1027,7 @@ bool UiElementComponent::AreAllAncestorsVisible()
     while (parentElementComponent)
     {
         bool isParentVisible = true;
-        EBUS_EVENT_ID_RESULT(isParentVisible, parentElementComponent->GetEntityId(), UiEditorBus, GetIsVisible);
+        UiEditorBus::EventResult(isParentVisible, parentElementComponent->GetEntityId(), &UiEditorBus::Events::GetIsVisible);
         if (!isParentVisible)
         {
             return false;
@@ -1102,8 +1106,9 @@ void UiElementComponent::AddChild(AZ::Entity* child, AZ::Entity* insertBefore)
 
     // Adding or removing child elements may require recomputing the
     // transforms of all children
-    EBUS_EVENT_ID(GetCanvasEntityId(), UiLayoutManagerBus, MarkToRecomputeLayout, GetEntityId());
-    EBUS_EVENT_ID(GetCanvasEntityId(), UiLayoutManagerBus, MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
+    UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
+    UiLayoutManagerBus::Event(
+        GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
 
     // It will always require recomputing the transform for the child just added
     if (IsFullyInitialized())
@@ -1145,8 +1150,9 @@ void UiElementComponent::RemoveChild(AZ::Entity* child)
 
         // Adding or removing child elements may require recomputing the
         // transforms of all children
-        EBUS_EVENT_ID(GetCanvasEntityId(), UiLayoutManagerBus, MarkToRecomputeLayout, GetEntityId());
-        EBUS_EVENT_ID(GetCanvasEntityId(), UiLayoutManagerBus, MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
+        UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
+        UiLayoutManagerBus::Event(
+            GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
 
         // tell the canvas to invalidate the render graph
         if (m_canvas)
@@ -1189,8 +1195,9 @@ void UiElementComponent::RemoveChild(AZ::EntityId child)
 
         // Adding or removing child elements may require recomputing the
         // transforms of all children
-        EBUS_EVENT_ID(GetCanvasEntityId(), UiLayoutManagerBus, MarkToRecomputeLayout, GetEntityId());
-        EBUS_EVENT_ID(GetCanvasEntityId(), UiLayoutManagerBus, MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
+        UiLayoutManagerBus::Event(GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
+        UiLayoutManagerBus::Event(
+            GetCanvasEntityId(), &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), false);
 
         // tell the canvas to invalidate the render graph
         if (m_canvas)
@@ -1247,7 +1254,7 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
     for (auto& child : m_childEntityIdOrder)
     {
         AZ::Entity* childEntity = nullptr;
-        EBUS_EVENT_RESULT(childEntity, AZ::ComponentApplicationBus, FindEntity, child.m_entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, child.m_entityId);
         if (!childEntity)
         {
             // with slices it is possible for users to get themselves into situations where a child no
@@ -1288,7 +1295,7 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
     for (auto child : m_childEntityIdOrder)
     {
         AZ::Entity* childEntity = nullptr;
-        EBUS_EVENT_RESULT(childEntity, AZ::ComponentApplicationBus, FindEntity, child.m_entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, child.m_entityId);
         AZ_Assert(childEntity, "Child element not found");
         UiElementComponent* childElementComponent = childEntity->FindComponent<UiElementComponent>();
         AZ_Assert(childElementComponent, "Child element has no UiElementComponent");
@@ -1298,7 +1305,8 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
     // Tell any listeners that the canvas entity ID for the element is now set, this allows other components to
     // listen for messages from the canvas
     AZ::EntityId parentEntityId = (parent) ? parent->GetId() : AZ::EntityId();
-    EBUS_EVENT_ID(GetEntityId(), UiElementNotificationBus, OnUiElementFixup, canvas->GetEntityId(), parentEntityId);
+    UiElementNotificationBus::Event(
+        GetEntityId(), &UiElementNotificationBus::Events::OnUiElementFixup, canvas->GetEntityId(), parentEntityId);
 
     return true;
 }
@@ -1421,7 +1429,7 @@ bool UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ
     // it will already have had its child entities replaced with entity IDs
 
     // find the m_children field
-    int childrenIndex = elementComponentNode->FindElement(AZ_CRC("Children", 0xa197b1ba));
+    int childrenIndex = elementComponentNode->FindElement(AZ_CRC_CE("Children"));
     if (childrenIndex == -1)
     {
         return false;
@@ -1461,7 +1469,7 @@ bool UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ
     AZStd::string elementFieldName = elementNode.GetNameString();
 
     // Find the EntityId node within this entity
-    int entityIdIndex = elementNode.FindElement(AZ_CRC("Id", 0xbf396750));
+    int entityIdIndex = elementNode.FindElement(AZ_CRC_CE("Id"));
     if (entityIdIndex == -1)
     {
         return false;
@@ -1469,7 +1477,7 @@ bool UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ
     AZ::SerializeContext::DataElementNode& elementIdNode = elementNode.GetSubElement(entityIdIndex);
 
     // Find the sub node of the EntityID that actually stores the u64 and make a copy of it
-    int u64Index = elementIdNode.FindElement(AZ_CRC("id", 0xbf396750));
+    int u64Index = elementIdNode.FindElement(AZ_CRC_CE("id"));
     if (u64Index == -1)
     {
         return false;
@@ -1555,7 +1563,8 @@ void UiElementComponent::DoRecursiveEnabledNotification(bool newIsEnabledValue)
         // but if it is enabled then its effective enabled state is controlled by its ancestors
         if (child->m_isEnabled)
         {
-            EBUS_EVENT_ID(child->GetEntityId(), UiElementNotificationBus, OnUiElementAndAncestorsEnabledChanged, newIsEnabledValue);
+            UiElementNotificationBus::Event(
+                child->GetEntityId(), &UiElementNotificationBus::Events::OnUiElementAndAncestorsEnabledChanged, newIsEnabledValue);
             child->DoRecursiveEnabledNotification(newIsEnabledValue);
         }
     }
@@ -1613,7 +1622,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
 
     // Build the address of the "Children" element within this UiElementComponent
     AZ::DataPatch::AddressType childrenAddress = address;
-    childrenAddress.push_back(AZ_CRC("Children", 0xa197b1ba));
+    childrenAddress.push_back(AZ_CRC_CE("Children"));
 
     // Get the serialize context for use in the LoadObjectFromStreamInPlace calls
     AZ::SerializeContext* serializeContext = nullptr;
@@ -1732,7 +1741,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
                 }
 
                 // This should be the u64 "Id" element of the EntityId, if not ignore.
-                if (childPatchAddress.back().GetAddressElement() == AZ_CRC("Id", 0xbf396750))
+                if (childPatchAddress.back().GetAddressElement() == AZ_CRC_CE("Id"))
                 {
                     // the second to last part of the address is the index in the m_children array
                     AZ::u64 index = childPatchAddress[childPatchAddress.size() - 2].GetAddressElement();
@@ -1909,7 +1918,7 @@ bool UiElementComponent::VersionConverter(AZ::SerializeContext& context,
     {
         // Version 3 added the persistent member m_childEntityIdOrder with replaces m_children
         // Find the "Children" element that we will be replacing.
-        int childrenIndex = classElement.FindElement(AZ_CRC("Children"));
+        int childrenIndex = classElement.FindElement(AZ_CRC_CE("Children"));
         if (childrenIndex != -1)
         {
             AZ::SerializeContext::DataElementNode& childrenElementNode = classElement.GetSubElement(childrenIndex);
@@ -1940,7 +1949,7 @@ bool UiElementComponent::VersionConverter(AZ::SerializeContext& context,
             }
 
             // remove the old m_children persistent member
-            classElement.RemoveElementByName(AZ_CRC("Children"));
+            classElement.RemoveElementByName(AZ_CRC_CE("Children"));
         }
     }
 

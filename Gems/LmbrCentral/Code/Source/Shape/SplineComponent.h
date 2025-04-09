@@ -19,7 +19,7 @@ namespace LmbrCentral
     class SplineCommon
     {
     public:
-        AZ_CLASS_ALLOCATOR(SplineCommon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SplineCommon, AZ::SystemAllocator);
         AZ_RTTI(SplineCommon, "{91A31D7E-F63A-4AA8-BC50-909B37F0AD8B}");
 
         SplineCommon();
@@ -27,7 +27,7 @@ namespace LmbrCentral
 
         static void Reflect(AZ::ReflectContext* context);
 
-        void ChangeSplineType(AZ::u64 splineType);
+        void ChangeSplineType(SplineType splineType);
 
         /// Override callbacks to be used when spline changes/is modified.
         void SetCallbacks(
@@ -41,7 +41,7 @@ namespace LmbrCentral
     private:
         AZ::u32 OnChangeSplineType();
 
-        AZ::u64 m_splineType = AZ::LinearSpline::RTTI_Type().GetHash(); ///< The currently set spline type (default to Linear).
+        SplineType m_splineType = SplineType::LINEAR; ///< The currently set spline type (default to Linear).
 
         AZ::IndexFunction m_onAddVertex = nullptr;
         AZ::IndexFunction m_onRemoveVertex = nullptr;
@@ -69,7 +69,7 @@ namespace LmbrCentral
 
         // SplineComponentRequestBus
         AZ::SplinePtr GetSpline() override;
-        void ChangeSplineType(AZ::u64 splineType) override;
+        void ChangeSplineType(SplineType splineType) override;
         void SetClosed(bool closed) override;
 
         // SplineComponentRequestBus/VertexContainerInterface
@@ -89,22 +89,22 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SplineService", 0x2b674d3c));
-            provided.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-            provided.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+            provided.push_back(AZ_CRC_CE("SplineService"));
+            provided.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+            provided.push_back(AZ_CRC_CE("FixedVertexContainerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("SplineService", 0x2b674d3c));
-            incompatible.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-            incompatible.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+            incompatible.push_back(AZ_CRC_CE("SplineService"));
+            incompatible.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+            incompatible.push_back(AZ_CRC_CE("FixedVertexContainerService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

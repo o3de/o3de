@@ -40,17 +40,17 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // EntityCompositionRequestBus::Handler
             AddComponentsOutcome AddComponentsToEntities(const EntityIdList& entityIds, const AZ::ComponentTypeList& componentsToAdd) override;
-            AddExistingComponentsOutcome AddExistingComponentsToEntityById(const AZ::EntityId& entityId, const AZStd::vector<AZ::Component*>& componentsToAdd) override;
-            RemoveComponentsOutcome RemoveComponents(const AZStd::vector<AZ::Component*>& componentsToRemove) override;
+            AddExistingComponentsOutcome AddExistingComponentsToEntityById(const AZ::EntityId& entityId, AZStd::span<AZ::Component* const> componentsToAdd) override;
+            RemoveComponentsOutcome RemoveComponents(AZStd::span<AZ::Component* const> componentsToRemove) override;
             ScrubEntitiesOutcome ScrubEntities(const EntityList& entities) override;
 
-            void CutComponents(const AZStd::vector<AZ::Component*>& components) override;
-            void CopyComponents(const AZStd::vector<AZ::Component*>& components) override;
+            void CutComponents(AZStd::span<AZ::Component* const> components) override;
+            void CopyComponents(AZStd::span<AZ::Component* const> components) override;
             void PasteComponentsToEntity(AZ::EntityId entityId) override;
             bool HasComponentsToPaste() override;
 
-            void EnableComponents(const AZStd::vector<AZ::Component*>& components) override;
-            void DisableComponents(const AZStd::vector<AZ::Component*>& components) override;
+            void EnableComponents(AZStd::span<AZ::Component* const> components) override;
+            void DisableComponents(AZStd::span<AZ::Component* const> components) override;
 
             PendingComponentInfo GetPendingComponentInfo(const AZ::Component* component) override;
 
@@ -59,6 +59,9 @@ namespace AzToolsFramework
         private:
 
             bool RemoveComponentFromEntityAndContainers(AZ::Entity* entity, AZ::Component* componentToRemove);
+
+            // Helper function to check whether an InstanceUpdateExecutor is currently Updating Template Instances In Queue
+            bool AreInstancesUpdated() const;
 
             ScrubEntityResults ScrubEntity(AZ::Entity* entity);
 

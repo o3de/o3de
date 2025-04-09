@@ -65,6 +65,16 @@ namespace AZ
         //! @return The number of microseconds that have elapsed since application start.
         virtual TimeUs GetRealElapsedTimeUs() const = 0;
 
+        //! Sets the number of milliseconds since application start.
+        //! For debug purposes only.
+        //! @param The number of milliseconds that have elapsed since application start.
+        virtual void SetElapsedTimeMsDebug(TimeMs time) = 0;
+
+        //! Sets the number of microseconds since application start.
+        //! For debug purposes only.
+        //! @param The number of microseconds that have elapsed since application start.
+        virtual void SetElapsedTimeUsDebug(TimeUs time) = 0;
+
         //! Returns the current simulation tick delta time.
         //! This is affected by the cvars t_simulationTickScale, t_simulationTickDeltaOverride, and t_maxGameTickDelta.
         //! @return The number of microseconds elapsed since the last game tick.
@@ -82,11 +92,12 @@ namespace AZ
         //! Setting to 0 disables the override.
         //! @param timeMs The time in milliseconds to use for the tick delta.
         virtual void SetSimulationTickDeltaOverride(TimeMs timeMs) = 0;
+        virtual void SetSimulationTickDeltaOverride(TimeUs timeUs) = 0;
 
         //! Returns the current simulation tick override.
         //! 0 means disabled.
         //! @returns The current simulation tick override in milliseconds.
-        virtual TimeMs GetSimulationTickDeltaOverride() const = 0;
+        virtual TimeUs GetSimulationTickDeltaOverride() const = 0;
 
         //! A scalar amount to adjust the passage of time by, 1.0 == realtime, 0.5 == half realtime, 2.0 == doubletime.
         //! @param scale The scalar value to apply to the simulation time.
@@ -206,7 +217,7 @@ namespace AZ
     //! Converts from milliseconds to AZStd::chrono::time_point
     inline auto TimeMsToChrono(TimeMs value)
     {
-        auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
+        AZStd::chrono::steady_clock::time_point epoch;
         auto chronoValue = AZStd::chrono::milliseconds(aznumeric_cast<int64_t>(value));
         return epoch + chronoValue;
     }
@@ -214,7 +225,7 @@ namespace AZ
     //! Converts from microseconds to AZStd::chrono::time_point
     inline auto TimeUsToChrono(TimeUs value)
     {
-        auto epoch = AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>();
+        AZStd::chrono::steady_clock::time_point epoch;
         auto chronoValue = AZStd::chrono::microseconds(aznumeric_cast<int64_t>(value));
         return epoch + chronoValue;
     }

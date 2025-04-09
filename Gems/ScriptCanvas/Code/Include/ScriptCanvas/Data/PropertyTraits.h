@@ -21,7 +21,7 @@ namespace ScriptCanvas
         using GetterFunction = AZStd::function<AZ::Outcome<Datum, AZStd::string>(const Datum&)>;
         struct GetterWrapper
         {
-            AZ_CLASS_ALLOCATOR(GetterWrapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetterWrapper, AZ::SystemAllocator);
             GetterFunction m_getterFunction;
             Data::Type m_propertyType;
             AZStd::string m_propertyName;
@@ -32,7 +32,7 @@ namespace ScriptCanvas
         using SetterFunction = AZStd::function<AZ::Outcome<void, AZStd::string>(Datum&, const Datum&)>;
         struct SetterWrapper
         {
-            AZ_CLASS_ALLOCATOR(SetterWrapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SetterWrapper, AZ::SystemAllocator);
             SetterFunction m_setterFunction;
             Data::Type m_propertyType;
             AZStd::string m_propertyName;
@@ -43,7 +43,7 @@ namespace ScriptCanvas
         struct PropertyMetadata
         {
             AZ_TYPE_INFO(PropertyMetadata, "{A4910EF1-0139-4A7A-878C-E60E18F3993A}");
-            AZ_CLASS_ALLOCATOR(PropertyMetadata, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PropertyMetadata, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* reflectContext);
 
             SlotId m_propertySlotId;
@@ -437,12 +437,12 @@ namespace ScriptCanvas
                         GetterFunction getterFunction = [&behaviorProperty, getterMethod](const Datum& thisDatum) -> AZ::Outcome<Datum, AZStd::string>
                         {
                             const size_t maxGetterArguments = 1;
-                            AZStd::array<AZ::BehaviorValueParameter, maxGetterArguments> getterParams;
+                            AZStd::array<AZ::BehaviorArgument, maxGetterArguments> getterParams;
                             const AZ::BehaviorParameter* thisParam = getterMethod->GetArgument(0);
-                            AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> thisObjectParam = thisDatum.ToBehaviorValueParameter(*thisParam);
+                            AZ::Outcome<AZ::BehaviorArgument, AZStd::string> thisObjectParam = thisDatum.ToBehaviorValueParameter(*thisParam);
                             if (!thisObjectParam.IsSuccess())
                             {
-                                return AZ::Failure(AZStd::string::format("BehaviorContextObject %s couldn't be turned into a BehaviorValueParameter for getter: %s",
+                                return AZ::Failure(AZStd::string::format("BehaviorContextObject %s couldn't be turned into a BehaviorArgument for getter: %s",
                                     Data::GetName(thisDatum.GetType()).data(),
                                     thisObjectParam.GetError().data()));
                             }
@@ -487,22 +487,22 @@ namespace ScriptCanvas
                         SetterFunction setterFunction = [setterMethod](Datum& thisDatum, const Datum& propertyDatum) -> AZ::Outcome<void, AZStd::string>
                         {
                             const size_t maxSetterArguments = 2;
-                            AZStd::array<AZ::BehaviorValueParameter, maxSetterArguments> setterParams;
+                            AZStd::array<AZ::BehaviorArgument, maxSetterArguments> setterParams;
                             const AZ::BehaviorParameter* thisParam = setterMethod->GetArgument(thisIndex);
-                            AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> thisObjectParam = thisDatum.ToBehaviorValueParameter(*thisParam);
+                            AZ::Outcome<AZ::BehaviorArgument, AZStd::string> thisObjectParam = thisDatum.ToBehaviorValueParameter(*thisParam);
                             if (!thisObjectParam.IsSuccess())
                             {
-                                return AZ::Failure(AZStd::string::format("BehaviorContextObject %s couldn't be turned into a BehaviorValueParameter for setter: %s",
+                                return AZ::Failure(AZStd::string::format("BehaviorContextObject %s couldn't be turned into a BehaviorArgument for setter: %s",
                                     Data::GetName(thisDatum.GetType()).data(),
                                     thisObjectParam.GetError().data()));
                             }
                             setterParams[thisIndex].Set(thisObjectParam.TakeValue());
 
                             const AZ::BehaviorParameter* propertyParam = setterMethod->GetArgument(propertyIndex);
-                            AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> propertyObjectParam = propertyDatum.ToBehaviorValueParameter(*propertyParam);
+                            AZ::Outcome<AZ::BehaviorArgument, AZStd::string> propertyObjectParam = propertyDatum.ToBehaviorValueParameter(*propertyParam);
                             if (!propertyObjectParam.IsSuccess())
                             {
-                                return AZ::Failure(AZStd::string::format("Property type %s couldn't be turned into a BehaviorValueParameter for setter. BehaviorContextObject %s will not be set: %s.",
+                                return AZ::Failure(AZStd::string::format("Property type %s couldn't be turned into a BehaviorArgument for setter. BehaviorContextObject %s will not be set: %s.",
                                     Data::GetName(propertyDatum.GetType()).data(),
                                     Data::GetName(thisDatum.GetType()).data(),
                                     propertyObjectParam.GetError().data()));
@@ -539,7 +539,7 @@ namespace ScriptCanvas
         {
             struct TypeErasedPropertyTraits
             {
-                AZ_CLASS_ALLOCATOR(TypeErasedPropertyTraits, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(TypeErasedPropertyTraits, AZ::SystemAllocator);
 
                 TypeErasedPropertyTraits() = default;
 

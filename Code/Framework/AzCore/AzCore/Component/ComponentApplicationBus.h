@@ -39,10 +39,23 @@ namespace AZ
 
     struct ApplicationTypeQuery
     {
+        //! Signals if the application is the Editor.
         bool IsEditor() const;
+
+        //! Signals if the application is the tool application, i.e. AssetProcessor.
         bool IsTool() const;
+
+        //! Signals if the application is a game or server launcher.
         bool IsGame() const;
+
+        //! Signals if the application is running headless (console application with no graphics rendering capability enabled).
+        bool IsHeadless() const;
+
+        //! Signals if the application is valid or not. This means the application has not been categorized as any one of Editor, Tool, or Game.
         bool IsValid() const;
+
+        //! Signals if the application is running in console mode where the native client window is not created but still (optionally) supports graphics rendering.
+        bool IsConsoleMode() const;
 
         enum class Masks
         {
@@ -50,6 +63,8 @@ namespace AZ
             Editor = 1 << 0,
             Tool = 1 << 1,
             Game = 1 << 2,
+            Headless = 1 << 3,
+            ConsoleMode = 1 << 4,
         };
         Masks m_maskValue = Masks::Invalid;
     };
@@ -59,6 +74,8 @@ namespace AZ
     inline bool ApplicationTypeQuery::IsEditor() const { return (m_maskValue & Masks::Editor) == Masks::Editor; }
     inline bool ApplicationTypeQuery::IsTool() const { return (m_maskValue & Masks::Tool) == Masks::Tool; }
     inline bool ApplicationTypeQuery::IsGame() const { return (m_maskValue & Masks::Game) == Masks::Game; }
+    inline bool ApplicationTypeQuery::IsHeadless() const { return (m_maskValue & Masks::Headless) == Masks::Headless; }
+    inline bool ApplicationTypeQuery::IsConsoleMode() const { return (m_maskValue & Masks::ConsoleMode) == Masks::ConsoleMode; }
     inline bool ApplicationTypeQuery::IsValid() const { return m_maskValue != Masks::Invalid; }
 
     using EntityAddedEvent = AZ::Event<AZ::Entity*>;
@@ -211,3 +228,5 @@ namespace AZ
     //! Used by components to make requests of the component application.
     using ComponentApplicationBus = AZ::EBus<ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits>;
 }
+
+DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);

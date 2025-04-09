@@ -9,6 +9,8 @@
 #define AZCORE_ENTITY_ID_H
 
 #include <AzCore/base.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/string/string.h>
 
@@ -19,6 +21,8 @@
 
 namespace AZ
 {
+    AZ_CHILD_ALLOCATOR_WITH_NAME(EntityAllocator, "EntityAllocator", "{C3FA54B6-DAFC-44A8-98C2-7EB0ACF92BE8}", SystemAllocator);
+
     /**
      * Entity ID type.
      * Entity IDs are used to uniquely identify entities. Each component that is 
@@ -31,17 +35,18 @@ namespace AZ
         friend class Entity;
 
     public:
+        AZ_CLASS_ALLOCATOR(EntityId, EntityAllocator);
 
-         /**
-          * Invalid entity ID with a machine ID of 0 and the maximum timestamp.
-          */
-         static const u64 InvalidEntityId = 0x00000000FFFFFFFFull; 
+        /**
+         * Invalid entity ID with a machine ID of 0 and the maximum timestamp.
+         */
+        static constexpr u64 InvalidEntityId = 0x00000000FFFFFFFFull;
                  
-         /**
-          * Enables this class to be identified across modules and serialized into
-          * different contexts.
-          */
-         AZ_TYPE_INFO(EntityId, "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}");
+        /**
+         * Enables this class to be identified across modules and serialized into
+         * different contexts.
+         */
+        AZ_TYPE_INFO(EntityId, "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}");
 
         /**
          * Creates an entity ID instance. 

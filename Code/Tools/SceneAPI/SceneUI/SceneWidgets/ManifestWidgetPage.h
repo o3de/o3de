@@ -61,15 +61,29 @@ namespace AZ
 
                 void RefreshPage(); // Called when a scene is initially loaded, after all objects are populated.
 
+            signals:
+                void SaveClicked();
+                void ResetSettings();
+                void ClearChanges();
+                void AssignScript();
+                void InspectClicked();
+
+            public slots:
+                void AppendUnsavedChangesToTitle(bool hasUnsavedChanges);
+                void EnableInspector(bool enableInspector);
+
             protected slots:
                 //! Callback that's triggered when the add button only has 1 entry.
                 void OnSingleGroupAdd();
+                void AddEditMenu();
 
             protected:
                 //! Callback that's triggered when the add button has multiple entries.
                 virtual void OnMultiGroupAdd(const Uuid& id);
+                virtual void OnHelpButtonClicked();
 
                 virtual void BuildAndConnectAddButton();
+                virtual void BuildHelpButton();
                 
                 virtual AZStd::string ClassIdToName(const Uuid& id) const;
                 virtual void AddNewObject(const Uuid& id);
@@ -87,6 +101,11 @@ namespace AZ
 
                 // ManifestMetaInfoBus
                 void ObjectUpdated(const Containers::Scene& scene, const DataTypes::IManifestObject* target, void* sender) override;
+                void AddObjects(AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>& objects) override;
+
+                void UpdateAddButtonStatus();
+
+                bool SetNodeReadOnlyStatus(const AzToolsFramework::InstanceDataNode* node);
 
                 AZStd::vector<AZ::Uuid> m_classTypeIds;
                 AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> m_objects;
@@ -94,6 +113,9 @@ namespace AZ
                 AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor;
                 SerializeContext* m_context;
                 size_t m_capSize;
+                QString m_helpUrl;
+                QMenu* m_editMenu;
+                bool m_scrollToBottomQueued = false;
             };
         } // namespace UI
     } // namespace SceneAPI

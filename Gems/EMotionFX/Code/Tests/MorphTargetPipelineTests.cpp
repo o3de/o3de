@@ -7,7 +7,6 @@
  */
 
 #include "InitSceneAPIFixture.h"
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/conversions.h>
@@ -42,7 +41,6 @@ namespace EMotionFX
     // the morph target pipeline tests
 
     using MorphTargetPipelineFixtureBase = InitSceneAPIFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
@@ -294,7 +292,7 @@ namespace EMotionFX
 
     // Note that these values are instantiated before the SystemAllocator is
     // created, so we can't use AZStd::vector
-    INSTANTIATE_TEST_CASE_P(TestMorphTargetCreation, MorphTargetCreationTestFixture,
+    INSTANTIATE_TEST_SUITE_P(TestMorphTargetCreation, MorphTargetCreationTestFixture,
         ::testing::Values(
             std::vector<std::string> {},
             std::vector<std::string> {"testMorphTarget0"},

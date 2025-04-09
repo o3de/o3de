@@ -37,16 +37,17 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, s_categoryName)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->UIElement("GradientPreviewer", "Previewer")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC("GradientEntity", 0xe8531817), &EditorGradientSurfaceDataComponent::GetGradientEntityId)
-                    ->Attribute(AZ_CRC("GradientFilter", 0x99bf0362), &EditorGradientSurfaceDataComponent::GetFilterFunc)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
+                    ->Attribute(AZ_CRC_CE("GradientEntity"), &EditorGradientSurfaceDataComponent::GetGradientEntityId)
+                    ->Attribute(AZ_CRC_CE("GradientFilter"), &EditorGradientSurfaceDataComponent::GetFilterFunc)
+                    ->EndGroup()
                     ;
             }
         }

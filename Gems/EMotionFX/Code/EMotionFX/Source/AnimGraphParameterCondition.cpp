@@ -37,8 +37,8 @@ namespace EMotionFX
     const char* AnimGraphParameterCondition::s_functionInRange = "param INRANGE [testValue..rangeValue]";
     const char* AnimGraphParameterCondition::s_functionNotInRange = "param NOT INRANGE [testValue..rangeValue]";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterCondition, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterCondition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterCondition, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterCondition::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     AnimGraphParameterCondition::UniqueData::UniqueData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance)
         : AnimGraphObjectData(object, animGraphInstance)
@@ -605,10 +605,10 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphNumberParameter", 0x8023eba9), &AnimGraphParameterCondition::m_parameterName, "Parameter", "The parameter name to apply the condition on.")
+            ->DataElement(AZ_CRC_CE("AnimGraphNumberParameter"), &AnimGraphParameterCondition::m_parameterName, "Parameter", "The parameter name to apply the condition on.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphParameterCondition::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphParameterCondition::GetAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphParameterCondition::GetAnimGraph)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AnimGraphParameterCondition::m_function)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphParameterCondition::GetFloatParameterOptionsVisibility)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphParameterCondition::Reinit)

@@ -14,7 +14,7 @@
                 },
                 // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 },
                 // Outputs...
@@ -39,15 +39,15 @@
                 {
                     "LocalSlot": "LuminanceMipChainOutput",
                     "AttachmentRef": {
-                        "Pass": "DownsampleLuminanceMipChain",
-                        "Attachment": "MipChainInputOutput"
+                        "Pass": "DownsampleSinglePassLuminance",
+                        "Attachment": "Output"
                     }
                 }
             ],
             "PassRequests": [
                 {
-                    "Name": "DownsampleLuminanceMinAvgMax",
-                    "TemplateName": "DownsampleLuminanceMinAvgMaxCS",
+                    "Name": "DownsampleSinglePassLuminance",
+                    "TemplateName": "DownsampleSinglePassLuminanceTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",
@@ -59,25 +59,6 @@
                     ]
                 },
                 {
-                    "Name": "DownsampleLuminanceMipChain",
-                    "TemplateName": "DownsampleMipChainTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "MipChainInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "DownsampleLuminanceMinAvgMax",
-                                "Attachment": "Output"
-                            }
-                        }
-                    ],
-                    "PassData": {
-                        "$type": "DownsampleMipChainPassData",
-                        "ShaderAsset": {
-                            "FilePath": "Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader"
-                        }
-                    }
-                },
-                {
                     "Name": "EyeAdaptationPass",
                     "TemplateName": "EyeAdaptationTemplate",
                     "Enabled": true,
@@ -85,8 +66,8 @@
                         {
                             "LocalSlot": "SceneLuminanceInput",
                             "AttachmentRef": {
-                                "Pass": "DownsampleLuminanceMipChain",
-                                "Attachment": "MipChainInputOutput"
+                                "Pass": "DownsampleSinglePassLuminance",
+                                "Attachment": "Output"
                             }
                         }
                     ]
@@ -130,10 +111,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -151,10 +132,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]

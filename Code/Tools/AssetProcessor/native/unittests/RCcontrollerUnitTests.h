@@ -5,35 +5,41 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef RCCONTROLLERUNITTESTS_H
-#define RCCONTROLLERUNITTESTS_H
 
-#if !defined(Q_MOC_RUN)
-#include "UnitTestRunner.h"
-#include "native/resourcecompiler/rccontroller.h"
-#endif
+#pragma once
 
+#include <native/unittests/AssetProcessorUnitTests.h>
+
+namespace AssetProcessor
+{
+    class RCController;
+    class RCJob;
+    class RCJobListModel;
+    class RCQueueSortModel;
+}
 
 class RCcontrollerUnitTests
-    : public UnitTestRun
+    : public QObject
+    , public UnitTest::AssetProcessorUnitTestBase
 {
-    Q_OBJECT
 public:
-    virtual void StartTest() override;
+    void SetUp() override;
+    void TearDown() override;
 
-    RCcontrollerUnitTests();
+protected:
+    void FinishJob(AssetProcessor::RCJob* rcJob);
+    void PrepareRCJobListModelTest(int& numJobs);
+    void PrepareCompileGroupTests(const QStringList& tempJobNames, bool& gotCreated, bool& gotCompleted, AssetProcessor::NetworkRequestID& gotGroupID, AzFramework::AssetSystem::AssetStatus& gotStatus);
     void Reset();
 
-Q_SIGNALS:
-    void RcControllerPrepared();
-public Q_SLOTS:
-    void PrepareRCController();
-    void RunRCControllerTests();
+    void ConnectCompileGroupSignalsAndSlots(bool& gotCreated, bool& gotCompleted, AssetProcessor::NetworkRequestID& gotGroupID, AzFramework::AssetSystem::AssetStatus& gotStatus);
+    void ConnectJobSignalsAndSlots(bool& allJobsCompleted, AssetProcessor::JobEntry& entry);
 
-
-private:
-    AssetProcessor::RCController m_rcController;
+    AZStd::unique_ptr<AssetProcessor::RCController> m_rcController;
     AssetBuilderSDK::AssetBuilderDesc m_assetBuilderDesc;
-};
+    AssetProcessor::RCJobListModel* m_rcJobListModel;
+    AssetProcessor::RCQueueSortModel* m_rcQueueSortModel;
 
-#endif // RCCONTROLLERUNITTESTS_H
+    QList<AssetProcessor::RCJob*> m_createdJobs;
+
+};

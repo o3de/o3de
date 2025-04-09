@@ -12,8 +12,9 @@
 #include <Atom/Features/PBR/Lights/Ltc.azsli>
 #include <Atom/RPI/Math.azsli>
 
+#if ENABLE_POLYGON_LTC_LIGHTS
 // Polygon lights using Linearly Transformed Cosines
-void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout LightingData lightingData)
+void ApplyPoylgonLight(PolygonLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
@@ -30,16 +31,7 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout Light
 
     if (!doubleSided)
     {
-        // Determine the direction of the polygon light by crossing the first two edges
-        float3 edge1 = ViewSrg::m_polygonLightPoints[startIndex].xyz - ViewSrg::m_polygonLightPoints[startIndex + 1].xyz;
-        float3 edge2 = ViewSrg::m_polygonLightPoints[startIndex + 2].xyz - ViewSrg::m_polygonLightPoints[startIndex + 1].xyz;
-        float3 lightDirection = normalize(cross(edge2, edge1));
-
-        // The sign bit on light.m_rgbIntensityNits.x stores if first two edges are concave or convex. Flip lightDirection based on this bit.
-        lightDirection = asfloat(asuint(lightDirection) ^ asuint(light.m_rgbIntensityNits.x) & 0x80000000); 
-
-        float posToLightDotLightDirection = dot(posToLight, -lightDirection);
-        if (posToLightDotLightDirection <= 0.0)
+        if (dot(posToLight, -light.m_direction) <= 0.0)
         {
             return; // Light isn't facing the surface
         }
@@ -68,12 +60,22 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout Light
 
 void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_POLYGON_LTC_LIGHTS
-    for (uint currLightIndex = 0; currLightIndex <  ViewSrg::m_polygonLightCount; ++currLightIndex)
+    if (o_enablePolygonLights)
     {
-        ViewSrg::PolygonLight light = ViewSrg::m_polygonLights[currLightIndex];
-        
-        ApplyPoylgonLight(light, surface, lightingData);
+        for (uint currLightIndex = 0; currLightIndex <  ViewSrg::m_polygonLightCount; ++currLightIndex)
+        {
+            PolygonLight light = ViewSrg::m_polygonLights[currLightIndex];
+            if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+            {
+                continue;
+            }            
+            ApplyPoylgonLight(light, surface, lightingData);
+        }
     }
-#endif
 }
+#else
+void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
+{
+    return;
+}
+#endif

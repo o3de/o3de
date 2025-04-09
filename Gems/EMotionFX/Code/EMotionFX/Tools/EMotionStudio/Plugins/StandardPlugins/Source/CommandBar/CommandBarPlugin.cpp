@@ -9,8 +9,6 @@
 #include "CommandBarPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include <MCore/Source/LogManager.h>
-#include "../MotionWindow/MotionWindowPlugin.h"
-#include "../MotionWindow/MotionListWindow.h"
 #include <AzQtComponents/Components/Widgets/Slider.h>
 #include <QAction>
 #include <QDir>
@@ -22,7 +20,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandBarPlugin::ProgressHandler, EMotionFX::EventHandlerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandBarPlugin::ProgressHandler, EMotionFX::EventHandlerAllocator)
 
     CommandBarPlugin::CommandBarPlugin()
         : EMStudio::ToolBarPlugin()

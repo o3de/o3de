@@ -5,8 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Render Mesh Component",
-                "category": "Rendering"
+                "name": "Render Mesh Component Request Bus"
             },
             "methods": [
                 {
@@ -26,7 +25,29 @@
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "LOD Override"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetExcludeFromReflectionCubeMaps",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Exclude From Reflection Cube Maps"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Exclude From Reflection Cube Maps is invoked"
+                    },
+                    "details": {
+                        "name": "Set Exclude From Reflection Cube Maps"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Exclude"
                             }
                         }
                     ]
@@ -48,7 +69,7 @@
                         {
                             "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
                             "details": {
-                                "name": "AZ::s 64"
+                                "name": "Sort Key"
                             }
                         }
                     ]
@@ -70,7 +91,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Quality Decay Rate"
                             }
                         }
                     ]
@@ -92,7 +113,51 @@
                         {
                             "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
                             "details": {
-                                "name": "AZ::s 64"
+                                "name": "Sort Key"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIsAlwaysDynamic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Always Dynamic"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Always Dynamic is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Always Dynamic"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Always Dynamic"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRayTracingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Ray Tracing Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Ray Tracing Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Get Ray Tracing Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
                             }
                         }
                     ]
@@ -114,7 +179,7 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Asset Path"
                             }
                         }
                     ]
@@ -136,7 +201,7 @@
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "LOD Type"
                             }
                         }
                     ]
@@ -158,7 +223,7 @@
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "LOD Override"
                             }
                         }
                     ]
@@ -180,7 +245,73 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Minimum Screen Coverage"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetExcludeFromReflectionCubeMaps",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Exclude From Reflection Cube Maps"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Exclude From Reflection Cube Maps is invoked"
+                    },
+                    "details": {
+                        "name": "Get Exclude From Reflection Cube Maps"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Exclude"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetVisibility",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Visibility"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Visibility is invoked"
+                    },
+                    "details": {
+                        "name": "Set Visibility"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Visible"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetVisibility",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Visibility"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Visibility is invoked"
+                    },
+                    "details": {
+                        "name": "Get Visibility"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Visible"
                             }
                         }
                     ]
@@ -224,7 +355,7 @@
                         {
                             "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
                             "details": {
-                                "name": "unsigned char"
+                                "name": "LOD Type"
                             }
                         }
                     ]
@@ -246,7 +377,29 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Minimum Screen Coverage"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRayTracingEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Ray Tracing Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Ray Tracing Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Ray Tracing Enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
                             }
                         }
                     ]
@@ -290,7 +443,29 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Asset Path"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIsAlwaysDynamic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Is Always Dynamic"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Is Always Dynamic is invoked"
+                    },
+                    "details": {
+                        "name": "Get Is Always Dynamic"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Always Dynamic"
                             }
                         }
                     ]
@@ -312,7 +487,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Quality Decay Rate"
                             }
                         }
                     ]

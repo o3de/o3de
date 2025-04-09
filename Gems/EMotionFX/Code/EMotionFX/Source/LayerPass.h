@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 
 
 namespace EMotionFX
@@ -25,7 +25,7 @@ namespace EMotionFX
      * Sometimes it is needed to manually process blending of some specific properties such as facial expression weights.
      */
     class EMFX_API LayerPass
-        : public BaseObject
+        : public MCore::RefCounted
     {
     public:
         /**
@@ -48,7 +48,7 @@ namespace EMotionFX
          * @param motionLayerSystem The motion layer system where this pass will be added to.
          */
         LayerPass(MotionLayerSystem* motionLayerSystem)
-            : BaseObject()                  { m_motionSystem = motionLayerSystem; }
+            : MCore::RefCounted()                  { m_motionSystem = motionLayerSystem; }
 
         /**
          * The destructor.

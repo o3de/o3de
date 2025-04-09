@@ -33,6 +33,13 @@ ly_add_pytest(
 )
 
 ly_add_pytest(
+    NAME o3de_download
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_download.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
     NAME o3de_enable_gem
     PATH ${CMAKE_CURRENT_LIST_DIR}/test_enable_gem.py
     TEST_SUITE smoke
@@ -68,6 +75,13 @@ ly_add_pytest(
 )
 
 ly_add_pytest(
+    NAME o3de_repo
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_repo.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
     NAME o3de_gem_properties
     PATH ${CMAKE_CURRENT_LIST_DIR}/test_gem_properties.py
     TEST_SUITE smoke
@@ -87,3 +101,19 @@ ly_add_pytest(
     TEST_SUITE smoke
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
 )
+
+ly_add_pytest(
+    NAME o3de_export_project
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_export_project.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
+    NAME o3de_utils
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_utils.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+add_subdirectory(ExportScripts)

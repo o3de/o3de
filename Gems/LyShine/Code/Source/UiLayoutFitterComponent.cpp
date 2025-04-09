@@ -43,9 +43,9 @@ void UiLayoutFitterComponent::ApplyLayoutWidth()
 
         // Recalculate the new horizontal offsets using the pivot
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
         UiTransform2dInterface::Anchors anchors;
-        EBUS_EVENT_ID_RESULT(anchors, GetEntityId(), UiTransform2dBus, GetAnchors);
+        UiTransform2dBus::EventResult(anchors, GetEntityId(), &UiTransform2dBus::Events::GetAnchors);
 
         // If anchors are separate
         if (anchors.m_left != anchors.m_right)
@@ -54,7 +54,7 @@ void UiLayoutFitterComponent::ApplyLayoutWidth()
             float midPoint = (anchors.m_left + anchors.m_right) / 2.0f;
             anchors.m_left = anchors.m_right = midPoint;
 
-            EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetAnchors, anchors, false, true);
+            UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetAnchors, anchors, false, true);
         }
 
         float oldWidth = offsets.m_right - offsets.m_left;
@@ -63,12 +63,12 @@ void UiLayoutFitterComponent::ApplyLayoutWidth()
         if (widthDiff != 0.0f)
         {
             AZ::Vector2 pivot;
-            EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+            UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
             offsets.m_left -= widthDiff * pivot.GetX();
             offsets.m_right += widthDiff * (1.0f - pivot.GetX());
 
-            EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
         }
     }
 }
@@ -82,9 +82,9 @@ void UiLayoutFitterComponent::ApplyLayoutHeight()
 
         // Recalculate the new vertical offsets using the pivot
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
         UiTransform2dInterface::Anchors anchors;
-        EBUS_EVENT_ID_RESULT(anchors, GetEntityId(), UiTransform2dBus, GetAnchors);
+        UiTransform2dBus::EventResult(anchors, GetEntityId(), &UiTransform2dBus::Events::GetAnchors);
 
         // If anchors are separate
         if (anchors.m_top != anchors.m_bottom)
@@ -93,7 +93,7 @@ void UiLayoutFitterComponent::ApplyLayoutHeight()
             float midPoint = (anchors.m_top + anchors.m_bottom) / 2.0f;
             anchors.m_top = anchors.m_bottom = midPoint;
 
-            EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetAnchors, anchors, false, true);
+            UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetAnchors, anchors, false, true);
         }
 
         float oldHeight = offsets.m_bottom - offsets.m_top;
@@ -102,12 +102,12 @@ void UiLayoutFitterComponent::ApplyLayoutHeight()
         if (heightDiff != 0.0f)
         {
             AZ::Vector2 pivot;
-            EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+            UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
             offsets.m_top -= heightDiff * pivot.GetY();
             offsets.m_bottom += heightDiff * (1.0f - pivot.GetY());
 
-            EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
         }
     }
 }
@@ -185,7 +185,7 @@ void UiLayoutFitterComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiLayoutFitter.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiLayoutFitter.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutFitterComponent::m_horizontalFit, "Horizontal Fit",
@@ -254,5 +254,5 @@ void UiLayoutFitterComponent::CheckFitterAndInvalidateLayout()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiLayoutFitterComponent::RefreshEditorTransformProperties()
 {
-    EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorTransformPropertiesNeedRefresh);
+    UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorTransformPropertiesNeedRefresh);
 }

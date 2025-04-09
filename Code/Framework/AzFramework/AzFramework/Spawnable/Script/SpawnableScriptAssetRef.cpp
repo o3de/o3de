@@ -21,7 +21,10 @@ namespace AzFramework::Scripts
         {
             serializeContext
                 ->Class<SpawnableScriptAssetRef>()
-                ->Field("asset", &SpawnableScriptAssetRef::m_asset);
+                ->Version(0)
+                ->EventHandler<SerializationEvents>()
+                ->Field("asset", &SpawnableScriptAssetRef::m_asset)
+            ;
 
             serializeContext->RegisterGenericType<AZStd::vector<SpawnableScriptAssetRef>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, SpawnableScriptAssetRef>>();
@@ -31,6 +34,8 @@ namespace AzFramework::Scripts
             {
                 editContext
                     ->Class<SpawnableScriptAssetRef>("SpawnableScriptAssetRef", "A wrapper around spawnable asset to be used as a variable in Script Canvas.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     // m_asset
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SpawnableScriptAssetRef::m_asset, "asset", "")
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
@@ -42,13 +47,18 @@ namespace AzFramework::Scripts
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext
-                ->Class<SpawnableScriptAssetRef>("SpawnableScriptAssetRef")
-                ->Constructor()
+            behaviorContext->Class<SpawnableScriptAssetRef>("SpawnableScriptAssetRef")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
                 ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
                 ->Attribute(AZ::Script::Attributes::Module, "prefabs")
-                ->Property("asset", BehaviorValueProperty(&SpawnableScriptAssetRef::m_asset));
+                ->Constructor()
+                ->Method("GetAsset", &SpawnableScriptAssetRef::GetAsset)
+                ->Method("SetAsset", &SpawnableScriptAssetRef::SetAsset)
+                ->Method("GetAssetId", &SpawnableScriptAssetRef::GetAssetId)
+                ->Method("SetAssetId", &SpawnableScriptAssetRef::SetAssetId)
+                ->Method("IsValid", &SpawnableScriptAssetRef::IsValid)
+                ;
         }
     }
 
@@ -58,20 +68,20 @@ namespace AzFramework::Scripts
     }
 
     SpawnableScriptAssetRef::SpawnableScriptAssetRef(const SpawnableScriptAssetRef& rhs)
-        : m_asset(rhs.m_asset)
     {
+        SetAsset(rhs.m_asset);
     }
 
     SpawnableScriptAssetRef::SpawnableScriptAssetRef(SpawnableScriptAssetRef&& rhs)
-        : m_asset(AZStd::move(rhs.m_asset))
     {
+        SetAsset(AZStd::move(rhs.m_asset));
     }
 
     SpawnableScriptAssetRef& SpawnableScriptAssetRef::operator=(const SpawnableScriptAssetRef& rhs)
     {
         if (this != &rhs)
         {
-            m_asset = rhs.m_asset;
+            SetAsset(rhs.m_asset);
         }
         return *this;
     }
@@ -80,14 +90,19 @@ namespace AzFramework::Scripts
     {
         if (this != &rhs)
         {
-            m_asset = AZStd::move(rhs.m_asset);
+            SetAsset(AZStd::move(rhs.m_asset));
         }
         return *this;
     }
 
     void SpawnableScriptAssetRef::SetAsset(const AZ::Data::Asset<Spawnable>& asset)
     {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
         m_asset = asset;
+        if (m_asset.GetId().IsValid())
+        {
+            AZ::Data::AssetBus::Handler::BusConnect(m_asset.GetId());
+        }
     }
 
     AZ::Data::Asset<Spawnable> SpawnableScriptAssetRef::GetAsset() const
@@ -97,35 +112,33 @@ namespace AzFramework::Scripts
 
     void SpawnableScriptAssetRef::OnSpawnAssetChanged()
     {
-        // Disconnect from the bus beforehand in case the new asset is not valid
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-
-        if (m_asset.GetId().IsValid())
-        {
-            AZStd::string spawnableAssetFile;
-            StringFunc::Path::GetFileName(m_asset.GetHint().c_str(), spawnableAssetFile);
-            StringFunc::Path::ReplaceExtension(spawnableAssetFile, Spawnable::DotFileExtension);
-            AZ::u32 spawnableAssetSubId = SpawnableAssetHandler::BuildSubId(spawnableAssetFile);
-
-            if (m_asset.GetId().m_subId != spawnableAssetSubId)
-            {
-                AZ::Data::AssetId spawnableAssetId = m_asset.GetId();
-                spawnableAssetId.m_subId = spawnableAssetSubId;
-
-                m_asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<Spawnable>(
-                    spawnableAssetId, AZ::Data::AssetLoadBehavior::Default);
-            }
-            else
-            {
-                m_asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::Default);
-            }
-
-            AZ::Data::AssetBus::Handler::BusConnect(m_asset.GetId());
-        }
+        SetAsset(m_asset);
     }
 
     void SpawnableScriptAssetRef::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         m_asset = asset;
+    }
+
+    void SpawnableScriptAssetRef::SetAssetId(const AZ::Data::AssetId& assetId)
+    {
+        if (assetId == m_asset.GetId())
+        {
+            return;
+        }
+
+        AZ::Data::Asset<Spawnable> newAsset =
+            AZ::Data::AssetManager::Instance().GetAsset<Spawnable>(assetId, AZ::Data::AssetLoadBehavior::NoLoad);
+        SetAsset(newAsset);
+    }
+
+    AZ::Data::AssetId SpawnableScriptAssetRef::GetAssetId() const
+    {
+        return m_asset.GetId();
+    }
+
+    bool SpawnableScriptAssetRef::IsValid() const
+    {
+        return m_asset.GetId().IsValid();
     }
 }

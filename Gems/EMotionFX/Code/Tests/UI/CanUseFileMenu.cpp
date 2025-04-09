@@ -27,7 +27,6 @@
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <EMotionFX/Rendering/OpenGL2/Source/GraphicsManager.h>
 #include <EMotionFX/Source/AnimGraphReferenceNode.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
@@ -73,7 +72,7 @@ namespace EMotionFX
 
         QString GetAssetSaveFolder() const
         {
-            auto testAssetsPath = AZ::IO::Path(GetEMotionFX().GetAssetCacheFolder()) / "TmpTestAssets";
+            auto testAssetsPath = AZ::IO::Path(GetEMotionFX().GetAssetCacheFolder()) / "tmptestassets";
             QString dataDir = QString::fromUtf8(testAssetsPath.c_str(), aznumeric_cast<int>(testAssetsPath.Native().size()));
 
             if (!QDir(dataDir).exists())
@@ -176,19 +175,6 @@ namespace EMotionFX
             saveDirtyPopupHandler.WaitForPopupPressDialogButton<EMStudio::SaveDirtySettingsWindow*>(QDialogButtonBox::Ok);
 
             EMStudio::GetMainWindow()->LoadActor(filename, replaceScene);
-        }
-
-        void CreateMotionSet()
-        {
-            if (EMotionFX::GetMotionManager().GetNumMotionSets() == 0)
-            {
-                EMStudio::MotionSetManagementWindow* managementWindow = GetMotionSetManagementWindow();
-                ASSERT_TRUE(managementWindow);
-
-                managementWindow->OnCreateMotionSet();
-
-                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to create motion set for reset test.";
-            }
         }
 
         void CreateMotion()
@@ -333,6 +319,9 @@ namespace EMotionFX
             // Pretend editing the anim graph
             EMotionFX::AnimGraph* animGraph = m_animGraphPlugin->GetActiveAnimGraph();
             animGraph->SetDirtyFlag(true);
+
+            // Skip the motion set.
+            GetMotionManager().GetMotionSet(0)->SetDirtyFlag(false);
 
             // Prepare a watcher to press the ok button when the SaveDirtySettingsWindow appears.
             ModalPopupHandler saveDirtyPopupHandler;
@@ -495,7 +484,6 @@ namespace EMotionFX
         void CreateDataForResetTest()
         {
             CreateActor();
-            CreateMotionSet();
             CreateMotion();
             CreateAnimGraph();
         }
@@ -600,7 +588,7 @@ namespace EMotionFX
 
                 // Motion Sets
                 TestResetMenuItem(resetAction, "EMFX.ResetSettingsDialog.MotionSets");
-                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to reset MotionSets. Default motion set should be present.";
 
                 // AnimGraphs
                 TestResetMenuItem(resetAction, "EMFX.ResetSettingsDialog.AnimGraphs");
@@ -618,7 +606,7 @@ namespace EMotionFX
                 TestResetMenuItem(resetAction, "*");
                 ASSERT_EQ(EMotionFX::GetActorManager().GetNumActorInstances(), 0) << "Failed to reset Actors.";
                 ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotions(), 0) << "Failed to reset Motions.";
-                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to reset MotionSets. Default motion set should be present.";
                 ASSERT_FALSE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to reset AnimGraphs.";
             }
         }
@@ -637,7 +625,6 @@ namespace EMotionFX
             animGraph->SetFileName(animGraphFilename.toUtf8().constData());
             animGraph->SetDirtyFlag(true);
 
-            CreateMotionSet();
             const QString motionsetFilename = GenerateTempMotionSetFilename();
             EMotionFX::MotionSet *motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
             motionSet->SetFilename(motionsetFilename.toUtf8().constData());
@@ -686,11 +673,7 @@ namespace EMotionFX
             QString m_lastSavedWorkspaceFilename;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CanUseFileMenuUIFixture, DISABLED_CanUseFileMenu)
-#else
     TEST_F(CanUseFileMenuUIFixture, CanUseFileMenu)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C1698601");
         RecordProperty("test_case_id", "C16302183");

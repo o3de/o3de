@@ -11,7 +11,7 @@ AZStd::array<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>{% elif
 AZStd::fixed_vector<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>{% endif %}
 {%- endmacro %}
 {% macro DefinePacketMethods(packetNode, name) %}
-{%  if (packetNode.getchildren()) | len > 0 %}
+{%  if packetNode | len > 0 %}
     {{ name }}::{{ name }}
     (
 {%      for Member in packetNode.iter('Member') %}

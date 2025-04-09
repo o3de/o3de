@@ -7,6 +7,7 @@
  */
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <AzCore/Script/ScriptContextDebug.h>
@@ -14,9 +15,9 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Script/lua/lua.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/RTTI/AttributeReader.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzCore/Script/ScriptPropertyTable.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -103,11 +104,14 @@ namespace ScriptContextCpp
     // remove Lua packgage.loadlib immediately after loading libraries to prevent use of unsafe function
     void OpenLuaLibraries(lua_State* m_lua)
     {
-        // Lua: 
+        // LUA Must execute in the "C" Locale.
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
+        // Lua:
         luaL_openlibs(m_lua);
-        // Lua: 
+        // Lua:
         lua_getglobal(m_lua, "package");
-        // Lua: package 
+        // Lua: package
         AZ_Assert(lua_type(m_lua, -1) == LUA_TTABLE, "package was not a table");
         // Lua: package, package.loadlib
         lua_getfield(m_lua, -1, "loadlib");
@@ -134,7 +138,7 @@ namespace AZ
     struct ExposedLambda
     {
         AZ_TYPE_INFO(ExposedLambda, "{B702DB0B-516B-4807-8007-DC50A5CE180A}");
-        AZ_CLASS_ALLOCATOR(ExposedLambda, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExposedLambda, AZ::SystemAllocator);
 
         // assumes a lambda is at the top of the stack and will pop it
         ExposedLambda(lua_State* lua)
@@ -191,7 +195,7 @@ namespace AZ
             return *this;
         }
 
-        void operator()([[maybe_unused]] AZ::BehaviorValueParameter*  resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments)
+        void operator()([[maybe_unused]] AZ::BehaviorArgument*  resultBVP, AZ::BehaviorArgument* argsBVPs, int numArguments)
         {
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
             // Lua:
@@ -224,14 +228,14 @@ namespace AZ
         }
 
         template<typename T>
-        static T* GetAs(AZ::BehaviorValueParameter& argument)
+        static T* GetAs(AZ::BehaviorArgument& argument)
         {
             return argument.m_typeId == azrtti_typeid<T>()
                 ? reinterpret_cast<T*>(argument.GetValueAddress())
                 : nullptr;
         }
 
-        static void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& argument)
+        static void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& argument)
         {
             if (auto cStringPtr = GetAs<const char*>(argument))
             {
@@ -317,7 +321,7 @@ namespace AZ
 
             m_valueByUserData[userdata] = userdata->value;
         }
-        
+
         {
             auto userIter = m_userDataByValue.find(userdata->value);
             if (userIter != m_userDataByValue.end())
@@ -388,7 +392,7 @@ namespace AZ
     namespace Internal
     {
         // Flag on Lua user data to validate that it is AZ user data
-        static const Crc32 AZLuaUserData = AZ_CRC("AZLuaUserData", 0x7d76a773);
+        static const Crc32 AZLuaUserData = AZ_CRC_CE("AZLuaUserData");
 
         // Special indices in the table at AZ_LUA_WEAK_CACHE_TABLE_REF
         enum {
@@ -398,26 +402,7 @@ namespace AZ
         };
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        class LuaSystemAllocator final
-            : public AZ::SystemAllocator
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(LuaSystemAllocator, AZ::SystemAllocator, 0);
-            AZ_TYPE_INFO(LuaSystemAllocator, "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}");
-
-            ///////////////////////////////////////////////////////////////////////////////////////////
-            // IAllocator
-            const char* GetName() const override
-            {
-                return "LuaSystemAllocator";
-            }
-
-            const char* GetDescription() const override
-            {
-                return "Generic allocator for use in the Lua System.";
-            }
-            ///////////////////////////////////////////////////////////////////////////////////////////
-        };
+        AZ_CHILD_ALLOCATOR_WITH_NAME(LuaSystemAllocator, "LuaSystemAllocator", "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}", AZ::SystemAllocator);
 
         //=========================================================================
         // azlua_setglobal - raw setglobal function (no metamethods called)
@@ -461,12 +446,12 @@ namespace AZ
         {
             lua_pushlightuserdata(lua, (void*)typeId.GetHash());
         }
-        
+
         bool azlua_istable(lua_State* lua, int stackIndex)
         {
             return lua_istable(lua, stackIndex);
         }
-        
+
         bool azlua_isfunction(lua_State* lua, int stackIndex)
         {
             return lua_isfunction(lua, stackIndex);
@@ -546,7 +531,7 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         void* LuaScriptValueStackRead(lua_State* lua, int stackIndex, const AZ::Uuid typeId)
         {
-            if (typeId == nullptr || lua_islightuserdata(lua, stackIndex))
+            if (typeId.IsNull() || lua_islightuserdata(lua, stackIndex))
             {
                 return lua_touserdata(lua, stackIndex);
             }
@@ -604,6 +589,11 @@ namespace AZ
         //=========================================================================
         bool LuaSafeCall(lua_State* lua, int numParams, int numResults)
         {
+            // Lua must execute in the "C" Locale.  this does mean that the scoped locale will
+            // bleed into any C++ calls that the pcall actually calls back into, but it is also the assumption
+            // that any C++ calls that lua makes are also in the "C" locale.
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
+
             // Can't do LSV here because of multiple return values
 
             // Index the error handler should end up in
@@ -641,6 +631,7 @@ namespace AZ
         //=========================================================================
         int Class__Index(lua_State* l)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
             LSV_BEGIN(l, 1);
 
             // calling format __index(table,key)
@@ -728,6 +719,7 @@ namespace AZ
 
         int Class__IndexAllowNil(lua_State* l)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
             LSV_BEGIN(l, 1);
 
             // calling format __index(table,key)
@@ -807,6 +799,7 @@ namespace AZ
         //=========================================================================
         int Class__NewIndex(lua_State* l)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
             LSV_BEGIN(l, 0);
 
             // calling format __index(table,key,value)
@@ -841,7 +834,7 @@ namespace AZ
                 {
                     // we have custom index handler
                     lua_pushvalue(l, -5); // duplicate the table (class pointer)
-                    lua_pushvalue(l, -5); // duplicate the index 
+                    lua_pushvalue(l, -5); // duplicate the index
                     lua_pushvalue(l, -5); // duplicate the value
                     lua_call(l, 3, 0);
                 }
@@ -906,7 +899,7 @@ namespace AZ
                     lua_pushvalue(l, -4); // copy the value for set
                     lua_call(l, 2, 0);
 
-                   //EBUS_EVENT_ID(thisPtr, BehaviorObjectSignals, OnMemberMethodCalled, method);
+                    //BehaviorObjectSignals::Event(thisPtr, &BehaviorObjectSignals::Events::OnMemberMethodCalled, method);
                 }
             }
 
@@ -923,7 +916,7 @@ namespace AZ
             LSV_BEGIN(l, 1);
             // Lua: object
             AZ::LuaUserData* userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(l, -1));
-            AZ_Assert(userData && userData->magicData == AZ_CRC("AZLuaUserData", 0x7d76a773), "this isn't user data");
+            AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
             lua_getmetatable(l, -1); // load the class metatable
             // Lua: object, mt
             lua_rawgeti(l, -1, AZ_LUA_CLASS_METATABLE_NAME_INDEX);
@@ -1009,14 +1002,14 @@ namespace AZ
             }
         }
 
-        
+
 
         //////////////////////////////////////////////////////////////////////////
         int ClassAcquireOwnership(lua_State* l)
         {
             if (LuaIsClass(l,-1))
             {
-                Internal::LuaAcquireClassOwnership(l, -1); 
+                Internal::LuaAcquireClassOwnership(l, -1);
             }
 
             // copy the source as a result
@@ -1055,7 +1048,7 @@ namespace AZ
     {
         // Turn this feature on whenever there is TRACING enabled, which is where things like luaL_error will have any effect.
         // when TRACING is not enabled, chances are luaL_error will not be seen as there will be no listener
-#if defined(AZ_ENABLE_TRACING) 
+#if defined(AZ_ENABLE_TRACING)
         using limits = std::numeric_limits<T>;
         double number = luaL_checknumber(l, index);
 
@@ -1227,24 +1220,28 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     void ScriptValue<float>::StackPush(lua_State* l, float value)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
         lua_pushnumber(l, value);
     }
 
     //////////////////////////////////////////////////////////////////////////
     float ScriptValue<float>::StackRead(lua_State* l, int stackIndex)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
         return azlua_checknumber<float>(l, stackIndex);
     }
 
     //////////////////////////////////////////////////////////////////////////
     void ScriptValue<double>::StackPush(lua_State* l, double value)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
         lua_pushnumber(l, static_cast<lua_Number>(value));
     }
 
     //////////////////////////////////////////////////////////////////////////
     double ScriptValue<double>::StackRead(lua_State* l, int stackIndex)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
         return lua_tonumber(l, stackIndex);
     }
 
@@ -1504,7 +1501,7 @@ static void* LuaMemoryHook(void* userData, void* ptr, size_t osize, size_t nsize
     }
     else if (ptr == nullptr)
     {
-        return allocator->Allocate(nsize, LUA_DEFAULT_ALIGNMENT, 0, "Script", __FILE__, __LINE__, 1);
+        return allocator->Allocate(nsize, LUA_DEFAULT_ALIGNMENT);
     }
     else
     {
@@ -1688,7 +1685,7 @@ static int Global_Typeid(lua_State* l)
 
 //=========================================================================
 // LUA Dummy Node Extension
-// Through an environment variable we can ensure that LUA's static 
+// Through an environment variable we can ensure that LUA's static
 // dummynode is safe across DLLs
 // [5/18/2016]
 //=========================================================================
@@ -1699,7 +1696,7 @@ LUA_API const Node* lua_getDummyNode()
 {
     if (!s_luaDummyNodeVariable)
     {
-        const AZ::u32 luaDummyNodeVariableID = AZ_CRC("lua_DummyNode", 0x155c8ce4);
+        const AZ::u32 luaDummyNodeVariableID = AZ_CRC_CE("lua_DummyNode");
 
         s_luaDummyNodeVariable = AZ::Environment::FindVariable<Node>(luaDummyNodeVariableID);
         if (!s_luaDummyNodeVariable)
@@ -2333,9 +2330,9 @@ LUA_API const Node* lua_getDummyNode()
         namespace Internal
         {
             template<class T>
-            bool AllocateTempStorageLuaNative(BehaviorValueParameter& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator& tempAllocator, AZStd::allocator* backupAllocator = nullptr)
+            bool AllocateTempStorageLuaNative(BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator& tempAllocator, AZStd::allocator* backupAllocator = nullptr)
             {
-                static_assert(AZStd::is_pod<T>::value, "This should be use only for POD data types, as no ctor/dtor is called!");
+                static_assert(AZStd::is_trivial<T>::value, "This should be use only for trivial data types, as no ctor/dtor is called!");
                 (void)valueClass;
 
                 if (value.m_traits & BehaviorParameter::TR_POINTER)
@@ -2351,12 +2348,12 @@ LUA_API const Node* lua_getDummyNode()
                     bool usedBackupAlloc = false;
                     if (backupAllocator != nullptr && sizeof(T) > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
                     {
-                        value.m_value = backupAllocator->allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);
+                        value.m_value = backupAllocator->allocate(sizeof(T), AZStd::alignment_of<T>::value);
                         usedBackupAlloc = true;
                     }
                     else
                     {
-                        value.m_value = tempAllocator.allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);
+                        value.m_value = tempAllocator.allocate(sizeof(T), AZStd::alignment_of<T>::value);
                     }
                     memset(value.m_value, 0, sizeof(T));
                     return usedBackupAlloc;
@@ -2365,7 +2362,7 @@ LUA_API const Node* lua_getDummyNode()
                 return false;
             }
 
-            bool AllocateTempStorage(BehaviorValueParameter& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator& tempAllocator, AZStd::allocator* backupAllocator = nullptr)
+            bool AllocateTempStorage(BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator& tempAllocator, AZStd::allocator* backupAllocator = nullptr)
             {
                 if (value.m_traits & BehaviorParameter::TR_POINTER)
                 {
@@ -2385,12 +2382,12 @@ LUA_API const Node* lua_getDummyNode()
                     bool usedBackupAlloc = false;
                     if (backupAllocator != nullptr && valueClass->m_size > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
                     {
-                        value.m_value = backupAllocator->allocate(valueClass->m_size, valueClass->m_alignment, 0);
+                        value.m_value = backupAllocator->allocate(valueClass->m_size, valueClass->m_alignment);
                         usedBackupAlloc = true;
                     }
                     else
                     {
-                        value.m_value = tempAllocator.allocate(valueClass->m_size, valueClass->m_alignment, 0);
+                        value.m_value = tempAllocator.allocate(valueClass->m_size, valueClass->m_alignment);
                     }
                     if (valueClass->m_defaultConstructor)
                     {
@@ -2431,8 +2428,10 @@ LUA_API const Node* lua_getDummyNode()
             struct LuaScriptNumber
             {
                 typedef T ValueType;
-                static bool FromStack(lua_State* lua, int stackIndex, BehaviorValueParameter& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
+                static bool FromStack(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
                 {
+                    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
                     value.m_typeId = AzTypeInfo<ValueType>::Uuid(); // we should probably store const &
                     if (value.m_value == nullptr)
                     {
@@ -2451,8 +2450,10 @@ LUA_API const Node* lua_getDummyNode()
 
                     return true;
                 }
-                static void ToStack(lua_State* lua, BehaviorValueParameter& value)
+                static void ToStack(lua_State* lua, BehaviorArgument& value)
                 {
+                    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
                     void* valueAddress = value.GetValueAddress();
                     ValueType actualValue = *reinterpret_cast<ValueType*>(valueAddress);
 
@@ -2492,7 +2493,7 @@ LUA_API const Node* lua_getDummyNode()
 
             struct LuaScriptString
             {
-                static bool FromStack(lua_State* lua, int stackIndex, BehaviorValueParameter& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
+                static bool FromStack(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
                 {
                     if (lua_isstring(lua, stackIndex))
                     {
@@ -2514,7 +2515,7 @@ LUA_API const Node* lua_getDummyNode()
                     return false;
                 }
 
-                static void ToStack(lua_State* lua, BehaviorValueParameter& value)
+                static void ToStack(lua_State* lua, BehaviorArgument& value)
                 {
                     lua_pushstring(lua, *reinterpret_cast<const char**>(value.m_value));
                 }
@@ -2546,7 +2547,7 @@ LUA_API const Node* lua_getDummyNode()
 
             struct LuaScriptGenericPointer
             {
-                static bool FromStack(lua_State* lua, int stackIndex, BehaviorValueParameter& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
+                static bool FromStack(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
                 {
                     if (lua_islightuserdata(lua, stackIndex))
                     {
@@ -2566,8 +2567,9 @@ LUA_API const Node* lua_getDummyNode()
                         {
                             if (userData->behaviorClass->m_unwrapper && value.m_typeId == userData->behaviorClass->m_wrappedTypeId)
                             {
-                                void* valueAddress;
-                                userData->behaviorClass->m_unwrapper(userData->value, valueAddress, value.m_typeId, userData->behaviorClass->m_unwrapperUserData);
+                                BehaviorObject unwrappedObject;
+                                userData->behaviorClass->m_unwrapper(userData->value, unwrappedObject, userData->behaviorClass->m_unwrapperUserData);
+                                value.m_typeId = unwrappedObject.m_typeId;
 
                                 if (value.m_traits & BehaviorParameter::TR_POINTER)
                                 {
@@ -2577,11 +2579,11 @@ LUA_API const Node* lua_getDummyNode()
                                         AllocateTempStorageLuaNative<void*>(value, valueClass, *tempAllocator);
                                     }
                                     // check custom storage we should get the full value with storage type in case of smart pointers
-                                    *reinterpret_cast<void**>(value.m_value) = valueAddress;
+                                    *reinterpret_cast<void**>(value.m_value) = unwrappedObject.m_address;
                                 }
                                 else
                                 {
-                                    value.m_value = valueAddress;
+                                    value.m_value = unwrappedObject.m_address;
                                 }
 
                                 return true;
@@ -2606,7 +2608,7 @@ LUA_API const Node* lua_getDummyNode()
                     return false;
                 }
 
-                static void ToStack(lua_State* lua, BehaviorValueParameter& value)
+                static void ToStack(lua_State* lua, BehaviorArgument& value)
                 {
                     lua_pushlightuserdata(lua, *reinterpret_cast<void**>(value.m_value)); // we should pass the type? we will need full userdata
                 }
@@ -2650,7 +2652,7 @@ LUA_API const Node* lua_getDummyNode()
                         lua_pop(lua, 2); // pop class table and the non table value (should be nil)
 
                         // since we handle generic pointers elsewhere this should be an asset
-                        AZ_Assert(false, "We should always have metatable as this function is called for reflected types, we handle this outside");                        
+                        AZ_Assert(false, "We should always have metatable as this function is called for reflected types, we handle this outside");
                         return LUA_REFNIL;
                     }
                     else
@@ -2664,11 +2666,11 @@ LUA_API const Node* lua_getDummyNode()
 
                 // get the behavior class
                 lua_rawgeti(lua, metatableIndex, AZ_LUA_CLASS_METATABLE_BEHAVIOR_CLASS);
-                behaviorClass = reinterpret_cast<BehaviorClass*>(lua_touserdata(lua, -1));                
+                behaviorClass = reinterpret_cast<BehaviorClass*>(lua_touserdata(lua, -1));
 
                 lua_pop(lua, 1); // pop behavior class and storage type
                 //////////////////////////////////////////////////////////////////////////
-                
+
                 // <UserData>
                 LuaUserData* userData = reinterpret_cast<LuaUserData*>(lua_newuserdata(lua, sizeof(LuaUserData)));
 
@@ -2689,7 +2691,7 @@ LUA_API const Node* lua_getDummyNode()
                 lua_setmetatable(lua, -2);
                 // </table>
 
-                // </UserData>                
+                // </UserData>
 
                 lua_replace(lua, -3); // replace the class table with the user data
                 lua_pop(lua, 1); // and pop metatable
@@ -2724,8 +2726,8 @@ LUA_API const Node* lua_getDummyNode()
 
                         if (scriptContext)
                         {
-                            scriptContext->Error(ScriptContext::ErrorType::Error, 
-                                true /*print callstack*/, 
+                            scriptContext->Error(ScriptContext::ErrorType::Error,
+                                true /*print callstack*/,
                                 "Object has type Id %s, which is not reflected to the BehaviorContext, or it has the Script::Attributes::Ignore attribute assigned. Nil will be returned.",
                                 typeId.ToString<AZStd::string>().c_str());
                         }
@@ -2773,7 +2775,7 @@ LUA_API const Node* lua_getDummyNode()
 
                     valueSize += behaviorClass->m_size;
                     // make sure we can properly align the userdata
-                    if (behaviorClass->m_alignment > sizeof(L_Umaxalign)) 
+                    if (behaviorClass->m_alignment > sizeof(L_Umaxalign))
                     {
                         valueSize += behaviorClass->m_alignment - sizeof(L_Umaxalign);
                     }
@@ -2816,7 +2818,7 @@ LUA_API const Node* lua_getDummyNode()
                 }
                 else
                 {
-                    // we own only the object that we create, not the one that are passed in, unless the 
+                    // we own only the object that we create, not the one that are passed in, unless the
                     // the developer explicit calls \ref ScrtiptDataContext::ReleaseOwnership.
                     storageType = Script::Attributes::StorageType::RuntimeOwn;
                 }
@@ -2852,7 +2854,7 @@ LUA_API const Node* lua_getDummyNode()
 
             struct LuaScriptReflectedType
             {
-                static bool FromStack(lua_State* lua, int stackIndex, BehaviorValueParameter& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
+                static bool FromStack(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* tempAllocator)
                 {
                     if (lua_isuserdata(lua, stackIndex))
                     {
@@ -2864,14 +2866,9 @@ LUA_API const Node* lua_getDummyNode()
                             // If we have an unwrapper, see if it is for the value type
                             if (userData->behaviorClass->m_unwrapper && value.m_typeId != userData->behaviorClass->m_typeId)
                             {
-                                unwrap = value.m_typeId == userData->behaviorClass->m_wrappedTypeId;
-                                // If not the exact value type, check to see it is a base class of the value type
-                                if (!unwrap)
+                                if (unwrap = value.m_typeId == userData->behaviorClass->m_wrappedTypeId; !unwrap)
                                 {
-                                    AZ::BehaviorContext* behaviorContext{};
-                                    AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
-                                    auto unwrappedClassIter = behaviorContext->m_typeToClassMap.find(value.m_typeId);
-                                    AZ::BehaviorClass* unwrappedClass = unwrappedClassIter != behaviorContext->m_typeToClassMap.end() ? unwrappedClassIter->second : nullptr;
+                                    const AZ::BehaviorClass* unwrappedClass = AZ::BehaviorContextHelper::GetClass(value.m_typeId);
                                     unwrap = unwrappedClass && unwrappedClass->m_azRtti && unwrappedClass->m_azRtti->ProvidesFullRtti() && unwrappedClass->m_azRtti->IsTypeOf(valueClass->m_typeId);
                                 }
                             }
@@ -2881,8 +2878,10 @@ LUA_API const Node* lua_getDummyNode()
                             // If we found a proper unwrapper, use it
                             if (unwrap)
                             {
-                                userData->behaviorClass->m_unwrapper(userData->value, valueAddress, value.m_typeId, userData->behaviorClass->m_unwrapperUserData);
-                                value.m_typeId = userData->behaviorClass->m_wrappedTypeId;
+                                BehaviorObject unwrappedObject;
+                                userData->behaviorClass->m_unwrapper(userData->value, unwrappedObject, userData->behaviorClass->m_unwrapperUserData);
+                                valueAddress = unwrappedObject.m_address;
+                                value.m_typeId = unwrappedObject.m_typeId;
                             }
                             else
                             {
@@ -2938,7 +2937,7 @@ LUA_API const Node* lua_getDummyNode()
                             AllocateTempStorage(value, valueClass, *tempAllocator);
                             return true;
                         }
-                        else 
+                        else
                             {
                             // we can't have nil references or values
                             value.m_name = "nil";
@@ -2956,11 +2955,11 @@ LUA_API const Node* lua_getDummyNode()
                     }
                     return false;
                 }
-                static void ToStack(lua_State* lua, BehaviorValueParameter& value)
+                static void ToStack(lua_State* lua, BehaviorArgument& value)
                 {
                     void* valueAddress = value.m_value;
                     ObjectToLua toLua = ObjectToLua::ByReference;
-                    if (value.m_traits & BehaviorParameter::TR_POINTER) // TODO: Use value->GetUnsafe in BehaviorValueParameter if we can adjust it for TR_POINTER
+                    if (value.m_traits & BehaviorParameter::TR_POINTER) // TODO: Use value->GetUnsafe in BehaviorArgument if we can adjust it for TR_POINTER
                     {
                         // we have pointer to a pointer
                         valueAddress = *reinterpret_cast<void**>(valueAddress);
@@ -3332,7 +3331,7 @@ LUA_API const Node* lua_getDummyNode()
                     // handle specific pointer types
                     Internal::LuaScriptReflectedType::FromStack(result);
                 }
-                
+
                 return result;
             }
 
@@ -3345,19 +3344,19 @@ LUA_API const Node* lua_getDummyNode()
             return result;
         }
 
-        bool StackRead(lua_State* lua, int index, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator* allocator)
+        bool StackRead(lua_State* lua, int index, AZ::BehaviorContext* context, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* allocator)
         {
             AZ::BehaviorClass* bcClass = nullptr;
             LuaLoadFromStack fromStack = FromLuaStack(context, &param, bcClass);
             return fromStack(lua, index, param, bcClass, allocator);
         }
 
-        bool StackRead(lua_State* lua, int index, AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator* allocator)
+        bool StackRead(lua_State* lua, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* allocator)
         {
             return StackRead(lua, index, ScriptContext::FromNativeContext(lua)->GetBoundContext(), param, allocator);
         }
 
-        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& param)
+        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& param)
         {
             AZ::BehaviorClass* unused = nullptr;
             LuaPrepareValue prepareValue = nullptr;
@@ -3365,8 +3364,8 @@ LUA_API const Node* lua_getDummyNode()
             AZ_Assert(pushToStack != nullptr, "No LuaPushToStack function found for typeid: %s", param.m_typeId.ToString<AZStd::string>().data());
             pushToStack(lua, param);
         }
-        
-        void StackPush(lua_State* lua, AZ::BehaviorValueParameter& param)
+
+        void StackPush(lua_State* lua, AZ::BehaviorArgument& param)
         {
             StackPush(lua, ScriptContext::FromNativeContext(lua)->GetBoundContext(), param);
         }
@@ -3439,7 +3438,7 @@ LUA_API const Node* lua_getDummyNode()
         class LuaScriptCaller : public LuaCaller
         {
         public:
-            AZ_CLASS_ALLOCATOR(LuaScriptCaller, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LuaScriptCaller, AZ::SystemAllocator);
 
             LuaScriptCaller(BehaviorContext* context, BehaviorMethod* method)
             {
@@ -3496,15 +3495,15 @@ LUA_API const Node* lua_getDummyNode()
                 int numElementsOnStack = lua_gettop(lua);
                 if (numElementsOnStack < static_cast<int>(thisPtr->m_method->GetMinNumberOfArguments()))
                 {
-                    // we can here load default parameters 
+                    // we can here load default parameters
                     ScriptContext::FromNativeContext(lua)->Error(ScriptContext::ErrorType::Error, true, "Not enough arguments for %s(%s) method, we expected %d arguments (left to right), provided %d!", thisPtr->m_method->m_name.c_str(), lua_tostring(lua, lua_upvalueindex(2)), thisPtr->m_method->GetMinNumberOfArguments(), numElementsOnStack);
                     return 0;
                 }
 
                 // there's no limit inherently in BehaviorContext (as there is no document limit in C++), but the LY supported limits default to 40 for Lua, ScriptCanvas, and ScriptEvents.
                 // this limit of 40 is however implicit, for now.
-                BehaviorValueParameter arguments[40];
-                BehaviorValueParameter result;
+                BehaviorArgument arguments[40];
+                BehaviorArgument result;
                 ScriptContext::StackVariableAllocator tempData;
                 AZStd::allocator backupAllocator;
                 bool usedBackupAlloc  = false;
@@ -3512,7 +3511,7 @@ LUA_API const Node* lua_getDummyNode()
                 int numArguments = GetMin(static_cast<int>(thisPtr->m_method->GetNumArguments()), numElementsOnStack);
                 AZ_Assert(static_cast<int>(AZ_ARRAY_SIZE(arguments)) >= numArguments, "Increase the argument array size!");
 
-                // for each argument read a variable from the stack to a BehaviorValueParameter
+                // for each argument read a variable from the stack to a BehaviorArgument
                 for (int i = 0; i < numArguments; ++i)
                 {
                     const AZ::BehaviorParameter* parameter = thisPtr->m_method->GetArgument(i);
@@ -3536,7 +3535,7 @@ LUA_API const Node* lua_getDummyNode()
 
                 if (thisPtr->m_resultToLua)
                 {
-                    result.Set(*thisPtr->m_method->GetResult()); 
+                    result.Set(*thisPtr->m_method->GetResult());
 
                     if (thisPtr->m_prepareResult)
                     {
@@ -3621,7 +3620,7 @@ LUA_API const Node* lua_getDummyNode()
         class LuaGenericCaller : public LuaCaller
         {
         public:
-            AZ_CLASS_ALLOCATOR(LuaGenericCaller, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LuaGenericCaller, AZ::SystemAllocator);
 
             LuaGenericCaller(BehaviorContext* context, BehaviorMethod* method)
             {
@@ -3638,7 +3637,7 @@ LUA_API const Node* lua_getDummyNode()
 
                 if (method->GetNumArguments() == 2) // member functions
                 {
-                    // should be a registered type (can't integral or generic) 
+                    // should be a registered type (can't integral or generic)
 
                     m_classPtr = FromLuaStack(context, method->GetArgument(0), m_classPtrClass);
                 }
@@ -3662,7 +3661,7 @@ LUA_API const Node* lua_getDummyNode()
 
             static int Call(lua_State* lua)
             {
-                BehaviorValueParameter methodArgs[2];
+                BehaviorArgument methodArgs[2];
                 ScriptContext::StackVariableAllocator tempData;
 
                 LuaGenericCaller* thisPtr = reinterpret_cast<LuaGenericCaller*>(lua_touserdata(lua, lua_upvalueindex(1)));
@@ -3733,7 +3732,7 @@ LUA_API const Node* lua_getDummyNode()
             return result;
         }
 
-        static void CallDestructorOnBehaviorValueParameter(BehaviorClass* idClass, BehaviorValueParameter* parameter)
+        static void CallDestructorOnBehaviorValueParameter(BehaviorClass* idClass, BehaviorArgument* parameter)
         {
             if (idClass && idClass->m_destructor && (parameter->m_traits & AZ::BehaviorParameter::TR_POINTER) == 0)
             {
@@ -3751,7 +3750,7 @@ LUA_API const Node* lua_getDummyNode()
         {
         public:
             AZ_TYPE_INFO(LuaEBusHandler, "{425e6ac2-d36d-4bba-b2b4-989ef3f69597}");
-            //AZ_CLASS_ALLOCATOR(LuaEBusHandler, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(LuaEBusHandler, AZ::SystemAllocator);
 
             struct HookUserData
             {
@@ -3762,7 +3761,7 @@ LUA_API const Node* lua_getDummyNode()
                 LuaEBusHandler* m_luaHandler;
             };
 
-            LuaEBusHandler(BehaviorContext* behaviorContext, BehaviorEBus* bus, BehaviorClass* idClass, ScriptDataContext& scriptTable, BehaviorValueParameter* connectionId /*= nullptr*/, bool autoConnect)
+            LuaEBusHandler(BehaviorContext* behaviorContext, BehaviorEBus* bus, BehaviorClass* idClass, ScriptDataContext& scriptTable, BehaviorArgument* connectionId /*= nullptr*/, bool autoConnect)
                 : m_context(behaviorContext)
                 , m_bus(bus)
                 , m_handler(nullptr)
@@ -3855,8 +3854,7 @@ LUA_API const Node* lua_getDummyNode()
                             const BehaviorEBusHandler::BusForwarderEvent& e = events[iEvent];
                             if (strcmp(fieldName, e.m_name) == 0)
                             {
-                                m_hooks.push_back();
-                                HookUserData* userData = &m_hooks.back();
+                                HookUserData* userData = &m_hooks.emplace_back();
 
                                 // make the object, cache the function, find the pushers for each argument
                                 userData->m_luaHandler = this;
@@ -3901,12 +3899,12 @@ LUA_API const Node* lua_getDummyNode()
 
                         if (!autoConnect && idFromLua && numArguments > 1)
                         {
-                            ScriptContext::FromNativeContext(lua)->Error(ScriptContext::ErrorType::Warning, true, 
+                            ScriptContext::FromNativeContext(lua)->Error(ScriptContext::ErrorType::Warning, true,
                                 "CreateHandler function called with busId. Please change instances of BusName.CreateHandler(<table>, <id>) to BusName.Connect(<table>, <id>) to avoid loss of functionality in future releases!");
                             autoConnect = true;
                         }
 
-                        BehaviorValueParameter idParam;
+                        BehaviorArgument idParam;
                         ScriptContext::StackVariableAllocator tempData;
                         idParam.Set(ebus->m_idParam);
                         if (idFromLua && autoConnect)
@@ -3914,7 +3912,7 @@ LUA_API const Node* lua_getDummyNode()
                             if (numArguments < 2)
                             {
                                 // Need ID, don't have one
-                                ScriptContext::FromNativeContext(lua)->Error(ScriptContext::ErrorType::Error, true, 
+                                ScriptContext::FromNativeContext(lua)->Error(ScriptContext::ErrorType::Error, true,
                                     "Connect function called without address ID parameter on bus that expects one, please provide address! (e.g., BusName.Connect(self, self.entityId) for component buses)");
                                 lua_pushnil(lua);
                                 return 1;
@@ -3941,7 +3939,7 @@ LUA_API const Node* lua_getDummyNode()
                             ScriptContext::FromNativeContext(lua)->Error(ScriptContext::ErrorType::Error, true, "Create Handler called on a non-reflected class. Please reflect an appropriate EBusHandler into the BehaviorContext in order to successfully create the EBusHandler.");
                             lua_pushnil(lua);
                         }
-                    }                    
+                    }
                     else
                     {
                         // Non-table first argument
@@ -3977,7 +3975,7 @@ LUA_API const Node* lua_getDummyNode()
                         BehaviorClass* idClass = nullptr;
                         LuaLoadFromStack idFromLua = FromLuaStack(ebusHandler->m_context, &ebusHandler->m_bus->m_idParam, idClass);
 
-                        BehaviorValueParameter idParam;
+                        BehaviorArgument idParam;
                         ScriptContext::StackVariableAllocator tempData;
                         idParam.Set(ebusHandler->m_bus->m_idParam);
                         if (idFromLua)
@@ -4119,7 +4117,7 @@ LUA_API const Node* lua_getDummyNode()
 
                 if (idFromLua)
                 {
-                    BehaviorValueParameter idParam;
+                    BehaviorArgument idParam;
                     ScriptContext::StackVariableAllocator tempData;
                     idParam.Set(ebusHandler->m_bus->m_idParam);
 
@@ -4150,7 +4148,7 @@ LUA_API const Node* lua_getDummyNode()
             {
                 LSV_BEGIN(lua, 0);
 
-                // register LuaHandler metatable 
+                // register LuaHandler metatable
                 // TODO: consider just reflecting the class and using the reflection, we don't do it as we don't want to modify behavior context)
                 lua_createtable(lua, 0, 0);
 
@@ -4191,7 +4189,7 @@ LUA_API const Node* lua_getDummyNode()
                 Internal::azlua_setglobal(lua, s_luaEBusHandlerMetatableName);
             }
 
-            static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, BehaviorValueParameter* result, int numParameters, BehaviorValueParameter* parameters)
+            static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, BehaviorArgument* result, int numParameters, BehaviorArgument* parameters)
             {
                 (void)eventName;
                 (void)eventIndex;
@@ -4294,7 +4292,7 @@ LUA_API const Node* lua_getDummyNode()
                     void* userData1 = lua;
                     void* userData2 = reinterpret_cast<void*>(static_cast<size_t>(cachedIndex));
 
-                    // register the callback               
+                    // register the callback
                     ebus->m_queueFunction->Invoke(&FromBehaviorContext, userData1, userData2);
                 }
                 else
@@ -4314,7 +4312,7 @@ LUA_API const Node* lua_getDummyNode()
         public:
             typedef ScriptProperty* (*ScriptTypeFactory)(ScriptDataContext& context, int valueIndex, const char* name);
 
-            AZ_CLASS_ALLOCATOR(ScriptContextImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptContextImpl, AZ::SystemAllocator);
 
             //////////////////////////////////////////////////////////////////////////
             ScriptContextImpl(ScriptContext* owner, IAllocator* allocator, lua_State* nativeContext)
@@ -4331,7 +4329,7 @@ LUA_API const Node* lua_getDummyNode()
                         &AZ::ScriptPropertyBoolean::TryCreateProperty,
                         &AZ::ScriptPropertyNumber::TryCreateProperty,
                         &AZ::ScriptPropertyString::TryCreateProperty,
-                        &AZ::ScriptPropertyGenericClass::TryCreateProperty,                
+                        &AZ::ScriptPropertyGenericClass::TryCreateProperty,
                     }
                 )
                 , m_scriptPropertyArrayFactories(
@@ -4354,11 +4352,7 @@ LUA_API const Node* lua_getDummyNode()
                 {
                     if (!allocator)
                     {
-                        Internal::LuaSystemAllocator::Descriptor desc;
-                        // Prevent allocator from growing in small chunks
-                        desc.m_heap.m_systemChunkSize = 1024 * 1024;
-                        m_luaAllocator.Create(desc);
-                        allocator = m_luaAllocator.Get();
+                        allocator = &m_luaAllocator;
                     }
                     m_lua = lua_newstate(&LuaMemoryHook, allocator);
                     AZ_Assert(m_lua, "Failed to create new LUA state!");
@@ -4481,7 +4475,7 @@ LUA_API const Node* lua_getDummyNode()
                         lua_pushnil(lua);
                         return 1; // push nil object and return it
                     }
-                    
+
                     // replace the source table with the metatable
                     int metatableIndex = 1;
                     lua_replace(lua, 1);
@@ -4546,7 +4540,7 @@ LUA_API const Node* lua_getDummyNode()
                     {
                         // currently we have the the class table and the instance on the stack
                         // pop the table so we can actually use the default lua call (so it should not be on the stack)
-                        // this is "thisPtr/Value" + parameters 
+                        // this is "thisPtr/Value" + parameters
                         lua_replace(lua, metatableIndex);
                         customConstructor->ManualCall(lua);
                         // push back the value to the top
@@ -4586,7 +4580,7 @@ LUA_API const Node* lua_getDummyNode()
                     if (lua_istable(lua, -1))
                     {
                         // Lua: userdata, class_table
-                        Internal::azlua_pushtypeid(lua, userData->behaviorClass->m_typeId); 
+                        Internal::azlua_pushtypeid(lua, userData->behaviorClass->m_typeId);
                         // Lua: userdata, class_table, typeid
                         lua_rawget(lua, -2);
                         // Lua: userdata, class_table, ?
@@ -4642,7 +4636,7 @@ LUA_API const Node* lua_getDummyNode()
                 // Check for specialized function for scripting void (ScriptContextData&), both as function and as custom attribute
                 if ((method->GetNumArguments() && method->GetArgument(method->GetNumArguments() - 1)->m_typeId == AzTypeInfo<ScriptDataContext>::Uuid()))
                 {
-                    // 
+                    //
                     LuaGenericCaller* caller = aznew LuaGenericCaller(behaviorContext, method);
                     binder = caller;
                     m_genericMethods.insert(caller);
@@ -4682,8 +4676,8 @@ LUA_API const Node* lua_getDummyNode()
                 }
                 else
                 {
-                    // There is no substitution for developer debug description, as we will 
-                    // get context on the issue. When this is missing we will list the types 
+                    // There is no substitution for developer debug description, as we will
+                    // get context on the issue. When this is missing we will list the types
                     // of the parameters we expect to pass from Lua
                     AZStd::string functionName;
                     if (method->HasResult())
@@ -4715,7 +4709,7 @@ LUA_API const Node* lua_getDummyNode()
                     }
 
                     // ScriptDataContext is the parameter when we have generic input/out, the user should provide info what actually are input/output parameters
-                    
+
                     if (AZ::StringFunc::Replace(functionName, "ScriptDataContext", "...", true))
                     {
                         functionName.insert(0, "[=...] ");
@@ -4845,10 +4839,10 @@ LUA_API const Node* lua_getDummyNode()
                             break;
                         case AZ::Script::Attributes::OperatorType::IndexRead:
                             if ((!method->HasResult() && method->GetNumArguments() == 2 && method->GetArgument(1)->m_typeId == AzTypeInfo<ScriptDataContext>::Uuid()) || // generic function
-                                (method->GetNumArguments() == 2 && method->GetArgument(0)->m_typeId == behaviorClass->m_typeId && // it should accept that class pointer + index 
+                                (method->GetNumArguments() == 2 && method->GetArgument(0)->m_typeId == behaviorClass->m_typeId && // it should accept that class pointer + index
                                 method->HasResult())) // we should return result
                             {
-                                methodName = "__AZ_Index"; /// internal name 
+                                methodName = "__AZ_Index"; /// internal name
                             }
                             else
                             {
@@ -4860,7 +4854,7 @@ LUA_API const Node* lua_getDummyNode()
                             if ((!method->HasResult() && method->GetNumArguments() == 2 && method->GetArgument(1)->m_typeId == AzTypeInfo<ScriptDataContext>::Uuid()) || // generic function
                                 (method->GetNumArguments() == 3 && method->GetArgument(0)->m_typeId == behaviorClass->m_typeId)) // it should accept that class pointer + index + value
                             {
-                                methodName = "__AZ_NewIndex"; /// internal name 
+                                methodName = "__AZ_NewIndex"; /// internal name
                             }
                             else
                             {
@@ -4889,7 +4883,7 @@ LUA_API const Node* lua_getDummyNode()
                 }
                 return source;
             }
-            
+
             //////////////////////////////////////////////////////////////////////////
             void BindClassMethodAndProperties(BehaviorClass* behaviorClass)
             {
@@ -4912,14 +4906,14 @@ LUA_API const Node* lua_getDummyNode()
                     {
                         continue; // skip this operator
                     }
-                    
+
                     if (method->m_overload)
                     {
                         auto overload = method;
                         auto overloadNames = GetOverloadNames(*method, methodName);
                         auto overloadName = overloadNames.begin();
- 
-                        do 
+
+                        do
                         {
                             lua_pushstring(m_lua, overloadName->data()); // push method name on the stack
                             BindMethodOnStack(m_context, overload); // push the method
@@ -5011,8 +5005,8 @@ LUA_API const Node* lua_getDummyNode()
                 BindMethodOnStack(m_context, method);
 
                 lua_rawset(m_lua, globalTableIndex); // member function set it in the table
-            }    
-            
+            }
+
             //////////////////////////////////////////////////////////////////////////
             void BindGlobalProperty(BehaviorProperty* prop, int globalTableIndex)
             {
@@ -5105,7 +5099,7 @@ LUA_API const Node* lua_getDummyNode()
                     {
                         customConstructorMethod = reinterpret_cast<BehaviorMethod*>(customConstructorAttr->GetContextData());
                     }
-                    // Check all constructors if they have use ScriptDataContext and if so choose this one 
+                    // Check all constructors if they have use ScriptDataContext and if so choose this one
                     if (!customConstructorMethod)
                     {
                         int overrideIndex = -1;
@@ -5196,7 +5190,7 @@ LUA_API const Node* lua_getDummyNode()
                 Internal::azlua_pushtypeid(m_lua, behaviorClass->m_typeId);
                 lua_rawseti(m_lua, -2, AZ_LUA_CLASS_METATABLE_TYPE_INDEX);
 
-  
+
                 lua_pushinteger(m_lua, static_cast<int>(storageType));
                 lua_rawseti(m_lua, -2, AZ_LUA_CLASS_METATABLE_STORAGE_TYPE_INDEX);
 
@@ -5205,24 +5199,24 @@ LUA_API const Node* lua_getDummyNode()
 
                 BindClassMethodAndProperties(behaviorClass);
 
-                if (AZ::Attribute* eventHandlerCreationFunctionAttribute = FindAttribute(AZ::Script::Attributes::EventHandlerCreationFunction, behaviorClass->m_attributes))
+                if (FindAttribute(AZ::Script::Attributes::EventHandlerCreationFunction, behaviorClass->m_attributes))
                 {
                     BindEventSupport();
                 }
-                
+
                 if (storageType != Script::Attributes::StorageType::Value)
                 {
                     lua_pushliteral(m_lua, "AcquireOwnership"); // method name
 
                     // If we are not stored by value add Acquire/Release Ownweship semantics
-                    lua_pushlightuserdata(m_lua, nullptr);                    
+                    lua_pushlightuserdata(m_lua, nullptr);
                     lua_pushliteral(m_lua, "Takes ownership of the object and the object will be deleted from Lua when the last reference is gone.");
                     lua_pushcclosure(m_lua, &Internal::LuaMethodTagHelper, 0);
                     lua_pushcclosure(m_lua, &Internal::ClassAcquireOwnership, 3);
                     lua_rawset(m_lua, -3); // member function set it in the class table
 
-                    lua_pushliteral(m_lua, "ReleaseOwnership");                 
-                    
+                    lua_pushliteral(m_lua, "ReleaseOwnership");
+
                     lua_pushlightuserdata(m_lua, nullptr);
                     lua_pushliteral(m_lua, "Releases ownership of the object, the object should be deleted from the C++ runtime.");
                     lua_pushcclosure(m_lua, &Internal::LuaMethodTagHelper, 0);
@@ -5425,7 +5419,7 @@ LUA_API const Node* lua_getDummyNode()
                 LuaLoadFromStack idFromLua = FromLuaStack(m_context, &ebus->m_idParam, idClass);
 
                 // CreateHandler lua function
-                // Example usage: 
+                // Example usage:
                 //  handler = TickBus.CreateHandler(handlerTable);
                 //  handler:Connect([connectionId]);
                 lua_pushliteral(m_lua, "CreateHandler");
@@ -5439,7 +5433,7 @@ LUA_API const Node* lua_getDummyNode()
                 lua_rawset(m_lua, -3); // store the CreateHandler in the table
 
                 // Connect lua function (shortcut for CreateHandler + calling Connect manually on that handler)
-                // Example usage: 
+                // Example usage:
                 //  handler = TickBus.Connect(handlerTable[, connectionId]);
                 lua_pushliteral(m_lua, "Connect");
                 lua_pushlightuserdata(m_lua, m_context);
@@ -5461,7 +5455,7 @@ LUA_API const Node* lua_getDummyNode()
 
                 Internal::azlua_setglobal(m_lua, ValidateName(ebusName));
             }
-                        
+
             static int ConnectToExposedEvent(lua_State* lua)
             {
                 if (!(lua_isuserdata(lua, -2) && !lua_islightuserdata(lua, -2)))
@@ -5483,12 +5477,12 @@ LUA_API const Node* lua_getDummyNode()
                 AZ::AttributeReader attributeReader(nullptr, eventHandlerCreationFunctionAttribute);
                 AZ::EventHandlerCreationFunctionHolder holder;
                 attributeReader.Read<EventHandlerCreationFunctionHolder>(holder);
-                                
+
                 // Lua: ExposedEvent, lambda
                 lua_pushvalue(lua, -1);
                 // Lua: ExposedEvent, lambda, lambda
                 auto handlerAndType = AZStd::invoke(holder.m_function, userData->value, AZStd::move(ExposedLambda(lua)));
-                // Lua: ExposedEvent, lambda    
+                // Lua: ExposedEvent, lambda
                 Internal::RegisteredObjectToLua(lua, handlerAndType.m_address, handlerAndType.m_typeId, ObjectToLua::ByReference, AcquisitionOnPush::ScriptAcquire);
                 // Lua: ExposedEvent, lambda, handler
                 return 1;
@@ -5509,6 +5503,13 @@ LUA_API const Node* lua_getDummyNode()
             //////////////////////////////////////////////////////////////////////////
             void BindTo(BehaviorContext* behaviorContext)
             {
+                // LUA Must execute in the "C" Locale.  We add this around this root
+                // call so that it doesn't have to be added to every function call inside.
+                // It only truly matters around parsing of float values (commas versus periods)
+                // so it doesn't need to be absolutely everywhere.  Just when its possible for
+                // such code to be encountered.
+                AZ::Locale::ScopedSerializationLocale scopedLocale;
+
                 LSV_BEGIN(m_lua, 0);
 
                 if (m_context)
@@ -5559,7 +5560,7 @@ LUA_API const Node* lua_getDummyNode()
             //////////////////////////////////////////////////////////////////////////
             //////////////////////////////////////////////////////////////////////////
             // BehaviorContextBus
-            
+
             //////////////////////////////////////////////////////////////////////////
             void OnAddGlobalMethod(const char* methodName, BehaviorMethod* method) override
             {
@@ -5635,6 +5636,8 @@ LUA_API const Node* lua_getDummyNode()
             /// execute all script loaded though load function, plus the one you supply as string
             bool Execute(const char* script = nullptr, const char* dbgName = nullptr, size_t dataSize = 0)
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale;
+
                 LSV_BEGIN(m_lua, 0);
 
                 if (script)
@@ -5666,6 +5669,7 @@ LUA_API const Node* lua_getDummyNode()
             // Load a stream as a function (module)
             bool LoadFromStream(IO::GenericStream* stream, const char* debugName, const char* mode, lua_State* lua)
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale;
                 LSV_BEGIN(m_lua, 1);
 
                 using namespace Internal;
@@ -5686,7 +5690,7 @@ LUA_API const Node* lua_getDummyNode()
                 {
                     return lua_isfunction(thread, -1);
                 }
-                
+
                 // If load didn't return 0, handle error
 
                 // If not string, pop it and push a string on.
@@ -5695,6 +5699,8 @@ LUA_API const Node* lua_getDummyNode()
                     lua_pop(thread, 1);
                     lua_pushfstring(thread, "Failed to load script %s.", debugName);
                 }
+
+                AZ_Warning("LuaContext",false, "Failed to load script: %s", debugName);
 
                 return false;
             }
@@ -5716,7 +5722,7 @@ LUA_API const Node* lua_getDummyNode()
             void Error(ScriptContext::ErrorType error, bool doStackTrace, const char* format, va_list mark)
             {
                 // max size due to requirements of \Legacy\CrySystem\Log.h MAX_TEMP_LENGTH_SIZE(2048) minus room for the time stamp (128)
-                // otherwise if the script passes in a string larger, their script will cause an assert 
+                // otherwise if the script passes in a string larger, their script will cause an assert
                 char message[4096 - 128];
                 azvsnprintf(message, AZ_ARRAY_SIZE(message), format, mark);
 
@@ -5857,7 +5863,7 @@ LUA_API const Node* lua_getDummyNode()
             AZStd::vector< ScriptTypeFactory >  m_scriptPropertyFactories;
             AZStd::vector< ScriptTypeFactory >  m_scriptPropertyArrayFactories;
             ScriptTypeFactory                   m_scriptPropertyTableFactory;
-            AllocatorWrapper<Internal::LuaSystemAllocator> m_luaAllocator;
+            Internal::LuaSystemAllocator m_luaAllocator;
             AZStd::thread::id m_ownerThreadId; // Check if Lua methods (including EBus handlers) are called from background threads.
         };
 
@@ -5960,14 +5966,14 @@ LUA_API const Node* lua_getDummyNode()
         lua_pop(m_impl->m_lua, 1); // Pop the global
         return ref;
     }
-    
+
     //////////////////////////////////////////////////////////////////////////
     bool ScriptContext::FindGlobal(int cachedIndex, ScriptDataContext& dc)
     {
         if (cachedIndex > -1)
         {
             dc.Reset();
-            Internal::LuaLoadCached(m_impl->m_lua,cachedIndex);            
+            Internal::LuaLoadCached(m_impl->m_lua,cachedIndex);
             if (!lua_isnil(m_impl->m_lua, -1))
             {
                 dc.SetInspect(m_impl->m_lua, lua_gettop(m_impl->m_lua));
@@ -5975,12 +5981,12 @@ LUA_API const Node* lua_getDummyNode()
             }
         }
         return false;
-    }    
+    }
 
     //////////////////////////////////////////////////////////////////////////
     void ScriptContext::ReleaseCached(int cacheIndex)
     {
-        Internal::LuaReleaseCached(m_impl->m_lua, cacheIndex);        
+        Internal::LuaReleaseCached(m_impl->m_lua, cacheIndex);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -6004,7 +6010,7 @@ LUA_API const Node* lua_getDummyNode()
     bool ScriptContext::CallCached(int cachedIndex, ScriptDataContext& dc)
     {
         dc.Reset();
-        Internal::LuaLoadCached(m_impl->m_lua,cachedIndex);        
+        Internal::LuaLoadCached(m_impl->m_lua,cachedIndex);
         if (lua_isfunction(m_impl->m_lua, -1))
         {
             dc.SetCaller(m_impl->m_lua, lua_gettop(m_impl->m_lua));
@@ -6041,7 +6047,7 @@ LUA_API const Node* lua_getDummyNode()
     bool ScriptContext::InspectTableCached(int cachedIndex, ScriptDataContext& dc)
     {
         dc.Reset();
-        Internal::LuaLoadCached(m_impl->m_lua,cachedIndex);        
+        Internal::LuaLoadCached(m_impl->m_lua,cachedIndex);
         if (lua_istable(m_impl->m_lua, -1))
         {
             dc.SetInspect(m_impl->m_lua, lua_gettop(m_impl->m_lua));  // -1 to account for the actual table

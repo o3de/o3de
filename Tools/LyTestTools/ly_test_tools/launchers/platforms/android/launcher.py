@@ -34,12 +34,12 @@ log = logging.getLogger(__name__)
 
 def get_package_name(project_path):
     """
-    Gets the Package name from the project's settings JSON.
+    Gets the Package name from the android project's settings JSON.
 
     :param project_path: The project path of the project
     :return: The Package name from the settings JSON
     """
-    project_json_path = os.path.join(project_path, 'project.json')
+    project_json_path = os.path.join(project_path, 'Platform', 'Android', 'android_project.json')
     with open(project_json_path) as json_file:
         json_list = json.loads(json_file.read())
 
@@ -213,17 +213,17 @@ class AndroidLauncher(Launcher):
 
         # Create a python dictionary that can serialize to a json file with JSON pointer of
         # /Amazon/AzCore/Bootstrap/<settings>
-        vfs_settings = { 'Amazon' : { 'AzCore' : { 'Bootstrap' : {} }}}
+        vfs_settings = { 'Amazon' : { 'AzCore' : { 'Bootstrap' : {} }},
+            'O3DE': { 'Autoexec' : { 'ConsoleCommands' : {}}}}
         vfs_settings['Amazon']['AzCore']['Bootstrap']['connect_to_remote'] = 1
         vfs_settings['Amazon']['AzCore']['Bootstrap']['android_connect_to_remote'] = 1
         vfs_settings['Amazon']['AzCore']['Bootstrap']['wait_for_connect'] = 1
         vfs_settings['Amazon']['AzCore']['Bootstrap']['remote_ip'] = '127.0.0.1'
         vfs_settings['Amazon']['AzCore']['Bootstrap']['remote_port'] = 45643
+        vfs_settings['O3DE']['Autoexec']['ConsoleComands']['log_RemoteConsoleAllowedAddresses'] = '127.0.0.1'
         self.android_vfs_setreg_path = user_registry_path / 'test_android_vfs_settings.android.setreg'
         with self.android_vfs_setreg_path.open('w') as android_vfs_setreg:
             json.dump(vfs_settings, android_vfs_setreg, indent=4)
-
-        self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", '127.0.0.1')
 
     def launch(self):
         """

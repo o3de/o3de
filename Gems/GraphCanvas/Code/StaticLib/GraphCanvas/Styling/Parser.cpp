@@ -18,6 +18,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QFile>
+#include <QFontDatabase>
 #include <QByteArray>
 #include <QColor>
 #include <QFont>
@@ -197,6 +198,10 @@ namespace
         {
             return Styling::Attribute::Spacing;
         }
+        else if (attribute == Styling::Attributes::LayoutOrientation)
+        {
+            return Styling::Attribute::LayoutOrientation;
+        }
         else if (attribute == Styling::Attributes::Selectors)
         {
             return Styling::Attribute::Selectors;
@@ -367,6 +372,20 @@ namespace
         else if (QString::compare(value, QLatin1String("center"), Qt::CaseInsensitive) == 0)
         {
             return Qt::AlignVCenter;
+        }
+
+        return {};
+    }
+
+    Qt::Orientation ParseOrientation(const QString& value)
+    {
+        if (QString::compare(value, QLatin1String("vertical"), Qt::CaseInsensitive) == 0)
+        {
+            return Qt::Vertical;
+        }
+        else if (QString::compare(value, QLatin1String("horizontal"), Qt::CaseInsensitive) == 0)
+        {
+            return Qt::Horizontal;
         }
 
         return {};
@@ -841,9 +860,9 @@ namespace GraphCanvas
                     }
                     else
                     {
-                        QFont font(valueStr);
-                        QFontInfo info(font);
-                        if (!info.exactMatch())
+                        // Check all available font families (from both the system and explicitly registered with the application)
+                        QFontDatabase fontDatabase;
+                        if (!fontDatabase.families().contains(valueStr))
                         {
                             qWarning() << "Invalid font-family:" << valueStr;
                         }
@@ -914,6 +933,14 @@ namespace GraphCanvas
                     if (Qt::AlignmentFlag flag = ParseTextVerticalAlignment(member->value.GetString()))
                     {
                         style->SetAttribute(attribute, QVariant::fromValue(flag));
+                    }
+                    break;
+                }
+                case Attribute::LayoutOrientation:
+                {
+                    if (Qt::Orientation orientation = ParseOrientation(member->value.GetString()))
+                    {
+                        style->SetAttribute(attribute, orientation);
                     }
                     break;
                 }

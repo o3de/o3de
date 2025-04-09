@@ -29,10 +29,9 @@
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
-
-#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
 
 namespace ScriptCanvasEditor
 {
@@ -103,7 +102,7 @@ namespace ScriptCanvasEditor
 
         QList<QTableWidgetItem*> Controller::FindTableItems(const SourceHandle& info)
         {
-            return m_view->tableWidget->findItems(info.Path().c_str(), Qt::MatchFlag::MatchExactly);
+            return m_view->tableWidget->findItems(info.RelativePath().c_str(), Qt::MatchFlag::MatchExactly);
         }
 
         void Controller::OnButtonPressClose()
@@ -122,16 +121,17 @@ namespace ScriptCanvasEditor
                     ( ScriptCanvas::k_VersionExplorerWindow.data()
                     , asset.Get() != nullptr
                     , "InspectAsset: %s, failed to load valid graph"
-                    , asset.Path().c_str());
+                    , asset.RelativePath().c_str());
 
-                return graphComponent
-                    && (!graphComponent->GetVersion().IsLatest() || m_view->forceUpgrade->isChecked())
-                        ? ScanConfiguration::Filter::Include
+                return graphComponent &&
+                        (!graphComponent->GetVersion().IsLatest() || graphComponent->HasDeprecatedNode() || m_view->forceUpgrade->isChecked())
+                    ? ScanConfiguration::Filter::Include
                         : ScanConfiguration::Filter::Exclude;
             };
 
             ScanConfiguration config;
             config.reportFilteredGraphs = !m_view->onlyShowOutdated->isChecked();
+            config.onlyIncludeLegacyXML = m_view->onlyShowXMLFiles->isChecked();
             config.filter = isUpToDate;
 
             SetLoggingPreferences();
@@ -213,13 +213,13 @@ namespace ScriptCanvasEditor
         {
             if (result.errorMessage.empty())
             {
-                VE_LOG("Successfully modified %s", result.asset.Path().c_str());
+                VE_LOG("Successfully modified %s", result.asset.RelativePath().c_str());
             }
             else
             {
-                VE_LOG("Failed to modify %s: %s", result.asset.Path().c_str(), result.errorMessage.data());
+                VE_LOG("Failed to modify %s: %s", result.asset.RelativePath().c_str(), result.errorMessage.data());
                 AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data()
-                    , false, "Failed to modify %s: %s", result.asset.Path().c_str(), result.errorMessage.data());
+                    , false, "Failed to modify %s: %s", result.asset.RelativePath().c_str(), result.errorMessage.data());
             }
 
             for (auto* item : FindTableItems(info))
@@ -247,7 +247,7 @@ namespace ScriptCanvasEditor
             AddLogEntries();
         }
 
-        void Controller::OnGraphUpgradeComplete(ScriptCanvasEditor::SourceHandle& asset, bool skipped)
+        void Controller::OnGraphUpgradeComplete(SourceHandle& asset, bool skipped)
         {
             ModificationResult result;
             result.asset = asset;
@@ -262,23 +262,45 @@ namespace ScriptCanvasEditor
 
         void Controller::OnScanBegin(size_t assetCount)
         {
+            // Reset rows
             m_handledAssetCount = 0;
             m_view->tableWidget->setRowCount(0);
-            m_view->progressBar->setVisible(true);
+
+            // Show progress bar and spinner
             m_view->progressBar->setRange(0, aznumeric_cast<int>(assetCount));
             m_view->progressBar->setValue(0);
-            m_view->scanButton->setEnabled(false);
-            m_view->upgradeAllButton->setEnabled(false);
-            m_view->onlyShowOutdated->setEnabled(false);
+            m_view->progressBar->setVisible(true);
 
             QString spinnerText = QStringLiteral("Scan in progress - gathering graphs that can be updated");
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(true);
+
+            // Disable buttons
+            m_view->scanButton->setEnabled(false);
+            m_view->upgradeAllButton->setEnabled(false);
+            m_view->closeButton->setEnabled(false);
+            m_view->makeBackupCheckbox->setEnabled(false);
+            m_view->onlyShowOutdated->setEnabled(false);
+            m_view->onlyShowXMLFiles->setEnabled(false);
         }
 
         void Controller::OnScanComplete(const ScanResult& result)
         {
+            // Enable buttons
+            m_view->onlyShowXMLFiles->setEnabled(true);
             m_view->onlyShowOutdated->setEnabled(true);
+            m_view->makeBackupCheckbox->setEnabled(true);
+            m_view->closeButton->setEnabled(true);
+            if (!result.m_unfiltered.empty())
+            {
+                m_view->upgradeAllButton->setEnabled(true);
+            }
+            m_view->scanButton->setEnabled(true);
+            EnableAllUpgradeButtons();
+
+            // Hide progress bar and show scan result
+            m_view->progressBar->setVisible(false);
+            m_view->progressBar->setValue(0);
 
             QString spinnerText = QStringLiteral("Scan Complete");
             spinnerText.append(QString::asprintf(" - Discovered: %zu, Failed: %zu, Upgradeable: %zu, Up-to-date: %zu"
@@ -286,16 +308,8 @@ namespace ScriptCanvasEditor
                 , result.m_loadErrors.size()
                 , result.m_unfiltered.size()
                 , result.m_filteredAssets.size()));
-
             m_view->spinner->SetText(spinnerText);
             SetSpinnerIsBusy(false);
-            m_view->progressBar->setVisible(false);
-            EnableAllUpgradeButtons();
-
-            if (!result.m_unfiltered.empty())
-            {
-                m_view->upgradeAllButton->setEnabled(true);
-            }
         }
 
         void Controller::OnScanFilteredGraph(const SourceHandle& info)
@@ -310,7 +324,7 @@ namespace ScriptCanvasEditor
             if (filtered == Filtered::No || !m_view->onlyShowOutdated->isChecked())
             {
                 m_view->tableWidget->insertRow(rowIndex);
-                QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.Path().c_str()));
+                QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.RelativePath().c_str()));
                 m_view->tableWidget->setItem(rowIndex, static_cast<int>(ColumnAsset), rowName);
                 SetRowSucceeded(rowIndex);
 
@@ -336,7 +350,7 @@ namespace ScriptCanvasEditor
                 bool result = false;
                 AZ::Data::AssetInfo info;
                 AZStd::string watchFolder;
-                QByteArray assetNameUtf8 = assetInfo.Path().c_str();
+                QByteArray assetNameUtf8 = assetInfo.RelativePath().c_str();
                 AzToolsFramework::AssetSystemRequestBus::BroadcastResult
                     ( result
                     , &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath
@@ -375,7 +389,7 @@ namespace ScriptCanvasEditor
             const int rowIndex = m_view->tableWidget->rowCount();
             m_view->tableWidget->insertRow(rowIndex);
             QTableWidgetItem* rowName = new QTableWidgetItem
-                ( tr(AZStd::string::format("Load Error: %s", info.Path().c_str()).c_str()));
+                ( tr(AZStd::string::format("Load Error: %s", info.AbsolutePath().c_str()).c_str()));
             m_view->tableWidget->setItem(rowIndex, static_cast<int>(ColumnAsset), rowName);
             SetRowFailed(rowIndex, "Load failed");
             OnScannedGraphResult(info);
@@ -391,7 +405,7 @@ namespace ScriptCanvasEditor
             , [[maybe_unused]] const AZStd::vector<SourceHandle>& assets)
         {
             QString spinnerText = QStringLiteral("Upgrade in progress - ");
-            if (!config.modifySingleAsset.Path().empty())
+            if (!config.modifySingleAsset.RelativePath().empty())
             {
                 spinnerText.append(" single graph");
 

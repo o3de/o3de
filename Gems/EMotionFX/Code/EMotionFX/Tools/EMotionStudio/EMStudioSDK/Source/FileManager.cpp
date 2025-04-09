@@ -76,7 +76,8 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(assetCachePath);
 
         AZStd::string relativePath;
-        EBUS_EVENT_RESULT(relativePath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            relativePath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(assetCachePath.c_str(), relativePath.c_str(), filename);
 
         return filename;
@@ -280,7 +281,11 @@ namespace EMStudio
             EMotionFX::GetEMotionFX().GetFilenameRelativeTo(&relativeFilename, assetCacheFolder.c_str());
 
             bool found = false;
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, relativeFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                relativeFilename.c_str(),
+                filename);
             return found;
         }
         return true;
@@ -637,6 +642,86 @@ namespace EMStudio
         return filename;
     }
 
+    void FileManager::SaveAnimGraph(const char* filename, size_t animGraphIndex, MCore::CommandGroup* commandGroup)
+    {
+        const AZStd::string command = AZStd::string::format("SaveAnimGraph -index %zu -filename \"%s\"", animGraphIndex, filename);
+
+        if (!commandGroup)
+        {
+            AZStd::string result;
+            if (!EMStudio::GetCommandManager()->ExecuteCommand(command, result))
+            {
+                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
+                    AZStd::string::format("AnimGraph <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
+            }
+            else
+            {
+                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
+                    "AnimGraph <font color=green>successfully</font> saved");
+            }
+        }
+        else
+        {
+            commandGroup->AddCommandString(command);
+        }
+    }
+
+    void FileManager::SaveAnimGraph(QWidget* parent, EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup)
+    {
+        const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
+        if (animGraphIndex == InvalidIndex)
+        {
+            return;
+        }
+
+        AZStd::string filename = animGraph->GetFileName();
+        if (filename.empty())
+        {
+            filename = SaveAnimGraphFileDialog(parent);
+            if (filename.empty())
+            {
+                return;
+            }
+        }
+
+        SaveAnimGraph(filename.c_str(), animGraphIndex, commandGroup);
+    }
+
+    void FileManager::SaveAnimGraphAs(QWidget* parent, EMotionFX::AnimGraph* animGraph, const EMotionFX::AnimGraph* focusedAnimGraph, MCore::CommandGroup* commandGroup)
+    {
+        const AZStd::string filename = SaveAnimGraphFileDialog(parent);
+        if (filename.empty())
+        {
+            return;
+        }
+
+        AZStd::string assetFilename = filename;
+        RelocateToAssetCacheFolder(assetFilename);
+        AZStd::string sourceFilename = filename;
+        RelocateToAssetSourceFolder(sourceFilename);
+
+        // Are we about to overwrite an already opened anim graph?
+        const EMotionFX::AnimGraph* sourceAnimGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByFileName(sourceFilename.c_str(), /*isTool*/ true);
+        const EMotionFX::AnimGraph* cacheAnimGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByFileName(assetFilename.c_str(), /*isTool*/ true);
+        if (QFile::exists(sourceFilename.c_str()) &&
+            (sourceAnimGraph || cacheAnimGraph) &&
+            (sourceAnimGraph != focusedAnimGraph && cacheAnimGraph != focusedAnimGraph))
+        {
+            QMessageBox::warning(parent, "Cannot overwrite anim graph", "Anim graph is already opened and cannot be overwritten.", QMessageBox::Ok);
+            return;
+        }
+
+        const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
+        if (animGraphIndex == InvalidIndex)
+        {
+            MCore::LogError("Cannot save anim graph. Anim graph index invalid.");
+            return;
+        }
+
+        SaveAnimGraph(filename.c_str(), animGraphIndex, commandGroup);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
 
     // load a node map file
     AZStd::string FileManager::LoadNodeMapFileDialog(QWidget* parent)

@@ -20,7 +20,7 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(XcbApplication, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XcbApplication, AZ::SystemAllocator);
         XcbApplication();
         ~XcbApplication() override;
 

@@ -62,7 +62,6 @@ namespace BarrierInput
             {
                 ec->Class<BarrierInputSystemComponent>("BarrierInput", "Provides functionality related to Barrier input.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -72,13 +71,13 @@ namespace BarrierInput
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void BarrierInputSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("BarrierInputService"));
+        provided.push_back(AZ_CRC_CE("BarrierInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void BarrierInputSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("BarrierInputService"));
+        incompatible.push_back(AZ_CRC_CE("BarrierInputService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,14 +112,17 @@ namespace BarrierInput
         if (!barrierClientScreenNameCVar.empty() && !barrierServerHostNameCVar.empty() && barrierConnectionPort)
         {
             // Enable the Barrier keyboard/mouse input device implementations.
+            InputDeviceKeyboardBarrierImplFactory   keyboardBarrierImplFactory;
             AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceKeyboard>::Bus::Event(
                 AzFramework::InputDeviceKeyboard::Id,
                 &AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceKeyboard>::SetCustomImplementation,
-                BarrierInput::InputDeviceKeyboardBarrier::Create);
+                &keyboardBarrierImplFactory);
+
+            InputDeviceMouseBarrierImplFactory mouseBarrierImplFactory;
             AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceMouse>::Bus::Event(
                 AzFramework::InputDeviceMouse::Id,
                 &AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceMouse>::SetCustomImplementation,
-                BarrierInput::InputDeviceMouseBarrier::Create);
+                &mouseBarrierImplFactory);
 
             // Create the Barrier client instance.
             m_barrierClient = AZStd::make_unique<BarrierClient>(barrierClientScreenNameCVar.c_str(), barrierServerHostNameCVar.c_str(), barrierConnectionPort);
@@ -139,11 +141,11 @@ namespace BarrierInput
             AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceKeyboard>::Bus::Event(
                 AzFramework::InputDeviceKeyboard::Id,
                 &AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceKeyboard>::SetCustomImplementation,
-                AzFramework::InputDeviceKeyboard::Implementation::Create);
+                AZ::Interface<AzFramework::InputDeviceKeyboard::ImplementationFactory>::Get());
             AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceMouse>::Bus::Event(
                 AzFramework::InputDeviceMouse::Id,
                 &AzFramework::InputDeviceImplementationRequest<AzFramework::InputDeviceMouse>::SetCustomImplementation,
-                AzFramework::InputDeviceMouse::Implementation::Create);
+                AZ::Interface<AzFramework::InputDeviceMouse::ImplementationFactory>::Get());
         }
     }
 } // namespace BarrierInput

@@ -13,9 +13,11 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <ScriptCanvas/Translation/Translation.h>
+
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+#include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Translation/Translation.h>
 
 namespace AZ
 {
@@ -29,18 +31,18 @@ namespace AZ
 
 namespace ScriptCanvas
 {
-    class RuntimeAsset;
-    class SubgraphInterfaceAsset;
+    struct SubgraphInterfaceData;
 }
 
 namespace ScriptCanvasEditor
 {
     class EditorGraph;
-    class SourceHandle;
 }
 
 namespace ScriptCanvasBuilder
 {
+    using SourceHandle = ScriptCanvas::SourceHandle;
+
     constexpr const char* s_scriptCanvasBuilder = "ScriptCanvasBuilder";
     constexpr const char* s_scriptCanvasProcessJobKey = "Script Canvas Process Job";
     constexpr const char* s_unitTestParseErrorPrefix = "LY_SC_UnitTest";
@@ -61,6 +63,13 @@ namespace ScriptCanvasBuilder
         FixExecutionStateNodeableConstruction,
         SwitchAssetsToBinary,
         ReinforcePreloadBehavior,
+        SeparateFromEntityComponentSystem,
+        DistinguishEntityScriptFromScript,
+        ExecutionStateAsLightUserdata,
+        UpdateDependencyHandling,
+        AddExplicitDestructCallForMemberVariables,
+        DoNotLoadScriptEventsDuringCreateJobs,
+        FixEntityIdReturnValuesInEvents,
         // add new entries above
         Current,
     };
@@ -110,7 +119,7 @@ namespace ScriptCanvasBuilder
     class JobDependencyVerificationHandler : public ScriptCanvas::RuntimeAssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(JobDependencyVerificationHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JobDependencyVerificationHandler, AZ::SystemAllocator);
         AZ_RTTI(JobDependencyVerificationHandler, "{3997EF50-350A-46F0-9D84-7FA403855CC5}", ScriptCanvas::RuntimeAssetHandler);
 
         void InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload) override
@@ -122,13 +131,9 @@ namespace ScriptCanvasBuilder
         }
     };
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const ScriptCanvasEditor::SourceHandle& asset);
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const SourceHandle& asset);
 
-    AZ::Outcome<ScriptCanvas::GraphData, AZStd::string> CompileGraphData(AZ::Entity* scriptCanvasEntity);
-
-    AZ::Outcome<ScriptCanvas::VariableData, AZStd::string> CompileVariableData(AZ::Entity* scriptCanvasEntity);
-
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
 
     int GetBuilderVersion();
 
@@ -169,6 +174,7 @@ namespace ScriptCanvasBuilder
     private:
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
+        AZ::Uuid m_sourceUuid;
 
         mutable AZStd::vector<AZ::Data::AssetFilterInfo> m_processEditorAssetDependencies;
         // cached on first time query

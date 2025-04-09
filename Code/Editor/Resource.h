@@ -72,11 +72,8 @@
 #define IDC_GROUPBOX_GLOBALTAGS                    2916
 #define IDC_GROUPBOX_FRAGMENTTAGS                  2917
 #define ID_RESOURCES_REDUCEWORKINGSET              32896
-#define ID_RELOAD_TERRAIN                          32902
 #define ID_VIEW_CONFIGURELAYOUT                    32906
 #define ID_TOOLS_LOGMEMORYUSAGE                    32908
-#define ID_TERRAIN_EXPORTBLOCK                     32909
-#define ID_TERRAIN_IMPORTBLOCK                     32910
 #define ID_TOOLS_CONFIGURETOOLS                    32911
 #define ID_TOOLS_TOOL1                             32913
 #define ID_TOOLS_CUSTOMIZEKEYBOARD                 32914
@@ -86,8 +83,6 @@
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
 #define ID_FILE_SAVELEVELRESOURCES                 32942
-#define ID_TERRAIN_RESIZE                          32944
-#define ID_TERRAIN_COLLISION                       32960
 #define ID_TOOL_FIRST                              32972
 #define ID_EDIT_UNFREEZE                           32973
 #define ID_EDIT_UNHIDE                             32974
@@ -95,7 +90,6 @@
 #define ID_TOOL_SHELVE_FIRST                       33174
 #define ID_TOOL_SHELVE_LAST                        33375
 #define ID_WIREFRAME                               33410
-#define ID_FILE_GENERATETERRAINTEXTURE             33445
 #define ID_GENERATORS_TEXTURE                      33448
 #define ID_FILE_IMPORT                             33457
 #define ID_EDIT_HOLD                               33464
@@ -162,7 +156,6 @@
 #define ID_TV_PREVKEY                              33602
 #define ID_TV_NEXTKEY                              33603
 #define ID_PLAY_LOOP                               33607
-#define ID_TERRAIN                                 33611
 #define ID_PANEL_VEG_EXPORT                        33672
 #define ID_PANEL_VEG_IMPORT                        33673
 #define ID_PANEL_VEG_DISTRIBUTE                    33674
@@ -176,13 +169,11 @@
 #define ID_PANEL_VEG_RENAMECATEGORY                33683
 #define ID_PANEL_VEG_REMOVECATEGORY                33684
 #define ID_TOOLS_PREFERENCES                       33691
-#define ID_TOOLTERRAINMODIFY_SMOOTH                33695
-#define ID_TERRAINMODIFY_SMOOTH                    33696
-#define ID_TERRAIN_PAINTLAYERS                     33698
 #define ID_SWITCHCAMERA_DEFAULTCAMERA              33700
 #define ID_SWITCHCAMERA_SEQUENCECAMERA             33701
 #define ID_SWITCHCAMERA_SELECTEDCAMERA             33702
 #define ID_TV_RECORD_AUTO                          33703
+#define ID_TV_STOP_HARD_RESET                      33704
 #define ID_VIEW_OPENVIEWPANE                       33709
 #define ID_VIEW_OPENPANE_FIRST          33712
 #define ID_VIEW_OPENPANE_LAST           33811
@@ -192,9 +183,6 @@
 #define ID_MODIFY_AIPOINT_PICKIMPASSLINK           33865
 #define ID_FILE_EXPORTSELECTION                    33875
 #define ID_EDIT_PASTE_WITH_LINKS                   33893
-#define ID_FILE_EXPORT_TERRAINAREA                 33904
-#define ID_FILE_EXPORT_TERRAINAREAWITHOBJECTS      33910
-#define ID_FILE_EXPORT_SELECTEDOBJECTS             33911
 #define ID_SPLINE_PREVIOUS_KEY                     33916
 #define ID_SPLINE_NEXT_KEY                         33917
 #define ID_SPLINE_FLATTEN_ALL                      33918
@@ -216,7 +204,6 @@
 #define ID_TOOLS_UPDATEPROCEDURALVEGETATION        33999
 #define ID_DISPLAY_GOTOPOSITION                    34004
 #define ID_PHYSICS_SIMULATEOBJECTS                 34007
-#define ID_TERRAIN_TEXTURE_EXPORT                  34008
 #define ID_TV_SEQUENCE_NEW                         34049
 #define ID_TV_MODE_DOPESHEET                       34052
 #define ID_VIEW_LAYOUTS                            34053
@@ -250,17 +237,10 @@
 #define ID_FILE_SAVE_LEVEL                         34197
 #define ID_TV_SYNC_TO_BASE                         34199
 #define ID_TV_SYNC_FROM_BASE                       34200
-#ifdef ENABLE_SLICE_EDITOR
-#define ID_FILE_NEW_SLICE                          34201
-#define ID_FILE_OPEN_SLICE                         34202
-#endif
-#define ID_FILE_SAVE_SELECTED_SLICE                34203
 #define ID_FILE_SAVESETTINGS                       34204
-#define ID_FILE_SAVE_SLICE_TO_ROOT                 34205
 #define ID_SET_TIME_TO_KEY                         34206
 #define ID_TOGGLE_SCRUB_UNITS                      34207
 #define ID_TOGGLE_PREVIEW_UNITS                    34208
-#define ID_FILE_EXPORTOCCLUSIONMESH                34209
 #define ID_MANN_RELOAD_ANIMS                       34210
 #define ID_FILE_ANIMDBEDITOR                       34211
 #define ID_SNAP_TO_ANGLE_RANGE_BEGIN    34323
@@ -285,11 +265,8 @@
 #define ID_FILE_PROJECT_MANAGER_SETTINGS                            35082
 #define ID_TV_TRACKS_TOOLBAR_BASE                                   35083               // range between ID_TV_TRACKS_TOOLBAR_BASE to ID_TV_TRACKS_TOOLBAR_LAST reserved
 #define ID_TV_TRACKS_TOOLBAR_LAST                                   35183               // for up to 100 "Add Tracks..." dynamically added Track View Track buttons
-#define ID_OPEN_TERRAIN_EDITOR          36007
 #define ID_OPEN_UICANVASEDITOR          36010
-#define ID_OPEN_TERRAINTEXTURE_EDITOR   36012
 #define ID_SKINS_REFRESH                36014
-#define ID_FILE_GENERATETERRAIN         36016
 #define ID_DOCUMENTATION_GETTINGSTARTEDGUIDE    36023
 #define ID_DOCUMENTATION_TUTORIALS              36024
 #define ID_DOCUMENTATION_GLOSSARY               36025
@@ -303,7 +280,6 @@
 #define ID_DOCUMENTATION_FEEDBACK                    36043
 #define ID_OPEN_SUBSTANCE_EDITOR                     36060
 #define ID_IMPORT_ASSET                              36069
-#define ID_FILE_RESAVESLICES                        36210
 #define FIRST_QT_ACTION                      50000
 #define ID_VIEW_CONSOLEWINDOW                50001
 #define ID_TOOLBAR_SEPARATOR                 50002

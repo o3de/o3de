@@ -242,14 +242,12 @@ namespace AZ::IO
     };
 
     class StreamerTestBase
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             m_prevFileIO = FileIOBase::GetInstance();
             FileIOBase::SetInstance(&m_fileIO);
@@ -273,25 +271,9 @@ namespace AZ::IO
             delete m_application;
             m_application = nullptr;
 
-            for (size_t i = 0; i < m_testFileCount; ++i)
-            {
-                AZStd::string name = AZStd::string::format("TestFile_%zu.test", i);
-
-#if AZ_TRAIT_TEST_APPEND_ROOT_FOLDER_TO_PATH
-                AZ::IO::Path testFullPath(AZ_TRAIT_TEST_ROOT_FOLDER);
-#else
-                AZ::IO::Path testFullPath;
-#endif
-                testFullPath /= name;
-
-                FileIOBase::GetInstance()->DestroyPath(testFullPath.c_str());
-            }
-
             FileIOBase::SetInstance(m_prevFileIO);
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         //! Requests are typically completed by Streamer before it updates it's internal bookkeeping.
@@ -299,7 +281,7 @@ namespace AZ::IO
         //! then call WaitForScheduler to give Steamers scheduler some time to update it's internal status.
         void WaitForScheduler()
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(250));
+            AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(1));
         }
 
     protected:
@@ -314,11 +296,7 @@ namespace AZ::IO
         {
             AZStd::string name = AZStd::string::format("TestFile_%zu.test", m_testFileCount++);
 
-#if AZ_TRAIT_TEST_APPEND_ROOT_FOLDER_TO_PATH
-            AZ::IO::Path testFullPath(AZ_TRAIT_TEST_ROOT_FOLDER);
-#else
-            AZ::IO::Path testFullPath;
-#endif
+            AZ::IO::Path testFullPath = m_tempDirectory.GetDirectory();
             testFullPath /= name;
 
             AZStd::unique_ptr<MockFileBase> result = CreateMockFile();
@@ -352,7 +330,7 @@ namespace AZ::IO
             }
         }
 
-        void PeriodicallyCheckedRead(AZ::IO::PathView filePath, void* buffer, u64 fileSize, u64 offset, AZStd::chrono::seconds timeOut)
+        void PeriodicallyCheckedRead(AZ::IO::PathView filePath, void* buffer, u64 fileSize, u64 offset, AZStd::chrono::seconds timeOut, bool& result)
         {
             AZStd::binary_semaphore sync;
 
@@ -370,10 +348,12 @@ namespace AZ::IO
             this->m_streamer->QueueRequest(AZStd::move(request));
 
             bool hasTimedOut = !sync.try_acquire_for(timeOut);
+            result = readSuccessful && !hasTimedOut;
             ASSERT_FALSE(hasTimedOut);
             ASSERT_TRUE(readSuccessful);
         }
 
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
         UnitTest::TestFileIOBase m_fileIO;
         FileIOBase* m_prevFileIO{ nullptr };
         IStreamer* m_streamer{ nullptr };
@@ -454,7 +434,7 @@ namespace AZ::IO
 
 #if !AZ_TRAIT_DISABLE_FAILED_STREAMER_TESTS
 
-    TYPED_TEST_CASE_P(StreamerTest);
+    TYPED_TEST_SUITE_P(StreamerTest);
 
     // Read a file that's smaller than the cache.
     TYPED_TEST_P(StreamerTest, Read_ReadSmallFileEntirely_FileFullyRead)
@@ -463,8 +443,13 @@ namespace AZ::IO
         auto testFile = this->CreateTestFile(fileSize, PadArchive::No);
 
         char buffer[fileSize];
-        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5));
-        this->VerifyTestFile(buffer, fileSize);
+        bool readResult{ false };
+        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5), readResult);
+        EXPECT_TRUE(readResult);
+        if(readResult)
+        {
+            this->VerifyTestFile(buffer, fileSize);
+        }
     }
 
     // Read a large file that will need to be broken into chunks.
@@ -474,8 +459,13 @@ namespace AZ::IO
         auto testFile = this->CreateTestFile(fileSize, PadArchive::No);
 
         char* buffer = new char[fileSize];
-        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5));
-        this->VerifyTestFile(buffer, fileSize);
+        bool readResult{ false };
+        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5), readResult);
+        EXPECT_TRUE(readResult);
+        if(readResult)
+        {
+            this->VerifyTestFile(buffer, fileSize);
+        }
 
         delete[] buffer;
     }
@@ -500,8 +490,13 @@ namespace AZ::IO
         for (block = 0; block < fileSize; block += readBlock)
         {
             size_t blockSize = AZStd::min(readBlock, fileRemainder);
-            this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, blockSize, block, AZStd::chrono::seconds(5));
-            this->AssertTestFile(buffer, blockSize, block);
+            bool readResult{ false };
+            this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, blockSize, block, AZStd::chrono::seconds(5), readResult);
+            EXPECT_TRUE(readResult);
+            if (readResult)
+            {
+                this->AssertTestFile(buffer, blockSize, block);
+            }
 
             fileRemainder -= blockSize;
         }
@@ -658,7 +653,7 @@ namespace AZ::IO
         EXPECT_TRUE(readSuccessful);
     }
 
-    REGISTER_TYPED_TEST_CASE_P(StreamerTest,
+    REGISTER_TYPED_TEST_SUITE_P(StreamerTest,
         Read_ReadSmallFileEntirely_FileFullyRead,
         Read_ReadLargeFileEntirely_FileFullyRead,
         Read_ReadMultiplePieces_AllReadRequestWereSuccessful,
@@ -668,7 +663,7 @@ namespace AZ::IO
 
     using StreamerTestCases = ::testing::Types<GlobalCache_Uncompressed, DedicatedCache_Uncompressed, GlobalCache_Compressed, DedicatedCache_Compressed>;
 
-    INSTANTIATE_TYPED_TEST_CASE_P(StreamerTests, StreamerTest, StreamerTestCases);
+    INSTANTIATE_TYPED_TEST_SUITE_P(StreamerTests, StreamerTest, StreamerTestCases);
 #endif // AZ_TRAIT_DISABLE_FAILED_STREAMER_TESTS
 
 } // namespace AZ::IO

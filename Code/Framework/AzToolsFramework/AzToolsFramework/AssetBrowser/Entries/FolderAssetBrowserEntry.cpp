@@ -10,19 +10,23 @@
 
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        void FolderAssetBrowserEntry::Reflect(AZ::ReflectContext* context)
+        FolderAssetBrowserEntry::FolderAssetBrowserEntry()
+            : m_folderUuid(AZ::Uuid::CreateRandom())
         {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
+            EntryCache::GetInstance()->m_folderUuidMap[m_folderUuid] = this;
+        }
+
+        FolderAssetBrowserEntry::~FolderAssetBrowserEntry()
+        {
+            if (EntryCache* cache = EntryCache::GetInstance())
             {
-                serializeContext->Class<FolderAssetBrowserEntry, AssetBrowserEntry>()
-                    ->Field("m_isGemsFolder", &FolderAssetBrowserEntry::m_isGemsFolder)
-                    ->Version(1);
+                cache->m_folderUuidMap.erase(m_folderUuid);
             }
         }
 
@@ -31,22 +35,58 @@ namespace AzToolsFramework
             return AssetEntryType::Folder;
         }
 
-        bool FolderAssetBrowserEntry::IsGemsFolder() const
+        bool FolderAssetBrowserEntry::IsScanFolder() const
         {
-            return m_isGemsFolder;
+            return m_isScanFolder;
+        }
+
+        bool FolderAssetBrowserEntry::IsGemFolder() const
+        {
+            return m_isGemFolder;
+        }
+
+        const AZ::Uuid& FolderAssetBrowserEntry::GetFolderUuid() const
+        {
+            return m_folderUuid;
         }
 
         void FolderAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
         {
-            child->m_relativePath = m_relativePath / child->m_name;
-            child->m_displayPath = QString::fromUtf8(child->m_relativePath.c_str());
-            child->m_fullPath = m_fullPath / child->m_name;
+            // the "relative paths" of a child is the path relative to a scan folder
+            // thus, if we are a scan folder, the relative path is just the name of the child
+            // but if we are not a scan folder, the relative path is our relative path + their name.
+            if (IsScanFolder())
+            {
+                child->m_relativePath = child->m_name;
+            }
+            else
+            {
+                child->m_relativePath = (m_relativePath / child->m_name).LexicallyNormal();
+            }
+
+            // the visible path of a child is the path that is visible in the asset browser
+            child->m_visiblePath = (m_visiblePath / child->m_name).LexicallyNormal();
+
+            // display path is just the relative path without the name:
+            AZ::IO::Path parentPath = child->m_relativePath.ParentPath();
+            child->m_displayPath = QString::fromUtf8(parentPath.c_str());
+            child->SetFullPath((m_fullPath / child->m_name).LexicallyNormal());
             AssetBrowserEntry::UpdateChildPaths(child);
         }
 
         SharedThumbnailKey FolderAssetBrowserEntry::CreateThumbnailKey()
         {
-            return MAKE_TKEY(FolderThumbnailKey, m_fullPath.c_str(), IsGemsFolder());
+            return MAKE_TKEY(FolderThumbnailKey, m_fullPath.c_str());
         }
+
+        const FolderAssetBrowserEntry* FolderAssetBrowserEntry::GetFolderByUuid(const AZ::Uuid& folderUuid)
+        {
+            if (EntryCache* cache = EntryCache::GetInstance())
+            {
+                return cache->m_folderUuidMap[folderUuid];
+            }
+            return nullptr;
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h>
 
 #include <AzCore/std/smart_ptr/intrusive_base.h>
@@ -33,22 +34,22 @@ namespace AZ
         //!         // Use the buffer view for DrawItem or etc.
         //!     }
         //! Note: DynamicBuffer should only be used for DynamicInputAssembly buffer or Constant buffer (not supported yet).
-        class DynamicBuffer
+        class ATOM_RPI_PUBLIC_API DynamicBuffer
             : public AZStd::intrusive_base
         {
             friend class DynamicBufferAllocator;
-            AZ_RTTI(AZ::RPI::DynamicBuffer, "{812ED1A6-9E9C-4ED0-9D47-6615DB7A2226}");
-            AZ_CLASS_ALLOCATOR(DynamicBuffer, AZ::SystemAllocator, 0);
 
         public:
+            AZ_RTTI(AZ::RPI::DynamicBuffer, "{812ED1A6-9E9C-4ED0-9D47-6615DB7A2226}");
+            AZ_CLASS_ALLOCATOR(DynamicBuffer, AZ::SystemAllocator);
             //! Write data to the DyanmicBuffer. The write size can't be larger than this buffer's size
             bool Write(const void* data, uint32_t size);
 
             //! Get the buffer's size
             uint32_t GetSize();
 
-            //! Get the buffer's address. User can write data to the address. 
-            void* GetBufferAddress();
+            //! Get the buffer's address. User can write data to the address.
+            const AZStd::unordered_map<int, void*>& GetBufferAddress();
 
             //! Get IndexBufferView if this buffer is used as index buffer
             RHI::IndexBufferView GetIndexBufferView(RHI::IndexFormat format);
@@ -62,9 +63,9 @@ namespace AZ
             DynamicBuffer() = default;
 
             // initialize function called by DynamicBufferAllocator which to initialize this buffer
-            void Initialize(void* address, uint32_t size);
+            void Initialize(const AZStd::unordered_map<int, void*>& address, uint32_t size);
 
-            void* m_address = nullptr;
+            AZStd::unordered_map<int, void*> m_address;
             uint32_t m_size;
 
             // The allocator which allocated this DyanmicBuffer. 

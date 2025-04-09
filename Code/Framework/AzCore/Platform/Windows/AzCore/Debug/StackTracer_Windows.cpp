@@ -63,7 +63,7 @@ namespace AZ {
         {
             if (!s_dynamicallyLoadedModulesMutex)
             {
-                s_dynamicallyLoadedModulesMutex = Environment::CreateVariable<AZStd::mutex>(AZ_CRC("SymbolStorageDynamicallyLoadedModulesMutex", 0x2b7dbaf2));
+                s_dynamicallyLoadedModulesMutex = Environment::CreateVariable<AZStd::mutex>(AZ_CRC_CE("SymbolStorageDynamicallyLoadedModulesMutex"));
                 AZ_Assert(s_dynamicallyLoadedModulesMutex, "Unable to create SymbolStorageDynamicallyLoadedModulesMutex environment variable");
             }
             return *s_dynamicallyLoadedModulesMutex;
@@ -73,7 +73,7 @@ namespace AZ {
         {
             if (!s_dynamicallyLoadedModules)
             {
-                s_dynamicallyLoadedModules = Environment::CreateVariable<SymbolStorageDynamicallyLoadedModules>(AZ_CRC("SymbolStorageDynamicallyLoadedModules", 0xecf96588));
+                s_dynamicallyLoadedModules = Environment::CreateVariable<SymbolStorageDynamicallyLoadedModules>(AZ_CRC_CE("SymbolStorageDynamicallyLoadedModules"));
                 AZ_Assert(s_dynamicallyLoadedModules, "Unable to create SymbolStorageDynamicallyLoadedModules environment variable - dynamically loaded modules won't have symbols loaded!");
             }
             return *s_dynamicallyLoadedModules;
@@ -627,8 +627,7 @@ namespace AZ {
                 // find insert position
                 if (g_moduleInfo.size() <  g_moduleInfo.capacity())
                 {
-                    g_moduleInfo.push_back();
-                    SymbolStorage::ModuleInfo& modInfo = g_moduleInfo.back();
+                    SymbolStorage::ModuleInfo& modInfo = g_moduleInfo.emplace_back();
                     modInfo.m_baseAddress = (u64)baseAddr;
                     azstrcpy(modInfo.m_modName, AZ_ARRAY_SIZE(modInfo.m_modName), szMod);
                     azstrcpy(modInfo.m_fileName, AZ_ARRAY_SIZE(modInfo.m_fileName), img);

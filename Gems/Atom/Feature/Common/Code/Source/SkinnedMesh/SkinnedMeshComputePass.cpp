@@ -39,16 +39,24 @@ namespace AZ
         {
             m_skinnedMeshFeatureProcessor = skinnedMeshFeatureProcessor;
         }
-        
+
+        void SkinnedMeshComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+        {
+            if (m_skinnedMeshFeatureProcessor)
+            {
+                m_skinnedMeshFeatureProcessor->SetupSkinningScope(frameGraph);
+            }
+
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
+        }
+
         void SkinnedMeshComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             if (m_skinnedMeshFeatureProcessor)
             {
-                RHI::CommandList* commandList = context.GetCommandList();
+                SetSrgsForDispatch(context);
 
-                SetSrgsForDispatch(commandList);
-
-                m_skinnedMeshFeatureProcessor->SubmitSkinningDispatchItems(commandList);
+                m_skinnedMeshFeatureProcessor->SubmitSkinningDispatchItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
             }
         }
 

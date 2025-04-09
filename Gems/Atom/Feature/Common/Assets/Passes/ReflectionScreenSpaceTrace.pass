@@ -10,6 +10,7 @@
                 {
                     "Name": "DepthStencilTextureInput",
                     "SlotType": "Input",
+                    "ShaderInputName": "m_depth",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
                         "AspectFlags": [
@@ -18,23 +19,45 @@
                     }
                 },
                 {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depthLinear",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
                     "Name": "NormalInput",
                     "SlotType": "Input",
+                    "ShaderInputName": "m_normal",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "SpecularF0Input",
                     "SlotType": "Input",
+                    "ShaderInputName": "m_specularF0",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "ReflectionInputOutput",
                     "SlotType": "Input",
+                    "ShaderInputName": "m_reflection",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "PreviousFrameInputOutput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_previousFrame",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "RayTracingCoordsInput",
                     "SlotType": "Input",
+                    "ShaderInputName": "m_rayTracingCoords",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "FallbackColorInput",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_fallbackColor",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
@@ -54,17 +77,16 @@
                     }
                 },
                 {
-                    "Name": "DownsampledDepthOutput",
+                    "Name": "TraceCoordsOutput",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "DepthStencil",
+                    "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
                         "ClearValue": {
-                            "Type": "DepthStencil",
                             "Value": [
-                                1.0,
-                                {},
-                                {},
-                                {}
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
                             ]
                         },
                         "LoadAction": "Clear"
@@ -86,28 +108,27 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "MipLevels": "5",
-                        "SharedQueueMask": "Graphics"
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "ShaderReadWrite",
+                            "Color"
+                        ]
                     }
                 },
                 {
-                    "Name": "DownsampledDepthImage",
+                    "Name": "TraceCoordsImage",
                     "SizeSource": {
                         "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "DepthStencilInput"
+                            "Pass": "This",
+                            "Attachment": "SpecularF0Input"
                         },
                         "Multipliers": {
                             "WidthMultiplier": 0.5,
                             "HeightMultiplier": 0.5
                         }
                     },
-                    "FormatSource": {
-                        "Pass": "Parent",
-                        "Attachment": "DepthStencilInput"
-                    },
                     "ImageDescriptor": {
-                        "MipLevels": "5",
+                        "Format": "R16G16B16A16_FLOAT",
                         "SharedQueueMask": "Graphics"
                     }
                 },
@@ -134,10 +155,10 @@
                     }
                 },
                 {
-                    "LocalSlot": "DownsampledDepthOutput",
+                    "LocalSlot": "TraceCoordsOutput",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "DownsampledDepthImage"
+                        "Attachment": "TraceCoordsImage"
                     }
                 },
                 {
@@ -153,7 +174,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionScreenSpaceTrace.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

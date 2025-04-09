@@ -16,7 +16,7 @@
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Statistics/RunningStatistic.h>
@@ -83,7 +83,7 @@ namespace AZ::IO
         bool ExecuteRequests() override;
 
         void UpdateStatus(Status& status) const override;
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+        void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
 
         void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
@@ -103,7 +103,7 @@ namespace AZ::IO
 
         struct FileReadInformation
         {
-            AZStd::chrono::system_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
             FileRequest* m_request{ nullptr };
             void* m_sectorAlignedOutput{ nullptr };    // Internally allocated buffer that is sector aligned.
             size_t m_copyBackOffset{ 0 };
@@ -132,10 +132,10 @@ namespace AZ::IO
         size_t GetNextMetaDataCacheSlot();
         bool IsServicedByThisDrive(AZ::IO::PathView filePath) const;
 
-        void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
+        void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::steady_clock::time_point& startTime,
             const RequestPath*& activeFile, u64& activeOffset) const;
         void EstimateCompletionTimeForRequestChecked(FileRequest* request,
-            AZStd::chrono::system_clock::time_point startTime, const RequestPath*& activeFile, u64& activeOffset) const;
+            AZStd::chrono::steady_clock::time_point startTime, const RequestPath*& activeFile, u64& activeOffset) const;
         s32 CalculateNumAvailableSlots() const;
 
         void FlushCache(const RequestPath& filePath);
@@ -157,7 +157,7 @@ namespace AZ::IO
         AZ::Statistics::RunningStatistic m_seekPercentageStat;
         AZ::Statistics::RunningStatistic m_directReadsPercentageStat;
 #endif
-        AZStd::chrono::system_clock::time_point m_activeReads_startTime;
+        AZStd::chrono::steady_clock::time_point m_activeReads_startTime;
 
         AZStd::deque<FileRequest*> m_pendingReadRequests;
         AZStd::deque<FileRequest*> m_pendingRequests;
@@ -166,7 +166,7 @@ namespace AZ::IO
         AZStd::vector<FileReadStatus> m_readSlots_statusInfo;
         AZStd::vector<bool> m_readSlots_active;
 
-        AZStd::vector<AZStd::chrono::system_clock::time_point> m_fileCache_lastTimeUsed;
+        AZStd::vector<AZStd::chrono::steady_clock::time_point> m_fileCache_lastTimeUsed;
         AZStd::vector<RequestPath> m_fileCache_paths;
         AZStd::vector<HANDLE> m_fileCache_handles;
         AZStd::vector<u16> m_fileCache_activeReads;

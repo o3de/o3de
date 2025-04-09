@@ -26,7 +26,7 @@ AZ::EntityId UiCanvasProxyRefComponent::GetCanvas()
 
     if (m_canvasAssetRefEntityId.IsValid())
     {
-        EBUS_EVENT_ID_RESULT(uiCanvasEntityId, m_canvasAssetRefEntityId, UiCanvasRefBus, GetCanvas);
+        UiCanvasRefBus::EventResult(uiCanvasEntityId, m_canvasAssetRefEntityId, &UiCanvasRefBus::Events::GetCanvas);
     }
 
     return uiCanvasEntityId;
@@ -39,13 +39,15 @@ void UiCanvasProxyRefComponent::SetCanvasRefEntity(AZ::EntityId canvasAssetRefEn
 
     AZ::EntityId uiCanvasEntityId = GetCanvas();
 
-    EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), uiCanvasEntityId);
+    UiCanvasRefNotificationBus::Event(
+        GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), uiCanvasEntityId);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasProxyRefComponent::OnCanvasRefChanged([[maybe_unused]] AZ::EntityId uiCanvasRefEntity, AZ::EntityId uiCanvasEntity)
 {
-    EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), uiCanvasEntity);
+    UiCanvasRefNotificationBus::Event(
+        GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), uiCanvasEntity);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +75,7 @@ void UiCanvasProxyRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/UiCanvasProxyRef.svg")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/UiCanvasProxyRef.svg")
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui/canvas-proxy-ref/")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c));
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
             editInfo->DataElement(0, &UiCanvasProxyRefComponent::m_canvasAssetRefEntityId,
                 "Canvas Asset Ref entity", "The entity that holds the UI Canvas Asset Ref component.");

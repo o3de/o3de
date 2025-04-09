@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
@@ -47,6 +48,11 @@ namespace AzFramework::Scripts
         }
     }
 
+    SpawnableScriptMediator::SpawnableScriptMediator()
+        : m_sentinel(AZStd::make_shared<CallbackSentinel>())
+    {
+    }
+
     SpawnableScriptMediator::~SpawnableScriptMediator()
     {
         Clear();
@@ -60,7 +66,9 @@ namespace AzFramework::Scripts
 
     EntitySpawnTicket SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
     {
-        return EntitySpawnTicket(spawnableAsset.GetAsset());
+        EntitySpawnTicket ticket = EntitySpawnTicket(spawnableAsset.GetAsset());
+        m_cachedSpawnTickets.insert(ticket);
+        return ticket;
     }
 
     bool SpawnableScriptMediator::Spawn(EntitySpawnTicket spawnTicket)
@@ -97,10 +105,14 @@ namespace AzFramework::Scripts
             return false;
         }
 
-        auto preSpawnCB = [parentId, translation, rotation, scale](
-                              [[maybe_unused]] EntitySpawnTicket::Id ticketId,
-            SpawnableEntityContainerView view)
+        AZStd::weak_ptr<CallbackSentinel> weakPtr = m_sentinel;
+        auto preSpawnCB = [weakPtr, parentId, translation, rotation, scale]
+            ([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableEntityContainerView view)
         {
+            if (!weakPtr.lock())
+            {
+                return;
+            }
             AZ::Entity* containerEntity = *view.begin();
             TransformComponent* entityTransform = containerEntity->FindComponent<TransformComponent>();
 
@@ -116,11 +128,13 @@ namespace AzFramework::Scripts
         };
 
         auto spawnCompleteCB =
-            [this,
-             spawnTicket]([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableConstEntityContainerView view)
+            [this, weakPtr, spawnTicket]
+            ([[maybe_unused]] EntitySpawnTicket::Id ticketId, SpawnableConstEntityContainerView view)
         {
-            AZStd::lock_guard lock(m_mutex);
-
+            if (!weakPtr.lock())
+            {
+                return;
+            }
             SpawnResult spawnResult;
             // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
             // and to provide easier access to it in OnSpawnCompleted callback
@@ -130,18 +144,13 @@ namespace AzFramework::Scripts
             {
                 spawnResult.m_entityList.emplace_back(entity->GetId());
             }
-            m_resultCommands.push_back(AZStd::move(spawnResult));
+            QueueProcessResult(spawnResult);
         };
 
         SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_preInsertionCallback = AZStd::move(preSpawnCB);
         optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
         SpawnableEntitiesInterface::Get()->SpawnAllEntities(spawnTicket, AZStd::move(optionalArgs));
-
-        if (!AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusConnect();
-        }
 
         return true;
     }
@@ -154,33 +163,43 @@ namespace AzFramework::Scripts
             return false;
         }
 
-        auto despawnCompleteCB = [this, spawnTicket]([[maybe_unused]] EntitySpawnTicket::Id ticketId)
+        AZStd::weak_ptr<CallbackSentinel> weakPtr = m_sentinel;
+        auto despawnCompleteCB = [this, weakPtr, spawnTicket]
+            ([[maybe_unused]] EntitySpawnTicket::Id ticketId)
         {
-            AZStd::lock_guard lock(m_mutex);
+            if (!weakPtr.lock())
+            {
+                return;
+            }
             // SpawnTicket instance is cached instead of SpawnTicketId to simplify managing its lifecycle on Script Canvas
             // and to provide easier access to it in OnDespawn callback
             DespawnResult despawnResult;
             despawnResult.m_spawnTicket = spawnTicket;
-            m_resultCommands.push_back(despawnResult);
+            QueueProcessResult(despawnResult);
         };
 
         DespawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(despawnCompleteCB);
         SpawnableEntitiesInterface::Get()->DespawnAllEntities(spawnTicket, AZStd::move(optionalArgs));
 
-        
-        if (!AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusConnect();
-        }
-
         return true;
     }
 
     void SpawnableScriptMediator::Clear()
     {
+        m_cachedSpawnTickets.clear();
         m_resultCommands.clear();
         AZ::TickBus::Handler::BusDisconnect();
+    }
+
+    void SpawnableScriptMediator::QueueProcessResult(const ResultCommand& resultCommand)
+    {
+        AZStd::lock_guard lock(m_mutex);
+        m_resultCommands.push_back(resultCommand);
+        if (!AZ::TickBus::Handler::BusIsConnected())
+        {
+            AZ::TickBus::Handler::BusConnect();
+        }
     }
 
     void SpawnableScriptMediator::ProcessResults()

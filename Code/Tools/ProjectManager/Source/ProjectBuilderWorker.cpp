@@ -28,7 +28,6 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderWorker::BuildProject()
     {
-
         auto result = BuildProjectForPlatform();
 
         if (result.IsSuccess())
@@ -122,7 +121,10 @@ namespace O3DE::ProjectManager
             QStringToAZTracePrint(cmakeGenerateArgumentsResult.GetError());
             return AZ::Failure(cmakeGenerateArgumentsResult.GetError());
         }
+
         auto cmakeGenerateArguments = cmakeGenerateArgumentsResult.GetValue();
+        logStream << cmakeGenerateArguments.join(' ') << '\n';
+
         m_configProjectProcess->start(cmakeGenerateArguments.front(), cmakeGenerateArguments.mid(1));
         if (!m_configProjectProcess->waitForStarted())
         {
@@ -143,8 +145,12 @@ namespace O3DE::ProjectManager
             logStream << configOutput;
             logStream.flush();
 
-            // Show last line of output
-            UpdateProgress(configOutput.split('\n', Qt::SkipEmptyParts).last());
+            // Show last line of output if any
+            auto configOutputLines = configOutput.split('\n', Qt::SkipEmptyParts);
+            if (configOutputLines.length() > 0)
+            {
+                UpdateProgress(configOutputLines.last());
+            }
 
             if (QThread::currentThread()->isInterruptionRequested())
             {
@@ -173,7 +179,9 @@ namespace O3DE::ProjectManager
             QStringToAZTracePrint(cmakeBuildArgumentsResult.GetError());
             return AZ::Failure(cmakeBuildArgumentsResult.GetError());
         }
+
         auto cmakeBuildArguments = cmakeBuildArgumentsResult.GetValue();
+        logStream << cmakeBuildArguments.join(' ') << '\n';
 
         m_buildProjectProcess->start(cmakeBuildArguments.front(), cmakeBuildArguments.mid(1));
         if (!m_buildProjectProcess->waitForStarted())
@@ -191,7 +199,11 @@ namespace O3DE::ProjectManager
             logStream.flush();
 
             // Show last line of output
-            UpdateProgress(buildOutput.split('\n', Qt::SkipEmptyParts).last());
+            if (QStringList strs = buildOutput.split('\n', Qt::SkipEmptyParts);
+                !strs.empty())
+            {
+                UpdateProgress(strs.last());
+            }
 
             if (QThread::currentThread()->isInterruptionRequested())
             {

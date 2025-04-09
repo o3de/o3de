@@ -21,10 +21,10 @@ namespace AtomToolsFramework
 
     void RotateCameraBehavior::End()
     {
-        float distanceToObject = m_controller->GetDistanceToObject();
+        float objectDistance = m_controller->GetObjectDistance();
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTM);
-        AZ::Vector3 objectPosition = transform.GetTranslation() + transform.GetBasisY() * distanceToObject;
+        AZ::Vector3 objectPosition = transform.GetTranslation() + transform.GetBasisY() * objectDistance;
         m_controller->SetObjectPosition(objectPosition);
     }
 

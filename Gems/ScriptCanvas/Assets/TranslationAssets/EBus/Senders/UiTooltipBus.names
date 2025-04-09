@@ -44,6 +44,7 @@
                     },
                     "details": {
                         "name": "Set Text",
+                        "subtitle": "UI Tooltip",
                         "tooltip": "Sets the tooltip text"
                     },
                     "params": [

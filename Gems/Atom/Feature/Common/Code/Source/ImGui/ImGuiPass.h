@@ -12,7 +12,7 @@
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -33,7 +33,7 @@ namespace AZ
             : public RPI::RasterPassData
         {
             AZ_RTTI(ImGuiPassData, "{3E96AF5F-DE1E-4B3B-9833-7164AEAB7C28}", RPI::RasterPassData);
-            AZ_CLASS_ALLOCATOR(ImGuiPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImGuiPassData, SystemAllocator);
 
             ImGuiPassData() = default;
             virtual ~ImGuiPassData() = default;
@@ -63,7 +63,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ImGuiPass, "{44EC7CFB-860B-40C8-922D-D54F971E049F}", Base);
-            AZ_CLASS_ALLOCATOR(ImGuiPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImGuiPass, SystemAllocator);
 
             //! Creates a new ImGuiPass
             static RPI::Ptr<ImGuiPass> Create(const RPI::PassDescriptor& descriptor);
@@ -129,14 +129,30 @@ namespace AZ
 
             struct DrawInfo
             {
-                RHI::DrawIndexed m_drawIndexed;
+                RHI::DrawInstanceArguments m_drawInstanceArgs;
+                RHI::GeometryView m_geometryView;
                 RHI::Scissor m_scissor;
+            };
+
+            // Wrapper around AZStd::vector<DrawInfo> to implement double/triple buffering
+            struct BufferedDrawInfos
+            {
+                static constexpr u32 DrawInfoBuffering = 2;
+                AZStd::vector<DrawInfo> m_drawInfos[DrawInfoBuffering];
+                u8 m_currentIndex = 0;
+
+                // Move to the next DrawInfo list in a ring buffer fashion
+                void NextBuffer() { m_currentIndex = (m_currentIndex + 1) % DrawInfoBuffering; }
+
+                // Get the current DrawInfo list
+                AZStd::vector<DrawInfo>& Get() { return m_drawInfos[m_currentIndex]; }
             };
 
             //! Updates the index and vertex buffers, and returns the total number of draw items.
             uint32_t UpdateImGuiResources();
 
-            void Init();
+            // Initializes ImGui related data in the pass. Called during the pass's initialization phase.
+            void InitializeImGui();
 
             ImGuiContext* m_imguiContext = nullptr;
             TickHandlerFrameStart m_tickHandlerFrameStart;
@@ -152,11 +168,16 @@ namespace AZ
 
             RHI::IndexBufferView m_indexBufferView;
             AZStd::array<RHI::StreamBufferView, 2> m_vertexBufferView; // For vertex buffer and instance data
-            AZStd::vector<DrawInfo> m_draws;
+
+            // List of DrawInfos that can be double or triple buffered
+            BufferedDrawInfos m_drawInfos;
             Data::Instance<RPI::StreamingImage> m_fontAtlas;
 
             AZStd::vector<ImDrawData> m_drawData;
             bool m_isDefaultImGuiPass = false;
+
+            // Whether the pass data indicated that the pass should be used as the default ImGui pass
+            bool m_requestedAsDefaultImguiPass = false;
 
             // ImGui processes mouse wheel movement on NewFrame(), which could be before input events
             // happen, so save the value to apply the most recent value right before NewFrame().
@@ -168,6 +189,12 @@ namespace AZ
             AZStd::unordered_map<Data::Instance<RPI::StreamingImage>, uint32_t> m_userTextures;
             Data::Instance<RPI::Buffer> m_instanceBuffer;
             RHI::StreamBufferView m_instanceBufferView;
+
+            // cache the font text id
+            void* m_imguiFontTexId = nullptr;
+
+            // Whether the pass has already initialized it's ImGui related data.
+            bool m_imguiInitialized = false;
         };
     }   // namespace RPI
 }   // namespace AZ

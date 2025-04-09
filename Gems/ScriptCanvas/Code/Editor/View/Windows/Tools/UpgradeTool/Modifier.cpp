@@ -9,8 +9,8 @@
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Modifier.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Core/Graph.h>
 
@@ -92,7 +92,7 @@ namespace ScriptCanvasEditor
         AZStd::sys_time_t Modifier::CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const
         {
             auto maxSeconds = AZStd::chrono::seconds(dependencies.size() * m_config.perDependencyWaitSecondsMax);
-            auto waitedSeconds = AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_waitTimeStamp);
+            auto waitedSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - m_waitTimeStamp);
             return (maxSeconds - waitedSeconds).count();
         }
 
@@ -104,10 +104,10 @@ namespace ScriptCanvasEditor
             {
                 VE_LOG
                     ( "dependencies found for %s, update will wait for the AP to finish processing them"
-                    , m_result.asset.Path().c_str());
+                    , m_result.asset.RelativePath().c_str());
 
-                m_waitTimeStamp = AZStd::chrono::system_clock::now();
-                m_waitLogTimeStamp = AZStd::chrono::system_clock::time_point{};
+                m_waitTimeStamp = AZStd::chrono::steady_clock::now();
+                m_waitLogTimeStamp = AZStd::chrono::steady_clock::time_point{};
                 m_modifyState = ModifyState::WaitingForDependencyProcessing;
             }
             else
@@ -163,14 +163,14 @@ namespace ScriptCanvasEditor
                 {
                     anyFailures = true;
                     VE_LOG("Modifier: ERROR - Failed to gather dependencies from graph data: %s"
-                        , m_result.asset.Path().c_str())
+                        , m_result.asset.RelativePath().c_str())
                 }
             }
             else
             {
                 anyFailures = true;
                 VE_LOG("Modifier: ERROR - Failed to load asset %s for modification, even though it scanned properly"
-                    , m_result.asset.Path().c_str());
+                    , m_result.asset.RelativePath().c_str());
             }
 
             ModelNotificationsBus::Broadcast
@@ -215,7 +215,6 @@ namespace ScriptCanvasEditor
             if (m_assetIndex != m_assets.size())
             {
                 m_result.asset = m_assets[GetCurrentIndex()];
-                CompleteDescriptionInPlace(m_result.asset);
                 m_attemptedAssets.insert(m_result.asset.Id());
             }
         }
@@ -225,10 +224,10 @@ namespace ScriptCanvasEditor
             auto& handle = m_result.asset;
             if (!handle.IsGraphValid())
             {
-                auto outcome = LoadFromFile(handle.Path().c_str());
-                if (outcome.IsSuccess())
+                auto result = ScriptCanvas::LoadFromFile(handle.AbsolutePath().c_str());
+                if (result)
                 {
-                    handle = outcome.GetValue().handle;
+                    handle = result.m_handle;
                 }
             }
         }
@@ -286,7 +285,7 @@ namespace ScriptCanvasEditor
             {
                 VE_LOG
                     ( "Temporary file not removed for %s: %s"
-                    , m_result.asset.Path().c_str()
+                    , m_result.asset.RelativePath().c_str()
                     , result.tempFileRemovalError.c_str());
             }
 
@@ -320,7 +319,7 @@ namespace ScriptCanvasEditor
             for (const auto& assetPath : m_successNotifications)
             {
                 VE_LOG("received AssetCompilationSuccess: %s", assetPath.c_str());
-                SourceHandle sourceHandle(nullptr, {}, assetPath.c_str());
+                auto sourceHandle = SourceHandle::FromRelativePath(nullptr, AZ::Uuid::CreateNull(), assetPath.c_str());
                 CompleteDescriptionInPlace(sourceHandle);
 
                 if (m_attemptedAssets.contains(sourceHandle.Id()))
@@ -334,7 +333,7 @@ namespace ScriptCanvasEditor
             for (const auto& assetPath : m_failureNotifications)
             {
                 VE_LOG("received AssetCompilationFailed: %s", assetPath.c_str());
-                SourceHandle sourceHandle(nullptr, {}, assetPath.c_str());
+                auto sourceHandle = SourceHandle::FromRelativePath(nullptr, AZ::Uuid::CreateNull(), assetPath.c_str());
                 CompleteDescriptionInPlace(sourceHandle);
 
                 if (m_attemptedAssets.contains(sourceHandle.Id()))
@@ -363,10 +362,10 @@ namespace ScriptCanvasEditor
 
         void Modifier::ReportModificationSuccess()
         {
+            using namespace AzFramework;
             // \note DO NOT put asset into the m_assetsCompletedByAP here. That can only be done when the message is received by the AP
-            m_results.m_successes.push_back({ m_result.asset.Describe(), {} });
-            AzFramework::AssetSystemRequestBus::Broadcast(
-                &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_result.asset.Id());
+            m_results.m_successes.push_back(m_result.asset.Describe());
+            AssetSystemRequestBus::Broadcast(&AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_result.asset.Id());
             NextModification();
         }
 
@@ -375,7 +374,7 @@ namespace ScriptCanvasEditor
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             m_fileSaver.reset();
 
-            if (m_fileSaveResult.fileSaveError.empty())
+            if (m_fileSaveResult.IsSuccess())
             {
                 ReportModificationSuccess();
             }
@@ -391,7 +390,7 @@ namespace ScriptCanvasEditor
             m_fileSaver = AZStd::make_unique<FileSaver>
                     ( m_config.onReadOnlyFile
                     , [this](const FileSaveResult& fileSaveResult) { OnFileSaveComplete(fileSaveResult); });
-            m_fileSaver->Save(result.asset);
+            m_fileSaver->Save(result.asset, result.asset.AbsolutePath());
         }
 
         void Modifier::SortGraphsByDependencies()
@@ -399,7 +398,7 @@ namespace ScriptCanvasEditor
             m_dependencyOrderedAssetIndicies.reserve(m_assets.size());
             Sorter sorter;
             sorter.modifier = this;
-            sorter.Sort();           
+            sorter.Sort();
         }
 
         ModificationResults&& Modifier::TakeResult()
@@ -513,15 +512,15 @@ namespace ScriptCanvasEditor
             {
                 ReportModificationError("Dependency update time has taken too long, aborting modification.");
             }
-            else if (AZStd::chrono::seconds(AZStd::chrono::system_clock::now() - m_waitLogTimeStamp).count() > LogPeriodSeconds)
+            else if (AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - m_waitLogTimeStamp).count() > LogPeriodSeconds)
             {
-                m_waitLogTimeStamp = AZStd::chrono::system_clock::now();
+                m_waitLogTimeStamp = AZStd::chrono::steady_clock::now();
 
                 AZ_TracePrintf
                     ( ScriptCanvas::k_VersionExplorerWindow.data()
                     , "Waiting for dependencies for %d more seconds: %s"
                     , AZStd::chrono::seconds(CalculateRemainingWaitTime(*dependencies)).count()
-                    , m_result.asset.Path().c_str());
+                    , m_result.asset.RelativePath().c_str());
 
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeDependencyWaitInterval, m_result.asset);
             }
@@ -553,7 +552,7 @@ namespace ScriptCanvasEditor
                     ( ScriptCanvas::k_VersionExplorerWindow.data()
                     , false
                     , "Modifier: Dependency sort has failed during, circular dependency detected for Asset: %s"
-                    , modifier->m_result.asset.Path().c_str());
+                    , modifier->m_result.asset.RelativePath().c_str());
                 return;
             }
 

@@ -9,6 +9,7 @@
 #include <PrefabGroup/PrefabGroupBehavior.h>
 #include <PrefabGroup/PrefabGroup.h>
 #include <PrefabGroup/ProceduralAssetHandler.h>
+#include <PrefabGroup/DefaultProceduralPrefab.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/FileIO.h>
@@ -19,6 +20,7 @@
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -46,19 +48,8 @@
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
-
-namespace AZStd
-{
-    template<> struct hash<AZ::SceneAPI::Containers::SceneGraph::NodeIndex>
-    {
-        inline size_t operator()(const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const
-        {
-            size_t hashValue{ 0 };
-            hash_combine(hashValue, nodeIndex.AsNumber());
-            return hashValue;
-        }
-    };
-}
+#include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
 
 namespace AZ::SceneAPI::Behaviors
 {
@@ -67,27 +58,35 @@ namespace AZ::SceneAPI::Behaviors
     //
 
     static constexpr const char s_PrefabGroupBehaviorCreateDefaultKey[] = "/O3DE/Preferences/Prefabs/CreateDefaults";
+    static constexpr const char s_PrefabGroupBehaviorIgnoreActorsKey[] = "/O3DE/Preferences/Prefabs/IgnoreActors";
 
     struct PrefabGroupBehavior::ExportEventHandler final
         : public AZ::SceneAPI::SceneCore::ExportingComponent
         , public Events::AssetImportRequestBus::Handler
+        , public Events::ManifestMetaInfoBus::Handler
     {
+        AZ_CLASS_ALLOCATOR(PrefabGroupBehavior, AZ::SystemAllocator)
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
         AZ::Prefab::PrefabGroupAssetHandler m_prefabGroupAssetHandler;
+        AZStd::unique_ptr<DefaultProceduralPrefabGroup> m_defaultProceduralPrefab;
 
         ExportEventHandler() = delete;
 
         ExportEventHandler(PreExportEventContextFunction function)
             : m_preExportEventContextFunction(AZStd::move(function))
         {
+            m_defaultProceduralPrefab = AZStd::make_unique<DefaultProceduralPrefabGroup>();
             BindToCall(&ExportEventHandler::PrepareForExport);
             AZ::SceneAPI::SceneCore::ExportingComponent::Activate();
             Events::AssetImportRequestBus::Handler::BusConnect();
+            Events::ManifestMetaInfoBus::Handler::BusConnect();
         }
 
         ~ExportEventHandler()
         {
+            m_defaultProceduralPrefab.reset();
+            Events::ManifestMetaInfoBus::Handler::BusDisconnect();
             Events::AssetImportRequestBus::Handler::BusDisconnect();
             AZ::SceneAPI::SceneCore::ExportingComponent::Deactivate();
         }
@@ -97,492 +96,196 @@ namespace AZ::SceneAPI::Behaviors
             return m_preExportEventContextFunction(context);
         }
 
-        // this stores the data related with MeshData nodes
-        struct MeshNodeData
-        {
-            Containers::SceneGraph::NodeIndex m_meshIndex = {};
-            Containers::SceneGraph::NodeIndex m_transformIndex = {};
-            Containers::SceneGraph::NodeIndex m_propertyMapIndex = {};
-        };
-
-        using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
-        using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshNodeData>;
-        using MeshIndexContainer = AZStd::unordered_set<Containers::SceneGraph::NodeIndex>;
-        using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
-        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
-        using EntityIdList = AZStd::vector<AZ::EntityId>;
-
-        void AssignCustomPropertyMapIndex(
-            MeshNodeData& meshNodeData,
-            const Containers::SceneGraph& graph,
-            const Containers::SceneGraph::NodeIndex meshIndex)
-        {
-            auto childIndex = graph.GetNodeChild(meshIndex);
-            while (childIndex.IsValid())
-            {
-                const auto nodeContent = graph.GetNodeContent(childIndex);
-                if (nodeContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(nodeContent.get()))
-                {
-                    meshNodeData.m_propertyMapIndex = childIndex;
-                    return;
-                }
-                childIndex = graph.GetNodeSibling(childIndex);
-            }
-        }
-
-        MeshTransformMap CalculateMeshTransformMap(const Containers::Scene& scene)
-        {
-            auto graph = scene.GetGraph();
-            const auto view = Containers::Views::MakeSceneGraphDownwardsView<Containers::Views::BreadthFirst>(
-                graph,
-                graph.GetRoot(),
-                graph.GetContentStorage().cbegin(),
-                true);
-
-            if (view.empty())
-            {
-                return {};
-            }
-
-            MeshIndexContainer meshIndexContainer;
-            MeshTransformMap meshTransformMap;
-            for (auto it = view.begin(); it != view.end(); ++it)
-            {
-                Containers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
-                AZStd::string currentNodeName = graph.GetNodeName(currentIndex).GetPath();
-                const auto currentContent = graph.GetNodeContent(currentIndex);
-                if (currentContent)
-                {
-                    if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(currentContent.get()))
-                    {
-                        const auto parentIndex = graph.GetNodeParent(currentIndex);
-                        if (parentIndex.IsValid() == false)
-                        {
-                            continue;
-                        }
-                        const auto parentContent = graph.GetNodeContent(parentIndex);
-                        if (parentContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(parentContent.get()))
-                        {
-                            // map the node parent to the ITransform
-                            meshIndexContainer.erase(parentIndex);
-                            MeshNodeData meshNodeData{ parentIndex, currentIndex };
-                            AssignCustomPropertyMapIndex(meshNodeData, graph, parentIndex);
-                            meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(parentIndex), AZStd::move(meshNodeData) });
-                        }
-                    }
-                    else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(currentContent.get()))
-                    {
-                        meshIndexContainer.insert(currentIndex);
-                    }
-                }
-            }
-
-            // all mesh data nodes left in the meshIndexContainer do not have a matching TransformData node
-            // since the nodes have an identity transform, so map the MeshData index with an Invalid mesh index to
-            // indicate the transform should not be set to a default value
-            for( const auto& meshIndex : meshIndexContainer)
-            {
-                MeshNodeData meshNodeData { meshIndex, Containers::SceneGraph::NodeIndex{} };
-                AssignCustomPropertyMapIndex(meshNodeData, graph, meshIndex);
-                meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(meshIndex), AZStd::move(meshNodeData) });
-            }
-
-            return meshTransformMap;
-        }
-
-        bool AddEditorMaterialComponent(const AZ::EntityId& entityId, const DataTypes::ICustomPropertyData& propertyData)
-        {
-            const auto propertyMaterialPathIterator = propertyData.GetPropertyMap().find("o3de.default.material");
-            if (propertyMaterialPathIterator == propertyData.GetPropertyMap().end())
-            {
-                // skip these assignment since the default material override was not provided
-                return true;
-            }
-
-            const AZStd::any& propertyMaterialPath = propertyMaterialPathIterator->second;
-            if (propertyMaterialPath.empty() || propertyMaterialPath.is<AZStd::string>() == false)
-            {
-                AZ_Error("prefab", false, "The 'o3de.default.material' custom property value type must be a string."
-                                          "This will need to be fixed in the DCC tool and re-export the file asset.");
-                return false;
-            }
-
-            // find asset path via node data
-            const AZStd::string* materialAssetPath = AZStd::any_cast<AZStd::string>(&propertyMaterialPath);
-            if (materialAssetPath->empty())
-            {
-                AZ_Error("prefab", false, "Material asset path must not be empty.");
-                return false;
-            }
-
-            // create a material component for this entity's mesh to render with
-            AzFramework::BehaviorComponentId editorMaterialComponent;
-            AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                editorMaterialComponent,
-                &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
-                entityId,
-                "EditorMaterialComponent");
-
-            if (editorMaterialComponent.IsValid() == false)
-            {
-                AZ_Warning("prefab", false, "Could not add the EditorMaterialComponent component; project needs Atom enabled.");
-                return {};
-            }
-
-            // the material product asset such as 'myassets/path/to/cool.azmaterial' is assigned via hint
-            auto materialAssetJson = AZStd::string::format(
-                R"JSON(
-                    {"Controller":{"Configuration":{"materials":[{"Value":{"MaterialAsset":{"assetHint":"%s"}}}]}}}
-                    )JSON", materialAssetPath->c_str());
-
-            bool result = false;
-            AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                result,
-                &AzToolsFramework::EntityUtilityBus::Events::UpdateComponentForEntity,
-                entityId,
-                editorMaterialComponent,
-                materialAssetJson);
-
-            AZ_Error("prefab", result, "UpdateComponentForEntity failed for EditorMaterialComponent component");
-            return result;
-        }
-
-        bool AddEditorMeshComponent(
-            const AZ::EntityId& entityId,
-            const AZStd::string& relativeSourcePath,
-            const AZStd::string& meshGroupName)
-        {
-            // Since the mesh component lives in a gem, then create it by name
-            AzFramework::BehaviorComponentId editorMeshComponent;
-            AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                editorMeshComponent,
-                &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
-                entityId,
-                "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9} AZ::Render::EditorMeshComponent");
-
-            if (editorMeshComponent.IsValid() == false)
-            {
-                AZ_Warning("prefab", false, "Could not add the EditorMeshComponent component; project needs Atom enabled.");
-                return {};
-            }
-
-            // assign mesh asset id hint using JSON
-            AZStd::string modelAssetPath;
-            modelAssetPath = relativeSourcePath;
-            AZ::StringFunc::Path::ReplaceFullName(modelAssetPath, meshGroupName.c_str());
-            AZ::StringFunc::Replace(modelAssetPath, "\\", "/"); // asset paths use forward slashes
-
-            auto meshAssetJson = AZStd::string::format(
-                R"JSON(
-                        {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
-                    )JSON", modelAssetPath.c_str());
-
-            bool result = false;
-            AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                result,
-                &AzToolsFramework::EntityUtilityBus::Events::UpdateComponentForEntity,
-                entityId,
-                editorMeshComponent,
-                meshAssetJson);
-
-            AZ_Error("prefab", result, "UpdateComponentForEntity failed for EditorMeshComponent component");
-            return result;
-        }
-
-        NodeEntityMap CreateMeshGroups(
-            ManifestUpdates& manifestUpdates,
-            const MeshTransformMap& meshTransformMap,
-            const Containers::Scene& scene,
-            const AZStd::string& relativeSourcePath)
-        {
-            NodeEntityMap nodeEntityMap;
-            const auto& graph = scene.GetGraph();
-
-            for (const auto& entry : meshTransformMap)
-            {
-                const auto thisNodeIndex = entry.first;
-                const auto meshNodeIndex = entry.second.m_meshIndex;
-                const auto propertyDataIndex = entry.second.m_propertyMapIndex;
-                const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
-
-                AZStd::string meshNodePath{ meshNodeName.GetPath() };
-                AZStd::string meshGroupName = "default_";
-                meshGroupName += scene.GetName();
-                meshGroupName += meshNodePath;
-
-                // clean up the mesh group name
-                AZStd::replace_if(
-                    meshGroupName.begin(),
-                    meshGroupName.end(),
-                    [](char c) { return (!AZStd::is_alnum(c) && c != '_'); },
-                    '_');
-
-                auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
-                meshGroup->SetName(meshGroupName);
-                meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
-                for (const auto& meshGoupNamePair : meshTransformMap)
-                {
-                    if (meshGoupNamePair.first != thisNodeIndex)
-                    {
-                        const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.m_meshIndex);
-                        meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
-                    }
-                }
-                meshGroup->OverrideId(DataTypes::Utilities::CreateStableUuid(
-                    scene,
-                    azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
-                    meshNodeName.GetPath()));
-
-                // this clears out the mesh coordinates each mesh group will be rotated and translated
-                // using the attached scene graph node
-                auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
-                coordinateSystemRule->SetUseAdvancedData(true);
-                coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
-                coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
-                coordinateSystemRule->SetScale(1.0f);
-                meshGroup->GetRuleContainer().AddRule(coordinateSystemRule);
-
-                // create an empty LOD rule in order to skip the LOD buffer creation
-                meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::LodRule>());
-
-                manifestUpdates.emplace_back(meshGroup);
-
-                // create an entity for each MeshGroup
-                AZ::EntityId entityId;
-                AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                    entityId,
-                    &AzToolsFramework::EntityUtilityBus::Events::CreateEditorReadyEntity,
-                    meshNodeName.GetName());
-
-                if (entityId.IsValid() == false)
-                {
-                    return {};
-                }
-
-
-                if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroupName) == false)
-                {
-                    return {};
-                }
-
-                if (propertyDataIndex.IsValid())
-                {
-                    const auto customPropertyData = azrtti_cast<const DataTypes::ICustomPropertyData*>(graph.GetNodeContent(propertyDataIndex));
-                    if (!customPropertyData)
-                    {
-                        AZ_Error("prefab", false, "Missing custom propertiy data content for node.");
-                        return {};
-                    }
-
-                    if (AddEditorMaterialComponent(entityId, *(customPropertyData.get())) == false)
-                    {
-                        return {};
-                    }
-                }
-
-                nodeEntityMap.insert({ thisNodeIndex, entityId });
-            }
-
-            return nodeEntityMap;
-        }
-
-        EntityIdList FixUpEntityParenting(
-            const NodeEntityMap& nodeEntityMap,
-            const Containers::SceneGraph& graph,
-            const MeshTransformMap& meshTransformMap)
-        {
-            EntityIdList entities;            
-            entities.reserve(nodeEntityMap.size());
-
-            for (const auto& nodeEntity : nodeEntityMap)
-            {
-                entities.emplace_back(nodeEntity.second);
-
-                // find matching parent EntityId (if any)
-                AZ::EntityId parentEntityId;
-                const auto thisNodeIndex = nodeEntity.first;
-                auto parentNodeIndex = graph.GetNodeParent(thisNodeIndex);
-                while (parentNodeIndex.IsValid())
-                {
-                    auto parentNodeIterator = meshTransformMap.find(parentNodeIndex);
-                    if (meshTransformMap.end() != parentNodeIterator)
-                    {
-                        auto parentEntiyIterator = nodeEntityMap.find(parentNodeIterator->first);
-                        if (nodeEntityMap.end() != parentEntiyIterator)
-                        {
-                            parentEntityId = parentEntiyIterator->second;
-                            break;
-                        }
-                    }
-                    else if (graph.HasNodeParent(parentNodeIndex))
-                    {
-                        parentNodeIndex = graph.GetNodeParent(parentNodeIndex);
-                    }
-                    else
-                    {
-                        parentNodeIndex = {};
-                    }
-                }
-
-                AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(nodeEntity.second);
-                auto* entityTransform = entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
-                if (!entityTransform)
-                {
-                    return {};
-                }
-
-                // parent entities
-                if (parentEntityId.IsValid())
-                {
-                    entityTransform->SetParent(parentEntityId);
-                }
-
-                auto thisNodeIterator = meshTransformMap.find(thisNodeIndex);
-                AZ_Assert(thisNodeIterator != meshTransformMap.end(), "This node index missing.");
-                auto thisTransformIndex = thisNodeIterator->second.m_transformIndex;
-
-                // get node matrix data to set the entity's local transform
-                const auto nodeTransform = azrtti_cast<const DataTypes::ITransform*>(graph.GetNodeContent(thisTransformIndex));
-                if (nodeTransform)
-                {
-                    entityTransform->SetLocalTM(AZ::Transform::CreateFromMatrix3x4(nodeTransform->GetMatrix()));
-                }
-                else
-                {
-                    entityTransform->SetLocalTM(AZ::Transform::CreateUniformScale(1.0f));
-                }
-            }
-
-            return entities;
-        }
-
-        bool CreatePrefabGroup(
-            ManifestUpdates& manifestUpdates,
-            Containers::Scene& scene,
-            const EntityIdList& entities,
-            const AZStd::string& filenameOnly,
-            const AZStd::string& relativeSourcePath)
-        {
-            AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
-
-            AZStd::string prefabTemplateName { relativeSourcePath };
-            AZ::StringFunc::Path::ReplaceFullName(prefabTemplateName, filenameOnly.c_str());
-            AZ::StringFunc::Replace(prefabTemplateName, "\\", "/"); // the source folder uses forward slash
-
-            // create prefab group for entire stack
-            AzToolsFramework::Prefab::TemplateId prefabTemplateId;
-            AzToolsFramework::Prefab::PrefabSystemScriptingBus::BroadcastResult(
-                prefabTemplateId,
-                &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplate,
-                entities,
-                prefabTemplateName);
-
-            if (prefabTemplateId == AzToolsFramework::Prefab::InvalidTemplateId)
-            {
-                AZ_Error("prefab", false, "Could not create a prefab template for entites.");
-                return false;
-            }
-
-            // Convert the prefab to a JSON string
-            AZ::Outcome<AZStd::string, void> outcome;
-            AzToolsFramework::Prefab::PrefabLoaderScriptingBus::BroadcastResult(
-                outcome,
-                &AzToolsFramework::Prefab::PrefabLoaderScriptingBus::Events::SaveTemplateToString,
-                prefabTemplateId);
-
-            if (outcome.IsSuccess() == false)
-            {
-                AZ_Error("prefab", false, "Could not create JSON string for template; maybe NaN values in the template?");
-                return false;
-            }
-
-            AzToolsFramework::Prefab::PrefabDom prefabDom;
-            prefabDom.Parse(outcome.GetValue().c_str());
-
-            auto prefabGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::PrefabGroup>();
-            prefabGroup->SetName(prefabTemplateName);
-            prefabGroup->SetPrefabDom(AZStd::move(prefabDom));
-            prefabGroup->SetId(DataTypes::Utilities::CreateStableUuid(
-                scene,
-                azrtti_typeid<AZ::SceneAPI::SceneData::PrefabGroup>(),
-                prefabTemplateName));
-
-            manifestUpdates.emplace_back(prefabGroup);
-
-            // update manifest if there where no errors
-            for (auto update : manifestUpdates)
-            {
-                scene.GetManifest().AddEntry(update);
-            }
-
-            return true;
-        }
+        Events::ProcessingResult UpdateSceneForPrefabGroup(Containers::Scene& scene, ManifestAction action);
 
         // AssetImportRequest
         Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
+        Events::ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester) override;
+        void GetPolicyName(AZStd::string& result) const override
+        {
+            result = "PrefabGroupBehavior::ExportEventHandler";
+        }
+
+        // ManifestMetaInfoBus
+        void GetCategoryAssignments(AZ::SceneAPI::Events::ManifestMetaInfo::CategoryRegistrationList& categories, const Containers::Scene& scene) override;
+        void InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target) override;
     };
 
-    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
-        Containers::Scene& scene,
-        ManifestAction action,
+    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::PrepareForAssetLoading(
+        [[maybe_unused]] Containers::Scene& scene,
         RequestingApplication requester)
     {
-        if (action == Events::AssetImportRequest::Update)
+        using namespace AzToolsFramework;
+        if (requester == RequestingApplication::AssetProcessor)
         {
-            // ignore constructing a default procedural prefab if some tool or script is attempting
-            // to update the scene manifest
-            return Events::ProcessingResult::Ignored;
+            EntityUtilityBus::Broadcast(&EntityUtilityBus::Events::ResetEntityContext);
+            AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
         }
-        else if (action == Events::AssetImportRequest::ConstructDefault && requester == RequestingApplication::Editor)
-        {
-            // ignore constructing a default procedurla prefab if the Editor's "Edit Settings..." is being used
-            // the user is trying to assign the source scene asset their own mesh groups
-            return Events::ProcessingResult::Ignored;
-        }
+        return Events::ProcessingResult::Success;
+    }
 
-        // this toggle makes constructing default mesh groups and a prefab optional
+    void PrefabGroupBehavior::ExportEventHandler::GetCategoryAssignments(CategoryRegistrationList& categories, const Containers::Scene&)
+    {
+        categories.emplace_back("Procedural Prefab", SceneData::PrefabGroup::TYPEINFO_Uuid(), s_prefabGroupPreferredTabOrder);
+    }
+
+    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateSceneForPrefabGroup(
+        Containers::Scene& scene,
+        ManifestAction action)
+    {
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
         {
+            bool skip = false;
+
+            // this toggle makes constructing default mesh groups and a prefab optional
             bool createDefaultPrefab = true;
             settingsRegistry->Get(createDefaultPrefab, s_PrefabGroupBehaviorCreateDefaultKey);
             if (createDefaultPrefab == false)
             {
+                AZ_Info(
+                    "PrefabGroupBehavior",
+                    "Skipping default prefab generation - registry setting %s is disabled\n",
+                    s_PrefabGroupBehaviorCreateDefaultKey);
+                skip = true;
+            }
+
+            // do not make a Prefab Group if the animation policy will be applied (if ignore actors is set)
+            bool ignoreActors = true;
+            settingsRegistry->Get(ignoreActors, s_PrefabGroupBehaviorIgnoreActorsKey);
+            if (!skip && ignoreActors)
+            {
+                AZStd::set<AZStd::string> appliedPolicies;
+                AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(
+                    &AZ::SceneAPI::Events::GraphMetaInfoBus::Events::GetAppliedPolicyNames,
+                    appliedPolicies,
+                    scene);
+
+                if (appliedPolicies.contains("ActorGroupBehavior"))
+                {
+                    AZ_Info(
+                        "PrefabGroupBehavior",
+                        "Skipping default prefab generation - scene has an Actor group present and registry setting %s"
+                        " is enabled\n",
+                        s_PrefabGroupBehaviorIgnoreActorsKey);
+                    skip = true;
+                }
+            }
+
+            // Remove the prefab group so it doesn't try fail to process an empty prefab group during export
+            if (skip)
+            {
+                for (auto manifestItemIdx = 0; manifestItemIdx < scene.GetManifest().GetEntryCount(); ++manifestItemIdx)
+                {
+                    const auto* prefabGroup =
+                        azrtti_cast<const SceneData::PrefabGroup*>(scene.GetManifest().GetValue(manifestItemIdx).get());
+                    if (prefabGroup)
+                    {
+                        if (prefabGroup->GetPrefabDomRef().has_value() == false)
+                        {
+                            scene.GetManifest().RemoveEntry(prefabGroup);
+                            return Events::ProcessingResult::Ignored;
+                        }
+                    }
+                }
+
                 return Events::ProcessingResult::Ignored;
             }
         }
 
-        auto meshTransformMap = CalculateMeshTransformMap(scene);
-        if (meshTransformMap.empty())
+        if (action == Events::AssetImportRequest::Update)
+        {
+            bool createProceduralPrefab = false;
+            for (auto manifestItemIdx = 0; manifestItemIdx < scene.GetManifest().GetEntryCount(); ++manifestItemIdx)
+            {
+                const auto* prefabGroup = azrtti_cast<const SceneData::PrefabGroup*>(scene.GetManifest().GetValue(manifestItemIdx).get());
+                if (prefabGroup)
+                {
+                    // found a Prefab Group that wants to be created but does not have a DOM yet?
+                    if (prefabGroup->GetPrefabDomRef().has_value() == false)
+                    {
+                        // re-create the Prefab Group to get the DOM
+                        scene.GetManifest().RemoveEntry(prefabGroup);
+                        createProceduralPrefab = true;
+                        break;
+                    }
+                }
+            }
+
+            if (createProceduralPrefab)
+            {
+                // clear out the previous created default mesh groups made for this prefab group
+                AZStd::vector<const DataTypes::IMeshGroup*> proceduralMeshGroupList;
+                for (auto manifestItemIdx = 0; manifestItemIdx < scene.GetManifest().GetEntryCount(); ++manifestItemIdx)
+                {
+                    auto* meshGroup = azrtti_cast<DataTypes::IMeshGroup*>(scene.GetManifest().GetValue(manifestItemIdx).get());
+                    if (meshGroup)
+                    {
+                        const auto proceduralMeshGroupRule =
+                            meshGroup->GetRuleContainer().FindFirstByType<SceneData::ProceduralMeshGroupRule>();
+
+                        if (proceduralMeshGroupRule)
+                        {
+                            proceduralMeshGroupList.push_back(meshGroup);
+                        }
+                    }
+                }
+                while (!proceduralMeshGroupList.empty())
+                {
+                    scene.GetManifest().RemoveEntry(proceduralMeshGroupList.back());
+                    proceduralMeshGroupList.pop_back();
+                }
+            }
+            else
+            {
+                // if a valid prefab group has already been created then do not generate another prefab group
+                return Events::ProcessingResult::Ignored;
+            }
+        }
+
+        // ignore empty scenes (i.e. only has the root node)
+        if (scene.GetGraph().GetNodeCount() == 1)
         {
             return Events::ProcessingResult::Ignored;
         }
 
-        // compute the filenames of the scene file
-        AZStd::string relativeSourcePath = scene.GetSourceFilename();
-        // the watch folder and forward slash is used to in the asset hint path of the file
-        AZStd::string watchFolder = scene.GetWatchFolder() + "/";
-        AZ::StringFunc::Replace(relativeSourcePath, watchFolder.c_str(), "");
-        AZ::StringFunc::Replace(relativeSourcePath, ".", "_");
-        AZStd::string filenameOnly{ relativeSourcePath };
-        AZ::StringFunc::Path::GetFileName(filenameOnly.c_str(), filenameOnly);
-        AZ::StringFunc::Path::ReplaceExtension(filenameOnly, "procprefab");
+        AZStd::optional<AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates> manifestUpdates;
+        AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
+            manifestUpdates, &AZ::SceneAPI::PrefabGroupEventBus::Events::GeneratePrefabGroupManifestUpdates, scene);
 
-        ManifestUpdates manifestUpdates;
-
-        auto nodeEntityMap = CreateMeshGroups(manifestUpdates, meshTransformMap, scene, relativeSourcePath);
-        if(nodeEntityMap.empty())
+        if (!manifestUpdates)
         {
+            AZ_Warning("prefab", false, "Scene doesn't contain IMeshData, add at least 1 IMeshData to generate Manifest Updates");
             return Events::ProcessingResult::Ignored;
         }
 
-        auto entities = FixUpEntityParenting(nodeEntityMap, scene.GetGraph(), meshTransformMap);
-        if(entities.empty())
+        // update manifest if there were no errors
+        for (auto update : manifestUpdates.value())
         {
-            return Events::ProcessingResult::Ignored;
+            scene.GetManifest().AddEntry(update);
         }
+        return Events::ProcessingResult::Success;
+    }
 
-        bool success = CreatePrefabGroup(manifestUpdates, scene, entities, filenameOnly, relativeSourcePath);
-        return success ? Events::ProcessingResult::Success : Events::ProcessingResult::Ignored;
+    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
+        Containers::Scene& scene,
+        ManifestAction action,
+        [[maybe_unused]] RequestingApplication requester)
+    {
+        return UpdateSceneForPrefabGroup(scene, action);
+    }
+
+    void PrefabGroupBehavior::ExportEventHandler::InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target)
+    {
+        if (!target.RTTI_IsTypeOf(PrefabGroup::TYPEINFO_Uuid()))
+        {
+            return;
+        }
+        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> manifestUpdates;
+        AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
+            manifestUpdates, &AZ::SceneAPI::PrefabGroupEventBus::Events::GenerateDefaultPrefabMeshGroups, scene);
+
+        Events::ManifestMetaInfoBus::Broadcast(&Events::ManifestMetaInfoBus::Events::AddObjects, manifestUpdates);
+
     }
 
     //
@@ -641,7 +344,7 @@ namespace AZ::SceneAPI::Behaviors
         auto templateId = prefabLoaderInterface->LoadTemplateFromString(sb.GetString(), templateName.Native().c_str());
         if (templateId == InvalidTemplateId)
         {
-            AZ_Error("prefab", false, "PrefabGroup(%s) Could not write load template", prefabGroup->GetName().c_str());
+            AZ_Error("prefab", false, "PrefabGroup(%s) Could not load template", prefabGroup->GetName().c_str());
             return {};
         }
 
@@ -664,10 +367,18 @@ namespace AZ::SceneAPI::Behaviors
         const SceneData::PrefabGroup* prefabGroup,
         const rapidjson::Document& doc) const
     {
+        // Since the prefab group name already has the source file extension added as a part of the name (ex: "model_fbx"),
+        // we won't pass the source file extension again to CreateOuputFileName. This prevents names like "model_fbx.fbx.procprefab".
+        // CreateOutputFileName has been changed to preserve the model's extension as a bugfix, which occurred after the procprefab
+        // system was built, so we need to be concerned with backwards compatibility. Procprefab files are typically referenced
+        // by file name, not by asset ID or source GUID, so we can't introduce changes that would change the procprefab file name.
+        const AZStd::string emptySourceExtension;
+
         AZStd::string filePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
             prefabGroup->GetName().c_str(),
             context.GetOutputDirectory(),
-            AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
+            AZ::Prefab::PrefabGroupAssetHandler::s_Extension,
+            emptySourceExtension);
 
         bool result = WriteOutProductAssetFile(filePath, context, prefabGroup, doc, false);
 
@@ -676,7 +387,8 @@ namespace AZ::SceneAPI::Behaviors
             AZStd::string debugFilePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
                 prefabGroup->GetName().c_str(),
                 context.GetOutputDirectory(),
-                AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
+                AZ::Prefab::PrefabGroupAssetHandler::s_Extension,
+                emptySourceExtension);
             debugFilePath.append(".json");
             WriteOutProductAssetFile(debugFilePath, context, prefabGroup, doc, true);
         }
@@ -783,27 +495,27 @@ namespace AZ::SceneAPI::Behaviors
     {
         AZ::SceneAPI::SceneData::PrefabGroup::Reflect(context);
         Prefab::ProceduralPrefabAsset::Reflect(context);
+        DefaultProceduralPrefabGroup::Reflect(context);
 
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<PrefabGroupBehavior, BehaviorComponent>()->Version(1);
+            serializeContext->Class<PrefabGroupBehavior, BehaviorComponent>()->Version(2);
         }
 
         BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
         if (behaviorContext)
         {
-            using namespace AzToolsFramework::Prefab;
 
             auto loadTemplate = [](const AZStd::string& prefabPath)
             {
                 AZ::IO::FixedMaxPath path {prefabPath};
-                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                auto* prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
                 if (prefabLoaderInterface)
                 {
                     return prefabLoaderInterface->LoadTemplateFromFile(path);
                 }
-                return TemplateId{};
+                return AzToolsFramework::Prefab::TemplateId{};
             };
 
             behaviorContext->Method("LoadTemplate", loadTemplate)
@@ -811,10 +523,10 @@ namespace AZ::SceneAPI::Behaviors
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "prefab");
 
-            auto saveTemplateToString = [](TemplateId templateId) -> AZStd::string
+            auto saveTemplateToString = [](AzToolsFramework::Prefab::TemplateId templateId) -> AZStd::string
             {
                 AZStd::string output;
-                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                auto* prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
                 if (prefabLoaderInterface)
                 {
                     prefabLoaderInterface->SaveTemplateToString(templateId, output);

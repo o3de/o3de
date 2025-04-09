@@ -9,6 +9,7 @@
 
 namespace Camera
 {
-    const static char* s_viewportCameraSelectorName = "Viewport Camera Selector";
+    static constexpr const char* s_viewportCameraSelectorName = "Viewport Camera Selector";
+
     extern void RegisterViewportCameraSelectorWindow();
 } // namespace Camera

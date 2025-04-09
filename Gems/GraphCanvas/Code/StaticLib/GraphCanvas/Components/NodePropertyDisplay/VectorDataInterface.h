@@ -9,6 +9,8 @@
 
 #include "DataInterface.h"
 
+#include <QPixmap>
+
 namespace GraphCanvas
 {
     // Thought: Potential to make this support arbitrary types of elements all in a single line.
@@ -17,7 +19,8 @@ namespace GraphCanvas
         : public DataInterface
     {
     public:
-    
+        using SubmitValueEvent = AZ::Event<>;
+
         // Returns the number of elements that this vector represents.
         virtual int GetElementCount() const = 0;
         
@@ -41,12 +44,15 @@ namespace GraphCanvas
 
         // Returns the truncated display precision for the given index.
         virtual int GetDisplayDecimalPlaces(int /*index*/) const { return 4; }
+
+        virtual void OnPressButton() { }
+        virtual QPixmap GetIcon() const { return QPixmap(); }
         
         // Returns the minimum/maximum value for the given index.
         virtual double GetMinimum(int /*index*/) const { return -999999999; }
         virtual double GetMaximum(int /*index*/) const { return 999999999; }
         
         // Returns the suffix to append to the spin box.
-        virtual const char* GetSuffix(int /*index*/) const { return ""; }        
+        virtual const char* GetSuffix(int /*index*/) const { return ""; }
     };
 }

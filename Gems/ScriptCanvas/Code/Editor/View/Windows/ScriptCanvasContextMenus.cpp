@@ -6,57 +6,60 @@
  *
  */
 
-#include <QVBoxLayout>
 #include <QApplication>
 #include <QClipboard>
-#include <QMimeData>
+#include <QFileDialog>
 #include <QInputDialog>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QVBoxLayout>
 
 #include <AzCore/UserSettings/UserSettings.h>
-
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
+#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
+#include <Editor/Nodes/NodeCreateUtils.h>
 #include <Editor/Nodes/NodeUtils.h>
+#include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/VariablePanel/GraphVariablesTableView.h>
 #include <Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h>
 
-#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
-#include <ScriptCanvas/Bus/RequestBus.h>
-#include <ScriptCanvas/Bus/NodeIdPair.h>
-#include <ScriptCanvas/Core/GraphBus.h>
-
 #include <GraphCanvas/Components/GridBus.h>
+#include <GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
 #include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
 #include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
+#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/ViewBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
+#include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h>
-#include <GraphCanvas/Utils/NodeNudgingController.h>
+#include <GraphCanvas/Types/Endpoint.h>
 #include <GraphCanvas/Utils/ConversionUtils.h>
+#include <GraphCanvas/Utils/NodeNudgingController.h>
+#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h>
 
-#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
-#include <Editor/Nodes/NodeCreateUtils.h>
-#include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Bus/NodeIdPair.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Core/GraphBus.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Core/NodeBus.h>
+#include <ScriptCanvas/Core/ScriptCanvasBus.h>
+#include <ScriptCanvas/Core/Slot.h>
+#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
+#include <ScriptCanvas/GraphCanvas/MappingBus.h>
+#include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
+#include <ScriptCanvas/Libraries/Core/Method.h>
+
+#include <ScriptEvents/ScriptEventsBus.h>
 
 #include "ScriptCanvasContextMenus.h"
 #include "Settings.h"
-
-#include <ScriptCanvas/Core/NodeBus.h>
-#include <ScriptCanvas/Core/Slot.h>
-#include <GraphCanvas/Editor/EditorTypes.h>
-#include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
-#include <ScriptCanvas/Libraries/Core/Method.h>
-#include <GraphCanvas/Types/Endpoint.h>
-#include <ScriptCanvas/Core/ScriptCanvasBus.h>
-#include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/GraphCanvas/MappingBus.h>
-#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
-#include <GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
-
 
 namespace ScriptCanvasEditor
 {
@@ -166,7 +169,7 @@ namespace ScriptCanvasEditor
 
     GraphCanvas::ActionGroupId ConvertVariableNodeToReferenceAction::GetActionGroupId() const
     {
-        return AZ_CRC("VariableConversion", 0x157beab0);
+        return AZ_CRC_CE("VariableConversion");
     }
 
     void ConvertVariableNodeToReferenceAction::RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId)
@@ -213,7 +216,7 @@ namespace ScriptCanvasEditor
 
     GraphCanvas::ActionGroupId ConvertReferenceToVariableNodeAction::GetActionGroupId() const
     {
-        return AZ_CRC("VariableConversion", 0x157beab0);
+        return AZ_CRC_CE("VariableConversion");
     }
 
 
@@ -834,7 +837,7 @@ namespace ScriptCanvasEditor
         : GraphCanvas::SceneContextMenu(ScriptCanvasEditor::AssetEditorId)
     {
 
-        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         if (userSettings)
         {
             m_userNodePaletteWidth = userSettings->m_sceneContextMenuNodePaletteWidth;
@@ -931,7 +934,6 @@ namespace ScriptCanvasEditor
 
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
-
 
     #include "Editor/View/Windows/moc_ScriptCanvasContextMenus.cpp"
 }

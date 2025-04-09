@@ -33,7 +33,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EMotionFXManager, EMotionFXManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EMotionFXManager, EMotionFXManagerAllocator)
 
     // the global EMotion FX manager object
     AZ::EnvironmentVariable<EMotionFXManager*> gEMFX;
@@ -48,9 +48,6 @@ namespace EMotionFX
         {
             return true;
         }
-
-        // Create EMotion FX allocators
-        Allocators::Create();
 
         // create the new object
         gEMFX = AZ::Environment::CreateVariable<EMotionFXManager*>(kEMotionFXInstanceVarName);
@@ -99,8 +96,6 @@ namespace EMotionFX
         // delete the global object and reset it to nullptr
         gEMFX.Get()->Destroy();
         gEMFX.Reset();
-
-        Allocators::Destroy();
     }
 
     //-----------------------------------------------------------------------------
@@ -343,7 +338,8 @@ namespace EMotionFX
             }
         }
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, m_mediaRootFolder);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, m_mediaRootFolder);
     }
 
 
@@ -366,7 +362,8 @@ namespace EMotionFX
                 }
             }
 
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, m_assetSourceFolder);
+            AzFramework::ApplicationRequests::Bus::Broadcast(
+                &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, m_assetSourceFolder);
         }
         else
         {
@@ -391,7 +388,8 @@ namespace EMotionFX
                 }
             }
 
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, m_assetCacheFolder);
+            AzFramework::ApplicationRequests::Bus::Broadcast(
+                &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, m_assetCacheFolder);
         }
         else
         {
@@ -403,7 +401,8 @@ namespace EMotionFX
     void EMotionFXManager::ConstructAbsoluteFilename(const char* relativeFilename, AZStd::string& outAbsoluteFilename)
     {
         outAbsoluteFilename = relativeFilename;
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, outAbsoluteFilename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, outAbsoluteFilename);
         AzFramework::StringFunc::Replace(outAbsoluteFilename, EMFX_MEDIAROOTFOLDER_STRING, m_mediaRootFolder.c_str(), true);
     }
 
@@ -422,8 +421,10 @@ namespace EMotionFX
         AZStd::string filename = inOutFilename->c_str();
 
         // TODO: Add parameter to not lower case the path once it is in and working.
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, baseFolderPath);
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, baseFolderPath);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         // Remove the media root folder from the absolute motion filename so that we get the relative one to the media root folder.
         AzFramework::StringFunc::Replace(filename, baseFolderPath.c_str(), "", false /* case sensitive */, true /* replace first */);
@@ -577,7 +578,6 @@ namespace EMotionFX
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK,                     "EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_POSE,                          "EMFX_MEMCATEGORY_ANIMGRAPH_POSE");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS,                    "EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS");
-        memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER,                "EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS,                  "EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL,                      "EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_NODES,                         "EMFX_MEMCATEGORY_ANIMGRAPH_NODES");
@@ -646,7 +646,6 @@ namespace EMotionFX
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_POSE);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS);
-        idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_NODES);

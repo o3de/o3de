@@ -70,12 +70,7 @@ ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
 {
     CSystem* pSystem = NULL;
 
-    // We must attach to the environment prior to allocating CSystem, as opposed to waiting
-    // for ModuleInitISystem(), because the log message sink uses buses.
-    // Environment should have been attached via InitializeDynamicModule
-    AZ_Assert(AZ::Environment::IsReady(), "Environment is not attached, must be attached before CreateSystemInterface can be called");
-
-    pSystem = new CSystem(startupParams.pSharedEnvironment);
+    pSystem = new CSystem();
     ModuleInitISystem(pSystem, "CrySystem");
 
 #if defined(AZ_RESTRICTED_PLATFORM)

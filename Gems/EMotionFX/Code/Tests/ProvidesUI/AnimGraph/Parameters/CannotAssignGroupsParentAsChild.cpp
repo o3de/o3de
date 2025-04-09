@@ -7,6 +7,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <MCore/Source/IDGenerator.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/Parameter/GroupParameter.h>
@@ -14,17 +15,18 @@
 
 namespace EMotionFX
 {
-
     TEST_F(CommandRunnerFixture, CannotAssignGroupsParentAsChild)
     {
+        const AZ::u32 animGraphId = aznumeric_cast<AZ::u32>(MCore::GetIDGenerator().GenerateID()) + 1;
+
         ExecuteCommands({
             "CreateAnimGraph",
-            "Select -animGraphID 0",
-            "AnimGraphAddGroupParameter -animGraphID 0 -name OriginalParent",
-            "AnimGraphAddGroupParameter -animGraphID 0 -name OriginalChild -parent OriginalParent",
+            "Select -animGraphID " + std::to_string(animGraphId),
+            "AnimGraphAddGroupParameter -animGraphID " + std::to_string(animGraphId) + " -name OriginalParent",
+            "AnimGraphAddGroupParameter -animGraphID " + std::to_string(animGraphId) + " -name OriginalChild -parent OriginalParent",
         });
 
-        const AnimGraph* animGraph = GetAnimGraphManager().FindAnimGraphByID(0);
+        const AnimGraph* animGraph = GetAnimGraphManager().FindAnimGraphByID(animGraphId);
         ASSERT_TRUE(animGraph);
         const GroupParameter* originalParent = static_cast<const GroupParameter*>(animGraph->FindParameterByName("OriginalParent"));
         const GroupParameter* originalChild = static_cast<const GroupParameter*>(animGraph->FindParameterByName("OriginalChild"));
@@ -34,7 +36,7 @@ namespace EMotionFX
 
         {
             AZStd::string result;
-            EXPECT_FALSE(CommandSystem::GetCommandManager()->ExecuteCommand("AnimGraphAdjustGroupParameter -animGraphID 0 -name OriginalChild -parameterNames OriginalParent -action add", result));
+            EXPECT_FALSE(CommandSystem::GetCommandManager()->ExecuteCommand({"AnimGraphAdjustGroupParameter -animGraphID " + AZStd::to_string(animGraphId) + " -name OriginalChild -parameterNames OriginalParent -action add"}, result));
         }
 
         EXPECT_THAT(originalParent->GetChildParameters(), testing::Contains(originalChild));

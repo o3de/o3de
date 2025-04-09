@@ -39,13 +39,15 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spawner.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spawner.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorSpawnerComponent::m_sliceAsset, "Dynamic slice", "The slice to spawn")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSpawnerComponent::m_sliceAsset, "Dynamic slice", "The slice to spawn")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSpawnerComponent::SliceAssetChanged)
-                    ->DataElement(0, &EditorSpawnerComponent::m_spawnOnActivate, "Spawn on activate", "Should the component spawn the selected slice upon activation?")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSpawnerComponent::m_spawnOnActivate, "Spawn on activate",
+                        "Should the component spawn the selected slice upon activation?")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSpawnerComponent::SpawnOnActivateChanged)
-                    ->DataElement(0, &EditorSpawnerComponent::m_destroyOnDeactivate, "Destroy on deactivate", "Upon deactivation, should the component destroy any slices it spawned?")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSpawnerComponent::m_destroyOnDeactivate, "Destroy on deactivate",
+                        "Upon deactivation, should the component destroy any slices it spawned?")
                     ;
             }
         }

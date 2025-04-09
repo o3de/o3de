@@ -189,7 +189,7 @@ bool UiEditorEntityContext::SaveToStreamForGame(AZ::IO::GenericStream& stream, A
     }
 
     // Emulate client flags.
-    AZ::PlatformTagSet platformTags = { AZ_CRC("renderer", 0xf199a19c) };
+    AZ::PlatformTagSet platformTags = { AZ_CRC_CE("renderer") };
 
     // Compile the source slice into the runtime slice (with runtime components).
     AzToolsFramework::UiEditorOnlyEntityHandler uiEditorOnlyEntityHandler;
@@ -240,16 +240,14 @@ bool UiEditorEntityContext::SaveCanvasEntityToStreamForGame(AZ::Entity* canvasEn
     AZ_Assert(exportCanvasEntity, "Failed to create target entity \"%s\" for export.",
         sourceCanvasEntity->GetName().c_str());
 
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, PreExportEntity,
-        *sourceCanvasEntity,
-        *exportCanvasEntity);
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::PreExportEntity, *sourceCanvasEntity, *exportCanvasEntity);
 
     // Export entity representing the canvas, which has only runtime components.
     AZ::Utils::SaveObjectToStream<AZ::Entity>(stream, streamType, exportCanvasEntity);
 
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, PostExportEntity,
-        *sourceCanvasEntity,
-        *exportCanvasEntity);
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::PostExportEntity, *sourceCanvasEntity, *exportCanvasEntity);
 
     return true;
 }
@@ -310,7 +308,7 @@ bool UiEditorEntityContext::CloneUiEntities(const AZStd::vector<AZ::EntityId>& s
     for (const AZ::EntityId& id : sourceEntities)
     {
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
         if (entity)
         {
             sourceObjects.m_entities.push_back(entity);
@@ -440,7 +438,7 @@ void UiEditorEntityContext::DeleteElements(AzToolsFramework::EntityIdList elemen
                 [](AZ::EntityId entityId)
                 {
                     AZ::Entity* entity = nullptr;
-                    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+                    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
                     return !entity;
                 }),
             elements.end());
@@ -465,7 +463,7 @@ void UiEditorEntityContext::DeleteElements(AzToolsFramework::EntityIdList elemen
                 [](AZ::EntityId entityId)
                 {
                     AZ::Entity* entity = nullptr;
-                    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+                    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
                     return !entity;
                 }),
             selectedEntities.end());
@@ -536,7 +534,8 @@ void UiEditorEntityContext::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId
     if (m_queuedSliceReplacement.IsValid())
     {
         AZStd::string relativePath;
-        EBUS_EVENT_RESULT(relativePath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            relativePath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
 
         if (AZStd::string::npos != AzFramework::StringFunc::Find(m_queuedSliceReplacement.m_path.c_str(), relativePath.c_str()))
         {
@@ -641,7 +640,7 @@ void UiEditorEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAs
             for (AZ::Entity* entity : entities)
             {
                 LyShine::EntityArray children;
-                EBUS_EVENT_ID_RESULT(children, entity->GetId(), UiElementBus, GetChildElements);
+                UiElementBus::EventResult(children, entity->GetId(), &UiElementBus::Events::GetChildElements);
                 
                 for (auto child : children)
                 {
@@ -658,11 +657,11 @@ void UiEditorEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAs
             {
                 if (parent)
                 {
-                    EBUS_EVENT_ID_RESULT(insertBefore, parent->GetId(), UiElementBus, GetChildElement, childIndex);
+                    UiElementBus::EventResult(insertBefore, parent->GetId(), &UiElementBus::Events::GetChildElement, childIndex);
                 }
                 else
                 {
-                    EBUS_EVENT_ID_RESULT(insertBefore, m_editorWindow->GetCanvas(), UiCanvasBus, GetChildElement, childIndex);
+                    UiCanvasBus::EventResult(insertBefore, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::GetChildElement, childIndex);
                 }
             }
 
@@ -680,12 +679,12 @@ void UiEditorEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAs
             // Initialize the internal parent pointers and the canvas pointer in the elements
             // We do this before adding the elements, otherwise the GetUniqueChildName code in FixupCreatedEntities will
             // already see the new elements and think the names are not unique
-            EBUS_EVENT_ID(m_editorWindow->GetCanvas(), UiCanvasBus, FixupCreatedEntities, entitiesToInit, true, parent);
+            UiCanvasBus::Event(m_editorWindow->GetCanvas(), &UiCanvasBus::Events::FixupCreatedEntities, entitiesToInit, true, parent);
 
             // Add all of the top-level entities as children of the parent
             for (auto entity : topLevelEntities)
             {
-                EBUS_EVENT_ID(m_editorWindow->GetCanvas(), UiCanvasBus, AddElement, entity, parent, insertBefore);
+                UiCanvasBus::Event(m_editorWindow->GetCanvas(), &UiCanvasBus::Events::AddElement, entity, parent, insertBefore);
             }
 
             // Here we adjust the position of the instantiated entities so that if the slice was instantiated from the
@@ -699,11 +698,11 @@ void UiEditorEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAs
 
                 // Transform pivot position to canvas space
                 AZ::Vector2 pivotPos;
-                EBUS_EVENT_ID_RESULT(pivotPos, rootElement->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+                UiTransformBus::EventResult(pivotPos, rootElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
 
                 // Transform destination position to canvas space
                 AZ::Matrix4x4 transformFromViewport;
-                EBUS_EVENT_ID(rootElement->GetId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+                UiTransformBus::Event(rootElement->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
                 AZ::Vector3 destPos3 = transformFromViewport * AZ::Vector3(desiredViewportPosition.GetX(), desiredViewportPosition.GetY(), 0.0f);
                 AZ::Vector2 destPos(destPos3.GetX(), destPos3.GetY());
 
@@ -713,8 +712,8 @@ void UiEditorEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAs
                 for (auto entity : entitiesToInit)
                 {
                     UiTransform2dInterface::Offsets offsets;
-                    EBUS_EVENT_ID_RESULT(offsets, entity->GetId(), UiTransform2dBus, GetOffsets);
-                    EBUS_EVENT_ID(entity->GetId(), UiTransform2dBus, SetOffsets, offsets + offsetDelta);
+                    UiTransform2dBus::EventResult(offsets, entity->GetId(), &UiTransform2dBus::Events::GetOffsets);
+                    UiTransform2dBus::Event(entity->GetId(), &UiTransform2dBus::Events::SetOffsets, offsets + offsetDelta);
                 }
             }
 
@@ -739,7 +738,8 @@ void UiEditorEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAs
 
             m_instantiatingSlices.erase(instantiatingIter);
 
-            EBUS_EVENT(UiEditorEntityContextNotificationBus, OnSliceInstantiated, sliceAssetId, sliceAddress, ticket);
+            UiEditorEntityContextNotificationBus::Broadcast(
+                &UiEditorEntityContextNotificationBus::Events::OnSliceInstantiated, sliceAssetId, sliceAddress, ticket);
 
             break;
         }
@@ -758,7 +758,8 @@ void UiEditorEntityContext::OnSliceInstantiationFailed(const AZ::Data::AssetId& 
         if (instantiatingIter->first.GetId() == sliceAssetId)
         {
             AZ::Data::AssetBus::MultiHandler::BusDisconnect(sliceAssetId);
-            EBUS_EVENT(UiEditorEntityContextNotificationBus, OnSliceInstantiationFailed, sliceAssetId, ticket);
+            UiEditorEntityContextNotificationBus::Broadcast(
+                &UiEditorEntityContextNotificationBus::Events::OnSliceInstantiationFailed, sliceAssetId, ticket);
 
             m_instantiatingSlices.erase(instantiatingIter);
             break;
@@ -840,7 +841,7 @@ void UiEditorEntityContext::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData>
     
     m_entityOwnershipService->OnAssetReloaded(asset);
 
-    EBUS_EVENT_ID(m_editorWindow->GetCanvasForEntityContext(GetContextId()), UiCanvasBus, ReinitializeElements);
+    UiCanvasBus::Event(m_editorWindow->GetCanvasForEntityContext(GetContextId()), &UiCanvasBus::Events::ReinitializeElements);
 
     if (isActive)
     {
@@ -852,14 +853,14 @@ void UiEditorEntityContext::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData>
                 [](AZ::EntityId entityId)
                 {
                     AZ::Entity* entity = nullptr;
-                    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+                    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
                     return !entity;
                 }),
             selectedEntities.end());
     
         // Refresh the Hierarchy pane
         LyShine::EntityArray childElements;
-        EBUS_EVENT_ID_RESULT(childElements, m_editorWindow->GetCanvas(), UiCanvasBus, GetChildElements);
+        UiCanvasBus::EventResult(childElements, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::GetChildElements);
         hierarchy->RecreateItems(childElements);
 
         HierarchyHelpers::SetSelectedItems(hierarchy, &selectedEntities);
@@ -1006,7 +1007,7 @@ void UiEditorEntityContext::GetTopLevelEntities(const AZStd::unordered_set<AZ::E
     {
         // if this entities parent is not in the set then it is a top-level
         AZ::Entity* parentElement = nullptr;
-        EBUS_EVENT_ID_RESULT(parentElement, entityId, UiElementBus, GetParent);
+        UiElementBus::EventResult(parentElement, entityId, &UiElementBus::Events::GetParent);
 
         if (!parentElement || entities.count(parentElement->GetId()) == 0)
         {
@@ -1060,7 +1061,7 @@ void UiEditorEntityContext::QueuedSliceReplacement::Finalize(
     }
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         
     // Remap references on any entities left out of the slice, to any entities in the slice instance.
     for (const AZ::EntityId& selectedId : m_entitiesInSelection)
@@ -1072,7 +1073,7 @@ void UiEditorEntityContext::QueuedSliceReplacement::Finalize(
         }
 
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, selectedId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, selectedId);
 
         AZ_Error("EditorEntityContext", entity, "Failed to locate live entity during slice replacement.");
 

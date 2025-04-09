@@ -42,13 +42,14 @@
                 "$type": "EditorTerrainWorldComponent",
                 "Id": 16439252587045735872
             },
+            "Component_[17289454741407577043]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 17289454741407577043,
+                "LocalBookmarkFileName": "TerrainPhysicsCollider_MaterialMapping_Works_16674923282247643.setreg"
+            },
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
-            },
-            "Component_[6545738857812235305]": {
-                "$type": "SelectionComponent",
-                "Id": 6545738857812235305
             },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",
@@ -76,10 +77,6 @@
             "Id": "Entity_[1155164325235]",
             "Name": "Sun",
             "Components": {
-                "Component_[10440557478882592717]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10440557478882592717
-                },
                 "Component_[13620450453324765907]": {
                     "$type": "EditorLockComponent",
                     "Id": 13620450453324765907
@@ -156,7 +153,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 6154987512225103865
+                            "EditorEntityId": 8616034677590180771
                         }
                     }
                 },
@@ -184,10 +181,6 @@
                             -90.00528717041016
                         ]
                     }
-                },
-                "Component_[18387556550380114975]": {
-                    "$type": "SelectionComponent",
-                    "Id": 18387556550380114975
                 },
                 "Component_[2654521436129313160]": {
                     "$type": "EditorVisibilityComponent",
@@ -240,10 +233,6 @@
                     "$type": "EditorLockComponent",
                     "Id": 14988041764659020032
                 },
-                "Component_[15808690248755038124]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15808690248755038124
-                },
                 "Component_[15900837685796817138]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 15900837685796817138
@@ -294,10 +283,6 @@
                         }
                     }
                 },
-                "Component_[11980494120202836095]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11980494120202836095
-                },
                 "Component_[1428633914413949476]": {
                     "$type": "EditorLockComponent",
                     "Id": 1428633914413949476
@@ -322,6 +307,20 @@
                                 "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_iblspecular.exr.streamingimage"
                             }
                         }
+                    },
+                    "diffuseImageAsset": {
+                        "assetId": {
+                            "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
+                            "subId": 3000
+                        },
+                        "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_ibldiffuse.exr.streamingimage"
+                    },
+                    "specularImageAsset": {
+                        "assetId": {
+                            "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
+                            "subId": 2000
+                        },
+                        "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_iblspecular.exr.streamingimage"
                     }
                 },
                 "Component_[14994774102579326069]": {
@@ -367,6 +366,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 10744220290655785341,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -386,14 +392,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            143.97714233398438,
-                            237.59323120117188,
-                            14.275827407836914
-                        ],
-                        "Rotate": [
-                            0.7218570113182068,
-                            -18.652305603027344,
-                            -0.16037322580814362
+                            143.75379943847656,
+                            237.58489990234375,
+                            14.5
                         ]
                     }
                 },
@@ -426,12 +427,17 @@
                     "Configuration": {
                         "entityId": "",
                         "Mass": 999.9999389648438,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 0.005999999586492777
-                        }
+                        "Inertia tensor": [
+                            166.6666717529297,
+                            0.0,
+                            0.0,
+                            0.0,
+                            166.6666717529297,
+                            0.0,
+                            0.0,
+                            0.0,
+                            166.6666717529297
+                        ]
                     }
                 },
                 "Component_[15496502846084008866]": {
@@ -441,10 +447,6 @@
                 "Component_[18392511014948595626]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 18392511014948595626
-                },
-                "Component_[3579014362228884389]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3579014362228884389
                 },
                 "Component_[3668609610460496102]": {
                     "$type": "EditorLockComponent",
@@ -504,18 +506,37 @@
                     "$type": "EditorHeightfieldColliderComponent",
                     "Id": 13116465701951274134,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "Position": [
+                            0.4336090087890625,
+                            0.43792724609375,
+                            0.0
+                        ],
+                        "MaterialSlots": {
+                            "Slots": [
                                 {},
                                 {
-                                    "MaterialId": "{FD59CBE9-D1C4-4119-81CB-CD7AD72FC295}"
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{00880607-87E1-5178-8C30-37B3220D6149}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "assets/physics/glass.physicsmaterial"
+                                    }
                                 },
                                 {
-                                    "MaterialId": "{8C7A6011-61C2-46B7-9BF4-8D4DD2A624F1}"
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{418485F0-20D0-5819-BC6D-22E89145B6AA}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "assets/physics/rubber.physicsmaterial"
+                                    }
                                 }
                             ]
-                        },
-                        "propertyVisibilityFlags": 233
+                        }
+                    },
+                    "DebugDrawSettings": {
+                        "LocallyEnabled": true
                     }
                 },
                 "Component_[13811745118082474953]": {
@@ -535,10 +556,6 @@
                         "Entity_[876667865988]",
                         "Entity_[949682310020]"
                     ]
-                },
-                "Component_[2701087696133365661]": {
-                    "$type": "SelectionComponent",
-                    "Id": 2701087696133365661
                 },
                 "Component_[2925086111632418607]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -630,16 +647,24 @@
                                 "Surface": {
                                     "SurfaceTagCrc": 2062838596
                                 },
-                                "Material": {
-                                    "MaterialId": "{FD59CBE9-D1C4-4119-81CB-CD7AD72FC295}"
+                                "MaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{00880607-87E1-5178-8C30-37B3220D6149}",
+                                        "subId": 1
+                                    },
+                                    "assetHint": "assets/physics/glass.physicsmaterial"
                                 }
                             },
                             {
                                 "Surface": {
                                     "SurfaceTagCrc": 1797181423
                                 },
-                                "Material": {
-                                    "MaterialId": "{8C7A6011-61C2-46B7-9BF4-8D4DD2A624F1}"
+                                "MaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{418485F0-20D0-5819-BC6D-22E89145B6AA}",
+                                        "subId": 1
+                                    },
+                                    "assetHint": "assets/physics/rubber.physicsmaterial"
                                 }
                             }
                         ]
@@ -671,10 +696,6 @@
                     "$type": "EditorEntitySortComponent",
                     "Id": 14391335833174673744
                 },
-                "Component_[16353146163619112907]": {
-                    "$type": "SelectionComponent",
-                    "Id": 16353146163619112907
-                },
                 "Component_[4146850309854912578]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 4146850309854912578
@@ -682,6 +703,9 @@
                 "Component_[6089676015797773678]": {
                     "$type": "EditorImageGradientComponent",
                     "Id": 6089676015797773678,
+                    "Previewer": {
+                        "BoundsEntity": ""
+                    },
                     "Configuration": {
                         "StreamingImageAsset": {
                             "assetId": {
@@ -690,8 +714,7 @@
                             },
                             "assetHint": "imagegradients/largeworldsexamples/blured_circle_gsi.tif.streamingimage"
                         }
-                    },
-                    "PreviewEntity": "Entity_[726344010628]"
+                    }
                 },
                 "Component_[6513054201869143058]": {
                     "$type": "EditorLockComponent",
@@ -747,7 +770,9 @@
                         "ShapeEntityId": "Entity_[876667865988]",
                         "FalloffWidth": 0.0
                     },
-                    "PreviewEntity": "Entity_[876667865988]"
+                    "Previewer": {
+                        "BoundsEntity": "Entity_[876667865988]"
+                    }
                 },
                 "Component_[11471394824284544663]": {
                     "$type": "EditorInspectorComponent",
@@ -789,10 +814,6 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 3045452491462684049
                 },
-                "Component_[6326641414874562178]": {
-                    "$type": "SelectionComponent",
-                    "Id": 6326641414874562178
-                },
                 "Component_[6534397926297186697]": {
                     "$type": "EditorBoxShapeComponent",
                     "Id": 6534397926297186697,
@@ -823,7 +844,9 @@
                         "ShapeEntityId": "Entity_[949682310020]",
                         "FalloffWidth": 0.0
                     },
-                    "PreviewEntity": "Entity_[949682310020]"
+                    "Previewer": {
+                        "BoundsEntity": "Entity_[949682310020]"
+                    }
                 },
                 "Component_[11471394824284544663]": {
                     "$type": "EditorInspectorComponent",
@@ -865,10 +888,6 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 3045452491462684049
                 },
-                "Component_[6326641414874562178]": {
-                    "$type": "SelectionComponent",
-                    "Id": 6326641414874562178
-                },
                 "Component_[6534397926297186697]": {
                     "$type": "EditorBoxShapeComponent",
                     "Id": 6534397926297186697,
@@ -892,6 +911,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 10744220290655785341,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -911,14 +937,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            143.9164581298828,
-                            224.15390014648438,
-                            14.144479751586914
-                        ],
-                        "Rotate": [
-                            3.441272258758545,
-                            -22.321136474609375,
-                            1.8760989904403687
+                            143.6857452392578,
+                            224.13734436035156,
+                            14.5
                         ]
                     }
                 },
@@ -952,12 +973,17 @@
                         "entityId": "",
                         "Compute Mass": false,
                         "Mass": 999.9999389648438,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 0.0060000005178153515
-                        }
+                        "Inertia tensor": [
+                            166.66665649414063,
+                            0.0,
+                            0.0,
+                            0.0,
+                            166.66665649414063,
+                            0.0,
+                            0.0,
+                            0.0,
+                            166.66665649414063
+                        ]
                     }
                 },
                 "Component_[15496502846084008866]": {
@@ -967,10 +993,6 @@
                 "Component_[18392511014948595626]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 18392511014948595626
-                },
-                "Component_[3579014362228884389]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3579014362228884389
                 },
                 "Component_[3668609610460496102]": {
                     "$type": "EditorLockComponent",

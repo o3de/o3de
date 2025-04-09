@@ -15,7 +15,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonBoolSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonBoolSerializer, SystemAllocator);
 
     namespace SerializerInternal
     {

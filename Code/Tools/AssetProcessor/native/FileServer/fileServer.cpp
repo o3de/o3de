@@ -102,7 +102,7 @@ void FileServer::ConnectionAdded(unsigned int connId, Connection* connection)
             if ((fileIO) && (!connection->AssetPlatforms().isEmpty())) // when someone disconnects, the asset platform may be cleared before disconnect is set.
             {
                 QDir projectCacheRoot;
-                // Because the platform based aliases below can only be one platform at at a time we need to prefer a single platform in case multiple listening platforms
+                // Because the platform based aliases below can only be one platform at a time we need to prefer a single platform in case multiple listening platforms
                 // exist on the same connection
                 QString assetPlatform = connection->AssetPlatforms().first();
                 if (!AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot))
@@ -113,8 +113,8 @@ void FileServer::ConnectionAdded(unsigned int connId, Connection* connection)
                 {
                     projectCacheRoot = QDir(projectCacheRoot.absoluteFilePath(assetPlatform));
                 }
-                const char* projectCachePath = projectCacheRoot.absolutePath().toUtf8().data();
-                fileIO->SetAlias("@products@", projectCachePath);
+
+                fileIO->SetAlias("@products@", projectCacheRoot.absolutePath().toUtf8().data());
 
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
@@ -274,7 +274,7 @@ template <class R>
 inline void FileServer::Send(unsigned int connId, unsigned int serial, const R& response)
 {
     size_t bytesSent;
-    EBUS_EVENT_ID_RESULT(bytesSent, connId, AssetProcessor::ConnectionBus, SendResponse, serial, response);
+    AssetProcessor::ConnectionBus::EventResult(bytesSent, connId, &AssetProcessor::ConnectionBus::Events::SendResponse, serial, response);
     m_bytesSent += bytesSent;
     AddBytesSent(connId, bytesSent, m_realtimeMetrics);
 }

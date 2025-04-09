@@ -122,6 +122,7 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
     from azlmbr.math import Math_IsClose
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorLevelEntity
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties, DISPLAY_MAPPER_PRESET, DISPLAY_MAPPER_OPERATION_TYPE
 
@@ -134,6 +135,7 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         # Test steps begin.
         # 1. Add Display Mapper level component to the level entity.
         display_mapper_component = EditorLevelEntity.add_component(AtomComponentProperties.display_mapper())
+        PrefabWaiter.wait_for_propagation()
         Report.critical_result(
             Tests.display_mapper_component,
             EditorLevelEntity.has_component(AtomComponentProperties.display_mapper()))
@@ -141,17 +143,17 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         # 2. UNDO the level component addition.
         # -> UNDO component addition.
         general.undo()
-        general.idle_wait_frames(1)
+        PrefabWaiter.wait_for_propagation()
         Report.result(Tests.creation_undo, not EditorLevelEntity.has_component(AtomComponentProperties.display_mapper()))
 
         # 3. REDO the level component addition.
         # -> REDO component addition.
         general.redo()
-        general.idle_wait_frames(1)
+        PrefabWaiter.wait_for_propagation()
         Report.result(Tests.creation_redo, EditorLevelEntity.has_component(AtomComponentProperties.display_mapper()))
 
         # 4. Set LDR color Grading LUT asset.
-        display_mapper_asset_path = os.path.join("LookupTables", "LUT_Sepia.azasset")
+        display_mapper_asset_path = os.path.join("lookuptables", "lut_sepia.azasset")
         display_mapper_asset = Asset.find_asset_by_path(display_mapper_asset_path, False)
         display_mapper_component.set_component_property_value(
             AtomComponentProperties.display_mapper('LDR color Grading LUT'), display_mapper_asset.id)
@@ -162,11 +164,8 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
 
         for operation_type in DISPLAY_MAPPER_OPERATION_TYPE.keys():
             # 5. Set the Display Mapper Operation Type enumerated in DISPLAY_MAPPER_OPERATION_TYPE for each type
-            # Type property cannot be set currently. as a workaround we are calling an ebus to set the operation type
-            # display_mapper_component.set_component_property_value(
-            #     AtomComponentProperties.display_mapper('Type'), DISPLAY_MAPPER_OPERATION_TYPE[operation_type])
-            render.DisplayMapperComponentRequestBus(
-                bus.Broadcast, "SetDisplayMapperOperationType", DISPLAY_MAPPER_OPERATION_TYPE[operation_type])
+            display_mapper_component.set_component_property_value(
+                AtomComponentProperties.display_mapper('Type'), DISPLAY_MAPPER_OPERATION_TYPE[operation_type])
             general.idle_wait_frames(3)
             set_type = render.DisplayMapperComponentRequestBus(bus.Broadcast, "GetDisplayMapperOperationType")
             Report.info(f"DiplayMapperOperationType: {set_type}")
@@ -369,11 +368,14 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         cinema_limit_white_presets = [48.0, 184.3200073, 368.6400146, 737.2800293]
         for preset in DISPLAY_MAPPER_PRESET.keys():
             # 19. Select and load each preset
-            # Preset Selection cannot be set or loaded currently; as a workaround we are calling an ebus to load preset
-            # A fix is in progress
-            # display_mapper_component.set_component_property_value(
-            #     AtomComponentProperties.display_mapper('Preset Selection'), DISPLAY_MAPPER_PRESET[preset])
-            render.DisplayMapperComponentRequestBus(bus.Broadcast, "LoadPreset", DISPLAY_MAPPER_PRESET[preset])
+            display_mapper_component.set_component_property_value(
+                AtomComponentProperties.display_mapper('Preset Selection'), DISPLAY_MAPPER_PRESET[preset])
+            general.idle_wait_frames(1)
+            render.DisplayMapperComponentRequestBus(
+                bus.Broadcast,
+                "LoadPreset",
+                display_mapper_component.get_component_property_value(
+                    AtomComponentProperties.display_mapper('Preset Selection')))
             general.idle_wait_frames(1)
             # check some value to confirm preset loaded
             test_preset = (f"Preset {preset} loaded expected value",

@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QStyleOptionSpinBox>
 #include <QHBoxLayout>
+#include <QEvent>
 
 namespace AzQtComponents
 {
@@ -62,8 +63,10 @@ const QString& VectorElement::label() const
 
 void VectorElement::setValue(double newValue)
 {
-    // Nothing to do if the value is not actually changed
-    if (AZ::IsCloseMag(m_value, newValue, AZStd::numeric_limits<double>::epsilon()))
+    // Nothing to do if the value is not actually changed.
+    // Cast to float for comparison because our vector data is stored in floats.
+    // Otherwise, small changes may be detected when comparing values
+    if (AZ::IsCloseMag(static_cast<float>(m_value), static_cast<float>(newValue), AZStd::numeric_limits<float>::epsilon()))
     {
         return;
     }
@@ -105,6 +108,15 @@ void VectorElement::onSpinBoxEditingFinished()
 void VectorElement::setCoordinate(VectorElement::Coordinate coordinate)
 {
     setProperty(g_CoordinatePropertyName, QVariant::fromValue(coordinate));
+}
+
+void VectorElement::changeEvent(QEvent* event) {
+
+    if(event->type() == QEvent::EnabledChange) {
+         style()->unpolish(m_label);
+         style()->polish(m_label);
+    }
+    QWidget::changeEvent(event);
 }
 
 QSize VectorElement::sizeHint() const
@@ -158,7 +170,7 @@ void VectorElement::layout(QWidget* element, QAbstractSpinBox* spinBox, QLabel* 
 
 QRect VectorElement::editFieldRect(const QProxyStyle* style, const QStyleOptionComplex* option, const QWidget* widget, const SpinBox::Config& config)
 {
-    if (auto spinBoxOption = qstyleoption_cast<const QStyleOptionSpinBox *>(option))
+    if (qstyleoption_cast<const QStyleOptionSpinBox *>(option))
     {
         auto rect = SpinBox::editFieldRect(style, option, widget, config);
 

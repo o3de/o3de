@@ -14,6 +14,8 @@ namespace AZ
     {
         namespace Neon
         {
+            constexpr uint32x4_t LastLane{ 0, 0, 0, 1 };
+
             AZ_MATH_INLINE bool AreAllLanesTrue(uint32x2_t value)
             {
                 return vminv_u32(value) != 0;
@@ -22,6 +24,11 @@ namespace AZ
             AZ_MATH_INLINE bool AreAllLanesTrue(uint32x4_t value)
             {
                 return vminvq_u32(value) != 0;
+            }
+
+            AZ_MATH_INLINE bool AreFirstThreeLanesTrue(uint32x4_t value)
+            {
+                return AreAllLanesTrue(vorrq_u32(value, LastLane));
             }
         }
     }

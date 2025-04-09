@@ -36,6 +36,11 @@ namespace UnitTest
             m_entityMap[Passenger2EntityName] = CreateEntity(Passenger2EntityName);
             m_entityMap[CityEntityName] = CreateEntity(CityEntityName);
 
+            AddRequiredEditorComponents({
+                m_entityMap[Passenger1EntityName]->GetId(),
+                m_entityMap[Passenger2EntityName]->GetId(),
+                m_entityMap[CityEntityName]->GetId() });
+
             // Call HandleEntitiesAdded to the loose entities to register them with the Prefab EOS
             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded,
@@ -150,7 +155,8 @@ namespace UnitTest
         {
             m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_instanceMap[CarEntityName]->GetContainerEntityId());
             EXPECT_EQ(
-                m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId), m_instanceMap[CarEntityName]->GetTemplateId());
+                m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId),
+                m_instanceMap[CarEntityName]->GetTemplateId());
 
             auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_editorEntityContextId);
             EXPECT_TRUE(instance.has_value());
@@ -164,7 +170,8 @@ namespace UnitTest
         {
             m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_entityMap[Passenger1EntityName]->GetId());
             EXPECT_EQ(
-                m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId), m_instanceMap[CarEntityName]->GetTemplateId());
+                m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId),
+                m_instanceMap[CarEntityName]->GetTemplateId());
 
             auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_editorEntityContextId);
             EXPECT_TRUE(instance.has_value());
@@ -184,7 +191,8 @@ namespace UnitTest
 
             m_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
             EXPECT_EQ(
-                m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId), rootPrefabInstance->get().GetTemplateId());
+                m_prefabFocusInterface->GetFocusedPrefabTemplateId(m_editorEntityContextId),
+                rootPrefabInstance->get().GetTemplateId());
 
             auto instance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_editorEntityContextId);
             EXPECT_TRUE(instance.has_value());

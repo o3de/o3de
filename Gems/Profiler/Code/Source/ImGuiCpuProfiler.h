@@ -91,6 +91,7 @@ namespace Profiler
         {
             const AZStd::string& m_name;
             double m_executeDuration = 0;
+            double m_executeDurationAverage = 0;
         };
 
         ImGuiCpuProfiler();
@@ -130,6 +131,9 @@ namespace Profiler
         // Sort the table by a given column, rearranges the pointers in m_tableData.
         void SortTable(ImGuiTableSortSpecs* sortSpecs);
 
+        // Clear the table, forcing it to rebuild
+        void ResetTable();
+
         // gather the latest timing statistics
         void CacheCpuTimingStatistics();
 
@@ -168,6 +172,12 @@ namespace Profiler
 
         // System tick bus overrides
         void OnSystemTick() override;
+
+        // Convert time ticks to milliseconds
+        float TicksToMs(double ticks);
+
+        // Convert time ticks to milliseconds
+        float TicksToMs(AZStd::sys_time_t ticks);
 
         //  --- Visualizer Members ---
 
@@ -232,6 +242,8 @@ namespace Profiler
         // Index into the file picker, used to determine which file to load when "Load File" is pressed.
         int m_currentFileIndex = 0;
 
+        // Ticks per second used when the profiler data was recorded (when loading from a file).
+        AZStd::sys_time_t m_ticksPerSecondFromFile = 0;
 
         // --- Loading capture state ---
         AZStd::unordered_set<AZStd::string> m_deserializedStringPool;

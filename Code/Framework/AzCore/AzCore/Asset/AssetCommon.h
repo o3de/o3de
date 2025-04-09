@@ -8,18 +8,19 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/IStreamerTypes.h>
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/std/function/function_fwd.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Math/Uuid.h>
-#include <AzCore/Preprocessor/Enum.h>
-#include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_base_of.h>
-#include <AzCore/IO/IStreamerTypes.h>
 
 namespace AZ
 {
@@ -57,6 +58,7 @@ namespace AZ
 
             /// Create asset id in invalid state
             AssetId();
+            explicit AssetId(AZStd::string_view guidString, u32 subId = 0);
             AssetId(const Uuid& guid, u32 subId = 0);
 
             bool IsValid() const;
@@ -81,6 +83,10 @@ namespace AZ
 
             static AssetId CreateString(AZStd::string_view input);
             static void Reflect(ReflectContext* context);
+
+            static constexpr size_t MaxStringBuffer = AZ::Uuid::MaxStringBuffer + 9; /// UUid size (includes terminal) + ":" + hex, subId
+            using FixedString = AZStd::fixed_string<MaxStringBuffer>;
+            FixedString ToFixedString() const;
 
             Uuid m_guid;
             u32  m_subId;   ///< To allow easier and more consistent asset guid, we can provide asset sub ID. (i.e. Guid is a cubemap texture, subId is the index of the side)
@@ -123,7 +129,7 @@ namespace AZ
                 Error,              ///< Asset attempted to load, but it or a strict dependency failed.
             };
 
-            AZ_CLASS_ALLOCATOR(AssetData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetData, SystemAllocator);
             AZ_RTTI(AssetData, "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}");
 
             AssetData(const AssetId& assetId = AssetId(), AssetStatus status = AssetStatus::NotLoaded)
@@ -155,7 +161,7 @@ namespace AZ
             bool IsLoading(bool includeQueued = true) const;
             AssetStatus GetStatus() const { return m_status.load(); }
             const AssetId& GetId() const { return m_assetId; }
-            const AssetType& GetType() const { return RTTI_GetType(); }
+            AssetType GetType() const { return RTTI_GetType(); }
             int GetUseCount() const { return m_useCount.load(); }
             int GetCreationToken() const { return m_creationToken; }
 
@@ -214,10 +220,9 @@ namespace AZ
          * Setting for each reference (Asset<T>) to control loading of referenced assets during serialization.
          */
         AZ_ENUM_WITH_UNDERLYING_TYPE(AssetLoadBehavior, u8,
-            (PreLoad, 0),          ///< Serializer will "Pre load" dependencies, asset containers may load in parallel but will not signal AssetReady
-            (QueueLoad, 1),        ///< Serializer will queue an asynchronous load of the referenced asset and return the object to the user. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-            (NoLoad, 2),           ///< Serializer will load reference information, but asset loading will be left to the user. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-                                   ///< AssetContainers will skip NoLoad dependencies
+            (PreLoad, 0),          ///< Specifies the asset should be loaded automatically and that it will be required to finish loading before the parent (asset depending on this asset) can be considered "ready" (OnReady only fires when the asset and all it's PreLoad dependencies are loaded)
+            (QueueLoad, 1),        ///< Specifies the asset should be loaded automatically but the parent (asset depending on this asset) will not wait for it and can be considered ready without this asset. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
+            (NoLoad, 2),           ///< Specifies the asset should not be loaded automatically. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
             Count,
             (Default, QueueLoad)
         );
@@ -258,11 +263,11 @@ namespace AZ
             {
             }
             AssetFilterCB m_assetLoadFilterCB{ nullptr };
-            AZStd::optional<AZStd::chrono::milliseconds> m_deadline{ };
+            AZStd::optional<AZ::IO::IStreamerTypes::Deadline> m_deadline{};
             AZStd::optional<IO::IStreamerTypes::Priority> m_priority{ };
             AssetDependencyLoadRules m_dependencyRules{ AssetDependencyLoadRules::Default };
             // If the asset we're requesting is already loaded and we don't want to check for any
-            // depenencies that need loading, leave this as true.  If you wish to force a clean evaluation
+            // dependencies that need loading, leave this as true.  If you wish to force a clean evaluation
             // for dependent assets set to false
             bool m_reloadMissingDependencies{ false };
             bool operator==(const AssetLoadParameters& rhs) const
@@ -630,7 +635,7 @@ namespace AZ
             : public AssetBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetBusCallbacks, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBusCallbacks, AZ::SystemAllocator);
 
             using AssetReadyCB = AZStd::function<void (Asset<AssetData> /*asset*/, AssetBusCallbacks& /*callbacks*/)>;
             using AssetMovedCB = AZStd::function<void (Asset<AssetData> /*asset*/, void* /*oldDataPointer*/, AssetBusCallbacks& /*callbacks*/)>;
@@ -692,6 +697,10 @@ namespace AZ
         }
 
         //=========================================================================
+        inline AssetId::AssetId(AZStd::string_view guidString, u32 subId)
+            : AssetId(AZ::Uuid(guidString), subId)
+        {
+        }
         inline AssetId::AssetId(const Uuid& guid, u32 subId)
             : m_guid(guid)
             , m_subId(subId)
@@ -717,7 +726,7 @@ namespace AZ
                 result = StringType::format("%s:%x", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             case SubIdDisplayType::Decimal:
-                result = StringType::format("%s:%d", m_guid.ToString<StringType>().c_str(), m_subId);
+                result = StringType::format("%s:%u", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             }
         }
@@ -1037,13 +1046,11 @@ namespace AZ
             if (assetData && !assetData->RTTI_IsTypeOf(AzTypeInfo<T>::Uuid()))
             {
 #ifdef AZ_ENABLE_TRACING
-                char assetDataIdGUIDStr[Uuid::MaxStringBuffer];
-                char assetTypeIdGUIDStr[Uuid::MaxStringBuffer];
-                assetData->GetId().m_guid.ToString(assetDataIdGUIDStr, AZ_ARRAY_SIZE(assetDataIdGUIDStr));
-                AzTypeInfo<T>::Uuid().ToString(assetTypeIdGUIDStr, AZ_ARRAY_SIZE(assetTypeIdGUIDStr));
-                AZ_Error("AssetDatabase", false, "Asset of type %s:%x (%s) is not related to %s (%s)!",
-                    assetData->GetType().ToString<AZStd::string>().c_str(), assetData->GetId().m_subId, assetDataIdGUIDStr,
-                    AzTypeInfo<T>::Name(), assetTypeIdGUIDStr);
+                AZ_Error("AssetDatabase", false, "Asset: %s TypeId: %s, is not related to Type: %s (%s)!"
+                    , assetData->GetId().ToFixedString().c_str()
+                    , assetData->GetType().ToFixedString().c_str()
+                    , AzTypeInfo<T>::Name()
+                    , AzTypeInfo<T>::Uuid().ToFixedString().c_str());
 #endif // AZ_ENABLE_TRACING
                 m_assetId = AssetId();
                 m_assetType = azrtti_typeid<T>();
@@ -1259,3 +1266,4 @@ namespace AZStd
     };
 }
 
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(Data::AssetEvents);

@@ -22,7 +22,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
-            AZ_CLASS_ALLOCATOR_IMPL(MotionSamplingRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MotionSamplingRule, AZ::SystemAllocator)
 
             float MotionSamplingRule::GetCustomSampleRate() const
             {
@@ -147,7 +147,7 @@ namespace EMotionFX
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->DataElement(AZ_CRC("MotionData"), &MotionSamplingRule::m_motionDataType, "Motion data type",
+                        ->DataElement(AZ_CRC_CE("MotionData"), &MotionSamplingRule::m_motionDataType, "Motion data type",
                             "The motion data type to use. This defines how the motion data is stored. This can have an effect on performance and memory usage.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MotionSamplingRule::m_sampleRateMethod, "Sample rate", "Either use the Fbx sample rate or use a custom sample rate. The sample rate is automatically limited to the rate from Fbx.")

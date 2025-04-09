@@ -24,7 +24,7 @@ namespace UnitTest
 
     template<typename Set>
     class ConcurrentUnorderedSetTestBase
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -165,7 +165,7 @@ namespace UnitTest
 
     template<typename Set>
     class ConcurrentUnorderedMultiSetTestBase
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -312,7 +312,7 @@ namespace UnitTest
 
     template<typename Map>
     class ConcurrentUnorderedMapTestBase
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -461,7 +461,7 @@ namespace UnitTest
 
     template<typename Map>
     class ConcurrentUnorderedMultiMapTestBase
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -616,7 +616,7 @@ namespace UnitTest
     }
 
     class ConcurrentVectorTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()

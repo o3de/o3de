@@ -56,19 +56,39 @@ namespace EMStudio
         m_frameworkScene = createSceneOutcome.TakeValue();
         m_frameworkScene->SetSubsystem<AzFramework::EntityContext::SceneStorageType>(m_entityContext.get());
 
-        // Create and register a scene with all available feature processors
+        // Create and register a scene with feature processors defined in the viewport settings
         AZ::RPI::SceneDescriptor sceneDesc;
         sceneDesc.m_nameId = AZ::Name("AnimViewport");
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        const char* viewportSettingPath = "/O3DE/Editor/Viewport/Animation/Scene";
+        bool sceneDescLoaded = settingsRegistry->GetObject(sceneDesc, viewportSettingPath);
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
-        m_scene->EnableAllFeatureProcessors();
+
+        if (!sceneDescLoaded)
+        {
+            AZ_Warning("AnimViewportRenderer", false, "Settings registry is missing the scene settings for this viewport, so all feature processors will be enabled. "
+                        "To enable only a minimal set, add the specific list of feature processors with a registry path of '%s'.", viewportSettingPath);
+            m_scene->EnableAllFeatureProcessors();
+        }
 
         // Link our RPI::Scene to the AzFramework::Scene
         m_frameworkScene->SetSubsystem(m_scene);
 
-        const char* pipelineAssetPath = "passes/MainRenderPipeline.azasset";
+        AZStd::string pipelineAssetPath = "passes/MainRenderPipeline.azasset";
+        AZ::RPI::XRRenderingInterface* xrSystem = AZ::RPI::RPISystemInterface::Get()->GetXRSystem();
+        if (xrSystem)
+        {
+            // OpenXr uses low end render pipeline
+            pipelineAssetPath = "passes/LowEndRenderPipeline.azasset";
+        }
+
         AZStd::optional<AZ::RPI::RenderPipelineDescriptor> renderPipelineDesc =
-            AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath, AZStd::string::format("_%i", viewportContext->GetId()));
-        AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
+            AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath.c_str(), AZStd::string::format("_%i", viewportContext->GetId()));
+        AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath.c_str());
+
+        const AZ::RHI::MultisampleState multiSampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        renderPipelineDesc.value().m_renderSettings.m_multisampleState = multiSampleState;
+        AZ_Printf("AnimViewportRenderer", "Animation viewport renderer starting with multi sample %d", multiSampleState.m_samples);
         
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *m_windowContext.get());
         m_scene->AddRenderPipeline(m_renderPipeline);
@@ -261,7 +281,7 @@ namespace EMStudio
         AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, identityTransform);
 
         auto modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-            "objects/groudplane/groundplane_512x512m.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
+            "objects/groudplane/groundplane_512x512m.fbx.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
         AZ::Render::MeshComponentRequestBus::Event(
             m_groundEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, modelAsset);
 
@@ -375,5 +395,15 @@ namespace EMStudio
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,
             cameraConfig, m_lightHandles, false);
+    }
+
+    AZ::RPI::SceneId AnimViewportRenderer::GetRenderSceneId() const
+    {
+        return m_scene->GetId();
+    }
+
+    const AZStd::vector<AZ::Entity*>& AnimViewportRenderer::GetActorEntities() const
+    {
+        return m_actorEntities;
     }
 } // namespace EMStudio

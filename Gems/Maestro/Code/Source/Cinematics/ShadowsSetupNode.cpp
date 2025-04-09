@@ -10,111 +10,108 @@
 // Description : CryMovie animation node for shadow settings
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/vector.h>
 
 #include "ShadowsSetupNode.h"
 #include "Maestro/Types/AnimNodeType.h"
 #include "Maestro/Types/AnimValueType.h"
 #include "Maestro/Types/AnimParamType.h"
 
-//////////////////////////////////////////////////////////////////////////
-namespace ShadowSetupNode
+namespace Maestro
 {
-    bool s_shadowSetupParamsInit = false;
-    StaticInstance<std::vector<CAnimNode::SParamInfo>> s_shadowSetupParams;
 
-    void AddSupportedParam(const char* sName, AnimParamType paramId, AnimValueType valueType)
+    namespace ShadowSetupNodeHelper
     {
-        CAnimNode::SParamInfo param;
-        param.name = sName;
-        param.paramType = paramId;
-        param.valueType = valueType;
-        s_shadowSetupParams.push_back(param);
-    }
-};
+        static bool s_shadowSetupParamsInit = false;
+        static AZStd::vector<CAnimNode::SParamInfo> s_shadowSetupParams;
 
-//-----------------------------------------------------------------------------
-CShadowsSetupNode::CShadowsSetupNode()
-    : CShadowsSetupNode(0)
-{
-}
-
-//-----------------------------------------------------------------------------
-CShadowsSetupNode::CShadowsSetupNode(const int id)
-    : CAnimNode(id, AnimNodeType::ShadowSetup)
-{
-    CShadowsSetupNode::Initialize();
-}
-
-//-----------------------------------------------------------------------------
-void CShadowsSetupNode::Initialize()
-{
-    if (!ShadowSetupNode::s_shadowSetupParamsInit)
-    {
-        ShadowSetupNode::s_shadowSetupParamsInit = true;
-        ShadowSetupNode::s_shadowSetupParams.reserve(1);
-        ShadowSetupNode::AddSupportedParam("GSMCache", AnimParamType::GSMCache, AnimValueType::Bool);
-    }
-}
-
-//-----------------------------------------------------------------------------
-void CShadowsSetupNode::Animate(SAnimContext& ac)
-{
-    IAnimTrack* pGsmCache = GetTrackForParameter(AnimParamType::GSMCache);
-    if (pGsmCache && (pGsmCache->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled) == 0)
-    {
-        bool val(false);
-        pGsmCache->GetValue(ac.time, val);
-    }
-}
-
-//-----------------------------------------------------------------------------
-void CShadowsSetupNode::CreateDefaultTracks()
-{
-    CreateTrack(AnimParamType::GSMCache);
-}
-
-//-----------------------------------------------------------------------------
-void CShadowsSetupNode::OnReset()
-{
-}
-
-//-----------------------------------------------------------------------------
-unsigned int CShadowsSetupNode::GetParamCount() const
-{
-    return static_cast<int>(ShadowSetupNode::s_shadowSetupParams.size());
-}
-
-//-----------------------------------------------------------------------------
-CAnimParamType CShadowsSetupNode::GetParamType(unsigned int nIndex) const
-{
-    if (nIndex < ShadowSetupNode::s_shadowSetupParams.size())
-    {
-        return ShadowSetupNode::s_shadowSetupParams[nIndex].paramType;
-    }
-
-    return AnimParamType::Invalid;
-}
-
-//-----------------------------------------------------------------------------
-bool CShadowsSetupNode::GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const
-{
-    for (size_t i = 0; i < ShadowSetupNode::s_shadowSetupParams.size(); ++i)
-    {
-        if (ShadowSetupNode::s_shadowSetupParams[i].paramType == paramId)
+        static void AddSupportedParam(const char* sName, AnimParamType paramId, AnimValueType valueType)
         {
-            info = ShadowSetupNode::s_shadowSetupParams[i];
-            return true;
+            CAnimNode::SParamInfo param;
+            param.name = sName;
+            param.paramType = paramId;
+            param.valueType = valueType;
+            s_shadowSetupParams.push_back(param);
+        }
+    } // namespace ShadowSetupNodeHelper
+
+    CShadowsSetupNode::CShadowsSetupNode()
+        : CShadowsSetupNode(0)
+    {
+    }
+
+    CShadowsSetupNode::CShadowsSetupNode(const int id)
+        : CAnimNode(id, AnimNodeType::ShadowSetup)
+    {
+        CShadowsSetupNode::Initialize();
+    }
+
+    void CShadowsSetupNode::Initialize()
+    {
+        using namespace ShadowSetupNodeHelper;
+        if (!s_shadowSetupParamsInit)
+        {
+            s_shadowSetupParamsInit = true;
+            s_shadowSetupParams.reserve(1);
+            AddSupportedParam("GSMCache", AnimParamType::GSMCache, AnimValueType::Bool);
         }
     }
-    return false;
-}
 
-//////////////////////////////////////////////////////////////////////////
-void CShadowsSetupNode::Reflect(AZ::ReflectContext* context)
-{
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    void CShadowsSetupNode::Animate(SAnimContext& ac)
     {
-        serializeContext->Class<CShadowsSetupNode, CAnimNode>()
-            ->Version(1);
+        IAnimTrack* pGsmCache = GetTrackForParameter(AnimParamType::GSMCache);
+        if (pGsmCache && (pGsmCache->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled) == 0)
+        {
+            bool val(false);
+            pGsmCache->GetValue(ac.time, val);
+        }
     }
-}
+
+    void CShadowsSetupNode::CreateDefaultTracks()
+    {
+        CreateTrack(AnimParamType::GSMCache);
+    }
+
+    void CShadowsSetupNode::OnReset()
+    {
+    }
+
+    unsigned int CShadowsSetupNode::GetParamCount() const
+    {
+        return static_cast<int>(ShadowSetupNodeHelper::s_shadowSetupParams.size());
+    }
+
+    CAnimParamType CShadowsSetupNode::GetParamType(unsigned int nIndex) const
+    {
+        using namespace ShadowSetupNodeHelper;
+        if (nIndex < s_shadowSetupParams.size())
+        {
+            return s_shadowSetupParams[nIndex].paramType;
+        }
+
+        return AnimParamType::Invalid;
+    }
+
+    bool CShadowsSetupNode::GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const
+    {
+        using namespace ShadowSetupNodeHelper;
+        for (size_t i = 0; i < s_shadowSetupParams.size(); ++i)
+        {
+            if (s_shadowSetupParams[i].paramType == paramId)
+            {
+                info = s_shadowSetupParams[i];
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void CShadowsSetupNode::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CShadowsSetupNode, CAnimNode>()->Version(1);
+        }
+    }
+
+} // namespace Maestro

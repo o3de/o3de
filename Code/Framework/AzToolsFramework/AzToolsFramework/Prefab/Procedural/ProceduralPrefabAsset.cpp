@@ -6,10 +6,10 @@
  *
  */
 #include <Prefab/Procedural/ProceduralPrefabAsset.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AZ::Prefab
@@ -57,14 +57,7 @@ namespace AZ::Prefab
 
     bool ProceduralPrefabAsset::UseProceduralPrefabs()
     {
-        bool prefabsEnabled = false;
-        AzFramework::ApplicationRequests::Bus::Broadcast(
-            [&prefabsEnabled](AzFramework::ApplicationRequests::Bus::Events* ebus)
-        {
-            prefabsEnabled = ebus->IsPrefabSystemEnabled();
-        });
-
-        return prefabsEnabled;
+        return true;
     }
 
     // PrefabDomData
@@ -86,6 +79,9 @@ namespace AZ::Prefab
 
     void PrefabDomData::CopyValue(const rapidjson::Value& inputValue)
     {
+        // Force a memory clear by first assigning to empty.  Simply calling copyfrom
+        // just allocates more memory without clearing existing memory usage.
+        m_prefabDom = AzToolsFramework::Prefab::PrefabDom();
         m_prefabDom.CopyFrom(inputValue, m_prefabDom.GetAllocator());
     }
 

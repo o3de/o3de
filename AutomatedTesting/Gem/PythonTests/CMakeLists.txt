@@ -10,7 +10,7 @@
 # Automated Tests
 ################################################################################
 
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_dir}/PAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -41,9 +41,6 @@ add_subdirectory(EditorPythonBindings)
 ## Python Asset Builder ##
 add_subdirectory(PythonAssetBuilder)
 
-## Blast ##
-add_subdirectory(Blast)
-
 ## Large Worlds ##
 add_subdirectory(largeworlds)
 
@@ -58,9 +55,6 @@ add_subdirectory(smoke)
 
 ## Terrain ##
 add_subdirectory(Terrain)
-
-## AWS ##
-add_subdirectory(AWS)
 
 ## Multiplayer ##
 add_subdirectory(Multiplayer)

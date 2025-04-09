@@ -13,6 +13,10 @@
                 "Path": "Passes/TerrainDetailClipmapGenerationPass.pass"
             },
             {
+                "Name": "TerrainClipmapDebugPassTemplate",
+                "Path": "Passes/TerrainClipmapDebugPass.pass"
+            },
+            {
                 "Name": "TerrainParentPassTemplate",
                 "Path": "Passes/TerrainParentPass.pass"
             }

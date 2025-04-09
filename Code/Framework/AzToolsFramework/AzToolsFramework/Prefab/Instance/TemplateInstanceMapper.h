@@ -20,7 +20,7 @@ namespace AzToolsFramework
             : public TemplateInstanceMapperInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(TemplateInstanceMapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TemplateInstanceMapper, AZ::SystemAllocator);
             AZ_RTTI(TemplateInstanceMapper, "{28EA46C7-F107-4D41-A008-960BED6371FB}", TemplateInstanceMapperInterface);
 
             TemplateInstanceMapper();

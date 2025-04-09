@@ -57,7 +57,7 @@ namespace AzFramework
             class Implementation
             {
             public:
-                AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
                 static Implementation* Create(StreamingInstallSystemComponent& streamingInstallSystemComponent);
                 Implementation(StreamingInstallSystemComponent& streamingInstallSystemComponent);

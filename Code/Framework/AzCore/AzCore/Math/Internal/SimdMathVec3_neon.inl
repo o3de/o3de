@@ -28,12 +28,12 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec1(Vec1::FloatArgType value)
         {
-            return NeonQuad::FromVec1(value);
+            return NeonQuad::FromVec1(value); // {value.x, value.x, value.x, unused}
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec2(Vec2::FloatArgType value)
         {
-            return NeonQuad::FromVec2(value);
+            return NeonQuad::FromVec2(value); // {value.x, value.y, 0.0f, unused}
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::LoadAligned(const float* __restrict addr)
@@ -86,19 +86,19 @@ namespace AZ
             NeonQuad::StreamAligned(addr, value);
         }
 
-        AZ_MATH_INLINE float Vec3::SelectFirst(FloatArgType value)
+        AZ_MATH_INLINE float Vec3::SelectIndex0(FloatArgType value)
         {
-            return NeonQuad::SelectFirst(value);
+            return NeonQuad::SelectIndex0(value);
         }
 
-        AZ_MATH_INLINE float Vec3::SelectSecond(FloatArgType value)
+        AZ_MATH_INLINE float Vec3::SelectIndex1(FloatArgType value)
         {
-            return NeonQuad::SelectSecond(value);
+            return NeonQuad::SelectIndex1(value);
         }
 
-        AZ_MATH_INLINE float Vec3::SelectThird(FloatArgType value)
+        AZ_MATH_INLINE float Vec3::SelectIndex2(FloatArgType value)
         {
-            return NeonQuad::SelectThird(value);
+            return NeonQuad::SelectIndex2(value);
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::Splat(float value)
@@ -111,49 +111,49 @@ namespace AZ
             return NeonQuad::Splat(value);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatFirst(FloatArgType value)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatIndex0(FloatArgType value)
         {
-            return NeonQuad::SplatFirst(value);
+            return NeonQuad::SplatIndex0(value);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatSecond(FloatArgType value)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatIndex1(FloatArgType value)
         {
-            return NeonQuad::SplatSecond(value);
+            return NeonQuad::SplatIndex1(value);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatThird(FloatArgType value)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatIndex2(FloatArgType value)
         {
-            return NeonQuad::SplatThird(value);
+            return NeonQuad::SplatIndex2(value);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceFirst(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex0(FloatArgType a, float b)
         {
-            return NeonQuad::ReplaceFirst(a, b);
+            return NeonQuad::ReplaceIndex0(a, b);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceFirst(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex0(FloatArgType a, FloatArgType b)
         {
-            return NeonQuad::ReplaceFirst(a, b);
+            return NeonQuad::ReplaceIndex0(a, b);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceSecond(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex1(FloatArgType a, float b)
         {
-            return NeonQuad::ReplaceSecond(a, b);
+            return NeonQuad::ReplaceIndex1(a, b);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceSecond(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex1(FloatArgType a, FloatArgType b)
         {
-            return NeonQuad::ReplaceSecond(a, b);
+            return NeonQuad::ReplaceIndex1(a, b);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceThird(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex2(FloatArgType a, float b)
         {
-            return NeonQuad::ReplaceThird(a, b);
+            return NeonQuad::ReplaceIndex2(a, b);
         }
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceThird(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex2(FloatArgType a, FloatArgType b)
         {
-            return NeonQuad::ReplaceThird(a, b);
+            return NeonQuad::ReplaceIndex2(a, b);
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::LoadImmediate(float x, float y, float z)
@@ -188,6 +188,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::Div(FloatArgType arg1, FloatArgType arg2)
         {
+            // In Vec3 the last element can be zero, avoid doing division by zero
+            arg2 = NeonQuad::ReplaceIndex3(arg2, 1.0f);
             return NeonQuad::Div(arg1, arg2);
         }
 
@@ -353,41 +355,27 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec3::CmpAllEq(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllEq compares all 4 elements.
-            // The fourth elements are already equal since it's not used in Vec3.
-            return NeonQuad::CmpAllEq(arg1, arg2);
+            return NeonQuad::CmpFirstThreeEq(arg1, arg2);
         }
 
         AZ_MATH_INLINE bool Vec3::CmpAllLt(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllLt compares all 4 elements.
-            // This makes sure unused fourth element of arg1 < arg2.
-            return NeonQuad::CmpAllLt(
-                NeonQuad::ReplaceFourth(arg1, 0.0f),
-                NeonQuad::ReplaceFourth(arg2, 1.0f));
+            return NeonQuad::CmpFirstThreeLt(arg1, arg2);
         }
 
         AZ_MATH_INLINE bool Vec3::CmpAllLtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllLtEq compares all 4 elements.
-            // The fourth elements are already equal since it's not used in Vec3.
-            return NeonQuad::CmpAllLtEq(arg1, arg2);
+            return NeonQuad::CmpFirstThreeLtEq(arg1, arg2);
         }
 
         AZ_MATH_INLINE bool Vec3::CmpAllGt(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllGt compares all 4 elements.
-            // This makes sure unused fourth element of arg1 > arg2.
-            return NeonQuad::CmpAllGt(
-                NeonQuad::ReplaceFourth(arg1, 1.0f),
-                NeonQuad::ReplaceFourth(arg2, 0.0f));
+            return NeonQuad::CmpFirstThreeGt(arg1, arg2);
         }
 
         AZ_MATH_INLINE bool Vec3::CmpAllGtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            // NeonQuad::CmpAllGtEq compares all 4 elements.
-            // The fourth elements are already equal since it's not used in Vec3.
-            return NeonQuad::CmpAllGtEq(arg1, arg2);
+            return NeonQuad::CmpFirstThreeGtEq(arg1, arg2);
         }
 
         AZ_MATH_INLINE Vec3::Int32Type Vec3::CmpEq(Int32ArgType arg1, Int32ArgType arg2)
@@ -422,9 +410,7 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec3::CmpAllEq(Int32ArgType arg1, Int32ArgType arg2)
         {
-            // NeonQuad::CmpAllEq compares all 4 elements.
-            // The fourth elements are already equal since it's not used in Vec3.
-            return NeonQuad::CmpAllEq(arg1, arg2);
+            return NeonQuad::CmpFirstThreeEq(arg1, arg2);
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::Select(FloatArgType arg1, FloatArgType arg2, FloatArgType mask)
@@ -439,12 +425,18 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::Reciprocal(FloatArgType value)
         {
-            return NeonQuad::Reciprocal(value);
+            // In Vec3 the last element can be garbage or 0
+            // Using (value.x, value.y, value.z, 1) to avoid divisions by 0.
+            return NeonQuad::Reciprocal(
+                NeonQuad::ReplaceIndex3(value, 1.0f));
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::ReciprocalEstimate(FloatArgType value)
         {
-            return NeonQuad::ReciprocalEstimate(value);
+            // In Vec3 the last element can be garbage or 0
+            // Using (value.x, value.y, value.z, 1) to avoid divisions by 0.
+            return NeonQuad::ReciprocalEstimate(
+                NeonQuad::ReplaceIndex3(value, 1.0f));
         }
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::Mod(FloatArgType value, FloatArgType divisor)
@@ -510,6 +502,11 @@ namespace AZ
         AZ_MATH_INLINE Vec3::FloatType Vec3::Atan2(FloatArgType y, FloatArgType x)
         {
             return Common::Atan2<Vec3>(y, x);
+        }
+
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ExpEstimate(FloatArgType x)
+        {
+            return Common::ExpEstimate<Vec3>(x);
         }
 
         AZ_MATH_INLINE Vec1::FloatType Vec3::Dot(FloatArgType arg1, FloatArgType arg2)

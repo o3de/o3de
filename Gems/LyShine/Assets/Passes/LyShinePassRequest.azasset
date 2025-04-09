@@ -9,14 +9,14 @@
             {
                 "LocalSlot": "ColorInputOutput",
                 "AttachmentRef": {
-                    "Pass": "DebugOverlayPass",
-                    "Attachment": "InputOutput"
+                    "Pass": "AuxGeomPass",
+                    "Attachment": "ColorInputOutput"
                 }
             },
             {
                 "LocalSlot": "DepthInputOutput",
                 "AttachmentRef": {
-                    "Pass": "DepthPrePass",
+                    "Pass": "PipelineGlobal",
                     "Attachment": "Depth"
                 }
             }

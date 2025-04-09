@@ -8,123 +8,173 @@
 
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/std/string/conversions.h>
 
-namespace AZ
+namespace AZ::IO
 {
-    namespace IO
+    template<typename T>
+    Statistic Statistic::Create(
+        AZStd::string_view owner, AZStd::string_view name, T&& value, AZStd::string_view description, GraphType graphType)
     {
-        Statistic Statistic::CreateFloat(AZStd::string_view owner, AZStd::string_view name, double value)
-        {
-            Statistic result;
-            result.m_owner = owner;
-            result.m_name = name;
-            result.m_value.m_floatingPoint = value;
-            result.m_type = Type::FloatingPoint;
-            return result;
-        }
+        Statistic result;
+        result.m_owner = owner;
+        result.m_name = name;
+        result.m_description = description;
+        result.m_value = AZStd::forward<T>(value);
+        result.m_graphType = graphType;
+        return result;
+    }
+    
+    Statistic Statistic::CreateBoolean(
+        AZStd::string_view owner, AZStd::string_view name, bool value, AZStd::string_view description, GraphType graphType)
+    {
+        return Create(owner, name, value, description, graphType);
+    }
 
-        Statistic Statistic::CreateInteger(AZStd::string_view owner, AZStd::string_view name, s64 value)
-        {
-            Statistic result;
-            result.m_owner = owner;
-            result.m_name = name;
-            result.m_value.m_integer = value;
-            result.m_type = Type::Integer;
-            return result;
-        }
+    Statistic Statistic::CreateFloat(
+        AZStd::string_view owner, AZStd::string_view name, double value, AZStd::string_view description, GraphType graphType)
+    {
+        return Create(owner, name, value, description, graphType);
+    }
 
-        Statistic Statistic::CreatePercentage(AZStd::string_view owner, AZStd::string_view name, double value)
-        {
-            Statistic result;
-            result.m_owner = owner;
-            result.m_name = name;
-            result.m_value.m_floatingPoint = value;
-            result.m_type = Type::Percentage;
-            return result;
-        }
+    Statistic Statistic::CreateFloatRange(
+        AZStd::string_view owner,
+        AZStd::string_view name,
+        double value,
+        double min,
+        double max,
+        AZStd::string_view description,
+        GraphType graphType)
+    {
+        return Create(owner, name, FloatRange{ value, min, max }, description, graphType);
+    }
 
-        void Statistic::PlotImmediate(
-            [[maybe_unused]] AZStd::string_view owner,
-            [[maybe_unused]] AZStd::string_view name,
-            [[maybe_unused]] double value)
-        {
-            AZ_PROFILE_DATAPOINT(AzCore, value,
-                "Streamer/%.*s/%.*s (Raw)",
+    Statistic Statistic::CreateInteger(
+        AZStd::string_view owner, AZStd::string_view name, s64 value, AZStd::string_view description, GraphType graphType)
+    {
+        return Create(owner, name, value, description, graphType);
+    }
+
+    Statistic Statistic::CreateIntegerRange(
+        AZStd::string_view owner, AZStd::string_view name, s64 value, s64 min, s64 max, AZStd::string_view description, GraphType graphType)
+    {
+        return Create(owner, name, IntegerRange{ value, min, max }, description, graphType);
+    }
+
+    Statistic Statistic::CreatePercentage(
+        AZStd::string_view owner, AZStd::string_view name, double value, AZStd::string_view description, GraphType graphType)
+    {
+        return Create(owner, name, Percentage{ value }, description, graphType);
+    }
+
+    Statistic Statistic::CreatePercentageRange(
+        AZStd::string_view owner,
+        AZStd::string_view name,
+        double value,
+        double min,
+        double max,
+        AZStd::string_view description,
+        GraphType graphType)
+    {
+        return Create(owner, name, PercentageRange{ value, min, max }, description, graphType);
+    }
+
+    Statistic Statistic::CreateByteSize(
+        AZStd::string_view owner, AZStd::string_view name, u64 value, AZStd::string_view description, GraphType graphType)
+    {
+        return Create(owner, name, ByteSize{ value }, description, graphType);
+    }
+
+    Statistic Statistic::CreateByteSizeRange(
+        AZStd::string_view owner, AZStd::string_view name, u64 value, u64 min, u64 max, AZStd::string_view description, GraphType graphType)
+    {
+        return Create(owner, name, ByteSizeRange{ value, min, max }, description, graphType);
+    }
+
+    Statistic Statistic::CreateTime(
+        AZStd::string_view owner,
+        AZStd::string_view name,
+        TimeValue value,
+        AZStd::string_view description,
+        GraphType graphType)
+    {
+        return Create(owner, name, Time{ value }, description, graphType);
+    }
+
+    Statistic Statistic::CreateTimeRange(
+        AZStd::string_view owner,
+        AZStd::string_view name,
+        TimeValue value,
+        TimeValue min,
+        TimeValue max,
+        AZStd::string_view description,
+        GraphType graphType)
+    {
+        return Create(owner, name, TimeRange{ value, min, max }, description, graphType);
+    }
+
+    Statistic Statistic::CreateBytesPerSecond(
+        AZStd::string_view owner,
+        AZStd::string_view name,
+        double value,
+        AZStd::string_view description,
+        GraphType graphType)
+    {
+        return Create(owner, name, BytesPerSecond{ value }, description, graphType);
+    }
+
+    Statistic Statistic::CreatePersistentString(
+        AZStd::string_view owner, AZStd::string_view name, AZStd::string value, AZStd::string_view description)
+    {
+        return Create(owner, name, AZStd::move(value), description, GraphType::None);
+    }
+
+    Statistic Statistic::CreateReferenceString(
+        AZStd::string_view owner, AZStd::string_view name, AZStd::string_view value, AZStd::string_view description)
+    {
+        return Create(owner, name, value, description, GraphType::None);
+    }
+
+    void Statistic::PlotImmediate(
+        [[maybe_unused]] AZStd::string_view owner,
+        [[maybe_unused]] AZStd::string_view name,
+        [[maybe_unused]] double value)
+    {
+        // AZ_PROFILE_DATAPOINT requires a wstring as input, but you can't feed non-wstring parameters to wstring::format.
+        const size_t MaxStatNameLength = 256;
+        wchar_t statBufferStack[MaxStatNameLength];
+        statBufferStack[MaxStatNameLength - 1] = 0; // make sure it is null terminated
+
+        AZStd::to_wstring(statBufferStack, MaxStatNameLength - 1,
+            AZStd::string::format("Streamer/%.*s/%.*s (Raw)",
                 aznumeric_cast<int>(owner.size()), owner.data(),
-                aznumeric_cast<int>(name.size()), name.data());
-        }
+                aznumeric_cast<int>(name.size()), name.data()));
+        
+        AZ_PROFILE_DATAPOINT(AzCore, value,statBufferStack);
+    }
 
-        Statistic::Statistic(const Statistic& rhs)
-            : m_owner(rhs.m_owner)
-            , m_name(rhs.m_name)
-            , m_type(rhs.m_type)
-        {
-            memcpy(&m_value, &rhs.m_value, sizeof(m_value));
-        }
+    AZStd::string_view Statistic::GetOwner() const
+    {
+        return m_owner;
+    }
 
-        Statistic::Statistic(Statistic&& rhs)
-            : m_owner(AZStd::move(rhs.m_owner))
-            , m_name(AZStd::move(rhs.m_name))
-            , m_type(rhs.m_type)
-        {
-            memcpy(&m_value, &rhs.m_value, sizeof(m_value));
-        }
+    AZStd::string_view Statistic::GetName() const
+    {
+        return m_name;
+    }
 
-        Statistic& Statistic::operator=(const Statistic& rhs)
-        {
-            if (this != &rhs)
-            {
-                m_owner = rhs.m_owner;
-                m_name = rhs.m_name;
-                m_type = rhs.m_type;
-                memcpy(&m_value, &rhs.m_value, sizeof(m_value));
-            }
-            return *this;
-        }
+    AZStd::string_view Statistic::GetDescription() const
+    {
+        return m_description;
+    }
 
-        Statistic& Statistic::operator=(Statistic&& rhs)
-        {
-            if (this != &rhs)
-            {
-                m_owner = AZStd::move(rhs.m_owner);
-                m_name = AZStd::move(rhs.m_name);
-                m_type = rhs.m_type;
-                memcpy(&m_value, &rhs.m_value, sizeof(m_value));
-            }
-            return *this;
-        }
+    auto Statistic::GetValue() const -> const Value&
+    {
+        return m_value;
+    }
 
-        AZStd::string_view Statistic::GetOwner() const
-        {
-            return m_owner;
-        }
-
-        AZStd::string_view Statistic::GetName() const
-        {
-            return m_name;
-        }
-
-        Statistic::Type Statistic::GetType() const
-        {
-            return m_type;
-        }
-
-        double Statistic::GetFloatValue() const
-        {
-            AZ_Assert(m_type == Type::FloatingPoint, "Trying to get a floating point value from a statistic that doesn't store a floating point value.");
-            return m_value.m_floatingPoint;
-        }
-
-        s64 Statistic::GetIntegerValue() const
-        {
-            AZ_Assert(m_type == Type::Integer, "Trying to get a integer value from a statistic that doesn't store a integer value.");
-            return m_value.m_integer;
-        }
-
-        double Statistic::GetPercentage() const
-        {
-            AZ_Assert(m_type == Type::Percentage, "Trying to get a percentage value from a statistic that doesn't store a percentage value.");
-            return m_value.m_floatingPoint * 100.0;
-        }
-    } // namespace IO
-} // namespace AZ
+    auto Statistic::GetGraphType() const -> GraphType
+    {
+        return m_graphType;
+    }
+} // namespace AZ::IO

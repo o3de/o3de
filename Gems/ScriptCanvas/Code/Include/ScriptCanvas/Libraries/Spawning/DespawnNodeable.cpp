@@ -25,12 +25,12 @@ namespace ScriptCanvas::Nodeables::Spawning
     void DespawnNodeable::OnDeactivate()
     {
         m_spawnableScriptMediator.Clear();
-        AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler::BusDisconnect();
+        AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusDisconnect();
     }
 
     void DespawnNodeable::OnDespawn(AzFramework::EntitySpawnTicket spawnTicket)
     {
-        AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler::BusDisconnect(spawnTicket.GetId());
+        AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusDisconnect(spawnTicket.GetId());
         CallOnDespawn(spawnTicket);
     }
 
@@ -40,7 +40,7 @@ namespace ScriptCanvas::Nodeables::Spawning
 
         if (m_spawnableScriptMediator.Despawn(spawnTicket))
         {
-            Scripts::SpawnableScriptNotificationsBus::Handler::BusConnect(spawnTicket.GetId());
+            Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusConnect(spawnTicket.GetId());
         }
     }
 } // namespace ScriptCanvas::Nodeables::Spawning

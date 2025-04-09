@@ -6,14 +6,14 @@
  *
  */
 
-#include <algorithm>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/UnorderedSetSerializer.h>
+#include <AzCore/std/sort.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedSetContainerSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedSetContainerSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonUnorderedSetContainerSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -31,12 +31,11 @@ namespace AZ
         // Only sort if there's an array. If something went wrong or the set has been fully defaulted then the output won't be an array.
         if (outputValue.IsArray())
         {
-            // Using std::sort because AZStd::sort isn't implemented in terms of move operations.
             auto less = [](const rapidjson::Value& lhs, const rapidjson::Value& rhs) -> bool
             {
                 return JsonSerialization::Compare(lhs, rhs) == JsonSerializerCompareResult::Less;
             };
-            std::sort(outputValue.Begin(), outputValue.End(), less);
+            AZStd::sort(outputValue.Begin(), outputValue.End(), less);
         }
 
         return result;

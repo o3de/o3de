@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class SurfaceMaskGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientNode, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskGradientNode, "{A14FC1D9-1D3D-4385-AD07-8E4170637290}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -34,8 +34,8 @@ namespace LandscapeCanvas
         SurfaceMaskGradientNode() = default;
         explicit SurfaceMaskGradientNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
-        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
+        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_TITLE; }
     };
 }

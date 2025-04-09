@@ -11,16 +11,19 @@
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/DrawFilterTagRegistry.h>
+#include <Atom/RHI/TagBitRegistry.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
 
 #include <AtomCore/Instance/Instance.h>
 
@@ -33,6 +36,11 @@
 
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
+
+namespace AzFramework
+{
+    class IVisibilityScene;
+}
 
 namespace AZ
 {
@@ -48,13 +56,12 @@ namespace AZ
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;
 
-        class Scene final
-            : public SceneRequestBus::Handler
+        class ATOM_RPI_PUBLIC_API Scene final : public SceneRequestBus::Handler
         {
             friend class FeatureProcessorFactory;
             friend class RPISystem;
         public:
-            AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator);
             AZ_RTTI(Scene, "{29860D3E-D57E-41D9-8624-C39604EF2973}");
 
             // Pipeline states info built from scene's render pipeline passes
@@ -101,6 +108,11 @@ namespace AZ
             void DisableFeatureProcessor(const FeatureProcessorId& featureProcessorId);
 
             void DisableAllFeatureProcessors();
+
+            //! Callback function that will be invoked with each non-pointer FeatureProcessor
+            //! return true to continue visiting or false to halt
+            using FeatureProcessorVisitCallback = AZStd::function<bool(FeatureProcessor&)>;
+            void VisitFeatureProcessor(FeatureProcessorVisitCallback callback) const;
 
             //! Linear search to retrieve specific class of a feature processor.
             //! Returns nullptr if a feature processor with the specified id is
@@ -153,12 +165,11 @@ namespace AZ
 
             bool HasOutputForPipelineState(RHI::DrawListTag drawListTag) const;
 
-            AZ::RPI::CullingScene* GetCullingScene()
-            {
-                return m_cullingScene;
-            }
+            AzFramework::IVisibilityScene* GetVisibilityScene() const;
 
-            RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle);
+            AZ::RPI::CullingScene* GetCullingScene() const;
+
+            RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType = ViewType::Default);
 
             using PrepareSceneSrgEvent = AZ::Event<RPI::ShaderResourceGroup*>;
             //! Connect a handler to listen to the event that the Scene is ready to update and compile its scene srg
@@ -173,10 +184,17 @@ namespace AZ
             //! Try apply render pipeline changes from each feature processors if the pipeline allows modification and wasn't modified.
             void TryApplyRenderPipelineChanges(RenderPipeline* pipeline);
 
+            RHI::TagBitRegistry<uint32_t>& GetViewTagBitRegistry();
+            
+            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const;
+
+            uint16_t GetActiveRenderPipelines() const;
+
         protected:
-            // SceneFinder overrides...
-            void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
-                        
+            // SceneRequestBus::Handler overrides...
+            void OnSceneNotificationHandlerConnected(SceneNotification* handler) override;
+            void PipelineStateLookupNeedsRebuild() override;
+
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's simulation.
             // @param simulationTime the number of seconds since the application started
@@ -195,13 +213,12 @@ namespace AZ
             // This is called after PassSystem's FramePrepare so passes can still modify view srgs in its FramePrepareIntenal function before they are submitted to command list
             void UpdateSrgs();
 
-
         private:
             Scene();
 
 
             // Helper function to wait for end of TaskGraph and then delete the TaskGraphEvent
-            void WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&& completionTGEvent);
+            void WaitAndCleanTGEvent();
 
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
@@ -239,6 +256,7 @@ namespace AZ
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
 
+            AzFramework::IVisibilityScene* m_visibilityScene;
             AZ::RPI::CullingScene* m_cullingScene;
 
             // Cached views for current rendering frame. It gets re-built every frame.
@@ -261,20 +279,30 @@ namespace AZ
 
             RenderPipelinePtr m_defaultPipeline;
 
+            // Rebuild the m_pipelineStatesLookup after queued Pipeline changes have been applied.
+            bool m_pipelineStatesLookupNeedsRebuild = false;
+
             // Mapping of draw list tag and a group of pipeline states info built from scene's render pipeline passes
             AZStd::map<RHI::DrawListTag, PipelineStateList> m_pipelineStatesLookup;
 
             // reference of dynamic draw system (from RPISystem)
             DynamicDrawSystem* m_dynamicDrawSystem = nullptr;
 
+            // Bit tag registry that allows all views in the scene to sync on the position of flag bits by tag.
+            RHI::Ptr <RHI::TagBitRegistry<uint32_t>> m_viewTagBitRegistry = nullptr;
+
             // Registry which allocates draw filter tag for RenderPipeline
             RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
 
-            RHI::ShaderInputConstantIndex m_timeInputIndex;
-            float m_simulationTime;
+            RHI::ShaderInputNameIndex m_timeInputIndex = "m_time";
+            float m_simulationTime = 0.0;
+            RHI::ShaderInputNameIndex m_prevTimeInputIndex = "m_prevTime";
+            float m_prevSimulationTime = 0.0;
+            uint16_t m_numActiveRenderPipelines = 0;
         };
 
         // --- Template functions ---
+
         template<typename FeatureProcessorType>
         FeatureProcessorType* Scene::EnableFeatureProcessor()
         {

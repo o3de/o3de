@@ -10,6 +10,9 @@
 #include "ReflectionScreenSpaceBlurPass.h"
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 
 namespace AZ
 {
@@ -26,19 +29,6 @@ namespace AZ
         {
         }
 
-        bool ReflectionScreenSpaceCompositePass::IsEnabled() const
-        {
-            // delay for a few frames to ensure that the previous frame texture is populated
-            static const uint32_t FrameDelay = 10;
-            if (m_frameDelayCount < FrameDelay)
-            {
-                m_frameDelayCount++;
-                return false;
-            }
-
-            return true;
-        }
-
         void ReflectionScreenSpaceCompositePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
             if (!m_shaderResourceGroup)
@@ -46,8 +36,20 @@ namespace AZ
                 return;
             }
 
-            auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxMipLevel"));
-            m_shaderResourceGroup->SetConstant(constantIndex, ReflectionScreenSpaceBlurPass::NumMipLevels - 1);
+            RPI::Scene* scene = m_pipeline->GetScene();
+            SpecularReflectionsFeatureProcessorInterface* specularReflectionsFeatureProcessor = scene->GetFeatureProcessor<SpecularReflectionsFeatureProcessorInterface>();
+            AZ_Assert(specularReflectionsFeatureProcessor, "ReflectionScreenSpaceCompositePass requires the SpecularReflectionsFeatureProcessor");
+
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
+            AZ_Assert(outputAttachment, "ReflectionScreenSpaceCompositePass: Output binding has no attachment!");
+            RHI::Size outputImageSize = outputAttachment->m_descriptor.m_image.m_size;
+
+            const SSROptions& ssrOptions = specularReflectionsFeatureProcessor->GetSSROptions();
+
+            m_shaderResourceGroup->SetConstant(m_outputScaleNameIndex, ssrOptions.GetOutputScale());
+            m_shaderResourceGroup->SetConstant(m_outputWidthNameIndex, outputImageSize.m_width);
+            m_shaderResourceGroup->SetConstant(m_outputHeightNameIndex, outputImageSize.m_height);
+            m_shaderResourceGroup->SetConstant(m_maxRoughnessNameIndex, ssrOptions.m_maxRoughness);
 
             FullscreenTrianglePass::CompileResources(context);
         }

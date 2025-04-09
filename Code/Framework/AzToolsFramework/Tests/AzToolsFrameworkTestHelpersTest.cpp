@@ -13,12 +13,12 @@
 
 namespace UnitTest
 {
-    class AzToolsFrameworkTestHelpersFixture : public AllocatorsTestFixture
+    class AzToolsFrameworkTestHelpersFixture : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(0, 0);
@@ -35,7 +35,7 @@ namespace UnitTest
             m_rootWidget.reset();
             m_mouseMoveDetector.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<QWidget> m_rootWidget;
@@ -78,7 +78,7 @@ namespace UnitTest
         EXPECT_THAT(mouseLocalPositionFromGlobal.y(), Eq(expectedPosition.y()));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         MouseMoveAzToolsFrameworkTestHelperFixture,
         testing::Values(

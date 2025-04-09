@@ -13,6 +13,7 @@
 
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/NodelingBus.h>
@@ -30,6 +31,7 @@
 
 namespace ScriptCanvasEditor::Nodes
 {
+
     NodeIdPair CreateFunctionDefinitionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, bool isInput, AZStd::string rootName)
     {
         ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;
@@ -107,6 +109,7 @@ namespace ScriptCanvasEditor::Nodes
         scriptCanvasEntity->Init();
         nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();
         ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasId, classId);
+        
         if (onCreateCallback)
         {
             onCreateCallback(node);
@@ -186,7 +189,7 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIds;
     }
 
-    NodeIdPair CreateGlobalMethodNode(AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+    NodeIdPair CreateGlobalMethodNode(AZStd::string_view methodName, bool isProperty, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIds;
@@ -208,7 +211,7 @@ namespace ScriptCanvasEditor::Nodes
         AZ::EntityId graphCanvasGraphId;
         EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
 
-        nodeIds.m_graphCanvasId = DisplayMethodNode(graphCanvasGraphId, methodNode);
+        nodeIds.m_graphCanvasId = DisplayMethodNode(graphCanvasGraphId, methodNode, isProperty);
 
         return nodeIds;
     }

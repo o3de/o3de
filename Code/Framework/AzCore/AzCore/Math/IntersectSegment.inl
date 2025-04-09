@@ -10,23 +10,45 @@ namespace AZ
 {
     namespace Intersect
     {
+        AZ_MATH_INLINE bool IntersectSegmentTriangleCCW(
+            const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c, Vector3& normal, float& t)
+        {
+            SegmentTriangleHitTester hitTester(p, q);
+            return hitTester.IntersectSegmentTriangleCCW(a, b, c, normal, t);
+        }
+
+        AZ_MATH_INLINE bool IntersectSegmentTriangle(
+            const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c, Vector3& normal, float& t)
+        {
+            SegmentTriangleHitTester hitTester(p, q);
+            return hitTester.IntersectSegmentTriangle(a, b, c, normal, t);
+        }
+
         AZ_MATH_INLINE bool ClipRayWithAabb(const Aabb& aabb, Vector3& rayStart, Vector3& rayEnd, float& tClipStart, float& tClipEnd)
         {
+            // Initialize our results to "unclipped".
+            tClipStart = 0.0f;
+            tClipEnd = 1.0f;
+
             Vector3 startNormal;
             float tStart, tEnd;
             Vector3 dirLen = rayEnd - rayStart;
             if (IntersectRayAABB(rayStart, dirLen, dirLen.GetReciprocal(), aabb, tStart, tEnd, startNormal) != ISECT_RAY_AABB_NONE)
             {
                 // clip the ray with the box
-                if (tStart > 0.0f)
-                {
-                    rayStart = rayStart + tStart * dirLen;
-                    tClipStart = tStart;
-                }
+
+                // Check and clip rayEnd first, since we might modify rayStart.
                 if (tEnd < 1.0f)
                 {
                     rayEnd = rayStart + tEnd * dirLen;
                     tClipEnd = tEnd;
+                }
+
+                // Check and clip rayStart as needed.
+                if (tStart > 0.0f)
+                {
+                    rayStart = rayStart + tStart * dirLen;
+                    tClipStart = tStart;
                 }
 
                 return true;

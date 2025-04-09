@@ -41,7 +41,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyEntityIdCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyEntityIdCtrl, AZ::SystemAllocator);
 
         PropertyEntityIdCtrl(QWidget *pParent = NULL);
         virtual ~PropertyEntityIdCtrl();
@@ -66,14 +66,19 @@ namespace AzToolsFramework
         // AzToolsFramework::EditorEvents::Bus::Handler
         void OnEscape() override;
 
-        void SetRequiredServices(const AZStd::vector<AZ::ComponentServiceType>& requiredServices);
-        void SetIncompatibleServices(const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
+        void SetRequiredServices(AZStd::span<const AZ::ComponentServiceType> requiredServices);
+        void SetIncompatibleServices(AZStd::span<const AZ::ComponentServiceType> incompatibleServices);
         void SetMismatchedServices(bool mismatchedServices);
 
         void SetAcceptedEntityContext(AzFramework::EntityContextId contextId);
 
-        void SetHasClearButton(bool value){ m_hasClearButton = value; }
-        bool HasClearButton(){ return m_hasClearButton; }
+        void SetHasClearButton(bool value) { m_hasClearButton = value; }
+        void SetHasPickButton(bool value) { m_hasPickButton = value; }
+        void SetAllowsDrop(bool value) { m_allowsDrop = value; }
+
+        bool HasClearButton() { return m_hasClearButton; }
+        bool HasPickButton() { return m_hasPickButton; }
+        bool AllowsDrop() { return m_allowsDrop; }
 
     signals:
         void OnEntityIdChanged(AZ::EntityId newEntityId);
@@ -87,7 +92,7 @@ namespace AzToolsFramework
 
     protected:
         bool IsCorrectMimeData(const QMimeData* mimeData) const;
-        bool EntityIdsFromMimeData(const QMimeData &mimeData, AzToolsFramework::EditorEntityIdContainer* entityIdListContainer = nullptr) const;
+        bool EntityIdsFromMimeData(const QMimeData& mimeData, AzToolsFramework::EditorEntityIdContainer* entityIdListContainer = nullptr) const;
 
         // Move the editor into Pick Mode.
         void StartEntityPickMode();
@@ -97,12 +102,15 @@ namespace AzToolsFramework
 
         EntityIdQLineEdit* m_entityIdLineEdit;
         QToolButton* m_pickButton;
-        AZStd::vector<AZ::ComponentServiceType> m_requiredServices;
-        AZStd::vector<AZ::ComponentServiceType> m_incompatibleServices;
+        AZ::ComponentDescriptor::DependencyArrayType m_requiredServices;
+        AZ::ComponentDescriptor::DependencyArrayType m_incompatibleServices;
         AzFramework::EntityContextId m_acceptedEntityContextId;
         AZStd::list<AZStd::string> m_componentsSatisfyingServices;
 
         bool m_hasClearButton{ true };
+        bool m_hasPickButton{ true };
+        bool m_allowsDrop { true };
+
         QIcon m_pickerIcon;
     };
 
@@ -111,7 +119,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EntityIdPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdPropertyHandler, AZ::SystemAllocator);
 
         virtual AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::EntityId; }
         virtual bool IsDefaultHandler() const override { return true; }

@@ -7,11 +7,11 @@
  */
 #include <RHI/MemoryView.h>
 
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/string.h>
+#include <dx12ma/D3D12MemAlloc.h>
 
 AZ_DECLARE_BUDGET(RHI);
 
@@ -19,16 +19,33 @@ namespace AZ
 {
     namespace DX12
     {
-        MemoryView::MemoryView(const MemoryAllocation& memAllocation, MemoryViewType viewType)
+        MemoryView::MemoryView(const MemoryAllocation& memAllocation, MemoryViewType viewType, ID3D12Heap* heap, size_t heapOffset)
             : m_memoryAllocation(memAllocation)
             , m_viewType(viewType)
+            , m_heap(heap)
+            , m_heapOffset(heapOffset)
         {
             Construct();
         }
 
-        MemoryView::MemoryView(RHI::Ptr<Memory> memory, size_t offset, size_t size, size_t alignment, MemoryViewType viewType)
-            : MemoryView(MemoryAllocation(memory, offset, size, alignment), viewType)
+        MemoryView::MemoryView(
+            RHI::Ptr<Memory> memory,
+            size_t offset,
+            size_t size,
+            size_t alignment,
+            MemoryViewType viewType,
+            ID3D12Heap* heap,
+            size_t heapOffset)
+            : MemoryView(MemoryAllocation(memory, offset, size, alignment), viewType, heap, heapOffset)
         {
+        }
+
+        MemoryView::MemoryView(D3D12MA::Allocation* allocation, RHI::Ptr<Memory> memory, size_t offset, size_t size, size_t alignment, MemoryViewType viewType)
+            : m_memoryAllocation(MemoryAllocation(memory, offset, size, alignment))
+            , m_viewType(viewType)
+            , m_d3d12maAllocation(allocation)
+        {
+            Construct();
         }
 
         bool MemoryView::IsValid() const
@@ -39,6 +56,11 @@ namespace AZ
         Memory* MemoryView::GetMemory() const
         {
             return m_memoryAllocation.m_memory.get();
+        }
+
+        D3D12MA::Allocation* MemoryView::GetD3d12maAllocation() const
+        {
+            return m_d3d12maAllocation;
         }
 
         size_t MemoryView::GetOffset() const
@@ -59,31 +81,47 @@ namespace AZ
         CpuVirtualAddress MemoryView::Map(RHI::HostMemoryAccess hostAccess) const
         {
             CpuVirtualAddress cpuAddress = nullptr;
-            D3D12_RANGE readRange = {};
-            if (hostAccess == RHI::HostMemoryAccess::Read)
+            if (m_d3d12maAllocation)
             {
-                readRange.Begin = m_memoryAllocation.m_offset;
-                readRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
+                // buffers allocated through D3D12MA map the whole buffer
+                m_memoryAllocation.m_memory->Map(0, nullptr, reinterpret_cast<void**>(&cpuAddress));
             }
-            m_memoryAllocation.m_memory->Map(0, &readRange, reinterpret_cast<void**>(&cpuAddress));
-
-            // Make sure we return null if the map operation failed.
-            if (cpuAddress)
+            else
             {
-                cpuAddress += m_memoryAllocation.m_offset;
+                D3D12_RANGE readRange = {};
+                if (hostAccess == RHI::HostMemoryAccess::Read)
+                {
+                    readRange.Begin = m_memoryAllocation.m_offset;
+                    readRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
+                }
+                m_memoryAllocation.m_memory->Map(0, &readRange, reinterpret_cast<void**>(&cpuAddress));
+
+                // Make sure we return null if the map operation failed.
+                if (cpuAddress)
+                {
+                    cpuAddress += m_memoryAllocation.m_offset;
+                }
             }
             return cpuAddress;
         }
 
         void MemoryView::Unmap(RHI::HostMemoryAccess hostAccess) const
         {
-            D3D12_RANGE writeRange = {};
-            if (hostAccess == RHI::HostMemoryAccess::Write)
+            if (m_d3d12maAllocation)
             {
-                writeRange.Begin = m_memoryAllocation.m_offset;
-                writeRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
+                // buffers allocated through D3D12MA unmap the whole buffer
+                m_memoryAllocation.m_memory->Unmap(0, nullptr);
             }
-            m_memoryAllocation.m_memory->Unmap(0, &writeRange);
+            else
+            {
+                D3D12_RANGE writeRange = {};
+                if (hostAccess == RHI::HostMemoryAccess::Write)
+                {
+                    writeRange.Begin = m_memoryAllocation.m_offset;
+                    writeRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
+                }
+                m_memoryAllocation.m_memory->Unmap(0, &writeRange);
+            }
         }
 
         GpuVirtualAddress MemoryView::GetGpuAddress() const
@@ -108,6 +146,30 @@ namespace AZ
             {
                 m_memoryAllocation.m_memory->SetPrivateData(
                     WKPDID_D3DDebugObjectNameW, aznumeric_cast<unsigned int>(name.size() * sizeof(wchar_t)), name.data());
+            }
+        }
+
+        ID3D12Heap* MemoryView::GetHeap()
+        {
+            if (m_d3d12maAllocation)
+            {
+                return m_d3d12maAllocation->GetHeap();
+            }
+            else
+            {
+                return m_heap;
+            }
+        }
+
+        size_t MemoryView::GetHeapOffset()
+        {
+            if (m_d3d12maAllocation)
+            {
+                return m_d3d12maAllocation->GetOffset();
+            }
+            else
+            {
+                return m_heapOffset;
             }
         }
 

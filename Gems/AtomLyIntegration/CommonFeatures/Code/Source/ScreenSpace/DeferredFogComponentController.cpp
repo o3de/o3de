@@ -119,14 +119,6 @@ namespace AZ
             {
                 // Set SRG constants
                 m_configuration.CopySettingsTo(m_settingsInterface);
-
-                // Set the shader options bits
-                m_settingsInterface->SetEnableFogLayerShaderOption(m_configuration.GetEnableFogLayerShaderOption());
-                m_settingsInterface->SetUseNoiseTextureShaderOption(m_configuration.GetUseNoiseTextureShaderOption());
-
-                // Enable / disable the pass
-                m_settingsInterface->SetEnabled(m_configuration.GetIsEnabled());
-
                 m_settingsInterface->OnSettingsChanged();
             }
         }

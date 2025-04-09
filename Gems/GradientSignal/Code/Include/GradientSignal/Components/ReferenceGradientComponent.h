@@ -27,13 +27,13 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReferenceGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReferenceGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(ReferenceGradientConfig, "{121A6DAB-26C1-46B7-83AE-BE750FDABC04}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid ReferenceGradientComponentTypeId = "{C4904252-3386-4820-9BF7-53DE705FA644}";
+    inline constexpr AZ::TypeId ReferenceGradientComponentTypeId{ "{C4904252-3386-4820-9BF7-53DE705FA644}" };
 
     /**
     * calculates a gradient value by referencing values from another gradient

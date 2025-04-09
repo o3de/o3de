@@ -44,7 +44,7 @@ namespace GraphCanvas
 {
     struct Endpoint;
 
-    static const AZ::Crc32 GraphCanvasRequestsServiceId = AZ_CRC("GraphCanvasService", 0x138a9c46);
+    static const AZ::Crc32 GraphCanvasRequestsServiceId = AZ_CRC_CE("GraphCanvasService");
     static constexpr const char* EditorGraphModuleName = "editor.graph";
 
     //! GraphCanvasRequests

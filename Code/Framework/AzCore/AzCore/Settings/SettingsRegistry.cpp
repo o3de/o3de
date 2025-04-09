@@ -117,4 +117,79 @@ namespace AZ
             return pathValue;
         };
     }
+
+    // Settings Registry MergeSettings result implementtion
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(SettingsRegistryInterface::MergeSettingsReturnCode);
+
+    SettingsRegistryInterface::MergeSettingsResult::operator bool() const
+    {
+        return m_returnCode >= MergeSettingsReturnCode::Unset;
+    }
+
+    auto SettingsRegistryInterface::MergeSettingsResult::Combine(MergeSettingsResult other) &
+        -> MergeSettingsResult&
+    {
+        // The other return code isn't set so combining is not needed
+        if (other.m_returnCode == MergeSettingsReturnCode::Unset)
+        {
+            return *this;
+        }
+
+        // The merge settings return code is unset so take its return code
+        if (m_returnCode == MergeSettingsReturnCode::Unset)
+        {
+            m_returnCode = other.m_returnCode;
+        }
+        else
+        {
+            // Combining a successful rc with a failure rc
+            // results in partial success
+            // The above if blocks validates that neither
+            // this->m_returnCode nor other.m_returnCode is equal to Unset
+            // so the checks below reduces to a two-state bool
+            bool selfSuccess = (m_returnCode > MergeSettingsReturnCode::Unset);
+            bool otherSuccess = (other.m_returnCode > MergeSettingsReturnCode::Unset);
+
+            if ((selfSuccess && !otherSuccess)
+                || (!selfSuccess && otherSuccess))
+            {
+                m_returnCode = MergeSettingsReturnCode::PartialSuccess;
+            }
+            else if (selfSuccess)
+            {
+                m_returnCode = MergeSettingsReturnCode::Success;
+            }
+            else
+            {
+                m_returnCode = MergeSettingsReturnCode::Failure;
+            }
+        }
+
+        // add a newline between messages if the operation message is not empty
+        if (!m_operationMessages.empty())
+        {
+            m_operationMessages += '\n';
+        }
+
+        m_operationMessages += AZStd::move(other.m_operationMessages);
+
+        return *this;
+    }
+
+    auto SettingsRegistryInterface::MergeSettingsResult::Combine(MergeSettingsResult other) &&
+        -> MergeSettingsResult
+    {
+        return static_cast<MergeSettingsResult&>(*this).Combine(AZStd::move(other));
+    }
+
+    auto SettingsRegistryInterface::MergeSettingsResult::Combine(MergeSettingsReturnCode otherReturnCode)
+        -> MergeSettingsResult
+    {
+        return Combine(MergeSettingsResult{ otherReturnCode });
+    }
+
+    const AZStd::string& SettingsRegistryInterface::MergeSettingsResult::GetMessages() const
+    {
+        return m_operationMessages;
+    }
 } // namespace AZ

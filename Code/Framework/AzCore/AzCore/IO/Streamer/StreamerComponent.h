@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_STREAMER_COMPONENT_H
-#define AZCORE_STREAMER_COMPONENT_H
+
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -36,6 +36,8 @@ namespace AZ
     private:
         void Activate() override;
         void Deactivate() override;
+
+        // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
@@ -58,6 +60,3 @@ namespace AZ
         int m_deviceThreadPriority;
     };
 }
-
-#endif // AZCORE_STREAMER_COMPONENT_H
-#pragma once

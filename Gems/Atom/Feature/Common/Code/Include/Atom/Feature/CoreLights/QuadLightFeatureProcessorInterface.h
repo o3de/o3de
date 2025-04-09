@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <AzCore/Math/Quaternion.h>
-#include <Atom/Feature/CoreLights/PhotometricValue.h>
 
 namespace AZ
 {
@@ -45,6 +46,11 @@ namespace AZ
             AZStd::array<float, 3> m_rgbIntensityNits = { { 0.0f, 0.0f, 0.0f } };
             uint32_t m_flags = 0x0;
 
+            float m_affectsGIFactor = 1.0f;
+            bool m_affectsGI = true;
+            uint32_t m_lightingChannelMask = 1;
+            float m_padding0 = 0.0f;
+
             void SetFlag(QuadLightFlag::Flag flag, bool value)
             {
                 m_flags = value ?
@@ -59,7 +65,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::QuadLightFeatureProcessorInterface, "{D86216E4-92A8-43BE-A5E4-883489C6AF06}");
+            AZ_RTTI(AZ::Render::QuadLightFeatureProcessorInterface, "{D86216E4-92A8-43BE-A5E4-883489C6AF06}", AZ::RPI::FeatureProcessor);
 
             using LightHandle = RHI::Handle<uint16_t, class QuadLight>;
             static constexpr PhotometricUnit PhotometricUnitType = PhotometricUnit::Nit;
@@ -85,9 +91,20 @@ namespace AZ
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the quad radius for the provided LightHandle.
             virtual void SetQuadDimensions(LightHandle handle, float width, float height) = 0;
+            //! Specifies if this light affects the diffuse global illumination in the scene.
+            virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
+            //! Specifies the contribution of this light to the diffuse global illumination in the scene.
+            virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
 
             //! Sets all of the the quad data for the provided LightHandle.
             virtual void SetQuadData(LightHandle handle, const QuadLightData& data) = 0;
+
+            //! Returns the buffer containing the light data for all quad lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the number of quad lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

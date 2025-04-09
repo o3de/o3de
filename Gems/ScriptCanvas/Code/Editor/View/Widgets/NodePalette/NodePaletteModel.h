@@ -21,6 +21,8 @@
 
 #include <ScriptEvents/ScriptEventsAsset.h>
 
+#include <Editor/Nodes/NodeCreateUtils.h>
+
 #include <Editor/View/Widgets/NodePalette/NodePaletteModelBus.h>
 
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
@@ -35,7 +37,7 @@ namespace ScriptCanvasEditor
     struct NodePaletteModelInformation
     {
         AZ_RTTI(NodePaletteModelInformation, "{CC031806-7610-4C29-909D-9527F265E014}");
-        AZ_CLASS_ALLOCATOR(NodePaletteModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteModelInformation, AZ::SystemAllocator);
 
         virtual ~NodePaletteModelInformation() = default;
 
@@ -66,7 +68,7 @@ namespace ScriptCanvasEditor
     public:
         typedef AZStd::unordered_map< ScriptCanvas::NodeTypeIdentifier, NodePaletteModelInformation* > NodePaletteRegistry;
 
-        AZ_CLASS_ALLOCATOR(NodePaletteModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteModel, AZ::SystemAllocator);
 
         NodePaletteModel();
         ~NodePaletteModel();
@@ -77,9 +79,9 @@ namespace ScriptCanvasEditor
 
         void RepopulateModel();
 
-        void RegisterCustomNode(AZStd::string_view categoryPath, const AZ::Uuid& uuid, AZStd::string_view name, const AZ::SerializeContext::ClassData* classData);
+        void RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath = "Nodes");
         void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);
-        void RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod);
+        void RegisterGlobalMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod);
         void RegisterGlobalConstant(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorProperty* behaviorProperty, const AZ::BehaviorMethod& behaviorMethod);
 
 
@@ -89,6 +91,7 @@ namespace ScriptCanvasEditor
         // Asset Based Registrations
         AZStd::vector<ScriptCanvas::NodeTypeIdentifier> RegisterScriptEvent(ScriptEvents::ScriptEventsAsset* scriptEventAsset);
 
+        void RegisterDefaultCateogryInformation();
         void RegisterCategoryInformation(const AZStd::string& category, const CategoryInformation& categoryInformation);
         const CategoryInformation* FindCategoryInformation(const AZStd::string& categoryStyle) const;
         const CategoryInformation* FindBestCategoryInformation(AZStd::string_view categoryView) const;
@@ -141,7 +144,7 @@ namespace ScriptCanvasEditor
         : public NodePaletteModelInformation
     {
         AZ_RTTI(CustomNodeModelInformation, "{481FB8AE-8683-4E50-95C1-B4B1C1B6806C}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(CustomNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomNodeModelInformation, AZ::SystemAllocator);
 
         AZ::Uuid m_typeId = AZ::Uuid::CreateNull();
     };
@@ -150,7 +153,7 @@ namespace ScriptCanvasEditor
         : public NodePaletteModelInformation
     {
         AZ_RTTI(MethodNodeModelInformation, "{9B6337F9-B8D0-4B63-9EE7-91079FE386B9}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(MethodNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MethodNodeModelInformation, AZ::SystemAllocator);
 
         bool m_isOverload{};
         AZStd::string m_classMethod;
@@ -162,16 +165,17 @@ namespace ScriptCanvasEditor
         : public NodePaletteModelInformation
     {
         AZ_RTTI(GlobalMethodNodeModelInformation, "{AB98D0F1-BB6D-49D5-ACEB-3E991C365DF5}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(GlobalMethodNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GlobalMethodNodeModelInformation, AZ::SystemAllocator);
 
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
 
     struct EBusHandlerNodeModelInformation
         : public NodePaletteModelInformation
     {
         AZ_RTTI(EBusHandlerNodeModelInformation, "{D1438D14-0CE9-4202-A1C5-9F5F13DFC0C4}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(EBusHandlerNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusHandlerNodeModelInformation, AZ::SystemAllocator);
 
         AZStd::string m_busName;
         AZStd::string m_eventName;
@@ -185,7 +189,7 @@ namespace ScriptCanvasEditor
         : public NodePaletteModelInformation
     {
         AZ_RTTI(EBusSenderNodeModelInformation, "{EE0F0385-3596-4D4E-9DC7-BE147EBB3C15}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(EBusSenderNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusSenderNodeModelInformation, AZ::SystemAllocator);
 
         bool m_isOverload{};
 
@@ -201,14 +205,14 @@ namespace ScriptCanvasEditor
         : public EBusHandlerNodeModelInformation
     {
         AZ_RTTI(ScriptEventHandlerNodeModelInformation, "{BCA92869-63F4-4A1F-B751-F3F28443BBFC}", EBusHandlerNodeModelInformation);
-        AZ_CLASS_ALLOCATOR(ScriptEventHandlerNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventHandlerNodeModelInformation, AZ::SystemAllocator);
     };
 
     struct ScriptEventSenderNodeModelInformation
         : public EBusSenderNodeModelInformation
     {
         AZ_RTTI(ScriptEventSenderNodeModelInformation, "{99046345-080C-42A6-BE76-D09583055EED}", EBusSenderNodeModelInformation);
-        AZ_CLASS_ALLOCATOR(ScriptEventSenderNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventSenderNodeModelInformation, AZ::SystemAllocator);
     };
 
     //! FunctionNodeModelInformation refers to function graph assets, not methods
@@ -216,7 +220,7 @@ namespace ScriptCanvasEditor
         : public NodePaletteModelInformation
     {
         AZ_RTTI(FunctionNodeModelInformation, "{B84B4C2C-2F0B-4C0B-879A-956E83BD2874}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(FunctionNodeModelInformation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FunctionNodeModelInformation, AZ::SystemAllocator);
 
         AZ::Color         m_functionColor;
         AZ::Data::AssetId m_functionAssetId;

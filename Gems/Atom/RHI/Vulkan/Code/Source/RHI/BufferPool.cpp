@@ -7,7 +7,6 @@
  */
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
-#include <Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/BufferPool.h>
 #include <RHI/Buffer.h>
@@ -29,56 +28,14 @@ namespace AZ
             return static_cast<Device&>(Base::GetDevice());
         }
 
-        void BufferPool::GarbageCollect()
-        {
-            m_memoryAllocator.GarbageCollect();
-        }
-
         BufferPoolResolver* BufferPool::GetResolver()
         {
             return static_cast<BufferPoolResolver*>(Base::GetResolver());
         }
 
-        void BufferPool::OnFrameEnd()
-        {
-            GarbageCollect();
-            Base::OnFrameEnd();
-        }
-
         RHI::ResultCode BufferPool::InitInternal(RHI::Device& deviceBase, const RHI::BufferPoolDescriptor& descriptorBase) 
         {
             auto& device = static_cast<Device&>(deviceBase);
-
-            VkDeviceSize bufferPageSizeInBytes = device.GetDescriptor().m_platformLimitsDescriptor->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
-            VkMemoryPropertyFlags additionalMemoryPropertyFlags = 0;
-            if (const auto* descriptor = azrtti_cast<const BufferPoolDescriptor*>(&descriptorBase))
-            {
-                bufferPageSizeInBytes = descriptor->m_bufferPoolPageSizeInBytes;
-                additionalMemoryPropertyFlags = descriptor->m_additionalMemoryPropertyFlags;
-            }
-
-            if (descriptorBase.m_largestPooledAllocationSizeInBytes > 0)
-            {
-                bufferPageSizeInBytes = AZStd::max(bufferPageSizeInBytes, aznumeric_cast<VkDeviceSize>(descriptorBase.m_largestPooledAllocationSizeInBytes));
-            }
-
-            // Add the copy write flag since it's needed for staging copies and clear operations.
-            RHI::BufferBindFlags bindFlags = descriptorBase.m_bindFlags | RHI::BufferBindFlags::CopyWrite;
-
-            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(descriptorBase.m_heapMemoryLevel);
-            BufferMemoryAllocator::Descriptor memoryAllocDescriptor;
-            memoryAllocDescriptor.m_device = &device;
-            memoryAllocDescriptor.m_pageSizeInBytes = static_cast<size_t>(bufferPageSizeInBytes);
-            memoryAllocDescriptor.m_heapMemoryLevel = descriptorBase.m_heapMemoryLevel;
-            memoryAllocDescriptor.m_hostMemoryAccess = descriptorBase.m_hostMemoryAccess;
-            memoryAllocDescriptor.m_additionalMemoryPropertyFlags = additionalMemoryPropertyFlags;
-            memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
-            memoryAllocDescriptor.m_recycleOnCollect = true;
-            memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
-            memoryAllocDescriptor.m_bindFlags = bindFlags;
-            memoryAllocDescriptor.m_sharedQueueMask = descriptorBase.m_sharedQueueMask;
-            m_memoryAllocator.Init(memoryAllocDescriptor);
-
             if (descriptorBase.m_heapMemoryLevel == RHI::HeapMemoryLevel::Device)
             {
                 SetResolver(AZStd::make_unique<BufferPoolResolver>(device, descriptorBase));
@@ -89,34 +46,39 @@ namespace AZ
 
         void BufferPool::ShutdownInternal() 
         {
-            m_memoryAllocator.Shutdown();
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
         {
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
 
-            // Note that InputAssembly, RayTracingAccelerationStructure, and RayTracingShaderBindingTable buffers must be unique allocations.
-            // This is necessary since the alignment on a paged memory allocation is not compatible with the required raytracing alignment.
-            bool forceUnique = RHI::CheckBitsAny(
-                bufferDescriptor.m_bindFlags,
-                RHI::BufferBindFlags::InputAssembly |
-                RHI::BufferBindFlags::DynamicInputAssembly |
-                RHI::BufferBindFlags::RayTracingAccelerationStructure |
-                RHI::BufferBindFlags::RayTracingShaderTable);
-
-            BufferMemoryView memoryView = m_memoryAllocator.Allocate(bufferDescriptor.m_byteCount, 1, forceUnique);
-            if (!memoryView.IsValid())
+            VkMemoryRequirements requirements = device.GetBufferMemoryRequirements(bufferDescriptor);
+            RHI::HeapMemoryLevel heapMemoryLevel = GetDescriptor().m_heapMemoryLevel;
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            if (!heapMemoryUsage.CanAllocate(requirements.size))
             {
+                AZ_Error("Vulkan::BufferPool", false, "Failed to initialize buffer to due memory budget constraints");
                 return RHI::ResultCode::OutOfMemory;
             }
 
-            RHI::ResultCode result = buffer.Init(device, bufferDescriptor, memoryView);
+            // Add the copy write flag since it's needed for staging copies and clear operations.
+            RHI::BufferDescriptor descriptor = bufferDescriptor;
+            descriptor.m_bindFlags |= RHI::BufferBindFlags::CopyWrite;
+
+            RHI::Ptr<BufferMemory> memory = BufferMemory::Create();
+            auto result = memory->Init(device, BufferMemory::Descriptor(descriptor, heapMemoryLevel));
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            result = buffer.Init(device, descriptor, BufferMemoryView(memory));
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            heapMemoryUsage.m_usedResidentInBytes += requirements.size;
+            heapMemoryUsage.m_totalResidentInBytes += requirements.size;
             return result;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::Resource& resource) 
+        void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resource) 
         {
             auto& buffer = static_cast<Buffer&>(resource);
             auto& device = static_cast<Device&>(GetDevice());
@@ -130,36 +92,36 @@ namespace AZ
                 poolResolver->OnResourceShutdown(resource);
             }
 
-            m_memoryAllocator.DeAllocate(buffer.m_memoryView);
+            RHI::HeapMemoryLevel heapMemoryLevel = GetDescriptor().m_heapMemoryLevel;
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            size_t sizeInBytes = buffer.m_memoryView.GetSize();
+            heapMemoryUsage.m_usedResidentInBytes -= sizeInBytes;
+            heapMemoryUsage.m_totalResidentInBytes -= sizeInBytes;
+
+            // Deallocate the BufferMemory
+            device.QueueForRelease(buffer.m_memoryView.GetAllocation());
             buffer.m_memoryView = BufferMemoryView();
             buffer.Invalidate();
         }
 
-        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::Buffer& bufferBase) 
+        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::DeviceBuffer& bufferBase) 
         {
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
 
             // Deallocate the BufferMemory
-            m_memoryAllocator.DeAllocate(buffer.m_memoryView);
+            device.QueueForRelease(buffer.m_memoryView.GetAllocation());
             buffer.m_memoryView = BufferMemoryView();
             buffer.Invalidate();
 
-            // Allocate a new BufferMemmory
-            BufferMemoryView memoryView = m_memoryAllocator.Allocate(buffer.GetDescriptor().m_byteCount, 1);
-            if (!memoryView.IsValid())
-            {
-                return RHI::ResultCode::OutOfMemory;
-            }
-
-            RHI::ResultCode result = buffer.Init(device, bufferBase.GetDescriptor(), memoryView);
+            auto result  = InitBufferInternal(bufferBase, bufferBase.GetDescriptor());
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            
+
             buffer.InvalidateViews();
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& mapRequest, RHI::BufferMapResponse& response) 
+        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::DeviceBufferMapRequest& mapRequest, RHI::DeviceBufferMapResponse& response) 
         {
             const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
             auto* buffer = static_cast<Buffer*>(mapRequest.m_buffer);
@@ -206,7 +168,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void BufferPool::UnmapBufferInternal(RHI::Buffer& bufferBase) 
+        void BufferPool::UnmapBufferInternal(RHI::DeviceBuffer& bufferBase) 
         {
             const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
             auto& buffer = static_cast<Buffer&>(bufferBase);
@@ -227,7 +189,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::BufferStreamRequest& request)
+        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
             device.GetAsyncUploadQueue().QueueUpload(request);
@@ -236,15 +198,7 @@ namespace AZ
 
         void BufferPool::ComputeFragmentation() const
         {
-            float fragmentation = m_memoryAllocator.ComputeFragmentation();
-
-            const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
-            m_memoryUsage.GetHeapMemoryUsage(descriptor.m_heapMemoryLevel).m_fragmentation = fragmentation;
-        }
-
-        void BufferPool::SetNameInternal(const AZStd::string_view& name)
-        {
-             m_memoryAllocator.SetName(AZ::Name{ name });
+            // Since we use a per device memory allocator (VMA), there's no longer a per BufferPool fragmentation, only a global one.
         }
     }
 }

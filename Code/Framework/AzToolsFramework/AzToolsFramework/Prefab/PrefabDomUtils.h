@@ -19,18 +19,27 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+
         namespace PrefabDomUtils
         {
-            inline static const char* InstancesName = "Instances";
-            inline static const char* PatchesName = "Patches";
-            inline static const char* SourceName = "Source";
-            inline static const char* LinkIdName = "LinkId";
-            inline static const char* EntityIdName = "Id";
-            inline static const char* EntitiesName = "Entities";
-            inline static const char* ContainerEntityName = "ContainerEntity";
-            inline static const char* ComponentsName = "Components";
-            inline static const char* EntityOrderName = "Child Entity Order";
-            inline static const char* TypeName = "$type";
+            inline static constexpr const char* InstancesName = "Instances";
+            inline static constexpr const char* PatchesName = "Patches";
+            inline static constexpr const char* SourceName = "Source";
+            inline static constexpr const char* LinkIdName = "LinkId";
+            inline static constexpr const char* EntityIdName = "Id";
+            inline static constexpr const char* EntitiesName = "Entities";
+            inline static constexpr const char* ContainerEntityName = "ContainerEntity";
+            inline static constexpr const char* ComponentsName = "Components";
+            inline static constexpr const char* EntityOrderName = "Child Entity Order";
+            inline static constexpr const char* TypeName = "$type";
+
+            inline static constexpr const char* PathStartingWithEntities = "/Entities/";
+            inline static constexpr const char* PathStartingWithInstances = "/Instances/";
+            inline static constexpr const char* PathMatchingEntities = "/Entities";
+            inline static constexpr const char* PathMatchingInstances = "/Instances";
+            inline static constexpr const char* PathMatchingContainerEntity = "/ContainerEntity";
+            inline static constexpr const char* PathMatchingLinkId = "/LinkId";
+            inline static constexpr const char* PathMatchingSource = "/Source";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -43,7 +52,7 @@ namespace AzToolsFramework
 
             enum class StoreFlags : uint8_t
             {
-                //! No flags used during the call to LoadInstanceFromPrefabDom.
+                //! No flags used.
                 None = 0,
 
                 //! By default an instance will be stored with default values. In cases where we want to store less json without defaults
@@ -55,6 +64,19 @@ namespace AzToolsFramework
                 StripLinkIds = 1 << 1
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreFlags);
+
+            //! The metadata about patches indicating information about the modified instance members.
+            struct PatchesMetadata
+            {
+                AZStd::unordered_set<EntityAlias> m_entitiesToReload;
+                AZStd::unordered_set<EntityAlias> m_entitiesToRemove;
+                AZStd::unordered_set<InstanceAlias> m_instancesToRemove;
+                AZStd::unordered_set<InstanceAlias> m_instancesToAdd;
+                AZStd::unordered_set<InstanceAlias> m_instancesToReload;
+                bool m_shouldReloadContainerEntity = false;
+                bool m_clearAndLoadAllEntities = false;
+                bool m_clearAndLoadAllInstances = false;
+            };
 
             /**
             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
@@ -93,11 +115,18 @@ namespace AzToolsFramework
 
             enum class LoadFlags : uint8_t
             {
-                //! No flags used during the call to LoadInstanceFromPrefabDom.
+                //! No flags used.
                 None = 0,
+
                 //! By default entities will get a stable id when they're deserialized. In cases where the new entities need to be kept
                 //! unique, e.g. when they are duplicates of live entities, this flag will assign them a random new id.
-                AssignRandomEntityId = 1 << 0
+                AssignRandomEntityId = 1 << 0,
+
+                //! Identifies the entities modified since the last deserialization and only loads them.
+                UseSelectiveDeserialization = 1 << 1,
+
+                //! Adds metadata to track and report deprecated components during deserialization
+                ReportDeprecatedComponents = 1 << 2
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadFlags);
 
@@ -162,6 +191,18 @@ namespace AzToolsFramework
                 PrefabDom::AllocatorType& allocator,
                 const PrefabDomValue& patches);
 
+             /**
+             * Gets the instances DOM value from the given prefab DOM.
+             *
+             * @return the instances DOM value or AZStd::nullopt if its instances can't be found.
+             */
+            PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom);
+
+            //! Identifies instance members modified by inspecting the patches provided.
+            //! @param patches The patches to inspect.
+            //! @return PatchesMetada The metadata object indicating which instance members get modified with the provided patches.
+            PatchesMetadata IdentifyModifiedInstanceMembers(const PrefabDom& patches);
+
             /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.
              * @param printMessage The message that will be printed before printing the PrefabDomValue
@@ -171,6 +212,26 @@ namespace AzToolsFramework
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const AzToolsFramework::Prefab::PrefabDomValue& prefabDomValue);
 
+            AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
+
+            //! Adds a nested instance to the prefab DOM and optionally initialize its contents.
+            //! @param prefabDom The prefab DOM to update.
+            //! @param nestedInstanceAlias The alias of the nested instance to be added.
+            //! @param nestedInstanceDom An optional value to assign to the added nested instance in the prefab DOM.
+            void AddNestedInstance(
+                PrefabDom& prefabDom,
+                const InstanceAlias& nestedInstanceAlias,
+                PrefabDomValueConstReference nestedInstanceDom = AZStd::nullopt);
+
+            //! Runs through PrefabDom structure analyzing its general correctness, and checks that
+            //! nested entity objects have non-empty parent values in their TransformComponents.
+            //! Logs errors found.
+            //! In case a nested entity object has the empty parent alias, reassigns the container entity alias as the parent.
+            //! This may happen, for example, when loading a spoiled prefab stored with earlier O3DE versions.
+            //! @param prefabDom The prefab DOM to check and conditionally update. Changes will be applied in place.
+            //! @return True if all checks were successful, otherwise false. 
+            bool SubstituteInvalidParentsInEntities(PrefabDom& prefabDom);
+
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.
             struct LinkIdMetadata
@@ -178,6 +239,14 @@ namespace AzToolsFramework
                 AZ_RTTI(LinkIdMetadata, "{8FF7D299-14E3-41D4-90C5-393A240FAE7C}");
 
                 virtual ~LinkIdMetadata() {}
+            };
+
+            //! An empty struct to pass to the JsonDeserializerSettings, which will be used to identify whether we should selectively
+            //! deserialize only modified entities.
+            struct InstanceDomMetadata
+            {
+                AZ_RTTI(InstanceDomMetadata, "{4B509C7B-91B6-4C5E-9696-F7E2C67B6E1B}");
+                virtual ~InstanceDomMetadata() {}
             };
         } // namespace PrefabDomUtils
     } // namespace Prefab

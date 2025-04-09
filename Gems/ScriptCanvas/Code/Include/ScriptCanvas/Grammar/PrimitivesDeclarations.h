@@ -109,6 +109,10 @@ namespace ScriptCanvas
         constexpr const char* k_SetExecutionOutNameNodeable = "SetExecutionOutNodeable";
         constexpr const char* k_SetExecutionOutResultNameNodeable = "SetExecutionOutResultNodeable";
 
+        // #scriptcanvas_component_extension
+        constexpr const char* k_GetSelfEntityId = "GetSelfEntityId_SCVM";
+        constexpr const char* k_GetSelfEntityIdCall = "GetSelfEntityId_SCVM(executionState)";
+
         constexpr const char* k_GetExecutionOutNameInterpretedClass = "GetExecutionOutClass_SCVM";
         constexpr const char* k_InitializeExecutionOutsNameInterpretedClass = "InitializeExecutionOutsClass_SCVM";
         constexpr const char* k_SetExecutionOutNameInterpretedClass = "SetExecutionOutClass_SCVM";
@@ -159,6 +163,7 @@ namespace ScriptCanvas
             InputNodeable,
             InputVariable,
             None,
+            SelfEntityId,
             Static,
         };
 
@@ -173,7 +178,7 @@ namespace ScriptCanvas
 
         // create the Symbol strings
 #define REGISTER_ENUM(x) #x,
-        static const char* g_SymbolNames[] =
+        static constexpr const char* g_SymbolNames[] =
         {
 #include    "SymbolNames.h"
             "<ERROR>"
@@ -253,7 +258,7 @@ namespace ScriptCanvas
         class SettingsCache
         {
         public:
-            AZ_CLASS_ALLOCATOR(SettingsCache, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SettingsCache, AZ::SystemAllocator);
 
             SettingsCache();
             ~SettingsCache();
@@ -289,7 +294,7 @@ namespace ScriptCanvas
         struct Source
         {
             AZ_TYPE_INFO(Source, "{116D1E9E-11F5-4610-95AD-42BF2C32E530}");
-            AZ_CLASS_ALLOCATOR(Source, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Source, AZ::SystemAllocator);
 
             static AZ::Outcome<Source, AZStd::string> Construct(const Request& reqeust);
 

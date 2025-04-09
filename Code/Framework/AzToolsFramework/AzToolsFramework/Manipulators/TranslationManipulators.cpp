@@ -8,7 +8,6 @@
 
 #include "TranslationManipulators.h"
 
-#include <AzCore/Math/VectorConversions.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 
@@ -36,7 +35,6 @@ namespace AzToolsFramework
 
     TranslationManipulators::TranslationManipulators(
         const Dimensions dimensions, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
-        : m_dimensions(dimensions)
     {
         switch (dimensions)
         {
@@ -330,7 +328,7 @@ namespace AzToolsFramework
                    const AZ::Color& defaultColor) -> AZ::Color
                 {
                     const AZ::Color color[2] = {
-                        defaultColor, Vector3ToVector4(BaseManipulator::s_defaultMouseOverColor.GetAsVector3(), SurfaceManipulatorOpacity())
+                        defaultColor, AZ::Vector4(BaseManipulator::s_defaultMouseOverColor.GetAsVector3(), SurfaceManipulatorOpacity())
                     };
 
                     return color[mouseOver];

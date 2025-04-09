@@ -17,7 +17,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     class PrefabProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabProcessor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabProcessor, AZ::SystemAllocator);
         AZ_RTTI(PrefabProcessor, "{393C95DF-C0DA-4EF0-A081-9CA899649DDD}");
 
         virtual ~PrefabProcessor() = default;

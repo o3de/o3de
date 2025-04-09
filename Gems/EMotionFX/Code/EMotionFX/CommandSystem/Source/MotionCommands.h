@@ -10,6 +10,7 @@
 
 #include "CommandSystemConfig.h"
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/optional.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/CommandGroup.h>
@@ -39,6 +40,7 @@ namespace CommandSystem
         bool SetCommandParameters(const MCore::CommandLine& parameters);
 
         void SetMotionID(uint32 motionID) { m_motionID = motionID; }
+        uint32 GetMotionID() const { return m_motionID; }
     protected:
         uint32 m_motionID = 0;
     };
@@ -129,14 +131,12 @@ namespace CommandSystem
 
     // Adjust default playback info command.
     MCORE_DEFINECOMMAND_START(CommandAdjustDefaultPlayBackInfo, "Adjust default playback info", true)
+    public:
+        static EMotionFX::Motion* GetMotionFromFilenameParameter(MCore::Command* command, const MCore::CommandLine& parameters);
+    private:
     EMotionFX::PlayBackInfo m_oldPlaybackInfo;
     bool                    m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
-
-
-    // Stop motion instances command.
-    MCORE_DEFINECOMMAND(CommandStopMotionInstances, "StopMotionInstances", "Stop motion instances", false)
-
 
     // Stop all motion instances command.
     MCORE_DEFINECOMMAND_START(CommandStopAllMotionInstances, "Stop all motion instances", false)
@@ -150,4 +150,5 @@ public:
     void COMMANDSYSTEM_API LoadMotionsCommand(const AZStd::vector<AZStd::string>& filenames, bool reload = false);
     void COMMANDSYSTEM_API RemoveMotions(const AZStd::vector<EMotionFX::Motion*>& motions, AZStd::vector<EMotionFX::Motion*>* outFailedMotions, MCore::CommandGroup* commandGroup = nullptr, bool forceRemove = false);
     void COMMANDSYSTEM_API ClearMotions(MCore::CommandGroup* commandGroup = nullptr, bool forceRemove = false);
+    void COMMANDSYSTEM_API PlayMotions(const AZStd::span<EMotionFX::Motion*> motions);
 } // namespace CommandSystem

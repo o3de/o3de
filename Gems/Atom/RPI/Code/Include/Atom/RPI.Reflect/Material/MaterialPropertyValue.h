@@ -21,6 +21,7 @@
 #include <AzCore/Math/Color.h>
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -34,7 +35,7 @@ namespace AZ
         //! For convenience, it supports all the types necessary for *both* the runtime data (MaterialAsset) as well as .material file data (MaterialSourceData).
         //! For example, Instance<Image> is exclusive to the runtime data and AZStd::string is primarily for image file paths in .material files. Most other
         //! data types are relevant in both contexts.
-        class MaterialPropertyValue final
+        class ATOM_RPI_REFLECT_API MaterialPropertyValue final
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialPropertyValue, "{59815051-BBA2-4C6A-A414-A82834A84CB2}");
@@ -115,6 +116,15 @@ namespace AZ
             {
                 return m_value != other.m_value;
             }
+
+            //! Attempt to cast the value to another type, handling numerical types (e.g. int to
+            //! float, bool to int), vector types (e.g. Vector2 to Vector3) and color<->vector types
+            //! (e.g. Vector[3-4] to Color). In conversions between vector based types of different
+            //! dimension, the result gets truncated or padded with zeroes as needed. Conversions
+            //! between color and vector types are only supported for 3 and 4 dimensional vectors.
+            //! In case of incompatible types (e.g. string to float, Vector2 to Color), the current
+            //! object is returned as-is.
+            MaterialPropertyValue CastToType(TypeId requestedType) const;
 
         private:
 

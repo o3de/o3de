@@ -7,13 +7,8 @@
  */
 #pragma once
 
-#include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
-#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
-#include <CoreLights/ShadowmapAtlas.h>
-#include <CoreLights/ShadowmapPass.h>
-
 
 namespace AZ
 {
@@ -27,40 +22,21 @@ namespace AZ
             using Base = RPI::ParentPass;
 
         public:
-            AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator);
             AZ_RTTI(ProjectedShadowmapsPass, "00024B13-1095-40FA-BEC3-B0F68110BEA2", Base);
-
-            static constexpr uint16_t InvalidIndex = std::numeric_limits<uint16_t>::max();
-            struct ShadowmapSizeWithIndices
-            {
-                ShadowmapSize m_size = ShadowmapSize::None;
-                uint16_t m_shadowIndexInSrg = InvalidIndex;
-            };
 
             virtual ~ProjectedShadowmapsPass();
             static RPI::Ptr<ProjectedShadowmapsPass> Create(const RPI::PassDescriptor& descriptor);
 
-            //! This returns true if this pass is of the given render pipeline. 
-            bool IsOfRenderPipeline(const RPI::RenderPipeline& renderPipeline) const;
+            // RPI::Pass overrides
+            RHI::DrawListTag GetDrawListTag() const override;
+            const RPI::PipelineViewTag& GetPipelineViewTag() const override;
 
-            //! This returns the pipeline view tag used in shadowmap passes.
-            const RPI::PipelineViewTag& GetPipelineViewTagOfChild(size_t childIndex);
+            //! Sets the image to use as the output for all esm passes. This is needed so multiple pipelines in a scene can share the same resource.
+            void SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge);
 
-            //! This update shadowmap sizes for each projected light shadow index.
-            //! @param sizes shadowmap sizes for each projected light shadow index.
-            void UpdateShadowmapSizes(const AZStd::vector<ShadowmapSizeWithIndices>& sizes);
-
-            //! This returns the image size(width/height) of shadowmap atlas.
-            //! @return image size of the shadowmap atlas.
-            ShadowmapSize GetShadowmapAtlasSize() const;
-
-            //! This returns the origin of shadowmap in the atlas.
-            //! @param lightIndex index of light in SRG.
-            //! @return array slice and origin in the slice for the light.
-            ShadowmapAtlas::Origin GetOriginInAtlas(uint16_t index) const;
-
-            //! This exposes the shadowmap atlas.
-            ShadowmapAtlas& GetShadowmapAtlas();
+            void QueueAddChild(RPI::Ptr<Pass> pass);
+            void QueueRemoveChild(RPI::Ptr<Pass> pass);
 
         private:
             ProjectedShadowmapsPass() = delete;
@@ -68,23 +44,18 @@ namespace AZ
 
             // RPI::Pass overrides...
             void BuildInternal() override;
-            void GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const override;
-            void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, RPI::PassesByDrawList& outPassesByDrawList, const RPI::PipelineViewTag& viewTag) const override;
 
-            RHI::Ptr<ShadowmapPass> CreateChild(size_t childIndex);
-
-            void UpdateChildren();
-            void SetChildrenCount(size_t count);
-            
-            const Name m_slotName{ "Shadowmap" };
-            Name m_pipelineViewTagBase;
-            Name m_drawListTagName;
             RHI::DrawListTag m_drawListTag;
-            AZStd::vector<RPI::PipelineViewTag> m_childrenPipelineViewTags;
-            AZStd::vector<ShadowmapSizeWithIndices> m_sizes;
+            RPI::PipelineViewTag m_pipelineViewTag;
+            Data::Instance<RPI::AttachmentImage> m_atlasAttachmentImage;
 
-            ShadowmapAtlas m_atlas;
-            bool m_updateChildren = true;
+            struct PassAddRemove
+            {
+                RPI::Ptr<Pass> m_pass;
+                bool m_isRemoval;
+            };
+            AZStd::vector<PassAddRemove> m_passesToAddOrRemove;
+
         };
     } // namespace Render
 } // namespace AZ

@@ -18,8 +18,7 @@
 
 namespace AZ::Render
 {
-    RenderDebugSettings::RenderDebugSettings(RenderDebugFeatureProcessor* featureProcessor)
-        : m_featureProcessor(featureProcessor)
+    RenderDebugSettings::RenderDebugSettings([[maybe_unused]] RenderDebugFeatureProcessor* featureProcessor)
     {
     }
 
@@ -76,6 +75,12 @@ namespace AZ::Render
         m_optionsMask |= (u32)specularLightingEnabled << (u32)RenderDebugOptions::EnableSpecularLighting;
         m_optionsMask |= (u32)directLightingEnabled   << (u32)RenderDebugOptions::EnableDirectLighting;
         m_optionsMask |= (u32)indirectLightingEnabled << (u32)RenderDebugOptions::EnableIndirectLighting;
+
+        // Custom Debug Options
+        m_optionsMask |= (u32)GetCustomDebugOption01() << (u32)RenderDebugOptions::CustomDebugOption01;
+        m_optionsMask |= (u32)GetCustomDebugOption02() << (u32)RenderDebugOptions::CustomDebugOption02;
+        m_optionsMask |= (u32)GetCustomDebugOption03() << (u32)RenderDebugOptions::CustomDebugOption03;
+        m_optionsMask |= (u32)GetCustomDebugOption04() << (u32)RenderDebugOptions::CustomDebugOption04;
     }
 
 }

@@ -12,6 +12,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
+#include <SurfaceData/SurfaceDataTypes.h>
 
 namespace SurfaceData
 {
@@ -62,12 +63,28 @@ namespace SurfaceData
         void UnregisterSurfaceDataModifier(const SurfaceDataRegistryHandle& handle) override;
         void UpdateSurfaceDataModifier(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry) override;
 
-        void RefreshSurfaceData(const AZ::Aabb& dirtyArea) override;
+        void RefreshSurfaceData(const SurfaceDataRegistryHandle& providerHandle, const AZ::Aabb& dirtyArea) override;
 
         SurfaceDataRegistryHandle GetSurfaceDataProviderHandle(const AZ::EntityId& providerEntityId) override;
         SurfaceDataRegistryHandle GetSurfaceDataModifierHandle(const AZ::EntityId& modifierEntityId) override;
 
     private:
+
+        using SurfaceDataRegistryMap = AZStd::unordered_map<SurfaceDataRegistryHandle, SurfaceDataRegistryEntry>;
+
+        // Get all the surface tags that can exist within the given bounds.
+        SurfaceTagSet GetTagsFromBounds(const AZ::Aabb& bounds, const SurfaceDataRegistryMap& registeredEntries) const;
+        // Get all the surface provider tags that can exist within the given bounds.
+        SurfaceTagSet GetProviderTagsFromBounds(const AZ::Aabb& bounds) const;
+        // Get all the surface modifier tags that can exist within the given bounds.
+        SurfaceTagSet GetModifierTagsFromBounds(const AZ::Aabb& bounds) const;
+
+        // Get all of the surface tags that can be affected by surface provider changes within the given bounds.
+        SurfaceTagSet GetAffectedSurfaceTags(const AZ::Aabb& bounds, const SurfaceTagVector& providerTags) const;
+
+        // Convert a SurfaceTagVector to a SurfaceTagSet.
+        SurfaceTagSet ConvertTagVectorToSet(const SurfaceTagVector& surfaceTags) const;
+
         SurfaceDataRegistryHandle RegisterSurfaceDataProviderInternal(const SurfaceDataRegistryEntry& entry);
         SurfaceDataRegistryEntry UnregisterSurfaceDataProviderInternal(const SurfaceDataRegistryHandle& handle);
         bool UpdateSurfaceDataProviderInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds);
@@ -77,8 +94,8 @@ namespace SurfaceData
         bool UpdateSurfaceDataModifierInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds);
 
         mutable AZStd::shared_mutex m_registrationMutex;
-        AZStd::unordered_map<SurfaceDataRegistryHandle, SurfaceDataRegistryEntry> m_registeredSurfaceDataProviders;
-        AZStd::unordered_map<SurfaceDataRegistryHandle, SurfaceDataRegistryEntry> m_registeredSurfaceDataModifiers;
+        SurfaceDataRegistryMap m_registeredSurfaceDataProviders;
+        SurfaceDataRegistryMap m_registeredSurfaceDataModifiers;
         SurfaceDataRegistryHandle m_registeredSurfaceDataProviderHandleCounter = InvalidSurfaceDataRegistryHandle;
         SurfaceDataRegistryHandle m_registeredSurfaceDataModifierHandleCounter = InvalidSurfaceDataRegistryHandle;
         AZStd::unordered_set<AZ::u32> m_registeredModifierTags;

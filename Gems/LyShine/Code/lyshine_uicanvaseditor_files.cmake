@@ -70,8 +70,6 @@ set(FILES
     Editor/EnterPreviewToolbar.h
     Editor/EntityHelpers.cpp
     Editor/EntityHelpers.h
-    Editor/FeedbackDialog.cpp
-    Editor/FeedbackDialog.h
     Editor/FileHelpers.cpp
     Editor/FileHelpers.h
     Editor/FindEntityItemModel.cpp
@@ -120,6 +118,8 @@ set(FILES
     Editor/PropertiesWrapper.h
     Editor/PropertyHandlerAnchor.cpp
     Editor/PropertyHandlerAnchor.h
+    Editor/PropertyHandlerCanvasAsset.cpp
+    Editor/PropertyHandlerCanvasAsset.h
     Editor/PropertyHandlerChar.cpp
     Editor/PropertyHandlerChar.h
     Editor/PropertyHandlerDirectory.cpp

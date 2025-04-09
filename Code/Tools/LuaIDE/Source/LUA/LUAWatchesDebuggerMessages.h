@@ -38,8 +38,9 @@ namespace LUAEditor
         virtual ~LUAWatchesDebuggerMessages() {}
     };
 
-    // messages going TO the lua Context FROM anyone needing watch info
+    using LUAWatchesDebuggerMessagesRequestBus = AZ::EBus<LUAWatchesDebuggerMessages>;
 
+    // messages going TO the lua Context FROM anyone needing watch info
     class LUAWatchesRequestMessages
         : public AZ::EBusTraits
     {
@@ -56,6 +57,8 @@ namespace LUAEditor
 
         virtual ~LUAWatchesRequestMessages() {}
     };
+
+    using LUAWatchesRequestMessagesRequestBus = AZ::EBus<LUAWatchesRequestMessages>;
 }
 
 #endif//LUAEDITOR_LUAWATCHESDEBUGGERMESSAGES_H

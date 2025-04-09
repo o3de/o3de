@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>
@@ -37,6 +37,7 @@ namespace ScriptCanvas
         namespace Core
         {
             class Start;
+            class FunctionCallNode;
             class FunctionDefinitionNode;
         }
     }
@@ -299,6 +300,8 @@ namespace ScriptCanvas
 
             void ParseAutoConnectedEBusHandlerVariables();
 
+            void ParseComponentExtension();
+
             enum class FirstNode
             {
                 Self,
@@ -318,6 +321,7 @@ namespace ScriptCanvas
 
             void ParseDependenciesAssetIndicies();
 
+            // #scriptcanvas_component_extension
             void ParseEntityIdInput(ExecutionTreePtr execution);
 
             void ParseExecutionBreak(ExecutionTreePtr execution);
@@ -343,6 +347,8 @@ namespace ScriptCanvas
             void ParseExecutionLoop(ExecutionTreePtr execution);
 
             void ParseExecutionMultipleOutSyntaxSugar(ExecutionTreePtr execution, const EndpointsResolved& executionOutNodes, const AZStd::vector<const Slot*>& outSlots);
+
+            bool HasUnparsedImplicitConnections(const Slot* outSlot, const Slot* inSlot);
 
             void ParseExecutionMultipleOutSyntaxSugarOfSequencNode(ExecutionTreePtr sequence);
 
@@ -379,6 +385,8 @@ namespace ScriptCanvas
 
             bool ParseInputThisPointer(ExecutionTreePtr execution);
 
+            void ParseLocallyDefinedFunctionCalls();
+
             void ParseMetaData(ExecutionTreePtr execution);
 
             void ParseMultiExecutionPost(ExecutionTreePtr execution);
@@ -404,6 +412,8 @@ namespace ScriptCanvas
             void ParseReturnValue(ExecutionTreePtr execution, const Slot& returnValueSlot);
 
             void ParseReturnValue(ExecutionTreePtr execution, VariableConstPtr variable, const Slot* returnValueSlot);
+
+            void ParseSubgraphInterface(const Node& node);
 
             void ParseUserFunctionTopology();
 
@@ -476,7 +486,7 @@ namespace ScriptCanvas
             }
 
             void AddExecutionMapIn
-            (UserInParseTopologyResult result
+                ( UserInParseTopologyResult result
                 , ExecutionTreeConstPtr root
                 , const AZStd::vector<ExecutionTreeConstPtr>& outCalls
                 , AZStd::string_view defaultOutName
@@ -490,8 +500,6 @@ namespace ScriptCanvas
             void AddPreviouslyExecutedScopeVariableToOutputAssignments(VariableConstPtr newInputVariable, const ConnectionsInPreviouslyExecutedScope& connectedInputInPreviouslyExecutedScope);
 
             void ConvertNamesToIdentifiers();
-
-            AZStd::vector<AZStd::pair<ExecutionTreePtr, const Nodes::Core::FunctionDefinitionNode*>> FindAllNodelingOuts(ExecutionTreePtr root) const;
 
             VariableConstPtr FindBoundVariable(GraphScopedVariableId variableId) const;
 
@@ -533,7 +541,7 @@ namespace ScriptCanvas
             DebugSymbolMapReverse m_debugMapReverse;
 
             AZStd::sys_time_t m_parseDuration;
-            AZStd::chrono::system_clock::time_point m_parseStartTime;
+            AZStd::chrono::steady_clock::time_point m_parseStartTime;
             EBusHandlingByNode m_ebusHandlingByNode;
             EventHandlingByNode m_eventHandlingByNode;
             ImplicitVariablesByNode m_implicitVariablesByNode;
@@ -565,6 +573,8 @@ namespace ScriptCanvas
             AZStd::unordered_set<const Node*> m_subgraphStartCalls;
             AZStd::unordered_set<const Node*> m_activeDefaultObject;
 
+            AZStd::vector<const Nodes::Core::FunctionCallNode*> m_locallyDefinedFunctionCallNodes;
+
             SubgraphInterface m_subgraphInterface;
 
             AZStd::unordered_set<AZStd::string> m_uniqueOutNames;
@@ -576,6 +586,8 @@ namespace ScriptCanvas
             VariableUseage m_variableUse;
 
             ParsedRuntimeInputs m_runtimeInputs;
+
+            AZStd::vector<AZStd::pair<const Slot*, const Slot*>> m_parsedImplicitConnections;
 
             AZStd::vector<VariablePtr> FindUserImmediateInput(ExecutionTreePtr call) const;
 

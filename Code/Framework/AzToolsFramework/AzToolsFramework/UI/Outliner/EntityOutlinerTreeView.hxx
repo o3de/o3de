@@ -41,7 +41,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerTreeView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerTreeView, AZ::SystemAllocator);
 
         EntityOutlinerTreeView(QWidget* pParent = NULL);
         virtual ~EntityOutlinerTreeView();

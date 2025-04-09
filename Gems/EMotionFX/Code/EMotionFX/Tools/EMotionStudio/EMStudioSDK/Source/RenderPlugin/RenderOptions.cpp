@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
-#include <EMotionFX/Rendering/Common/OrbitCamera.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <MysticQt/Source/MysticQtConfig.h>
@@ -80,6 +79,9 @@ namespace EMStudio
         , m_tangentsScale(1.0f)
         , m_nodeOrientationScale(1.0f)
         , m_scaleBonesOnLength(true)
+        , m_nearClipPlaneDistance(0.1f)
+        , m_farClipPlaneDistance(200.0f)
+        , m_fov(55.0f)
         , m_mainLightIntensity(1.0f)
         , m_mainLightAngleA(0.0f)
         , m_mainLightAngleB(0.0f)
@@ -125,10 +127,6 @@ namespace EMStudio
         , m_lastUsedLayout("Single")
         , m_renderSelectionBox(true)
     {
-        MCommon::OrbitCamera tempCam;
-        m_nearClipPlaneDistance = tempCam.GetNearClipDistance();
-        m_farClipPlaneDistance = tempCam.GetFarClipDistance();
-        m_fov = tempCam.GetFOV();
     }
 
     RenderOptions& RenderOptions::operator=(const RenderOptions& other)
@@ -560,7 +558,7 @@ namespace EMStudio
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnLineSkeletonColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_skeletonColor, "Solid skeleton color",
                 "Solid skeleton color.")
-            ->Attribute(AZ_CRC("AlphaChannel", 0xa0cab5cf), true)
+            ->Attribute(AZ_CRC_CE("AlphaChannel"), true)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnSkeletonColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_selectionColor, "Selection gizmo color",
                 "Selection gizmo color")

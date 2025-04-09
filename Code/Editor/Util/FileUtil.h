@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "FileUtil_Common.h"
 #include "../Include/SandboxAPI.h"
 #include <QString>
 #include <QFileInfo>
@@ -126,8 +127,6 @@ public:
 
     static void PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath);
 
-    static void GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase = false, bool bMakeUnixPath = false);
-
     // Get file attributes include source control attributes if available
     static uint32 GetAttributes(const char* filename, bool bUseSourceControl = true);
 
@@ -152,6 +151,13 @@ private:
 
     // Keep this variant of this method private! pIsSelected is captured in a lambda, and so requires menu use exec() and never use show()
     static void PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* pIsSelected);
+
+    static void HandlePrefsDialogForFileType(const Common::EditFileType fileType);
+    static QString GetEditorForFileTypeFromPreferences(const Common::EditFileType fileType);
+    static QString HandleNoEditorAssigned(const Common::EditFileType fileType);
+    static QString HandleEditorOpenFailure(const Common::EditFileType fileType, const QString& currentEditor);
+    static AZStd::string GetSettingsKeyForFileType(const Common::EditFileType fileType);
+    static void EditFile(const QString&, const Common::EditFileType fileType);
 };
 
 class CAutoRestorePrimaryCDRoot

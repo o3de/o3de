@@ -6,14 +6,12 @@
  *
  */
 
-#include "DebugMap.h"
-
 #include <AzCore/Serialization/SerializeContext.h>
-
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
+#include <ScriptCanvas/Grammar/Primitives.h>
 
-#include "Primitives.h"
+#include <ScriptCanvas/Grammar/DebugMap.h>
 
 namespace ScriptCanvas
 {

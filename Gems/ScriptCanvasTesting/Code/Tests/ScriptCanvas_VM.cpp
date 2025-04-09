@@ -18,6 +18,7 @@
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
 #include <Source/ScriptCanvasTestBus.h>
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
 using namespace ScriptCanvas;
 using namespace ScriptCanvasTests;
@@ -28,7 +29,7 @@ class Grandparent
 {
 public:
     AZ_RTTI(Grandparent, "{76EF13EE-7F5E-41C8-A789-A86836D66D10}");
-    AZ_CLASS_ALLOCATOR(Grandparent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Grandparent, AZ::SystemAllocator);
 
     virtual ~Grandparent() = default;
 
@@ -58,7 +59,7 @@ class Parent
 {
 public:
     AZ_RTTI(Parent, "{2ABA91B7-24F7-495A-ACC6-4F93DE47B507}", Grandparent);
-    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator);
 
     ~Parent() override = default;
 
@@ -87,7 +88,7 @@ class Child
 {
 public:
     AZ_RTTI(Child, "{826DB77C-11B7-42C4-8F3F-3438AFE5B29B}", Parent);
-    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator);
 
     ~Child() override = default;
 
@@ -178,6 +179,11 @@ public:
 //     EXPECT_DEATH(CreateIdFromStringFast("0123ABCD4567EFAB0123ABCD4567EFAB0"), "");
 // }
 
+TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
+}
+
 TEST_F(ScriptCanvasTestFixture, TypeInheritance)
 {
     using namespace ScriptCanvas;
@@ -222,12 +228,36 @@ TEST_F(ScriptCanvasTestFixture, TypeInheritance)
     EXPECT_TRUE(childType.IS_EXACTLY_A(childType2));
 }
 
+TEST_F(ScriptCanvasTestFixture, TestLuaStringHandling)
+{
+    AZ::ScriptContext sc;
+    AZStd::string testingStrings[11] = {
+        "test",
+        "test]",
+        "[test]",
+        "=[test]=",
+        "[=[test]=]",
+        "[==[=[test]=]==]",
+        "==[=[test]=]==",
+        "test]=",
+        "[=[==[test]==]=]",
+        "[===[=[==[test]==]=]===]",
+        "\"\\/.'].["
+    };
+
+    for (AZStd::string item : testingStrings)
+    {
+        AZStd::string safeStringLiteral = Translation::MakeRuntimeSafeStringLiteral(item);
+        EXPECT_TRUE(sc.Execute(AZStd::string::format("print(%s)", safeStringLiteral.c_str()).c_str()));
+    }
+}
+
 // \todo turn this into a unit test nodeable that adds a unit test failure on destruction if it was never triggered (or triggered the required number of times)
 class Marker
 {
 public:
     AZ_TYPE_INFO(Marker, "{BEEB4BF4-81B8-45A0-AD3F-D1875703315B}");
-    AZ_CLASS_ALLOCATOR(Marker, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Marker, AZ::SystemAllocator);
 
     static AZStd::vector<int> s_markedPositions;
     

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
-#include <AzCore/Component/TickBus.h>
 #include <PreviewRenderer/PreviewRendererState.h>
 
 namespace AtomToolsFramework
@@ -17,21 +16,20 @@ namespace AtomToolsFramework
     //! PreviewRendererCaptureState renders a preview to an image
     class PreviewRendererCaptureState final
         : public PreviewRendererState
-        , public AZ::TickBus::Handler
         , public AZ::Render::FrameCaptureNotificationBus::Handler
     {
     public:
         PreviewRendererCaptureState(PreviewRenderer* renderer);
         ~PreviewRendererCaptureState();
+        void Update() override;
 
     private:
-        //! AZ::TickBus::Handler interface overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
         //! AZ::Render::FrameCaptureNotificationBus::Handler overrides...
-        void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+        void OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
-        //! This is necessary to suspend capture until preview scene is ready
-        int m_ticksToCapture = 1;
+        //! Track the amount of time since the capture request was initiated
+        AZStd::chrono::steady_clock::time_point m_startTime = AZStd::chrono::steady_clock::now();
+        AZStd::chrono::steady_clock::time_point m_abortTime = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(5000);
+        bool m_captureComplete = false;
     };
 } // namespace AtomToolsFramework

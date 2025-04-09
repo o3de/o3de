@@ -6,38 +6,19 @@
       <rect>
         <x>0</x>
         <y>0</y>
-        <width>400</width>
+        <width>200</width>
         <height>320</height>
       </rect>
     </property>
     <property name="minimumSize">
       <size>
-        <width>400</width>
+        <width>200</width>
         <height>320</height>
       </size>
     </property>
     <property name="windowTitle">
-      <string>Scene Settings (PREVIEW)</string>
+      <string>Scene Settings</string>
     </property>
-    <widget class="QMenuBar" name="menuBar">
-      <widget class="QMenu" name="editMenu">
-        <property name="title">
-          <string>&amp;Edit</string>
-        </property>
-        <addaction name="m_actionResetSettings"/>
-		<addaction name="m_actionAssignScript"/>
-	  </widget>
-      <widget class="QMenu" name="helpMenu">
-        <property name="title">
-          <string>&amp;Help</string>
-        </property>
-        <addaction name="m_actionInspect"/>
-        <addaction name="separator"/>
-        <addaction name="actionOpenDocumentation"/>
-      </widget>
-      <addaction name="editMenu"/>
-      <addaction name="helpMenu"/>
-    </widget>
     <widget class="QWidget" name="m_rootWidget">
       <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
@@ -59,23 +40,44 @@
                 <verstretch>0</verstretch>
               </sizepolicy>
             </property>
-            <layout class="QGridLayout" name="mainAreaLayout">
-              <property name="spacing">
-                <number>0</number>
-              </property>
-              <property name="leftMargin">
-                <number>0</number>
-              </property>
-              <property name="topMargin">
-                <number>0</number>
-              </property>
-              <property name="rightMargin">
-                <number>0</number>
-              </property>
-              <property name="bottomMargin">
-                <number>0</number>
-              </property>
-            </layout>
+              <layout class="QVBoxLayout" name="mainAreaLayout">
+                  <property name="spacing">
+                      <number>0</number>
+                  </property>
+                  <property name="leftMargin">
+                      <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                      <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                      <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                      <number>0</number>
+                  </property>
+                  <item>
+                      <widget class="QWidget" name="m_notificationAreaLayoutWidget">
+                          <layout class="QVBoxLayout" name="m_notificationAreaLayout">
+                              <item>
+                                  <widget class="QWidget" name="m_cardAreaLayoutWidget">
+                                      <layout class="QVBoxLayout" name="m_cardAreaLayout">
+                                          <property name="topMargin">
+                                              <number>6</number>
+                                          </property>
+                                      </layout>
+                                  </widget>
+                              </item>
+                          </layout>
+                      </widget>
+                  </item>
+                  <item>
+                      <widget class="QWidget" name="m_settingsAreaLayoutWidget">
+                          <layout class="QVBoxLayout" name="m_settingsAreaLayout">
+                          </layout>
+                      </widget>
+                  </item>
+              </layout>
           </widget>
         </item>
 
@@ -167,70 +169,7 @@
         </item>
       </layout>
     </widget>
-  
-    <action name="m_actionResetSettings">
-      <property name="text">
-        <string>Reset settings...</string>
-      </property>
-      <property name="toolTip">
-        <string>Reset the settings for this file (note: you will have to update to commit)</string>
-      </property>
-    </action>
-
-    <action name="m_actionAssignScript">
-      <property name="text">
-        <string>Assign Build Script...</string>
-      </property>
-      <property name="toolTip">
-        <string>Assign a Python build script that will override the scene's build rules</string>
-      </property>
-    </action>
-	  
-    <action name="actionOpenDocumentation">
-      <property name="text">
-        <string>Documentation</string>
-      </property>
-    </action>
- 
-    <action name="m_actionInspect">
-      <property name="text">
-        <string>Inspect...</string>
-      </property>
-      <property name="toolTip">
-        <string>Inspect the data loaded in greater detail.</string>
-      </property>
-    </action>
   </widget>
 
   <layoutdefault spacing="6" margin="0"/>
-
-  <resources>
-    <include location="AssetImporter.qrc"/>
-  </resources>
-  <connections>
-    <connection>
-      <sender>m_actionResetSettings</sender>
-      <signal>triggered()</signal>
-      <receiver>AssetImporterWindow</receiver>
-      <slot>OnSceneResetRequested()</slot>
-    </connection>
-    <connection>
-      <sender>m_actionAssignScript</sender>
-      <signal>triggered()</signal>
-      <receiver>AssetImporterWindow</receiver>
-      <slot>OnAssignScript()</slot>
-    </connection>
-    <connection>
-      <sender>m_actionInspect</sender>
-      <signal>triggered()</signal>
-      <receiver>AssetImporterWindow</receiver>
-      <slot>OnInspect()</slot>
-    </connection>
-    <connection>
-      <sender>actionOpenDocumentation</sender>
-      <signal>triggered()</signal>
-      <receiver>AssetImporterWindow</receiver>
-      <slot>OnOpenDocumentation()</slot>
-    </connection>
-  </connections>
 </ui>

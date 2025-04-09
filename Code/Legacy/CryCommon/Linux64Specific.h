@@ -15,18 +15,20 @@
 #pragma once
 
 
-
-//#define _CPU_X86
-#define _CPU_AMD64
-#define _CPU_SSE
-
+#if !defined(__ARM_ARCH)
+    #define _CPU_AMD64
+    #define _CPU_SSE
+#endif // __ARM_NEON
 //////////////////////////////////////////////////////////////////////////
 // Standard includes.
 //////////////////////////////////////////////////////////////////////////
 #include <malloc.h>
 #include <stdint.h>
 #include <sys/dir.h>
+#if !defined(__ARM_ARCH)
 #include <sys/io.h>
+#endif // __ARM_ARCH
+
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -103,7 +105,7 @@ typedef uint8               byte;
 
 #define PLATFORM_64BIT
 
-#ifdef _RELEASE
+#if defined(_RELEASE) || defined(__ARM_ARCH)
     #define __debugbreak()
 #else
     #define __debugbreak() asm("int3")

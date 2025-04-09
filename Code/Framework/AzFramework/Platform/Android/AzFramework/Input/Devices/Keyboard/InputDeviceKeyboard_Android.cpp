@@ -6,11 +6,11 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
 #include <AzCore/Android/Utils.h>
-
 #include <android/input.h>
 
 
@@ -321,7 +321,7 @@ namespace AzFramework
         , public RawInputNotificationBusAndroid::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardAndroid, AZ::SystemAllocator);
 
 
         InputDeviceKeyboardAndroid(InputDeviceKeyboard& inputDevice);
@@ -435,9 +435,21 @@ namespace AzFramework
         ProcessRawEventQueues();
     }
 
-
-    InputDeviceKeyboard::Implementation* InputDeviceKeyboard::Implementation::Create(InputDeviceKeyboard& inputDevice)
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class AndroidDeviceKeyboardImplFactory
+        : public InputDeviceKeyboard::ImplementationFactory
     {
-        return aznew InputDeviceKeyboardAndroid(inputDevice);
+    public:
+        AZStd::unique_ptr<InputDeviceKeyboard::Implementation> Create(InputDeviceKeyboard& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceKeyboardAndroid>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
+    {
+        m_deviceKeyboardImplFactory = AZStd::make_unique<AndroidDeviceKeyboardImplFactory>();
+        AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
     }
 } // namespace AzFramework

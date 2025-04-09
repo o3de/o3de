@@ -7,8 +7,8 @@
  */
 
 #pragma once
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Vector2.h>
-#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -35,13 +35,13 @@ namespace AZ
         //! @param epsilon If any non-consecutive edges of the polygon are closer than this value, it is considered self-intersecting.
         //! @return True if the vertices form a simple polygon.
         //! See https://en.wikipedia.org/wiki/Simple_polygon.
-        bool IsSimplePolygon(const AZStd::vector<AZ::Vector2>& vertices, float epsilon = 1e-3f);
+        bool IsSimplePolygon(AZStd::span<const AZ::Vector2> vertices, float epsilon = 1e-3f);
 
         //! Determines if every angle in a series of vertices considered in counterclockwise winding order is convex.
         //! Note that this function does not test for self-intersection, so a pentagram for example would be considered
         //! convex.  IsSimplePolygon may be used to separately test for self-intersection.
         //! @param vertices Vertices, assumed to be in counterclockwise order.
         //! @return True if all the angles are convex (but the edges may be self-intersecting).
-        bool IsConvex(const AZStd::vector<AZ::Vector2>& vertices);
+        bool IsConvex(AZStd::span<const AZ::Vector2> vertices);
     } // namespace Geometry2DUtils
 } // namespace AZ

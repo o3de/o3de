@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_OBBFunctions_IsFinite",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Is Finite",
+                "category": "Math/OBB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_OBBFunctions_IsFinite",
+                    "details": {
+                        "name": "Is Finite",
+                        "tooltip": "Returns true if every element in Source is finite, is false"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

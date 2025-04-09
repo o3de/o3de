@@ -64,12 +64,16 @@ namespace MaterialEditor
         AZ::NonUniformScaleRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(100, 100, 1.0));
 
+        // Avoid z-fighting with the cube model when double-sided rendering is enabled
+        AZ::TransformBus::Event(
+            GetShadowCatcherEntityId(), &AZ::TransformInterface::SetWorldZ, -0.01f);
+
         AZ::Render::MeshComponentRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAssetId,
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.azmodel"));
+            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.fbx.azmodel"));
 
         AZ::Render::MaterialComponentRequestBus::Event(
-            GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverride,
+            GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,
             AZ::Render::DefaultMaterialAssignmentId,
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/special/shadowcatcher.azmaterial"));
 
@@ -131,7 +135,7 @@ namespace MaterialEditor
         materialAssignment.m_materialInstancePreCreated = true;
 
         AZ::Render::MaterialComponentRequestBus::Event(
-            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverrides, materials);
+            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialMap, materials);
     }
 
     void MaterialEditorViewportContent::OnViewportSettingsChanged()
@@ -170,7 +174,7 @@ namespace MaterialEditor
                     viewportRequests->GetShadowCatcherEnabled());
 
                 AZ::Render::MaterialComponentRequestBus::Event(
-                    GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetPropertyOverride,
+                    GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetPropertyValue,
                     AZ::Render::DefaultMaterialAssignmentId, "settings.opacity", AZStd::any(lightingPreset.m_shadowCatcherOpacity));
 
                 AZ::Render::DisplayMapperComponentRequestBus::Event(

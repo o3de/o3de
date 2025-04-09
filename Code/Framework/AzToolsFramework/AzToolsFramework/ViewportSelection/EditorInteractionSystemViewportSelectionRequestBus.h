@@ -42,6 +42,11 @@ namespace AzToolsFramework
     class EditorInteractionSystemViewportSelection : public ViewportInteraction::InternalViewportSelectionRequests
     {
     public:
+        //! \ref GetEntityDataCache enables callers to get access to the current entity data cache.
+        //! No assumptions should be made about the lifetime of this pointer, it may get destroyed
+        //! and recreated every time the Editor interaction handler is changed.
+        virtual const EditorVisibleEntityDataCacheInterface* GetEntityDataCache() const = 0;
+
         //! \ref SetHandler takes a factory function to create a new type implementing
         //! the ViewportSelectionRequests interface.
         //! It provides a handler implementing ViewportSelectionRequests to handle all

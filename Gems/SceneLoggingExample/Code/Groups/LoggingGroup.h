@@ -36,7 +36,7 @@ namespace SceneLoggingExample
         ~LoggingGroup() override = default;
 
         AZ_RTTI(LoggingGroup, "{A5ECF95D-2E84-4574-BF93-09E469E2BA4E}", AZ::SceneAPI::DataTypes::IGroup);
-        AZ_CLASS_ALLOCATOR(LoggingGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LoggingGroup, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

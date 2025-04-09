@@ -53,7 +53,7 @@ namespace AtomToolsFramework
         //! @param documentId unique id of document for which the notification is sent
         virtual void OnDocumentExternallyModified([[maybe_unused]] const AZ::Uuid& documentId){};
 
-        //! Signal that a document undo state was updated
+        //! Signal that the current location in the undo redo history has changed and the UI needs to be updated
         //! @param documentId unique id of document for which the notification is sent
         virtual void OnDocumentUndoStateChanged([[maybe_unused]] const AZ::Uuid& documentId){};
 
@@ -65,6 +65,10 @@ namespace AtomToolsFramework
             [[maybe_unused]] const AZ::Uuid& documentId,
             [[maybe_unused]] const DocumentObjectInfo& objectInfo,
             [[maybe_unused]] bool rebuilt){};
+
+        //! Signal that reflected objects and pointers contained in the document have been invalidated so that any affected UI can be rebuilt
+        //! @param documentId unique id of document for which the notification is sent
+        virtual void OnDocumentObjectInfoInvalidated([[maybe_unused]] const AZ::Uuid& documentId){};
 
         //! Signal the document content has been cleared
         //! @param documentId unique id of document for which the notification is sent

@@ -15,14 +15,14 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FeatureMatrix, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureMatrix, MotionMatchAllocator)
 
     void FeatureMatrix::Clear()
     {
         resize(0, 0);
     }
 
-    void FeatureMatrix::SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames)
+    void FeatureMatrix::SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames) const
     {
         std::ofstream file(filename.c_str());
 
@@ -49,19 +49,9 @@ namespace EMotionFX::MotionMatching
 #endif
     }
 
-    void FeatureMatrix::SaveAsCsv(const AZStd::string& filename, const FeatureSchema* featureSchema)
+    void FeatureMatrix::SaveAsCsv(const AZStd::string& filename, const FeatureSchema* featureSchema) const
     {
-        AZStd::vector<AZStd::string> columnNames;
-
-        for (Feature* feature: featureSchema->GetFeatures())
-        {
-            const size_t numDimensions = feature->GetNumDimensions();
-            for (size_t dimension = 0; dimension < numDimensions; ++dimension)
-            {
-                columnNames.push_back(feature->GetDimensionName(dimension));
-            }
-        }
-
+        const AZStd::vector<AZStd::string> columnNames = featureSchema->CollectColumnNames();
         SaveAsCsv(filename, columnNames);
     }
 

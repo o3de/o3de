@@ -24,7 +24,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetCompleterModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetCompleterModel, AZ::SystemAllocator);
         explicit AssetCompleterModel(QObject* parent = nullptr);
         ~AssetCompleterModel();
 
@@ -32,10 +32,11 @@ namespace AzToolsFramework
         int columnCount(const QModelIndex &parent = QModelIndex()) const override;
         QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-        void SetFilter(AZ::Data::AssetType filterType);
+        void SetFilter(const AZ::Data::AssetType& assetType);
+        void SetFilter(const AZStd::vector<AZ::Data::AssetType>& assetTypes);
         void SetFilter(FilterConstType filter);
         void RefreshAssetList();
-        void SearchStringHighlight(QString searchString);
+        void SearchStringHighlight(const QString& searchString);
 
         Qt::ItemFlags flags(const QModelIndex &index) const override;
 

@@ -22,7 +22,7 @@ namespace ExpressionEvaluation
         : public ExpressionElementParser
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrimitiveParser, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrimitiveParser, AZ::SystemAllocator);
 
         PrimitiveParser() = default;
 
@@ -49,7 +49,7 @@ namespace ExpressionEvaluation
         : public PrimitiveParser
     {
     public:
-        AZ_CLASS_ALLOCATOR(NumericPrimitiveParser, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NumericPrimitiveParser, AZ::SystemAllocator);
 
         NumericPrimitiveParser();
 
@@ -66,7 +66,7 @@ namespace ExpressionEvaluation
         : public PrimitiveParser
     {
     public:
-        AZ_CLASS_ALLOCATOR(BooleanPrimitiveParser, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BooleanPrimitiveParser, AZ::SystemAllocator);
 
         BooleanPrimitiveParser();
 

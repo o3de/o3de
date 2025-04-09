@@ -27,7 +27,6 @@ namespace LegacyFramework
     {
         void* m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
         bool m_enableGUI; // false if you want none of the QT or GUI functionality to exist.  You cannot use project manager if you do this.
-        bool m_enableGridmate; // false if you want to not activate the network communications module.
         bool m_enablePerforce; // false if you want to not activate perforce SCM integration.  note that this will eventually become a plugin anyway
         bool m_enableProjectManager; // false if you want to disable project management.  No project path will be set and the project picker GUI will not appear.
         bool m_shouldRunAssetProcessor; // false if you want to disable auto launching the asset processor.
@@ -52,11 +51,14 @@ namespace LegacyFramework
     {
         /// Create application, if systemEntityFileName is NULL, we will create with default settings.
     public:
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator)
 
         using CoreMessageBus::Handler::Run;
         virtual int Run(const ApplicationDesc& desc);
         Application();
         Application(int argc, char** argv);
+        explicit Application(AZ::ComponentApplicationSettings componentAppSettings);
+        Application(int argc, char** argv, AZ::ComponentApplicationSettings componentAppSettings);
 
         void CreateReflectionManager() override;
 

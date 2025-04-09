@@ -84,12 +84,18 @@ namespace EMotionFX::MotionMatching
 
         static void Reflect(AZ::ReflectContext* context);
 
+        const FeatureSchema& GetFeatureSchema() const { return m_featureSchema; }
+
     private:
         void Output(AnimGraphInstance* animGraphInstance) override;
         void Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
         void PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
 
         AZ::Crc32 GetTrajectoryPathSettingsVisibility() const;
+        AZ::Crc32 GetFeatureScalerTypeSettingsVisibility() const;
+        AZ::Crc32 GetMinMaxSettingsVisibility() const;
+        AZ::Crc32 OnVisualizeSchemaButtonClicked();
+        AZStd::string OnVisualizeSchemaButtonText() const;
 
         FeatureSchema m_featureSchema;
         AZStd::vector<AZStd::string> m_motionIds;
@@ -102,6 +108,13 @@ namespace EMotionFX::MotionMatching
         AZ::u32 m_minFramesPerKdTreeNode = 1000;
         TrajectoryQuery::EMode m_trajectoryQueryMode = TrajectoryQuery::MODE_TARGETDRIVEN;
         bool m_mirror = false;
+
+        // Data normalization.
+        bool m_normalizeData = false;
+        MotionMatchingData::FeatureScalerType m_featureScalerType = MotionMatchingData::StandardScalerType;
+        float m_featureMin = 0.0f;
+        float m_featureMax = 1.0f;
+        bool m_clipFeatures = false;
 
         AZ::Debug::Timer m_timer;
         float m_updateTimeInMs = 0.0f;

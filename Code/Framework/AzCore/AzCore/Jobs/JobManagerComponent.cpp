@@ -22,7 +22,7 @@
 
 #include <AzCore/Threading/ThreadUtils.h>
 
-AZ_CVAR(float, cl_jobThreadsConcurrencyRatio, 0.6f, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system multiplier on the number of hw threads the machine creates at initialization");
+AZ_CVAR(float, cl_jobThreadsConcurrencyRatio, AZ_TRAIT_USE_JOB_THREADS_CONCURRENCY_RATIO, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system multiplier on the number of hw threads the machine creates at initialization");
 AZ_CVAR(uint32_t, cl_jobThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system number of hardware threads that are reserved for O3DE system threads");
 AZ_CVAR(uint32_t, cl_jobThreadsMinNumber, 3, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system minimum number of worker threads to create after scaling the number of hw threads");
 
@@ -61,7 +61,7 @@ namespace AZ
             numberOfWorkerThreads = AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS;
         #else
             uint32_t scaledHardwareThreads = Threading::CalcNumWorkerThreads(cl_jobThreadsConcurrencyRatio, cl_jobThreadsMinNumber, 0, cl_jobThreadsNumReserved);
-            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), scaledHardwareThreads);
+            numberOfWorkerThreads = desc.GetWorkerThreadCount(scaledHardwareThreads);
         #endif // (AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS)
         }
 
@@ -99,7 +99,7 @@ namespace AZ
     //=========================================================================
     void JobManagerComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("JobsService", 0xd5ab5a50));
+        provided.push_back(AZ_CRC_CE("JobsService"));
     }
 
     //=========================================================================
@@ -107,7 +107,7 @@ namespace AZ
     //=========================================================================
     void JobManagerComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("JobsService", 0xd5ab5a50));
+        incompatible.push_back(AZ_CRC_CE("JobsService"));
     }
 
     //=========================================================================
@@ -115,8 +115,7 @@ namespace AZ
     //=========================================================================
     void JobManagerComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("MemoryService", 0x5c4d473c));
-        dependent.push_back(AZ_CRC("ProfilerService", 0x505033c9));
+        dependent.push_back(AZ_CRC_CE("ProfilerService"));
     }
 
     //=========================================================================
@@ -138,7 +137,6 @@ namespace AZ
                     "Job Manager", "Provides fine grained job system and worker threads")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &JobManagerComponent::m_numberOfWorkerThreads, "Worker threads", "Number of worked threads for this job manager.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, 16)

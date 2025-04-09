@@ -21,16 +21,12 @@ namespace BarrierInput
     //! Barrier specific implementation for keyboard input devices.
     class InputDeviceKeyboardBarrier : public AzFramework::InputDeviceKeyboard::Implementation
                                      , public RawInputNotificationBusBarrier::Handler
+
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardBarrier, AZ::SystemAllocator, 0);
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Custom factory create function
-        //! \param[in] inputDevice Reference to the input device being implemented
-        static Implementation* Create(AzFramework::InputDeviceKeyboard& inputDevice);
+        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardBarrier, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -105,5 +101,11 @@ namespace BarrierInput
         AZStd::mutex                 m_threadAwareRawTextEventQueueMutex;
 
         bool                         m_hasTextEntryStarted;
+    };
+
+    struct InputDeviceKeyboardBarrierImplFactory 
+        : public AzFramework::InputDeviceKeyboard::ImplementationFactory
+    {
+        AZStd::unique_ptr<AzFramework::InputDeviceKeyboard::Implementation> Create(AzFramework::InputDeviceKeyboard& inputDevice) override;
     };
 } // namespace BarrierInput

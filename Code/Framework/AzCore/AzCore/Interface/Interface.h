@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/typetraits/is_constructible.h>
@@ -18,12 +19,16 @@
 
 namespace AZ
 {
+    // Type aliases for return types for register and unregister commands
+    using InterfaceErrorString = AZStd::fixed_string<256>;
+    using InterfaceRegisterOutcome = AZ::Outcome<void, InterfaceErrorString>;
+
     /**
      * Interface class for accessing registered singletons across module boundaries. The raw interface
      * pointer is handed to you; the assumption is that the registered system will outlive cached
      * references. A system must register itself with the interface at initialization time by calling
      * @ref Register(); and unregister at shutdown by calling @ref Unregister(). The provided Registrar
-     * class will do this for you automatically.  Registration will only succeed after the 
+     * class will do this for you automatically.  Registration will only succeed after the
      * AZ::Environment has been attached and is ready.
      *
      * Example Usage:
@@ -56,22 +61,23 @@ namespace AZ
     class Interface final
     {
     public:
+        using ErrorString = InterfaceErrorString;
+        using RegisterOutcome = InterfaceRegisterOutcome;
 
         // Fix Atom usage and re-enable these static_asserts
-        //static_assert(AZStd::has_virtual_destructor<T>::value, "Interface type must have a virtual destructor to prevent memory leaks");
         //static_assert(!AZStd::is_move_constructible_v<T>, "Interface type should not be movable, as this could leave a dangling interface");
         //static_assert(!AZStd::is_move_assignable_v<T>, "Interface type should not be movable, as this could leave a dangling interface");
 
         /**
          * Registers an instance pointer to the interface. Only one instance is allowed to register at a time.
          */
-        static void Register(T* type);
+        static RegisterOutcome Register(T* type);
 
         /**
          * Unregisters from the interface. An unregister must occur in the same module as the original Register
          * call; the pointer must match the original call to Register.
          */
-        static void Unregister(T* type);
+        static RegisterOutcome Unregister(T* type);
 
         /**
          * Returns the registered interface pointer, if it exists. This method is thread-safe in that you can
@@ -102,66 +108,67 @@ namespace AZ
     private:
         static uint32_t GetVariableName();
 
-        /**
-         * Module-specific static environment variable. This will require a FindVariable<>() operation
-         * when invoked for the first time in a new module. There is one of these per module, but they
-         * all point to the same internal pointer.
-         */
-        static EnvironmentVariable<T*> s_instance;
+        inline static EnvironmentVariable<T*>& GetInstance()
+        {
+            /**
+             * Module-specific static environment variable. This will require a FindVariable<>() operation
+             * when invoked for the first time in a new module. There is one of these per module, but they
+             * all point to the same internal pointer.
+             */
+            static EnvironmentVariable<T*> s_instance;
+            return s_instance;
+        }
+
         static AZStd::shared_mutex s_mutex;
         static bool s_instanceAssigned;
     };
 
     template <typename T>
-    EnvironmentVariable<T*> Interface<T>::s_instance;
-
-    template <typename T>
     AZStd::shared_mutex Interface<T>::s_mutex;
 
     template <typename T>
-    bool Interface<T>::s_instanceAssigned;
+    bool Interface<T>::s_instanceAssigned = false;
 
     template <typename T>
-    void Interface<T>::Register(T* type)
+    auto Interface<T>::Register(T* type) -> RegisterOutcome
     {
         if (!type)
         {
-            AZ_Assert(false, "Interface '%s' registering a null pointer!", AzTypeInfo<T>::Name());
-            return;
+            return AZ::Failure(ErrorString::format("Interface '%s' registering a null pointer!", AzTypeInfo<T>::Name()));
         }
 
         if (T* foundType = Get())
         {
-            AZ_Assert(false, "Interface '%s' already registered! [Found: %p]", AzTypeInfo<T>::Name(), foundType);
-            return;
+            return AZ::Failure(ErrorString::format("Interface '%s' already registered! [Found: %p]", AzTypeInfo<T>::Name(), foundType));
         }
 
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
-        s_instance = Environment::CreateVariable<T*>(GetVariableName());
-        s_instance.Get() = type;
+        GetInstance() = Environment::CreateVariable<T*>(GetVariableName());
+        GetInstance().Get() = type;
         s_instanceAssigned = true;
+        return AZ::Success();
     }
 
     template <typename T>
-    void Interface<T>::Unregister(T* type)
+    auto Interface<T>::Unregister(T* type) -> RegisterOutcome
     {
         if (!s_instanceAssigned)
         {
-            AZ_Assert(false, "Interface '%s' not registered on this module!", AzTypeInfo<T>::Name());
-            return;
+            return AZ::Failure(ErrorString::format("Interface '%s' not registered on this module!", AzTypeInfo<T>::Name()));
         }
 
-        if (s_instance && s_instance.Get() != type)
+        if (GetInstance() && GetInstance().Get() != type)
         {
-            AZ_Assert(false, "Interface '%s' is not the same instance that was registered! [Expected '%p', Found '%p']", AzTypeInfo<T>::Name(), type, s_instance.Get());
-            return;
+            return AZ::Failure(ErrorString::format("Interface '%s' is not the same instance that was registered! [Expected '%p', Found '%p']",
+                AzTypeInfo<T>::Name(), type, GetInstance().Get()));
         }
 
         // Assign the internal pointer to null and release the EnvironmentVariable reference.
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
-        *s_instance = nullptr;
-        s_instance.Reset();
+        *GetInstance() = nullptr;
+        GetInstance().Reset();
         s_instanceAssigned = false;
+        return AZ::Success();
     }
 
     template <typename T>
@@ -173,16 +180,16 @@ namespace AZ
             AZStd::shared_lock<AZStd::shared_mutex> lock(s_mutex);
             if (s_instanceAssigned)
             {
-                return s_instance ? s_instance.Get() : nullptr;
+                return GetInstance() ? GetInstance().Get() : nullptr;
             }
         }
 
         // If the instance doesn't exist (which means we could be in a different module),
         // take the full lock and request it.
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
-        s_instance = Environment::FindVariable<T*>(GetVariableName());
-        s_instanceAssigned = true;
-        return s_instance ? s_instance.Get() : nullptr;
+        GetInstance() = Environment::FindVariable<T*>(GetVariableName());
+        s_instanceAssigned = static_cast<bool>(GetInstance());
+        return GetInstance() ? GetInstance().Get() : nullptr;
     }
 
     template <typename T>

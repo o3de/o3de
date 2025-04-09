@@ -1,7 +1,0 @@
-<ObjectStream version="3">
-	<Class name="MaterialLibraryAsset" version="2" type="{9E366D8C-33BB-4825-9A1F-FA3ADBE11D0F}">
-		<Class name="AssetData" field="BaseClass1" version="1" type="{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}"/>
-		<Class name="AZStd::vector" field="Properties" type="{A8E59F8C-2F9A-525A-B549-A9E197EB9632}"/>
-	</Class>
-</ObjectStream>
-

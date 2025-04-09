@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/PBR/SpecularAA.azsli>
+
+// For artists workflows, specular F0 for dialectric (non-metal) materials is exposed as a 0-1 scale
+// However the specular F0 for dialectrics is much lower than metals, so we expose this scaling factor here
+static const real3 MaxDielectricSpecularF0 = 0.08;
+
+// Make sure roughness is above 0 to avoid precision and divide by zero issues.
+// Picked 0.024 because anything lower makes no perceivable difference in the material editor.
+static const real MinRoughnessLinear = 0.024;
+
+
+// The roughness value in microfacet calculations (called "alpha" in the literature) does not give perceptually
+// linear results. Disney found that squaring the roughness value before using it in microfacet equations causes
+// the user-provided roughness parameter to be more perceptually linear. We keep both values available as some
+// equations need roughnessLinear (i.e. IBL sampling) while others need roughnessA (i.e. GGX equations).
+// See Burley's Disney PBR: https://pdfs.semanticscholar.org/eeee/3b125c09044d3e2f58ed0e4b1b66a677886d.pdf
+void CalculateRoughnessValues(float3 normal, inout float roughnessLinear, out float roughnessA, out float roughnessA2)
+{
+    roughnessLinear = max(roughnessLinear, MinRoughnessLinear);
+    roughnessA = Pow2(roughnessLinear);
+    roughnessA2 = Pow2(roughnessA);
+
+#if ENABLE_SPECULARAA
+    if(o_applySpecularAA)
+    {
+        roughnessA2 = CalculateSpecularAA(normal, roughnessA2);
+
+        // Apply backwards so we get consistent behavior (for things like lookup tables for example)
+        roughnessA = sqrt(roughnessA2);
+        roughnessLinear = sqrt(roughnessA);
+    }
+#endif
+}
+
+real3 GetAlbedo(real3 baseColor, real metallic)
+{
+    return baseColor * (1.0 - metallic);
+}
+
+real3 CalculateSpecularF0(real3 baseColor, real metallic, real specularF0Factor)
+{
+    real3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
+    return lerp(dielectricSpecularF0, baseColor, metallic);
+}
+
+// Manipulates surface specularF0 to apply a clear coat factor
+void ApplyClearCoatToSpecularF0(inout real3 specularF0, real clearCoatFactor)
+{
+    // For the derivation of the following equation please refer to:
+    // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
+    real3 f0 = (1.0 - 5.0 * sqrt(specularF0)) / (5.0 - sqrt(specularF0));
+    specularF0 = lerp(specularF0, f0 * f0, clearCoatFactor);
+}

@@ -136,7 +136,7 @@ CLyShine::CLyShine()
     // This support will be removed at some point
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         if (behaviorContext)
         {
             behaviorContext->Class<LyShineLua>("LyShineLua")
@@ -197,7 +197,8 @@ CLyShine::CLyShine()
         azrtti_typeid<UiLayoutFitterComponent>(),
         azrtti_typeid<UiParticleEmitterComponent>(),
     };
-    EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, componentUuidsForMetricsCollection);
+    AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+        &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, componentUuidsForMetricsCollection);
 
 
 
@@ -342,9 +343,9 @@ ISprite* CLyShine::LoadSprite(const AZStd::string& pathname)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ISprite* CLyShine::CreateSprite(const AZStd::string& renderTargetName)
+ISprite* CLyShine::CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
-    return CSprite::CreateSprite(renderTargetName);
+    return CSprite::CreateSprite(attachmentImageAsset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -409,7 +410,7 @@ void CLyShine::Update(float deltaTimeInSeconds)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::Render()
 {
-    if (AZ::RHI::IsNullRenderer())
+    if (AZ::RHI::IsNullRHI())
     {
         return;
     }
@@ -575,6 +576,11 @@ AZ::Vector2 CLyShine::GetUiCursorPosition()
 
     return AZ::Vector2(systemCursorPositionNormalized.GetX() * viewportSize.GetX(),
         systemCursorPositionNormalized.GetY() * viewportSize.GetY());
+}
+
+void CLyShine::SetUiCursorPosition(const AZ::Vector2& positionNormalized)
+{
+    AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized, positionNormalized);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

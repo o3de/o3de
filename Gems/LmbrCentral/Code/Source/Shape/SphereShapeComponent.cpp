@@ -16,20 +16,20 @@ namespace LmbrCentral
 {
     void SphereShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        provided.push_back(AZ_CRC("SphereShapeService", 0x90c8dc80));
+        provided.push_back(AZ_CRC_CE("ShapeService"));
+        provided.push_back(AZ_CRC_CE("SphereShapeService"));
     }
 
     void SphereShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        incompatible.push_back(AZ_CRC("SphereShapeService", 0x90c8dc80));
+        incompatible.push_back(AZ_CRC_CE("ShapeService"));
+        incompatible.push_back(AZ_CRC_CE("SphereShapeService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void SphereShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void SphereShapeDebugDisplayComponent::Reflect(AZ::ReflectContext* context)
@@ -103,13 +103,14 @@ namespace LmbrCentral
             // Deprecate: SphereColliderConfiguration -> SphereShapeConfig
             serializeContext->ClassDeprecate(
                 "SphereColliderConfiguration",
-                "{0319AE62-3355-4C98-873D-3139D0427A53}",
+                AZ::Uuid("{0319AE62-3355-4C98-873D-3139D0427A53}"),
                 &ClassConverters::DeprecateSphereColliderConfiguration)
                 ;
 
             serializeContext->Class<SphereShapeConfig, ShapeComponentConfig>()
                 ->Version(2)
                 ->Field("Radius", &SphereShapeConfig::m_radius)
+                ->Field("TranslationOffset", &SphereShapeConfig::m_translationOffset)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -117,10 +118,16 @@ namespace LmbrCentral
                 editContext->Class<SphereShapeConfig>("Configuration", "Sphere shape configuration parameters")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SphereShapeConfig::m_radius, "Radius", "Radius of sphere")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                        ;
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SphereShapeConfig::m_translationOffset,
+                        "Translation Offset",
+                        "Translation offset of shape relative to its entity")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f);
             }
         }
 
@@ -143,7 +150,7 @@ namespace LmbrCentral
             // Deprecate: SphereColliderComponent -> SphereShapeComponent
             serializeContext->ClassDeprecate(
                 "SphereColliderComponent",
-                "{99F33E4A-4EFB-403C-8918-9171D47A03A4}",
+                AZ::Uuid("{99F33E4A-4EFB-403C-8918-9171D47A03A4}"),
                 &ClassConverters::DeprecateSphereColliderComponent)
                 ;
 
@@ -212,7 +219,7 @@ namespace LmbrCentral
 
             // Cache the Radius
             float oldRadius = 0.f;
-            const int oldIndex = classElement.FindElement(AZ_CRC("Radius", 0x3b7c6e5a));
+            const int oldIndex = classElement.FindElement(AZ_CRC_CE("Radius"));
             if (oldIndex != -1)
             {
                 classElement.GetSubElement(oldIndex).GetData<float>(oldRadius);
@@ -259,7 +266,7 @@ namespace LmbrCentral
 
             // Cache the Configuration
             SphereShapeConfig configuration;
-            int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (configIndex != -1)
             {
                 classElement.GetSubElement(configIndex).GetData<SphereShapeConfig>(configuration);

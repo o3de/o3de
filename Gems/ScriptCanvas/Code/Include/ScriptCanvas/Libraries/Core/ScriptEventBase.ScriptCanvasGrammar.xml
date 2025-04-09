@@ -2,16 +2,15 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/ScriptEventBase.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="ScriptEventBase"
-	       QualifiedName="ScriptCanvas::Nodes::Core::Internal::ScriptEventBase"
-	       PreferredClassName="Script Event"
-           Uuid="{B6614CEC-4788-476C-A19A-BA0A8B490C73}"
-           Base="ScriptCanvas::Node"
-           Category="Internal"
-           Version="6"
-           VersionConverter="VersionConverters::ScriptEventBaseVersionConverter"
-           EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-           GeneratePropertyFriend="True"
-           Description="Base class for Script Events.">
+        QualifiedName="ScriptCanvas::Nodes::Core::Internal::ScriptEventBase"
+        PreferredClassName="Script Event"
+        Uuid="{B6614CEC-4788-476C-A19A-BA0A8B490C73}"
+        BaseClass="True"
+        Category="Internal"
+        Version="6"
+        VersionConverter="VersionConverters::ScriptEventBaseVersionConverter"
+        EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+        Description="Base class for Script Events.">
         <SerializedProperty Name="m_version" />
         <SerializedProperty Name="m_eventMap" />
         <SerializedProperty Name="m_eventSlotMapping" />

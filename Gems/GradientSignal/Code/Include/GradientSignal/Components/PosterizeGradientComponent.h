@@ -27,7 +27,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(PosterizeGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PosterizeGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(PosterizeGradientConfig, "{4AFDFD7F-384A-41DF-900C-9B25A4AA8D1E}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         enum class ModeType : AZ::u8
@@ -42,7 +42,7 @@ namespace GradientSignal
         GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid PosterizeGradientComponentTypeId = "{BDA78E8D-DEEE-477B-B1FD-11F9930322AA}";
+    inline constexpr AZ::TypeId PosterizeGradientComponentTypeId{ "{BDA78E8D-DEEE-477B-B1FD-11F9930322AA}" };
 
     /**
     * calculates a gradient value by converting values from another gradient to another's range

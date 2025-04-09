@@ -16,9 +16,11 @@ from abc import ABCMeta, abstractmethod
 from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
-from ly_test_tools.environment.file_system import find_ancestor_file
+import ly_test_tools.environment.file_system
+import ly_test_tools._internal.exceptions as exceptions
 
 logger = logging.getLogger(__name__)
+
 
 def _find_engine_root(initial_path):
     # type: (str) -> str
@@ -41,7 +43,7 @@ def _find_engine_root(initial_path):
         else:  # explicit else avoids aberrant behavior from following filesystem links
             current_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
 
-    raise OSError(f"Unable to find engine root directory. Verify root file '{root_file}' exists")
+    raise exceptions.LyTestToolsFrameworkException(f"Unable to find engine root directory. Verify root file '{root_file}' exists")
 
 
 def _find_project_json(engine_root, project):
@@ -60,7 +62,15 @@ def _find_project_json(engine_root, project):
     if os.path.isfile(manifest_json):
         # Read the o3de_manifest.json 
         with open(manifest_json, "r") as manifest_file:
-            json_data = json.load(manifest_file)
+
+            # Try to load the contents of the o3de_manifest.json file
+            try:
+                manifest_file_contents = manifest_file.read()
+                json_data = json.loads(manifest_file_contents)
+            except json.JSONDecodeError as jderror:
+                logger.error(f"Attempted to open the contents of {manifest_json}, found invalid JSON: {manifest_file_contents}")
+                raise jderror
+
             # Look at the "projects" key for registered project paths
             try:
                 for projects_path in json_data["projects"]:
@@ -84,8 +94,8 @@ def _find_project_json(engine_root, project):
 
     # Check relative to defined build directory, for external projects which configure through SDK settings
     if not project_json:
-        project_json = find_ancestor_file(target_file_name='project.json',
-                                          start_path=ly_test_tools._internal.pytest_plugin.build_directory)
+        project_json = ly_test_tools.environment.file_system.find_ancestor_file(
+            target_file_name='project.json', start_path=ly_test_tools._internal.pytest_plugin.build_directory)
 
     if not project_json:
         raise OSError(f"Unable to find the project directory for project: ${project}")
@@ -121,31 +131,6 @@ class AbstractResourceLocator(object):
         :return: engine_root
         """
         return self._engine_root
-
-    def third_party(self):
-        """
-        Return path to 3rdParty directory
-        ex. <engine_root>\\3rdParty
-        :return: path to 3rdParty
-        """
-        third_party_folder = os.path.join(self._engine_root, '3rdParty')
-        third_party_txt_file = os.path.join(third_party_folder, '3rdParty.txt')
-
-        if not os.path.isfile(third_party_txt_file):
-            raise FileNotFoundError(
-                f"3rdParty.txt file not found at third_party_txt_file location: '{third_party_txt_file}' - "
-                f"Please specify a directory containing the 3rdParty.txt file.")
-
-        return third_party_folder
-
-    def build(self):
-        """
-        Return path to the build directory.
-        ex. engine_root/dev/windows_vs2017/bin/profile)
-        :return: full path to the bin folder
-        """
-        warnings.warn("build() is deprecated; use build_directory()", DeprecationWarning)
-        return self.build_directory()
 
     def build_directory(self):
         """
@@ -285,14 +270,6 @@ class AbstractResourceLocator(object):
         """
         return self.cache()
 
-    def get_shader_compiler_path(self):
-        """
-        Return path to shader compiler executable
-        ex. engine_root/dev/windows/bin/profile/CrySCompileServer
-        :return: path to CrySCompileServer executable
-        """
-        return os.path.join(self.build_directory(), 'CrySCompileServer')
-
     def asset_processor_config_file(self):
         return os.path.join(self.engine_root(), 'Registry', 'AssetProcessorPlatformConfig.setreg')
 
@@ -304,12 +281,14 @@ class AbstractResourceLocator(object):
 
     def test_results(self):
         """
-        Return the path to the TestResults directory containing test artifacts.
+        Return the path to a default TestResults directory containing test artifacts. This may not be used if the
+        workspace defines an output_path for its artifact manager.
         :return: path to TestResults dir
         """
         return os.path.join(self.engine_root(), "TestResults")
 
-    def devices_file(self):
+    @staticmethod
+    def devices_file():
         """
         Return the path to the user's devices.ini file. This has OS specific functionality.
             Windows: %USERPROFILE%/ly_test_tools/devices.ini
@@ -321,36 +300,30 @@ class AbstractResourceLocator(object):
                             'ly_test_tools',
                             'devices.ini')
 
-    def shader_compiler_config_file(self):
+    def material_editor_log(self):
         """
-        Return path to the Shader Compiler config file
-        ex. engine_root/dev/windows/bin/profile/config.ini
-        :return: path to the Shader Compiler config file
+        Return path to the project's MaterialEditor log dir using the builds project and platform
+        :return: path to MaterialEditor.log
         """
-        return os.path.join(self.build_directory(), 'config.ini')
+        return os.path.join(self.project_log(), "MaterialEditor.log")
 
-    def shader_cache(self):
+    def editor_log(self):
         """
-        Return path to the shader cache for the current build
-        ex. engine_root/dev/windows/bin/profile/Cache
-        :return: path to the shader cache for the current build
+        Return path to the project's editor log dir using the builds project and platform
+        :return: path to Editor.log
         """
-        return os.path.join(self.build_directory(), 'Cache')
+        return os.path.join(self.project_log(), "Editor.log")
+
+    def material_canvas_log(self):
+        """
+        Return path to the project's MaterialCanvas log dir using the builds project and platform
+        :return: path to MaterialCanvas.log
+        """
+        return os.path.join(self.project_log(), "MaterialCanvas.log")
 
     #
     #   The following are OS specific paths and must be defined by an override
     #
-
-    @abstractmethod
-    def platform_config_file(self):
-        """
-        Return the path to the platform config file.
-        :return: path to the platform config file (i.e. engine_root/dev/system_windows_pc.cfg)
-        """
-        raise NotImplementedError(
-            "platform_config_file() is not implemented on the base AbstractResourceLocator() class. "
-            "It must be defined by the inheriting class - "
-            "i.e. _WindowsResourceLocator(AbstractResourceLocator).platform_config_file()")
 
     @abstractmethod
     def platform_cache(self):
@@ -384,17 +357,6 @@ class AbstractResourceLocator(object):
             "project_screenshots() is not implemented on the base AbstractResourceLocator() class. "
             "It must be defined by the inheriting class - "
             "i.e. _WindowsResourceLocator(AbstractResourceLocator).project_screenshots()")
-
-    @abstractmethod
-    def editor_log(self):
-        """
-        Return path to the project's editor log dir using the builds project and platform
-        :return: path to Editor.log
-        """
-        raise NotImplementedError(
-            "editor_log() is not implemented on the base AbstractResourceLocator() class. "
-            "It must be defined by the inheriting class - "
-            "i.e. _WindowsResourceLocator(AbstractResourceLocator).editor_log()")
 
     @abstractmethod
     def crash_log(self):

@@ -84,42 +84,49 @@ namespace EMotionFX
             AZStd::string morphNodeName;
             AZStd::string morphParentNodeName;
 
+            AZ::SceneAPI::Events::ProcessingResult processingResult = SceneEvents::ProcessingResult::Success;
+
             // Outer loop isolates unique morph target names in the selection list
-            const size_t selectionNodeCount = morphTargetRule->GetSceneNodeSelectionList().GetSelectedNodeCount();
-            for (size_t index = 0; index < selectionNodeCount; ++index)
-            {
-                AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = graph.Find(morphTargetRule->GetSceneNodeSelectionList().GetSelectedNode(index));
-                morphTargetName = context.m_scene.GetGraph().GetNodeName(nodeIndex).GetName();
-                if (AZStd::find(visitedBlendShapeNames.begin(), visitedBlendShapeNames.end(), morphTargetName) != visitedBlendShapeNames.end())
+            morphTargetRule->GetSceneNodeSelectionList().EnumerateSelectedNodes(
+                [&](const AZStd::string& name)
                 {
-                    continue;
-                }
-                visitedBlendShapeNames.insert(morphTargetName);
-                AZStd::unique_ptr<Actor> morphTargetActor = baseActorImage->Clone();
-                if (!morphTargetActor)
-                {
-                    return SceneEvents::ProcessingResult::Failure;
-                }
-                morphTargetActor->SetName(morphTargetName.c_str());
+                    AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = graph.Find(name);
+                    morphTargetName = context.m_scene.GetGraph().GetNodeName(nodeIndex).GetName();
+                    if (AZStd::find(visitedBlendShapeNames.begin(), visitedBlendShapeNames.end(), morphTargetName) !=
+                        visitedBlendShapeNames.end())
+                    {
+                        return true;
+                    }
+                    visitedBlendShapeNames.insert(morphTargetName);
+                    AZStd::unique_ptr<Actor> morphTargetActor = baseActorImage->Clone();
+                    if (!morphTargetActor)
+                    {
+                        processingResult = SceneEvents::ProcessingResult::Failure;
+                        return false;
+                    }
+                    morphTargetActor->SetName(morphTargetName.c_str());
 
-                // Add the morph target actor to the main actor
-                EMotionFX::MorphTargetStandard* morphTarget = EMotionFX::MorphTargetStandard::Create(false, context.m_actor, morphTargetActor.get(), morphTargetName.c_str());
+                    // Add the morph target actor to the main actor
+                    EMotionFX::MorphTargetStandard* morphTarget =
+                        EMotionFX::MorphTargetStandard::Create(false, context.m_actor, morphTargetActor.get(), morphTargetName.c_str());
 
-                // Assume LOD 0
-                EMotionFX::MorphSetup* morphSetup = context.m_actor->GetMorphSetup(0);
-                if (!morphSetup)
-                {
-                    morphSetup = EMotionFX::MorphSetup::Create();
-                    context.m_actor->SetMorphSetup(0, morphSetup);
-                }
+                    // Assume LOD 0
+                    EMotionFX::MorphSetup* morphSetup = context.m_actor->GetMorphSetup(0);
+                    if (!morphSetup)
+                    {
+                        morphSetup = EMotionFX::MorphSetup::Create();
+                        context.m_actor->SetMorphSetup(0, morphSetup);
+                    }
 
-                if (morphSetup)
-                {
-                    morphSetup->AddMorphTarget(morphTarget);
-                }
-            }
+                    if (morphSetup)
+                    {
+                        morphSetup->AddMorphTarget(morphTarget);
+                    }
 
-            return SceneEvents::ProcessingResult::Success;
+                    return true;
+                });
+
+            return processingResult;
         }
     } // namespace Pipeline
 } // namespace EMotionFX

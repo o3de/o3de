@@ -1,0 +1,79 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic allows you to use the EvaluateVertexGeometry function in this file without making it the final
+// EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
+//
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry EvaluateVertexGeometry_Eye
+#endif
+
+#include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+
+VsOutput EvaluateVertexGeometry_Eye(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float3 bitangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId)
+{
+    VsOutput output;
+
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
+    output.worldPosition = worldPosition.xyz;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+
+    output.uvs[0] = uv0;
+    output.uvs[1] = uv1;
+
+    output.normal = normal;
+    output.tangent = tangent;
+    // Bitangent is temporarily added back to fix the eye material screenshot test.
+    output.bitangent = bitangent;
+
+    output.localPosition = position.xyz;
+    
+    // Set the instanceId on the output so the pixel shader can use it
+    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
+    output.m_instanceId = instanceId;
+
+    return output;
+}
+
+// Added this version to make it compatible with the number of arguments in BasePBR.
+// Avoids compilation errors for compute shaders, listed in a materialpipeline,
+// that call EvaluateVertexGeometry().
+VsOutput EvaluateVertexGeometry_Eye(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0,
+    float2 uv1,
+    uint instanceId)
+{
+    const float3 bitangent = float3(0, 0, 0);
+    return EvaluateVertexGeometry_Eye(position, normal, tangent, bitangent, uv0, uv1, instanceId);
+}
+
+VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV)
+{
+    return EvaluateVertexGeometry_Eye(
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.bitangent,
+        IN.uv0,
+        IN.uv1,
+        SV.m_instanceId);
+}

@@ -15,6 +15,9 @@
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #endif
 
+class QDragEnterEvent;
+class QDragLeaveEvent;
+class QDropEvent;
 class QMenu;
 
 namespace AtomToolsFramework
@@ -28,7 +31,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AtomToolsDocumentMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsDocumentMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsMainWindow;
 
@@ -74,22 +77,32 @@ namespace AtomToolsFramework
         //! Insert items into the tab context menu for the document ID
         virtual void PopulateTabContextMenu(const AZ::Uuid& documentId, QMenu& menu);
 
-        //! Requests a source and target path for creating a new document based on another
-        virtual bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath);
-
-        //! Prompts the user for a selection of documents to open
-        virtual AZStd::vector<AZStd::string> GetOpenDocumentParams();
+        //! Select the target path where a document will be saved.
+        virtual AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const;
 
         // AtomToolsMainWindowRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
-    protected:
-        void AddDocumentTabBar();
+        void PopulateSettingsInspector(InspectorWidget* inspector) const override;
 
-        void AddRecentFilePath(const AZStd::string& absolutePath);
-        void ClearRecentFilePaths();
+    protected:
+        // Create menus and actions to open and create files for all registered document types 
+        void BuildCreateMenu(QAction* insertPostion);
+        void BuildOpenMenu(QAction* insertPostion);
+
+        void AddDocumentTabBar();
         void UpdateRecentFileMenu();
+
+        // Return true when save success
+        bool SaveDocument(const AZ::Uuid& documentId);
+
+        // Return true when save success or no save
+        // Return false when save failed or save cancel or close cancel
+        bool CloseDocumentCheck(const AZ::Uuid& documentId);
+        // Return false when CloseDocumentCheck failed or close failed
+        bool CloseDocuments(const AZStd::vector<AZ::Uuid>& documentIds);
+        const AZStd::vector<AZ::Uuid> GetOpenDocumentIds() const;
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
@@ -102,14 +115,16 @@ namespace AtomToolsFramework
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
+        void dragEnterEvent(QDragEnterEvent* event) override;
+        void dragMoveEvent(QDragMoveEvent* event) override;
+        void dragLeaveEvent(QDragLeaveEvent* event) override;
+        void dropEvent(QDropEvent* event) override;
 
         template<typename Functor>
-        QAction* CreateAction(const QString& text, Functor functor, const QKeySequence& shortcut = 0);
+        QAction* CreateActionAtPosition(QMenu* menu, QAction* position, const QString& name, Functor fn, const QKeySequence& shortcut = 0);
 
         QMenu* m_menuOpenRecent = {};
 
-        QAction* m_actionNew = {};
-        QAction* m_actionOpen = {};
         QAction* m_actionClose = {};
         QAction* m_actionCloseAll = {};
         QAction* m_actionCloseOthers = {};
@@ -126,6 +141,6 @@ namespace AtomToolsFramework
 
         AzQtComponents::TabWidget* m_tabWidget = {};
 
-        static constexpr const char* RecentFilePathsKey = "/O3DE/AtomToolsFramework/Document/RecentFilePaths";
+        mutable AZStd::shared_ptr<DynamicPropertyGroup> m_documentSystemSettingsGroup;
     };
 } // namespace AtomToolsFramework

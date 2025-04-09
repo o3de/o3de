@@ -10,7 +10,7 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 
 class PlatformHelperTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
 

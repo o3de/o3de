@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const MeshComponentTypeId = "{C7801FA8-3E82-4D40-B039-4854F1892FDE}";
-        static constexpr const char* const EditorMeshComponentTypeId = "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9}";
+        inline constexpr AZ::TypeId MeshComponentTypeId{ "{C7801FA8-3E82-4D40-B039-4854F1892FDE}" };
+        inline constexpr AZ::TypeId EditorMeshComponentTypeId{ "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9}" };
     } // namespace Render
 } // namespace AZ

@@ -31,7 +31,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/GraphActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/VariableActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     DefineStateId(CreateGraphTest_CreateGraphHotKeyState);
 
@@ -46,6 +46,7 @@ namespace ScriptCanvasDeveloper
             , public GraphCanvas::AssetEditorNotificationBus::Handler
         {
         public:
+            AZ_CLASS_ALLOCATOR(CreateGraphHotKeyState, AZ::SystemAllocator)
             CreateGraphHotKeyState();
             ~CreateGraphHotKeyState() override = default;
 
@@ -71,6 +72,7 @@ namespace ScriptCanvasDeveloper
         };
 
     public:
+        AZ_CLASS_ALLOCATOR(CreateGraphTest, AZ::SystemAllocator)
         CreateGraphTest();
         ~CreateGraphTest() override = default;
 

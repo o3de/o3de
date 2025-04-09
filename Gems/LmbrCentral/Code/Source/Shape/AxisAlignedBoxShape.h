@@ -29,7 +29,7 @@ namespace LmbrCentral
         : public BoxShape
     {
     public:
-        AZ_CLASS_ALLOCATOR(AxisAlignedBoxShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AxisAlignedBoxShape, AZ::SystemAllocator)
         AZ_RTTI(AxisAlignedBoxShape, "{CFDC96C5-287A-4033-8D7D-BA9331C13F25}", BoxShape)
 
         AxisAlignedBoxShape();
@@ -40,5 +40,8 @@ namespace LmbrCentral
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+        // BoxShapeComponentRequestBus::Handler overrides ...
+        bool IsTypeAxisAligned() const override;
     };
 } // namespace LmbrCentral

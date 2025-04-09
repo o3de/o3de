@@ -10,16 +10,18 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/DocumentPropertyEditor/BasicAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 
 namespace AZ::DocumentPropertyEditor::Tests
 {
     class DocumentPropertyEditorTestFixture
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override;
         void TearDown() override;
 
         AZStd::unique_ptr<BasicAdapter> m_adapter;
+        AZStd::unique_ptr<PropertyEditorSystem> m_system;
     };
 }

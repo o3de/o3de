@@ -51,7 +51,10 @@ namespace AzFramework
         //! @{
         void Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const;
         void Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const;
+        void Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const;
+        void Enumerate(const AZ::Capsule& capsule, const IVisibilityScene::EnumerateCallback& callback) const;
         void Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const;
+        void Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const IVisibilityScene::EnumerateCallback& callback) const;
         //! @}
 
         //! Recursively enumerate *all* OctreeNodes that have any entries in them (without any culling).
@@ -93,7 +96,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(OctreeScene, "{A88E4D86-11F1-4E3F-A91A-66DE99502B93}");
-        AZ_CLASS_ALLOCATOR(OctreeScene, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OctreeScene, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(OctreeScene);
 
         explicit OctreeScene(const AZ::Name& sceneName);
@@ -106,7 +109,10 @@ namespace AzFramework
         void RemoveEntry(VisibilityEntry& entry) override;
         void Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const override;
+        void Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const override;
+        void Enumerate(const AZ::Capsule& capsule, const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const override;
+        void Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const EnumerateCallback& callback) const override;
         void EnumerateNoCull(const IVisibilityScene::EnumerateCallback& callback) const override;
         uint32_t GetEntryCount() const override;
         //! @}

@@ -37,19 +37,19 @@ namespace LmbrCentral
         void Deactivate() override;
         
         // ShapeComponent::Handler implementation
-        AZ::Crc32 GetShapeType() override
+        AZ::Crc32 GetShapeType() const override
         {
             return AZ::Crc32("Compound");
         }
 
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point) override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
         
         // CompoundShapeComponentRequestsBus::Handler implementation
-        CompoundShapeConfiguration GetCompoundShapeConfiguration() override
+        const CompoundShapeConfiguration& GetCompoundShapeConfiguration() const override
         {
             return m_configuration;
         }
@@ -64,14 +64,14 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            provided.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
+            provided.push_back(AZ_CRC_CE("ShapeService"));
+            provided.push_back(AZ_CRC_CE("CompoundShapeService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            incompatible.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
+            incompatible.push_back(AZ_CRC_CE("ShapeService"));
+            incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 

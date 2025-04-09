@@ -49,7 +49,9 @@
 #elif defined(APPLE) // Scrubber friendly negated define pattern
 #elif defined(ANDROID) // Scrubber friendly negated define pattern
 #elif defined(LINUX)
+#if !defined(__ARM_ARCH)
     #   include <sys/io.h>
+#endif // __ARM_ARCH
 #else
     #   include <io.h>
 #endif
@@ -110,7 +112,6 @@ namespace AZ::IO
 }
 struct ICryFont;
 struct IMovieSystem;
-struct IAudioSystem;
 struct IPhysicalWorld;
 
 #endif //__cplusplus

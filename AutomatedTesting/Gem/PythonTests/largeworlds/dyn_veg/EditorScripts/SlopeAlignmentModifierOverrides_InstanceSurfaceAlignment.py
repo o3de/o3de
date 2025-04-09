@@ -64,14 +64,14 @@ def SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment():
 
     # Create a spawner entity setup with all needed components
     center_point = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "SlopeAlign_PinkFlower2")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 32.0,
                                                                pink_flower_prefab)
 
     # Create a sloped mesh surface for the instances to plant on
     center_point = math.Vector3(502.0, 512.0, 24.0)
-    mesh_asset_path = os.path.join("objects", "_primitives", "_box_1x1.azmodel")
+    mesh_asset_path = os.path.join("objects", "_primitives", "_box_1x1.fbx.azmodel")
     mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(),
                                               False)
     rotation = math.Vector3(0.0, radians(45.0), 0.0)
@@ -81,7 +81,7 @@ def SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment():
         ["Mesh", "Mesh Surface Tag Emitter"]
     )
     Report.critical_result(Tests.surface_entity_created, surface_entity.id.IsValid())
-    hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
+    hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Model Asset", mesh_asset)
     components.TransformBus(bus.Event, "SetLocalRotation", surface_entity.id, rotation)
     components.TransformBus(bus.Event, "SetLocalUniformScale", surface_entity.id, 30.0)
 

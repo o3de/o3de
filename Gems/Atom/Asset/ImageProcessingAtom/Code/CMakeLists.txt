@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME ImageProcessingAtom.Headers HEADERONLY
+    NAME ${gem_name}.Headers HEADERONLY
     NAMESPACE Gem
     FILES_CMAKE
         imageprocessingatom_headers_files.cmake
@@ -26,18 +26,18 @@ set(pal_tools_include_dirs)
 foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
     string(TOLOWER ${enabled_platform} enabled_platform_lowercase)
 
-    o3de_pal_dir(pal_tools_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+    o3de_pal_dir(pal_tools_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
     list(APPEND pal_tools_include_dirs ${pal_tools_source_dir})
 
     list(APPEND platform_tools_files ${pal_tools_source_dir}/pal_tools_${enabled_platform_lowercase}.cmake)
     list(APPEND pal_tools_include_files ${pal_tools_source_dir}/pal_tools_${enabled_platform_lowercase}_files.cmake)
 endforeach()
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
-    NAME ImageProcessingAtom.Editor.Static STATIC
+    NAME ${gem_name}.Editor.Static STATIC
     NAMESPACE Gem
     AUTOMOC
     AUTOUIC
@@ -87,7 +87,7 @@ ly_add_source_properties(
 )
 
 ly_add_target(
-    NAME ImageProcessingAtom.Editor GEM_MODULE
+    NAME ${gem_name}.Editor GEM_MODULE
 
     NAMESPACE Gem
     FILES_CMAKE
@@ -99,15 +99,24 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::ImageProcessingAtom.Editor.Static
+            Gem::${gem_name}.Editor.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/ImageProcessingModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME ImageProcessingAtom.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             imageprocessing_tests_files.cmake
@@ -117,9 +126,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::ImageProcessingAtom.Editor.Static
+                Gem::${gem_name}.Editor.Static
     )
     ly_add_googletest(
-        NAME Gem::ImageProcessingAtom.Editor.Tests
+        NAME Gem::${gem_name}.Editor.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

@@ -92,6 +92,74 @@ namespace AZ
     }
 
     //=========================================================================
+    // Helper class to reflect notifications about asset events
+    //=========================================================================
+    class AssetBusHandler final
+        : public Data::AssetBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            AssetBusHandler,
+            "{929CAC7F-CFFE-472B-95CB-71BDF3CE2798}",
+            AZ::SystemAllocator,
+            OnAssetReady,
+            OnAssetPreReload,
+            OnAssetReloaded,
+            OnAssetReloadError,
+            OnAssetSaved,
+            OnAssetUnloaded,
+            OnAssetError,
+            OnAssetCanceled,
+            OnAssetContainerReady
+            );
+
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> rootAsset) override
+        {
+            Call(FN_OnAssetReady, rootAsset);
+        }
+
+        void OnAssetPreReload(AZ::Data::Asset<AZ::Data::AssetData> asset) override
+        {
+            Call(FN_OnAssetPreReload, asset);
+        }
+
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override
+        {
+            Call(FN_OnAssetReloaded, asset);
+        }
+
+        void OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset) override
+        {
+            Call(FN_OnAssetReloadError, asset);
+        }
+
+        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, bool isSuccessful) override
+        {
+            Call(FN_OnAssetSaved, asset, isSuccessful);
+        }
+
+        void OnAssetUnloaded(AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType) override
+        {
+            Call(FN_OnAssetUnloaded, assetId, assetType);
+        }
+
+        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override
+        {
+            Call(FN_OnAssetError, asset);
+        }
+
+        void OnAssetCanceled(AZ::Data::AssetId assetId) override
+        {
+            Call(FN_OnAssetCanceled, assetId);
+        }
+
+        void OnAssetContainerReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override
+        {
+            Call(FN_OnAssetContainerReady, asset);
+        }
+    };
+    //=========================================================================
     // Reflect
     //=========================================================================
     void AssetManagerComponent::Reflect(ReflectContext* context)
@@ -115,7 +183,6 @@ namespace AZ
                     "Asset Database", "Asset database system functionality")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -129,7 +196,25 @@ namespace AZ
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Event("GetAssetPathById", &Data::AssetCatalogRequests::GetAssetPathById)
                 ->Event("GetAssetIdByPath", &Data::AssetCatalogRequests::GetAssetIdByPath)
+                ->Event("GetAssetInfoById", &Data::AssetCatalogRequests::GetAssetInfoById)
                 ->Event("GetAssetTypeByDisplayName", &Data::AssetCatalogRequests::GetAssetTypeByDisplayName)
+                ;
+
+            behaviorContext->EBus<Data::AssetBus>("AssetBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Asset")
+                ->Attribute(AZ::Script::Attributes::Module, "asset")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Handler<AssetBusHandler>()
+                ->Event("OnAssetReady", &Data::AssetEvents::OnAssetReady)
+                ->Event("OnAssetPreReload", &Data::AssetEvents::OnAssetPreReload)
+                ->Event("OnAssetReloaded", &Data::AssetEvents::OnAssetReloaded)
+                ->Event("OnAssetReloadError", &Data::AssetEvents::OnAssetReloadError)
+                ->Event("OnAssetSaved", &Data::AssetEvents::OnAssetSaved)
+                ->Event("OnAssetUnloaded", &Data::AssetEvents::OnAssetUnloaded)
+                ->Event("OnAssetError", &Data::AssetEvents::OnAssetError)
+                ->Event("OnAssetCanceled", &Data::AssetEvents::OnAssetCanceled)
+                ->Event("OnAssetContainerReady", &Data::AssetEvents::OnAssetContainerReady)
                 ;
         }
 

@@ -28,6 +28,24 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
+    void DisplayErrorMessage(QWidget* parent, const QString& title, const QString& text)
+    {
+        AZ_Error("AtomToolsDocumentSystem", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs", true))
+        {
+            QMessageBox::critical(parent, title, QObject::tr("%1\nThese messages can be disabled from settings.").arg(text));
+        }
+    }
+
+    void DisplayWarningMessage(QWidget* parent, const QString& title, const QString& text)
+    {
+        AZ_Warning("AtomToolsDocumentSystem", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs", true))
+        {
+            QMessageBox::warning(parent, title, QObject::tr("%1\nThese messages can be disabled from settings.").arg(text));
+        }
+    }
+
     void AtomToolsDocumentSystem::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -39,7 +57,6 @@ namespace AtomToolsFramework
             {
                 editContext->Class<AtomToolsDocumentSystem>("AtomToolsDocumentSystem", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -63,7 +80,15 @@ namespace AtomToolsFramework
                 ->Event("SaveDocumentAsCopy", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy)
                 ->Event("SaveDocumentAsChild", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild)
                 ->Event("SaveAllDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments)
+                ->Event("SaveAllModifiedDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllModifiedDocuments)
+                ->Event("QueueReopenModifiedDocuments", &AtomToolsDocumentSystemRequestBus::Events::QueueReopenModifiedDocuments)
+                ->Event("ReopenModifiedDocuments", &AtomToolsDocumentSystemRequestBus::Events::ReopenModifiedDocuments)
                 ->Event("GetDocumentCount", &AtomToolsDocumentSystemRequestBus::Events::GetDocumentCount)
+                ->Event("IsDocumentOpen", &AtomToolsDocumentSystemRequestBus::Events::IsDocumentOpen)
+                ->Event("AddRecentFilePath", &AtomToolsDocumentSystemRequestBus::Events::AddRecentFilePath)
+                ->Event("ClearRecentFilePaths", &AtomToolsDocumentSystemRequestBus::Events::ClearRecentFilePaths)
+                ->Event("SetRecentFilePaths", &AtomToolsDocumentSystemRequestBus::Events::SetRecentFilePaths)
+                ->Event("GetRecentFilePaths", &AtomToolsDocumentSystemRequestBus::Events::GetRecentFilePaths)
                 ;
         }
     }
@@ -97,7 +122,10 @@ namespace AtomToolsFramework
         AZStd::unique_ptr<AtomToolsDocumentRequests> document(documentType.CreateDocument(m_toolId));
         if (!document)
         {
-            AZ_Error("AtomToolsDocument", false, "Failed to create new document.");
+            DisplayErrorMessage(
+                GetToolMainWindow(),
+                QObject::tr("Document could not be created"),
+                QObject::tr("Could not create document using type: %1").arg(documentType.m_documentTypeName.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
@@ -123,7 +151,7 @@ namespace AtomToolsFramework
     {
         for (const auto& documentType : m_documentTypes)
         {
-            if (documentType.IsSupportedExtensionToCreate(path))
+            if (documentType.IsSupportedExtensionToCreate(path) || documentType.IsSupportedExtensionToOpen(path))
             {
                 return CreateDocumentFromType(documentType);
             }
@@ -133,12 +161,18 @@ namespace AtomToolsFramework
 
     AZ::Uuid AtomToolsDocumentSystem::CreateDocumentFromFilePath(const AZStd::string& sourcePath, const AZStd::string& targetPath)
     {
+        // This function attempts to create a new document in a couple of different ways.
+        // If a source path is specified then it will attempt to create a document using the source path extension and automatically open
+        // the source file. This mechanism supports creating new documents from pre-existing templates or using the source document as a
+        // parent. If no source file is specified, an attempt will be made to create the document using the target path extension to
+        // determine the document type. If a target path is specified then the new document will also automatically be saved to that
+        // location.
         TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
         AZStd::string openPath = sourcePath;
-        if (!ValidateDocumentPath(openPath))
+        if (!openPath.empty() && !ValidateDocumentPath(openPath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(openPath.c_str()));
@@ -148,33 +182,37 @@ namespace AtomToolsFramework
         AZStd::string savePath = targetPath;
         if (!savePath.empty() && !ValidateDocumentPath(savePath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
-        AZ::Uuid documentId = CreateDocumentFromFileType(openPath);
+        const AZStd::string& createPath = !openPath.empty() ? openPath : savePath;
+        const AZ::Uuid documentId = CreateDocumentFromFileType(createPath);
         if (documentId.IsNull())
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
-                QObject::tr("Failed to create: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QObject::tr("Failed to create document from file type: \n%1\n\n%2").arg(createPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return AZ::Uuid::CreateNull();
         }
 
-        bool openResult = false;
-        AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, openPath);
-        if (!openResult)
+        if (!openPath.empty())
         {
-            QMessageBox::critical(
-                GetToolMainWindow(),
-                QObject::tr("Document could not be opened"),
-                QObject::tr("Failed to open: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
-            DestroyDocument(documentId);
-            return AZ::Uuid::CreateNull();
+            bool openResult = false;
+            AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, openPath);
+            if (!openResult)
+            {
+                DisplayErrorMessage(
+                    GetToolMainWindow(),
+                    QObject::tr("Document could not be opened"),
+                    QObject::tr("Failed to open: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                DestroyDocument(documentId);
+                return AZ::Uuid::CreateNull();
+            }
         }
 
         if (!savePath.empty())
@@ -185,13 +223,19 @@ namespace AtomToolsFramework
                 return AZ::Uuid::CreateNull();
             }
 
-            // Send document open notification after creating new one
-            AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+            AddRecentFilePath(savePath);
         }
+        else
+        {
+            AddRecentFilePath(openPath);
+        }
+
+        // Send document open notification after creating new one
+        AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
 
         if (traceRecorder.GetWarningCount(true) > 0)
         {
-            QMessageBox::warning(
+            DisplayWarningMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document opened with warnings"),
                 QObject::tr("Warnings encountered: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -210,7 +254,7 @@ namespace AtomToolsFramework
         AZStd::string openPath = sourcePath;
         if (!ValidateDocumentPath(openPath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be opened"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(openPath.c_str()));
@@ -220,14 +264,15 @@ namespace AtomToolsFramework
         // Determine if the file is already open and select it
         for (const auto& documentPair : m_documentMap)
         {
+            const auto& documentId = documentPair.first;
+
             AZStd::string openDocumentPath;
-            AtomToolsDocumentRequestBus::EventResult(
-                openDocumentPath, documentPair.first, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+            AtomToolsDocumentRequestBus::EventResult(openDocumentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
             if (AZ::StringFunc::Equal(openDocumentPath, openPath))
             {
-                AtomToolsDocumentNotificationBus::Event(
-                    m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentPair.first);
-                return documentPair.first;
+                AddRecentFilePath(openPath);
+                AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+                return documentId;
             }
         }
 
@@ -236,41 +281,8 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentSystem::CloseDocument(const AZ::Uuid& documentId)
     {
-        bool isOpen = false;
-        AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsDocumentRequestBus::Events::IsOpen);
-        if (!isOpen)
-        {
-            // immediately destroy unopened documents
-            DestroyDocument(documentId);
-            return true;
-        }
-
         AZStd::string documentPath;
         AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
-
-        bool isModified = false;
-        AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsDocumentRequestBus::Events::IsModified);
-        if (isModified)
-        {
-            auto selection = QMessageBox::question(
-                GetToolMainWindow(),
-                QObject::tr("Document has unsaved changes"),
-                QObject::tr("Do you want to save changes to\n%1?").arg(documentPath.c_str()),
-                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-            if (selection == QMessageBox::Cancel)
-            {
-                AZ_TracePrintf("AtomToolsDocument", "Close document canceled: %s", documentPath.c_str());
-                return false;
-            }
-            if (selection == QMessageBox::Yes)
-            {
-                if (!SaveDocument(documentId))
-                {
-                    AZ_Error("AtomToolsDocument", false, "Close document failed because document was not saved: %s", documentPath.c_str());
-                    return false;
-                }
-            }
-        }
 
         TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
@@ -278,7 +290,7 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(closeResult, documentId, &AtomToolsDocumentRequestBus::Events::Close);
         if (!closeResult)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be closed"),
                 QObject::tr("Failed to close: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -286,6 +298,7 @@ namespace AtomToolsFramework
         }
 
         DestroyDocument(documentId);
+
         return true;
     }
 
@@ -329,7 +342,7 @@ namespace AtomToolsFramework
 
         if (!ValidateDocumentPath(savePath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
@@ -339,7 +352,7 @@ namespace AtomToolsFramework
         const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
@@ -352,7 +365,7 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Save);
         if (!result)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -367,7 +380,7 @@ namespace AtomToolsFramework
         AZStd::string savePath = targetPath;
         if (!ValidateDocumentPath(savePath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
@@ -377,7 +390,7 @@ namespace AtomToolsFramework
         const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
@@ -390,13 +403,14 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::SaveAsCopy, savePath);
         if (!result)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
+        AddRecentFilePath(savePath);
         return true;
     }
 
@@ -405,7 +419,7 @@ namespace AtomToolsFramework
         AZStd::string savePath = targetPath;
         if (!ValidateDocumentPath(savePath))
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document path is invalid, not in a supported project or gem folder, or marked as non-editable:\n%1").arg(savePath.c_str()));
@@ -415,7 +429,7 @@ namespace AtomToolsFramework
         const QFileInfo saveInfo(savePath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Document could not be overwritten:\n%1").arg(savePath.c_str()));
@@ -428,13 +442,14 @@ namespace AtomToolsFramework
         AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::SaveAsChild, savePath);
         if (!result)
         {
-            QMessageBox::critical(
+            DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be saved"),
                 QObject::tr("Failed to save: \n%1\n\n%2").arg(savePath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
+        AddRecentFilePath(savePath);
         return true;
     }
 
@@ -443,63 +458,88 @@ namespace AtomToolsFramework
         bool result = true;
         for (const auto& documentPair : m_documentMap)
         {
-            if (!SaveDocument(documentPair.first))
+            const auto& documentId = documentPair.first;
+
+            AZStd::string documentPath;
+            AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+            DocumentTypeInfo documentInfo;
+            AtomToolsDocumentRequestBus::EventResult(documentInfo, documentId, &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
+            if (documentInfo.IsSupportedExtensionToSave(documentPath))
             {
-                result = false;
+                if (!SaveDocument(documentId))
+                {
+                    result = false;
+                }
             }
         }
 
         return result;
     }
 
-    AZ::u32 AtomToolsDocumentSystem::GetDocumentCount() const
+    bool AtomToolsDocumentSystem::SaveAllModifiedDocuments()
     {
-        return aznumeric_cast<AZ::u32>(m_documentMap.size());
-    }
-
-
-    void AtomToolsDocumentSystem::OnDocumentExternallyModified(const AZ::Uuid& documentId)
-    {
-        m_documentIdsWithExternalChanges.insert(documentId);
-        QueueReopenDocuments();
-    }
-
-    void AtomToolsDocumentSystem::OnDocumentDependencyModified(const AZ::Uuid& documentId)
-    {
-        m_documentIdsWithDependencyChanges.insert(documentId);
-        QueueReopenDocuments();
-    }
-
-    void AtomToolsDocumentSystem::QueueReopenDocuments()
-    {
-        if (!m_queueReopenDocuments)
+        bool result = true;
+        for (const auto& documentPair : m_documentMap)
         {
-            m_queueReopenDocuments = true;
-            QTimer::singleShot(500, [this] { ReopenDocuments(); });
+            const auto& documentId = documentPair.first;
+
+            AZStd::string documentPath;
+            AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+            DocumentTypeInfo documentInfo;
+            AtomToolsDocumentRequestBus::EventResult(documentInfo, documentId, &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
+            if (documentInfo.IsSupportedExtensionToSave(documentPath))
+            {
+                bool isModified = false;
+                AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsDocumentRequestBus::Events::IsModified);
+                if (isModified)
+                {
+                    if (!SaveDocument(documentId))
+                    {
+                        result = false;
+                    }
+                }
+            }
         }
+
+        m_queueSaveAllModifiedDocuments = false;
+        return result;
     }
 
-    void AtomToolsDocumentSystem::ReopenDocuments()
+    bool AtomToolsDocumentSystem::QueueReopenModifiedDocuments()
     {
-        m_queueReopenDocuments = false;
+        if (!m_queueReopenModifiedDocuments)
+        {
+            m_queueReopenModifiedDocuments = true;
+            const int interval =
+                static_cast<int>(GetSettingsValue<AZ::s64>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/ReopenInterval", 500));
+            QTimer::singleShot(interval, [toolId = m_toolId]() {
+                AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::ReopenModifiedDocuments);
+            });
+            return true;
+        }
+        return false;
+    }
 
-        const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableHotReload", true);
+    bool AtomToolsDocumentSystem::ReopenModifiedDocuments()
+    {
+        const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload", true);
         if (!enableHotReload)
         {
             m_documentIdsWithDependencyChanges.clear();
             m_documentIdsWithExternalChanges.clear();
-            return;
+            m_queueReopenModifiedDocuments = false;
+            return false;
         }
 
         // Postpone document reload if a modal dialog is active or the application is out of focus
         if (QApplication::activeModalWidget() || !(QApplication::applicationState() & Qt::ApplicationActive))
         {
-            QueueReopenDocuments();
-            return;
+            QueueReopenModifiedDocuments();
+            return false;
         }
 
         const bool enableHotReloadPrompts =
-            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableHotReloadPrompts", true);
+            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts", true);
 
         for (const AZ::Uuid& documentId : m_documentIdsWithExternalChanges)
         {
@@ -523,7 +563,7 @@ namespace AtomToolsFramework
             AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, documentPath);
             if (!openResult)
             {
-                QMessageBox::critical(
+                DisplayErrorMessage(
                     GetToolMainWindow(),
                     QObject::tr("Document could not be opened"),
                     QObject::tr("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -551,7 +591,7 @@ namespace AtomToolsFramework
             AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Reopen);
             if (!openResult)
             {
-                QMessageBox::critical(
+                DisplayErrorMessage(
                     GetToolMainWindow(),
                     QObject::tr("Document could not be opened"),
                     QObject::tr("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -561,5 +601,86 @@ namespace AtomToolsFramework
 
         m_documentIdsWithDependencyChanges.clear();
         m_documentIdsWithExternalChanges.clear();
+        m_queueReopenModifiedDocuments = false;
+        return true;
+    }
+
+    AZ::u32 AtomToolsDocumentSystem::GetDocumentCount() const
+    {
+        return aznumeric_cast<AZ::u32>(m_documentMap.size());
+    }
+
+    bool AtomToolsDocumentSystem::IsDocumentOpen(const AZ::Uuid& documentId) const
+    {
+        bool result = false;
+        AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::IsOpen);
+        return result;
+    }
+
+    void AtomToolsDocumentSystem::AddRecentFilePath(const AZStd::string& absolutePath)
+    {
+        if (!absolutePath.empty())
+        {
+            // Get the list of previously stored recent file paths from the settings registry
+            AZStd::vector<AZStd::string> paths = GetRecentFilePaths();
+
+            // If the new path is already in the list then remove it Because it will be moved to the front of the list
+            AZStd::erase_if(paths, [&absolutePath](const AZStd::string& currentPath) {
+                return AZ::StringFunc::Equal(currentPath, absolutePath);
+            });
+
+            paths.insert(paths.begin(), absolutePath);
+
+            constexpr const size_t recentFilePathsMax = 10;
+            if (paths.size() > recentFilePathsMax)
+            {
+                paths.resize(recentFilePathsMax);
+            }
+
+            SetRecentFilePaths(paths);
+        }
+    }
+
+    void AtomToolsDocumentSystem::ClearRecentFilePaths()
+    {
+        SetRecentFilePaths(AZStd::vector<AZStd::string>());
+    }
+
+    void AtomToolsDocumentSystem::SetRecentFilePaths(const AZStd::vector<AZStd::string>& absolutePaths)
+    {
+        SetSettingsObject("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/RecentFilePaths", absolutePaths);
+    }
+
+    const AZStd::vector<AZStd::string> AtomToolsDocumentSystem::GetRecentFilePaths() const
+    {
+        return GetSettingsObject("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/RecentFilePaths", AZStd::vector<AZStd::string>());
+    }
+
+    void AtomToolsDocumentSystem::OnDocumentModified([[maybe_unused]] const AZ::Uuid& documentId)
+    {
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled", false))
+        {
+            if (!m_queueSaveAllModifiedDocuments)
+            {
+                m_queueSaveAllModifiedDocuments = true;
+                const int interval =
+                    static_cast<int>(GetSettingsValue<AZ::s64>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval", 250));
+                QTimer::singleShot(interval, [toolId = m_toolId]() {
+                    AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveAllModifiedDocuments);
+                });
+            }
+        }
+    }
+
+    void AtomToolsDocumentSystem::OnDocumentExternallyModified(const AZ::Uuid& documentId)
+    {
+        m_documentIdsWithExternalChanges.insert(documentId);
+        QueueReopenModifiedDocuments();
+    }
+
+    void AtomToolsDocumentSystem::OnDocumentDependencyModified(const AZ::Uuid& documentId)
+    {
+        m_documentIdsWithDependencyChanges.insert(documentId);
+        QueueReopenModifiedDocuments();
     }
 } // namespace AtomToolsFramework

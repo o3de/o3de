@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString PerlinNoiseGradientNode::TITLE = QObject::tr("Perlin Noise");
+    const char* PerlinNoiseGradientNode::TITLE = "Perlin Noise";
 
     PerlinNoiseGradientNode::PerlinNoiseGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)

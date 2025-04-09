@@ -13,7 +13,6 @@
 #include "UiAnimViewNodes.h"
 #include "UiAnimViewDopeSheetBase.h"
 #include "UiAnimViewUndo.h"
-#include "StringDlg.h"
 #include "UiAnimViewDialog.h"
 #include "UiAVEventsDialog.h"
 
@@ -21,9 +20,7 @@
 
 #include <LyShine/Animation/IUiAnimation.h>
 
-#include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "Export/ExportManager.h"
 #include <Editor/Util/fastlib.h>
 
 #include "QtUtilWin.h"
@@ -254,18 +251,8 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     connect(ui->treeWidget, &QTreeWidget::itemExpanded, this, &CUiAnimViewNodesCtrl::OnItemExpanded);
     connect(ui->treeWidget, &QTreeWidget::itemCollapsed, this, &CUiAnimViewNodesCtrl::OnItemExpanded);
     connect(ui->treeWidget, &QTreeWidget::itemSelectionChanged, this, &CUiAnimViewNodesCtrl::OnSelectionChanged);
-    connect(ui->treeWidget, &QTreeWidget::itemDoubleClicked, this, &CUiAnimViewNodesCtrl::OnItemDblClick);
 
     connect(ui->searchField, &QLineEdit::textChanged, this, &CUiAnimViewNodesCtrl::OnFilterChange);
-
-    for (int i = 0; i <= 28; i++)
-    {
-        QIcon icon(QString(":/nodes/tvnodes-%1.png").arg(i, 2, 10, QLatin1Char('0')));
-        if (!icon.isNull())
-        {
-            m_imageList[i] = icon;
-        }
-    }
 
     m_bEditLock = false;
 
@@ -288,7 +275,7 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
         [this]([[maybe_unused]] bool checked)
         {
             CUiAnimViewSequence* pSequence = nullptr;
-            EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+            UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
             if (pSequence)
             {
                 UiAnimUndo undo("Delete selected UiAnimView Nodes/Tracks");
@@ -338,74 +325,6 @@ void CUiAnimViewNodesCtrl::OnSequenceChanged()
 void CUiAnimViewNodesCtrl::SetDopeSheet(CUiAnimViewDopeSheetBase* pDopeSheet)
 {
     m_pDopeSheet = pDopeSheet;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CUiAnimViewNodesCtrl::GetIconIndexForTrack([[maybe_unused]] const CUiAnimViewTrack* pTrack) const
-{
-    int nImage = 13; // Default
-    return nImage;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CUiAnimViewNodesCtrl::GetIconIndexForNode(EUiAnimNodeType type) const
-{
-    int nImage = 0;
-    if (type == eUiAnimNodeType_Entity)
-    {
-        // TODO: Get specific icons for lights, particles etc.
-        nImage = 21;
-    }
-    else if (type == eUiAnimNodeType_Director)
-    {
-        nImage = 27;
-    }
-    else if (type == eUiAnimNodeType_Camera)
-    {
-        nImage = 8;
-    }
-    else if (type == eUiAnimNodeType_CVar)
-    {
-        nImage = 15;
-    }
-    else if (type == eUiAnimNodeType_ScriptVar)
-    {
-        nImage = 14;
-    }
-    else if (type == eUiAnimNodeType_Material)
-    {
-        nImage = 16;
-    }
-    else if (type == eUiAnimNodeType_Event)
-    {
-        nImage = 6;
-    }
-    else if (type == eUiAnimNodeType_Group)
-    {
-        nImage = 1;
-    }
-    else if (type == eUiAnimNodeType_Layer)
-    {
-        nImage = 20;
-    }
-    else if (type == eUiAnimNodeType_Comment)
-    {
-        nImage = 23;
-    }
-    else if (type == eUiAnimNodeType_Light)
-    {
-        nImage = 18;
-    }
-    else if (type == eUiAnimNodeType_HDRSetup)
-    {
-        nImage = 26;
-    }
-    else if (type == eUiAnimNodeType_ShadowSetup)
-    {
-        nImage = 24;
-    }
-
-    return nImage;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -544,9 +463,7 @@ void CUiAnimViewNodesCtrl::UpdateNodeRecord(CRecord* pRecord)
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewNodesCtrl::UpdateTrackRecord(CRecord* pRecord, CUiAnimViewTrack* pTrack)
 {
-    int nImage = GetIconIndexForTrack(pTrack);
-    assert(m_imageList.contains(nImage));
-    pRecord->setIcon(0, m_imageList[nImage]);
+    pRecord->setIcon(0, QIcon(QStringLiteral(":/nodes/tvnodes-13.png")));
 
     // Check if parameter is valid for non sub tracks
     CUiAnimViewAnimNode* pAnimNode = pTrack->GetAnimNode();
@@ -557,6 +474,40 @@ void CUiAnimViewNodesCtrl::UpdateTrackRecord(CRecord* pRecord, CUiAnimViewTrack*
 
     // If track is not valid and disabled/muted color node in grey
     pRecord->setData(0, CRecord::EnableRole, !bDisabledOrMuted && isParamValid);
+}
+
+QIcon CUiAnimViewNodesCtrl::NodeTypeToTrackViewIcon(EUiAnimNodeType nodeType)
+{
+    switch (nodeType)
+    {
+    case eUiAnimNodeType_AzEntity:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
+    case eUiAnimNodeType_Director:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-27.png"));
+    case eUiAnimNodeType_Camera:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-08.png"));
+    case eUiAnimNodeType_CVar:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-15.png"));
+    case eUiAnimNodeType_ScriptVar:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-14.png"));
+    case eUiAnimNodeType_Material:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-16.png"));
+    case eUiAnimNodeType_Event:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-06.png"));
+    case eUiAnimNodeType_Group:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-01.png"));
+    case eUiAnimNodeType_Layer:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-20.png"));
+    case eUiAnimNodeType_Comment:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-23.png"));
+    case eUiAnimNodeType_Light:
+        return QIcon( QStringLiteral(":/nodes/tvnodes-18.png"));
+    case eUiAnimNodeType_HDRSetup:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-26.png"));
+    case eUiAnimNodeType_ShadowSetup:
+        return QIcon(QStringLiteral(":/nodes/tvnodes-24.png"));
+    }
+    return QIcon(QStringLiteral(":/nodes/tvnodes-21.png"));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -573,12 +524,9 @@ void CUiAnimViewNodesCtrl::UpdateUiAnimNodeRecord(CRecord* pRecord, CUiAnimViewA
     pRecord->setFont(0, f);
 
     EUiAnimNodeType nodeType = pAnimNode->GetType();
-    int nNodeImage = GetIconIndexForNode(nodeType);
-    assert(m_imageList.contains(nNodeImage));
-
     QString nodeName = QString::fromUtf8(pAnimNode->GetName().c_str());
 
-    pRecord->setIcon(0, m_imageList[nNodeImage]);
+    pRecord->setIcon(0, NodeTypeToTrackViewIcon(nodeType));
 
     const bool bDisabled = pAnimNode->IsDisabled();
     pRecord->setData(0, CRecord::EnableRole, !bDisabled);
@@ -627,7 +575,7 @@ void CUiAnimViewNodesCtrl::Reload()
 void CUiAnimViewNodesCtrl::OnFillItems()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         CUiAnimViewSequenceNotificationContext context(pSequence);
@@ -678,7 +626,7 @@ void CUiAnimViewNodesCtrl::OnSelectionChanged()
     m_bSelectionChanging = true;
 
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         CUiAnimViewSequenceNotificationContext context(pSequence);
@@ -711,7 +659,7 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
     CRecord* pRecord = 0;
 
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -839,40 +787,6 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
             UiAnimUndo undo("Add UiAnimView Event Node");
             pGroupNode->CreateSubNode("Events", eUiAnimNodeType_Event);
         }
-#if UI_ANIMATION_REMOVED // CStringDlg unresolved
-        else if (cmd == eMI_AddConsoleVariable)
-        {
-            CStringDlg dlg(_T("Console Variable Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                UiAnimUndo undo("Add UiAnimView Console (CVar) Node");
-                CString name = pGroupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
-                pGroupNode->CreateSubNode(name, eUiAnimNodeType_CVar);
-            }
-        }
-        else if (cmd == eMI_AddScriptVariable)
-        {
-            CStringDlg dlg(_T("Script Variable Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                UiAnimUndo undo("Add UiAnimView Script Variable Node");
-                CString name = pGroupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
-                pGroupNode->CreateSubNode(name, eUiAnimNodeType_ScriptVar);
-            }
-        }
-        else if (cmd == eMI_AddMaterial)
-        {
-            CStringDlg dlg(_T("Material Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                if (pGroupNode->GetAnimNodesByName(dlg.GetString()).GetCount() == 0)
-                {
-                    UiAnimUndo undo("Add UiAnimView Material Node");
-                    pGroupNode->CreateSubNode(dlg.GetString(), eUiAnimNodeType_Material);
-                }
-            }
-        }
-#endif
     }
 
     if (cmd == eMI_EditEvents)
@@ -977,11 +891,6 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
             EndUndoTransaction();
         }
     }
-    else if (cmd == eMI_SelectInViewport)
-    {
-        UiAnimUndo undo("Select Animation Nodes in Viewport");
-        pSequence->SelectSelectedNodesInViewport();
-    }
     else if (cmd >= eMI_SelectSubmaterialBase && cmd < eMI_SelectSubmaterialBase + 100)
     {
         if (pAnimNode)
@@ -1037,31 +946,6 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUiAnimViewNodesCtrl::OnItemDblClick(QTreeWidgetItem* item, int)
-{
-    CRecord* pRecord = (CRecord*)item;
-    if (pRecord && pRecord->GetNode())
-    {
-        CUiAnimViewNode* pNode = pRecord->GetNode();
-
-        if (pNode->GetNodeType() == eUiAVNT_AnimNode)
-        {
-#if UI_ANIMATION_REMOVED // uses Cry Entity
-            CUiAnimViewAnimNode* pAnimNode = static_cast<CUiAnimViewAnimNode*>(pNode);
-            CEntityObject* pEntity = pAnimNode->GetNodeEntity();
-
-            if (pEntity)
-            {
-                UiAnimUndo undo("Select Object");
-                GetIEditor()->ClearSelection();
-                GetIEditor()->SelectObject(pEntity);
-            }
-#endif
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CUiAnimViewNodesCtrl::EditEvents()
 {
     CUiAVEventsDialog dlg;
@@ -1095,13 +979,6 @@ void CUiAnimViewNodesCtrl::AddGroupNodeAddItems(UiAnimContextMenu& contextMenu, 
         contextMenu.main.addAction("Add Selected UI Element(s)")->setData(eMI_AddSelectedUiElements);
         contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
     }
-
-#if UI_ANIMATION_REMOVED
-    contextMenu.main.addAction("Add Comment Node")->setData(eMI_AddCommentNode);
-    contextMenu.main.addAction("Add Console Variable")->setData(eMI_AddConsoleVariable);
-    contextMenu.main.addAction("Add Script Variable")->setData(eMI_AddScriptVariable);
-    contextMenu.main.addAction("Add Material")->setData(eMI_AddMaterial);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1139,29 +1016,10 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
         pAnimNode = pTrack->GetAnimNode();
     }
 
-#if UI_ANIMATION_REMOVED
-    // Entity
-    if (bOnNode && pAnimNode->GetEntity() != nullptr && !bIsLightAnimationSet)
+    if (bOnNode || bOnSequence || bOnTrackNotSub)
     {
-        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-
-        contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
-
-        if (pAnimNode->GetType() == eUiAnimNodeType_Camera)
-        {
-            contextMenu.main.addAction("Set As View Camera")->setData(eMI_SetAsViewCamera);
-        }
-
+        contextMenu.main.addAction("Delete")->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
         bAppended = true;
-    }
-#endif
-
-    {
-        if (bOnNode || bOnSequence || bOnTrackNotSub)
-        {
-            contextMenu.main.addAction("Delete")->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
-            bAppended = true;
-        }
     }
 
     if (bOnTrack)
@@ -1209,21 +1067,20 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
         bAppended = true;
     }
 
-#if UI_ANIMATION_REMOVED
-    // We have removed support for saving out the custom colors per track
-    // it may be added back at some point
-    // Track color
-    if (bOnTrack)
-    {
-        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Customize Track Color...")->setData(eMI_CustomizeTrackColor);
-        if (pTrack->HasCustomColor())
-        {
-            contextMenu.main.addAction("Clear Custom Track Color")->setData(eMI_ClearCustomTrackColor);
-        }
-        bAppended = true;
-    }
-#endif
+   // TODO: look into support track colors
+   // We have removed support for saving out the custom colors per track
+   // it may be added back at some point
+   // Track color
+   // if (bOnTrack)
+   // {
+   //     AddMenuSeperatorConditional(contextMenu.main, bAppended);
+   //     contextMenu.main.addAction("Customize Track Color...")->setData(eMI_CustomizeTrackColor);
+   //     if (pTrack->HasCustomColor())
+   //     {
+   //         contextMenu.main.addAction("Clear Custom Track Color")->setData(eMI_ClearCustomTrackColor);
+   //     }
+   //     bAppended = true;
+   // }
 
     // Track hide/unhide flags
     if (bOnNode && !pNode->IsGroupNode())
@@ -1292,7 +1149,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuMultiSelection(UiAnimContextMenu& context
 int CUiAnimViewNodesCtrl::ShowPopupMenu([[maybe_unused]] QPoint point, const CRecord* pRecord)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return 0;
@@ -1371,7 +1228,7 @@ void CUiAnimViewNodesCtrl::FillAutoCompletionListForFilter()
 {
     QStringList strings;
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         ui->noitems->hide();
@@ -1404,7 +1261,7 @@ void CUiAnimViewNodesCtrl::FillAutoCompletionListForFilter()
 void CUiAnimViewNodesCtrl::OnFilterChange(const QString& text)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     if (pSequence)
     {
@@ -1460,7 +1317,7 @@ void CUiAnimViewNodesCtrl::ShowNextResult()
     if (m_matchCount > 1)
     {
         CUiAnimViewSequence* pSequence = nullptr;
-        EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+        UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
         if (pSequence && !ui->searchField->text().isEmpty())
         {
@@ -1497,7 +1354,7 @@ void CUiAnimViewNodesCtrl::CreateSetAnimationLayerPopupMenu([[maybe_unused]] QMe
 void CUiAnimViewNodesCtrl::CustomizeTrackColor(CUiAnimViewTrack* pTrack)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1526,7 +1383,7 @@ void CUiAnimViewNodesCtrl::CustomizeTrackColor(CUiAnimViewTrack* pTrack)
 void CUiAnimViewNodesCtrl::ClearCustomTrackColor(CUiAnimViewTrack* pTrack)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1587,7 +1444,7 @@ void CUiAnimViewNodesCtrl::UpdateRecordVisibility()
 void CUiAnimViewNodesCtrl::UpdateAllNodesForElementChanges()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         CUiAnimViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
@@ -1604,7 +1461,7 @@ void CUiAnimViewNodesCtrl::UpdateAllNodesForElementChanges()
 void CUiAnimViewNodesCtrl::OnNodeChanged(CUiAnimViewNode* pNode, IUiAnimViewSequenceListener::ENodeChangeType type)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1721,17 +1578,16 @@ void CUiAnimViewNodesCtrl::EndUndoTransaction()
 }
 
 //////////////////////////////////////////////////////////////////////////
-QIcon CUiAnimViewNodesCtrl::GetIconForTrack(const CUiAnimViewTrack* pTrack)
+QIcon CUiAnimViewNodesCtrl::GetIconForTrack([[maybe_unused]] const CUiAnimViewTrack* pTrack)
 {
-    int r = GetIconIndexForTrack(pTrack);
-    return m_imageList.contains(r) ? m_imageList[r] : QIcon();
+    return QIcon(QStringLiteral(":/nodes/tvnodes-13.png"));
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewNodesCtrl::OnKeysChanged(CUiAnimViewSequence* pSequence)
 {
     CUiAnimViewSequence* pCurrentSequence = nullptr;
-    EBUS_EVENT_RESULT(pCurrentSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pCurrentSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!m_bIgnoreNotifications && pSequence && pSequence == pCurrentSequence)
     {
         UpdateDopeSheet();
@@ -1753,7 +1609,7 @@ void CUiAnimViewNodesCtrl::OnNodeSelectionChanged(CUiAnimViewSequence* pSequence
     }
 
     CUiAnimViewSequence* pCurrentSequence = nullptr;
-    EBUS_EVENT_RESULT(pCurrentSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pCurrentSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!m_bIgnoreNotifications && pSequence && pSequence == pCurrentSequence)
     {
         UpdateDopeSheet();

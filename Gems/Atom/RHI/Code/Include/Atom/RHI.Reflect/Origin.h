@@ -13,24 +13,24 @@
 namespace AZ
 {
     class ReflectContext;
+}
 
-    namespace RHI
+namespace AZ::RHI
+{
+    struct Origin
     {
-        struct Origin
-        {
-            AZ_TYPE_INFO(Origin, "{323EB88E-A2BF-421F-9CD4-B668CA246AAF}");
+        AZ_TYPE_INFO(Origin, "{323EB88E-A2BF-421F-9CD4-B668CA246AAF}");
 
-            static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            Origin() = default;
-            Origin(uint32_t left, uint32_t top, uint32_t front);
+        Origin() = default;
+        Origin(uint32_t left, uint32_t top, uint32_t front);
 
-            uint32_t m_left = 0;
-            uint32_t m_top = 0;
-            uint32_t m_front = 0;
+        uint32_t m_left = 0;
+        uint32_t m_top = 0;
+        uint32_t m_front = 0;
 
-            bool operator == (const Origin& rhs) const;
-            bool operator != (const Origin& rhs) const;
-        };
-    }
+        bool operator == (const Origin& rhs) const;
+        bool operator != (const Origin& rhs) const;
+    };
 }

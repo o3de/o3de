@@ -22,9 +22,11 @@ constexpr AZ::u64 operator"" _gib(AZ::u64 value);
 
 namespace AZ::IO::IStreamerTypes
 {
+    using Deadline = AZStd::chrono::microseconds;
+
     // Default value for commonly used priorities.
-    inline constexpr static AZStd::chrono::microseconds s_deadlineNow = AZStd::chrono::microseconds::zero();
-    inline constexpr static AZStd::chrono::microseconds s_noDeadline = AZStd::chrono::microseconds::max();
+    inline constexpr static Deadline s_deadlineNow = Deadline::zero();
+    inline constexpr static Deadline s_noDeadline = Deadline::max();
 
     // Default values for commonly used priorities
     using Priority = u8;
@@ -152,6 +154,13 @@ namespace AZ::IO::IStreamerTypes
         AZStd::atomic_int m_lockCounter{ 0 };
         AZStd::atomic_int m_allocationCounter{ 0 };
         AZ::IAllocator& m_allocator;
+    };
+
+    //! The type of information that will be reported back from a call to Report.
+    enum class ReportType : int8_t
+    {
+        Config,     //!< Report the configuration of stack.
+        FileLocks   //!< Report all file locks.
     };
 
     // The following alignment functions are put here until they're available in AzCore's math library.

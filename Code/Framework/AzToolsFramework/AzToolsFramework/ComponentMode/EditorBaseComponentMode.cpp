@@ -11,11 +11,14 @@
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
+
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
-        AZ_CLASS_ALLOCATOR_IMPL(EditorBaseComponentMode, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(EditorBaseComponentMode, AZ::SystemAllocator)
 
         EditorBaseComponentMode::EditorBaseComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
@@ -32,16 +35,24 @@ namespace AzToolsFramework
             }
 
             ComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
-            ToolsApplicationNotificationBus::Handler::BusConnect();
+            Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         }
 
         EditorBaseComponentMode::~EditorBaseComponentMode()
         {
-            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
             ComponentModeRequestBus::Handler::BusDisconnect();
         }
 
-        void EditorBaseComponentMode::AfterUndoRedo()
+        void EditorBaseComponentMode::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<EditorBaseComponentMode>();
+            }
+        }
+
+        void EditorBaseComponentMode::OnPrefabInstancePropagationEnd()
         {
             Refresh();
         }
@@ -53,13 +64,34 @@ namespace AzToolsFramework
             ComponentModeViewportUiRequestBus::Event(
                 GetComponentType(), &ComponentModeViewportUiRequestBus::Events::RegisterViewportElementGroup,
                 GetEntityComponentIdPair(), elementIdsToDisplay);
-            // create the component mode border with the specific name for this component mode
-            ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, GetComponentModeName(),
-                []
-                {
-                    ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
-                });
+
+            bool borderVisible = false;
+            ViewportUi::ViewportUiRequestBus::EventResult(
+                borderVisible,
+                ViewportUi::DefaultViewportId,
+                &ViewportUi::ViewportUiRequestBus::Events::GetViewportBorderVisible);
+
+            // if the border is visible, change the border title
+            // else create the component mode border with the specific name for this component mode
+            if (borderVisible)
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId,
+                    &ViewportUi::ViewportUiRequestBus::Events::ChangeViewportBorderText,
+                    GetComponentModeName());
+            }
+            else
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId,
+                    &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder,
+                    GetComponentModeName(),
+                    []
+                    {
+                        ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
+                    });
+            }
+
             // set the EntityComponentId for this ComponentMode to active in the ComponentModeViewportUi system
             ComponentModeViewportUiRequestBus::Event(
                 GetComponentType(), &ComponentModeViewportUiRequestBus::Events::SetViewportUiActiveEntityComponentId,
@@ -80,6 +112,15 @@ namespace AzToolsFramework
         AZStd::vector<ActionOverride> EditorBaseComponentMode::PopulateActions()
         {
             return PopulateActionsImpl();
+        }
+
+        AZ::Uuid EditorBaseComponentMode::GetComponentModeType() const
+        {
+            AZ_Assert(
+                false,
+                "Classes derived from EditorBaseComponentMode need to override this function and return their typeid."
+                "Example: \"return azrtti_typeid<DerivedComponentMode>();\"");
+            return AZ::Uuid::CreateNull();
         }
 
         void EditorBaseComponentMode::PostHandleMouseInteraction()

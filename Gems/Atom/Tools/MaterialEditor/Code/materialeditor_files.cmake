@@ -20,8 +20,4 @@ set(FILES
     Source/Window/MaterialEditorMainWindow.h
     Source/Window/MaterialEditorViewportContent.cpp
     Source/Window/MaterialEditorViewportContent.h
-    Source/Window/SettingsDialog/SettingsDialog.cpp
-    Source/Window/SettingsDialog/SettingsDialog.h
-    Source/Window/SettingsDialog/SettingsWidget.cpp
-    Source/Window/SettingsDialog/SettingsWidget.h
 )

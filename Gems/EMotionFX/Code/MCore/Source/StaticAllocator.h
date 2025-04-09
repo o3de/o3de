@@ -16,11 +16,11 @@ namespace MCore
         : public AZStd::allocator
     {
     public:
-        StaticAllocator::pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0);
+        StaticAllocator::pointer allocate(size_type byteSize, size_type alignment, int flags = 0);
 
-        void deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
+        void deallocate(pointer ptr, size_type byteSize, size_type alignment);
 
-        StaticAllocator::size_type resize(pointer_type ptr, size_type newSize);
+        StaticAllocator::size_type resize(pointer ptr, size_type newSize);
 
         StaticAllocator::size_type max_size() const;
 

@@ -12,21 +12,18 @@
 
 #include <Atom/RHI.Edit/Utils.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void ShaderBuildOptions::Reflect(ReflectContext* context)
     {
-        void ShaderBuildOptions::Reflect(ReflectContext* context)
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ShaderBuildOptions>()
-                    ->Version(1)
-                    ->Field("RemoveBuildArguments", &ShaderBuildOptions::m_removeBuildArguments)
-                    ->Field("AddBuildArguments", &ShaderBuildOptions::m_addBuildArguments)
-                    ->Field("Definitions", &ShaderBuildOptions::m_definitions)
-                    ;
-            }
+            serializeContext->Class<ShaderBuildOptions>()
+                ->Version(1)
+                ->Field("RemoveBuildArguments", &ShaderBuildOptions::m_removeBuildArguments)
+                ->Field("AddBuildArguments", &ShaderBuildOptions::m_addBuildArguments)
+                ->Field("Definitions", &ShaderBuildOptions::m_definitions)
+                ;
         }
     }
 }

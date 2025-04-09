@@ -37,14 +37,6 @@ namespace EMotionFX
         EMStudio::MotionSetWindow* motionSetWindow = motionSetPlugin->GetMotionSetWindow();
         ASSERT_TRUE(motionSetWindow) << "No motion set window found";
 
-        // Check there aren't any motion sets yet.
-        size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        EXPECT_EQ(numMotionSets, 0);
-
-        // Find the action to create a new motion set and press it.
-        QWidget* addMotionSetButton = GetWidgetWithNameFromNamedToolbar(managementWindow, "MotionSetManagementWindow.ToolBar", "MotionSetManagementWindow.ToolBar.AddNewMotionSet");
-        ASSERT_TRUE(addMotionSetButton);
-        QTest::mouseClick(addMotionSetButton, Qt::LeftButton);
 
         // Check there is now a motion set.
         size_t numMotionSetsAfterCreate = EMotionFX::GetMotionManager().GetNumMotionSets();

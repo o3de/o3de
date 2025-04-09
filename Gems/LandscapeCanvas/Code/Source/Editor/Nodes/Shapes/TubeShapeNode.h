@@ -16,7 +16,7 @@ namespace LandscapeCanvas
     class TubeShapeNode : public BaseShapeNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(TubeShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TubeShapeNode, AZ::SystemAllocator);
         AZ_RTTI(TubeShapeNode, "{2A0193AD-25AC-49CA-B90E-8C61A5C1CCC5}", BaseShapeNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         TubeShapeNode() = default;
         explicit TubeShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

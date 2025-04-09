@@ -71,6 +71,18 @@ namespace AzFramework
         }
     }
 
+    bool SliceEntityOwnershipService::CheckAndAssertRootComponentIsAvailable()
+    {
+        bool componentReady = m_rootAsset && m_rootAsset->GetComponent();
+        if (!componentReady)
+        {
+            AZ_Assert(false, "SliceEntityOwnershipService - Attempt to use the root asset component, but slice has not yet been created.");
+            return false;
+        }
+        return true;
+
+    }
+
     void SliceEntityOwnershipService::Reset()
     {
         if (m_rootAsset)
@@ -113,13 +125,21 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::AddEntity(AZ::Entity* entity)
     {
-        AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
+        if (!CheckAndAssertRootComponentIsAvailable())
+        {
+            return;
+        }
         m_rootAsset->GetComponent()->AddEntity(entity);
         HandleEntitiesAdded(EntityList{ entity });
     }
 
     void SliceEntityOwnershipService::AddEntities(const EntityList& entities)
     {
+        if (!CheckAndAssertRootComponentIsAvailable())
+        {
+            return;
+        }
+
         for (AZ::Entity* entity : entities)
         {
             AZ_Assert(!AzFramework::SliceEntityRequestBus::MultiHandler::BusIsConnectedId(entity->GetId()),
@@ -134,19 +154,35 @@ namespace AzFramework
     {
         if (entity)
         {
-            AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
             SliceEntityRequestBus::MultiHandler::BusDisconnect(entity->GetId());
-            m_entitiesRemovedCallback({ entity->GetId() });
-            return m_rootAsset->GetComponent()->RemoveEntity(entity);
+            if (m_entitiesAddedCallback)
+            {
+                m_entitiesRemovedCallback({ entity->GetId() });
+            }
+            if (CheckAndAssertRootComponentIsAvailable())
+            {
+                return m_rootAsset->GetComponent()->RemoveEntity(entity);
+            }
         }
         return false;
     }
 
     bool SliceEntityOwnershipService::DestroyEntityById(AZ::EntityId entityId)
     {
-        AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
-        AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
-        m_entitiesRemovedCallback({ entityId });
+        if (!CheckAndAssertRootComponentIsAvailable())
+        {
+            return false;
+        }
+
+        AZ_Assert(m_entitiesRemovedCallback, "Callback function m_entitiesRemovedCallback for DestroyEntityById has not been set.");
+        if (m_entitiesRemovedCallback)
+        {
+            m_entitiesRemovedCallback({ entityId });
+        }
+
+        // Note: This function should actually be destroying the entity, but some legacy slice code already
+        // expects it to just detach the entity (such as RestoreSliceEntity_SliceEntityDeleted_SliceEntityRestored),
+        // so the behavior is left unchanged.
 
         // Entities removed through the application (as in via manual 'delete'),
         // should be removed from the root slice, but not again deleted.
@@ -157,15 +193,24 @@ namespace AzFramework
     {
         AZ_PROFILE_FUNCTION(AzFramework);
 
-        AZ_Assert(m_rootAsset && m_rootAsset.Get(), "Root slice asset has not been created yet.");
-
+        if (!m_rootAsset || !m_rootAsset.Get())
+        {
+            AZ_Assert(false, "Root slice asset has not been created yet.");
+            return;
+        }
+        
         CreateRootSlice(m_rootAsset.Get());
     }
 
     void SliceEntityOwnershipService::CreateRootSlice(AZ::SliceAsset* rootSliceAsset)
     {
         AZ_PROFILE_FUNCTION(AzFramework);
-        AZ_Assert(m_rootAsset && m_rootAsset.Get(), "Root slice asset has not been created yet.");
+
+        if (!m_rootAsset || !m_rootAsset.Get())
+        {
+            AZ_Assert(false, "Root slice asset has not been created yet.");
+            return;
+        }
 
         AZ::Entity* rootEntity = new AZ::Entity();
         rootEntity->CreateComponent<AZ::SliceComponent>();
@@ -206,6 +251,8 @@ namespace AzFramework
     {
         EntityList entities;
 
+        CheckAndAssertRootComponentIsAvailable();
+
         const AZ::SliceComponent* rootSliceComponent = m_rootAsset->GetComponent();
 
         AZ_Assert(rootSliceComponent, "Root slice component has not been created.");
@@ -242,7 +289,11 @@ namespace AzFramework
     {
         AZ_PROFILE_FUNCTION(AzFramework);
 
-        AZ_Assert(m_rootAsset, "The entity ownership service has not been initialized.");
+        if (!m_rootAsset)
+        {
+            AZ_Assert(false, "The entity ownership service has not been initialized.");
+            return false;
+        }
 
         AZ::Entity* newRootEntity = AZ::Utils::LoadObjectFromStream<AZ::Entity>(stream, m_serializeContext, filterDesc);
 
@@ -387,7 +438,11 @@ namespace AzFramework
     {
         AZ_PROFILE_FUNCTION(AzFramework);
 
-        AZ_Assert(readyAsset.GetAs<AZ::SliceAsset>(), "Asset is not a slice!");
+        if (!readyAsset.GetAs<AZ::SliceAsset>())
+        {
+            AZ_Assert(readyAsset.GetAs<AZ::SliceAsset>(), "OnAssetReady : Asset %s (%s) is not a slice!", readyAsset.GetHint().c_str(), readyAsset.GetId().ToString<AZStd::string>().c_str());
+            return;
+        }
 
         if (readyAsset == m_rootAsset)
         {
@@ -548,7 +603,11 @@ namespace AzFramework
     {
         AZ_PROFILE_FUNCTION(AzFramework);
 
-        AZ_Assert(sourceInstance.IsValid(), "Source slice instance is invalid.");
+        if (!sourceInstance.IsValid())
+        {
+            AZ_Assert(false, "Source slice instance is invalid.");
+            return {};
+        }
 
         AZ::SliceComponent::SliceInstance* newInstance = sourceInstance.GetReference()->CloneInstance(sourceInstance.GetInstance(),
             sourceToCloneEntityIdMap);
@@ -564,7 +623,11 @@ namespace AzFramework
 
     AZ::SliceComponent::SliceInstanceAddress SliceEntityOwnershipService::GetOwningSlice(AZ::EntityId entityId)
     {
-        AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "The entity ownership service has not been initialized.");
+        if (!CheckAndAssertRootComponentIsAvailable())
+        {
+            return {};
+        }
+
         return m_rootAsset->GetComponent()->FindSlice(entityId);
     }
 
@@ -659,6 +722,23 @@ namespace AzFramework
     void SliceEntityOwnershipService::SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback)
     {
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
+    }
+
+    void SliceEntityOwnershipService::HandleEntityBeingDestroyed(const AZ::EntityId& entityId)
+    {
+        AZ_Assert(m_entitiesRemovedCallback, "Callback function for entity removal has not been set.");
+
+        if (m_entitiesAddedCallback)
+        {
+            m_entitiesRemovedCallback({ entityId });
+        }
+
+        // Entities removed through the application (as in via manual 'delete'),
+        // should be removed from the root slice, but not again deleted.
+        if (CheckAndAssertRootComponentIsAvailable())
+        {
+            m_rootAsset->GetComponent()->RemoveEntity(entityId, false);
+        }
     }
 
     AZ::Data::AssetId SliceEntityOwnershipService::CurrentlyInstantiatingSlice()

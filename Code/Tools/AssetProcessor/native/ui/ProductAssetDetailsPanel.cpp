@@ -15,6 +15,8 @@
 
 #include <AssetDatabase/AssetDatabase.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
+#include <AzCore/std/algorithm.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_ProductAssetDetailsPanel.h>
@@ -23,6 +25,8 @@
 #include <QDir>
 #include <QStringLiteral>
 #include <QUrl>
+#include <native/ui/GoToButtonDelegate.h>
+#include <AzCore/Jobs/JobFunction.h>
 
 namespace AssetProcessor
 {
@@ -31,7 +35,7 @@ namespace AssetProcessor
     {
         m_ui->setupUi(this);
         m_ui->scrollAreaWidgetContents->setLayout(m_ui->scrollableVerticalLayout);
-        m_ui->MissingProductDependenciesTable->setColumnWidth(1, 160);
+        m_ui->MissingProductDependenciesTable->setColumnWidth(static_cast<int>(MissingDependencyTableColumns::ScanTime), 160);
         ResetText();
         connect(m_ui->MissingProductDependenciesSupport, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnSupportClicked);
         connect(m_ui->ScanMissingDependenciesButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnScanFileClicked);
@@ -39,11 +43,55 @@ namespace AssetProcessor
 
         connect(m_ui->ClearMissingDependenciesButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnClearScanFileClicked);
         connect(m_ui->ClearScanFolderButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnClearScanFolderClicked);
+
+        auto* missingDependenciesDelegate = new GoToButtonDelegate(this);
+        connect(
+            missingDependenciesDelegate,
+            &GoToButtonDelegate::Clicked,
+            [this](const GoToButtonData& buttonData)
+            {
+                GoToProduct(buttonData.m_destination);
+            });
+        m_ui->MissingProductDependenciesTable->setItemDelegate(missingDependenciesDelegate);
     }
 
     ProductAssetDetailsPanel::~ProductAssetDetailsPanel()
     {
 
+    }
+
+    void ProductAssetDetailsPanel::SetupDependencyGraph(QTreeView* productAssetsTreeView, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection)
+    {
+        m_outgoingDependencyTreeModel =
+            new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Outgoing, this);
+        m_ui->OutgoingProductDependenciesTreeView->setModel(m_outgoingDependencyTreeModel);
+        m_ui->OutgoingProductDependenciesTreeView->setRootIsDecorated(true);
+        m_ui->OutgoingProductDependenciesTreeView->setItemDelegate(new ProductDependencyTreeDelegate(this, this));
+        connect(
+            productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_outgoingDependencyTreeModel,
+            &ProductDependencyTreeModel::AssetDataSelectionChanged);
+
+        m_incomingDependencyTreeModel =
+            new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Incoming, this);
+        m_ui->IncomingProductDependenciesTreeView->setModel(m_incomingDependencyTreeModel);
+        m_ui->IncomingProductDependenciesTreeView->setRootIsDecorated(true);
+        m_ui->IncomingProductDependenciesTreeView->setItemDelegate(new ProductDependencyTreeDelegate(this, this));
+        connect(
+            productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_incomingDependencyTreeModel,
+            &ProductDependencyTreeModel::AssetDataSelectionChanged);
+
+        AzQtComponents::StyleManager::setStyleSheet(m_ui->OutgoingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
+        AzQtComponents::StyleManager::setStyleSheet(m_ui->IncomingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
+    }
+
+    QTreeView* ProductAssetDetailsPanel::GetOutgoingProductDependenciesTreeView() const
+    {
+        return m_ui->OutgoingProductDependenciesTreeView;
+    }
+
+    QTreeView* ProductAssetDetailsPanel::GetIncomingProductDependenciesTreeView() const
+    {
+        return m_ui->IncomingProductDependenciesTreeView;
     }
 
     void ProductAssetDetailsPanel::SetScanQueueEnabled(bool enabled)
@@ -69,7 +117,7 @@ namespace AssetProcessor
         }
     }
 
-    void ProductAssetDetailsPanel::AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
+    void ProductAssetDetailsPanel::AssetDataSelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
         // Even if multi-select is enabled, only display the first selected item.
         if (selected.indexes().count() == 0 || !selected.indexes()[0].isValid())
@@ -116,7 +164,7 @@ namespace AssetProcessor
             m_ui->gotoAssetButton->m_ui->goToPushButton->disconnect();
 
             connect(m_ui->gotoAssetButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                GoToSource(sourceEntry.m_sourceName);
+                GoToSource(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()).AbsolutePath().c_str());
             });
 
             m_ui->sourceAssetValueLabel->setText(sourceEntry.m_sourceName.c_str());
@@ -147,8 +195,6 @@ namespace AssetProcessor
         const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData,
         const AZStd::string& platform)
     {
-        // Clear & ClearContents leave the table dimensions the same, so set rowCount to zero to reset it.
-        m_ui->outgoingProductDependenciesTable->setRowCount(0);
 
         m_ui->outgoingUnmetPathProductDependenciesList->clear();
         int productDependencyCount = 0;
@@ -179,18 +225,6 @@ namespace AssetProcessor
 
                     if (platformMatches)
                     {
-                        m_ui->outgoingProductDependenciesTable->insertRow(productDependencyCount);
-
-                        // Qt handles cleanup automatically, setting this as the parent means
-                        // when this panel is torn down, these widgets will be destroyed.
-                        GoToButton* rowGoToButton = new GoToButton(this);
-                        connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                            GoToProduct(product.m_productName);
-                        });
-                        m_ui->outgoingProductDependenciesTable->setCellWidget(productDependencyCount, 0, rowGoToButton);
-
-                        QTableWidgetItem* rowName = new QTableWidgetItem(product.m_productName.c_str());
-                        m_ui->outgoingProductDependenciesTable->setItem(productDependencyCount, 1, rowName);
                         ++productDependencyCount;
                     }
                     return true;
@@ -211,14 +245,6 @@ namespace AssetProcessor
         m_ui->outgoingProductDependenciesValueLabel->setText(QString::number(productDependencyCount));
         m_ui->outgoingUnmetPathProductDependenciesValueLabel->setText(QString::number(productPathDependencyCount));
 
-        if (productDependencyCount == 0)
-        {
-            m_ui->outgoingProductDependenciesTable->insertRow(productDependencyCount);
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr("No product dependencies"));
-            m_ui->outgoingProductDependenciesTable->setItem(productDependencyCount, 1, rowName);
-            ++productDependencyCount;
-        }
-
         if (productPathDependencyCount == 0)
         {
             QListWidgetItem* listWidgetItem = new QListWidgetItem();
@@ -227,10 +253,10 @@ namespace AssetProcessor
             ++productPathDependencyCount;
         }
 
-        m_ui->outgoingProductDependenciesTable->setMinimumHeight(m_ui->outgoingProductDependenciesTable->rowHeight(0) * productDependencyCount + 2 * m_ui->outgoingProductDependenciesTable->frameWidth());
-        m_ui->outgoingProductDependenciesTable->adjustSize();
-
-        m_ui->outgoingUnmetPathProductDependenciesList->setMinimumHeight(m_ui->outgoingUnmetPathProductDependenciesList->sizeHintForRow(0) * productPathDependencyCount + 2 * m_ui->outgoingUnmetPathProductDependenciesList->frameWidth());
+        int height = m_ui->outgoingUnmetPathProductDependenciesList->sizeHintForRow(0) * AZStd::min<int>(productPathDependencyCount, 4) +
+            2 * m_ui->outgoingUnmetPathProductDependenciesList->frameWidth();
+        m_ui->outgoingUnmetPathProductDependenciesList->setMinimumHeight(height);
+        m_ui->outgoingUnmetPathProductDependenciesList->setMaximumHeight(height);
         m_ui->outgoingUnmetPathProductDependenciesList->adjustSize();
     }
 
@@ -239,8 +265,6 @@ namespace AssetProcessor
         const AZ::Data::AssetId& assetId,
         const AZStd::string& platform)
     {
-        // Clear & ClearContents leave the table dimensions the same, so set rowCount to zero to reset it.
-        m_ui->incomingProductDependenciesTable->setRowCount(0);
 
         int incomingProductDependencyCount = 0;
         m_assetDatabaseConnection->QueryDirectReverseProductDependenciesBySourceGuidSubId(
@@ -262,16 +286,6 @@ namespace AssetProcessor
             });
             if (platformMatches)
             {
-                m_ui->incomingProductDependenciesTable->insertRow(incomingProductDependencyCount);
-
-                GoToButton* rowGoToButton = new GoToButton(this);
-                connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                    GoToProduct(incomingDependency.m_productName);
-                });
-                m_ui->incomingProductDependenciesTable->setCellWidget(incomingProductDependencyCount, 0, rowGoToButton);
-
-                QTableWidgetItem* rowName = new QTableWidgetItem(incomingDependency.m_productName.c_str());
-                m_ui->incomingProductDependenciesTable->setItem(incomingProductDependencyCount, 1, rowName);
 
                 ++incomingProductDependencyCount;
             }
@@ -280,15 +294,6 @@ namespace AssetProcessor
 
         m_ui->incomingProductDependenciesValueLabel->setText(QString::number(incomingProductDependencyCount));
 
-        if (incomingProductDependencyCount == 0)
-        {
-            m_ui->incomingProductDependenciesTable->insertRow(incomingProductDependencyCount);
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr("No incoming product dependencies"));
-            m_ui->incomingProductDependenciesTable->setItem(incomingProductDependencyCount, 1, rowName);
-            ++incomingProductDependencyCount;
-        }
-        m_ui->incomingProductDependenciesTable->setMinimumHeight(m_ui->incomingProductDependenciesTable->rowHeight(0) * incomingProductDependencyCount + 2 * m_ui->incomingProductDependenciesTable->frameWidth());
-        m_ui->incomingProductDependenciesTable->adjustSize();
     }
 
     struct MissingDependencyTableInfo
@@ -348,18 +353,20 @@ namespace AssetProcessor
             {
                 hasMissingDependency = true;
                 ++missingDependencyCount;
-                GoToButton* rowGoToButton = new GoToButton(this);
-                connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [&, missingDependency] {
-                    GoToProduct(missingDependency.m_missingProductName);
-                });
-                m_ui->MissingProductDependenciesTable->setCellWidget(missingDependencyRowCount, 0, rowGoToButton);
+
+                auto* goToWidget = new QTableWidgetItem();
+                goToWidget->setData(0, QVariant::fromValue(GoToButtonData(missingDependency.m_missingProductName)));
+                m_ui->MissingProductDependenciesTable->setItem(missingDependencyRowCount,
+                    static_cast<int>(MissingDependencyTableColumns::GoToButton), goToWidget);
             }
 
             QTableWidgetItem* scanTime = new QTableWidgetItem(missingDependency.m_databaseEntry.m_lastScanTime.c_str());
-            m_ui->MissingProductDependenciesTable->setItem(missingDependencyRowCount, 1, scanTime);
+            m_ui->MissingProductDependenciesTable->setItem(
+                missingDependencyRowCount, static_cast<int>(MissingDependencyTableColumns::ScanTime), scanTime);
 
             QTableWidgetItem* rowName = new QTableWidgetItem(missingDependency.m_databaseEntry.m_missingDependencyString.c_str());
-            m_ui->MissingProductDependenciesTable->setItem(missingDependencyRowCount, 2, rowName);
+            m_ui->MissingProductDependenciesTable->setItem(
+                missingDependencyRowCount, static_cast<int>(MissingDependencyTableColumns::Dependency), rowName);
 
             ++missingDependencyRowCount;
         }
@@ -370,7 +377,10 @@ namespace AssetProcessor
         {
             m_ui->MissingProductDependenciesTable->insertRow(missingDependencyRowCount);
             QTableWidgetItem* rowName = new QTableWidgetItem(tr("File has not been scanned."));
-            m_ui->MissingProductDependenciesTable->setItem(missingDependencyRowCount, 1, rowName);
+            // Put this text in the scan time column, not the missing dependency column, for layout purposes.
+            m_ui->MissingProductDependenciesTable->setItem(
+                missingDependencyRowCount, static_cast<int>(MissingDependencyTableColumns::ScanTime), rowName);
+
             ++missingDependencyRowCount;
         }
         else
@@ -378,7 +388,16 @@ namespace AssetProcessor
             m_ui->missingDependencyErrorIcon->setVisible(hasMissingDependency);
         }
 
-        m_ui->MissingProductDependenciesTable->setMinimumHeight(m_ui->MissingProductDependenciesTable->rowHeight(0) * missingDependencyRowCount + 2 * m_ui->MissingProductDependenciesTable->frameWidth());
+        // Because this is a table nested in a scroll view, Qt struggles to automatically resize the width.
+        // Set the width manually, to the size of the columns.
+        m_ui->MissingProductDependenciesTable->resizeColumnToContents(static_cast<int>(MissingDependencyTableColumns::ScanTime));
+        int width = 0;
+        for (int columnIndex = 0; columnIndex < static_cast<int>(MissingDependencyTableColumns::Max); ++columnIndex)
+        {
+            width += m_ui->MissingProductDependenciesTable->columnWidth(columnIndex);
+        }
+        m_ui->MissingProductDependenciesTable->setMinimumWidth(width);
+
         m_ui->MissingProductDependenciesTable->adjustSize();
     }
 
@@ -412,17 +431,7 @@ namespace AssetProcessor
         m_ui->sourceAssetValueLabel->setVisible(visible);
         m_ui->gotoAssetButton->setVisible(visible);
 
-        m_ui->outgoingProductDependenciesTitleLabel->setVisible(visible);
-        m_ui->outgoingProductDependenciesValueLabel->setVisible(visible);
-        m_ui->outgoingProductDependenciesTable->setVisible(visible);
-
-        m_ui->outgoingUnmetPathProductDependenciesTitleLabel->setVisible(visible);
-        m_ui->outgoingUnmetPathProductDependenciesValueLabel->setVisible(visible);
-        m_ui->outgoingUnmetPathProductDependenciesList->setVisible(visible);
-
-        m_ui->incomingProductDependenciesTitleLabel->setVisible(visible);
-        m_ui->incomingProductDependenciesValueLabel->setVisible(visible);
-        m_ui->incomingProductDependenciesTable->setVisible(visible);
+        m_ui->ProductAssetDetailTabs->setVisible(visible);
 
         m_ui->MissingProductDependenciesTitleLabel->setVisible(visible);
         m_ui->MissingProductDependenciesValueLabel->setVisible(visible);
@@ -431,19 +440,17 @@ namespace AssetProcessor
         m_ui->ScanMissingDependenciesButton->setVisible(visible);
         m_ui->ClearMissingDependenciesButton->setVisible(visible);
 
-        m_ui->DependencySeparatorLine->setVisible(visible);
-
         m_ui->missingDependencyErrorIcon->setVisible(false);
     }
 
-    void ProductAssetDetailsPanel::OnSupportClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnSupportClicked([[maybe_unused]] bool checked)
     {
         QDesktopServices::openUrl(
             QStringLiteral("https://o3de.org/docs/user-guide/packaging/asset-bundler/assets-resolving/"));
     }
 
 
-    void ProductAssetDetailsPanel::OnScanFileClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnScanFileClicked([[maybe_unused]] bool checked)
     {
         const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData = AZStd::rtti_pointer_cast<const ProductAssetTreeItemData>(m_currentItem->GetData());
         ScanFileForMissingDependencies(productItemData->m_name, productItemData);
@@ -461,8 +468,7 @@ namespace AssetProcessor
             productItemData->m_databaseInfo.m_productID,
             [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
         {
-            existingDependencies.push_back();
-            existingDependencies.back() = AZStd::move(entry);
+            existingDependencies.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
 
@@ -471,9 +477,8 @@ namespace AssetProcessor
         QString pathOnDisk = cacheRootDir.filePath(productItemData->m_databaseInfo.m_productName.c_str());
 
         AddProductIdToScanCount(productItemData->m_databaseInfo.m_productID, scanName);
-
         // Run the scan on another thread so the UI remains responsive.
-        AZStd::thread scanningThread = AZStd::thread([=]() {
+        auto* job = AZ::CreateJobFunction([=]() {
             MissingDependencyScannerRequestBus::Broadcast(&MissingDependencyScannerRequestBus::Events::ScanFile,
                 pathOnDisk.toUtf8().constData(),
                 MissingDependencyScanner::DefaultMaxScanIteration,
@@ -481,7 +486,7 @@ namespace AssetProcessor
                 existingDependencies,
                 m_assetDatabaseConnection,
                 /*queueDbCommandsOnMainThread*/ true,
-                [=](AZStd::string /*relativeDependencyFilePath*/) {
+                [=]([[maybe_unused]] AZStd::string relativeDependencyFilePath) {
                 RemoveProductIdFromScanCount(productItemData->m_databaseInfo.m_productID, scanName);
                 // The MissingDependencyScannerRequestBus callback always runs on the main thread, so no need to queue again.
                 AzToolsFramework::AssetDatabase::AssetDatabaseNotificationBus::Broadcast(
@@ -496,8 +501,9 @@ namespace AssetProcessor
                     }
                 }
             });
-        });
-        scanningThread.detach();
+        }, true);
+
+        job->Start();
     }
 
     void ProductAssetDetailsPanel::AddProductIdToScanCount(AZ::s64 scannedProductId, QString scanName)
@@ -565,7 +571,7 @@ namespace AssetProcessor
         }
     }
 
-    void ProductAssetDetailsPanel::OnScanFolderClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnScanFolderClicked([[maybe_unused]] bool checked)
     {
         if (!m_currentItem)
         {
@@ -591,13 +597,13 @@ namespace AssetProcessor
         }
     }
 
-    void ProductAssetDetailsPanel::OnClearScanFileClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnClearScanFileClicked([[maybe_unused]] bool checked)
     {
         const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData = AZStd::rtti_pointer_cast<const ProductAssetTreeItemData>(m_currentItem->GetData());
         ClearMissingDependenciesForFile(productItemData);
     }
 
-    void ProductAssetDetailsPanel::OnClearScanFolderClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnClearScanFolderClicked([[maybe_unused]] bool checked)
     {
         if (!m_currentItem)
         {

@@ -8,24 +8,26 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 #include <AzCore/std/containers/map.h>
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class ShaderPlatformInterface;
+    }
+
     namespace RPI
     {
-        class ShaderAssetCreator
+        class ATOM_RPI_REFLECT_API ShaderAssetCreator
             : public AssetCreator<ShaderAsset>
         {
         public:
             //! Begins creation of a shader asset.
             void Begin(const Data::AssetId& assetId);
-
-            //! [Optional] Set the timestamp for when the ShaderAsset build process began.
-            //! This is needed to synchronize between the ShaderAsset and ShaderVariantTreeAsset when hot-reloading shaders.
-            void SetShaderAssetBuildTimestamp(AZStd::sys_time_t shaderAssetBuildTimestamp);
 
             //! [Optional] Sets the name of the shader asset from content.
             void SetName(const Name& name);
@@ -36,6 +38,9 @@ namespace AZ
             //! [Required] Assigns the layout used to construct and parse shader options packed into shader variant keys.
             //! Requires that the keys assigned to shader variants were constructed using the same layout.
             void SetShaderOptionGroupLayout(const Ptr<ShaderOptionGroupLayout>& shaderOptionGroupLayout);
+
+            //! [Optional] Sets the default value for one shader option, overriding any default that was specified in the shader code.
+            void SetShaderOptionDefaultValue(const Name& optionName, const Name& optionValue);
 
             //! Begins the shader creation for a specific RHI API.
             //! Begin must be called before the BeginAPI function is called.
@@ -69,6 +74,9 @@ namespace AZ
             //! [Required] There's always a root variant for each supervariant.
             void SetRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
 
+            //! Set if the supervariant uses specialization constants for shader options.
+            void SetUseSpecializationConstants(bool value);
+
             bool EndSupervariant();
 
             bool EndAPI();
@@ -88,7 +96,8 @@ namespace AZ
 
             void Clone(const Data::AssetId& assetId,
                        const ShaderAsset& sourceShaderAsset,
-                       const ShaderSupervariants& supervariants);
+                       const ShaderSupervariants& supervariants,
+                       const AZStd::vector<RHI::ShaderPlatformInterface*>& platformInterfaces);
 
         private:
 
@@ -99,6 +108,7 @@ namespace AZ
             // construction. Additionally, prevents BeginSupervariant to be called more than once before calling EndSupervariant.
             ShaderAsset::Supervariant* m_currentSupervariant = nullptr;
 
+            ShaderOptionGroup m_defaultShaderOptionGroup;
         };
     } // namespace RPI
 } // namespace AZ

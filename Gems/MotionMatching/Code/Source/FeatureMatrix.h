@@ -110,8 +110,8 @@ namespace EMotionFX::MotionMatching
 
         void Clear();
 
-        void SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames = {});
-        void SaveAsCsv(const AZStd::string& filename, const FeatureSchema* featureSchema);
+        void SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames = {}) const;
+        void SaveAsCsv(const AZStd::string& filename, const FeatureSchema* featureSchema) const;
 
         size_t CalcMemoryUsageInBytes() const;
 

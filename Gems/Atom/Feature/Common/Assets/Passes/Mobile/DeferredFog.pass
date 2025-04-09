@@ -1,0 +1,58 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobileDeferredFogPassTemplate",
+            "PassClass": "DeferredFogPass",
+            "Slots": [
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "InputDepthStencil",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depthStencilTexture",
+                    "ScopeAttachmentUsage": "SubpassInput",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/ScreenSpace/MobileDeferredFog.shader"
+                },
+                "BindViewSrg": true,
+                "ShaderDataMappings": {
+                    "Float3Mappings": [
+                        {
+                            "Name": "m_fogColor",
+                            "Value": [ 0.45, 0.45, 0.6 ]
+                        }
+                    ],
+                    "FloatMappings": [
+                        {
+                            "Name": "m_fogStartDistance",
+                            "Value": 1.0
+                        },
+                        {
+                            "Name": "m_fogEndDistance",
+                            "Value": 5.0
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

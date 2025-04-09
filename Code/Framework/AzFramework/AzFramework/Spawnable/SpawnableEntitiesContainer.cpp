@@ -31,17 +31,16 @@ namespace AzFramework
         return m_currentGeneration;
     }
 
-    void SpawnableEntitiesContainer::SpawnAllEntities()
+    void SpawnableEntitiesContainer::SpawnAllEntities(SpawnAllEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(m_threadData, "Calling SpawnAllEntities on a Spawnable container that's not set.");
-        SpawnableEntitiesInterface::Get()->SpawnAllEntities(m_threadData->m_spawnedEntitiesTicket);
+        SpawnableEntitiesInterface::Get()->SpawnAllEntities(m_threadData->m_spawnedEntitiesTicket, optionalArgs);
     }
 
     void SpawnableEntitiesContainer::SpawnEntities(AZStd::vector<uint32_t> entityIndices)
     {
         AZ_Assert(m_threadData, "Calling SpawnEntities on a Spawnable container that's not set.");
-        SpawnableEntitiesInterface::Get()->SpawnEntities(
-            m_threadData->m_spawnedEntitiesTicket, AZStd::move(entityIndices));
+        SpawnableEntitiesInterface::Get()->SpawnEntities(m_threadData->m_spawnedEntitiesTicket, AZStd::move(entityIndices));
     }
 
     void SpawnableEntitiesContainer::DespawnAllEntities()

@@ -31,7 +31,7 @@ namespace UnitTests
 
         QObject::connect(
             m_assetProcessorManager.get(), &AssetProcessorManager::SourceDeleted,
-            [this](QString file)
+            [this](const SourceAssetReference& file)
             {
                 m_data->m_deletedSources.push_back(file);
             });
@@ -44,6 +44,10 @@ namespace UnitTests
             });
     }
 
+    void ModtimeScanningTest::PopulateDatabase()
+    {
+    }
+
     void ModtimeScanningTest::SetUp()
     {
         using namespace AssetProcessor;
@@ -52,42 +56,36 @@ namespace UnitTests
 
         m_data = AZStd::make_unique<StaticData>();
 
+        // Create the test file
+        const auto& scanFolder = m_config->GetScanFolderAt(1);
+        m_data->m_sourcePaths.push_back(AssetProcessor::SourceAssetReference(scanFolder.ScanPath(), "modtimeTestFile.txt"));
+        m_data->m_sourcePaths.push_back(AssetProcessor::SourceAssetReference(scanFolder.ScanPath(), "modtimeTestDependency.txt"));
+        m_data->m_sourcePaths.push_back(AssetProcessor::SourceAssetReference(scanFolder.ScanPath(), "modtimeTestDependency.txt.assetinfo"));
+
+        for (const auto& path : m_data->m_sourcePaths)
+        {
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(path.AbsolutePath().c_str(), ""));
+        }
+
         // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
         m_mockApplicationManager->BusDisconnect();
 
-        m_data->m_mockBuilderInfoHandler.m_builderDesc = m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(
+        m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(
             "test builder", "{DF09DDC0-FD22-43B6-9E22-22C8574A6E1E}",
-            { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) });
+            { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) },
+            MockMultiBuilderInfoHandler::AssetBuilderExtraInfo{ "", m_data->m_sourcePaths[1].AbsolutePath().c_str(), "", "", {} });
         m_data->m_mockBuilderInfoHandler.BusConnect();
 
         ASSERT_TRUE(m_mockApplicationManager->GetBuilderByID("txt files", m_data->m_builderTxtBuilder));
 
         SetUpAssetProcessorManager();
 
-        // Create the test file
-        const auto& scanFolder = m_config->GetScanFolderAt(0);
-        m_data->m_relativePathFromWatchFolder[0] = "modtimeTestFile.txt";
-        m_data->m_absolutePath.push_back(QDir(scanFolder.ScanPath()).absoluteFilePath(m_data->m_relativePathFromWatchFolder[0]));
-
-        m_data->m_relativePathFromWatchFolder[1] = "modtimeTestDependency.txt";
-        m_data->m_absolutePath.push_back(QDir(scanFolder.ScanPath()).absoluteFilePath(m_data->m_relativePathFromWatchFolder[1]));
-
-        m_data->m_relativePathFromWatchFolder[2] = "modtimeTestDependency.txt.assetinfo";
-        m_data->m_absolutePath.push_back(QDir(scanFolder.ScanPath()).absoluteFilePath(m_data->m_relativePathFromWatchFolder[2]));
-
-        for (const auto& path : m_data->m_absolutePath)
-        {
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(path, ""));
-        }
-
-        m_data->m_mockBuilderInfoHandler.m_dependencyFilePath = m_data->m_absolutePath[1].toUtf8().data();
-
         // Add file to database with no modtime
         {
             AssetDatabaseConnection connection;
             ASSERT_TRUE(connection.OpenDatabase());
             AzToolsFramework::AssetDatabase::FileDatabaseEntry fileEntry;
-            fileEntry.m_fileName = m_data->m_relativePathFromWatchFolder[0].toUtf8().data();
+            fileEntry.m_fileName = m_data->m_sourcePaths[0].RelativePath().Native();
             fileEntry.m_modTime = 0;
             fileEntry.m_isFolder = false;
             fileEntry.m_scanFolderPK = scanFolder.ScanFolderID();
@@ -97,12 +95,12 @@ namespace UnitTests
             ASSERT_FALSE(entryAlreadyExists);
 
             fileEntry.m_fileID = AzToolsFramework::AssetDatabase::InvalidEntryId; // Reset the id so we make a new entry
-            fileEntry.m_fileName = m_data->m_relativePathFromWatchFolder[1].toUtf8().data();
+            fileEntry.m_fileName = m_data->m_sourcePaths[1].RelativePath().Native();
             ASSERT_TRUE(connection.InsertFile(fileEntry, entryAlreadyExists));
             ASSERT_FALSE(entryAlreadyExists);
 
             fileEntry.m_fileID = AzToolsFramework::AssetDatabase::InvalidEntryId; // Reset the id so we make a new entry
-            fileEntry.m_fileName = m_data->m_relativePathFromWatchFolder[2].toUtf8().data();
+            fileEntry.m_fileName = m_data->m_sourcePaths[2].RelativePath().Native();
             ASSERT_TRUE(connection.InsertFile(fileEntry, entryAlreadyExists));
             ASSERT_FALSE(entryAlreadyExists);
         }
@@ -136,21 +134,16 @@ namespace UnitTests
 
         for (const auto& processResult : m_data->m_processResults)
         {
-            auto file =
-                QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1");
-            m_data->m_productPaths.emplace(
-                QDir(processResult.m_jobEntry.m_watchFolderPath)
-                    .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
-                    .toUtf8()
-                    .constData(),
-                file);
+            AZStd::string file = QString((processResult.m_jobEntry.m_sourceAssetReference.RelativePath().Native() + ".arc1").c_str()).toLower().toUtf8().constData();
+
+            m_data->m_productPaths.emplace(processResult.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData(), (processResult.m_cachePath / file).c_str());
 
             // Create the file on disk
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(file, "products."));
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile((processResult.m_cachePath / file).AsPosix().c_str(), "products."));
 
             AssetBuilderSDK::ProcessJobResponse response;
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file.toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct((processResult.m_relativePath / file).StringAsPosix(), AZ::Uuid::CreateNull(), 1));
 
             using JobEntry = AssetProcessor::JobEntry;
 
@@ -180,12 +173,12 @@ namespace UnitTests
     {
         QSet<AssetFileInfo> filePaths;
 
-        for (const auto& path : m_data->m_absolutePath)
+        for (const auto& path : m_data->m_sourcePaths)
         {
-            QFileInfo fileInfo(path);
+            QFileInfo fileInfo(path.AbsolutePath().c_str());
             auto modtime = fileInfo.lastModified();
             AZ::u64 fileSize = fileInfo.size();
-            filePaths.insert(AssetFileInfo(path, modtime, fileSize, m_config->GetScanFolderForFile(path), false));
+            filePaths.insert(AssetFileInfo(path.AbsolutePath().c_str(), modtime, fileSize, m_config->GetScanFolderForFile(path.AbsolutePath().c_str()), false));
         }
 
         return filePaths;
@@ -263,13 +256,12 @@ namespace UnitTests
         AssetUtilities::SetUseFileHashOverride(true, true);
 
         // Enable android platform after the initial SetUp has already processed the files for pc
-        QDir tempPath(m_tempDir.path());
         AssetBuilderSDK::PlatformInfo androidPlatform("android", { "host", "renderer" });
         m_config->EnablePlatform(androidPlatform, true);
 
         // There's no way to remove scanfolders and adding a new one after enabling the platform will cause the pc assets to build as well,
         // which we don't want Instead we'll just const cast the vector and modify the enabled platforms for the scanfolder
-        auto& platforms = const_cast<AZStd::vector<AssetBuilderSDK::PlatformInfo>&>(m_config->GetScanFolderAt(0).GetPlatforms());
+        auto& platforms = const_cast<AZStd::vector<AssetBuilderSDK::PlatformInfo>&>(m_config->GetScanFolderAt(1).GetPlatforms());
         platforms.push_back(androidPlatform);
 
         // We need the builder fingerprints to be updated to reflect the newly enabled platform
@@ -281,8 +273,8 @@ namespace UnitTests
         ExpectWork(
             4, 2); // CreateJobs = 4, 2 files * 2 platforms.  ProcessJobs = 2, just the android platform jobs (pc is already processed)
 
-        ASSERT_TRUE(m_data->m_processResults[0].m_destinationPath.contains("android"));
-        ASSERT_TRUE(m_data->m_processResults[1].m_destinationPath.contains("android"));
+        ASSERT_TRUE(m_data->m_processResults[0].m_cachePath.Filename() == "android");
+        ASSERT_TRUE(m_data->m_processResults[1].m_cachePath.Filename() == "android");
     }
 
     TEST_F(ModtimeScanningTest, ModtimeSkipping_ModifyTimestamp)
@@ -294,19 +286,17 @@ namespace UnitTests
 
         uint64_t timestamp = 1594923423;
 
-        QString databaseName, scanfolderName;
-        m_config->ConvertToRelativePath(m_data->m_absolutePath[1], databaseName, scanfolderName);
-        auto* scanFolder = m_config->GetScanFolderForFile(m_data->m_absolutePath[1]);
+        const auto& sourcePath = m_data->m_sourcePaths[1];
 
         AzToolsFramework::AssetDatabase::FileDatabaseEntry fileEntry;
 
-        m_assetProcessorManager->m_stateData->GetFileByFileNameAndScanFolderId(databaseName, scanFolder->ScanFolderID(), fileEntry);
+        m_assetProcessorManager->m_stateData->GetFileByFileNameAndScanFolderId(sourcePath.RelativePath().c_str(), sourcePath.ScanFolderId(), fileEntry);
 
         ASSERT_NE(fileEntry.m_modTime, timestamp);
         uint64_t existingTimestamp = fileEntry.m_modTime;
 
         // Modify the timestamp on just one file
-        AzToolsFramework::ToolsFileUtils::SetModificationTime(m_data->m_absolutePath[1].toUtf8().data(), timestamp);
+        AzToolsFramework::ToolsFileUtils::SetModificationTime(sourcePath.AbsolutePath().c_str(), timestamp);
 
         AssetUtilities::SetUseFileHashOverride(true, true);
 
@@ -315,7 +305,7 @@ namespace UnitTests
 
         ExpectNoWork();
 
-        m_assetProcessorManager->m_stateData->GetFileByFileNameAndScanFolderId(databaseName, scanFolder->ScanFolderID(), fileEntry);
+        m_assetProcessorManager->m_stateData->GetFileByFileNameAndScanFolderId(sourcePath.RelativePath().c_str(), sourcePath.ScanFolderId(), fileEntry);
 
         // The timestamp should be updated even though nothing processed
         ASSERT_NE(fileEntry.m_modTime, existingTimestamp);
@@ -331,7 +321,7 @@ namespace UnitTests
         uint64_t timestamp = 1594923423;
 
         // Modify the timestamp on just one file
-        AzToolsFramework::ToolsFileUtils::SetModificationTime(m_data->m_absolutePath[1].toUtf8().data(), timestamp);
+        AzToolsFramework::ToolsFileUtils::SetModificationTime(m_data->m_sourcePaths[1].AbsolutePath().c_str(), timestamp);
 
         AssetUtilities::SetUseFileHashOverride(true, false);
 
@@ -345,7 +335,7 @@ namespace UnitTests
     {
         using namespace AzToolsFramework::AssetSystem;
 
-        SetFileContents(m_data->m_absolutePath[1].toUtf8().constData(), "hello world");
+        SetFileContents(m_data->m_sourcePaths[1].AbsolutePath().c_str(), "hello world");
 
         AssetUtilities::SetUseFileHashOverride(true, true);
 
@@ -360,8 +350,8 @@ namespace UnitTests
     TEST_F(ModtimeScanningTest, ModtimeSkipping_ModifyFile_AndThenRevert_ProcessesAgain)
     {
         using namespace AzToolsFramework::AssetSystem;
-        auto theFile = m_data->m_absolutePath[1].toUtf8();
-        const char* theFileString = theFile.constData();
+        auto theFile = m_data->m_sourcePaths[1].AbsolutePath().Native();
+        const char* theFileString = theFile.c_str();
 
         SetFileContents(theFileString, "hello world");
 
@@ -392,7 +382,7 @@ namespace UnitTests
     {
         using namespace AzToolsFramework::AssetSystem;
 
-        SetFileContents(m_data->m_absolutePath[1].toUtf8().constData(), "hello world");
+        SetFileContents(m_data->m_sourcePaths[1].AbsolutePath().c_str(), "hello world");
 
         AssetUtilities::SetUseFileHashOverride(true, true);
 
@@ -409,7 +399,7 @@ namespace UnitTests
         m_data->m_deletedSources.clear();
 
         // Make file 0 have the same contents as file 1
-        SetFileContents(m_data->m_absolutePath[0].toUtf8().constData(), "hello world");
+        SetFileContents(m_data->m_sourcePaths[0].AbsolutePath().c_str(), "hello world");
 
         filePaths = BuildFileSet();
         SimulateAssetScanner(filePaths);
@@ -421,7 +411,7 @@ namespace UnitTests
     {
         using namespace AzToolsFramework::AssetSystem;
 
-        SetFileContents(m_data->m_absolutePath[2].toUtf8().constData(), "hello world");
+        SetFileContents(m_data->m_sourcePaths[2].AbsolutePath().c_str(), "hello world");
 
         AssetUtilities::SetUseFileHashOverride(true, true);
 
@@ -439,14 +429,14 @@ namespace UnitTests
 
         AssetUtilities::SetUseFileHashOverride(true, true);
 
-        ASSERT_TRUE(QFile::remove(m_data->m_absolutePath[0]));
+        ASSERT_TRUE(QFile::remove(m_data->m_sourcePaths[0].AbsolutePath().c_str()));
 
         // Feed in ONLY one file (the one we didn't delete)
         QSet<AssetFileInfo> filePaths;
-        QFileInfo fileInfo(m_data->m_absolutePath[1]);
+        QFileInfo fileInfo(m_data->m_sourcePaths[1].AbsolutePath().c_str());
         auto modtime = fileInfo.lastModified();
         AZ::u64 fileSize = fileInfo.size();
-        filePaths.insert(AssetFileInfo(m_data->m_absolutePath[1], modtime, fileSize, &m_config->GetScanFolderAt(0), false));
+        filePaths.insert(AssetFileInfo(m_data->m_sourcePaths[1].AbsolutePath().c_str(), modtime, fileSize, &m_config->GetScanFolderAt(0), false));
 
         SimulateAssetScanner(filePaths);
 
@@ -456,18 +446,18 @@ namespace UnitTests
         do
         {
             QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
-        } while (m_data->m_deletedSources.size() < m_data->m_relativePathFromWatchFolder[0].size() && timer.elapsed() < 5000);
+        } while (m_data->m_deletedSources.empty() && timer.elapsed() < 5000);
 
         ASSERT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, 0);
         ASSERT_EQ(m_data->m_processResults.size(), 0);
-        ASSERT_THAT(m_data->m_deletedSources, testing::ElementsAre(m_data->m_relativePathFromWatchFolder[0]));
+        ASSERT_THAT(m_data->m_deletedSources, testing::ElementsAre(m_data->m_sourcePaths[0]));
     }
 
     TEST_F(ModtimeScanningTest, ReprocessRequest_FileNotModified_FileProcessed)
     {
         using namespace AzToolsFramework::AssetSystem;
 
-        m_assetProcessorManager->RequestReprocess(m_data->m_absolutePath[0]);
+        m_assetProcessorManager->RequestReprocess(m_data->m_sourcePaths[0].AbsolutePath().c_str());
 
         ASSERT_TRUE(BlockUntilIdle(5000));
 
@@ -478,23 +468,22 @@ namespace UnitTests
     TEST_F(ModtimeScanningTest, ReprocessRequest_SourceWithDependency_BothWillProcess)
     {
         using namespace AzToolsFramework::AssetSystem;
-
-        using SourceFileDependencyEntry = AzToolsFramework::AssetDatabase::SourceFileDependencyEntry;
+        using namespace AzToolsFramework::AssetDatabase;
 
         SourceFileDependencyEntry newEntry1;
         newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
         newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
-        newEntry1.m_source = m_data->m_absolutePath[0].toUtf8().constData();
-        newEntry1.m_dependsOnSource = m_data->m_absolutePath[1].toUtf8().constData();
+        newEntry1.m_sourceGuid = AZ::Uuid{ "{C0BD819A-F84E-4A56-A6A5-917AE3ECDE53}" };
+        newEntry1.m_dependsOnSource = PathOrUuid(m_data->m_sourcePaths[1].AbsolutePath().c_str());
         newEntry1.m_typeOfDependency = SourceFileDependencyEntry::DEP_SourceToSource;
 
-        m_assetProcessorManager->RequestReprocess(m_data->m_absolutePath[0]);
+        m_assetProcessorManager->RequestReprocess(m_data->m_sourcePaths[0].AbsolutePath().c_str());
         ASSERT_TRUE(BlockUntilIdle(5000));
 
         ASSERT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, 1);
         ASSERT_EQ(m_data->m_processResults.size(), 1);
 
-        m_assetProcessorManager->RequestReprocess(m_data->m_absolutePath[1]);
+        m_assetProcessorManager->RequestReprocess(m_data->m_sourcePaths[1].AbsolutePath().c_str());
         ASSERT_TRUE(BlockUntilIdle(5000));
 
         ASSERT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, 3);
@@ -505,7 +494,7 @@ namespace UnitTests
     {
         using namespace AzToolsFramework::AssetSystem;
 
-        const auto& scanFolder = m_config->GetScanFolderAt(0);
+        const auto& scanFolder = m_config->GetScanFolderAt(1);
 
         QString scanPath = scanFolder.ScanPath();
         m_assetProcessorManager->RequestReprocess(scanPath);
@@ -519,8 +508,8 @@ namespace UnitTests
      TEST_F(ModtimeScanningTest, AssetProcessorIsRestartedBeforeDependencyIsProcessed_DependencyIsProcessedOnStart)
     {
         using namespace AzToolsFramework::AssetSystem;
-        auto theFile = m_data->m_absolutePath[1].toUtf8();
-        const char* theFileString = theFile.constData();
+        auto theFile = m_data->m_sourcePaths[1].AbsolutePath();
+        const char* theFileString = theFile.c_str();
 
         SetFileContents(theFileString, "hello world");
 
@@ -542,25 +531,20 @@ namespace UnitTests
                 m_data->m_processResults.begin(), m_data->m_processResults.end(),
                 [](decltype(m_data->m_processResults[0])& left, decltype(left)& right)
                 {
-                    return left.m_jobEntry.m_databaseSourceName < right.m_jobEntry.m_databaseSourceName;
+                    return left.m_jobEntry.m_sourceAssetReference < right.m_jobEntry.m_sourceAssetReference;
                 });
 
             const auto& processResult = m_data->m_processResults[0];
-            auto file =
-                QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1");
-            m_data->m_productPaths.emplace(
-                QDir(processResult.m_jobEntry.m_watchFolderPath)
-                    .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
-                    .toUtf8()
-                    .constData(),
-                file);
+            AZStd::string file = QString((processResult.m_jobEntry.m_sourceAssetReference.RelativePath().Native() + ".arc1").c_str()).toLower().toUtf8().constData();
+
+            m_data->m_productPaths.emplace(processResult.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData(), (processResult.m_cachePath / file).c_str());
 
             // Create the file on disk
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(file, "products."));
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile((processResult.m_cachePath / file).AsPosix().c_str(), "products."));
 
             AssetBuilderSDK::ProcessJobResponse response;
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file.toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file, AZ::Uuid::CreateNull(), 1));
 
             using JobEntry = AssetProcessor::JobEntry;
 
@@ -598,14 +582,16 @@ namespace UnitTests
         // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
         m_mockApplicationManager->BusDisconnect();
 
-        m_data->m_mockBuilderInfoHandler.m_builderDesc = m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(
+        m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(
             "test builder", "{DF09DDC0-FD22-43B6-9E22-22C8574A6E1E}",
-            { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) });
+            { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, {});
         m_data->m_mockBuilderInfoHandler.BusConnect();
 
         ASSERT_TRUE(m_mockApplicationManager->GetBuilderByID("txt files", m_data->m_builderTxtBuilder));
 
         SetUpAssetProcessorManager();
+
+        m_data->m_sourcePaths.clear();
 
         auto createFileAndAddToDatabaseFunc = [this](const AssetProcessor::ScanFolderInfo* scanFolder, QString file)
         {
@@ -615,7 +601,7 @@ namespace UnitTests
             QString absPath(QDir(watchFolderPath).absoluteFilePath(file));
             UnitTestUtils::CreateDummyFile(absPath);
 
-            m_data->m_absolutePath.push_back(absPath);
+            m_data->m_sourcePaths.push_back(AssetProcessor::SourceAssetReference(absPath));
 
             AzToolsFramework::AssetDatabase::FileDatabaseEntry fileEntry;
             fileEntry.m_fileName = file.toUtf8().constData();
@@ -629,9 +615,9 @@ namespace UnitTests
         };
 
         // Create test files
-        QDir tempPath(m_tempDir.path());
-        const auto* scanFolder1 = m_config->GetScanFolderByPath(tempPath.absoluteFilePath("subfolder1"));
-        const auto* scanFolder4 = m_config->GetScanFolderByPath(tempPath.absoluteFilePath("subfolder4"));
+        QDir assetRootPath(m_assetRootDir);
+        const auto* scanFolder1 = m_config->GetScanFolderByPath(assetRootPath.absoluteFilePath("subfolder1"));
+        const auto* scanFolder4 = m_config->GetScanFolderByPath(assetRootPath.absoluteFilePath("subfolder4"));
 
         createFileAndAddToDatabaseFunc(scanFolder1, QString("textures/a.txt"));
         createFileAndAddToDatabaseFunc(scanFolder4, QString("textures/b.txt"));
@@ -651,6 +637,7 @@ namespace UnitTests
         m_data->m_mockBuilderInfoHandler.m_createJobsCount = 0;
 
         // Reboot the APM since we added stuff to the database that needs to be loaded on-startup of the APM
+        m_assetProcessorManager = nullptr; // Destroy the old instance first so everything can destruct before we construct a new instance
         m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
 
         SetUpAssetProcessorManager();
@@ -671,8 +658,8 @@ namespace UnitTests
         ExpectNoWork();
 
         // Delete one of the folders
-        QDir tempPath(m_tempDir.path());
-        QString absPath(tempPath.absoluteFilePath("subfolder1/textures"));
+        QDir assetRootPath(m_assetRootDir);
+        QString absPath(assetRootPath.absoluteFilePath("subfolder1/textures"));
         QDir(absPath).removeRecursively();
 
         AZStd::vector<AZStd::string> deletedFolders;
@@ -686,14 +673,14 @@ namespace UnitTests
         m_assetProcessorManager->AssessDeletedFile(absPath);
         ASSERT_TRUE(BlockUntilIdle(5000));
 
-        ASSERT_THAT(m_data->m_deletedSources, testing::UnorderedElementsAre("textures/a.txt"));
-        ASSERT_THAT(deletedFolders, testing::UnorderedElementsAre("textures"));
+        ASSERT_THAT(m_data->m_deletedSources, testing::UnorderedElementsAre(AssetProcessor::SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1"), "textures/a.txt")));
+        ASSERT_THAT(deletedFolders, testing::UnorderedElementsAre(absPath.toUtf8().constData()));
     }
 
     TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
     {
-        auto theFile = m_data->m_absolutePath[1].toUtf8();
-        const char* theFileString = theFile.constData();
+        auto theFile = m_data->m_sourcePaths[1].AbsolutePath();
+        const char* theFileString = theFile.c_str();
         auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
 
         {
@@ -730,8 +717,8 @@ namespace UnitTests
         // when one of its product assets is locked temporarily
         // We'll lock the file by holding it open
 
-        auto theFile = m_data->m_absolutePath[1].toUtf8();
-        const char* theFileString = theFile.constData();
+        auto theFile = m_data->m_sourcePaths[1].AbsolutePath();
+        const char* theFileString = theFile.c_str();
         auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
 
         {

@@ -109,7 +109,7 @@ namespace AZ
 
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+            RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
             if (fp)
             {
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -299,8 +299,8 @@ namespace AZ
                 else
                 {
                     // If kernel radius is 0 skip kernel calculation and buffer preparation
-                    m_weightData.push_back();
-                    m_offsetData.push_back();
+                    m_weightData.emplace_back();
+                    m_offsetData.emplace_back();
                     m_kernelRadiusData.push_back(0);
                 }
             }
@@ -448,12 +448,14 @@ namespace AZ
         {
             if (m_offsetBuffer)
             {
-                m_shaderResourceGroup->SetBufferView(m_offsetsInputIndex, m_offsetBuffer->GetBufferView());
+                m_shaderResourceGroup->SetBufferView(
+                    m_offsetsInputIndex, m_offsetBuffer->GetBufferView());
             }
 
             if (m_weightBuffer)
             {
-                m_shaderResourceGroup->SetBufferView(m_weightsInputIndex, m_weightBuffer->GetBufferView());
+                m_shaderResourceGroup->SetBufferView(
+                    m_weightsInputIndex, m_weightBuffer->GetBufferView());
             }
 
             SetTargetThreadCounts(m_sourceImageWidth, m_sourceImageHeight, 1);

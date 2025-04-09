@@ -20,16 +20,13 @@
 #include <AzCore/std/parallel/threadbus.h>
 
 #include <AzCore/std/parallel/thread.h>
-#include <AzCore/std/delegate/delegate.h>
 #include <AzCore/std/chrono/chrono.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace UnitTest
 {
-
     using namespace AZStd;
-    using namespace AZStd::placeholders;
     using namespace UnitTestInternal;
 
     /**
@@ -44,10 +41,9 @@ namespace UnitTest
 
     TEST(Parallel, RecursiveMutex)
     {
-
         recursive_mutex m1;
         m1.lock();
-        AZ_TEST_ASSERT(m1.try_lock());  // we should be able to lock it from the same thread again...
+        EXPECT_TRUE(m1.try_lock());  // we should be able to lock it from the same thread again...
         m1.unlock();
         m1.unlock();
         {
@@ -73,7 +69,7 @@ namespace UnitTest
 
     // This is how long we wait when asked to wait a FULL duration.  This number should be as small as possible
     // for test efficiency while still being significant compared to the margin above.
-    constexpr AZStd::chrono::milliseconds WAIT_TIME_MS(60); 
+    constexpr AZStd::chrono::milliseconds WAIT_TIME_MS(60);
 
     TEST(Parallel, Semaphore_TryAcquireFor_WaitsMinimumTime)
     {
@@ -83,11 +79,11 @@ namespace UnitTest
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
         auto minDurationWithMarginForError = minDuration - AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS);
 
-        auto startTime = AZStd::chrono::system_clock::now();
-        
+        auto startTime = AZStd::chrono::steady_clock::now();
+
         EXPECT_FALSE(sema.try_acquire_for(minDuration));
-        
-        auto actualDuration = AZStd::chrono::system_clock::now() - startTime;
+
+        auto actualDuration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_GE(actualDuration, minDurationWithMarginForError);
     }
 
@@ -97,12 +93,12 @@ namespace UnitTest
         semaphore sema;
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
         auto minDurationWithMarginForError = minDuration - AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         auto absTime = startTime + minDuration;
-        
+
         EXPECT_FALSE(sema.try_acquire_until(absTime));
-        
-        auto duration = AZStd::chrono::system_clock::now() - startTime;
+
+        auto duration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_GE(duration, minDurationWithMarginForError);
     }
 
@@ -112,11 +108,11 @@ namespace UnitTest
 
         // this duration should not matter since it should not wait at all so we don't need an error margin.
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         sema.release();
         EXPECT_TRUE(sema.try_acquire_for(minDuration));
-        
-        auto durationSpent = AZStd::chrono::system_clock::now() - startTime;
+
+        auto durationSpent = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_LT(durationSpent, minDuration);
     }
 
@@ -125,12 +121,12 @@ namespace UnitTest
         semaphore sema;
         // we should not wait all at here, since we start with it already signalled.
         auto minDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-        auto startTime = AZStd::chrono::system_clock::now();
+        auto startTime = AZStd::chrono::steady_clock::now();
         auto absTime = startTime + minDuration;
         sema.release();
         EXPECT_TRUE(sema.try_acquire_until(absTime));
-        
-        auto duration = AZStd::chrono::system_clock::now() - startTime;
+
+        auto duration = AZStd::chrono::steady_clock::now() - startTime;
         EXPECT_LT(duration, minDuration);
     }
 
@@ -153,25 +149,16 @@ namespace UnitTest
      * Thread test
      */
     class Parallel_Thread
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-        int m_data;
-        int m_dataMax;
+    protected:
+        int m_data{};
+        int m_dataMax{};
 
         static const int m_threadStackSize = 32 * 1024;
         thread_desc      m_desc[3];
         int m_numThreadDesc = 0;
     public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
-
         void increment_data()
         {
             while (m_data < m_dataMax)
@@ -185,152 +172,18 @@ namespace UnitTest
             this_thread::sleep_for(time);
         }
 
-        void do_nothing()
-        {}
-
-        void test_thread_id_for_default_constructed_thread_is_default_constructed_id()
-        {
-            AZStd::thread t;
-            AZ_TEST_ASSERT(t.get_id() == AZStd::thread::id());
-        }
-
-        void test_thread_id_for_running_thread_is_not_default_constructed_id()
-        {
-            const thread_desc desc = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            AZStd::thread t(desc, AZStd::bind(&Parallel_Thread::do_nothing, this));
-            AZ_TEST_ASSERT(t.get_id() != AZStd::thread::id());
-            t.join();
-        }
-
-        void test_different_threads_have_different_ids()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
-            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::do_nothing, this));
-            AZStd::thread t2(desc2, AZStd::bind(&Parallel_Thread::do_nothing, this));
-            AZ_TEST_ASSERT(t.get_id() != t2.get_id());
-            t.join();
-            t2.join();
-        }
-
-        void test_thread_ids_have_a_total_order()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
-            const thread_desc desc3 = m_numThreadDesc ? m_desc[2] : thread_desc{};
-
-            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::do_nothing, this));
-            AZStd::thread t2(desc2, AZStd::bind(&Parallel_Thread::do_nothing, this));
-            AZStd::thread t3(desc3, AZStd::bind(&Parallel_Thread::do_nothing, this));
-            AZ_TEST_ASSERT(t.get_id() != t2.get_id());
-            AZ_TEST_ASSERT(t.get_id() != t3.get_id());
-            AZ_TEST_ASSERT(t2.get_id() != t3.get_id());
-
-            AZ_TEST_ASSERT((t.get_id() < t2.get_id()) != (t2.get_id() < t.get_id()));
-            AZ_TEST_ASSERT((t.get_id() < t3.get_id()) != (t3.get_id() < t.get_id()));
-            AZ_TEST_ASSERT((t2.get_id() < t3.get_id()) != (t3.get_id() < t2.get_id()));
-
-            AZ_TEST_ASSERT((t.get_id() > t2.get_id()) != (t2.get_id() > t.get_id()));
-            AZ_TEST_ASSERT((t.get_id() > t3.get_id()) != (t3.get_id() > t.get_id()));
-            AZ_TEST_ASSERT((t2.get_id() > t3.get_id()) != (t3.get_id() > t2.get_id()));
-
-            AZ_TEST_ASSERT((t.get_id() < t2.get_id()) == (t2.get_id() > t.get_id()));
-            AZ_TEST_ASSERT((t2.get_id() < t.get_id()) == (t.get_id() > t2.get_id()));
-            AZ_TEST_ASSERT((t.get_id() < t3.get_id()) == (t3.get_id() > t.get_id()));
-            AZ_TEST_ASSERT((t3.get_id() < t.get_id()) == (t.get_id() > t3.get_id()));
-            AZ_TEST_ASSERT((t2.get_id() < t3.get_id()) == (t3.get_id() > t2.get_id()));
-            AZ_TEST_ASSERT((t3.get_id() < t2.get_id()) == (t2.get_id() > t3.get_id()));
-
-            AZ_TEST_ASSERT((t.get_id() < t2.get_id()) == (t2.get_id() >= t.get_id()));
-            AZ_TEST_ASSERT((t2.get_id() < t.get_id()) == (t.get_id() >= t2.get_id()));
-            AZ_TEST_ASSERT((t.get_id() < t3.get_id()) == (t3.get_id() >= t.get_id()));
-            AZ_TEST_ASSERT((t3.get_id() < t.get_id()) == (t.get_id() >= t3.get_id()));
-            AZ_TEST_ASSERT((t2.get_id() < t3.get_id()) == (t3.get_id() >= t2.get_id()));
-            AZ_TEST_ASSERT((t3.get_id() < t2.get_id()) == (t2.get_id() >= t3.get_id()));
-
-            AZ_TEST_ASSERT((t.get_id() <= t2.get_id()) == (t2.get_id() > t.get_id()));
-            AZ_TEST_ASSERT((t2.get_id() <= t.get_id()) == (t.get_id() > t2.get_id()));
-            AZ_TEST_ASSERT((t.get_id() <= t3.get_id()) == (t3.get_id() > t.get_id()));
-            AZ_TEST_ASSERT((t3.get_id() <= t.get_id()) == (t.get_id() > t3.get_id()));
-            AZ_TEST_ASSERT((t2.get_id() <= t3.get_id()) == (t3.get_id() > t2.get_id()));
-            AZ_TEST_ASSERT((t3.get_id() <= t2.get_id()) == (t2.get_id() > t3.get_id()));
-
-            if ((t.get_id() < t2.get_id()) && (t2.get_id() < t3.get_id()))
-            {
-                AZ_TEST_ASSERT(t.get_id() < t3.get_id());
-            }
-            else if ((t.get_id() < t3.get_id()) && (t3.get_id() < t2.get_id()))
-            {
-                AZ_TEST_ASSERT(t.get_id() < t2.get_id());
-            }
-            else if ((t2.get_id() < t3.get_id()) && (t3.get_id() < t.get_id()))
-            {
-                AZ_TEST_ASSERT(t2.get_id() < t.get_id());
-            }
-            else if ((t2.get_id() < t.get_id()) && (t.get_id() < t3.get_id()))
-            {
-                AZ_TEST_ASSERT(t2.get_id() < t3.get_id());
-            }
-            else if ((t3.get_id() < t.get_id()) && (t.get_id() < t2.get_id()))
-            {
-                AZ_TEST_ASSERT(t3.get_id() < t2.get_id());
-            }
-            else if ((t3.get_id() < t2.get_id()) && (t2.get_id() < t.get_id()))
-            {
-                AZ_TEST_ASSERT(t3.get_id() < t.get_id());
-            }
-            else
-            {
-                AZ_TEST_ASSERT(false);
-            }
-
-            AZStd::thread::id default_id;
-
-            AZ_TEST_ASSERT(default_id < t.get_id());
-            AZ_TEST_ASSERT(default_id < t2.get_id());
-            AZ_TEST_ASSERT(default_id < t3.get_id());
-
-            AZ_TEST_ASSERT(default_id <= t.get_id());
-            AZ_TEST_ASSERT(default_id <= t2.get_id());
-            AZ_TEST_ASSERT(default_id <= t3.get_id());
-
-            AZ_TEST_ASSERT(!(default_id > t.get_id()));
-            AZ_TEST_ASSERT(!(default_id > t2.get_id()));
-            AZ_TEST_ASSERT(!(default_id > t3.get_id()));
-
-            AZ_TEST_ASSERT(!(default_id >= t.get_id()));
-            AZ_TEST_ASSERT(!(default_id >= t2.get_id()));
-            AZ_TEST_ASSERT(!(default_id >= t3.get_id()));
-
-            t.join();
-            t2.join();
-            t3.join();
-        }
-
         void get_thread_id(AZStd::thread::id* id)
         {
             *id = this_thread::get_id();
-        }
-
-        void test_thread_id_of_running_thread_returned_by_this_thread_get_id()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-
-            AZStd::thread::id id;
-            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::get_thread_id, this, &id));
-            AZStd::thread::id t_id = t.get_id();
-            t.join();
-            AZ_TEST_ASSERT(id == t_id);
         }
 
 
         class MfTest
         {
         public:
-            mutable unsigned int m_hash;
+            mutable unsigned int m_hash{};
 
-            MfTest()
-                : m_hash(0) {}
+            MfTest() = default;
 
             int f0() { f1(17); return 0; }
             int g0() const { g1(17); return 0; }
@@ -365,52 +218,11 @@ namespace UnitTest
             *my_id = this_thread::get_id();
         }
 
-        void test_move_on_construction()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            AZStd::thread::id the_id;
-            AZStd::thread x;
-            x = AZStd::thread(desc1, AZStd::bind(&Parallel_Thread::do_nothing_id, this, &the_id));
-            AZStd::thread::id x_id = x.get_id();
-            x.join();
-            AZ_TEST_ASSERT(the_id == x_id);
-        }
-
         AZStd::thread make_thread(AZStd::thread::id* the_id)
         {
             const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            return AZStd::thread(desc1, AZStd::bind(&Parallel_Thread::do_nothing_id, this, the_id));
+            return AZStd::thread(desc1, [this](AZStd::thread::id* threadId) { do_nothing_id(threadId); }, the_id);
         }
-
-        void test_move_from_function_return()
-        {
-            AZStd::thread::id the_id;
-            AZStd::thread x;
-            x = make_thread(&the_id);
-            AZStd::thread::id x_id = x.get_id();
-            x.join();
-            AZ_TEST_ASSERT(the_id == x_id);
-        }
-
-        /*void test_move_from_function_return_lvalue()
-        {
-            thread::id the_id;
-            thread x=make_thread_return_lvalue(&the_id);
-            thread::id x_id=x.get_id();
-            x.join();
-            AZ_TEST_ASSERT(the_id==x_id);
-        }
-
-        void test_move_assign()
-        {
-            thread::id the_id;
-            thread x(do_nothing_id,&the_id);
-            thread y;
-            y=AZStd::move(x);
-            thread::id y_id=y.get_id();
-            y.join();
-            AZ_TEST_ASSERT(the_id==y_id);
-        }*/
 
         void simple_thread()
         {
@@ -421,41 +233,12 @@ namespace UnitTest
         {
             AZStd::thread::id const my_id = this_thread::get_id();
 
-            AZ_TEST_ASSERT(my_id != parent);
+            EXPECT_NE(parent, my_id);
             AZStd::thread::id const my_id2 = this_thread::get_id();
-            AZ_TEST_ASSERT(my_id == my_id2);
+            EXPECT_EQ(my_id2, my_id);
 
             AZStd::thread::id const no_thread_id = AZStd::thread::id();
-            AZ_TEST_ASSERT(my_id != no_thread_id);
-        }
-
-        void do_test_creation()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            m_data = 0;
-            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::simple_thread, this));
-            t.join();
-            AZ_TEST_ASSERT(m_data == 999);
-        }
-
-        void test_creation()
-        {
-            //timed_test(&do_test_creation, 1);
-            do_test_creation();
-        }
-
-        void do_test_id_comparison()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            AZStd::thread::id self = this_thread::get_id();
-            AZStd::thread thrd(desc1, AZStd::bind(&Parallel_Thread::comparison_thread, this, self));
-            thrd.join();
-        }
-
-        void test_id_comparison()
-        {
-            //timed_test(&do_test_id_comparison, 1);
-            do_test_id_comparison();
+            EXPECT_NE(no_thread_id, my_id);
         }
 
         struct non_copyable_functor
@@ -474,182 +257,285 @@ namespace UnitTest
             non_copyable_functor(const non_copyable_functor&);
             non_copyable_functor& operator=(const non_copyable_functor&);
         };
-
-        void do_test_creation_through_reference_wrapper()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            non_copyable_functor f;
-
-            AZStd::thread thrd(desc1, AZStd::ref(f));
-            thrd.join();
-            AZ_TEST_ASSERT(f.value == 999);
-        }
-
-        void test_creation_through_reference_wrapper()
-        {
-            do_test_creation_through_reference_wrapper();
-        }
-
-        void test_swap()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-            const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
-            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::simple_thread, this));
-            AZStd::thread t2(desc2, AZStd::bind(&Parallel_Thread::simple_thread, this));
-            AZStd::thread::id id1 = t.get_id();
-            AZStd::thread::id id2 = t2.get_id();
-
-            t.swap(t2);
-            AZ_TEST_ASSERT(t.get_id() == id2);
-            AZ_TEST_ASSERT(t2.get_id() == id1);
-
-            swap(t, t2);
-            AZ_TEST_ASSERT(t.get_id() == id1);
-            AZ_TEST_ASSERT(t2.get_id() == id2);
-
-            t.detach();
-            t2.detach();
-        }
-
-        void run()
-        {
-            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
-
-            // We need to have at least one processor
-            AZ_TEST_ASSERT(AZStd::thread::hardware_concurrency() >= 1);
-
-            // Create thread to increment data till we need to
-            m_data = 0;
-            m_dataMax = 10;
-            AZStd::thread tr(desc1, AZStd::bind(&Parallel_Thread::increment_data, this));
-            tr.join();
-            AZ_TEST_ASSERT(m_data == m_dataMax);
-
-            m_data = 0;
-            AZStd::thread trDel(desc1, make_delegate(this, &Parallel_Thread::increment_data));
-            trDel.join();
-            AZ_TEST_ASSERT(m_data == m_dataMax);
-
-            chrono::system_clock::time_point startTime = chrono::system_clock::now();
-            {
-                AZStd::thread tr1(desc1, AZStd::bind(&Parallel_Thread::sleep_thread, this, chrono::milliseconds(100)));
-                tr1.join();
-            }
-            auto sleepTime = chrono::system_clock::now() - startTime;
-            //printf("\nSleeptime: %d Ms\n",(unsigned int)  ());
-            // On Windows we use Sleep. Sleep is dependent on MM timers.
-            // 99000 can be used only if we support 1 ms resolution timeGetDevCaps() and we set it timeBeginPeriod(1) timeEndPeriod(1)
-            // We will need to drag mmsystem.h and we don't really need to test the OS jus our math.
-            AZ_TEST_ASSERT(sleepTime.count() >= /*99000*/ 50000);
-
-            //////////////////////////////////////////////////////////////////////////
-            test_creation();
-            test_id_comparison();
-            test_creation_through_reference_wrapper();
-            test_swap();
-            //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // Thread id
-            test_thread_id_for_default_constructed_thread_is_default_constructed_id();
-            test_thread_id_for_running_thread_is_not_default_constructed_id();
-            test_different_threads_have_different_ids();
-            test_thread_ids_have_a_total_order();
-            test_thread_id_of_running_thread_returned_by_this_thread_get_id();
-            //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // Member function tests
-            // 0
-            {
-                MfTest x;
-                AZStd::function<void ()> func = AZStd::bind(&MfTest::f0, &x);
-                AZStd::thread(desc1, func).join();
-                func = AZStd::bind(&MfTest::f0, AZStd::ref(x));
-                AZStd::thread(desc1, func).join();
-                func = AZStd::bind(&MfTest::g0, &x);
-                AZStd::thread(desc1, func).join();
-                func = AZStd::bind(&MfTest::g0, x);
-                AZStd::thread(desc1, func).join();
-                func = AZStd::bind(&MfTest::g0, AZStd::ref(x));
-                AZStd::thread(desc1, func).join();
-
-                //// 1
-                //thread( AZStd::bind(desc1, &MfTest::f1, &x, 1)).join();
-                //thread( AZStd::bind(desc1, &MfTest::f1, AZStd::ref(x), 1)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g1, &x, 1)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g1, x, 1)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g1, AZStd::ref(x), 1)).join();
-
-                //// 2
-                //thread( AZStd::bind(desc1, &MfTest::f2, &x, 1, 2)).join();
-                //thread( AZStd::bind(desc1, &MfTest::f2, AZStd::ref(x), 1, 2)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g2, &x, 1, 2)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g2, x, 1, 2)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g2, AZStd::ref(x), 1, 2)).join();
-
-                //// 3
-                //thread( AZStd::bind(desc1, &MfTest::f3, &x, 1, 2, 3)).join();
-                //thread( AZStd::bind(desc1, &MfTest::f3, AZStd::ref(x), 1, 2, 3)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g3, &x, 1, 2, 3)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g3, x, 1, 2, 3)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g3, AZStd::ref(x), 1, 2, 3)).join();
-
-                //// 4
-                //thread( AZStd::bind(desc1, &MfTest::f4, &x, 1, 2, 3, 4)).join();
-                //thread( AZStd::bind(desc1, &MfTest::f4, AZStd::ref(x), 1, 2, 3, 4)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g4, &x, 1, 2, 3, 4)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g4, x, 1, 2, 3, 4)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g4, AZStd::ref(x), 1, 2, 3, 4)).join();
-
-                //// 5
-                //thread( AZStd::bind(desc1, &MfTest::f5, &x, 1, 2, 3, 4, 5)).join();
-                //thread( AZStd::bind(desc1, &MfTest::f5, AZStd::ref(x), 1, 2, 3, 4, 5)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g5, &x, 1, 2, 3, 4, 5)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g5, x, 1, 2, 3, 4, 5)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g5, AZStd::ref(x), 1, 2, 3, 4, 5)).join();
-
-                //// 6
-                //thread( AZStd::bind(desc1, &MfTest::f6, &x, 1, 2, 3, 4, 5, 6)).join();
-                //thread( AZStd::bind(desc1, &MfTest::f6, AZStd::ref(x), 1, 2, 3, 4, 5, 6)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g6, &x, 1, 2, 3, 4, 5, 6)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g6, x, 1, 2, 3, 4, 5, 6)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g6, AZStd::ref(x), 1, 2, 3, 4, 5, 6)).join();
-
-                //// 7
-                //thread( AZStd::bind(desc1, &MfTest::f7, &x, 1, 2, 3, 4, 5, 6, 7)).join();
-                //thread( AZStd::bind(desc1, &MfTest::f7, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g7, &x, 1, 2, 3, 4, 5, 6, 7)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g7, x, 1, 2, 3, 4, 5, 6, 7)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g7, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7)).join();
-
-                //// 8
-                //thread( AZStd::bind(desc1, &MfTest::f8, &x, 1, 2, 3, 4, 5, 6, 7, 8)).join();
-                //thread( AZStd::bind(desc1, &MfTest::f8, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7, 8)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g8, &x, 1, 2, 3, 4, 5, 6, 7, 8)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g8, x, 1, 2, 3, 4, 5, 6, 7, 8)).join();
-                //thread( AZStd::bind(desc1, &MfTest::g8, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7, 8)).join();
-
-                AZ_TEST_ASSERT(x.m_hash == 1366);
-            }
-            //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // Move
-            test_move_on_construction();
-
-            test_move_from_function_return();
-            //////////////////////////////////////////////////////////////////////////
-        }
     };
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_Test)
-#else 
-    TEST_F(Parallel_Thread, Test)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
+    TEST_F(Parallel_Thread, ThreadSanityTest)
     {
-        run();
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+
+        // We need to have at least one processor
+        EXPECT_GE(AZStd::thread::hardware_concurrency(), 1);
+
+        // Create thread to increment data till we need to
+        m_data = 0;
+        m_dataMax = 10;
+        AZStd::thread tr(
+            desc1,
+            [this]()
+            {
+                increment_data();
+            });
+        tr.join();
+        EXPECT_EQ(m_dataMax, m_data);
+
+        chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
+        {
+            AZStd::thread tr1(desc1, [this](AZStd::chrono::milliseconds waitTime) { sleep_thread(waitTime); },
+                chrono::milliseconds(100));
+            tr1.join();
+        }
+        auto sleepTime = chrono::steady_clock::now() - startTime;
+        // printf("\nSleeptime: %d Ms\n",(unsigned int)  ());
+        //  On Windows use Sleep. Sleep is dependent on MM timers.
+        //  99000 can be used only if the OS supports 1 ms resolution timeGetDevCaps() and it is set to timeBeginPeriod(1) timeEndPeriod(1)
+        EXPECT_GE(sleepTime.count(), 50000);
+    }
+
+    TEST_F(Parallel_Thread, ThreadCreation_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        m_data = 0;
+        AZStd::thread t(
+            desc1,
+            [this]()
+            {
+                simple_thread();
+            });
+        t.join();
+        EXPECT_EQ(999, m_data);
+    }
+
+    TEST_F(Parallel_Thread, ThreadCreationThroughRefWrapper_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        non_copyable_functor f;
+
+        AZStd::thread thrd(desc1, AZStd::ref(f));
+        thrd.join();
+        EXPECT_EQ(999, f.value);
+    }
+
+    TEST_F(Parallel_Thread, ThreadIdIsComparable_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        m_data = 0;
+        AZStd::thread t(
+            desc1,
+            [this]()
+            {
+                this->simple_thread();
+            });
+        t.join();
+        EXPECT_EQ(999, m_data);
+    }
+
+    TEST_F(Parallel_Thread, TestSwapThread_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
+        AZStd::thread t(desc1, [this]() { simple_thread(); });
+        AZStd::thread t2(desc2, [this]() { simple_thread(); });
+        AZStd::thread::id id1 = t.get_id();
+        AZStd::thread::id id2 = t2.get_id();
+
+        t.swap(t2);
+        EXPECT_EQ(id2, t.get_id());
+        EXPECT_EQ(id1, t2.get_id());
+
+        swap(t, t2);
+        EXPECT_EQ(id1, t.get_id());
+        EXPECT_EQ(id2, t2.get_id());
+
+        t.join();
+        t2.join();
+    }
+
+    TEST_F(Parallel_Thread, ThreadIdIsDefaultConstructForThread_Succeeds)
+    {
+        AZStd::thread t;
+        EXPECT_EQ(AZStd::thread::id(), t.get_id());
+    }
+
+    TEST_F(Parallel_Thread, ThreadIdForCurrentThread_IsNottDefaultConstructed_Succeeds)
+    {
+        const thread_desc desc = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        AZStd::thread t(desc, [](){});
+        EXPECT_NE(AZStd::thread::id(), t.get_id());
+        t.join();
+    }
+
+    TEST_F(Parallel_Thread, DifferentThreadsHaveDifferentThreadIds_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
+        AZStd::thread t(desc1, [](){});
+        AZStd::thread t2(desc2, [](){});
+        EXPECT_NE(t.get_id(), t2.get_id());
+        t.join();
+        t2.join();
+    }
+
+    TEST_F(Parallel_Thread, ThreadIdsAreTotallyOrdered_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
+        const thread_desc desc3 = m_numThreadDesc ? m_desc[2] : thread_desc{};
+
+        AZStd::thread t(desc1, [](){});
+        AZStd::thread t2(desc2, [](){});
+        AZStd::thread t3(desc3, [](){});
+        EXPECT_NE(t2.get_id(), t.get_id());
+        EXPECT_NE(t3.get_id(), t.get_id());
+        EXPECT_NE(t3.get_id(), t2.get_id());
+
+        EXPECT_NE((t2.get_id() < t.get_id()), (t.get_id() < t2.get_id()));
+        EXPECT_NE((t3.get_id() < t.get_id()), (t.get_id() < t3.get_id()));
+        EXPECT_NE((t3.get_id() < t2.get_id()), (t2.get_id() < t3.get_id()));
+
+        EXPECT_NE((t2.get_id() > t.get_id()), (t.get_id() > t2.get_id()));
+        EXPECT_NE((t3.get_id() > t.get_id()), (t.get_id() > t3.get_id()));
+        EXPECT_NE((t3.get_id() > t2.get_id()), (t2.get_id() > t3.get_id()));
+
+        EXPECT_EQ((t2.get_id() > t.get_id()), (t.get_id() < t2.get_id()));
+        EXPECT_EQ((t.get_id() > t2.get_id()), (t2.get_id() < t.get_id()));
+        EXPECT_EQ((t3.get_id() > t.get_id()), (t.get_id() < t3.get_id()));
+        EXPECT_EQ((t.get_id() > t3.get_id()), (t3.get_id() < t.get_id()));
+        EXPECT_EQ((t3.get_id() > t2.get_id()), (t2.get_id() < t3.get_id()));
+        EXPECT_EQ((t2.get_id() > t3.get_id()), (t3.get_id() < t2.get_id()));
+
+        EXPECT_EQ((t2.get_id() >= t.get_id()), (t.get_id() < t2.get_id()));
+        EXPECT_EQ((t.get_id() >= t2.get_id()), (t2.get_id() < t.get_id()));
+        EXPECT_EQ((t3.get_id() >= t.get_id()), (t.get_id() < t3.get_id()));
+        EXPECT_EQ((t.get_id() >= t3.get_id()), (t3.get_id() < t.get_id()));
+        EXPECT_EQ((t3.get_id() >= t2.get_id()), (t2.get_id() < t3.get_id()));
+        EXPECT_EQ((t2.get_id() >= t3.get_id()), (t3.get_id() < t2.get_id()));
+
+        EXPECT_EQ((t2.get_id() > t.get_id()), (t.get_id() <= t2.get_id()));
+        EXPECT_EQ((t.get_id() > t2.get_id()), (t2.get_id() <= t.get_id()));
+        EXPECT_EQ((t3.get_id() > t.get_id()), (t.get_id() <= t3.get_id()));
+        EXPECT_EQ((t.get_id() > t3.get_id()), (t3.get_id() <= t.get_id()));
+        EXPECT_EQ((t3.get_id() > t2.get_id()), (t2.get_id() <= t3.get_id()));
+        EXPECT_EQ((t2.get_id() > t3.get_id()), (t3.get_id() <= t2.get_id()));
+
+        if ((t.get_id() < t2.get_id()) && (t2.get_id() < t3.get_id()))
+        {
+            EXPECT_LT(t.get_id(), t3.get_id());
+        }
+        else if ((t.get_id() < t3.get_id()) && (t3.get_id() < t2.get_id()))
+        {
+            EXPECT_LT(t.get_id(), t2.get_id());
+        }
+        else if ((t2.get_id() < t3.get_id()) && (t3.get_id() < t.get_id()))
+        {
+            EXPECT_LT(t2.get_id(), t.get_id());
+        }
+        else if ((t2.get_id() < t.get_id()) && (t.get_id() < t3.get_id()))
+        {
+            EXPECT_LT(t2.get_id(), t3.get_id());
+        }
+        else if ((t3.get_id() < t.get_id()) && (t.get_id() < t2.get_id()))
+        {
+            EXPECT_LT(t3.get_id(), t2.get_id());
+        }
+        else if ((t3.get_id() < t2.get_id()) && (t2.get_id() < t.get_id()))
+        {
+            EXPECT_LT(t3.get_id(), t.get_id());
+        }
+        else
+        {
+            GTEST_FAIL();
+        }
+
+        AZStd::thread::id default_id;
+
+        EXPECT_LT(default_id, t.get_id());
+        EXPECT_LT(default_id, t2.get_id());
+        EXPECT_LT(default_id, t3.get_id());
+
+        EXPECT_LE(default_id, t.get_id());
+        EXPECT_LE(default_id, t2.get_id());
+        EXPECT_LE(default_id, t3.get_id());
+
+        EXPECT_FALSE(default_id > t.get_id());
+        EXPECT_FALSE(default_id > t2.get_id());
+        EXPECT_FALSE(default_id > t3.get_id());
+
+        EXPECT_FALSE(default_id >= t.get_id());
+        EXPECT_FALSE(default_id >= t2.get_id());
+        EXPECT_FALSE(default_id >= t3.get_id());
+
+        t.join();
+        t2.join();
+        t3.join();
+    }
+
+    TEST_F(Parallel_Thread, ThreadIdOfCurrentThreadReturnedByThisThreadId_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+
+        AZStd::thread::id id;
+        AZStd::thread t(desc1, [this, &id]() { get_thread_id(&id); });
+        AZStd::thread::id t_id = t.get_id();
+        t.join();
+        EXPECT_EQ(t_id, id);
+    }
+
+    TEST_F(Parallel_Thread, ThreadInvokesMemberFunction_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        MfTest x;
+        AZStd::function<void()> func = [xPtr = &x]()
+        {
+            xPtr->f0();
+        };
+        AZStd::thread(desc1, func).join();
+
+        func = [&x]
+        {
+            x.f0();
+        };
+        AZStd::thread(desc1, func).join();
+
+        func = [xPtr = &x]
+        {
+            xPtr->g0();
+        };
+        AZStd::thread(desc1, func).join();
+
+        func = [x]
+        {
+            x.g0();
+        };
+        AZStd::thread(desc1, func).join();
+
+        func = [&x]
+        {
+            x.g0();
+        };
+        AZStd::thread(desc1, func).join();
+
+        EXPECT_EQ(1366, x.m_hash);
+    }
+
+    TEST_F(Parallel_Thread, ThreadCanBeMovedAssigned_Succeeds)
+    {
+        const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+        AZStd::thread::id the_id;
+        AZStd::thread x;
+        x = AZStd::thread(desc1, [this, &the_id]() { do_nothing_id(&the_id); });
+        AZStd::thread::id x_id = x.get_id();
+        x.join();
+        EXPECT_EQ(x_id, the_id);
+    }
+
+    TEST_F(Parallel_Thread, ThreadMoveConstructorIsInvokedOnReturn_Succeeds)
+    {
+        AZStd::thread::id the_id;
+        AZStd::thread x;
+        x = make_thread(&the_id);
+        AZStd::thread::id x_id = x.get_id();
+        x.join();
+        EXPECT_EQ(x_id, the_id);
     }
 
     TEST_F(Parallel_Thread, Hashable)
@@ -676,7 +562,7 @@ namespace UnitTest
         }
 
         // Clean up the threads
-        AZStd::for_each(threadVector.begin(), threadVector.end(), 
+        AZStd::for_each(threadVector.begin(), threadVector.end(),
             [](AZStd::thread* thread)
             {
                 thread->join();
@@ -686,7 +572,7 @@ namespace UnitTest
     }
 
     class Parallel_Combinable
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -695,7 +581,7 @@ namespace UnitTest
             {
                 combinable<TestStruct> c;
                 TestStruct& s = c.local();
-                AZ_TEST_ASSERT(s.m_x == 42);
+                EXPECT_EQ(42, s.m_x);
             }
 
             //detect first initialization
@@ -703,21 +589,21 @@ namespace UnitTest
                 combinable<int> c;
                 bool exists;
                 int& v1 = c.local(exists);
-                AZ_TEST_ASSERT(!exists);
+                EXPECT_FALSE(exists);
                 v1 = 42;
 
                 int& v2 = c.local(exists);
-                AZ_TEST_ASSERT(exists);
-                AZ_TEST_ASSERT(v2 == 42);
+                EXPECT_TRUE(exists);
+                EXPECT_EQ(42, v2);
 
                 int& v3 = c.local();
-                AZ_TEST_ASSERT(v3 == 42);
+                EXPECT_EQ(42, v3);
             }
 
             //custom initializer
             {
                 combinable<int> c(&Initializer);
-                AZ_TEST_ASSERT(c.local() == 43);
+                EXPECT_EQ(43, c.local());
             }
 
             //clear
@@ -725,14 +611,14 @@ namespace UnitTest
                 combinable<int> c(&Initializer);
                 bool exists;
                 int& v1 = c.local(exists);
-                AZ_TEST_ASSERT(v1 == 43);
-                AZ_TEST_ASSERT(!exists);
+                EXPECT_EQ(43, v1);
+                EXPECT_FALSE(exists);
                 v1 = 44;
 
                 c.clear();
                 int& v2 = c.local(exists);
-                AZ_TEST_ASSERT(v2 == 43);
-                AZ_TEST_ASSERT(!exists);
+                EXPECT_EQ(43, v2);
+                EXPECT_FALSE(exists);
             }
 
             //copy constructor and assignment
@@ -742,10 +628,10 @@ namespace UnitTest
                 v = 45;
 
                 combinable<int> c3(c1);
-                AZ_TEST_ASSERT(c3.local() == 45);
+                EXPECT_EQ(45, c3.local());
 
                 c2 = c1;
-                AZ_TEST_ASSERT(c2.local() == 45);
+                EXPECT_EQ(45, c2.local());
             }
 
             //combine
@@ -753,10 +639,10 @@ namespace UnitTest
                 combinable<int> c(&Initializer);
 
                 //default value when no other values
-                AZ_TEST_ASSERT(c.combine(plus<int>()) == 43);
+                EXPECT_EQ(43, c.combine(plus<int>()));
 
                 c.local() = 50;
-                AZ_TEST_ASSERT(c.combine(plus<int>()) == 50);
+                EXPECT_EQ(50, c.combine(plus<int>()));
             }
 
             //combine_each
@@ -764,30 +650,30 @@ namespace UnitTest
                 combinable<int> c(&Initializer);
 
                 m_numCombinerCalls = 0;
-                c.combine_each(bind(&Parallel_Combinable::MyCombiner, this, _1));
-                AZ_TEST_ASSERT(m_numCombinerCalls == 0);
+                c.combine_each([this](int value) { MyCombiner(value); });
+                EXPECT_EQ(0, m_numCombinerCalls);
 
                 m_numCombinerCalls = 0;
                 m_combinerTotal = 0;
                 c.local() = 50;
-                c.combine_each(bind(&Parallel_Combinable::MyCombiner, this, _1));
-                AZ_TEST_ASSERT(m_numCombinerCalls == 1);
-                AZ_TEST_ASSERT(m_combinerTotal == 50);
+                c.combine_each([this](int value) { MyCombiner(value); });
+                EXPECT_EQ(1, m_numCombinerCalls);
+                EXPECT_EQ(50, m_combinerTotal);
             }
 
             //multithread test
             {
                 AZStd::thread_desc desc;
                 desc.m_name = "Test Thread 1";
-                AZStd::thread t1(bind(&Parallel_Combinable::MyThreadFunc, this, 0, 10), &desc);
+                AZStd::thread t1(desc, [this](int start, int end) { MyThreadFunc(start, end); }, 0, 10);
                 desc.m_name = "Test Thread 2";
-                AZStd::thread t2(bind(&Parallel_Combinable::MyThreadFunc, this, 10, 20), &desc);
+                AZStd::thread t2(desc, [this](int start, int end) { MyThreadFunc(start, end); }, 10, 20);
                 desc.m_name = "Test Thread 3";
-                AZStd::thread t3(bind(&Parallel_Combinable::MyThreadFunc, this, 20, 500), &desc);
+                AZStd::thread t3(desc, [this](int start, int end) { MyThreadFunc(start, end); }, 20, 500);
                 desc.m_name = "Test Thread 4";
-                AZStd::thread t4(bind(&Parallel_Combinable::MyThreadFunc, this, 500, 510), &desc);
+                AZStd::thread t4(desc, [this](int start, int end) { MyThreadFunc(start, end); }, 500, 510);
                 desc.m_name = "Test Thread 5";
-                AZStd::thread t5(bind(&Parallel_Combinable::MyThreadFunc, this, 510, 2001), &desc);
+                AZStd::thread t5(desc, [this](int start, int end) { MyThreadFunc(start, end); }, 510, 2001);
 
                 t1.join();
                 t2.join();
@@ -797,11 +683,11 @@ namespace UnitTest
 
                 m_numCombinerCalls = 0;
                 m_combinerTotal = 0;
-                m_threadCombinable.combine_each(bind(&Parallel_Combinable::MyCombiner, this, _1));
-                AZ_TEST_ASSERT(m_numCombinerCalls == 5);
-                AZ_TEST_ASSERT(m_combinerTotal == 2001000);
+                m_threadCombinable.combine_each([this](int value) { MyCombiner(value); });
+                EXPECT_EQ(5, m_numCombinerCalls);
+                EXPECT_EQ(2001000, m_combinerTotal);
 
-                AZ_TEST_ASSERT(m_threadCombinable.combine(plus<int>()) == 2001000);
+                EXPECT_EQ(2001000, m_threadCombinable.combine(plus<int>()));
 
                 m_threadCombinable.clear();
             }
@@ -847,7 +733,7 @@ namespace UnitTest
     }
 
     class Parallel_SharedMutex
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         static const int s_numOfReaders = 4;
@@ -888,7 +774,7 @@ namespace UnitTest
                 {
                     lock_guard<shared_mutex> lock(m_access);
                     // now we have exclusive access
-                    
+
                     // m_currentValue must be checked within the mutex as it is possible that
                     // the other writer thread incremented the m_currentValue to 100 between the check of
                     // the while loop condition and the acquiring of the shared_mutex exclusive lock
@@ -936,17 +822,17 @@ namespace UnitTest
 
                 AZStd::thread_desc desc;
                 desc.m_name = "Test Reader 1";
-                AZStd::thread t1(bind(&Parallel_SharedMutex::Reader, this, 0), &desc);
+                AZStd::thread t1(desc, [this](int index){ Reader(index); }, 0);
                 desc.m_name = "Test Reader 2";
-                AZStd::thread t2(bind(&Parallel_SharedMutex::Reader, this, 1), &desc);
+                AZStd::thread t2(desc, [this](int index){ Reader(index); }, 1);
                 desc.m_name = "Test Reader 3";
-                AZStd::thread t3(bind(&Parallel_SharedMutex::Reader, this, 2), &desc);
+                AZStd::thread t3(desc, [this](int index){ Reader(index); }, 2);
                 desc.m_name = "Test Reader 4";
-                AZStd::thread t4(bind(&Parallel_SharedMutex::Reader, this, 3), &desc);
+                AZStd::thread t4(desc, [this](int index){ Reader(index); }, 3);
                 desc.m_name = "Test Writer 1";
-                AZStd::thread t5(bind(&Parallel_SharedMutex::Writer, this), &desc);
+                AZStd::thread t5(desc, [this](){ Writer(); });
                 desc.m_name = "Test Writer 2";
-                AZStd::thread t6(bind(&Parallel_SharedMutex::Writer, this), &desc);
+                AZStd::thread t6(desc, [this](){ Writer(); });
 
                 t1.join();
                 t2.join();
@@ -980,9 +866,9 @@ namespace UnitTest
     }
 
     class ConditionVariable
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {};
-    
+
     TEST_F(ConditionVariable, NotifyOneSingleWait)
     {
         AZStd::condition_variable cv;
@@ -1010,7 +896,7 @@ namespace UnitTest
                 lock.unlock();
                 cv.notify_one();
                 lock.lock();
-            }            
+            }
         };
 
         EXPECT_EQ(0, i);
@@ -1086,7 +972,7 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic_int i(0);
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
@@ -1120,7 +1006,7 @@ namespace UnitTest
             waitThreads[threadIdx] = AZStd::thread(wait);
         }
         AZStd::thread signalThread(signal);
-        
+
         for (auto& thread : waitThreads)
         {
             thread.join();
@@ -1136,7 +1022,7 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         // note that we capture the start and end time in the thread - this is because threads starting and stopping
         // can have unpredictable scheduling.
 
@@ -1146,12 +1032,12 @@ namespace UnitTest
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
             status = cv.wait_until(lock, waitUntilTime);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
 
@@ -1167,18 +1053,18 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            auto waitUntilTime = AZStd::chrono::system_clock::now();
+            auto waitUntilTime = AZStd::chrono::steady_clock::now();
             startTime = waitUntilTime;
             status = cv.wait_until(lock, waitUntilTime);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
 
@@ -1193,22 +1079,22 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic_bool status = { true };
         auto pred = [](){ return false; };
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            auto waitUntilTime = AZStd::chrono::system_clock::now();
+            auto waitUntilTime = AZStd::chrono::steady_clock::now();
             startTime = waitUntilTime;
             status = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
-        
+
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // we should have timed out immediately:
         EXPECT_LT(timeSpent, AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS));
         EXPECT_FALSE(status); // if the time has passed, the status should be false.
@@ -1220,25 +1106,25 @@ namespace UnitTest
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
         AZStd::atomic_bool retVal = { true };
-        
+
         auto pred = []() { return false; }; // should cause it to wait the entire duration
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
-            auto waitUntilTime =  startTime + waitDuration;
+            startTime = AZStd::chrono::steady_clock::now();
+            auto waitUntilTime = startTime + waitDuration;
             retVal = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
-        
+
         waitThread1.join();
 
         // the duration given is a minimum time, for wait_until, so we should have timed out above
@@ -1251,26 +1137,26 @@ namespace UnitTest
     {
         AZStd::condition_variable cv;
         AZStd::mutex cv_mutex;
-        AZStd::atomic_bool retVal = {true};
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::atomic_bool retVal = { true };
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto pred = []() { return true; }; // should cause it to immediately return
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
-            
+
             retVal = cv.wait_until(lock, waitUntilTime, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // we should NOT have reached the minimum time or in fact waited at all:
         EXPECT_LE(timeSpent, AZStd::chrono::milliseconds(MARGIN_OF_ERROR_MS));
         EXPECT_TRUE(retVal); // we didn't wake up but still returned true.
@@ -1284,22 +1170,22 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic<AZStd::cv_status> status = { AZStd::cv_status::no_timeout };
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             status = cv.wait_for(lock, waitDuration);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
         waitThread1.join();
-        
+
         // note that wait_for is allowed to spuriously wake up on some platforms but even when it does, its likely to
         // have taken longer than margin of error to do so.  If the below triggers, its because it wasn't sleeping at
         // all and there is an error in the implementation which is causing it to return without sleeping.
@@ -1314,18 +1200,18 @@ namespace UnitTest
         AZStd::atomic_bool status = {true};
         auto pred = []() { return false; };
 
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
 
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitDuration = AZStd::chrono::milliseconds(WAIT_TIME_MS);
             status = cv.wait_for(lock, waitDuration, pred);
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
         };
-        
+
         // we aren't going to signal it, and ensure the timeout was reached.
         AZStd::thread waitThread1(wait);
         waitThread1.join();
@@ -1341,24 +1227,24 @@ namespace UnitTest
         AZStd::mutex cv_mutex;
         AZStd::atomic_int i(0);
         AZStd::atomic_bool done(false);
-        AZStd::chrono::system_clock::time_point startTime;
+        AZStd::chrono::steady_clock::time_point startTime;
         AZStd::chrono::milliseconds timeSpent;
         constexpr AZStd::chrono::seconds waitTimeCrossThread(10);
         // normally we'd wait for WAIT_TIME_MS, but in this case, a completely different thread is doing the signalling,
         // and it could be very slow to start if the machine is under load.  So instead, we wait for a long time.
         // In normal conditions, the wait will be very short (milliseconds), since we start the other thread that wakes
         // this one up immediately.
-        
+
         auto wait = [&]()
         {
             AZStd::unique_lock<AZStd::mutex> lock(cv_mutex);
-            
+
             auto waitDuration = waitTimeCrossThread;
-            startTime = AZStd::chrono::system_clock::now();
+            startTime = AZStd::chrono::steady_clock::now();
             auto waitUntilTime = startTime + waitDuration;
             // we expect the other thread to wake us up before the timeout expires so the following should return true
             EXPECT_TRUE(cv.wait_until(lock, waitUntilTime, [&]{ return i == 1; }));
-            timeSpent = AZStd::chrono::system_clock::now() - startTime;
+            timeSpent = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - startTime);
             EXPECT_EQ(1, i);
             done = true;
         };
@@ -1396,18 +1282,8 @@ namespace UnitTest
     // Fixture for thread-event-bus related calls
     // exists only to categorize the tests.
     class ThreadEventsBus :
-        public AllocatorsFixture
+        public LeakDetectionFixture
     {
-        public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     template <typename T> class ThreadEventCounter :
@@ -1435,7 +1311,7 @@ namespace UnitTest
             ++m_exitCount;
         }
     };
-    
+
     TEST_F(ThreadEventsBus, Broadcasts_BothBusses)
     {
         ThreadEventCounter<AZStd::ThreadEventBus::Handler> eventBusCounter;
@@ -1468,18 +1344,8 @@ namespace UnitTest
     // OnThreadExit() because it cannot lock the mutex.
 
     class ThreadEventsDeathTest :
-        public AllocatorsFixture
+        public LeakDetectionFixture
     {
-        public:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     class DeadlockCauser : public AZStd::ThreadEventBus::Handler
@@ -1540,11 +1406,11 @@ namespace UnitTest
 
             AZStd::thread deadlocker_thread = AZStd::thread(deadlocker_function);
 
-            chrono::system_clock::time_point startTime = chrono::system_clock::now();
+            chrono::steady_clock::time_point startTime = chrono::steady_clock::now();
             while (!doneIt.load())
             {
                 AZStd::this_thread::yield();
-                auto sleepTime = chrono::system_clock::now() - startTime;
+                auto sleepTime = chrono::steady_clock::now() - startTime;
 
                 // the test normally succeeds in under a second
                 // but machines can be slow, so we'll give it 20x the
@@ -1562,7 +1428,7 @@ namespace UnitTest
             EXPECT_TRUE(doneIt.load()) << "A test has deadlocked, aborting module";
             if (!doneIt.load())
             {
-                abort();
+                exit(1);
             }
             BusDisconnect();
             deadlocker_thread.join();
@@ -1586,17 +1452,21 @@ namespace UnitTest
     };
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TEST_F(ThreadEventsDeathTest, DISABLED_UsingClientBus_AvoidsDeadlock)
+#else
     TEST_F(ThreadEventsDeathTest, UsingClientBus_AvoidsDeadlock)
+#endif
     {
         EXPECT_EXIT(
             {
                 DeadlockCauser cause;
                 cause.PerformTest();
                 // you MUST exit for EXPECT_EXIT to function.
-                _exit(0); // this will cause spew, but it wont be considered to have failed.
+                exit(0); // this will cause spew, but it wont be considered to have failed.
             }
         , ::testing::ExitedWithCode(0),".*");
-        
+
     }
 #endif // GTEST_HAS_DEATH_TEST
 }

@@ -20,7 +20,7 @@ namespace ScriptCanvasEditor
         , public ScriptCanvas::GraphVariableManagerNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorGraphVariableItemModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorGraphVariableItemModel, AZ::SystemAllocator);
         EditorGraphVariableItemModel() = default;
 
         void Activate(const ScriptCanvas::ScriptCanvasId& executionId);
@@ -80,12 +80,12 @@ namespace ScriptCanvasEditor
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             ScriptCanvas::GraphVariableManagerComponent::GetProvidedServices(provided);
-            provided.push_back(AZ_CRC("EditorScriptCanvasVariableService", 0x3df3d54e));
+            provided.push_back(AZ_CRC_CE("EditorScriptCanvasVariableService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EditorScriptCanvasVariableService", 0x3df3d54e));
+            incompatible.push_back(AZ_CRC_CE("EditorScriptCanvasVariableService"));
         }
 
     private:

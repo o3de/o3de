@@ -6,9 +6,9 @@
  *
  */
 
-
 #include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
 #include <AzFramework/Components/TransformComponent.h>
+
 
 namespace ScriptCanvas::Nodeables::Spawning
 {
@@ -26,12 +26,12 @@ namespace ScriptCanvas::Nodeables::Spawning
     void SpawnNodeable::OnDeactivate()
     {
         m_spawnableScriptMediator.Clear();
-        AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler::BusDisconnect();
+        AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusDisconnect();
     }
 
     void SpawnNodeable::OnSpawn(AzFramework::EntitySpawnTicket spawnTicket, AZStd::vector<AZ::EntityId> entityList)
     {
-        AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler::BusDisconnect(spawnTicket.GetId());
+        AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusDisconnect(spawnTicket.GetId());
         CallOnSpawnCompleted(spawnTicket, move(entityList));
     }
     
@@ -46,7 +46,7 @@ namespace ScriptCanvas::Nodeables::Spawning
 
         if (m_spawnableScriptMediator.SpawnAndParentAndTransform(spawnTicket, parentId, translation, rotation, aznumeric_cast<float>(scale)))
         {
-            Scripts::SpawnableScriptNotificationsBus::Handler::BusConnect(spawnTicket.GetId());
+            Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusConnect(spawnTicket.GetId());
         }
     }
 } // namespace ScriptCanvas::Nodeables::Spawning

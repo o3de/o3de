@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(UnsavedChangesDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnsavedChangesDialog, AZ::SystemAllocator);
         UnsavedChangesDialog(const QString& filename, QWidget* pParent = nullptr);
         UnsavedChangesOptions GetResult() const { return m_result; }
 

@@ -17,7 +17,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeParameterNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeParameterNode, AnimGraphAllocator)
 
     static const char* sParameterNamesMember = "parameterNames";
 
@@ -329,7 +329,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphParameterMask", 0x67dd0993), &BlendTreeParameterNode::m_parameterNames, "Mask", "The visible and available of the node.")
+            ->DataElement(AZ_CRC_CE("AnimGraphParameterMask"), &BlendTreeParameterNode::m_parameterNames, "Mask", "The visible and available of the node.")
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
         ;

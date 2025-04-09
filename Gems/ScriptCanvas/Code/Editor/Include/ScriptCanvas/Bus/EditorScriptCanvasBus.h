@@ -34,37 +34,6 @@ namespace GraphCanvas
 
 namespace ScriptCanvasEditor
 {
-    //=========================================================================
-    // EditorGraphBus
-    //=========================================================================
-    class EditorScriptCanvasRequests : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = ScriptCanvas::ScriptCanvasId;
-
-
-        //! Sets the name of the ScriptCanvas Graph.
-        //! \param name value to set
-        virtual void SetName(const AZStd::string& name) = 0;
-
-        //! Gets the name of the ScriptCanvas Graph.
-        //! \return reference to Graph name
-        virtual const AZStd::string& GetName() const = 0;
-
-        //! Will open the graph in the editor.
-        virtual void OpenEditor() = 0;
-
-        //! Used to close a graph that is currently opened in the editor.
-        virtual void CloseGraph() = 0;
-
-        //! Returns the Entity ID of the Editor Entity that owns this graph.
-        virtual AZ::EntityId GetEditorEntityId() const = 0;
-        virtual AZ::NamedEntityId GetNamedEditorEntityId() const = 0;
-    };
-
-    using EditorScriptCanvasRequestBus = AZ::EBus<EditorScriptCanvasRequests>;
-
     class EditorScriptCanvasComponentRequests : public AZ::EBusTraits
     {
     public:
@@ -77,20 +46,6 @@ namespace ScriptCanvasEditor
 
     using EditorScriptCanvasComponentRequestBus = AZ::EBus<EditorScriptCanvasComponentRequests>;
 
-    // Above bus is keyed off of the graph Id. Which I don't really have access to.
-    // This bus is here just so I can tell it to open the Editor.
-    class EditorContextMenuRequests : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::EntityId;
-
-        //! Gets the GraphId for the EditorScriptCanvasComponent on the given entity.
-        virtual AZ::Data::AssetId GetAssetId() const = 0;
-    };
-
-    using EditorContextMenuRequestBus = AZ::EBus<EditorContextMenuRequests>;
-        
     class EditorGraphRequests : public AZ::EBusTraits
     {
     public:
@@ -133,8 +88,13 @@ namespace ScriptCanvasEditor
 
         virtual ScriptCanvas::Endpoint ConvertToScriptCanvasEndpoint(const GraphCanvas::Endpoint& endpoinnt) const = 0;
         virtual GraphCanvas::Endpoint ConvertToGraphCanvasEndpoint(const ScriptCanvas::Endpoint& endpoint) const = 0;
+
+        virtual void SetOriginalToNewIdsMap(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIds) = 0;
+        virtual void GetOriginalToNewIdsMap(AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIds) const = 0;
+        virtual AZ::EntityId FindNewIdFromOriginal(const AZ::EntityId& originalId) const = 0;
+        virtual AZ::EntityId FindOriginalIdFromNew(const AZ::EntityId& newId) const = 0;
     };
-    
+
     using EditorGraphRequestBus = AZ::EBus<EditorGraphRequests>;
 
     class EditorGraphNotifications

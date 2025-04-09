@@ -32,7 +32,7 @@ namespace AZ::IO::ZipDir
         : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(Cache, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Cache, AZ::SystemAllocator);
         // the size of the buffer that's using during re-linking the zip file
         inline static constexpr size_t g_nSizeRelinkBuffer = 1024 * 1024;
         inline static constexpr size_t g_nMaxItemsRelinkBuffer = 128; // max number of files to read before (without) writing
@@ -40,7 +40,6 @@ namespace AZ::IO::ZipDir
         inline static constexpr int compressedBlockHeaderSizeInBytes = 4; //number of bytes we need in front of the compressed block to indicate which compressor was used
 
         Cache();
-        explicit Cache(AZ::IAllocator* allocator);
 
         ~Cache()
         {
@@ -85,7 +84,7 @@ namespace AZ::IO::ZipDir
 
         void Free(void* ptr)
         {
-            m_allocator->DeAllocate(ptr);
+            azfree(ptr);
         }
 
         // refreshes information about the given file entry into this file entry
@@ -132,8 +131,7 @@ namespace AZ::IO::ZipDir
         friend class CacheFactory;
         friend class FileEntryTransactionAdd;
         FileEntryTree m_treeDir;
-        AZ::IO::HandleType m_fileHandle;
-        AZ::IAllocator* m_allocator;
+        AZ::IO::HandleType m_fileHandle = AZ::IO::InvalidHandle;
         AZ::IO::Path m_strFilePath;
 
         // String Pool for persistently storing paths as long as they reside in the cache
@@ -141,7 +139,7 @@ namespace AZ::IO::ZipDir
 
         // offset to the start of CDR in the file,even if there's no CDR there currently
         // when a new file is added, it can start from here, but this value will need to be updated then
-        uint32_t m_lCDROffset;
+        uint32_t m_lCDROffset = 0;
 
         enum
         {
@@ -155,12 +153,12 @@ namespace AZ::IO::ZipDir
             // when this is set, compact operation is not performed
             FLAGS_DONT_COMPACT = 1 << 3
         };
-        uint32_t m_nFlags;
+        uint32_t m_nFlags = 0;
 
         // CDR buffer.
         AZStd::vector<uint8_t> m_CDR_buffer;
 
-        ZipFile::EHeaderEncryptionType m_encryptedHeaders;
+        ZipFile::EHeaderEncryptionType m_encryptedHeaders = ZipFile::HEADERS_NOT_ENCRYPTED;
         ZipFile::EHeaderSignatureType m_signedHeaders;
 
         // Zip Headers

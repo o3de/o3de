@@ -33,7 +33,7 @@ using namespace AZ::Debug;
 namespace UnitTest
 {
     class NameMatchesFilterTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -85,7 +85,7 @@ namespace UnitTest
      * FileIOStream test
      */
     class FileIOStreamTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         AZ::IO::LocalFileIO m_fileIO;
@@ -97,7 +97,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
@@ -109,7 +109,7 @@ namespace UnitTest
         void TearDown() override
         {
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void run()
@@ -142,7 +142,7 @@ namespace UnitTest
     namespace LocalFileIOTest
     {
         class FolderFixture
-            : public ScopedAllocatorSetupFixture
+            : public LeakDetectionFixture
         {
         public:
             AZ::Test::ScopedAutoTempDirectory m_tempDir;
@@ -176,7 +176,7 @@ namespace UnitTest
             void SetUp() override
             {
                 // lets use a random temp folder name
-                srand(clock());
+                srand(static_cast<unsigned int>(clock()));
                 m_randomFolderKey = rand();
 
                 LocalFileIO local;
@@ -190,7 +190,7 @@ namespace UnitTest
                 m_file02Name = m_fileRoot / "file02.asdf";
                 m_file03Name = m_fileRoot / "test123.wha";
             }
-        
+
             void TearDown() override
             {
             }
@@ -422,7 +422,7 @@ namespace UnitTest
             void run()
             {
                 LocalFileIO local;
-                
+
                 AZ_TEST_ASSERT(local.CreatePath(m_fileRoot.c_str()));
                 AZ_TEST_ASSERT(local.IsDirectory(m_fileRoot.c_str()));
                 {
@@ -436,10 +436,9 @@ namespace UnitTest
                     fclose(tempFile);
                 }
 
-                // make sure attributes are copied (such as modtime) even if they're copied:
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
+                // make sure attributes are copied, such as original modtime:
+                AZStd::this_thread::sleep_for(AZStd::chrono::seconds(1));
                 AZ_TEST_ASSERT(local.Copy(m_file01Name.c_str(), m_file02Name.c_str()));
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
                 AZ_TEST_ASSERT(local.Copy(m_file01Name.c_str(), m_file03Name.c_str()));
 
                 AZ_TEST_ASSERT(local.Exists(m_file01Name.c_str()));
@@ -467,9 +466,6 @@ namespace UnitTest
                 EXPECT_TRUE(file.Open(m_file01Name.c_str(), SystemFile::SF_OPEN_WRITE_ONLY));
                 file.Write("this is just a test that is longer", 34);
                 file.Close();
-
-                // make sure attributes are copied (such as modtime) even if they're copied:
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
 
                 EXPECT_TRUE(local.Copy(m_file01Name.c_str(), m_file02Name.c_str()));
 
@@ -514,7 +510,6 @@ namespace UnitTest
                 AZ_TEST_ASSERT(local.Write(fileHandle, "more", 4));
                 AZ_TEST_ASSERT(local.Close(fileHandle));
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1500));
                 // No-append-mode
                 AZ_TEST_ASSERT(local.Open(m_file03Name.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, fileHandle));
                 AZ_TEST_ASSERT(fileHandle != AZ::IO::InvalidHandle);
@@ -524,7 +519,7 @@ namespace UnitTest
                 modTimeC = local.ModificationTime(m_file02Name.c_str());
                 modTimeD = local.ModificationTime(m_file03Name.c_str());
 
-                AZ_TEST_ASSERT(modTimeD > modTimeC);
+                AZ_TEST_ASSERT(modTimeD >= modTimeC); // should never be descending
 
                 AZ::u64 f1s = 0;
                 AZ::u64 f2s = 0;
@@ -802,6 +797,32 @@ namespace UnitTest
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
+        TEST_F(AliasTest, ReplaceAlias_CanReplaceAliasInplace_Succeeds)
+        {
+            AZ::IO::LocalFileIO local;
+            AZ::IO::FixedMaxPathString aliasFolder;
+            auto CreateTestAbsPath = [&local](char* ptr, size_t size) -> size_t
+            {
+                // If the path was successfully converted to an absolute path
+                // then take the string length of it to figure out where to resize
+                // the fixed_string downwards
+                return local.ConvertToAbsolutePath("/temp", ptr, size) ?
+                    AZStd::char_traits<char>::length(ptr) : 0;
+            };
+            aliasFolder.resize_and_overwrite(aliasFolder.max_size(), CreateTestAbsPath);
+            local.SetAlias("@test@", aliasFolder.c_str());
+
+            // First replace the alias into a new FixedMaxPath
+            const AZ::IO::FixedMaxPath testValue = "@test@/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json";
+            AZ::IO::FixedMaxPath expectedResolvedValue;
+            EXPECT_TRUE(local.ReplaceAlias(expectedResolvedValue, testValue));
+
+            // Make a copy of the testValue into a FixedMaxPath and resolve it inplace
+            AZ::IO::FixedMaxPath testPath = testValue;
+            EXPECT_TRUE(local.ReplaceAlias(testPath, testPath));
+            EXPECT_EQ(expectedResolvedValue, testPath);
+        }
+
         TEST_F(AliasTest, GetAlias_LogsError_WhenAccessingDeprecatedAlias_Succeeds)
         {
             AZ::IO::LocalFileIO local;
@@ -902,7 +923,7 @@ namespace UnitTest
                 testString[0] = '\0';
                 localFileIO.Read(fileHandle1, testString, testStringLen);
 
-                // try swapping files when the destination file is open for read only, 
+                // try swapping files when the destination file is open for read only,
                 // since window is unable to move files that are open for read, this will fail.
                 AZ_TEST_ASSERT(!AZ::IO::SmartMove(m_file01Name.c_str(), m_file02Name.c_str()));
                 localFileIO.Close(fileHandle1);

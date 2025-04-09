@@ -41,16 +41,18 @@ namespace AZ
             uint32_t m_textureArrayIndex = UnusedIndex;
             uint32_t m_textureIndex = UnusedIndex;
 
+            AZStd::array<float, 3> m_decalColor = { { 1.0f, 1.0f, 1.0f } };
+            float m_decalColorFactor = 1.0f;
             static constexpr uint32_t UnusedIndex = std::numeric_limits< uint32_t>::max();
         };
 
         //! DecalFeatureProcessorInterface provides an interface to acquire, release, and update a decal. This is necessary for code outside of
-        //! the Atom features gem to communicate with the DecalFeatureProcessor.
+        //! the Atom features gem to communicate with the DecalTextureArrayFeatureProcessor.
         class DecalFeatureProcessorInterface
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DecalFeatureProcessorInterface, "{4A64E427-7F9F-4AF7-B414-69EA91323827}", RPI::FeatureProcessor);
+            AZ_RTTI(AZ::Render::DecalFeatureProcessorInterface, "{4A64E427-7F9F-4AF7-B414-69EA91323827}", AZ::RPI::FeatureProcessor);
 
             using DecalHandle = RHI::Handle<uint16_t, class Decal>;
 
@@ -68,6 +70,12 @@ namespace AZ
 
             //! Sets the position of the decal
             virtual void SetDecalPosition(DecalHandle handle, const AZ::Vector3& position) = 0;
+
+            //! Sets the color of the decal
+            virtual void SetDecalColor(DecalHandle handle, const AZ::Vector3& color) = 0;
+
+            //! Sets the color factor of the decal
+            virtual void SetDecalColorFactor(DecalHandle handle, float colorFactor) = 0;
 
             //! Sets the orientation of the decal
             virtual void SetDecalOrientation(DecalHandle handle, const AZ::Quaternion& orientation) = 0;

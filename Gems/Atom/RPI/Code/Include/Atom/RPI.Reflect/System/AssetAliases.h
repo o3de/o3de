@@ -12,6 +12,7 @@
 #include <AzCore/Name/Name.h>
 
 #include <Atom/RPI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 
 namespace AZ
 {
@@ -21,12 +22,12 @@ namespace AZ
     {
         //! AssetAliases stores a mapping of names to AssetIds. It allows the user to reference assets by a short name rather than a complex AssetId.
         //! For example, pass template library can use this data to map pass template name to pass template asset id. 
-        class AssetAliases final
+        class ATOM_RPI_REFLECT_API AssetAliases final
         {
             friend class AssetAliasesSourceData;
         public:
             AZ_RTTI(AssetAliases, "{0C4796E1-5229-4A09-B093-59A09A122A2F}");
-            AZ_CLASS_ALLOCATOR(AssetAliases, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetAliases, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
                 

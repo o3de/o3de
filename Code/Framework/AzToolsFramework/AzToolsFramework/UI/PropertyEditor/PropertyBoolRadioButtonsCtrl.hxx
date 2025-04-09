@@ -32,7 +32,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyBoolRadioButtonsCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyBoolRadioButtonsCtrl, AZ::SystemAllocator);
 
         explicit PropertyBoolRadioButtonsCtrl(QWidget* pParent = nullptr);
         ~PropertyBoolRadioButtonsCtrl() override = default;
@@ -69,7 +69,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(BoolPropertyRadioButtonsHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BoolPropertyRadioButtonsHandler, AZ::SystemAllocator);
         ~BoolPropertyRadioButtonsHandler() override = default;
 
         AZ::u32 GetHandlerName() const override;
@@ -78,6 +78,7 @@ namespace AzToolsFramework
         void UpdateWidgetInternalTabbing(PropertyBoolRadioButtonsCtrl* widget) override;
 
         QWidget* CreateGUI(QWidget* pParent) override;
+        bool ResetGUIToDefaults(PropertyBoolRadioButtonsCtrl* GUI) override;
         void ConsumeAttribute(PropertyBoolRadioButtonsCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyBoolRadioButtonsCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyBoolRadioButtonsCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;

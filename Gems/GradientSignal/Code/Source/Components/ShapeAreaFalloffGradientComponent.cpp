@@ -25,6 +25,7 @@ namespace GradientSignal
                 ->Field("ShapeEntityId", &ShapeAreaFalloffGradientConfig::m_shapeEntityId)
                 ->Field("FalloffWidth", &ShapeAreaFalloffGradientConfig::m_falloffWidth)
                 ->Field("FalloffType", &ShapeAreaFalloffGradientConfig::m_falloffType)
+                ->Field("Is3dFalloff", &ShapeAreaFalloffGradientConfig::m_is3dFalloff)
                 ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -36,7 +37,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ShapeAreaFalloffGradientConfig::m_shapeEntityId, "Shape Entity Id", "Entity with shape component to test distance against.")
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("ShapeService", 0xe86aa5fe))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ShapeAreaFalloffGradientConfig::m_falloffWidth, "Falloff Width", "Maximum distance used to calculate gradient in meters.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
@@ -47,6 +48,9 @@ namespace GradientSignal
                     //->EnumAttribute(ShapeAreaFalloffGradientConfig::FalloffType::Inner, "Inner")
                     ->EnumAttribute(FalloffType::Outer, "Outer")
                     //->EnumAttribute(ShapeAreaFalloffGradientConfig::FalloffType::InnerOuter, "InnerOuter")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &ShapeAreaFalloffGradientConfig::m_is3dFalloff, "3D Falloff",
+                        "Either calculate the falloff in the XY plane or in 3D space.")
                     ;
             }
         }
@@ -61,19 +65,20 @@ namespace GradientSignal
                 ->Property("falloffType",
                     [](ShapeAreaFalloffGradientConfig* config) { return (AZ::u8&)(config->m_falloffType); },
                     [](ShapeAreaFalloffGradientConfig* config, const AZ::u8& i) { config->m_falloffType = (FalloffType)i; })
+                ->Property("is3dFalloff", BehaviorValueProperty(&ShapeAreaFalloffGradientConfig::m_is3dFalloff))
                 ;
         }
     }
 
     void ShapeAreaFalloffGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void ShapeAreaFalloffGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientService"));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
     }
 
     void ShapeAreaFalloffGradientComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -110,7 +115,9 @@ namespace GradientSignal
                 ->Event("GetFalloffType", &ShapeAreaFalloffGradientRequestBus::Events::GetFalloffType)
                 ->Event("SetFalloffType", &ShapeAreaFalloffGradientRequestBus::Events::SetFalloffType)
                 ->VirtualProperty("FalloffType", "GetFalloffType", "SetFalloffType")
-                ;
+                ->Event("Get3dFalloff", &ShapeAreaFalloffGradientRequestBus::Events::Get3dFalloff)
+                ->Event("Set3dFalloff", &ShapeAreaFalloffGradientRequestBus::Events::Set3dFalloff)
+                ->VirtualProperty("Is3dFalloff", "Get3dFalloff", "Set3dFalloff");
         }
     }
 
@@ -121,10 +128,17 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::Activate()
     {
-        m_dependencyMonitor.Reset();
-        m_dependencyMonitor.ConnectOwner(GetEntityId());
-        m_dependencyMonitor.ConnectDependency(m_configuration.m_shapeEntityId);
         ShapeAreaFalloffGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Make sure we're notified whenever the shape changes, so that we can re-cache its center point.
+        if (m_configuration.m_shapeEntityId.IsValid())
+        {
+            AZ::EntityBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
+            LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
+        }
+
+        // Keep track of the center of the shape so that we can calculate falloff distance correctly.
+        CacheShapeBounds();
 
         // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
         GradientRequestBus::Handler::BusConnect(GetEntityId());
@@ -135,8 +149,9 @@ namespace GradientSignal
         // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
 
-        m_dependencyMonitor.Reset();
+        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         ShapeAreaFalloffGradientRequestBus::Handler::BusDisconnect();
+        AZ::EntityBus::Handler::BusDisconnect();
     }
 
     bool ShapeAreaFalloffGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -164,7 +179,15 @@ namespace GradientSignal
         AZStd::shared_lock lock(m_queryMutex);
 
         float distance = 0.0f;
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, sampleParams.m_position);
+        AZ::Vector3 queryPoint = sampleParams.m_position;
+        if (!m_configuration.m_is3dFalloff)
+        {
+            // Calculate the shape falloff distance in the XY plane only by using the shape center as our Z location.
+            queryPoint.SetZ(m_cachedShapeCenter.GetZ());
+        }
+
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            distance, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, queryPoint);
 
         // Since this is outer falloff, distance should give us values from 1.0 at the minimum distance to 0.0 at the maximum distance.
         // The statement is written specifically to handle the 0 falloff case as well. For 0 falloff, all points inside the shape
@@ -189,13 +212,20 @@ namespace GradientSignal
 
         LmbrCentral::ShapeComponentRequestsBus::Event(
             m_configuration.m_shapeEntityId,
-            [falloffWidth, positions, &outValues, &shapeConnected](LmbrCentral::ShapeComponentRequestsBus::Events* shapeRequests)
+            [this, falloffWidth, positions, &outValues, &shapeConnected](LmbrCentral::ShapeComponentRequestsBus::Events* shapeRequests)
             {
                 shapeConnected = true;
 
                 for (size_t index = 0; index < positions.size(); index++)
                 {
-                    float distance = shapeRequests->DistanceFromPoint(positions[index]);
+                    AZ::Vector3 queryPoint = positions[index];
+                    if (!m_configuration.m_is3dFalloff)
+                    {
+                        // Calculate the shape falloff distance in the XY plane only by using the shape center as our Z location.
+                        queryPoint.SetZ(m_cachedShapeCenter.GetZ());
+                    }
+
+                    float distance = shapeRequests->DistanceFromPoint(queryPoint);
 
                     // Since this is outer falloff, distance should give us values from 1.0 at the minimum distance to 0.0 at the maximum
                     // distance. The statement is written specifically to handle the 0 falloff case as well. For 0 falloff, all points
@@ -216,6 +246,20 @@ namespace GradientSignal
         }
     }
 
+    void ShapeAreaFalloffGradientComponent::NotifyRegionChanged(const AZ::Aabb& region)
+    {
+        if (region.IsValid())
+        {
+            LmbrCentral::DependencyNotificationBus::Event(
+                GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, region);
+        }
+        else
+        {
+            LmbrCentral::DependencyNotificationBus::Event(
+                GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+        }
+    }
+
     AZ::EntityId ShapeAreaFalloffGradientComponent::GetShapeEntityId() const
     {
         return m_configuration.m_shapeEntityId;
@@ -227,10 +271,25 @@ namespace GradientSignal
         // execute an arbitrary amount of logic, including calls back to this component.
         {
             AZStd::unique_lock lock(m_queryMutex);
+
+            // If we're setting the entityId to the same one, don't do anything.
+            if (entityId == m_configuration.m_shapeEntityId)
+            {
+                return;
+            }
+
             m_configuration.m_shapeEntityId = entityId;
+
+            AZ::EntityBus::Handler::BusDisconnect();
+            LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+            if (m_configuration.m_shapeEntityId.IsValid())
+            {
+                AZ::EntityBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
+                LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
+            }
         }
 
-        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+        CacheShapeBounds();
     }
 
     float ShapeAreaFalloffGradientComponent::GetFalloffWidth() const
@@ -240,14 +299,18 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::SetFalloffWidth(float falloffWidth)
     {
+        AZ::Aabb dirtyRegion = AZ::Aabb::CreateNull();
+
         // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
         // execute an arbitrary amount of logic, including calls back to this component.
         {
             AZStd::unique_lock lock(m_queryMutex);
+            // We only support outer falloff, so our dirty region is our shape expanded by the larger falloff width.
+            dirtyRegion = m_cachedShapeBounds.GetExpanded(AZ::Vector3(AZ::GetMax(m_configuration.m_falloffWidth, falloffWidth)));
             m_configuration.m_falloffWidth = falloffWidth;
         }
 
-        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+        NotifyRegionChanged(dirtyRegion);
     }
 
     FalloffType ShapeAreaFalloffGradientComponent::GetFalloffType() const
@@ -257,13 +320,95 @@ namespace GradientSignal
 
     void ShapeAreaFalloffGradientComponent::SetFalloffType(FalloffType type)
     {
+        AZ::Aabb dirtyRegion = AZ::Aabb::CreateNull();
+
         // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
         // execute an arbitrary amount of logic, including calls back to this component.
         {
             AZStd::unique_lock lock(m_queryMutex);
             m_configuration.m_falloffType = type;
+
+            // We only support outer falloff, so our dirty region is our shape expanded by the falloff width.
+            dirtyRegion = m_cachedShapeBounds.GetExpanded(AZ::Vector3(m_configuration.m_falloffWidth));
         }
 
-        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+        NotifyRegionChanged(dirtyRegion);
     }
-}
+
+    bool ShapeAreaFalloffGradientComponent::Get3dFalloff() const
+    {
+        return m_configuration.m_is3dFalloff;
+    }
+
+    void ShapeAreaFalloffGradientComponent::Set3dFalloff(bool is3dFalloff)
+    {
+        AZ::Aabb dirtyRegion = AZ::Aabb::CreateNull();
+
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_is3dFalloff = is3dFalloff;
+
+            // We only support outer falloff, so our dirty region is our shape expanded by the falloff width.
+            dirtyRegion = m_cachedShapeBounds.GetExpanded(AZ::Vector3(m_configuration.m_falloffWidth));
+        }
+
+        NotifyRegionChanged(dirtyRegion);
+    }
+    
+    void ShapeAreaFalloffGradientComponent::OnShapeChanged(
+        [[maybe_unused]] LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons reasons)
+    {
+        CacheShapeBounds();
+    }
+
+    void ShapeAreaFalloffGradientComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        CacheShapeBounds();
+    }
+
+    void ShapeAreaFalloffGradientComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        CacheShapeBounds();
+    }
+
+    void ShapeAreaFalloffGradientComponent::CacheShapeBounds()
+    {
+        AZ::Aabb dirtyRegion = AZ::Aabb::CreateNull();
+
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+
+            AZ::Aabb previousShapeBounds = m_cachedShapeBounds;
+
+            m_cachedShapeBounds = AZ::Aabb::CreateNull();
+
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                m_cachedShapeBounds, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+            // Grab the center of the shape so that we can calculate falloff distance in 2D.
+            if (m_cachedShapeBounds.IsValid())
+            {
+                m_cachedShapeCenter = m_cachedShapeBounds.GetCenter();
+            }
+            else
+            {
+                m_cachedShapeCenter = AZ::Vector3::CreateZero();
+            }
+
+            // Calculate the dirty region based on the previous and current shape bounds.
+            // If either the previous or current shape bounds is invalid, then leave the dirtyRegion invalid.
+            // This component returns 1.0 everywhere if there's no shape, because technically there's no falloff from max,
+            // so changing to or from a valid shape will cause potential value changes across the entire world space.
+            if (previousShapeBounds.IsValid() && m_cachedShapeBounds.IsValid())
+            {
+                dirtyRegion.AddAabb(previousShapeBounds.GetExpanded(AZ::Vector3(m_configuration.m_falloffWidth)));
+                dirtyRegion.AddAabb(m_cachedShapeBounds.GetExpanded(AZ::Vector3(m_configuration.m_falloffWidth)));
+            }
+        }
+
+        // Any time we're caching the shape bounds, it's presumably because the shape changed, so notify about the change.
+        NotifyRegionChanged(dirtyRegion);
+    }
+} // namespace GradientSignal

@@ -25,5 +25,20 @@ namespace AZ
                 }
             }
         }
+        
+        void SkinnedMeshInstance::DisableSkinning(uint32_t lodIndex, uint32_t meshIndex)
+        {
+            m_isSkinningEnabled[lodIndex][meshIndex] = false;
+        }
+
+        void SkinnedMeshInstance::EnableSkinning(uint32_t lodIndex, uint32_t meshIndex)
+        {
+            m_isSkinningEnabled[lodIndex][meshIndex] = true;
+        }
+        
+        bool SkinnedMeshInstance::IsSkinningEnabled(uint32_t lodIndex, uint32_t meshIndex) const
+        {
+            return m_isSkinningEnabled[lodIndex][meshIndex];
+        }
     } // namespace Render
 }// namespace AZ

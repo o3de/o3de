@@ -25,7 +25,7 @@ namespace UnitTest
     bool g_globalBool = false;
 
     class EntityUtilityComponentTests
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
         void InitProperties()
         {

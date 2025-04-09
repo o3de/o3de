@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -22,7 +23,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceTouchIos, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceTouchIos, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -60,12 +61,6 @@ namespace AzFramework
         //! throughout a multi-touch sequence, so we can keep track of the touch indices ourselves.
         AZStd::vector<const UITouch*> m_activeTouches;
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceTouch::Implementation* InputDeviceTouch::Implementation::Create(InputDeviceTouch& inputDevice)
-    {
-        return aznew InputDeviceTouchIos(inputDevice);
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceTouchIos::InputDeviceTouchIos(InputDeviceTouch& inputDevice)
@@ -193,5 +188,23 @@ namespace AzFramework
                              pressure,
                              index,
                              state);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class IosDeviceTouchImplFactory
+        : public InputDeviceTouch::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceTouch::Implementation> Create(InputDeviceTouch& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceTouchIos>(inputDevice);    
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceTouchImplentationFactory()
+    {
+        m_deviceTouchImplFactory = AZStd::make_unique<IosDeviceTouchImplFactory>();
+        AZ::Interface<InputDeviceTouch::ImplementationFactory>::Register(m_deviceTouchImplFactory.get());
     }
 } // namespace AzFramework

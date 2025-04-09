@@ -8,48 +8,92 @@
 
 #include <ContextMenuHandlers.h>
 
+#include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <QAction>
 #include <QMenu>
 
-void ContextMenuBottomHandler::Setup()
+void EditorContextMenuHandler::Setup()
 {
-    AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
+    AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 }
 
-void ContextMenuBottomHandler::Teardown()
+void EditorContextMenuHandler::Teardown()
 {
-    AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
+    AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 }
 
-int ContextMenuBottomHandler::GetMenuPosition() const
+void EditorContextMenuHandler::OnMenuBindingHook()
 {
-    return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::BOTTOM);
-}
-
-void ContextMenuBottomHandler::PopulateEditorGlobalContextMenu(
-    QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
-{
-    AzToolsFramework::EntityIdList selected;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        selected, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-    QAction* action = nullptr;
-
-    if (selected.size() > 0)
+    auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+    if (!menuManagerInterface)
     {
-        action = menu->addAction(QObject::tr("Open pinned Inspector"));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [selected]
+        return;
+    }
+
+    // Entity Outliner Context Menu
+    menuManagerInterface->AddActionToMenu(
+        EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.entity.openPinnedInspector", 50100);
+
+    // Viewport Context Menu
+    menuManagerInterface->AddActionToMenu(
+        EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.entity.openPinnedInspector", 50100);
+}
+
+void EditorContextMenuHandler::OnActionRegistrationHook()
+{
+    auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+    if (!actionManagerInterface)
+    {
+        return;
+    }
+
+    // Open Pinned Inspector
+    {
+        const AZStd::string_view actionIdentifier = "o3de.action.entity.openPinnedInspector";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Open Pinned Inspector";
+        actionProperties.m_description = "Open a new instance of the Entity Inspector for the current selection.";
+        actionProperties.m_category = "Edit";
+
+        actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []()
             {
-                AzToolsFramework::EntityIdSet pinnedEntities(selected.begin(), selected.end());
+                AzToolsFramework::EntityIdList selectedEntities;
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                AzToolsFramework::EntityIdSet pinnedEntities(selectedEntities.begin(), selectedEntities.end());
                 AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::OpenPinnedInspector, pinnedEntities);
             }
         );
 
-        menu->addSeparator();
+        actionManagerInterface->InstallEnabledStateCallback(
+            actionIdentifier,
+            []() -> bool
+            {
+                int selectedEntitiesCount;
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntitiesCount);
+
+                return selectedEntitiesCount > 0;
+            }
+        );
+
+        // Trigger update whenever entity selection changes.
+        actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+        // This action is only accessible outside of Component Modes
+        actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
     }
 }

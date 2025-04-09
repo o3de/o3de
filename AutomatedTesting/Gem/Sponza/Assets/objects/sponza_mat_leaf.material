@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/thorn_basecolor.png",
         "clearCoat.factor": 0.05000000074505806,
@@ -8,13 +8,14 @@
         "clearCoat.roughness": 0.10000000149011612,
         "general.applySpecularAA": true,
         "general.doubleSided": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             0.46506446599960327,
             1.0,
             0.3944609761238098,
             1.0
         ],
         "normal.textureMap": "../Textures/thorn_normal.jpg",
+        "normal.flipY": true,
         "opacity.alphaSource": "Split",
         "opacity.factor": 0.20000000298023224,
         "opacity.mode": "Cutout",

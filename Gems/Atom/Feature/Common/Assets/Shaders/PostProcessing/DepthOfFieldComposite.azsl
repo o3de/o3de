@@ -10,7 +10,7 @@
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include "DepthOfField.azsli"
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
@@ -63,6 +63,7 @@ inline float3 ConvertDebugColor(float3 color, float3 debugColor)
             return color * debugColor;
         }
     }
+    return color;
 }
 
 PSOutput MainPS(VSOutput IN)

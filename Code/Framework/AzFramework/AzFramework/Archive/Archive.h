@@ -45,7 +45,7 @@ namespace AZ::IO
     struct CCachedFileData
         : public AZStd::intrusive_base
     {
-        AZ_CLASS_ALLOCATOR(CCachedFileData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CCachedFileData, AZ::SystemAllocator);
         CCachedFileData(ZipDir::CachePtr pZip, uint32_t nArchiveFlags, ZipDir::FileEntry* pFileEntry, AZStd::string_view szFilename);
         ~CCachedFileData();
         CCachedFileData(const CCachedFileData&) = delete;
@@ -92,7 +92,7 @@ namespace AZ::IO
     {
     public:
         AZ_RTTI(Archive, "{764A2260-FF8A-4C86-B958-EBB0B69D9DFA}", IArchive);
-        AZ_CLASS_ALLOCATOR(Archive, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Archive, AZ::OSAllocator);
     private:
         friend struct CCachedFileData;
         friend class FindData;
@@ -170,8 +170,6 @@ namespace AZ::IO
         void* PoolMalloc(size_t size) override;
         //! Free pool
         void PoolFree(void* p) override;
-
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> PoolAllocMemoryBlock(size_t nSize, const char* sUsage, size_t nAlign) override;
 
         // interface IArchive ---------------------------------------------------------------------------
 

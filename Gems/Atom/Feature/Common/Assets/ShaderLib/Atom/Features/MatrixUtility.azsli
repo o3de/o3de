@@ -8,7 +8,7 @@
 
 #pragma once
 
-#define EPSILON 10e-5f
+#define EPSILON 10e-5
 
  
 float4x4 CreateIdentity4x4()
@@ -27,6 +27,25 @@ float3x3 CreateIdentity3x3()
     result[0] = float3(1,0,0);
     result[1] = float3(0,1,0);
     result[2] = float3(0,0,1);
+    return result;
+}
+
+real4x4 CreateIdentity4x4_real()
+{
+    real4x4 result;
+    result[0] = real4(1,0,0,0);
+    result[1] = real4(0,1,0,0);
+    result[2] = real4(0,0,1,0);
+    result[3] = real4(0,0,0,1);
+    return result;
+}
+
+real3x3 CreateIdentity3x3_real()
+{
+    real3x3 result;
+    result[0] = real3(1,0,0);
+    result[1] = real3(0,1,0);
+    result[2] = real3(0,0,1);
     return result;
 }
 
@@ -76,9 +95,14 @@ float4x4 Inverse(float4x4 m)
     /* Calculate the determinant */
     float det = m[0][0] * result[0][0] + m[1][0] * result[0][1] + m[2][0] * result[0][2];
 
+    /* Run singularity test */
+    if (det == 0)
+    {
+        return CreateIdentity4x4();
+    }
+
     /* divide cofactors by determinant */
-    bool isDetZero = step(-EPSILON, det) * (1 - step(EPSILON, det));
-    float f = (isDetZero? 10000000.0 : 1.0/det);
+    float f = 1.f / det;
 
     result[0][0] = result[0][0] * f;
     result[0][1] = result[0][1] * f;
@@ -190,23 +214,23 @@ float3x3 InverseTransposeMatrixFast(float3x3 worldMat)
     return invScaleWorldMat;
 }
 
-float3x3 MatrixFromQuaternion(float4 quaternion)
+real3x3 MatrixFromQuaternion(real4 quaternion)
 {
-    float tx = quaternion.x * 2.0f;
-    float ty = quaternion.y * 2.0f;
-    float tz = quaternion.z * 2.0f;
-    float twx = quaternion.w * tx;
-    float twy = quaternion.w * ty;
-    float twz = quaternion.w * tz;
-    float txy = quaternion.x * ty;
-    float txx = quaternion.x * tx;
-    float txz = quaternion.x * tz;
-    float tyy = quaternion.y * ty;
-    float tyz = quaternion.y * tz;
-    float tzz = quaternion.z * tz;
+    real tx = quaternion.x * 2.0;
+    real ty = quaternion.y * 2.0;
+    real tz = quaternion.z * 2.0;
+    real twx = quaternion.w * tx;
+    real twy = quaternion.w * ty;
+    real twz = quaternion.w * tz;
+    real txy = quaternion.x * ty;
+    real txx = quaternion.x * tx;
+    real txz = quaternion.x * tz;
+    real tyy = quaternion.y * ty;
+    real tyz = quaternion.y * tz;
+    real tzz = quaternion.z * tz;
     
-    float3x3 m = float3x3(1.0f - tyy - tzz, txy - twz, txz + twy, 
-                            txy + twz, 1.0f - txx - tzz, tyz - twx, 
-                            txz - twy, tyz + twx, 1.0f - txx - tyy);
+    real3x3 m = real3x3(1.0 - tyy - tzz, txy - twz, txz + twy,
+                        txy + twz, 1.0 - txx - tzz, tyz - twx,
+                        txz - twy, tyz + twx, 1.0 - txx - tyy);
     return m;
 }

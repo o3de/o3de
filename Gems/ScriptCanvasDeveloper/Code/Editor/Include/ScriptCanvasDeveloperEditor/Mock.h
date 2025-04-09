@@ -16,13 +16,10 @@
 
 #include <ScriptCanvasDeveloperEditor/MockBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {
-        using namespace ScriptCanvas;
-
-
         enum class SlotConfigState : AZ::u8
         {
             New,
@@ -33,7 +30,7 @@ namespace ScriptCanvasDeveloper
         struct SlotConfig
         {
             AZ_TYPE_INFO(SlotConfig, "{10B5DF2F-1105-4BDD-B8C0-24684AA4ECB3}");
-            AZ_CLASS_ALLOCATOR(SlotConfig, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SlotConfig, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             AZ::Crc32 OnSlotNameChanged();
@@ -56,9 +53,9 @@ namespace ScriptCanvasDeveloper
             : public AZ::ComponentConfig
         {
             AZ_RTTI(MockNodeConfig, "{6FA19B08-186D-4308-BAE3-530367D902E0}");
-            AZ_CLASS_ALLOCATOR(MockNodeConfig, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MockNodeConfig, AZ::SystemAllocator);
 
-            static AZ::TypeId GetComponentTypeId()
+            static constexpr AZ::TypeId GetComponentTypeId()
             {
                 return AZ::TypeId("{91B3D89A-4A4B-49FF-AD91-CAAC49E141A8}");
             }
@@ -110,9 +107,9 @@ namespace ScriptCanvasDeveloper
             void SetUiEntityId(AZ::EntityId uiEntityId);
 
             void Clear();
-            
+
             AZStd::vector<AZStd::string> GetColorPaletteList() const;
-            
+
             virtual void OnClear();
             virtual void OnNodeDisplayed(const GraphCanvas::NodeId& graphCanvasEntityId);
 
@@ -129,12 +126,12 @@ namespace ScriptCanvasDeveloper
             AZStd::list<SlotConfig> m_dataOutConfigArray;
             AZStd::list<SlotConfig> m_executionInConfigArray;
             AZStd::list<SlotConfig> m_executionOutConfigArray;
-            
+
             AZ::EntityId m_graphCanvasNodeId;
             AZStd::vector<AZ::EntityId> m_graphCanvasSlotIds;
 
             ///< Contains slotIds from deleted SlotConfigs that needs the slots removed from the Mock
-            AZStd::vector<SlotId> m_pendingConfigRemovals; 
+            AZStd::vector<SlotId> m_pendingConfigRemovals;
         };
     }
 }

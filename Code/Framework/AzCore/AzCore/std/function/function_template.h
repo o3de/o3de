@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/function/function_base.h>
+#include <AzCore/std/typetraits/function_traits.h>
 #include <AzCore/std/function/invoke.h>
 #include <AzCore/std/typetraits/is_integral.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
@@ -683,4 +684,11 @@ namespace AZStd
             return base_type::operator()(AZStd::forward<Args>(args)...);
         }
     };
+
+    // AZStd::function deduction guides
+    template<class R, class... ArgTypes>
+    function(R(*)(ArgTypes...)) -> function<R(ArgTypes...)>;
+
+    template<class F, class = enable_if_t<AZStd::Internal::has_call_operator_v<F>>>
+    function(F) -> function<typename AZStd::Internal::function_object<F>::function_type>;
 } // end namespace AZStd

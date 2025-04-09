@@ -46,8 +46,7 @@ namespace ScriptCanvas
 
                 ScriptEventBase::ScriptEventBase()
                     : m_version(0)
-                    , m_scriptEventAssetId(0)
-                    , m_asset(AZ::Data::AssetLoadBehavior::PreLoad)
+                    , m_asset(AZ::Data::AssetLoadBehavior::NoLoad)
                 {
                 }
 

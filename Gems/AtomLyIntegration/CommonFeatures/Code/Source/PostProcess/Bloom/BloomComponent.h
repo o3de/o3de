@@ -20,7 +20,7 @@ namespace AZ
     {
         namespace Bloom
         {
-            static constexpr const char* const BloomComponentTypeId = "{0D38705D-525D-4BA7-A805-26E3E9093F54}";
+            inline constexpr AZ::TypeId BloomComponentTypeId{ "{0D38705D-525D-4BA7-A805-26E3E9093F54}" };
         }
 
         class BloomComponent final

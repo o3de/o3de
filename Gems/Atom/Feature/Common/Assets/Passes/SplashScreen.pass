@@ -1,0 +1,34 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SplashScreenPassTemplate",
+            "PassClass": "SplashScreenPass",
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/SplashScreen/SplashScreenPass.shader"
+                },
+                "BindViewSrg": true
+            },
+            "Slots": [
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "InputOutput",
+                    "AttachmentRef": {
+                        "Pass": "UIPass",
+                        "Attachment": "InputOutput"
+                    }
+                }
+            ]
+        }
+    }
+}

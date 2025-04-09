@@ -6,8 +6,8 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
@@ -18,23 +18,38 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2DMS<float>  m_depth;
+    Texture2D<float>    m_depthLinear;
     Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
     Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
     Texture2DMS<float4> m_reflection;
     Texture2D<float4>   m_previousFrame;
+    Texture2D<float4>   m_rayTracingCoords;
+    Texture2D<float4>   m_fallbackColor;
+   
+    // output image scale and dimensions
+    float m_invOutputScale;
+    uint  m_outputWidth;
+    uint  m_outputHeight;
+
+    // SSR settings
+    bool  m_rayTracingEnabled;
+    bool  m_rayTraceFallbackData;
+    float m_maxDepthThreshold;
+    float m_maxRayDistance;
+    float m_maxRoughness;
+    float m_roughnessBias;
 
     Sampler LinearSampler
     {
         MinFilter = Linear;
         MagFilter = Linear;
         MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
     };
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include "ReflectionCommon.azsli"
 #include "ReflectionScreenSpaceTrace.azsli"
 
@@ -64,26 +79,33 @@ VSOutput MainVS(VSInput input)
 struct PSOutput
 {    
     float4 m_color  : SV_Target0;
-    float m_depth   : SV_Depth;
+    float4 m_coords : SV_Target1;
 };
 
 PSOutput MainPS(VSOutput IN)
 {
-    // compute screen coords based on a half-res render target
-    float2 screenCoords = IN.m_position.xy * 2.0f;
-       
-    uint2 dimensions;
-    uint samples;
-    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
-    float2 UV = saturate(screenCoords / dimensions.xy);
+    float2 coords = IN.m_position.xy;
+    float2 UV = IN.m_texCoord.xy;
+    float2 fullScreenCoords = coords * PassSrg::m_invOutputScale;
+    uint2  fullScreenDimensions = uint2(PassSrg::m_outputWidth, PassSrg::m_outputHeight) * PassSrg::m_invOutputScale;
 
-    float depth = PassSrg::m_depth.Load(screenCoords, 0).r;
+    float depth = PassSrg::m_depth.Load(fullScreenCoords, 0).r;
     if (depth == 0.0f)
     {
         // skip tracing rays at max scene depth
         discard;
     }
-        
+       
+    float4 specularF0 = PassSrg::m_specularF0.Load(fullScreenCoords, 0);
+    float roughness = specularF0.a;
+    if (roughness > PassSrg::m_maxRoughness)
+    {
+        // outside of roughness range for SSR
+        discard;
+    }
+
+    roughness = saturate(roughness + PassSrg::m_roughnessBias);
+
     // compute view space surface position
     float2 ndcPos = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
     float4 projectedPos = float4(ndcPos, depth, 1.0f);
@@ -91,93 +113,80 @@ PSOutput MainPS(VSOutput IN)
     positionVS /= positionVS.w;
 
     // normalize the viewspace position to get the camera-to-position vector
-    float3 cameraToPositionVS = normalize(positionVS);  
+    float3 cameraToPositionVS = normalize(positionVS.xyz);
 
     // retrieve surface normal
-    float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, 0);
+    float4 encodedNormal = PassSrg::m_normal.Load(fullScreenCoords, 0);
     float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     float3 normalVS = normalize(mul(ViewSrg::m_viewMatrix, float4(normalWS, 0.0f)).xyz);
 
     // reflect view ray around surface normal
     float3 reflectDirVS = normalize(reflect(cameraToPositionVS, normalVS));
  
-    // check to see if the reflected direction is approaching the camera
-    float rdotv = dot(reflectDirVS, -cameraToPositionVS);
-    bool fallbackEdge = false;
-    if (rdotv >= -0.05f)
-    {
-        if (rdotv >= 0.0f)
-        {
-            // ray points back to camera, fallback to cubemaps
-            discard;            
-        }
-
-        // ray is approaching the camera direction, but not there yet - trace the reflection and set this
-        // as a non-reflected pixel, which will prevent artifacts at the boundary
-        fallbackEdge = true;
-    }
-
-    // trace screenspace rays against the depth buffer to find the screenspace intersection coordinates    
-    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    // retrieve the hitCoords from RayTracing, if enabled, or traditional raymarch
     float2 hitCoords = float2(0.0f, 0.0f);
-    if (TraceRayScreenSpace(positionVS, reflectDirVS, dimensions, hitCoords))
+    bool foundHit = false; 
+
+    if (PassSrg::m_rayTracingEnabled)
     {
-        // reconstruct the world space position of the trace coordinates
-        float2 traceUV = saturate(hitCoords / dimensions);
-        float traceDepth = PassSrg::m_depth.Load(hitCoords, 0).r;
-        float2 traceNDC = float2(traceUV.x, 1.0f - traceUV.y) * 2.0f - 1.0f;
-        float4 traceProjectedPos = float4(traceNDC, traceDepth, 1.0f);
-        float4 tracePositionVS = mul(ViewSrg::m_projectionMatrixInverse, traceProjectedPos);
-        tracePositionVS /= tracePositionVS.w;
-        float4 tracePositionWS = mul(ViewSrg::m_viewMatrixInverse, tracePositionVS);
-        
-        // reproject to the previous frame image coordinates
-        float4 tracePrevNDC = mul(ViewSrg::m_viewProjectionPrevMatrix, tracePositionWS);
-        tracePrevNDC /= tracePrevNDC.w;
-        float2 tracePrevUV = float2(tracePrevNDC.x, -1.0f * tracePrevNDC.y) * 0.5f + 0.5f;
-
-        // sample the previous frame image
-        result.rgb = PassSrg::m_previousFrame.SampleLevel(PassSrg::LinearSampler, tracePrevUV, 0).rgb;
-
-        // apply surface specular
-        float3 specularF0 = PassSrg::m_specularF0.Load(screenCoords, 0).rgb;
-        result.rgb *= specularF0;
-
-        // fade rays close to screen edge
-        const float ScreenFadeDistance = 0.95f;
-        float2 fadeAmount = max(max(0.0f, traceUV - ScreenFadeDistance), max(0.0f, 1.0f - traceUV - ScreenFadeDistance));
-        fadeAmount /= (1.0f - ScreenFadeDistance);
-        result.a = fallbackEdge ? 0.0f : 1.0f - max(fadeAmount.x, fadeAmount.y);
+        float4 rayTraceResult = PassSrg::m_rayTracingCoords.Load(int3(coords, 0));
+        hitCoords = rayTraceResult.xy;   
+        foundHit = (rayTraceResult.z == (float)ReflectionScreenSpaceRayTracingResult::Hit);
     }
     else
     {
-        // ray miss, add in the IBL/probe reflections from the specular pass
-        float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
-        float3 cameraToPositionWS = normalize(positionWS - ViewSrg::m_worldPosition);  
-        float3 reflectDirWS = normalize(reflect(cameraToPositionWS, normalWS));
-        
-        result.rgb += PassSrg::m_reflection.Load(screenCoords, 0).rgb;
-        result.a = fallbackEdge ? 0.0f : 1.0f;
+        foundHit = TraceRayScreenSpace(positionVS.xyz, reflectDirVS, fullScreenDimensions, hitCoords);
     }
-
-    // downsample depth
-    float downsampledDepth = 0.0f;
-    for (int y = -2; y < 2; ++y)
+    
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    if (foundHit)
     {
-        for (int x = -2; x < 2; ++x)
+        // check for RayTracing fallback
+        float4 fallbackColor = PassSrg::m_fallbackColor.Load(int3(coords, 0));
+        if (fallbackColor.a > 0.0f)
         {
-            float depth = PassSrg::m_depth.Load(screenCoords + int2(x, y), 0).r;
+            result.rgb = fallbackColor.rgb;
+            result.a = 1.0f;
+        }
+        else
+        {
+            // reconstruct the world space position of the trace coordinates
+            float2 traceUV = saturate(hitCoords / fullScreenDimensions);
+            float traceDepth = PassSrg::m_depth.Load(hitCoords, 0).r;
+            float2 traceNDC = float2(traceUV.x, 1.0f - traceUV.y) * 2.0f - 1.0f;
+            float4 traceProjectedPos = float4(traceNDC, traceDepth, 1.0f);
+            float4 tracePositionVS = mul(ViewSrg::m_projectionMatrixInverse, traceProjectedPos);
+            tracePositionVS /= tracePositionVS.w;
+            float4 tracePositionWS = mul(ViewSrg::m_viewMatrixInverse, tracePositionVS);
+        
+            // reproject to the previous frame image coordinates
+            float4 tracePrevNDC = mul(ViewSrg::m_viewProjectionPrevMatrix, tracePositionWS);
+            tracePrevNDC /= tracePrevNDC.w;
+            float2 tracePrevUV = float2(tracePrevNDC.x, -1.0f * tracePrevNDC.y) * 0.5f + 0.5f;
 
-            // take the closest depth sample (larger depth value due to reverse depth)
-            if (depth > downsampledDepth)
+            // sample the previous frame image
+            result.rgb = PassSrg::m_previousFrame.SampleLevel(PassSrg::LinearSampler, tracePrevUV, 0).rgb;
+
+            if (!PassSrg::m_rayTracingEnabled || !PassSrg::m_rayTraceFallbackData)
             {
-                downsampledDepth = depth;
+                // fade rays close to screen edge
+                const float ScreenFadeDistance = 0.95f;
+                float2 fadeAmount = max(max(0.0f, traceUV - ScreenFadeDistance), max(0.0f, 1.0f - traceUV - ScreenFadeDistance));
+                fadeAmount /= (1.0f - ScreenFadeDistance);
+                result.a = 1.0f - max(fadeAmount.x, fadeAmount.y);
+            }
+            else
+            {
+                result.a = 1.0f;            
             }
         }
+
+        // apply surface specular
+        result.rgb *= specularF0.rgb;
     }
 
     PSOutput OUT;
     OUT.m_color = result;
-    OUT.m_depth = downsampledDepth;
+    OUT.m_coords = float4(hitCoords.xy, 0.0f, (float)foundHit);
     return OUT;
 }

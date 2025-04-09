@@ -19,8 +19,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TransitionStateFilterPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(TransitionStateFilterLocalHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TransitionStateFilterPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(TransitionStateFilterLocalHandler, EditorAllocator)
 
     TransitionStateFilterPicker::TransitionStateFilterPicker(AnimGraphStateMachine* stateMachine, QWidget* parent)
         : QWidget(parent)
@@ -133,7 +133,7 @@ namespace EMotionFX
 
     AZ::u32 TransitionStateFilterLocalHandler::GetHandlerName() const
     {
-        return AZ_CRC("TransitionStateFilterLocal", 0x7c4000ff);
+        return AZ_CRC_CE("TransitionStateFilterLocal");
     }
 
 
@@ -143,7 +143,8 @@ namespace EMotionFX
 
         connect(picker, &TransitionStateFilterPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -161,7 +162,7 @@ namespace EMotionFX
             }
         }
 
-        if (attrib == AZ_CRC("StateMachine", 0xe5f2e7a8))
+        if (attrib == AZ_CRC_CE("StateMachine"))
         {
             attrValue->Read<AnimGraphStateMachine*>(m_stateMachine);
             GUI->SetStateMachine(m_stateMachine);

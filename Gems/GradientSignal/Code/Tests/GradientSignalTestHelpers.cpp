@@ -15,9 +15,9 @@
 
 namespace UnitTest
 {
-    AZ::RHI::ImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize)
+    AZ::RHI::DeviceImageSubresourceLayout BuildSubImageLayout(AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize)
     {
-        AZ::RHI::ImageSubresourceLayout layout;
+        AZ::RHI::DeviceImageSubresourceLayout layout;
         layout.m_size = AZ::RHI::Size{ width, height, 1 };
         layout.m_rowCount = width;
         layout.m_bytesPerRow = width * pixelSize;
@@ -49,24 +49,20 @@ namespace UnitTest
         return image;
     }
 
-    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZ::s32 seed)
+    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildBasicMipChainAsset(
+        AZ::u16 mipLevels, AZ::u32 width, AZ::u32 height, AZ::u32 pixelSize, AZStd::span<const uint8_t> data)
     {
         using namespace AZ;
 
         RPI::ImageMipChainAssetCreator assetCreator;
 
+        const uint16_t arraySize = 1;
         assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
 
-        RHI::ImageSubresourceLayout layout = BuildSubImageLayout(width, height, pixelSize);
+        RHI::DeviceImageSubresourceLayout layout = BuildSubImageLayout(width, height, pixelSize);
 
         assetCreator.BeginMip(layout);
-
-        for (AZ::u32 arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)
-        {
-            AZStd::vector<uint8_t> data = BuildBasicImageData(width, height, pixelSize, seed);
-            assetCreator.AddSubImage(data.data(), data.size());
-        }
-
+        assetCreator.AddSubImage(data.data(), data.size());
         assetCreator.EndMip();
 
         Data::Asset<RPI::ImageMipChainAsset> asset;
@@ -109,54 +105,22 @@ namespace UnitTest
         return image;
     }
 
-    AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> BuildSpecificPixelMipChainAsset(
-        AZ::u16 mipLevels, AZ::u16 arraySize, AZ::u32 width, AZ::u32 height,
-        AZ::u32 pixelSize, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues)
-    {
-        using namespace AZ;
-
-        RPI::ImageMipChainAssetCreator assetCreator;
-
-        assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), mipLevels, arraySize);
-
-        RHI::ImageSubresourceLayout layout = BuildSubImageLayout(width, height, pixelSize);
-
-        assetCreator.BeginMip(layout);
-
-        for (AZ::u32 arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)
-        {
-            AZStd::vector<uint8_t> data = BuildSpecificPixelImageData(width, height, pixelSize, pixelX, pixelY, setPixelValues);
-            assetCreator.AddSubImage(data.data(), data.size());
-        }
-
-        assetCreator.EndMip();
-
-        Data::Asset<RPI::ImageMipChainAsset> asset;
-        EXPECT_TRUE(assetCreator.End(asset));
-        EXPECT_TRUE(asset.IsReady());
-        EXPECT_NE(asset.Get(), nullptr);
-
-        return asset;
-    }
-
-    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed)
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAssetFromPixelData(
+        AZ::u32 width, AZ::u32 height, AZ::RHI::Format format, AZStd::span<const uint8_t> data)
     {
         auto randomAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
         auto imageAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::RPI::StreamingImageAsset>(
             randomAssetId, AZ::Data::AssetLoadBehavior::Default);
 
-        const AZ::u32 arraySize = 1;
         const AZ::u32 mipCountTotal = 1;
-        const auto format = AZ::RHI::Format::R8_UNORM;
         const AZ::u32 pixelSize = AZ::RHI::GetFormatComponentCount(format);
 
-        AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildBasicMipChainAsset(mipCountTotal, arraySize, width, height, pixelSize, seed);
+        AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildBasicMipChainAsset(mipCountTotal, width, height, pixelSize, data);
 
         AZ::RPI::StreamingImageAssetCreator assetCreator;
         assetCreator.Begin(randomAssetId);
 
-        AZ::RHI::ImageDescriptor imageDesc = AZ::RHI::ImageDescriptor::Create2DArray(AZ::RHI::ImageBindFlags::ShaderRead, width, height, arraySize, format);
-        imageDesc.m_mipLevels = static_cast<AZ::u16>(mipCountTotal);
+        AZ::RHI::ImageDescriptor imageDesc = AZ::RHI::ImageDescriptor::Create2D(AZ::RHI::ImageBindFlags::ShaderRead, width, height, format);
 
         assetCreator.SetImageDescriptor(imageDesc);
         assetCreator.AddMipChainAsset(*mipChain.Get());
@@ -166,36 +130,38 @@ namespace UnitTest
         EXPECT_NE(imageAsset.Get(), nullptr);
 
         return imageAsset;
+    }
+
+    AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed)
+    {
+        const auto format = AZ::RHI::Format::R8_UNORM;
+        const AZ::u32 pixelSize = AZ::RHI::GetFormatComponentCount(format);
+
+        AZStd::vector<uint8_t> data = BuildBasicImageData(width, height, pixelSize, seed);
+        return CreateImageAssetFromPixelData(width, height, format, data);
     }
 
     AZ::Data::Asset<AZ::RPI::StreamingImageAsset> CreateSpecificPixelImageAsset(
         AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY, AZStd::span<const AZ::u8> setPixelValues)
     {
-        auto randomAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
-        auto imageAsset = AZ::Data::AssetManager::Instance().CreateAsset<AZ::RPI::StreamingImageAsset>(
-            randomAssetId, AZ::Data::AssetLoadBehavior::Default);
-
-        const AZ::u32 arraySize = 1;
-        const AZ::u32 mipCountTotal = 1;
         const auto format = AZ::RHI::Format::R8G8B8A8_UNORM;
         const AZ::u32 pixelSize = AZ::RHI::GetFormatComponentCount(format);
 
-        AZ::Data::Asset<AZ::RPI::ImageMipChainAsset> mipChain = BuildSpecificPixelMipChainAsset(
-            mipCountTotal, arraySize, width, height, pixelSize, pixelX, pixelY, setPixelValues);
+        AZStd::vector<uint8_t> data = BuildSpecificPixelImageData(width, height, pixelSize, pixelX, pixelY, setPixelValues);
+        return CreateImageAssetFromPixelData(width, height, format, data);
+    }
 
-        AZ::RPI::StreamingImageAssetCreator assetCreator;
-        assetCreator.Begin(randomAssetId);
+    AZ::Vector3 PixelCoordinatesToWorldSpace(uint32_t pixelX, uint32_t pixelY, const AZ::Aabb& bounds, uint32_t width, uint32_t height)
+    {
+        AZ::Vector2 pixelSize(bounds.GetXExtent() / aznumeric_cast<float>(width), bounds.GetYExtent() / aznumeric_cast<float>(height));
 
-        AZ::RHI::ImageDescriptor imageDesc = AZ::RHI::ImageDescriptor::Create2DArray(AZ::RHI::ImageBindFlags::ShaderRead, width, height, arraySize, format);
-        imageDesc.m_mipLevels = static_cast<AZ::u16>(mipCountTotal);
-
-        assetCreator.SetImageDescriptor(imageDesc);
-        assetCreator.AddMipChainAsset(*mipChain.Get());
-
-        EXPECT_TRUE(assetCreator.End(imageAsset));
-        EXPECT_TRUE(imageAsset.IsReady());
-        EXPECT_NE(imageAsset.Get(), nullptr);
-        return imageAsset;
+        // Return the center point of the pixel in world space.
+        // Note that Y gets flipped because of the way images map into world space. (0,0) is the lower left corner in world space,
+        // but the upper left corner in image space.
+        return AZ::Vector3(
+            bounds.GetMin().GetX() + ((pixelX + 0.5f) * pixelSize.GetX()),
+            bounds.GetMin().GetY() + ((height - (pixelY + 0.5f)) * pixelSize.GetY()),
+            0.0f);
     }
 
     void GradientSignalTestHelpers::CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float queryMin, float queryMax)

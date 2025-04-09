@@ -16,15 +16,18 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+
 namespace ScriptCanvas::Nodeables::Spawning
 {
     //! Node for despawning entities
     class DespawnNodeable
         : public Nodeable
-        , public AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler
+        , public AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler
     {
         SCRIPTCANVAS_NODE(DespawnNodeable);
     public:
+        AZ_CLASS_ALLOCATOR(DespawnNodeable, AZ::SystemAllocator)
         DespawnNodeable() = default;
         DespawnNodeable(const DespawnNodeable& rhs);
         DespawnNodeable& operator=(const DespawnNodeable& rhs);

@@ -39,11 +39,11 @@ def DynVegUtils_TempPrefabCreationWorks():
     with Tracer() as error_tracer:
         # Create dictionary for prefab filenames and paths to create using helper function
         mesh_prefabs = {
-            "UtilsTest_PinkFlower": os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel"),
-            "UtilsTest_PurpleFlower": os.path.join("assets", "objects", "foliage", "grass_flower_purple.azmodel"),
-            "UtilsTest_1m_Cube": os.path.join("objects", "_primitives", "_box_1x1.azmodel"),
-            "UtilsTest_CedarTree": os.path.join("assets", "objects", "foliage", "cedar.azmodel"),
-            "UtilsTest_Bush": os.path.join("assets", "objects", "foliage", "bush_privet_01.azmodel"),
+            "UtilsTest_PinkFlower": os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel"),
+            "UtilsTest_PurpleFlower": os.path.join("assets", "objects", "foliage", "grass_flower_purple.fbx.azmodel"),
+            "UtilsTest_1m_Cube": os.path.join("objects", "_primitives", "_box_1x1.fbx.azmodel"),
+            "UtilsTest_CedarTree": os.path.join("assets", "objects", "foliage", "cedar.fbx.azmodel"),
+            "UtilsTest_Bush": os.path.join("assets", "objects", "foliage", "bush_privet_01.fbx.azmodel"),
                    }
 
         # 1) Open an existing simple level
@@ -66,7 +66,7 @@ def DynVegUtils_TempPrefabCreationWorks():
             f"Failed to create temporary mesh prefab: {physx_prefab_filename}"
         )
         test_physx_mesh_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", os.path.join(
-            "assets", "objects", "foliage", "cedar.pxmesh"), math.Uuid(), False)
+            "assets", "objects", "foliage", "cedar.fbx.pxmesh"), math.Uuid(), False)
         dynveg.create_temp_physx_mesh_collider(test_physx_mesh_asset_id, physx_prefab_filename)
         Report.result(physx_collider_prefab_created, helper.wait_for_condition(lambda:
                                                                                PrefabInstance.is_valid(prefab[1]), 3.0))

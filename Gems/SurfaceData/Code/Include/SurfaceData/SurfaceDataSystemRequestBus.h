@@ -51,7 +51,7 @@ namespace SurfaceData
         virtual void UpdateSurfaceDataModifier(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry) = 0;
 
         // Notify any dependent systems that they need to refresh their surface data for the provided area.
-        virtual void RefreshSurfaceData(const AZ::Aabb& dirtyArea) = 0;
+        virtual void RefreshSurfaceData(const SurfaceDataRegistryHandle& providerHandle, const AZ::Aabb& dirtyArea) = 0;
 
         // Get the SurfaceDataRegistryHandle for a given entityId.
         virtual SurfaceDataRegistryHandle GetSurfaceDataProviderHandle(const AZ::EntityId& providerEntityId) = 0;

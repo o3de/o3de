@@ -5,6 +5,6 @@
     "ClassData": {
         "Name": "TerrainParentPass",
         "TemplateName": "TerrainParentPassTemplate",
-        "Enabled": false
+        "Enabled": true
     }
 }

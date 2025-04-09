@@ -8,7 +8,10 @@
             "Name": "Emissive",
             "RGB_Weight": "CIEXYZ",
             "PixelFormat": "BC7",
-            "DiscardAlpha": true
+            "DiscardAlpha": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
         },
         "PlatformsPresets": {
             "android": {
@@ -16,30 +19,42 @@
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "ASTC_4x4",
-                "MaxTextureSize": 2048,
-                "DiscardAlpha": true
+                "MaxTextureSize": 512,
+                "DiscardAlpha": true,
+                "MipMapSetting": {
+                  "MipGenType": "Box"
+                }
             },
             "ios": {
                 "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "ASTC_6x6",
-                "MaxTextureSize": 2048,
-                "DiscardAlpha": true
+                "MaxTextureSize": 512,
+                "DiscardAlpha": true,
+                "MipMapSetting": {
+                  "MipGenType": "Box"
+                }
             },
             "mac": {
                 "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "BC7",
-                "DiscardAlpha": true
+                "DiscardAlpha": true,
+                "MipMapSetting": {
+                  "MipGenType": "Box"
+                }
             },
             "provo": {
                 "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "BC7",
-                "DiscardAlpha": true
+                "DiscardAlpha": true,
+                "MipMapSetting": {
+                  "MipGenType": "Box"
+              }
             }
         }
     }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/CRC.h"
+        Namespace="ScriptCanvas::CRCFunctions"
+        Category="Math/Crc32">
+        
+        <Function Name="FromString">
+            <Parameter Name="Value"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

@@ -13,7 +13,7 @@
         }
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
@@ -35,5 +35,14 @@
           "type": "Fragment"
         }
       ]
-    }   
+    },
+    "Supervariants":
+    [
+        {
+            "Name": "",
+            "AddBuildArguments": {
+                "azslc": ["--no-subpass-input"]
+            }
+        }
+    ]   
 }

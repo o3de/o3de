@@ -17,6 +17,7 @@
 #include <AzCore/std/hash.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
+#include <GradientSignal/Components/PerlinGradientComponent.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
@@ -72,7 +73,15 @@ namespace UnitTest
         float GetValue(const GradientSignal::GradientSampleParams& sampleParams) const override
         {
             const auto& pos = sampleParams.m_position;
-            const int index = azlossy_caster<float>(pos.GetY() * float(m_rowSize) + pos.GetX());
+
+            // Because gradients repeat infinitely by default, we mod by rowSize to bring the position into the correct range.
+            // The extra "+ rowSize) % rowSize" piece is so that negative values come into the correct range as well.
+            // If we just took the absolute value first, the mod would cause us to reverse the lookup on the negative side instead
+            // of continuing it.
+            int posX = ((static_cast<int>(pos.GetX()) % m_rowSize) + m_rowSize) % m_rowSize;
+            int posY = ((static_cast<int>(pos.GetY()) % m_rowSize) + m_rowSize) % m_rowSize;
+
+            const int index = (posY * m_rowSize) + posX;
 
             m_positionsRequested.push_back(sampleParams.m_position);
 
@@ -193,4 +202,34 @@ namespace UnitTest
         SurfaceData::SurfaceDataRegistryHandle m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
     };
 
+
+    // Mock the GradientSignal::PerlinGradientComponent so that its can inject a fixed permutation table for
+    // the perlin noise algorithm for consistent unit test results across all platforms
+    class MockGradientSignal : public GradientSignal::PerlinGradientComponent
+    {
+    public:
+        AZ_COMPONENT(MockGradientSignal, "{72B18966-6B4A-42C7-86AE-72AB6B1B84C5}", GradientSignal::PerlinGradientComponent);
+
+        MockGradientSignal() = default;
+        MockGradientSignal(const GradientSignal::PerlinGradientConfig& configuration)
+            : GradientSignal::PerlinGradientComponent(configuration)
+        {
+        }
+
+        static void Reflect(AZ::ReflectContext*) {}
+
+        void Activate() override
+        {
+            GradientSignal::PerlinGradientComponent::Activate();
+
+            m_perlinImprovedNoise.reset(aznew GradientSignal::PerlinImprovedNoise(m_testPermutationTable));
+        }
+
+        void SetPerlinNoisePermutationTableForTest(const AZStd::array<int, 512>& permutationTable)
+        {
+            AZStd::copy(permutationTable.cbegin(), permutationTable.cend(), m_testPermutationTable.begin());
+        }
+
+        AZStd::array<int, 512>  m_testPermutationTable;
+    };
 }

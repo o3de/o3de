@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Editor/ScriptCanvasContextIdentifiers.h
     Editor/ScriptCanvasEditorGem.cpp
     Editor/Settings.h
     Editor/Settings.cpp
@@ -21,32 +22,35 @@ set(FILES
     Editor/Assets/ScriptCanvasFileHandling.cpp
     Editor/Assets/ScriptCanvasUndoHelper.h
     Editor/Assets/ScriptCanvasUndoHelper.cpp
-    Editor/Include/ScriptCanvas/Bus/RequestBus.h
-    Editor/Include/ScriptCanvas/Bus/NodeIdPair.h
-    Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h
-    Editor/Include/ScriptCanvas/Bus/ScriptCanvasBus.h
-    Editor/Include/ScriptCanvas/Bus/IconBus.h
-    Editor/Include/ScriptCanvas/Bus/GraphBus.h
-    Editor/Include/ScriptCanvas/Bus/UndoBus.h
+    Editor/Components/EditorGraph.cpp
+    Editor/Components/EditorUtils.cpp
+    Editor/Components/EditorGraphVariableManagerComponent.cpp
+    Editor/Components/EditorScriptCanvasComponent.cpp
+    Editor/Components/GraphUpgrade.cpp
+    Editor/Components/IconComponent.h
+    Editor/Components/IconComponent.cpp
     Editor/Include/ScriptCanvas/Bus/EditorSceneVariableManagerBus.h
+    Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h
+    Editor/Include/ScriptCanvas/Bus/GraphBus.h
+    Editor/Include/ScriptCanvas/Bus/IconBus.h
+    Editor/Include/ScriptCanvas/Bus/NodeIdPair.h
+    Editor/Include/ScriptCanvas/Bus/NodeReplacementBus.h
+    Editor/Include/ScriptCanvas/Bus/RequestBus.h
+    Editor/Include/ScriptCanvas/Bus/ScriptCanvasBus.h
     Editor/Include/ScriptCanvas/Bus/ScriptCanvasExecutionBus.h
+    Editor/Include/ScriptCanvas/Bus/UndoBus.h
     Editor/Include/ScriptCanvas/Bus/UnitTestVerificationBus.h
     Editor/Include/ScriptCanvas/Components/GraphUpgrade.h
     Editor/Include/ScriptCanvas/Components/EditorGraph.h
     Editor/Include/ScriptCanvas/Components/EditorUtils.h
-    Editor/Components/EditorGraph.cpp
-    Editor/Components/EditorUtils.cpp
-    Editor/Components/GraphUpgrade.cpp
     Editor/Include/ScriptCanvas/Components/EditorGraphVariableManagerComponent.h
-    Editor/Components/EditorGraphVariableManagerComponent.cpp
     Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponent.h
     Editor/Include/ScriptCanvas/Components/EditorDeprecationData.h
     Editor/Include/ScriptCanvas/Components/EditorDeprecationData.cpp
-    Editor/Components/EditorScriptCanvasComponent.cpp
     Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h
     Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.cpp
-    Editor/Components/IconComponent.h
-    Editor/Components/IconComponent.cpp
+    Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.h
+    Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.cpp
     Editor/Include/ScriptCanvas/GraphCanvas/DynamicSlotBus.h
     Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h
     Editor/Include/ScriptCanvas/GraphCanvas/MappingBus.h
@@ -114,6 +118,7 @@ set(FILES
     Editor/Nodes/NodeDisplayUtils.cpp
     Editor/Nodes/NodeUtils.h
     Editor/Nodes/NodeUtils.cpp
+    Editor/Translation/TranslationHelper.cpp
     Editor/Translation/TranslationHelper.h
     Editor/Undo/ScriptCanvasGraphCommand.cpp
     Editor/Undo/ScriptCanvasGraphCommand.h
@@ -235,6 +240,9 @@ set(FILES
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.cpp
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.ui
     Editor/View/Windows/Tools/UpgradeTool/Controller.cpp
     Editor/View/Windows/Tools/UpgradeTool/Controller.h
     Editor/View/Windows/Tools/UpgradeTool/FileSaver.cpp
@@ -253,6 +261,10 @@ set(FILES
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.cpp
     Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h
     Editor/View/Windows/Tools/UpgradeTool/View.ui
+    Editor/Framework/Configuration.cpp
+    Editor/Framework/Configuration.h
+    Editor/Framework/Interpreter.cpp
+    Editor/Framework/Interpreter.h
     Editor/Framework/ScriptCanvasGraphUtilities.inl
     Editor/Framework/ScriptCanvasGraphUtilities.h
     Editor/Framework/ScriptCanvasTraceUtilities.h

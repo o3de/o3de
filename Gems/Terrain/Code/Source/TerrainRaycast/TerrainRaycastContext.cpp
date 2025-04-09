@@ -17,105 +17,11 @@ using namespace Terrain;
 namespace
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Convenience function to clamp a value to the given grid resolution, rounding up.
-    inline float ClampToGridRoundUp(float value, float gridResolution)
-    {
-        return ceil(value / gridResolution) * gridResolution;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Convenience function to clamp a value to the given grid resolution, rounding down.
-    inline float ClampToGridRoundDown(float value, float gridResolution)
-    {
-        return floor(value / gridResolution) * gridResolution;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Convenience function to find the nearest intersection (if any) between an AABB and a ray.
-    inline void FindNearestIntersection(const AZ::Aabb& aabb,
-                                        const AZ::Vector3& rayStart,
-                                        const AZ::Vector3& rayDirection,
-                                        AzFramework::RenderGeometry::RayResult& result)
-    {
-        float intersectionT;
-        float intersectionEndT;
-        AZ::Vector3 intersectionNormal;
-        const int intersectionResult = AZ::Intersect::IntersectRayAABB(rayStart,
-                                                                       rayDirection,
-                                                                       rayDirection.GetReciprocal(),
-                                                                       aabb,
-                                                                       intersectionT,
-                                                                       intersectionEndT,
-                                                                       intersectionNormal);
-        if (intersectionResult != AZ::Intersect::ISECT_RAY_AABB_NONE)
-        {
-            result.m_worldPosition = rayStart + (rayDirection * intersectionT);
-            result.m_worldNormal = intersectionNormal;
-            result.m_distance = rayDirection.GetLength() * intersectionT;
-        }
-        else
-        {
-            result.m_distance = FLT_MAX;
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Convenience function to find the nearest intersection (if any) between a triangle and a ray.
-    // This is an implementation of the Moller-Trumbore intersection algorithm. I first attempted to use
-    // the existing AZ::Intersect::IntersectSegmentTriangleCCW, which appears to use the same algorithm,
-    // but it takes a line segment as opposed to a ray and was not returning the expected results. Once
-    // I've written some tests I can go back and try it again to figure out what is different, but this
-    // is all likely to get replaced with an optimized SIMD version anyway so this should be ok for now.
-    inline void FindNearestIntersection(const AZ::Vector3& vertexA,
-                                        const AZ::Vector3& vertexB,
-                                        const AZ::Vector3& vertexC,
-                                        const AZ::Vector3& rayStart,
-                                        const AZ::Vector3& rayDirection,
-                                        AzFramework::RenderGeometry::RayResult& result)
-    {
-        const AZ::Vector3 edgeAB = vertexB - vertexA;
-        const AZ::Vector3 edgeAC = vertexC - vertexA;
-        const AZ::Vector3 pVec = rayDirection.Cross(edgeAC);
-        const float det = edgeAB.Dot(pVec);
-        if (AZ::IsClose(det, 0.0f))
-        {
-             // The ray is parallel to the triangle.
-            return;
-        }
-
-        const float detInv = 1.0f / det;
-        const AZ::Vector3 tVec = rayStart - vertexA;
-        const float u = detInv * tVec.Dot(pVec);
-        if (u < 0.0f || u > 1.0f)
-        {
-            // No intersection.
-            return;
-        }
-
-        const AZ::Vector3 qVec = tVec.Cross(edgeAB);
-        const float v = detInv * rayDirection.Dot(qVec);
-        if (v < 0.0 || u + v > 1.0)
-        {
-            // No intersection.
-            return;
-        }
-
-        const float t = detInv * edgeAC.Dot(qVec);
-        if (t > FLT_EPSILON)
-        {
-            result.m_worldPosition = rayStart + (rayDirection * t);
-            result.m_worldNormal = edgeAB.Cross(edgeAC);
-            result.m_distance = rayDirection.GetLength() * t;
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Convenience function to get the terrain height values at each corner of an AABB, triangulate them,
     // and then find the nearest intersection (if any) between the resulting triangles and the given ray.
-    inline void TriangulateAndFindNearestIntersection(const TerrainSystem& terrainSystem,
+    static void TriangulateAndFindNearestIntersection(const TerrainSystem& terrainSystem,
                                                       const AZ::Aabb& aabb,
-                                                      const AZ::Vector3& rayStart,
-                                                      const AZ::Vector3& rayDirection,
+                                                      const AZ::Intersect::SegmentTriangleHitTester& hitTester,
                                                       AzFramework::RenderGeometry::RayResult& result)
     {
         // Obtain the height values at each corner of the AABB.
@@ -125,213 +31,39 @@ namespace
         AZ::Vector3 point2 = aabbMax;
         AZ::Vector3 point1(point0.GetX(), point2.GetY(), 0.0f);
         AZ::Vector3 point3(point2.GetX(), point0.GetY(), 0.0f);
-        point0.SetZ(terrainSystem.GetHeight(point0, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT));
-        point1.SetZ(terrainSystem.GetHeight(point1, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT));
-        point2.SetZ(terrainSystem.GetHeight(point2, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT));
-        point3.SetZ(terrainSystem.GetHeight(point3, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT));
+        point0.SetZ(terrainSystem.GetHeight(point0, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT));
+        point1.SetZ(terrainSystem.GetHeight(point1, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT));
+        point2.SetZ(terrainSystem.GetHeight(point2, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT));
+        point3.SetZ(terrainSystem.GetHeight(point3, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT));
 
         // Finally, triangulate the four terrain points and check for a hit,
         // splitting using the top-left -> bottom-right diagonal so to match
         // the current behavior of the terrain physics and rendering systems.
-        AzFramework::RenderGeometry::RayResult bottomLeftIntersectionResult;
-        FindNearestIntersection(rayStart,
-                                rayDirection,
-                                point0,
-                                point3,
-                                point1,
-                                bottomLeftIntersectionResult);
+        AZ::Vector3 bottomLeftHitNormal;
+        float bottomLeftHitDistance;
+        bool bottomLeftHit =
+            hitTester.IntersectSegmentTriangleCCW(point0, point3, point1, bottomLeftHitNormal, bottomLeftHitDistance);
 
-        AzFramework::RenderGeometry::RayResult topRightIntersectionResult;
-        FindNearestIntersection(rayStart,
-                                rayDirection,
-                                point2,
-                                point1,
-                                point3,
-                                topRightIntersectionResult);
+        AZ::Vector3 topRightHitNormal;
+        float topRightHitDistance;
+        bool topRightHit =
+            hitTester.IntersectSegmentTriangleCCW(point2, point1, point3, topRightHitNormal, topRightHitDistance);
 
-        if (bottomLeftIntersectionResult)
+        if (bottomLeftHit && (!topRightHit || (bottomLeftHitDistance < topRightHitDistance)))
         {
-            result = !topRightIntersectionResult || bottomLeftIntersectionResult.m_distance < topRightIntersectionResult.m_distance ?
-                     bottomLeftIntersectionResult :
-                     topRightIntersectionResult;
+            result.m_distance = bottomLeftHitDistance;
+            result.m_worldNormal = bottomLeftHitNormal;
+            result.m_worldPosition = hitTester.GetIntersectionPoint(result.m_distance);
         }
-        else if (topRightIntersectionResult)
+        else if (topRightHit)
         {
-            result = topRightIntersectionResult;
+            result.m_distance = topRightHitDistance;
+            result.m_worldNormal = topRightHitNormal;
+            result.m_worldPosition = hitTester.GetIntersectionPoint(result.m_distance);
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Iterative function that divides an AABB encompasing terrain points into columns (or a voxel grid)
-    // of size equal to the given grid resolution, steps along the ray visiting each voxel it intersects
-    // in order from nearest to farthest, then obtains the terrain height values at each corner in order
-    // to triangulate them and find the nearest intersection (if any) between the triangles and the ray.
-    //
-    // Visualization:
-    // - X: Column intersection but no triangle hit found
-    // - T: Column intersection with a triangle hit found
-    // ________________________________________
-    // |    |    |    |    |    |    |    |    |
-    // |____|____|____|____|____|____|____|____|  Ray
-    // |    |    |    |    |    |    |    |    |  /
-    // |____|____|____|____|____|____|____|____| /
-    // |    |    |    |    |    |    |    | X  |/
-    // |____|____|____|____|____|____|____|____/
-    // |    |    |    |    |    |    |    | X /|
-    // |____|____|____|____|____|____|____|__/_|
-    // |    |    |    |    |    |    |    | /X |
-    // |____|____|____|____|____|____|____|/___|
-    // |    |    |    |    |    |    | X  / X  |
-    // |____|____|____|____|____|____|___/|____|
-    // |    |    |    |    |    |    | T/ |    |
-    // |____|____|____|____|____|____|____|____|
-    // |    |    |    |    |    |    |    |    |
-    // |____|____|____|____|____|____|____|____|
-    inline void FindNearestIntersectionIterative(const TerrainSystem& terrainSystem,
-                                                 const AZ::Vector2& terrainResolution,
-                                                 const AZ::Aabb& terrainWorldBounds,
-                                                 const AZ::Vector3& rayStart,
-                                                 const AZ::Vector3& rayEnd,
-                                                 AzFramework::RenderGeometry::RayResult& result)
-    {
-        // Find the nearest intersection (if any) between the ray and terrain world bounds.
-        // Note that the ray might (and often will) start inside the terrain world bounds.
-        const AZ::Vector3 rayDirection = (rayEnd - rayStart).GetNormalized();
-        FindNearestIntersection(terrainWorldBounds,
-                                rayStart,
-                                rayDirection,
-                                result);
-        if (!result)
-        {
-            // The ray does not intersect the terrain world bounds.
-            return;
-        }
-
-        // The terrain world can be visualized as a grid of columns,
-        // where the terrain resolution determines the dimensions of
-        // each column, or a voxel grid with one cell in z dimension.
-        //
-        // Starting at the voxel containing the initial intersection,
-        // we want to step along the ray and visit each voxel the ray
-        // intersects in order from nearest to furthest until we find
-        // an intersection with the terrain or the ray exits the grid.
-        const AZ::Vector3& initialIntersection = result.m_worldPosition;
-        const float initialIntersectionX = initialIntersection.GetX();
-        const float initialIntersectionY = initialIntersection.GetY();
-        const float initialIntersectionZ = initialIntersection.GetZ();
-        const float gridResolutionX = terrainResolution.GetX();
-        const float gridResolutionY = terrainResolution.GetY();
-        const float gridResolutionZ = terrainWorldBounds.GetMax().GetZ() - terrainWorldBounds.GetMin().GetZ();
-        float initialVoxelMinX = ClampToGridRoundDown(initialIntersectionX, gridResolutionX);
-        float initialVoxelMinY = ClampToGridRoundDown(initialIntersectionY, gridResolutionY);
-        float initialVoxelMinZ = terrainWorldBounds.GetMin().GetZ();
-        float initialVoxelMaxX = ClampToGridRoundUp(initialIntersectionX, gridResolutionX);
-        float initialVoxelMaxY = ClampToGridRoundUp(initialIntersectionY, gridResolutionY);
-        float initialVoxelMaxZ = terrainWorldBounds.GetMax().GetZ();
-
-        // For each axis calculate the distance t we need to move along
-        // the ray in order to fully traverse a voxel in that dimension.
-        const float rayDirectionX = rayDirection.GetX();
-        const float rayDirectionY = rayDirection.GetY();
-        const float rayDirectionZ = rayDirection.GetZ();
-        const float stepX = AZ::GetSign(rayDirectionX) * gridResolutionX;
-        const float stepY = AZ::GetSign(rayDirectionY) * gridResolutionY;
-        const float stepZ = AZ::GetSign(rayDirectionZ) * gridResolutionZ;
-        const float tDeltaX = rayDirectionX ?
-                              stepX / rayDirectionX :
-                              std::numeric_limits<float>::max();
-        const float tDeltaY = rayDirectionY ?
-                              stepY / rayDirectionY :
-                              std::numeric_limits<float>::max();
-        const float tDeltaZ = rayDirectionZ ?
-                              stepZ / rayDirectionZ :
-                              std::numeric_limits<float>::max();
-
-        // For each axis, calculate the distance t we need to move along the ray
-        // from the initial intersection point to the next voxel along that axis.
-        const float offsetX = stepX < 0.0f ?
-                              initialVoxelMinX - initialIntersectionX :
-                              initialVoxelMaxX - initialIntersectionX;
-        const float offsetY = stepY < 0.0f ?
-                              initialVoxelMinY - initialIntersectionY :
-                              initialVoxelMaxY - initialIntersectionY;
-        const float offsetZ = stepZ < 0.0f ?
-                              initialVoxelMinZ - initialIntersectionZ :
-                              initialVoxelMaxZ - initialIntersectionZ;
-        float tMaxX = rayDirectionX ?
-                      offsetX / rayDirectionX :
-                      std::numeric_limits<float>::max();
-        float tMaxY = rayDirectionY ?
-                      offsetY / rayDirectionY :
-                      std::numeric_limits<float>::max();
-        float tMaxZ = rayDirectionZ ?
-                      offsetZ / rayDirectionZ :
-                      std::numeric_limits<float>::max();
-
-        // Calculate the min/max voxel grid value on each axis by expanding
-        // the terrain world bounds so they align with the grid resolution.
-        const float voxelGridMinX = ClampToGridRoundDown(terrainWorldBounds.GetMin().GetX(), gridResolutionX);
-        const float voxelGridMinY = ClampToGridRoundDown(terrainWorldBounds.GetMin().GetY(), gridResolutionY);
-        const float voxelGridMinZ = terrainWorldBounds.GetMin().GetZ();
-        const float voxelGridMaxX = ClampToGridRoundUp(terrainWorldBounds.GetMax().GetX(), gridResolutionX);
-        const float voxelGridMaxY = ClampToGridRoundUp(terrainWorldBounds.GetMax().GetY(), gridResolutionY);
-        const float voxelGridMaxZ = terrainWorldBounds.GetMax().GetZ();
-
-        // Using the initial voxel values, construct an AABB representing the current voxel,
-        // then grab references to AABBs min/max vectors so we can manipulate them directly.
-        AZ::Aabb currentVoxel = AZ::Aabb::CreateFromMinMax({initialVoxelMinX, initialVoxelMinY, initialVoxelMinZ},
-                                                           {initialVoxelMaxX, initialVoxelMaxY, initialVoxelMaxZ});
-        AZ::Vector3& currentVoxelMin = const_cast<AZ::Vector3&>(currentVoxel.GetMin());
-        AZ::Vector3& currentVoxelMax = const_cast<AZ::Vector3&>(currentVoxel.GetMax());
-        const AZ::Vector3 stepVecX(stepX, 0.0f, 0.0f);
-        const AZ::Vector3 stepVecY(0.0f, stepY, 0.0f);
-        const AZ::Vector3 stepVecZ(0.0f, 0.0f, stepZ);
-
-        // Now we can step along the ray and visit each voxel the ray
-        // intersects in order from nearest to furthest until we find
-        // an intersection with the terrain or the ray exits the grid.
-        result = AzFramework::RenderGeometry::RayResult();
-        while (currentVoxel.GetMin().GetX() <= voxelGridMaxX &&
-               currentVoxel.GetMax().GetX() >= voxelGridMinX &&
-               currentVoxel.GetMin().GetY() <= voxelGridMaxY &&
-               currentVoxel.GetMax().GetY() >= voxelGridMinY &&
-               currentVoxel.GetMin().GetZ() <= voxelGridMaxZ &&
-               currentVoxel.GetMax().GetZ() >= voxelGridMinZ &&
-               tMaxX <= 1.0f && tMaxY <= 1.0f && tMaxZ <= 1.0f)
-        {
-            TriangulateAndFindNearestIntersection(terrainSystem,
-                                                  currentVoxel,
-                                                  rayStart,
-                                                  rayDirection,
-                                                  result);
-            if (result)
-            {
-                // Intersection found.
-                break;
-            }
-
-            // Step to the next voxel.
-            if (tMaxX < tMaxY && tMaxX < tMaxZ)
-            {
-                currentVoxelMin += stepVecX;
-                currentVoxelMax += stepVecX;
-                tMaxX += tDeltaX;
-            }
-            else if (tMaxY < tMaxZ)
-            {
-                currentVoxelMin += stepVecY;
-                currentVoxelMax += stepVecY;
-                tMaxY += tDeltaY;
-            }
-            else
-            {
-                currentVoxelMin += stepVecZ;
-                currentVoxelMax += stepVecZ;
-                tMaxZ += tDeltaZ;
-            }
-        }
-    }
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 TerrainRaycastContext::TerrainRaycastContext(TerrainSystem& terrainSystem)
@@ -347,20 +79,164 @@ TerrainRaycastContext::~TerrainRaycastContext()
     AzFramework::RenderGeometry::IntersectorBus::Handler::BusDisconnect();
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+   Iterative function that divides an AABB encompasing terrain points into grid squares based on
+   the given grid resolution and steps along the ray visiting each voxel it intersects in order
+   from nearest to farthest. In each square, it obtains the terrain height values at each corner and
+   triangulates them to find the nearest intersection (if any) between the triangles and the ray.
+
+   To step through the grid, we use an algorithm similar to Bresenham's line algorithm or a Digital
+   Differential Analyzer. We can't use Bresenham's line algorithm itself because it will sometimes skip
+   squares if the ray only passes through a tiny portion, and we need to use every square that it passes through.
+
+   We start by clipping the ray itself to the terrain AABB so that we don't walk through any grid squares
+   that cannot contain terrain. We then walk through the grid one square at a time, either moving horizontally
+   or vertically to the next square based on the ray's slope, until we reach the end of the ray or we've found a hit.
+
+   Visualization:
+    - X: Grid square intersection but no triangle hit found
+    - T: Grid square intersection with a triangle hit found
+    ________________________________________
+    |    |    |    |    |    |    |    |    |
+    |____|____|____|____|____|____|____|____|  Ray
+    |    |    |    |    |    |    |    |    |  /
+    |____|____|____|____|____|____|____|____| /
+    |    |    |    |    |    |    |    | X  |/
+    |____|____|____|____|____|____|____|____/
+    |    |    |    |    |    |    |    | X /|
+    |____|____|____|____|____|____|____|__/_|
+    |    |    |    |    |    |    |    | /X |
+    |____|____|____|____|____|____|____|/___|
+    |    |    |    |    |    |    | X  / X  |
+    |____|____|____|____|____|____|___/|____|
+    |    |    |    |    |    |    | T/ |    |
+    |____|____|____|____|____|____|____|____|
+    |    |    |    |    |    |    |    |    |
+    |____|____|____|____|____|____|____|____|
+*/
 AzFramework::RenderGeometry::RayResult TerrainRaycastContext::RayIntersect(
     const AzFramework::RenderGeometry::RayRequest& ray)
 {
     const AZ::Aabb terrainWorldBounds = m_terrainSystem.GetTerrainAabb();
-    const float terrainResolution = m_terrainSystem.GetTerrainHeightQueryResolution();
-    const AZ::Vector2 terrainResolution2d(terrainResolution);
-    AzFramework::RenderGeometry::RayResult rayIntersectionResult;
-    FindNearestIntersectionIterative(m_terrainSystem,
-                                     terrainResolution2d,
-                                     terrainWorldBounds,
-                                     ray.m_startWorldPosition,
-                                     ray.m_endWorldPosition,
-                                     rayIntersectionResult);
+    const AZ::Vector2 terrainResolution(m_terrainSystem.GetTerrainHeightQueryResolution());
+
+    // Initialize the result to invalid at the start.
+    AzFramework::RenderGeometry::RayResult rayIntersectionResult = AzFramework::RenderGeometry::RayResult();
+
+    if (!terrainWorldBounds.IsValid())
+    {
+        // There is no terrain to intersect.
+        return rayIntersectionResult;
+    }
+
+    // Start by clipping the ray to the terrain world bounds so that we can reduce our iteration over the ray to just
+    // the subset that can potentially collide with the terrain.
+    // We use a slightly expanded terrain world bounds for clipping the ray so that precision errors don't cause the ray
+    // to get overly truncated and miss a collision that might occur right on the world boundary.
+    AZ::Vector3 clippedRayStart = ray.m_startWorldPosition;
+    AZ::Vector3 clippedRayEnd = ray.m_endWorldPosition;
+    float tClipStart, tClipEnd;
+    bool rayIntersected = AZ::Intersect::ClipRayWithAabb(
+        terrainWorldBounds.GetExpanded(AZ::Vector3(0.01f)), clippedRayStart, clippedRayEnd, tClipStart, tClipEnd);
+
+    if (!rayIntersected)
+    {
+        // The ray does not intersect the terrain world bounds.
+        return rayIntersectionResult;
+    }
+
+    // Move our clipped line segment into Vector2s for more convenient use below.
+    const AZ::Vector2 clippedStart(clippedRayStart);
+    const AZ::Vector2 clippedEnd(clippedRayEnd);
+    const AZ::Vector2 clippedLineSegment = clippedEnd - clippedStart;
+
+    // Calculate the total number of terrain squares we'll need to visit to trace the ray segment.
+    // We need to visit 1 at the start, 1 for each X square we need to move, and 1 for each Y square we need to move,
+    // since we'll always move either horizontally or vertically one square at a time when traversing the ray segment.
+    const AZ::Vector2 numSquaresToMove =
+        ((clippedEnd / terrainResolution).GetFloor() - (clippedStart / terrainResolution).GetFloor()).GetAbs();
+    const int32_t numTerrainSquares =
+        1 + aznumeric_cast<int32_t>(numSquaresToMove.GetX()) + aznumeric_cast<int32_t>(numSquaresToMove.GetY());
+
+    // This tells us how much t distance on the line to move to increment one terrain square in each direction.
+    // Note that it could be infinity (due to a divide-by-0) if we're not moving in that direction.
+    const AZ::Vector2 tDelta(terrainResolution / clippedLineSegment.GetAbs());
+
+    // Get the min world space corner of the terrain grid square containing (x0, y0)
+    const AZ::Vector2 clippedStartGridCorner = (clippedStart / terrainResolution).GetFloor() * terrainResolution;
+
+    // tUntilNextBoundary stores how much further we currently need to move along t to get to the next terrain grid square boundary
+    // in each direction.
+    // We initialize with the fractional amount that we're starting in the square or max() if we're not moving in this
+    // direction at all (when clippedLineSegment == 0)
+    const AZ::Vector2 tFromMinCorner((clippedStart - clippedStartGridCorner) / clippedLineSegment.GetAbs());
+
+    AZ::Vector2 tUntilNextBoundary = AZ::Vector2::CreateSelectCmpEqual(
+        clippedLineSegment, AZ::Vector2::CreateZero(), AZ::Vector2(AZStd::numeric_limits<float>::max()), tFromMinCorner);
+
+    // If we're moving in the positive direction in the square, then the amount till the next boundary is actually
+    // the distance remaining to the max corner, not the distance in from the min corner, so flip our calculation.
+    tUntilNextBoundary = AZ::Vector2::CreateSelectCmpGreater(clippedEnd, clippedStart, tDelta - tUntilNextBoundary, tUntilNextBoundary);
+
+    // Initialize our segment/triangle hit tester with the ray that we're using. We use the full ray instead of the clipped one
+    // to make sure we don't run into any precision issues caused from the clipping.
+    AZ::Intersect::SegmentTriangleHitTester hitTester(ray.m_startWorldPosition, ray.m_endWorldPosition);
+
+    // These will hold our current square coordinates in world space values as we loop through the squares, starting with the
+    // grid square for (x0, y0). These values represent the minimum corner of each terrain square.
+    AZ::Vector2 curGridCorner = clippedStartGridCorner;
+
+    // This is how much we need to increment our x and y by to get to the next grid square along the line.
+    // They will either be +/- terrainResolution or 0 if we're not moving in that direction.
+    const AZ::Vector2 gridIncrement = terrainResolution *
+        AZ::Vector2::CreateSelectCmpEqual(clippedLineSegment,
+                                          AZ::Vector2::CreateZero(),
+                                          AZ::Vector2::CreateZero(),
+                                          AZ::Vector2(AZ::GetSign(clippedLineSegment.GetX()), AZ::GetSign(clippedLineSegment.GetY())));
+
+    // Convenience vectors that we can use in the loop to just increment one direction.
+    const AZ::Vector2 tDeltaX(tDelta.GetX(), 0.0f);
+    const AZ::Vector2 tDeltaY(0.0f, tDelta.GetY());
+    const AZ::Vector2 gridIncrementX(gridIncrement.GetX(), 0.0f);
+    const AZ::Vector2 gridIncrementY(0.0f, gridIncrement.GetY());
+
+    // Walk through each grid square in the terrain that intersects the XY coordinates of the line.
+    // We'll check each square to see if the ray intersections actually intersect the terrain triangles in the square.
+    for (int terrainSquare = 0; terrainSquare < numTerrainSquares; terrainSquare++)
+    {
+        // Create a bounding volume for this terrain square.
+        AZ::Aabb currentVoxel = AZ::Aabb::CreateFromMinMax(
+            AZ::Vector3(curGridCorner, terrainWorldBounds.GetMin().GetZ()),
+            AZ::Vector3(curGridCorner + terrainResolution, terrainWorldBounds.GetMax().GetZ()));
+
+        // Check for a hit against the terrain triangles in this square.
+        // Note - this could be optimized to be 2x faster by adding some code to keep track of the terrain heights
+        // from the previous square checked so that we only get the 2 new corners instead of all 4 every time.
+        TriangulateAndFindNearestIntersection(m_terrainSystem, currentVoxel, hitTester, rayIntersectionResult);
+        if (rayIntersectionResult)
+        {
+            // Intersection found. Replace the triangle normal from the hit with a higher-quality normal calculated
+            // by the terrain system.
+            rayIntersectionResult.m_worldNormal = m_terrainSystem.GetNormal(
+                rayIntersectionResult.m_worldPosition, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+
+            // Return the distance in world space instead of in ray distance space.
+            rayIntersectionResult.m_distance = rayIntersectionResult.m_worldPosition.GetDistance(ray.m_startWorldPosition);
+            break;
+        }
+
+        // No hit yet, so move forward along the line (either horizontally or vertically) to the next terrain square.
+        if (tUntilNextBoundary.GetY() < tUntilNextBoundary.GetX())
+        {
+            curGridCorner += gridIncrementY;
+            tUntilNextBoundary += tDeltaY;
+        }
+        else
+        {
+            curGridCorner += gridIncrementX;
+            tUntilNextBoundary += tDeltaX;
+        }
+    }
 
     // If needed we could call m_terrainSystem.FindBestAreaEntityAtPosition in order to set
     // rayIntersectionResult.m_entityAndComponent, but I'm not sure whether that is correct.

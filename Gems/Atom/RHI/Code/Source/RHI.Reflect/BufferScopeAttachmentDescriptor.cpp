@@ -9,27 +9,29 @@
 
 #include <Atom/RHI.Reflect/BufferScopeAttachmentDescriptor.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void BufferScopeAttachmentDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void BufferScopeAttachmentDescriptor::Reflect(AZ::ReflectContext* context)
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<BufferScopeAttachmentDescriptor, ScopeAttachmentDescriptor>()
-                    ->Version(3)
-                    ->Field("BufferViewDescriptor", &BufferScopeAttachmentDescriptor::m_bufferViewDescriptor)
-                    ;
-            }
+            serializeContext->Class<BufferScopeAttachmentDescriptor, ScopeAttachmentDescriptor>()
+                ->Version(3)
+                ->Field("BufferViewDescriptor", &BufferScopeAttachmentDescriptor::m_bufferViewDescriptor)
+                ;
         }
+    }
 
-        BufferScopeAttachmentDescriptor::BufferScopeAttachmentDescriptor(
-            const AttachmentId& attachmentId,
-            const BufferViewDescriptor& bufferViewDescriptor,
-            const AttachmentLoadStoreAction& bufferScopeLoadStoreAction)
-            : ScopeAttachmentDescriptor(attachmentId, bufferScopeLoadStoreAction)
-            , m_bufferViewDescriptor(bufferViewDescriptor)
-        {}
+    BufferScopeAttachmentDescriptor::BufferScopeAttachmentDescriptor(
+        const AttachmentId& attachmentId,
+        const BufferViewDescriptor& bufferViewDescriptor,
+        const AttachmentLoadStoreAction& bufferScopeLoadStoreAction)
+        : ScopeAttachmentDescriptor(attachmentId, bufferScopeLoadStoreAction)
+        , m_bufferViewDescriptor(bufferViewDescriptor)
+    {}
+
+    const BufferViewDescriptor& BufferScopeAttachmentDescriptor::GetViewDescriptor() const
+    {
+        return m_bufferViewDescriptor;
     }
 }

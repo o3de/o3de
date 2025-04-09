@@ -20,6 +20,7 @@ QT_FORWARD_DECLARE_CLASS(QTabWidget)
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ScreenWidget);
+    QT_FORWARD_DECLARE_CLASS(DownloadController);
 
     class ScreensCtrl
         : public QWidget
@@ -27,7 +28,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ScreensCtrl(QWidget* parent = nullptr);
+        explicit ScreensCtrl(QWidget* parent = nullptr, DownloadController* downloadController = nullptr);
         ~ScreensCtrl() = default;
 
         void BuildScreens(QVector<ProjectManagerScreen> screens);
@@ -37,6 +38,8 @@ namespace O3DE::ProjectManager
     signals:
         void NotifyCurrentProject(const QString& projectPath);
         void NotifyBuildProject(const ProjectInfo& projectInfo);
+        void NotifyProjectRemoved(const QString& projectPath);
+        void NotifyRemoteContentRefreshed();
 
     public slots:
         bool ChangeToScreen(ProjectManagerScreen screen);
@@ -55,6 +58,7 @@ namespace O3DE::ProjectManager
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
         QTabWidget* m_tabWidget;
+        DownloadController* m_downloadController;
     };
 
 } // namespace O3DE::ProjectManager

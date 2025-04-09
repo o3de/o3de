@@ -17,44 +17,13 @@
 
 namespace AZ::IO::ZipDir
 {
-    void FileDataRecordDeleter::operator()(const AZStd::intrusive_refcount<AZStd::atomic_uint, FileDataRecordDeleter>* ptr) const
-    {
-        auto fileDataRecordAddress = const_cast<FileDataRecord*>(static_cast<const FileDataRecord*>(ptr));
-        if (m_allocator)
-        {
-            fileDataRecordAddress->~FileDataRecord();
-            m_allocator->DeAllocate(fileDataRecordAddress);
-        }
-        else
-        {
-            delete fileDataRecordAddress;
-        }
-    }
 
-    FileDataRecord::FileDataRecord()
-        : AZStd::intrusive_refcount<AZStd::atomic_uint, FileDataRecordDeleter>{
-            AZ::AllocatorInstance<AZ::OSAllocator>::IsReady() ?
-            FileDataRecordDeleter{&AZ::AllocatorInstance<AZ::OSAllocator>::Get() }
-            : FileDataRecordDeleter{} }
+    FileDataRecord::FileDataRecord(const FileRecord& rThat)
+        : FileRecord(rThat)
+        , m_data{ reinterpret_cast<AZStd::byte*>(azmalloc(rThat.pFileEntryBase->desc.lSizeCompressed)) }
     {
     }
 
-    auto FileDataRecord::New(const FileRecord& rThat, AZ::IAllocator* allocator) -> AZStd::intrusive_ptr<FileDataRecord>
-    {
-        auto fileDataRecordAlloc = reinterpret_cast<FileDataRecord*>(allocator->Allocate(
-            sizeof(FileDataRecord) + rThat.pFileEntryBase->desc.lSizeCompressed,
-            alignof(FileDataRecord),
-            0,
-            "FileDataRecord::New"));
-
-
-        if (fileDataRecordAlloc)
-        {
-            new (fileDataRecordAlloc) FileDataRecord{};
-            *static_cast<FileRecord*>(fileDataRecordAlloc) = rThat;
-        }
-        return fileDataRecordAlloc;
-    }
     FileRecordList::FileRecordList(FileEntryTree* pTree)
     {
         clear();

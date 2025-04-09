@@ -7,148 +7,95 @@
  */
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
-
-#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/EBusFindAssetTypeByName.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        namespace
-        {
-            bool StringMatch(const QString& searched, const QString& text)
-            {
-                return text.contains(searched, Qt::CaseInsensitive);
-            }
-
-            //! Intersect operation between two sets which then overwrites result
-            void Intersect(AZStd::vector<const AssetBrowserEntry*>& result, AZStd::vector<const AssetBrowserEntry*>& set)
-            {
-                // inefficient, but sets are tiny so probably not worth the optimization effort
-                AZStd::vector<const AssetBrowserEntry*> intersection;
-                for (auto entry : result)
-                {
-                    if (AZStd::find(set.begin(), set.end(), entry) != set.end())
-                    {
-                        intersection.push_back(entry);
-                    }
-                }
-                result = intersection;
-            }
-
-            //! Insert an entry if it doesn't already exist
-            void Join(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry)
-            {
-                if (AZStd::find(result.begin(), result.end(), entry) == result.end())
-                {
-                    result.push_back(entry);
-                }
-            }
-
-            //! Join operation between two sets which then overwrites result
-            void Join(AZStd::vector<const AssetBrowserEntry*>& result, AZStd::vector<const AssetBrowserEntry*>& set)
-            {
-                AZStd::vector<const AssetBrowserEntry*> unionResult;
-                for (auto entry : set)
-                {
-                    Join(result, entry);
-                }
-            }
-
-            //! Expand all children recursively and write to result
-            void ExpandDown(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry)
-            {
-                Join(result, entry);
-                AZStd::vector<const AssetBrowserEntry*> children;
-                entry->GetChildren<AssetBrowserEntry>(children);
-                for (auto child : children)
-                {
-                    ExpandDown(result, child);
-                }
-            }
-
-            //! Expand all entries that are either parent or child relationship to the entry and write to result
-            void Expand(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry)
-            {
-                auto parent = entry->GetParent();
-                while (parent && parent->GetEntryType() != AssetBrowserEntry::AssetEntryType::Root)
-                {
-                    Join(result, parent);
-                    parent = parent->GetParent();
-                }
-                ExpandDown(result, entry);
-            }
-        }
-
         //////////////////////////////////////////////////////////////////////////
         // AssetBrowserEntryFilter
         //////////////////////////////////////////////////////////////////////////
-        AssetBrowserEntryFilter::AssetBrowserEntryFilter()
-            : m_direction(None)
-        {
-        }
-
         bool AssetBrowserEntryFilter::Match(const AssetBrowserEntry* entry) const
         {
-            if (MatchInternal(entry))
+            if (m_direction == PropagateDirection::None)
             {
-                return true;
+                if (MatchInternal(entry))
+                {
+                    return true;
+                }
             }
 
-            if (m_direction & Up)
+            if (m_direction == PropagateDirection::Up || m_direction == PropagateDirection::Both)
             {
-                auto parent = entry->GetParent();
-                while (parent && parent->GetEntryType() != AssetBrowserEntry::AssetEntryType::Root)
-                {
-                    if (MatchInternal(parent))
+                bool result = false;
+                entry->VisitUp(
+                    [&](const auto& currentEntry)
                     {
-                        return true;
-                    }
-                    parent = parent->GetParent();
+                        result = result || MatchInternal(currentEntry);
+                        return !result;
+                    });
+
+                if (result)
+                {
+                    return true;
                 }
             }
-            if (m_direction & Down)
+
+            if (m_direction == PropagateDirection::Down || m_direction == PropagateDirection::Both)
             {
-                AZStd::vector<const AssetBrowserEntry*> children;
-                entry->GetChildren<AssetBrowserEntry>(children);
-                for (auto child : children)
-                {
-                    if (MatchDown(child))
+                bool result = false;
+                entry->VisitDown(
+                    [&](const auto& currentEntry)
                     {
-                        return true;
-                    }
+                        result = result || MatchInternal(currentEntry);
+                        return !result;
+                    });
+
+                if (result)
+                {
+                    return true;
                 }
             }
+
             return false;
         }
 
-        void AssetBrowserEntryFilter::Filter(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
+        bool AssetBrowserEntryFilter::MatchWithoutPropagation(const AssetBrowserEntry* entry) const
         {
-            FilterInternal(result, entry);
+            return MatchInternal(entry);
+        }
 
-            if (m_direction & Up)
+        void AssetBrowserEntryFilter::Filter(AZStd::unordered_set<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
+        {
+            if (m_direction == PropagateDirection::None)
             {
-                auto parent = entry->GetParent();
-                while (parent && parent->GetEntryType() != AssetBrowserEntry::AssetEntryType::Root)
-                {
-                    FilterInternal(result, parent);
-                    parent = parent->GetParent();
-                }
+                FilterInternal(result, entry);
             }
-            if (m_direction & Down)
+
+            if (m_direction == PropagateDirection::Up || m_direction == PropagateDirection::Both)
             {
-                AZStd::vector<const AssetBrowserEntry*> children;
-                entry->GetChildren<AssetBrowserEntry>(children);
-                for (auto child : children)
-                {
-                    FilterDown(result, child);
-                }
+                entry->VisitUp(
+                    [&](const auto& currentEntry)
+                    {
+                        FilterInternal(result, currentEntry);
+                        return true;
+                    });
+            }
+
+            if (m_direction == PropagateDirection::Down || m_direction == PropagateDirection::Both)
+            {
+                entry->VisitDown(
+                    [&](const auto& currentEntry)
+                    {
+                        FilterInternal(result, currentEntry);
+                        return true;
+                    });
             }
         }
 
@@ -172,56 +119,37 @@ namespace AzToolsFramework
             m_tag = tag;
         }
 
-        void AssetBrowserEntryFilter::SetFilterPropagation(int direction)
+        void AssetBrowserEntryFilter::SetFilterPropagation(PropagateDirection direction)
         {
             m_direction = direction;
         }
 
-        void AssetBrowserEntryFilter::FilterInternal(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
+        bool AssetBrowserEntryFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            if (MatchInternal(entry))
-            {
-                Join(result, entry);
-            }
+            return entry != nullptr;
         }
 
-        bool AssetBrowserEntryFilter::MatchDown(const AssetBrowserEntry* entry) const
+        void AssetBrowserEntryFilter::FilterInternal(
+            AZStd::unordered_set<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
         {
             if (MatchInternal(entry))
             {
-                return true;
-            }
-            AZStd::vector<const AssetBrowserEntry*> children;
-            entry->GetChildren<AssetBrowserEntry>(children);
-            for (auto child : children)
-            {
-                if (MatchDown(child))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        void AssetBrowserEntryFilter::FilterDown(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
-        {
-            if (MatchInternal(entry))
-            {
-                Join(result, entry);
-            }
-            AZStd::vector<const AssetBrowserEntry*> children;
-            entry->GetChildren<AssetBrowserEntry>(children);
-            for (auto child : children)
-            {
-                FilterDown(result, child);
+                result.insert(entry);
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
         // StringFilter
         //////////////////////////////////////////////////////////////////////////
-        StringFilter::StringFilter()
-            : m_filterString("") {}
+        AssetBrowserEntryFilter* StringFilter::Clone() const
+        {
+            auto clone = new StringFilter();
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            clone->m_filterString = m_filterString;
+            return clone;
+        }
 
         void StringFilter::SetFilterString(const QString& filterString)
         {
@@ -241,26 +169,48 @@ namespace AzToolsFramework
 
         bool StringFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            // no filter string matches any asset
-            if (m_filterString.isEmpty())
-            {
-                return true;
-            }
+            // Return true if the filter is empty or the display name matches.
+            return m_filterString.isEmpty() || entry->GetDisplayName().contains(m_filterString, Qt::CaseInsensitive);
+        }
 
-            // entry's name matches search pattern
-            if (StringMatch(m_filterString, entry->GetDisplayName()))
-            {
-                return true;
-            }
+        //////////////////////////////////////////////////////////////////////////
+        // CustomFilter
+        //////////////////////////////////////////////////////////////////////////
+        CustomFilter::CustomFilter(const AZStd::function<bool(const AssetBrowserEntry*)>& filterFn)
+            : m_filterFn(filterFn)
+        {
+        }
 
-            return false;
+        AssetBrowserEntryFilter* CustomFilter::Clone() const
+        {
+            auto clone = new CustomFilter(m_filterFn);
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            return clone;
+        }
+
+        QString CustomFilter::GetNameInternal() const
+        {
+            return {};
+        }
+
+        bool CustomFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        {
+            return !m_filterFn || m_filterFn(entry);
         }
 
         //////////////////////////////////////////////////////////////////////////
         // RegExpFilter
         //////////////////////////////////////////////////////////////////////////
-        RegExpFilter::RegExpFilter()
+        AssetBrowserEntryFilter* RegExpFilter::Clone() const
         {
+            auto clone = new RegExpFilter();
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            clone->m_filterPattern = m_filterPattern;
+            return clone;
         }
 
         void RegExpFilter::SetFilterPattern(const QRegExp& filterPattern)
@@ -276,15 +226,22 @@ namespace AzToolsFramework
 
         bool RegExpFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            // entry's name matches regular expression pattern if specified
+            // Return true if the filter is empty or the display name matches.
             return m_filterPattern.isEmpty() || m_filterPattern.exactMatch(entry->GetDisplayName());
         }
 
         //////////////////////////////////////////////////////////////////////////
         // AssetTypeFilter
         //////////////////////////////////////////////////////////////////////////
-        AssetTypeFilter::AssetTypeFilter()
-            : m_assetType(AZ::Data::AssetType::CreateNull()) {}
+        AssetBrowserEntryFilter* AssetTypeFilter::Clone() const
+        {
+            auto clone = new AssetTypeFilter();
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            clone->m_assetType = m_assetType;
+            return clone;
+        }
 
         void AssetTypeFilter::SetAssetType(AZ::Data::AssetType assetType)
         {
@@ -314,32 +271,36 @@ namespace AzToolsFramework
         bool AssetTypeFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
             // this filter only works on products.
-            if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+            const ProductAssetBrowserEntry* product = entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product
+                ? static_cast<const ProductAssetBrowserEntry*>(entry)
+                : nullptr;
+            if (!product)
             {
-                if (m_assetType.IsNull())
-                {
-                    return true;
-                }
-
-                if (static_cast<const ProductAssetBrowserEntry*>(entry)->GetAssetType() == m_assetType)
-                {
-                    return true;
-                }
+                return false;
             }
-            return false;
+
+            return m_assetType.IsNull() || product->GetAssetType() == m_assetType;
         }
 
         //////////////////////////////////////////////////////////////////////////
         // AssetGroupFilter
         //////////////////////////////////////////////////////////////////////////
-        AssetGroupFilter::AssetGroupFilter()
-            : m_group("All")
+        AssetBrowserEntryFilter* AssetGroupFilter::Clone() const
         {
+            auto clone = new AssetGroupFilter();
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            clone->SetAssetGroup(m_group);
+            return clone;
         }
 
         void AssetGroupFilter::SetAssetGroup(const QString& group)
         {
             m_group = group;
+            m_groupCrc = AZ::Crc32(group.toUtf8().constData());
+            m_groupIsAll = m_group.compare("All", Qt::CaseInsensitive) == 0;
+            m_groupIsOther = m_group.compare("Other", Qt::CaseInsensitive) == 0;
         }
 
         const QString& AssetGroupFilter::GetAssetTypeGroup() const
@@ -355,34 +316,34 @@ namespace AzToolsFramework
         bool AssetGroupFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
             // this filter only works on products.
-            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
+            const ProductAssetBrowserEntry* product = entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product
+                ? static_cast<const ProductAssetBrowserEntry*>(entry)
+                : nullptr;
+            if (!product)
             {
                 return false;
             }
 
-            if (m_group.compare("All", Qt::CaseInsensitive) == 0)
-            {
-                return true;
-            }
-
-            auto product = static_cast<const ProductAssetBrowserEntry*>(entry);
-
-            QString group;
-            AZ::AssetTypeInfoBus::EventResult(group, product->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
-
-            if (m_group.compare("Other", Qt::CaseInsensitive) == 0 && group.isEmpty())
-            {
-                return true;
-            }
-
-            return (m_group.compare(group, Qt::CaseInsensitive) == 0);
+            return (m_groupIsAll) || (m_groupIsOther && product->GetGroupName().isEmpty()) || (m_groupCrc == product->GetGroupNameCrc());
         }
 
         //////////////////////////////////////////////////////////////////////////
         // EntryTypeFilter
         //////////////////////////////////////////////////////////////////////////
         EntryTypeFilter::EntryTypeFilter()
-            : m_entryType(AssetBrowserEntry::AssetEntryType::Product) {}
+            : m_entryType(AssetBrowserEntry::AssetEntryType::Product)
+        {
+        }
+
+        AssetBrowserEntryFilter* EntryTypeFilter::Clone() const
+        {
+            auto clone = new EntryTypeFilter();
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            clone->m_entryType = m_entryType;
+            return clone;
+        }
 
         void EntryTypeFilter::SetEntryType(AssetBrowserEntry::AssetEntryType entryType)
         {
@@ -409,7 +370,23 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         CompositeFilter::CompositeFilter(LogicOperatorType logicOperator)
             : m_logicOperator(logicOperator)
-            , m_emptyResult(true) {}
+        {
+        }
+
+        AssetBrowserEntryFilter* CompositeFilter::Clone() const
+        {
+            auto clone = new CompositeFilter();
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            clone->m_logicOperator = m_logicOperator;
+            clone->m_emptyResult = m_emptyResult;
+            for (const auto& subFilter : m_subFilters)
+            {
+                clone->AddFilter(FilterConstType(subFilter->Clone()));
+            }
+            return clone;
+        }
 
         void CompositeFilter::AddFilter(FilterConstType filter)
         {
@@ -454,7 +431,7 @@ namespace AzToolsFramework
 
         QString CompositeFilter::GetNameInternal() const
         {
-            QString name = "";
+            QString name;
             for (auto it = m_subFilters.begin(); it != m_subFilters.end(); ++it)
             {
                 name += (*it)->GetName();
@@ -468,7 +445,7 @@ namespace AzToolsFramework
 
         bool CompositeFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            if (m_subFilters.count() == 0)
+            if (m_subFilters.empty())
             {
                 return m_emptyResult;
             }
@@ -476,165 +453,92 @@ namespace AzToolsFramework
             // AND
             if (m_logicOperator == LogicOperatorType::AND)
             {
-                for (auto filter : m_subFilters)
-                {
-                    if (!filter->Match(entry))
-                    {
-                        return false;
-                    }
-                }
-                return true;
+                return AZStd::all_of(m_subFilters.begin(), m_subFilters.end(), [&](const auto& filter) {
+                    return filter->Match(entry);
+                });
             }
+
             // OR
-            for (auto filter : m_subFilters)
-            {
-                if (filter->Match(entry))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        void CompositeFilter::FilterInternal(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
-        {
-            // if no subfilters are present in this composite filter then all relating entries would match
-            if (m_subFilters.isEmpty())
-            {
-                // only if match on empty filter is success
-                if (m_emptyResult)
-                {
-                    Expand(result, entry);
-                }
-                return;
-            }
-
-            // AND
-            if (m_logicOperator == LogicOperatorType::AND)
-            {
-                AZStd::vector<const AssetBrowserEntry*> andResult;
-                bool firstResult = true;
-
-                for (auto filter : m_subFilters)
-                {
-                    if (firstResult)
-                    {
-                        firstResult = false;
-                        filter->Filter(andResult, entry);
-                    }
-                    else
-                    {
-                        AZStd::vector<const AssetBrowserEntry*> set;
-                        filter->Filter(set, entry);
-                        Intersect(andResult, set);
-                    }
-                    if (andResult.empty())
-                    {
-                        break;
-                    }
-                }
-                Join(result, andResult);
-            }
-            // OR
-            else
-            {
-                for (auto filter : m_subFilters)
-                {
-                    AZStd::vector<const AssetBrowserEntry*> set;
-                    filter->Filter(set, entry);
-                    Join(result, set);
-                }
-            }
+            return AZStd::any_of(m_subFilters.begin(), m_subFilters.end(), [&](const auto& filter) {
+                return filter->Match(entry);
+            });
         }
 
         //////////////////////////////////////////////////////////////////////////
         // InverseFilter
         //////////////////////////////////////////////////////////////////////////
-        InverseFilter::InverseFilter() {}
+        AssetBrowserEntryFilter* InverseFilter::Clone() const
+        {
+            auto clone = new InverseFilter();
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            clone->m_filter = FilterConstType(m_filter->Clone());
+            return clone;
+        }
 
         void InverseFilter::SetFilter(FilterConstType filter)
         {
-            if (m_filter == filter)
+            if (m_filter != filter)
             {
-                return;
+                m_filter = filter;
+                Q_EMIT updatedSignal();
             }
-
-            m_filter = filter;
-            Q_EMIT updatedSignal();
         }
 
         QString InverseFilter::GetNameInternal() const
         {
-            if (m_filter.isNull())
-            {
-                QString name = tr("NOT");
-            }
-            QString name = tr("NOT (%1)").arg(m_filter->GetName());
-            return name;
+            return m_filter.isNull() ? tr("NOT") : tr("NOT (%1)").arg(m_filter->GetName());
         }
 
         bool InverseFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            if (m_filter.isNull())
-            {
-                return false;
-            }
-            return !m_filter->Match(entry);
-        }
-
-        void InverseFilter::FilterInternal(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
-        {
-            if (MatchInternal(entry))
-            {
-                Expand(result, entry);
-            }
+            return m_filter && !m_filter->Match(entry);
         }
 
         //////////////////////////////////////////////////////////////////////////
         // CleanerProductsFilter
         //////////////////////////////////////////////////////////////////////////
-        CleanerProductsFilter::CleanerProductsFilter() {}
+        AssetBrowserEntryFilter* CleanerProductsFilter::Clone() const
+        {
+            auto clone = new CleanerProductsFilter();
+            clone->m_name = m_name;
+            clone->m_tag = m_tag;
+            clone->m_direction = m_direction;
+            return clone;
+        }
 
         QString CleanerProductsFilter::GetNameInternal() const
         {
-            return QString();
+            return {};
         }
 
         bool CleanerProductsFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            auto product = azrtti_cast<const ProductAssetBrowserEntry*>(entry);
+            const ProductAssetBrowserEntry* product = entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product
+                ? static_cast<const ProductAssetBrowserEntry*>(entry)
+                : nullptr;
             if (!product)
             {
                 return true;
             }
+
             auto source = product->GetParent();
-            if (!source)
-            {
-                return true;
-            }
-            if (source->GetChildCount() != 1)
+            if (!source || source->GetChildCount() != 1)
             {
                 return true;
             }
 
-            AZStd::string assetTypeName;
-            AZ::AssetTypeInfoBus::EventResult(assetTypeName, product->GetAssetType(), &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
-            if (!assetTypeName.empty())
-            {
-                return true;
-            }
-            
-            return false;
+            bool result = false;
+            AZ::AssetTypeInfoBus::Event(
+                product->GetAssetType(),
+                [&](AZ::AssetTypeInfoBus::Events* handler)
+                {
+                    const char* assetTypeName = handler->GetAssetTypeDisplayName();
+                    result = assetTypeName && assetTypeName[0];
+                });
+            return result;
         }
-
-        void CleanerProductsFilter::FilterInternal(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
-        {
-            if (MatchInternal(entry))
-            {
-                Expand(result, entry);
-            }
-        }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

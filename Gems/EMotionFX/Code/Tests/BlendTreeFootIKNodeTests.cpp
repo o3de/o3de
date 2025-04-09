@@ -32,12 +32,13 @@ namespace EMotionFX
 {
     class BlendTreeFootIKNodeTests
         : public JackGraphFixture
-        , private EMotionFX::Integration::RaycastRequestBus::Handler
+        , private EMotionFX::Integration::IRaycastRequests
     {
     public:
-        RaycastRequests::RaycastResult Raycast([[maybe_unused]] AZ::EntityId entityId, const RaycastRequests::RaycastRequest& rayRequest) override
+        IRaycastRequests::RaycastResult Raycast(
+            [[maybe_unused]] AZ::EntityId entityId, const IRaycastRequests::RaycastRequest& rayRequest) override
         {
-            RaycastRequests::RaycastResult result;
+            IRaycastRequests::RaycastResult result;
 
             //
             // z
@@ -79,7 +80,7 @@ namespace EMotionFX
         void TearDown() override
         {
             JackGraphFixture::TearDown();
-            EMotionFX::Integration::RaycastRequestBus::Handler::BusDisconnect();
+            AZ::Interface<IRaycastRequests>::Unregister(this);
         }
 
         void ConstructGraph() override
@@ -129,8 +130,8 @@ namespace EMotionFX
             JackGraphFixture::SetUp();
             
             // Disable raycasts in other handlers, and take over control (muahhahaha *evil laugh*).
-            EMotionFX::Integration::RaycastRequestBus::Broadcast(&EMotionFX::Integration::RaycastRequests::DisableRayRequests);
-            EMotionFX::Integration::RaycastRequestBus::Handler::BusConnect();
+            AZ::Interface<Integration::IRaycastRequests>::Get()->DisableRayRequests();
+            AZ::Interface<Integration::IRaycastRequests>::Register(this);
         }
 
         void ValidateFootHeight(BlendTreeFootIKNode::LegId legId, const char* jointName, float height, float tolerance)

@@ -20,12 +20,14 @@ namespace DebugDraw
         if (serializeContext)
         {
             serializeContext->Class<DebugDrawTextElement>()
-                ->Version(0)
+                ->Version(1)
                 ->Field("Text", &DebugDrawTextElement::m_text)
                 ->Field("Color", &DebugDrawTextElement::m_color)
                 ->Field("DrawMode", &DebugDrawTextElement::m_drawMode)
                 ->Field("WorldLocation", &DebugDrawTextElement::m_worldLocation)
                 ->Field("TargetEntity", &DebugDrawTextElement::m_targetEntityId)
+                ->Field("Centered", &DebugDrawTextElement::m_centered)
+                ->Field("Size", &DebugDrawTextElement::m_size)
                 ;
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -36,10 +38,12 @@ namespace DebugDraw
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->DataElement(0, &DebugDrawTextElement::m_text, "Text", "The Debug Text.")
                     ->DataElement(0, &DebugDrawTextElement::m_color, "Color", "Text Color.")
+                    ->DataElement(0, &DebugDrawTextElement::m_size, "Size", "Text size.")
                     ->DataElement(0, &DebugDrawTextElement::m_drawMode, "Draw Mode", "Draw Mode Preference.")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugDrawTextElement::m_drawMode, "Draw Mode", "Draw Mode Preference.")
                     ->EnumAttribute(DrawMode::OnScreen, "Screen Space")
                     ->EnumAttribute(DrawMode::InWorld, "World Space")
+                    ->DataElement(0, &DebugDrawTextElement::m_centered, "Centered", "Center align the text if enabled, otherwise left align.")
                     // Currently supports World Space placement on component owners location Or exact placement via behavior context / scripting (TBC)
                     //->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     //->DataElement(AZ::Edit::UIHandlers::Default, &DebugDrawTextElement::m_targetEntityId, "TargetEntity", "The target entity to position debug text at.")
@@ -71,7 +75,7 @@ namespace DebugDraw
 
     void DebugDrawTextComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("DebugDrawTextService", 0xabd60a17));
+        provided.push_back(AZ_CRC_CE("DebugDrawTextService"));
     }
 
     void DebugDrawTextComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

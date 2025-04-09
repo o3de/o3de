@@ -9,6 +9,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzFramework/Archive/Codec.h>
@@ -287,33 +288,6 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
         err = inflateEnd(&stream);
         *pReturnCode = err;
     }
-
-    static AZStd::intrusive_ptr<AZ::IO::MemoryBlock> CreateMemoryBlock(size_t size, const char* usage)
-    {
-        if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-        {
-            AZ_Error("Pak", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
-            return {};
-        }
-
-        AZ::IAllocator* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
-        auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
-        {
-            return reinterpret_cast<uint8_t*>(AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(byteSize, byteAlignment, 0, name));
-        };
-        auto DeleterFunc = [](uint8_t* ptrArray)
-        {
-            if (ptrArray)
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Get().DeAllocate(ptrArray);
-            }
-        };
-        memoryBlock->m_address = AZ::IO::MemoryBlock::AddressPtr{ CreateFunc(size, alignof(uint8_t), usage), AZ::IO::MemoryBlock::AddressDeleter{DeleterFunc} };
-        memoryBlock->m_size = size;
-
-        return memoryBlock;
-    }
 }
 
 namespace AZ::IO::ZipDir
@@ -324,7 +298,6 @@ namespace AZ::IO::ZipDir
     {
         if (!m_pInMemoryData)
         {
-            const char* szUsage = "In Memory Zip File";
             m_nCursor = 0;
 
             if (pData)
@@ -346,7 +319,11 @@ namespace AZ::IO::ZipDir
                 }
                 const size_t nFileSize = static_cast<size_t>(fileSize);
 
-                m_pInMemoryData = ZipDirStructuresInternal::CreateMemoryBlock(nFileSize, szUsage);
+                m_pInMemoryData = aznew AZ::IO::MemoryBlock{};
+
+                m_pInMemoryData->m_address.reset(reinterpret_cast<uint8_t*>(azmalloc(nFileSize, alignof(uint8_t))));
+                m_pInMemoryData->m_size = nFileSize;
+
 
                 m_nSize = nFileSize;
 
@@ -521,54 +498,57 @@ namespace AZ::IO::ZipDir
         int nReturnCode = Z_OK;
 
         //check first 4 bytes to see what compression codec was used
-        if (CompressionCodec::TestForZSTDMagic(pCompressed))
+        if (nSrcSize >= 4)
         {
-            size_t result = ZSTD_decompress(pUncompressed, *pDestSize, pCompressed, nSrcSize);
+            if (CompressionCodec::TestForZSTDMagic(pCompressed))
+            {
+                size_t result = ZSTD_decompress(pUncompressed, *pDestSize, pCompressed, nSrcSize);
 
-            if (ZSTD_isError(result))
-            {
-                AZ_Error("ZipDirStructures", false, "Error decompressing using zstd: %s", ZSTD_getErrorName(result));
-                nReturnCode = Z_BUF_ERROR;
+                if (ZSTD_isError(result))
+                {
+                    AZ_Error("ZipDirStructures", false, "Error decompressing using zstd: %s", ZSTD_getErrorName(result));
+                    nReturnCode = Z_BUF_ERROR;
+                }
+                else
+                {
+                    *pDestSize = result;
+                }
+                return nReturnCode;
             }
-            else
+            else if (CompressionCodec::TestForLZ4Magic(pCompressed))
             {
-                *pDestSize = result;
-            }
-            return nReturnCode;
-        }
-        else if (CompressionCodec::TestForLZ4Magic(pCompressed))
-        {
-            size_t result;
-            LZ4F_decompressionContext_t dctx;
-            result = LZ4F_createDecompressionContext(&dctx, LZ4F_VERSION);
-            if (LZ4F_isError(result))
-            {
-                AZ_Error("ZipDirStructures", false, "Error creating lz4 decompression context: %s", LZ4F_getErrorName(result));
-                return Z_BUF_ERROR;
-            }
+                size_t result;
+                LZ4F_decompressionContext_t dctx;
+                result = LZ4F_createDecompressionContext(&dctx, LZ4F_VERSION);
+                if (LZ4F_isError(result))
+                {
+                    AZ_Error("ZipDirStructures", false, "Error creating lz4 decompression context: %s", LZ4F_getErrorName(result));
+                    return Z_BUF_ERROR;
+                }
 
-            size_t dstSize = *pDestSize;
-            size_t srcSize = nSrcSize;
-            result = LZ4F_decompress(dctx, pUncompressed, &dstSize, pCompressed, &srcSize, nullptr);
-            if (LZ4F_isError(result))
-            {
-                AZ_Error("ZipDirStructures", false, "Error decompressing using lz4: %s", LZ4F_getErrorName(result));
-                nReturnCode = Z_BUF_ERROR;
-            }
-            else
-            {
-                *pDestSize = dstSize;
-            }
+                size_t dstSize = *pDestSize;
+                size_t srcSize = nSrcSize;
+                result = LZ4F_decompress(dctx, pUncompressed, &dstSize, pCompressed, &srcSize, nullptr);
+                if (LZ4F_isError(result))
+                {
+                    AZ_Error("ZipDirStructures", false, "Error decompressing using lz4: %s", LZ4F_getErrorName(result));
+                    nReturnCode = Z_BUF_ERROR;
+                }
+                else
+                {
+                    *pDestSize = dstSize;
+                }
 
-            size_t freeCode = LZ4F_freeDecompressionContext(dctx);
-            if (LZ4F_isError(freeCode))
-            {
-                //We are not changing the return code in this case, but it is good to record that releasing the
-                //decompression context failed.
-                AZ_Error("ZipDirStructures", false, "Error releasing lz4 decompression context: %s", LZ4F_getErrorName(freeCode));
-            }
+                size_t freeCode = LZ4F_freeDecompressionContext(dctx);
+                if (LZ4F_isError(freeCode))
+                {
+                    //We are not changing the return code in this case, but it is good to record that releasing the
+                    //decompression context failed.
+                    AZ_Error("ZipDirStructures", false, "Error releasing lz4 decompression context: %s", LZ4F_getErrorName(freeCode));
+                }
 
-            return nReturnCode;
+                return nReturnCode;
+            }
         }
 
         //fallback to zlib
@@ -591,7 +571,6 @@ namespace AZ::IO::ZipDir
         stream.avail_in = static_cast<uInt>(nSrcSize);
         stream.avail_out = static_cast<uInt>(*pDestSize);
 
-        AZ_Assert(AZ::AllocatorInstance<AZ::OSAllocator>::IsReady(), "OS Allocator must be ready in order to override zlib allocator");
         stream.zalloc = &ZipDirStructuresInternal::ZlibAlloc;
         stream.zfree = &ZipDirStructuresInternal::ZlibFree;
         stream.opaque = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();

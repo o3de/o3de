@@ -15,3 +15,8 @@
 #define AZ_TRAIT_AZFRAMEWORK_PYTHON_SHELL "python.sh"
 #define AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER 1
 #define AZ_TRAIT_AZFRAMEWORK_PROCESSLAUNCH_DEFAULT 0
+
+// Very important to enable this trait on Linux, otherwise
+// the whole OS gets stuck with an invisible mouse
+// cursor when debugging Lua code.
+#define AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT 1

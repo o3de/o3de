@@ -7,6 +7,7 @@
  */
 
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
+#include <SceneAPI/SceneData/Groups/ImportGroup.h>
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Groups/SkeletonGroup.h>
 #include <SceneAPI/SceneData/Groups/SkinGroup.h>
@@ -17,10 +18,13 @@
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
+#include <SceneAPI/SceneData/Rules/UnmodifiableRule.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
+#include <SceneAPI/SceneData/Rules/UVsRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Rules/TagRule.h>
 
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
 
@@ -57,6 +61,7 @@ namespace AZ
             }
 
             // Groups
+            SceneData::ImportGroup::Reflect(context);
             SceneData::MeshGroup::Reflect(context);
             SceneData::SkeletonGroup::Reflect(context);
             SceneData::SkinGroup::Reflect(context);
@@ -68,11 +73,14 @@ namespace AZ
             SceneData::LodRule::Reflect(context);
             SceneData::StaticMeshAdvancedRule::Reflect(context);
             SceneData::MaterialRule::Reflect(context);
+            SceneData::UnmodifiableRule::Reflect(context);
             SceneData::ScriptProcessorRule::Reflect(context);
             SceneData::SkeletonProxyRule::Reflect(context);
             SceneData::SkinMeshAdvancedRule::Reflect(context);
             SceneData::TangentsRule::Reflect(context);
+            SceneData::UVsRule::Reflect(context);
             SceneData::CoordinateSystemRule::Reflect(context);
+            SceneData::TagRule::Reflect(context);
 
             // Utility
             SceneData::SceneNodeSelectionList::Reflect(context);

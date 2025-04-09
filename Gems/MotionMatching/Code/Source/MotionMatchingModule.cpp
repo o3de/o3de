@@ -16,8 +16,12 @@ namespace EMotionFX::MotionMatching
     {
     public:
         AZ_RTTI(MotionMatchingModule, "{cf4381d1-0207-4ef8-85f0-6c88ec28a7b6}", MotionMatchingModuleInterface);
-        AZ_CLASS_ALLOCATOR(MotionMatchingModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MotionMatchingModule, AZ::SystemAllocator);
     };
 }// namespace EMotionFX::MotionMatching
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), EMotionFX::MotionMatching::MotionMatchingModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_MotionMatching, EMotionFX::MotionMatching::MotionMatchingModule)
+#endif

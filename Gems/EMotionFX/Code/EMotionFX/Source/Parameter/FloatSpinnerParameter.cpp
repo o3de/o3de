@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FloatSpinnerParameter, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FloatSpinnerParameter, AnimGraphAllocator)
 
 
     void FloatSpinnerParameter::Reflect(AZ::ReflectContext* context)

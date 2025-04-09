@@ -15,6 +15,8 @@
 
 namespace EMotionFX::MotionMatching
 {
+    class FeatureSchema;
+
     class DebugDrawRequests
         : public AZ::EBusTraits
     {
@@ -30,7 +32,16 @@ namespace EMotionFX::MotionMatching
     public:
         AZ_RTTI(MotionMatchingRequests, "{b08f73cc-a922-49ef-8c0e-07166b43ea65}");
         virtual ~MotionMatchingRequests() = default;
-        // Put your public methods here
+    };
+
+    class MotionMatchingEditorRequests
+    {
+    public:
+        AZ_RTTI(MotionMatchingEditorRequests, "{A162E323-10FC-45A6-BE1A-9770CD459BE6}");
+        virtual ~MotionMatchingEditorRequests() = default;
+
+        virtual void SetDebugDrawFeatureSchema([[maybe_unused]] FeatureSchema* featureSchema) = 0;
+        virtual FeatureSchema* GetDebugDrawFeatureSchema() const = 0;
     };
     
     class MotionMatchingBusTraits
@@ -46,5 +57,8 @@ namespace EMotionFX::MotionMatching
 
     using MotionMatchingRequestBus = AZ::EBus<MotionMatchingRequests, MotionMatchingBusTraits>;
     using MotionMatchingInterface = AZ::Interface<MotionMatchingRequests>;
+
+    using MotionMatchingEditorRequestBus = AZ::EBus<MotionMatchingEditorRequests, MotionMatchingBusTraits>;
+    using MotionMatchingEditorInterface = AZ::Interface<MotionMatchingEditorRequests>;
 
 } // namespace EMotionFX::MotionMatching

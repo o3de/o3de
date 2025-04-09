@@ -15,7 +15,13 @@
 #include "Viewport/WhiteBoxVertexTranslationModifier.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <QKeySequence>
 #include <QLayout>
@@ -44,6 +50,8 @@ namespace WhiteBox
     static const char* const HideEdgeUndoRedoDesc = "Hide an edge to merge two connected polygons together";
     static const char* const HideVertexUndoRedoDesc = "Hide a vertex to merge two connected edges together";
 
+    static constexpr AZStd::string_view WhiteBoxDefaultSelectionChangeUpdaterIdentifier = "o3de.updater.onWhiteBoxDefaultComponentModeSelectionChanged";
+
     const QKeySequence HideKey = QKeySequence{Qt::Key_H};
 
     // handle translation and scale modifiers for either polygon or edge - if a translation
@@ -69,6 +77,13 @@ namespace WhiteBox
 
                 AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                     &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
+
+                // Update actions defined with the Action Manager, if enabled.
+                auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+                if (actionManagerInterface)
+                {
+                    actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+                }
             }
         }
     }
@@ -115,7 +130,7 @@ namespace WhiteBox
         }
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(DefaultMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(DefaultMode, AZ::SystemAllocator)
 
     DefaultMode::DefaultMode(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_entityComponentIdPair(entityComponentIdPair)
@@ -130,6 +145,166 @@ namespace WhiteBox
         EditorWhiteBoxEdgeModifierNotificationBus::Handler::BusDisconnect();
         EditorWhiteBoxPolygonModifierNotificationBus::Handler::BusDisconnect();
         EditorWhiteBoxDefaultModeRequestBus::Handler::BusDisconnect();
+    }
+
+    void DefaultMode::RegisterActionUpdaters()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on RegisterActionUpdaters.");
+
+        actionManagerInterface->RegisterActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+    }
+
+    void DefaultMode::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "WhiteBoxDefaultMode - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Hide Edge
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.whiteBoxComponentMode.Default.hideEdge";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = HideEdgeTitle;
+            actionProperties.m_description = HideEdgeDesc;
+            actionProperties.m_category = "White Box Component Mode - Default";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxDefaultModeRequestBus::Event(
+                                entityComponentIdPair, &EditorWhiteBoxDefaultModeRequests::HideSelectedEdge);
+                        }
+                    );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    // edge selection test - ensure an edge is selected before enabling this shortcut
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isEdgeSelected = false;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isEdgeSelected](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            WhiteBox::Api::EdgeHandles handles;
+
+                            EditorWhiteBoxDefaultModeRequestBus::EventResult(
+                                handles, entityComponentIdPair, &EditorWhiteBoxDefaultModeRequests::SelectedEdgeHandles);
+
+                            if (!handles.empty())
+                            {
+                                isEdgeSelected = true;
+                            }
+                        }
+                    );
+
+                    return isEdgeSelected;
+                }
+            );
+            actionManagerInterface->AddActionToUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier, actionIdentifier);
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "H");
+        }
+
+        // Hide Vertex
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.whiteBoxComponentMode.Default.hideVertex";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = HideVertexTitle;
+            actionProperties.m_description = HideVertexDesc;
+            actionProperties.m_category = "White Box Component Mode - Default";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxDefaultModeRequestBus::Event(
+                                entityComponentIdPair, &EditorWhiteBoxDefaultModeRequests::HideSelectedVertex);
+                        }
+                    );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    // vertex selection test - ensure a vertex is selected before enabling this shortcut
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    bool isVertexSelected = false;
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [&isVertexSelected](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            WhiteBox::Api::EdgeHandles edgeHandles;
+                            EditorWhiteBoxDefaultModeRequestBus::EventResult(
+                                edgeHandles, entityComponentIdPair, &EditorWhiteBoxDefaultModeRequests::SelectedEdgeHandles);
+
+                            WhiteBox::Api::VertexHandles vertexHandles;
+                            EditorWhiteBoxDefaultModeRequestBus::EventResult(
+                                vertexHandles, entityComponentIdPair, &EditorWhiteBoxDefaultModeRequests::SelectedVertexHandles);
+
+                            if (edgeHandles.empty() && !vertexHandles.empty())
+                            {
+                                isVertexSelected = true;
+                            }
+                        }
+                    );
+
+                    return isVertexSelected;
+                }
+            );
+            actionManagerInterface->AddActionToUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier, actionIdentifier);
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "H");
+        }
+    }
+
+    void DefaultMode::BindActionsToModes(const AZStd::string& modeIdentifier)
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideEdge");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideVertex");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
+    }
+
+    void DefaultMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "WhiteBoxDefaultMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideEdge", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.Default.hideVertex", 6001);
     }
 
     void DefaultMode::Refresh()
@@ -147,7 +322,7 @@ namespace WhiteBox
         const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         // edge selection test - ensure an edge is selected before allowing this shortcut
-        if (auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier))
+        if ([[maybe_unused]] auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier))
         {
             return AZStd::vector<AzToolsFramework::ActionOverride>{
                 AzToolsFramework::ActionOverride()
@@ -157,20 +332,15 @@ namespace WhiteBox
                     .SetTip(HideEdgeDesc)
                     .SetEntityComponentIdPair(entityComponentIdPair)
                     .SetCallback(
-                        [entityComponentIdPair, modifier]()
+                        [this]()
                         {
-                            WhiteBoxMesh* whiteBox = nullptr;
-                            EditorWhiteBoxComponentRequestBus::EventResult(
-                                whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
-
-                            Api::HideEdge(*whiteBox, (*modifier)->GetEdgeHandle());
-                            (*modifier)->SetEdgeHandle(Api::EdgeHandle{});
-
-                            RecordWhiteBoxAction(*whiteBox, entityComponentIdPair, HideEdgeUndoRedoDesc);
-                        })};
+                            HideSelectedEdge();
+                        }
+                    )
+                };
         }
         // vertex selection test - ensure a vertex is selected before allowing this shortcut
-        else if (auto modifier2 = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier))
+        else if ([[maybe_unused]] auto modifier2 = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier))
         {
             return AZStd::vector<AzToolsFramework::ActionOverride>{
                 AzToolsFramework::ActionOverride()
@@ -180,17 +350,12 @@ namespace WhiteBox
                     .SetTip(HideVertexDesc)
                     .SetEntityComponentIdPair(entityComponentIdPair)
                     .SetCallback(
-                        [entityComponentIdPair, modifier2]()
+                        [this]()
                         {
-                            WhiteBoxMesh* whiteBox = nullptr;
-                            EditorWhiteBoxComponentRequestBus::EventResult(
-                                whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
-
-                            Api::HideVertex(*whiteBox, (*modifier2)->GetVertexHandle());
-                            (*modifier2)->SetVertexHandle(Api::VertexHandle{});
-
-                            RecordWhiteBoxAction(*whiteBox, entityComponentIdPair, HideVertexUndoRedoDesc);
-                        })};
+                            HideSelectedVertex();
+                        }
+                    )
+                };
         }
         else
         {
@@ -265,7 +430,7 @@ namespace WhiteBox
         debugDisplay.PushMatrix(worldFromLocal);
 
         DrawEdges(
-            debugDisplay, cl_whiteBoxEdgeUserColor, renderData.m_whiteBoxIntersectionData.m_edgeBounds,
+            debugDisplay, ed_whiteBoxEdgeDefault, renderData.m_whiteBoxIntersectionData.m_edgeBounds,
             FindInteractiveEdgeHandles(*whiteBox));
 
         DrawVertices(
@@ -476,13 +641,16 @@ namespace WhiteBox
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
 
+            // Update actions defined with the Action Manager, if enabled.
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            if (actionManagerInterface)
+            {
+                actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+            }
+
             if (auto modifier = AZStd::get_if<AZStd::unique_ptr<PolygonTranslationModifier>>(&m_selectedModifier))
             {
-                (*modifier)->SetColors(
-                    AZ::Color::CreateFromVector3AndFloat(
-                        static_cast<AZ::Color>(cl_whiteBoxSelectedModifierColor).GetAsVector3(), 0.5f),
-                    AZ::Color::CreateFromVector3AndFloat(
-                        static_cast<AZ::Color>(cl_whiteBoxSelectedModifierColor).GetAsVector3(), 1.0f));
+                (*modifier)->SetColors(ed_whiteBoxPolygonSelection, ed_whiteBoxOutlineSelection);
                 (*modifier)->CreateView();
             }
 
@@ -502,9 +670,16 @@ namespace WhiteBox
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
 
+            // Update actions defined with the Action Manager, if enabled.
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            if (actionManagerInterface)
+            {
+                actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+            }
+
             if (auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier))
             {
-                (*modifier)->SetColors(cl_whiteBoxSelectedModifierColor, cl_whiteBoxSelectedModifierColor);
+                (*modifier)->SetColors(ed_whiteBoxOutlineSelection, ed_whiteBoxOutlineSelection);
                 (*modifier)->SetWidths(cl_whiteBoxSelectedEdgeVisualWidth, cl_whiteBoxSelectedEdgeVisualWidth);
                 (*modifier)->CreateView();
             }
@@ -525,9 +700,16 @@ namespace WhiteBox
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
 
+            // Update actions defined with the Action Manager, if enabled.
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            if (actionManagerInterface)
+            {
+                actionManagerInterface->TriggerActionUpdater(WhiteBoxDefaultSelectionChangeUpdaterIdentifier);
+            }
+
             if (auto modifier = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier))
             {
-                (*modifier)->SetColor(cl_whiteBoxVertexSelectedModifierColor);
+                (*modifier)->SetColor(ed_whiteBoxVertexSelection);
                 (*modifier)->CreateView();
             }
 
@@ -641,6 +823,40 @@ namespace WhiteBox
     Api::PolygonHandle DefaultMode::HoveredPolygonHandle() const
     {
         return m_polygonTranslationModifier ? m_polygonTranslationModifier->GetPolygonHandle() : Api::PolygonHandle();
+    }
+
+    void DefaultMode::HideSelectedEdge()
+    {
+        auto modifier = AZStd::get_if<AZStd::unique_ptr<EdgeTranslationModifier>>(&m_selectedModifier);
+
+        WhiteBoxMesh* whiteBox = nullptr;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+
+        if (modifier)
+        {
+            Api::HideEdge(*whiteBox, (*modifier)->GetEdgeHandle());
+            (*modifier)->SetEdgeHandle(Api::EdgeHandle{});
+
+            RecordWhiteBoxAction(*whiteBox, m_entityComponentIdPair, HideEdgeUndoRedoDesc);
+        }
+    }
+
+    void DefaultMode::HideSelectedVertex()
+    {
+        auto modifier = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier);
+
+        WhiteBoxMesh* whiteBox = nullptr;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+
+        if (modifier)
+        {
+            Api::HideVertex(*whiteBox, (*modifier)->GetVertexHandle());
+            (*modifier)->SetVertexHandle(Api::VertexHandle{});
+
+            RecordWhiteBoxAction(*whiteBox, m_entityComponentIdPair, HideVertexUndoRedoDesc);
+        }
     }
 
     void DefaultMode::OnPolygonModifierUpdatedPolygonHandle(

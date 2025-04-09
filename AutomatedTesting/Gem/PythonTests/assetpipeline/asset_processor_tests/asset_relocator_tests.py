@@ -14,11 +14,13 @@ import os
 import pathlib
 import subprocess
 import shutil
+import sys
 from dataclasses import dataclass
 from dataclasses import field
 from typing import List
 
 # Import LyTestTools
+import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
@@ -58,7 +60,7 @@ def local_resources(request, workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("clear_testingAssets_dir")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 class TestsAssetRelocator_WindowsAndMac(object):
     """
     Specific Tests for Asset Processor GUI To Only Run on Windows and Mac
@@ -258,6 +260,8 @@ class TestsAssetRelocator_WindowsAndMac(object):
         # Look for expected message inside the log and verify that no move or delete occurs in the log
         utils.validate_log_output(ap_batch_output, [expected_message], [unexpected_message])
 
+    @pytest.mark.skipif(ly_test_tools.WINDOWS, reason="https://github.com/o3de/o3de/issues/14514")
+    @pytest.mark.skipif(ly_test_tools.LINUX, reason="Python based file locking does not function on Linux")
     @pytest.mark.test_case_id("C21968355")
     @pytest.mark.test_case_id("C21968356")
     @pytest.mark.test_case_id("C21968359")
@@ -344,6 +348,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
         4. Assert file existence or nonexistence based on the test case
         5. Validate the relocation report based on expected and unexpected messages
         """
+
         env = ap_setup_fixture
         test_file = "testFile.txt"
 
@@ -375,6 +380,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
         if expected_queries or unexpected_queries:
             utils.validate_log_output(ap_batch_output, expected_queries, unexpected_queries)
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.test_case_id("C21968381")
     @pytest.mark.test_case_id("C21968382")
     @pytest.mark.assetpipeline
@@ -557,7 +563,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
     @pytest.mark.test_case_id("C21968373")
     @pytest.mark.assetpipeline
     @pytest.mark.parametrize("test_file_name", ["ReadOnly.txt", "Writable.txt"])
-    @pytest.mark.skipif(not utils.check_for_perforce(), reason="Perforce not enabled")
+    @pytest.mark.skipif(not utils.check_for_perforce(error_on_no_perforce=False), reason="Perforce not enabled")
     def test_WindowsMacPlatforms_EnableSCM_RelocatorFails(self, workspace, ap_setup_fixture, test_file_name,
                                                           asset_processor):
         """
@@ -2620,7 +2626,7 @@ move_a_file_tests = [
             encoded_command="bad_file\\badfile.bad,bad_file\\MoveOutput\\formerBadFile.txt",
             encoded_output_dir="project_test_assets_dir\\MoveOutput\\",
             move_successful=False,
-            output_messages=["File not found."],
+            output_messages=["matched an existing file but it is not a source asset"],
         ),
         id="C19462844",
         marks=pytest.mark.test_case_id("C19462844"),
@@ -3774,7 +3780,7 @@ move_a_folder_tests = [
 @pytest.mark.usefixtures("clear_moveoutput")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorMove_WindowsAndMac:
 
     # run one test:
@@ -3782,6 +3788,7 @@ class TestsAssetProcessorMove_WindowsAndMac:
     # run all the tests for a test case:
     # -k C19462747
 
+    @pytest.mark.skipif(sys.platform.startswith('linux'), reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.parametrize("test", move_a_file_tests + move_a_folder_tests)
     def test_WindowsMacPlatforms_MoveCommand_CommandResult(self, asset_processor, ap_setup_fixture, test: MoveTest, project):
         """

@@ -32,6 +32,11 @@ namespace AZ::Render
         EnableDirectLighting,
         EnableIndirectLighting,
 
+        CustomDebugOption01,
+        CustomDebugOption02,
+        CustomDebugOption03,
+        CustomDebugOption04,
+
         Count
     };
 
@@ -49,6 +54,8 @@ namespace AZ::Render
         Albedo,
         Roughness,
         Metallic,
+
+        CascadeShadows,
 
         Count
     };

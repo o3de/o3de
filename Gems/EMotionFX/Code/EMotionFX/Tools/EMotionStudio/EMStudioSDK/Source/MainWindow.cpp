@@ -16,25 +16,28 @@
 #include <EMotionStudio/EMStudioSDK/Source/MainWindowEventFilter.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/PreferencesWindow.h>
-#include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
+#include <Editor/SaveDirtyFilesCallbacks.h>
+#include <MCore/Source/LogManager.h>
 
 #include <Editor/ActorEditorBus.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
-#include <EMotionFX/Tools/EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/FancyDocking.h>
 
 // include Qt related
 #include <QAbstractEventDispatcher>
+#include <QCloseEvent>
 #include <QComboBox>
 #include <QDesktopServices>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -50,8 +53,11 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/CommandSystem/Source/ActorCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphCommands.h>
@@ -75,89 +81,6 @@ AZ_POP_DISABLE_WARNING
 
 namespace EMStudio
 {
-    class SaveDirtyWorkspaceCallback
-        : public SaveDirtyFilesCallback
-    {
-        MCORE_MEMORYOBJECTCATEGORY(SaveDirtyWorkspaceCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
-
-    public:
-        SaveDirtyWorkspaceCallback()
-            : SaveDirtyFilesCallback()                                                              {}
-        ~SaveDirtyWorkspaceCallback()                                                               {}
-
-        enum
-        {
-            TYPE_ID = 0x000002345
-        };
-        uint32 GetType() const override                                                             { return TYPE_ID; }
-        uint32 GetPriority() const override                                                         { return 0; }
-        bool GetIsPostProcessed() const override                                                    { return false; }
-
-        void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
-        {
-            Workspace* workspace = GetManager()->GetWorkspace();
-            if (workspace->GetDirtyFlag())
-            {
-                // add the filename to the dirty filenames array
-                outFileNames->push_back(workspace->GetFilename());
-
-                // add the link to the actual object
-                ObjectPointer objPointer;
-                objPointer.m_workspace = workspace;
-                outObjects->push_back(objPointer);
-            }
-        }
-
-        int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override
-        {
-            MCORE_UNUSED(filenamesToSave);
-
-            const size_t numObjects = objects.size();
-            for (size_t i = 0; i < numObjects; ++i)
-            {
-                // get the current object pointer and skip directly if the type check fails
-                ObjectPointer objPointer = objects[i];
-                if (objPointer.m_workspace == nullptr)
-                {
-                    continue;
-                }
-
-                Workspace* workspace = objPointer.m_workspace;
-
-                // has the workspace been saved already or is it a new one?
-                if (workspace->GetFilenameString().empty())
-                {
-                    // open up save as dialog so that we can choose a filename
-                    const AZStd::string filename = GetMainWindow()->GetFileManager()->SaveWorkspaceFileDialog(GetMainWindow());
-                    if (filename.empty())
-                    {
-                        return DirtyFileManager::CANCELED;
-                    }
-
-                    // save the workspace using the newly selected filename
-                    AZStd::string command = AZStd::string::format("SaveWorkspace -filename \"%s\"", filename.c_str());
-                    commandGroup->AddCommandString(command);
-                }
-                else
-                {
-                    // save workspace using its filename
-                    AZStd::string command = AZStd::string::format("SaveWorkspace -filename \"%s\"", workspace->GetFilename());
-                    commandGroup->AddCommandString(command);
-                }
-            }
-
-            return DirtyFileManager::FINISHED;
-        }
-
-        const char* GetExtension() const override       { return "emfxworkspace"; }
-        const char* GetFileType() const override        { return "workspace"; }
-        const AZ::Uuid GetFileRttiType() const override
-        {
-            return azrtti_typeid<EMStudio::Workspace>();
-        }
-
-    };
-
     class UndoMenuCallback
         : public MCore::CommandManagerCallback
     {
@@ -229,6 +152,8 @@ namespace EMStudio
         m_textEdit->setText(text.c_str());
     }
 
+    constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+
     MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
         : AzQtComponents::DockMainWindow(parent, flags)
         , m_prevSelectedActor(nullptr)
@@ -259,10 +184,16 @@ namespace EMStudio
         m_unselectCallback               = nullptr;
         m_clearSelectionCallback        = nullptr;
         m_saveWorkspaceCallback          = nullptr;
+
+        // Register this window as the widget for the Animation Editor Action Context.
+        AzToolsFramework::AssignWidgetToActionContextHelper(AnimationEditorActionContextIdentifier, this);
     }
 
     MainWindow::~MainWindow()
     {
+        // Unregister this window as the widget for the Animation Editor Action Context.
+        AzToolsFramework::RemoveWidgetFromActionContextHelper(AnimationEditorActionContextIdentifier, this);
+
         DisableUpdatingPlugins();
 
         if (m_nativeEventFilter)
@@ -283,6 +214,7 @@ namespace EMStudio
         // Unload everything from the Editor, so that reopening the editor
         // results in an empty scene
         Reset();
+        CommandSystem::ClearMotionSetsCommand(); // Remove the default motion set.
 
         delete m_shortcutManager;
         delete m_fileManager;
@@ -467,12 +399,12 @@ namespace EMStudio
 
         menu->addAction("Documentation", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
+            QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/user-guide/visualization/animation/"));
         });
 
         menu->addAction("Forums", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/community/"));
+            QDesktopServices::openUrl(QUrl("https://www.o3de.org/community/"));
         });
 
         menu->addSeparator();
@@ -497,6 +429,10 @@ namespace EMStudio
 
         // Create the dirty file manager and register the workspace callback.
         m_dirtyFileManager = new DirtyFileManager;
+        m_dirtyFileManager->AddCallback(new SaveDirtyActorFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyMotionFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyMotionSetFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyAnimGraphFilesCallback());
         m_dirtyFileManager->AddCallback(new SaveDirtyWorkspaceCallback);
 
         // init the file manager
@@ -995,7 +931,19 @@ namespace EMStudio
         }
 
         // enable the menus if at least one motion set
-        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0)
+        bool emptyDefaultMotionSet = false;
+        if (EMotionFX::GetMotionManager().GetNumMotionSets() == 1)
+        {
+            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
+            if (motionSet->GetNumChildSets() == 0 &&
+                motionSet->GetNumMotionEntries() == 0 &&
+                motionSet->GetNameString() == CommandSystem::s_defaultMotionSetName)
+            {
+                emptyDefaultMotionSet = true;
+            }
+        }
+
+        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0 && !emptyDefaultMotionSet)
         {
             m_resetAction->setEnabled(true);
             m_saveAllAction->setEnabled(true);
@@ -1339,15 +1287,6 @@ namespace EMStudio
         // add the load and the create instance commands
         commandGroup.AddCommandString(loadActorCommand.c_str());
 
-        // Temp solution after we refactor / remove the actor manager.
-        // We only need to create the actor instance by ourselves when openGLRenderPlugin is present.
-        // Atom render viewport will create actor instance along with the actor component.
-        PluginManager* pluginManager = GetPluginManager();
-        if (pluginManager->FindActivePlugin(static_cast<uint32>(OpenGLRenderPlugin::CLASS_ID)))
-        {
-            commandGroup.AddCommandString("CreateActorInstance -actorID %LASTRESULT%");
-        }
-
         // execute the group command
         if (GetCommandManager()->ExecuteCommandGroup(commandGroup, outResult) == false)
         {
@@ -1369,16 +1308,23 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 
         AZStd::string animgraphFilename;
-        EBUS_EVENT_RESULT(animgraphFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, animgraphId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            animgraphFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, animgraphId);
         bool found;
         if (!animgraphFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, animgraphFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                animgraphFilename.c_str(),
+                filename);
+
             if (found)
             {
                 animgraphFilename = filename;
@@ -1386,10 +1332,16 @@ namespace EMStudio
         }
 
         AZStd::string motionSetFilename;
-        EBUS_EVENT_RESULT(motionSetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, motionSetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            motionSetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, motionSetId);
         if (!motionSetFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, motionSetFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                motionSetFilename.c_str(),
+                filename);
+
             if (found)
             {
                 motionSetFilename = filename;
@@ -1591,7 +1543,7 @@ namespace EMStudio
     }
 
 
-    void MainWindow::Reset(bool clearActors, bool clearMotionSets, bool clearMotions, bool clearAnimGraphs, MCore::CommandGroup* commandGroup)
+    void MainWindow::Reset(bool clearActors, bool clearMotionSets, bool clearMotions, bool clearAnimGraphs, MCore::CommandGroup* commandGroup, bool addDefaultMotionSet)
     {
         // create and relink to a temporary new command group in case the input command group has not been specified
         MCore::CommandGroup newCommandGroup("Reset Scene");
@@ -1610,6 +1562,10 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(&newCommandGroup);
+                if (addDefaultMotionSet)
+                {
+                    CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, &newCommandGroup);
+                }
             }
             if (clearMotions)
             {
@@ -1629,6 +1585,10 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(commandGroup);
+                if (addDefaultMotionSet)
+                {
+                    CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, commandGroup);
+                }
             }
             if (clearMotions)
             {
@@ -1648,7 +1608,7 @@ namespace EMStudio
         GetCommandManager()->ClearHistory();
 
         Workspace* workspace = GetManager()->GetWorkspace();
-        workspace->SetDirtyFlag(true);
+        workspace->SetDirtyFlag(false);
     }
 
     void MainWindow::OnReset()
@@ -2267,7 +2227,7 @@ namespace EMStudio
                 MCore::CommandGroup workspaceCommandGroup("Load workspace", 64);
 
                 // clear everything before laoding a new workspace file
-                Reset(true, true, true, true, &workspaceCommandGroup);
+                Reset(/*clearActors=*/true, /*clearMotionSets=*/true, /*clearMotions=*/true, /*clearAnimGraphs=*/true, &workspaceCommandGroup, /*addDefaultMotionSet=*/false);
                 workspaceCommandGroup.SetReturnFalseAfterError(true);
 
                 // load the first workspace of the list as more doesn't make sense anyway
@@ -2313,7 +2273,8 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 
@@ -2513,24 +2474,24 @@ namespace EMStudio
         // check if we dropped any files to the application
         const QMimeData* mimeData = event->mimeData();
 
-        AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries);
-
-        AZStd::vector<AZStd::string> fileNames;
-        for (const auto& entry : entries)
+        AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+        if (AzToolsFramework::AssetBrowser::Utils::FromMimeData(mimeData, entries))
         {
-            AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> productEntries;
-            entry->GetChildrenRecursively<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>(productEntries);
-            for (const auto& productEntry : productEntries)
+            AZStd::vector<AZStd::string> fileNames;
+            for (const auto& entry : entries)
             {
-                fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
+                AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> productEntries;
+                entry->GetChildrenRecursively<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>(productEntries);
+                for (const auto& productEntry : productEntries)
+                {
+                    fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
+                }
             }
+            LoadFiles(fileNames, event->pos().x(), event->pos().y());
+            event->acceptProposedAction();
+
         }
-        LoadFiles(fileNames, event->pos().x(), event->pos().y());
-
-        event->acceptProposedAction();
     }
-
 
     void MainWindow::closeEvent(QCloseEvent* event)
     {

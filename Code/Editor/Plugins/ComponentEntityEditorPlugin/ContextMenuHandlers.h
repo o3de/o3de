@@ -8,16 +8,19 @@
 
 #pragma once
 
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 
-class ContextMenuBottomHandler : private AzToolsFramework::EditorContextMenuBus::Handler
+//! Provides additional functionality for the editor's context menu.
+class EditorContextMenuHandler:
+    private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
 public:
     void Setup();
     void Teardown();
 
 private:
-    // EditorContextMenu overrides ...
-    void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
-    int GetMenuPosition() const override;
+
+    // ActionManagerRegistrationNotificationBus overrides ...
+    void OnMenuBindingHook() override;
+    void OnActionRegistrationHook() override;
 };

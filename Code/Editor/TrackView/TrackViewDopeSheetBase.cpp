@@ -12,22 +12,28 @@
 #include "TrackViewDopeSheetBase.h"
 
 // Qt
+#include <QColor>
+#include <QInputDialog>
 #include <QMenu>
 #include <QPainter>
 #include <QScrollBar>
 #include <QTimer>
 #include <QToolTip>
 
-// AzFramework
+// AzCore
+#include <AzCore/std/containers/set.h>
+
 #include <AzCore/std/sort.h>
+
 
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 
 // CryCommon
-#include <CryCommon/Maestro/Types/AnimValueType.h>
+#include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
+#include <CryCommon/Maestro/Types/AnimValueType.h>
 #include <CryCommon/Maestro/Types/AssetBlendKey.h>
 
 // Editor
@@ -38,15 +44,14 @@
 #include "TVCustomizeTrackColorsDlg.h"
 #include "TrackView/TrackViewKeyPropertiesDlg.h"
 
-
-#define EDIT_DISABLE_GRAY_COLOR QColor(128, 128, 128)
-#define KEY_TEXT_COLOR QColor(0, 0, 50)
-#define INACTIVE_TEXT_COLOR QColor(128, 128, 128)
-
 namespace
 {
     const int kMarginForMagnetSnapping = 10;
     const unsigned int kDefaultTrackHeight = 16;
+
+    const QColor kEditDisableColor = QColor(128, 128, 128);
+    const QColor kKeyTextColor = QColor(0, 0, 50);
+    const QColor kInactiveTextColor = QColor(128, 128, 128);
 }
 
 enum ETVMouseMode
@@ -64,7 +69,6 @@ enum ETVMouseMode
     eTVMouseMode_EndTimeAdjust
 };
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewDopeSheetBase::CTrackViewDopeSheetBase(QWidget* parent)
     : QWidget(parent)
 {
@@ -117,7 +121,7 @@ CTrackViewDopeSheetBase::CTrackViewDopeSheetBase(QWidget* parent)
 
     m_wndPropsOnSpot = nullptr;
 
-#ifdef DEBUG
+#ifdef AZ_DEBUG_BUILD
     m_redrawCount = 0;
 #endif
     m_bKeysMoved = false;
@@ -136,20 +140,17 @@ CTrackViewDopeSheetBase::CTrackViewDopeSheetBase(QWidget* parent)
     m_colorUpdateKeyTime = 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewDopeSheetBase::~CTrackViewDopeSheetBase()
 {
     HideKeyPropertyCtrlOnSpot();
     GetIEditor()->GetAnimation()->RemoveListener(this);
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewDopeSheetBase::TimeToClient(float time) const
 {
     return static_cast<int>(m_leftOffset - m_scrollOffset.x() + (time * m_timeScale));
 }
 
-//////////////////////////////////////////////////////////////////////////
 Range CTrackViewDopeSheetBase::GetVisibleRange() const
 {
     Range r;
@@ -162,7 +163,6 @@ Range CTrackViewDopeSheetBase::GetVisibleRange() const
     return r;
 }
 
-//////////////////////////////////////////////////////////////////////////
 Range CTrackViewDopeSheetBase::GetTimeRange(const QRect& rc) const
 {
     Range r;
@@ -178,7 +178,6 @@ Range CTrackViewDopeSheetBase::GetTimeRange(const QRect& rc) const
     return r;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetTimeRange(float start, float end)
 {
     if (m_timeMarked.start < start)
@@ -195,13 +194,12 @@ void CTrackViewDopeSheetBase::SetTimeRange(float start, float end)
     SetHorizontalExtent(-m_leftOffset, static_cast<int>(m_timeRange.end * m_timeScale - m_leftOffset));
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
 {
     const double fOldOffset = -fAnchorTime * m_timeScale;
 
-    timeScale = std::max(timeScale, 0.001f);
-    timeScale = std::min(timeScale, 100000.0f);
+    timeScale = AZStd::max(timeScale, 0.001f);
+    timeScale = AZStd::min(timeScale, 100000.0f);
     m_timeScale = timeScale;
 
     int steps = 0;
@@ -215,7 +213,7 @@ void CTrackViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
     }
     else
     {
-        assert(0);
+        AZ_Assert(false, "Invalid tick display mode");
     }
 
     double fPixelsPerTick;
@@ -274,7 +272,6 @@ void CTrackViewDopeSheetBase::showEvent(QShowEvent* event)
     GetIEditor()->GetAnimation()->AddListener(this);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
@@ -297,7 +294,6 @@ void CTrackViewDopeSheetBase::resizeEvent(QResizeEvent* event)
     QToolTip::hideText();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::wheelEvent(QWheelEvent* event)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -317,7 +313,6 @@ void CTrackViewDopeSheetBase::wheelEvent(QWheelEvent* event)
     event->accept();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnHScroll()
 {
     // Get the current position of scroll box.
@@ -331,7 +326,6 @@ int CTrackViewDopeSheetBase::GetScrollPos() const
     return m_scrollBar->value();
 }
 
-//////////////////////////////////////////////////////////////////////////
 double CTrackViewDopeSheetBase::GetTickTime() const
 {
     if (GetTickDisplayMode() == eTVTickMode_InFrames)
@@ -345,7 +339,6 @@ double CTrackViewDopeSheetBase::GetTickTime() const
 }
 
 
-//////////////////////////////////////////////////////////////////////////
 float CTrackViewDopeSheetBase::TickSnap(float time) const
 {
     double tickTime = GetTickTime();
@@ -354,7 +347,6 @@ float CTrackViewDopeSheetBase::TickSnap(float time) const
     return static_cast<float>(t);
 }
 
-//////////////////////////////////////////////////////////////////////////
 float CTrackViewDopeSheetBase::TimeFromPoint(const QPoint& point) const
 {
     int x = point.x() - m_leftOffset + m_scrollOffset.x();
@@ -362,7 +354,6 @@ float CTrackViewDopeSheetBase::TimeFromPoint(const QPoint& point) const
     return TickSnap(t);
 }
 
-//////////////////////////////////////////////////////////////////////////
 float CTrackViewDopeSheetBase::TimeFromPointUnsnapped(const QPoint& point) const
 {
     int x = point.x() - m_leftOffset + m_scrollOffset.x();
@@ -418,7 +409,6 @@ void CTrackViewDopeSheetBase::mouseDoubleClickEvent(QMouseEvent* event)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnLButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -525,7 +515,6 @@ void CTrackViewDopeSheetBase::OnLButtonDown(Qt::KeyboardModifiers modifiers, con
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -568,6 +557,21 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
     {
         SetMouseCursor(Qt::ArrowCursor);
     }
+    else if (m_mouseMode == eTVMouseMode_Clone)
+    {
+         if (!m_bKeysCloned) // Prevent multiple cloning
+         {
+             QPoint ofs = point - m_mouseDownPos;
+             float timeOffset = ofs.x() / m_timeScale;
+
+             pSequence->CloneSelectedKeys(timeOffset);
+             m_bKeysCloned = true;
+         }
+         else
+         {
+             m_mouseMode = eTVMouseMode_None;
+         }
+    }
 
     OnCaptureChanged();
 
@@ -579,7 +583,6 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
     update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnLButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -603,12 +606,12 @@ void CTrackViewDopeSheetBase::OnLButtonDblClk(Qt::KeyboardModifiers modifiers, c
 
             AzToolsFramework::ScopedUndoBatch undoBatch("Select key");
 
-            const std::vector<bool> beforeKeyState = sequence->SaveKeyStates();
+            const AZStd::vector<bool> beforeKeyState = sequence->SaveKeyStates();
 
             sequence->DeselectAllKeys();
             keyHandle.Select(true);
 
-            const std::vector<bool> afterKeyState = sequence->SaveKeyStates();
+            const AZStd::vector<bool> afterKeyState = sequence->SaveKeyStates();
 
             if (beforeKeyState != afterKeyState)
             {
@@ -621,6 +624,11 @@ void CTrackViewDopeSheetBase::OnLButtonDblClk(Qt::KeyboardModifiers modifiers, c
             {
                 // bring up color picker
                 EditSelectedColorKey(pTrack);
+            }
+            else if (pTrack->GetValueType() == AnimValueType::String)
+            {
+                // bring up line editor
+                EditSelectedStringKey(pTrack);
             }
             else if (pTrack->GetValueType() != AnimValueType::Bool)
             {
@@ -644,19 +652,16 @@ void CTrackViewDopeSheetBase::OnLButtonDblClk(Qt::KeyboardModifiers modifiers, c
     m_mouseMode = eTVMouseMode_None;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnMButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     OnRButtonDown(modifiers, point);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnMButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     OnRButtonUp(modifiers, point);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -763,7 +768,6 @@ void CTrackViewDopeSheetBase::OnRButtonDown(Qt::KeyboardModifiers modifiers, con
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifiers modifiers, [[maybe_unused]] const QPoint& point)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -798,14 +802,12 @@ void CTrackViewDopeSheetBase::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifiers
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::CancelDrag()
 {
     AcceptUndo();
     m_mouseMode = eTVMouseMode_None;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::mouseMoveEvent(QMouseEvent* event)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -869,11 +871,6 @@ void CTrackViewDopeSheetBase::mouseMoveEvent(QMouseEvent* event)
             CancelDrag();
         }
     }
-    else if (m_mouseMode == eTVMouseMode_Clone)
-    {
-        pSequence->CloneSelectedKeys();
-        m_mouseMode = eTVMouseMode_Move;
-    }
     else if (m_mouseMode == eTVMouseMode_DragTime)
     {
         if (leftButtonPressed)
@@ -935,7 +932,6 @@ void CTrackViewDopeSheetBase::mouseMoveEvent(QMouseEvent* event)
     }
     else
     {
-        //////////////////////////////////////////////////////////////////////////
         if (m_mouseActionMode == eTVActionMode_AddKeys)
         {
             SetMouseCursor(m_crsAddKey);
@@ -947,7 +943,6 @@ void CTrackViewDopeSheetBase::mouseMoveEvent(QMouseEvent* event)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
@@ -967,7 +962,7 @@ void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
             {
                 if (m_bEditLock)
                 {
-                    painter.fillRect(event->rect(), EDIT_DISABLE_GRAY_COLOR);
+                    painter.fillRect(event->rect(), kEditDisableColor);
                 }
 
                 DrawControl(&painter, event->rect());
@@ -982,7 +977,7 @@ void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
         DrawTimeline(&painter, event->rect());
     }
 
-#ifdef DEBUG
+#ifdef AZ_DEBUG_BUILD
     painter.setFont(m_descriptionFont);
     painter.setPen(QColor(255, 255, 255));
     painter.setBrush(QColor(0, 0, 0));
@@ -999,7 +994,6 @@ void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
 #endif
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, const bool bMultiSelection)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -1010,7 +1004,7 @@ void CTrackViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, cons
 
     AzToolsFramework::ScopedUndoBatch undoBatch("Select keys");
 
-    const std::vector<bool> beforeKeyState = sequence->SaveKeyStates();
+    const AZStd::vector<bool> beforeKeyState = sequence->SaveKeyStates();
 
     if (!bMultiSelection)
     {
@@ -1043,7 +1037,7 @@ void CTrackViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, cons
         }
     }
 
-    const std::vector<bool> afterKeyState = sequence->SaveKeyStates();
+    const AZStd::vector<bool> afterKeyState = sequence->SaveKeyStates();
 
     if (beforeKeyState != afterKeyState)
     {
@@ -1051,14 +1045,12 @@ void CTrackViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, cons
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetMouseCursor(const QCursor& cursor)
 {
     m_currCursor = cursor;
     setCursor(m_currCursor);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetCurrTime(float time)
 {
     if (time < m_timeRange.start)
@@ -1073,7 +1065,6 @@ void CTrackViewDopeSheetBase::SetCurrTime(float time)
     GetIEditor()->GetAnimation()->SetTime(time);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnTimeChanged(float newTime)
 {
     int x1 = TimeToClient(m_currentTime);
@@ -1089,7 +1080,6 @@ void CTrackViewDopeSheetBase::OnTimeChanged(float newTime)
     m_bFastRedraw = false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetStartMarker(float fTime)
 {
     m_timeMarked.start = fTime;
@@ -1111,7 +1101,6 @@ void CTrackViewDopeSheetBase::SetStartMarker(float fTime)
     update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetEndMarker(float fTime)
 {
     m_timeMarked.end = fTime;
@@ -1131,7 +1120,6 @@ void CTrackViewDopeSheetBase::SetEndMarker(float fTime)
     update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetMouseActionMode(ETVActionMode mode)
 {
     m_mouseActionMode = mode;
@@ -1141,7 +1129,6 @@ void CTrackViewDopeSheetBase::SetMouseActionMode(ETVActionMode mode)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewNode* CTrackViewDopeSheetBase::GetNodeFromPointRec(CTrackViewNode* pCurrentNode, const QPoint& point)
 {
     QRect currentNodeRect = GetNodeRect(pCurrentNode);
@@ -1172,14 +1159,12 @@ CTrackViewNode* CTrackViewDopeSheetBase::GetNodeFromPointRec(CTrackViewNode* pCu
     return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewNode* CTrackViewDopeSheetBase::GetNodeFromPoint(const QPoint& point)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
     return GetNodeFromPointRec(pSequence, point);
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewAnimNode* CTrackViewDopeSheetBase::GetAnimNodeFromPoint(const QPoint& point)
 {
     CTrackViewNode* pNode = GetNodeFromPoint(point);
@@ -1200,7 +1185,6 @@ CTrackViewAnimNode* CTrackViewDopeSheetBase::GetAnimNodeFromPoint(const QPoint& 
     return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewTrack* CTrackViewDopeSheetBase::GetTrackFromPoint(const QPoint& point)
 {
     CTrackViewNode* pNode = GetNodeFromPoint(point);
@@ -1213,7 +1197,6 @@ CTrackViewTrack* CTrackViewDopeSheetBase::GetTrackFromPoint(const QPoint& point)
     return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetHorizontalExtent(int min, int max)
 {
     m_scrollMin = min;
@@ -1222,7 +1205,6 @@ void CTrackViewDopeSheetBase::SetHorizontalExtent(int min, int max)
     m_scrollBar->setRange(min, max - m_scrollBar->pageStep() * 2 + m_leftOffset);
 };
 
-//////////////////////////////////////////////////////////////////////////
 XmlNodeRef CTrackViewDopeSheetBase::GetKeysInClickboard()
 {
     CClipboard clip(this);
@@ -1251,7 +1233,6 @@ XmlNodeRef CTrackViewDopeSheetBase::GetKeysInClickboard()
     return copyNode;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::StartPasteKeys()
 {
     m_clipboardKeys = GetKeysInClickboard();
@@ -1276,7 +1257,7 @@ void CTrackViewDopeSheetBase::keyPressEvent(QKeyEvent* event)
     // HAVE TO INCLUDE CASES FOR THESE IN THE ShortcutOverride handler in ::event() below
     if (event->matches(QKeySequence::Delete))
     {
-        CUndo undo("Delete Keys");
+        CUndo undo("Delete Selected Keys");
         sequence->DeleteSelectedKeys();
         return;
     }
@@ -1308,14 +1289,14 @@ void CTrackViewDopeSheetBase::keyPressEvent(QKeyEvent* event)
             {
                 CTrackViewSequenceNotificationContext context(sequence);
 
-                const std::vector<bool> beforeKeyState = sequence->SaveKeyStates();
+                const AZStd::vector<bool> beforeKeyState = sequence->SaveKeyStates();
 
                 AzToolsFramework::ScopedUndoBatch undoBatch("Select Key");
 
                 sequence->DeselectAllKeys();
                 keyHandle.Select(true);
 
-                const std::vector<bool> afterKeyState = sequence->SaveKeyStates();
+                const AZStd::vector<bool> afterKeyState = sequence->SaveKeyStates();
 
                 if (beforeKeyState != afterKeyState)
                 {
@@ -1387,7 +1368,6 @@ bool CTrackViewDopeSheetBase::event(QEvent* e)
     return QWidget::event(e);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::ShowKeyTooltip(CTrackViewKeyHandle& keyHandle, const QPoint& point)
 {
     if (m_lastTooltipPos == point)
@@ -1413,7 +1393,6 @@ void CTrackViewDopeSheetBase::ShowKeyTooltip(CTrackViewKeyHandle& keyHandle, con
     QToolTip::showText(point, tipText);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::OnCaptureChanged()
 {
     AcceptUndo();
@@ -1422,14 +1401,13 @@ void CTrackViewDopeSheetBase::OnCaptureChanged()
     m_bMoveDrag = false;
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewDopeSheetBase::IsOkToAddKeyHere(const CTrackViewTrack* pTrack, float time) const
 {
     for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
     {
         const CTrackViewKeyConstHandle& keyHandle = pTrack->GetKey(i);
 
-        if (keyHandle.GetTime() == time)
+        if ((AZStd::abs(keyHandle.GetTime() - time) <= AZ::Constants::Tolerance))
         {
             return false;
         }
@@ -1438,7 +1416,6 @@ bool CTrackViewDopeSheetBase::IsOkToAddKeyHere(const CTrackViewTrack* pTrack, fl
     return true;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::MouseMoveSelect(const QPoint& point)
 {
     SetMouseCursor(Qt::ArrowCursor);
@@ -1462,7 +1439,6 @@ void CTrackViewDopeSheetBase::MouseMoveSelect(const QPoint& point)
     m_rubberBand->setGeometry(m_rcSelect);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::MouseMoveStartEndTimeAdjust(const QPoint& p, bool bStart)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -1535,7 +1511,6 @@ void CTrackViewDopeSheetBase::MouseMoveStartEndTimeAdjust(const QPoint& p, bool 
     update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Qt::KeyboardModifiers modifiers)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -1605,7 +1580,7 @@ void CTrackViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Qt
     extendedTimeRange.ClipValue(newTime);
 
     timeOffset = newTime - oldTime; // Re-compute the time offset using snapped & clipped 'newTime'.
-    if (timeOffset == 0.0f)
+    if ((AZStd::abs(timeOffset) < AZ::Constants::Tolerance))
     {
         return;
     }
@@ -1774,7 +1749,6 @@ float CTrackViewDopeSheetBase::MagnetSnap(float newTime, const CTrackViewAnimNod
     return newTime;
 }
 
-//////////////////////////////////////////////////////////////////////////
 float CTrackViewDopeSheetBase::FrameSnap(float time) const
 {
     double t = floor((double)time / m_snapFrameTime + 0.5);
@@ -1782,7 +1756,6 @@ float CTrackViewDopeSheetBase::FrameSnap(float time) const
     return static_cast<float>(t);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::ShowKeyPropertyCtrlOnSpot(int x, int y, [[maybe_unused]] bool bMultipleKeysSelected, bool bKeyChangeInSameTrack)
 {
     if (m_keyPropertiesDlg == nullptr)
@@ -1818,7 +1791,6 @@ void CTrackViewDopeSheetBase::ShowKeyPropertyCtrlOnSpot(int x, int y, [[maybe_un
     });
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::HideKeyPropertyCtrlOnSpot()
 {
     if (m_wndPropsOnSpot)
@@ -1828,7 +1800,6 @@ void CTrackViewDopeSheetBase::HideKeyPropertyCtrlOnSpot()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetScrollOffset(int hpos)
 {
     m_scrollBar->setValue(hpos);
@@ -1836,7 +1807,6 @@ void CTrackViewDopeSheetBase::SetScrollOffset(int hpos)
     update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::LButtonDownOnTimeAdjustBar([[maybe_unused]] const QPoint& point, CTrackViewKeyHandle& keyHandle, bool bStart)
 {
     m_keyTimeOffset = 0;
@@ -1880,23 +1850,52 @@ void CTrackViewDopeSheetBase::LButtonDownOnTimeAdjustBar([[maybe_unused]] const 
     SetMouseCursor(m_crsAdjustLR);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::LButtonDownOnKey([[maybe_unused]] const QPoint& point, CTrackViewKeyHandle& keyHandle, Qt::KeyboardModifiers modifiers)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    const auto pTrack = keyHandle.GetTrack();
     AZ_Assert(sequence, "Expected a valid sequence.");
-
-    if (!sequence)
+    AZ_Assert(pTrack, "Expected a valid track.");
+    if (!sequence || !pTrack)
     {
         return;
     }
 
-    if (!keyHandle.IsSelected() && !(modifiers & Qt::ControlModifier))
+    bool isSelected = keyHandle.IsSelected();
+
+    const auto parentNode = pTrack->GetParentNode();
+    const bool allowSubTrackSelection = isSelected && pTrack->IsSubTrack() && parentNode;
+    if (allowSubTrackSelection) // Check if a "logical key" in a parent Compound track was selected.
+    {
+        if (parentNode->IsSelected())
+        {
+            isSelected = false; // Allow to select a key in sub-track...
+            parentNode->SetSelected(false); // ... and deselect the parent node.
+        }
+        else
+        {
+            for (unsigned int subTrackIdx = 0; isSelected && subTrackIdx < parentNode->GetChildCount(); ++subTrackIdx)
+            {
+                const auto pSubTrack = parentNode->GetChild(subTrackIdx);
+                const auto selectedKeysBundle = pSubTrack->GetSelectedKeys();
+                for (unsigned int keyIdx = 0; isSelected && keyIdx < selectedKeysBundle.GetKeyCount(); ++keyIdx)
+                {
+                    const auto key = selectedKeysBundle.GetKey(keyIdx);
+                    if (key != keyHandle) // If there is another key selected in the parent Compound track ? ...
+                    {
+                        isSelected = false; // ... regard this key unselected, and thus allow selecting it.
+                    }
+                }
+            }
+        }
+    }
+
+    if (!isSelected && !(modifiers & Qt::ControlModifier))
     {
         CTrackViewSequenceNotificationContext context(sequence);
         AzToolsFramework::ScopedUndoBatch undoBatch("Select keys");
 
-        const std::vector<bool> beforeKeyState = sequence->SaveKeyStates();
+        const AZStd::vector<bool> beforeKeyState = sequence->SaveKeyStates();
 
         sequence->DeselectAllKeys();
         m_bJustSelected = true;
@@ -1905,7 +1904,7 @@ void CTrackViewDopeSheetBase::LButtonDownOnKey([[maybe_unused]] const QPoint& po
 
         ChangeSequenceTrackSelection(sequence, keyHandle.GetTrack());
 
-        const std::vector<bool> afterKeyState = sequence->SaveKeyStates();
+        const AZStd::vector<bool> afterKeyState = sequence->SaveKeyStates();
 
         if (beforeKeyState != afterKeyState)
         {
@@ -1935,7 +1934,6 @@ void CTrackViewDopeSheetBase::LButtonDownOnKey([[maybe_unused]] const QPoint& po
     update();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::ChangeSequenceTrackSelection(CTrackViewSequence* sequenceWithTrack, CTrackViewTrack* trackToSelect) const
 {
     // Deselect all currently selected tracks that aren't the keyHandle's Track, then ensure the trackToSelect  is selected
@@ -1953,7 +1951,6 @@ void CTrackViewDopeSheetBase::ChangeSequenceTrackSelection(CTrackViewSequence* s
     trackToSelect->SetSelected(true);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::ChangeSequenceTrackSelection(CTrackViewSequence* sequence, CTrackViewTrackBundle tracksToSelect, bool multiTrackSelection) const
 {
     if (!multiTrackSelection)
@@ -1992,17 +1989,16 @@ void CTrackViewDopeSheetBase::ChangeSequenceTrackSelection(CTrackViewSequence* s
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyTime)
 {
     bool keyCreated = false;
-    Vec3 vColor(0, 0, 0);
+    AZ::Vector3 vColor(0, 0, 0);
     pTrack->GetValue(keyTime, vColor);
 
     const AZ::Color defaultColor(
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.x)), 0, 255),
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.y)), 0, 255),
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.z)), 0, 255),
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetX())), 0, 255),
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetY())), 0, 255),
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetZ())), 0, 255),
         255);
     AzQtComponents::ColorPicker dlg(AzQtComponents::ColorPicker::Configuration::RGB, QString(), this);
     dlg.setWindowTitle(tr("Select Color"));
@@ -2051,7 +2047,8 @@ void CTrackViewDopeSheetBase::OnCurrentColorChange(const AZ::Color& color)
 
 void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo)
 {
-    ColorF colArray(static_cast<f32>(color.redF()), static_cast<f32>(color.greenF()), static_cast<f32>(color.blueF()), static_cast<f32>(color.alphaF()));
+    ColorF colArray(static_cast<f32>(color.red()), static_cast<f32>(color.green()), static_cast<f32>(color.blue()), static_cast<f32>(color.alpha()));
+
 
     CTrackViewSequence* sequence = m_colorUpdateTrack->GetSequence();
     if (nullptr != sequence)
@@ -2113,13 +2110,13 @@ void CTrackViewDopeSheetBase::EditSelectedColorKey(CTrackViewTrack* pTrack)
             // init with the first selected key color
             m_colorUpdateKeyTime = selectedKeyBundle.GetKey(0).GetTime();
 
-            Vec3  color;
+            AZ::Vector3  color;
             pTrack->GetValue(m_colorUpdateKeyTime, color);
 
             const AZ::Color defaultColor(
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.x)), AZ::u8(0), AZ::u8(255)),
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.y)), AZ::u8(0), AZ::u8(255)),
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.z)), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetX())), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetY())), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetZ())), AZ::u8(0), AZ::u8(255)),
                 255);
 
             AzQtComponents::ColorPicker picker(AzQtComponents::ColorPicker::Configuration::RGB);
@@ -2144,7 +2141,77 @@ void CTrackViewDopeSheetBase::EditSelectedColorKey(CTrackViewTrack* pTrack)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
+bool CTrackViewDopeSheetBase::CreateStringKey(CTrackViewTrack* pTrack, float keyTime)
+{
+    const auto sequence = pTrack->GetSequence();
+    const bool canCreateKey = IsOkToAddKeyHere(pTrack, keyTime);
+    if (!(sequence && canCreateKey))
+    {
+        return false;
+    }
+
+    AZStd::string str;
+    pTrack->GetValue(keyTime, str); // get previous key value or default value for the track
+
+    bool isOk;
+    const QString title(pTrack->GetParameterType().GetName());
+    const QString label(tr("Value :\t\t\t\t\t\t\t\t")); // trick to widen widget
+    const QString prevStr(str.c_str());
+    const QString newStr = QInputDialog::getText(this, title, label, QLineEdit::EchoMode::Normal, prevStr, &isOk);
+    if (!isOk)
+    {
+        return false;
+    }
+
+    CTrackViewSequenceNotificationContext context(sequence);
+    AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
+
+    CTrackViewKeyHandle newKey = pTrack->CreateKey(keyTime);
+    IStringKey strKey;
+    newKey.GetKey(&strKey);
+    strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
+    newKey.SetKey(&strKey);
+
+    undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+    return true;
+}
+
+void CTrackViewDopeSheetBase::EditSelectedStringKey(CTrackViewTrack* pTrack)
+{
+    const auto sequence = pTrack->GetSequence();
+    CTrackViewKeyBundle selectedKeyBundle = pTrack->GetSelectedKeys();
+    if (!sequence || (selectedKeyBundle.GetKeyCount() < 1))
+    {
+        return;
+    }
+
+    auto selectedKeyHandle = selectedKeyBundle.GetKey(0);
+
+    AZStd::string str;
+    pTrack->GetValue(selectedKeyHandle.GetTime(), str); // get selected key value
+
+    bool isOk;
+    const QString title(pTrack->GetParameterType().GetName());
+    const QString label(tr("Value :\t\t\t\t\t\t\t\t")); // trick to widen widget
+    const QString prevStr(str.c_str());
+    const QString newStr = QInputDialog::getText(this, title, label, QLineEdit::EchoMode::Normal, prevStr, &isOk);
+    if (!isOk)
+    {
+        return;
+    }
+    CTrackViewSequenceNotificationContext context(sequence);
+    AzToolsFramework::ScopedUndoBatch undoBatch("Set Key");
+
+    IStringKey strKey;
+    selectedKeyHandle.GetKey(&strKey);
+    strKey.m_strValue = newStr.simplified().toStdString().c_str(); // set the new value
+    selectedKeyHandle.SetKey(&strKey);
+
+    undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+}
+
+
 void CTrackViewDopeSheetBase::AcceptUndo()
 {
     if (CUndo::IsRecording())
@@ -2155,15 +2222,34 @@ void CTrackViewDopeSheetBase::AcceptUndo()
         {
             GetIEditor()->CancelUndo();
         }
-        else if (m_mouseMode == eTVMouseMode_Move || m_mouseMode == eTVMouseMode_Clone)
+        else if (m_mouseMode == eTVMouseMode_Move)
         {
             if (sequence && m_bKeysMoved)
             {
                 GetIEditor()->CancelUndo();
 
                 // Keys Moved, mark the sequence dirty to get an AZ undo event.
-                AzToolsFramework::ScopedUndoBatch undoBatch("Move/Clone Keys");
+                AzToolsFramework::ScopedUndoBatch undoBatch("Move Keys");
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+                m_bKeysMoved = false;
+            }
+            else
+            {
+                GetIEditor()->CancelUndo();
+            }
+        }
+        else if (m_mouseMode == eTVMouseMode_Clone)
+        {
+            if (sequence && m_bKeysCloned)
+            {
+                GetIEditor()->CancelUndo();
+        
+                // Keys Cloned, mark the sequence dirty to get an AZ undo event.
+                AzToolsFramework::ScopedUndoBatch undoBatch("Clone Keys");
+                undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+                m_bKeysCloned = false;
             }
             else
             {
@@ -2190,7 +2276,6 @@ void CTrackViewDopeSheetBase::AcceptUndo()
     m_trackMementos.clear();
 }
 
-//////////////////////////////////////////////////////////////////////////
 float CTrackViewDopeSheetBase::ComputeSnappedMoveOffset()
 {
     // Compute time offset
@@ -2208,7 +2293,6 @@ float CTrackViewDopeSheetBase::ComputeSnappedMoveOffset()
     return time - time0;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKeysInGroup)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2228,75 +2312,100 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
     CTrackViewSequenceNotificationContext context(sequence);
 
     CTrackViewAnimNode* pNode = pTrack->GetAnimNode();
-    float keyTime = TimeFromPoint(point);
-    bool inRange = m_timeRange.IsInside(keyTime);
+    const float keyTime = TimeFromPoint(point);
+    const bool inRange = m_timeRange.IsInside(keyTime);
 
-    if (pTrack && inRange)
+    if (!(pNode && inRange))
     {
-        if (bTryAddKeysInGroup && pNode->GetParentNode())       // Add keys in group
-        {
-            CTrackViewTrackBundle tracksInGroup = pNode->GetTracksByParam(pTrack->GetParameterType());
-            for (int i = 0; i < (int)tracksInGroup.GetCount(); ++i)
-            {
-                CTrackViewTrack* pCurrTrack = tracksInGroup.GetTrack(i);
+        return;
+    }
 
-                if (pCurrTrack->GetChildCount() == 0)   // A simple track
-                {
-                    if (IsOkToAddKeyHere(pCurrTrack, keyTime))
-                    {
-                        AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                        pCurrTrack->CreateKey(keyTime);
-                        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-                    }
-                }
-                else                                                                            // A compound track
-                {
-                    for (unsigned int k = 0; k < pCurrTrack->GetChildCount(); ++k)
-                    {
-                        CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pCurrTrack->GetChild(k));
-                        if (IsOkToAddKeyHere(pSubTrack, keyTime))
-                        {
-                            AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                            pSubTrack->CreateKey(keyTime);
-                            undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-                        }
-                    }
-                }
-            }
-        }
-        else if (pTrack->GetChildCount() == 0)          // A simple track
+    if (bTryAddKeysInGroup && pNode->GetParentNode())       // Add keys in group
+    {
+        CTrackViewTrackBundle tracksInGroup = pNode->GetTracksByParam(pTrack->GetParameterType());
+        for (int i = 0; i < (int)tracksInGroup.GetCount(); ++i)
         {
-            if (IsOkToAddKeyHere(pTrack, keyTime))
+            CTrackViewTrack* pCurrTrack = tracksInGroup.GetTrack(i);
+            if (!IsOkToAddKeyHere(pCurrTrack, keyTime))
             {
+                continue;
+            }
+
+            const bool isSimpleTrack = pTrack->GetChildCount() == 0;
+            if (isSimpleTrack)
+            {
+                if (pCurrTrack->GetValueType() == AnimValueType::String)
+                {
+                    CreateStringKey(pTrack, keyTime);
+                    continue;
+                }
+
                 AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                pTrack->CreateKey(keyTime);
+                pCurrTrack->CreateKey(keyTime);
                 undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
             }
-        }
-        else                                                                                // A compound track
-        {
-            if (pTrack->GetValueType() == AnimValueType::RGB)
+            else // A compound track
             {
-                CreateColorKey(pTrack, keyTime);
-            }
-            else
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                for (unsigned int i = 0; i < pTrack->GetChildCount(); ++i)
+                if (pCurrTrack->GetValueType() == AnimValueType::RGB)
                 {
-                    CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pTrack->GetChild(i));
-                    if (IsOkToAddKeyHere(pSubTrack, keyTime))
-                    {
-                        pSubTrack->CreateKey(keyTime);
-                    }
+                    CreateColorKey(pCurrTrack, keyTime);
+                    continue;
                 }
-                undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+
+                // Update track default values before adding a new key at time, so that animated entity properties are not affected by adding a key
+                {
+                    AzToolsFramework::ScopedUndoBatch undoBatchUpdate("Update Track Defaults");
+                    pNode->UpdateTrackDefaultValue(keyTime, pCurrTrack->GetAnimTrack());
+                    undoBatchUpdate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+                }
+
+                AzToolsFramework::ScopedUndoBatch undoBatchCreate("Create Key");
+                pCurrTrack->CreateKey(keyTime);
+                undoBatchCreate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
             }
         }
+        return;
+    }
+
+    if (!IsOkToAddKeyHere(pTrack, keyTime))
+    {
+        return;
+    }
+
+    const bool isSimpleTrack = pTrack->GetChildCount() == 0;
+    if (isSimpleTrack)
+    {
+        if (pTrack->GetValueType() == AnimValueType::String)
+        {
+            CreateStringKey(pTrack, keyTime);
+            return;
+        }
+
+        AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
+        pTrack->CreateKey(keyTime);
+        undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+    }
+    else // A compound track
+    {
+        if (pTrack->GetValueType() == AnimValueType::RGB)
+        {
+            CreateColorKey(pTrack, keyTime);
+            return;
+        }
+
+        // Update track default values before adding a new key at time, so that animated entity properties are not affected by adding a key
+        {
+            AzToolsFramework::ScopedUndoBatch undoBatchUpdate("Update Track Defaults");
+            pNode->UpdateTrackDefaultValue(keyTime, pTrack->GetAnimTrack());
+            undoBatchUpdate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+        }
+
+        AzToolsFramework::ScopedUndoBatch undoBatchCreate("Create Key");
+        pTrack->CreateKey(keyTime);
+        undoBatchCreate.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawControl(QPainter* painter, const QRect& rcUpdate)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2313,7 +2422,6 @@ void CTrackViewDopeSheetBase::DrawControl(QPainter* painter, const QRect& rcUpda
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawNodesRecursive(CTrackViewNode* pNode, QPainter* painter, const QRect& rcUpdate)
 {
     const QRect rect = GetNodeRect(pNode);
@@ -2341,7 +2449,6 @@ void CTrackViewDopeSheetBase::DrawNodesRecursive(CTrackViewNode* pNode, QPainter
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Range& timeRange)
 {
     // Draw time ticks every tick step seconds.
@@ -2412,7 +2519,6 @@ void CTrackViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Rang
     painter->setPen(prevPen);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* painter, const QRect& trackRect)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2429,7 +2535,7 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
     bool bLightAnimationSetActive = pSequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet;
     if (bLightAnimationSetActive && pTrack->GetKeyCount() > 0)
     {
-        // In the case of the light animation set, the time of of the last key
+        // In the case of the light animation set, the time of the last key
         // determines the end of the track.
         float lastKeyTime = pTrack->GetKey(pTrack->GetKeyCount() - 1).GetTime();
         rcInner.setRight(min(rcInner.right(), TimeToClient(lastKeyTime)));
@@ -2546,7 +2652,6 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
     DrawKeys(pTrack, painter, rcInner, timeRange);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter* painter, CTrackViewTrack* pTrack, const QRect& rc)
 {
     const QBrush prevBrush = painter->brush();
@@ -2560,52 +2665,67 @@ void CTrackViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter* 
         ISelectKey selectKey;
         keyHandle.GetKey(&selectKey);
 
-        if (!selectKey.szSelection.empty() || selectKey.cameraAzEntityId.IsValid())
+        float time = keyHandle.GetTime();
+        float nextTime = timeRange.end;
+
+        if (selectKey.fDuration > 0)
         {
-            float time = keyHandle.GetTime();
-            float nextTime = timeRange.end;
-            if (i < numKeys - 1)
+            nextTime = time + selectKey.fDuration;
+        }
+        else
+        {
+            // Try to find a 2nd key to draw to, skipping invalid keys.
+            ISelectKey secondKey;
+            for (int nextKeyIdx = i + 1; nextKeyIdx < numKeys; ++nextKeyIdx)
             {
-                nextTime = pTrack->GetKey(i + 1).GetTime();
+                const CTrackViewKeyHandle& nextKeyHandle = pTrack->GetKey(nextKeyIdx);
+
+                ISelectKey nextKey;
+                nextKeyHandle.GetKey(&nextKey);
+
+                if (nextKey.IsValid())
+                {
+                    nextTime = nextKey.time;
+                    break;
+                }
             }
+        }
 
-            time = clamp_tpl(time, timeRange.start, timeRange.end);
-            nextTime = clamp_tpl(nextTime, timeRange.start, timeRange.end);
+        time = clamp_tpl(time, timeRange.start, timeRange.end);
+        nextTime = clamp_tpl(nextTime, timeRange.start, timeRange.end);
 
-            int x0_2 = TimeToClient(time);
+        int x0_2 = TimeToClient(time);
 
-            float fBlendTime = selectKey.fBlendTime;
-            int blendTimeEnd = 0;
+        float fBlendTime = selectKey.fBlendTime;
+        int blendTimeEnd = 0;
 
-            if (fBlendTime > 0.0f && fBlendTime < (nextTime - time))
-            {
-                blendTimeEnd = TimeToClient(nextTime);
-                nextTime -= fBlendTime;
-            }
+        if (fBlendTime > 0.0f && fBlendTime < (nextTime - time))
+        {
+            blendTimeEnd = TimeToClient(nextTime);
+            nextTime -= fBlendTime;
+        }
 
-            int x = TimeToClient(nextTime);
+        int x = TimeToClient(nextTime);
 
-            if (x != x0_2)
-            {
-                QLinearGradient gradient(x0_2, rc.top() + 1, x0_2, rc.bottom());
-                gradient.setColorAt(0, Qt::white);
-                gradient.setColorAt(1, QColor(100, 190, 255));
-                painter->fillRect(QRect(QPoint(x0_2, rc.top() + 1), QPoint(x, rc.bottom())), gradient);
-            }
+        if (x != x0_2) // draw duration bar
+        {
+            QLinearGradient gradient(x0_2, rc.top() + 1, x0_2, rc.bottom());
+            gradient.setColorAt(0, Qt::white);
+            gradient.setColorAt(1, QColor(100, 190, 255));
+            painter->fillRect(QRect(QPoint(x0_2, rc.top() + 1), QPoint(x, rc.bottom())), gradient);
+        }
 
-            if (fBlendTime > 0.0f)
-            {
-                QLinearGradient gradient(x, rc.top() + 1, x, rc.bottom());
-                gradient.setColorAt(0, Qt::white);
-                gradient.setColorAt(1, QColor(0, 115, 230));
-                painter->fillRect(QRect(QPoint(x, rc.top() + 1), QPoint(blendTimeEnd, rc.bottom())), gradient);
-            }
+        if (fBlendTime > 0.0f) // draw blend time bar
+        {
+            QLinearGradient gradient(x, rc.top() + 1, x, rc.bottom());
+            gradient.setColorAt(0, Qt::white);
+            gradient.setColorAt(1, QColor(0, 115, 230));
+            painter->fillRect(QRect(QPoint(x, rc.top() + 1), QPoint(blendTimeEnd, rc.bottom())), gradient);
         }
     }
     painter->setBrush(prevBrush);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* painter, CTrackViewTrack* pTrack, const QRect& rc)
 {
     int x0 = TimeToClient(timeRange.start);
@@ -2654,7 +2774,6 @@ void CTrackViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* pa
     painter->setBrush(prevBrush);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawSequenceTrack(const Range& timeRange, QPainter* painter, CTrackViewTrack* pTrack, const QRect& rc)
 {
     const QBrush prevBrush = painter->brush();
@@ -2695,13 +2814,11 @@ void CTrackViewDopeSheetBase::DrawSequenceTrack(const Range& timeRange, QPainter
     painter->setBrush(prevBrush);
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CTrackViewDopeSheetBase::CompareKeyHandleByTime(const CTrackViewKeyHandle &a, const CTrackViewKeyHandle &b)
 {
     return a.GetTime() < b.GetTime();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painter, QRect& rect, [[maybe_unused]] Range& timeRange)
 {
     int numKeys = pTrack->GetKeyCount();
@@ -2709,7 +2826,7 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
     const QFont prevFont = painter->font();
     painter->setFont(m_descriptionFont);
 
-    painter->setPen(KEY_TEXT_COLOR);
+    painter->setPen(kKeyTextColor);
 
     int prevKeyPixel = -10000;
     const int kDefaultWidthForDescription = 200;
@@ -2769,8 +2886,9 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
                 continue;
             }
 
-            if (duration > 0)
+            if (duration > 0 && pTrack->GetValueType() != AnimValueType::Select)
             {
+                // Draw duration bar for all tacks except CSelectTrack, as specific drawer has already painted duration and blend
                 DrawKeyDuration(pTrack, painter, rect, i);
             }
 
@@ -2808,21 +2926,57 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
             continue;
         }
 
-        if (pTrack->GetChildCount() == 0 // At compound tracks, keys are all green.
-            && abs(x - prevKeyPixel) < 2)
+        if (pTrack->GetChildCount() == 0 && abs(x - prevKeyPixel) < 2)
         {
-            // If multiple keys on the same time.
-            painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_02.png"));
+            // If multiple keys on the same time at a simple track, keys are red
+            painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_02.png")); // red
+        }
+        else if (pTrack->IsCompoundTrack()) // A key at a compound track is regarded as selected if all keys at the same time are selected
+        {
+            bool areAllSubKeysSelected = true;
+            for (int n = 0; n < numKeys; ++n)
+            {
+                CTrackViewKeyHandle aKeyHandle = sortedKeys[n];
+                const auto aKeyTime = aKeyHandle.GetTime();
+                if ((AZStd::abs(aKeyTime - time) < AZ::Constants::Tolerance) && !aKeyHandle.IsSelected())
+                {
+                    areAllSubKeysSelected = false;
+                    break;
+                }
+            }
+            if (areAllSubKeysSelected)
+            {
+                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_01.png")); // white
+            }
+            else
+            {
+                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_00.png")); // green
+            }
         }
         else
         {
             if (keyHandle.IsSelected())
             {
-                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_01.png"));
+                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_01.png")); // white
             }
             else
             {
-                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_00.png"));
+                // Colorize current key for Select track: green if key is valid, red if invalid
+                bool isValidKey = true;
+                if ((pTrack->GetValueType() == AnimValueType::Select))
+                {
+                    ISelectKey cameraKey;
+                    keyHandle.GetKey(&cameraKey);
+                    isValidKey = cameraKey.IsValid();
+                }
+                if (isValidKey)
+                {
+                    painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_00.png")); // green
+                }
+                else
+                {
+                    painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_02.png")); // red
+                }
             }
         }
 
@@ -2831,7 +2985,6 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
     painter->setFont(prevFont);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawClipboardKeys(QPainter* painter, [[maybe_unused]] const QRect& rc)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -2853,7 +3006,7 @@ void CTrackViewDopeSheetBase::DrawClipboardKeys(QPainter* painter, [[maybe_unuse
         if (pMatchedTrack->IsCompoundTrack())
         {
             // Both child counts should be the same, but make sure
-            const unsigned int numSubTrack = std::min(pMatchedTrack->GetChildCount(), (unsigned int)trackNode->getChildCount());
+            const unsigned int numSubTrack = AZStd::min(pMatchedTrack->GetChildCount(), (unsigned int)trackNode->getChildCount());
 
             for (unsigned int subTrackIndex = 0; subTrackIndex < numSubTrack; ++subTrackIndex)
             {
@@ -2872,7 +3025,6 @@ void CTrackViewDopeSheetBase::DrawClipboardKeys(QPainter* painter, [[maybe_unuse
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawTrackClipboardKeys(QPainter* painter, CTrackViewTrack* pTrack, XmlNodeRef trackNode, const float timeOffset)
 {
     const QPen prevPen = painter->pen();
@@ -2889,7 +3041,7 @@ void CTrackViewDopeSheetBase::DrawTrackClipboardKeys(QPainter* painter, CTrackVi
         if (keyNode->getAttr("time", time))
         {
             int x = TimeToClient(time + timeOffset);
-            painter->drawPixmap(QPoint(x - 6, trackRect.top() + 2), QPixmap(":/Trackview/trackview_keys_03.png"));
+            painter->drawPixmap(QPoint(x - 6, trackRect.top() + 2), QPixmap(":/Trackview/trackview_keys_03.png")); // yellow
             painter->drawLine(x, m_rcClient.top(), x, m_rcClient.bottom());
         }
     }
@@ -2897,7 +3049,6 @@ void CTrackViewDopeSheetBase::DrawTrackClipboardKeys(QPainter* painter, CTrackVi
     painter->setPen(prevPen);
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewDopeSheetBase::FirstKeyFromPoint(const QPoint& point)
 {
     CTrackViewTrack* pTrack = GetTrackFromPoint(point);
@@ -2924,7 +3075,6 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::FirstKeyFromPoint(const QPoint& poi
     return CTrackViewKeyHandle();
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewDopeSheetBase::DurationKeyFromPoint(const QPoint& point)
 {
     CTrackViewTrack* pTrack = GetTrackFromPoint(point);
@@ -2935,6 +3085,8 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::DurationKeyFromPoint(const QPoint& 
 
     float t = TimeFromPointUnsnapped(point);
 
+    const bool isSelectTrack = pTrack->GetParameterType().GetType() == AnimParamType::Camera;
+
     int numKeys = pTrack->GetKeyCount();
     // Iterate in a reverse order to prioritize later nodes.
     for (int i = numKeys - 1; i >= 0; --i)
@@ -2942,7 +3094,15 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::DurationKeyFromPoint(const QPoint& 
         const CTrackViewKeyHandle& keyHandle = pTrack->GetKey(i);
 
         const float time = keyHandle.GetTime();
-        const float duration = keyHandle.GetDuration();
+
+        // The ISelectKey::fDuration in CSelectTrack is not user-defined, but calculated for compatibility and correct representation of UI sliders ranges.
+        // So ignore ISelectKey::fDuration and only allow to select keys, which are very close in timeline.
+        if (isSelectTrack && (AZStd::abs(t - time) > AZ::Constants::Tolerance))
+        {
+            continue;
+        }
+
+        const float duration =  keyHandle.GetDuration();
 
         if (t >= time && t <= time + duration)
         {
@@ -2953,7 +3113,6 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::DurationKeyFromPoint(const QPoint& 
     return CTrackViewKeyHandle();
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyHandle CTrackViewDopeSheetBase::CheckCursorOnStartEndTimeAdjustBar(const QPoint& point, bool& bStart)
 {
     CTrackViewTrack* pTrack = GetTrackFromPoint(point);
@@ -2979,7 +3138,7 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::CheckCursorOnStartEndTimeAdjustBar(
         const float time = keyHandle.GetTime();
         const float duration = keyHandle.GetDuration();
 
-        if (duration == 0)
+        if (duration < AZ::Constants::Tolerance)
         {
             continue;
         }
@@ -3020,7 +3179,6 @@ CTrackViewKeyHandle CTrackViewDopeSheetBase::CheckCursorOnStartEndTimeAdjustBar(
     return CTrackViewKeyHandle();
 }
 
-//////////////////////////////////////////////////////////////////////////
 int CTrackViewDopeSheetBase::NumKeysFromPoint(const QPoint& point)
 {
     CTrackViewTrack* pTrack = GetTrackFromPoint(point);
@@ -3047,7 +3205,6 @@ int CTrackViewDopeSheetBase::NumKeysFromPoint(const QPoint& point)
     return count;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSelection)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -3060,7 +3217,7 @@ void CTrackViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSelec
 
     AzToolsFramework::ScopedUndoBatch undoBatch("Select Keys");
 
-    const std::vector<bool> beforeKeyState = sequence->SaveKeyStates();
+    const AZStd::vector<bool> beforeKeyState = sequence->SaveKeyStates();
 
     CTrackViewSequenceNotificationContext context(sequence);
     if (!bMultiSelection)
@@ -3108,7 +3265,7 @@ void CTrackViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSelec
 
     ChangeSequenceTrackSelection(sequence, tracksToSelect, bMultiSelection);
 
-    const std::vector<bool> afterKeyState = sequence->SaveKeyStates();
+    const AZStd::vector<bool> afterKeyState = sequence->SaveKeyStates();
 
     if (beforeKeyState != afterKeyState)
     {
@@ -3116,20 +3273,17 @@ void CTrackViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSelec
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetTickDisplayMode(ETVTickMode mode)
 {
     m_tickDisplayMode = mode;
     SetTimeScale(GetTimeScale(), 0); // for refresh
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::SetSnapFPS(UINT fps)
 {
     m_snapFrameTime = (fps == 0) ? 0.033333f : (1.0f / float(fps));
 }
 
-//////////////////////////////////////////////////////////////////////////
 ESnappingMode CTrackViewDopeSheetBase::GetKeyModifiedSnappingMode()
 {
     ESnappingMode snappingMode = m_snappingMode;
@@ -3150,7 +3304,6 @@ ESnappingMode CTrackViewDopeSheetBase::GetKeyModifiedSnappingMode()
     return snappingMode;
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -3169,7 +3322,6 @@ void CTrackViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
     painter->setPen(prevPen);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::ComputeFrameSteps(const Range& visRange)
 {
     float fNbFrames = fabsf ((visRange.end - visRange.start) / m_snapFrameTime);
@@ -3305,7 +3457,6 @@ void CTrackViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QRe
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpdate)
 {
     bool recording = GetIEditor()->GetAnimation()->IsRecording();
@@ -3363,13 +3514,12 @@ void CTrackViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpd
     }
     else
     {
-        assert (0);
+        AZ_Assert(false, "Invalid tick display mode");
     }
 
     // Draw time markers.
-    int x;
+    int x = TimeToClient(m_timeMarked.start);
 
-    x = TimeToClient(m_timeMarked.start);
     painter->drawPixmap(QPoint(x, m_rcTimeline.bottom() - 9), QPixmap(":/Trackview/marker/bmp00016_01.png"));
     x = TimeToClient(m_timeMarked.end);
     painter->drawPixmap(QPoint(x - 7, m_rcTimeline.bottom() - 9), QPixmap(":/Trackview/marker/bmp00016_00.png"));
@@ -3385,7 +3535,6 @@ void CTrackViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpd
     painter->setPen(prevPen);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpdate)
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -3403,7 +3552,6 @@ void CTrackViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpda
 
     const QPen prevPen = painter->pen();
     painter->setPen(QPen(lineCol, 3));
-    Range timeRange = m_timeRange;
 
     // Draw a short thick line at each place where there is a key in any tracks.
     CTrackViewKeyBundle keys = pSequence->GetAllKeys();
@@ -3417,7 +3565,6 @@ void CTrackViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpda
     painter->setPen(prevPen);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawNodeTrack(CTrackViewAnimNode* animNode, QPainter* painter, const QRect& trackRect)
 {
     const QFont prevFont = painter->font();
@@ -3427,11 +3574,11 @@ void CTrackViewDopeSheetBase::DrawNodeTrack(CTrackViewAnimNode* animNode, QPaint
 
     if (pDirectorNode->GetNodeType() != eTVNT_Sequence && !pDirectorNode->IsActiveDirector())
     {
-        painter->setPen(INACTIVE_TEXT_COLOR);
+        painter->setPen(kInactiveTextColor);
     }
     else
     {
-        painter->setPen(KEY_TEXT_COLOR);
+        painter->setPen(kKeyTextColor);
     }
 
     const QRect textRect = trackRect.adjusted(4, 0, -4, 0);
@@ -3450,7 +3597,6 @@ void CTrackViewDopeSheetBase::DrawNodeTrack(CTrackViewAnimNode* animNode, QPaint
     painter->setFont(prevFont);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawGoToTrackArrow(CTrackViewTrack* pTrack, QPainter* painter, const QRect& rc)
 {
     int numKeys = pTrack->GetKeyCount();
@@ -3492,7 +3638,6 @@ void CTrackViewDopeSheetBase::DrawGoToTrackArrow(CTrackViewTrack* pTrack, QPaint
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawKeyDuration(CTrackViewTrack* pTrack, QPainter* painter, const QRect& rc, int keyIndex)
 {
     const CTrackViewKeyHandle& keyHandle = pTrack->GetKey(keyIndex);
@@ -3577,23 +3722,21 @@ void CTrackViewDopeSheetBase::DrawKeyDuration(CTrackViewTrack* pTrack, QPainter*
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawColorGradient(QPainter* painter, const QRect& rc, const CTrackViewTrack* pTrack)
 {
     const QPen pOldPen = painter->pen();
     for (int x = rc.left(); x < rc.right(); ++x)
     {
         // This is really slow. Is there a better way?
-        Vec3 vColor(0, 0, 0);
+        AZ::Vector3 vColor(0, 0, 0);
         pTrack->GetValue(TimeFromPointUnsnapped(QPoint(x, rc.top())), vColor);
 
-        painter->setPen(ColorLinearToGamma(vColor / 255.0f));
+        painter->setPen(ColorToQColor(AZ::Color(vColor).ToU32LinearToGamma()));
         painter->drawLine(x, rc.top(), x, rc.bottom());
     }
     painter->setPen(pOldPen);
 }
 
-//////////////////////////////////////////////////////////////////////////
 QRect CTrackViewDopeSheetBase::GetNodeRect(const CTrackViewNode* pNode) const
 {
     CTrackViewNodesCtrl::CRecord* pRecord = m_pNodesCtrl->GetNodeRecord(pNode);
@@ -3607,7 +3750,6 @@ QRect CTrackViewDopeSheetBase::GetNodeRect(const CTrackViewNode* pNode) const
     return QRect();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::StoreMementoForTracksWithSelectedKeys()
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -3616,7 +3758,7 @@ void CTrackViewDopeSheetBase::StoreMementoForTracksWithSelectedKeys()
     m_trackMementos.clear();
 
     // Construct the set of tracks that have selected keys
-    std::set<CTrackViewTrack*> tracks;
+    AZStd::set<CTrackViewTrack*> tracks;
 
     const unsigned int numKeys = selectedKeys.GetKeyCount();
     for (unsigned int keyIndex = 0; keyIndex < numKeys; ++keyIndex)

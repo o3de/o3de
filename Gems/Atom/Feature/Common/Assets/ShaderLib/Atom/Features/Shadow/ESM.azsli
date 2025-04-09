@@ -8,13 +8,16 @@
  
 #pragma once
  
-
+// The calculation of ESM is given by formula exp((occluder - zReceiver) * esmComponent). Which can be spitted into 2 parts.
+// exp(occluer*esmComponent) * exp(-zReceiver * esmComponent).  Here is the calculation of Receiver part, combined with
+// occluder part to give the final soft shadow.
+// see DepthExponentiation.azsl for the calcuation of occluder part.
 float SampleESM(const Texture2DArray<float> shadowMap, const SamplerState samp, const float3 uv, const float zReceiver, const float esmExponent)
 {
-	const float mipmaplevel = 0;
-	const float occluder = shadowMap.SampleLevel(samp,uv, mipmaplevel).r;
-	const float lit = exp((occluder - zReceiver) * esmExponent);
-	return lit;
+    const float mipmaplevel = 0;
+    const float occluder = shadowMap.SampleLevel(samp, uv, mipmaplevel).r;
+    const float lit = exp(-zReceiver * esmExponent) * occluder;
+    return lit;
 }
 
 float PCFFallbackForESM(const Texture2DArray<float> shadowMap, const float3 uv, const float zReceiver, const float esmExponent)

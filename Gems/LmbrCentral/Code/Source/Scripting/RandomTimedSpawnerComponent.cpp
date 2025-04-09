@@ -8,6 +8,7 @@
 #include "RandomTimedSpawnerComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Scripting/SpawnerComponentBus.h>
@@ -29,31 +30,6 @@ namespace LmbrCentral
                 ->Field("SpawnDelayVariation", &RandomTimedSpawnerConfiguration::m_spawnDelayVariation)
                 ;
         }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<RandomTimedSpawnerComponentRequestBus>("RandomTimedSpawnerRequestBus")
-
-                ->Event("Enable", &RandomTimedSpawnerComponentRequestBus::Events::Enable)
-                ->Event("Disable", &RandomTimedSpawnerComponentRequestBus::Events::Disable)
-                ->Event("Toggle", &RandomTimedSpawnerComponentRequestBus::Events::Toggle)
-                ->Event("IsEnabled", &RandomTimedSpawnerComponentRequestBus::Events::IsEnabled)
-
-                ->Event("SetRandomDistribution", &RandomTimedSpawnerComponentRequestBus::Events::SetRandomDistribution)
-                ->Event("GetRandomDistribution", &RandomTimedSpawnerComponentRequestBus::Events::GetRandomDistribution)
-                ->VirtualProperty("RandomDistribution", "GetRandomDistribution", "SetRandomDistribution")
-
-                ->Event("SetSpawnDelay", &RandomTimedSpawnerComponentRequestBus::Events::SetSpawnDelay)
-                ->Event("GetSpawnDelay", &RandomTimedSpawnerComponentRequestBus::Events::GetSpawnDelay)
-                ->VirtualProperty("SpawnDelay", "GetSpawnDelay", "SetSpawnDelay")
-
-                ->Event("SetSpawnDelayVariation", &RandomTimedSpawnerComponentRequestBus::Events::SetSpawnDelayVariation)
-                ->Event("GetSpawnDelayVariation", &RandomTimedSpawnerComponentRequestBus::Events::GetSpawnDelayVariation)
-                ->VirtualProperty("SpawnDelayVariation", "GetSpawnDelayVariation", "SetSpawnDelayVariation")
-                ;
-
-            behaviorContext->Class<RandomTimedSpawnerComponent>()->RequestBus("RandomTimedSpawnerRequestBus");
-        }
     }
 
     void RandomTimedSpawnerComponent::Reflect(AZ::ReflectContext * context)
@@ -69,22 +45,22 @@ namespace LmbrCentral
         RandomTimedSpawnerConfiguration::Reflect(context);
     }
 
-    void RandomTimedSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided) 
+    void RandomTimedSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("RandomTimedSpawnerService", 0x56f2fa36));
+        provided.push_back(AZ_CRC_CE("RandomTimedSpawnerService"));
     }
     void RandomTimedSpawnerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        //Only compatible with Box and Cylinder shapes 
-        incompatible.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
-        incompatible.push_back(AZ_CRC("SphereShapeService", 0x90c8dc80));
-        incompatible.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
+        //Only compatible with Box and Cylinder shapes
+        incompatible.push_back(AZ_CRC_CE("CapsuleShapeService"));
+        incompatible.push_back(AZ_CRC_CE("SphereShapeService"));
+        incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
     }
-    void RandomTimedSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required) 
+    void RandomTimedSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        required.push_back(AZ_CRC("SpawnerService", 0xd2f1d7a3));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("ShapeService"));
+        required.push_back(AZ_CRC_CE("SpawnerService"));
     }
 
     void RandomTimedSpawnerComponent::Activate()
@@ -121,22 +97,22 @@ namespace LmbrCentral
             spawnTransform.SetTranslation(CalculateNextSpawnPosition());
 
             LmbrCentral::SpawnerComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SpawnerComponentRequestBus::Events::SpawnAbsolute, spawnTransform);
-            
+
             CalculateNextSpawnTime();
         }
     }
 
-    void RandomTimedSpawnerComponent::Enable() 
+    void RandomTimedSpawnerComponent::Enable()
     {
         m_config.m_enabled = true;
         AZ::TickBus::Handler::BusConnect();
     }
-    void RandomTimedSpawnerComponent::Disable() 
+    void RandomTimedSpawnerComponent::Disable()
     {
         m_config.m_enabled = false;
         AZ::TickBus::Handler::BusDisconnect();
     }
-    void RandomTimedSpawnerComponent::Toggle() 
+    void RandomTimedSpawnerComponent::Toggle()
     {
         m_config.m_enabled = !m_config.m_enabled;
         if (m_config.m_enabled)
@@ -157,7 +133,7 @@ namespace LmbrCentral
 
         m_nextSpawnTime = m_currentTime + spawnDelay;
     }
-    
+
     AZ::Vector3 RandomTimedSpawnerComponent::CalculateNextSpawnPosition()
     {
         AZ::Vector3 spawnPos = AZ::Vector3::CreateZero();

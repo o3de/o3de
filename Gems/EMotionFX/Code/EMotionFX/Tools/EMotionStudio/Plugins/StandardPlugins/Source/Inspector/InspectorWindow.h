@@ -48,9 +48,11 @@ namespace EMStudio
         uint32 GetClassID() const override { return CLASS_ID; }
 
         // InspectorRequestBus overrides...
-        void Update(const QString& headerTitle, const QString& iconFilename, QWidget* widget) override;
+        void UpdateWithHeader(const QString& headerTitle, const QString& iconFilename, QWidget* widget) override;
+        void Update(QWidget* widget) override;
         void UpdateWithRpe(const QString& headerTitle, const QString& iconFilename, const AZStd::vector<CardElement>& cardElements) override;
         void Clear() override;
+        void ClearIfShown(QWidget* widget) override;
 
     private:
         void InternalShow(QWidget* widget);

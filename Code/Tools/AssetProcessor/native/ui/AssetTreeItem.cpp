@@ -12,18 +12,46 @@
 #include <QFileIconProvider>
 #include <QStyle>
 #include <QVariant>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AssetProcessor
 {
 
-    AssetTreeItemData::AssetTreeItemData(const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid) :
+    AssetTreeItemData::AssetTreeItemData(
+        const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid, const AZ::s64 scanFolderID)
+        :
         m_assetDbName(assetDbName),
         m_name(name),
         m_isFolder(isFolder),
-        m_uuid(uuid)
+        m_uuid(uuid),
+        m_scanFolderID(scanFolderID)
     {
         QFileInfo fileInfo(name);
-        m_extension = fileInfo.completeSuffix();
+        m_extension = fileInfo.suffix();
+    }
+
+    int AssetTreeItemData::GetColumnCount() const
+    {
+        return aznumeric_cast<int>(AssetTreeColumns::Max);
+    }
+
+    QVariant AssetTreeItemData::GetDataForColumn(int column) const
+    {
+        switch (column)
+        {
+        case aznumeric_cast<int>(AssetTreeColumns::Name):
+            return m_name;
+        case aznumeric_cast<int>(AssetTreeColumns::Extension):
+            if (m_isFolder)
+            {
+                return QVariant();
+            }
+            return m_extension;
+        default:
+            AZ_Warning("AssetProcessor", false, "Unhandled AssetTree column %d", column);
+            break;
+        }
+        return QVariant();
     }
 
     AssetTreeItem::AssetTreeItem(
@@ -96,7 +124,7 @@ namespace AssetProcessor
 
     int AssetTreeItem::GetColumnCount() const
     {
-        return static_cast<int>(AssetTreeColumns::Max);
+        return m_data->GetColumnCount();
     }
 
     QVariant AssetTreeItem::GetDataForColumn(int column) const
@@ -105,21 +133,8 @@ namespace AssetProcessor
         {
             return QVariant();
         }
-        switch (column)
-        {
-            case static_cast<int>(AssetTreeColumns::Name):
-                return m_data->m_name;
-            case static_cast<int>(AssetTreeColumns::Extension):
-                if (m_data->m_isFolder)
-                {
-                    return QVariant();
-                }
-                return m_data->m_extension;
-            default:
-                AZ_Warning("AssetProcessor", false, "Unhandled AssetTree column %d", column);
-                break;
-        }
-        return QVariant();
+
+        return m_data->GetDataForColumn(column);
     }
 
     QIcon AssetTreeItem::GetIcon() const

@@ -11,6 +11,7 @@
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     int runSuccess = 0;
 
     // Call before using any Qt, or the app may not be able to locate Qt libs

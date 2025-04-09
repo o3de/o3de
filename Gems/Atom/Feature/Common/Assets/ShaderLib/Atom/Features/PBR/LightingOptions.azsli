@@ -18,6 +18,18 @@
 
 // --- Light Defines ---
 
+#ifndef ENABLE_SHADOWS
+#define ENABLE_SHADOWS              1
+#endif
+
+#ifndef ENABLE_LIGHT_CULLING
+#define ENABLE_LIGHT_CULLING              1
+#endif
+
+#ifndef ENABLE_DECALS
+#define ENABLE_DECALS              1
+#endif
+
 #ifndef ENABLE_AREA_LIGHT_VALIDATION
 #define ENABLE_AREA_LIGHT_VALIDATION    1
 #endif
@@ -57,6 +69,13 @@
 #define ENABLE_TRANSMISSION             1
 #endif
 
+#ifndef ENABLE_PARALLAX
+#define ENABLE_PARALLAX					1
+#endif
+
+#ifndef ENABLE_MOBILEBRDF
+#define ENABLE_MOBILEBRDF               0
+#endif
 
 // --- Shader Options ---
 
@@ -64,11 +83,23 @@ option bool o_specularF0_enableMultiScatterCompensation = true;
 option bool o_enableShadows = true;
 option bool o_enableDirectionalLights = true;
 option bool o_enablePunctualLights = true;
+
 option bool o_enableAreaLights = true;
+option bool o_enableSphereLights = true;
+option bool o_enableSphereLightShadows = true;
+option bool o_enableDiskLights = true;
+option bool o_enableDiskLightShadows = true;
+option bool o_enableCapsuleLights = true;
+option bool o_enableQuadLightLTC = true;
+option bool o_enableQuadLightApprox = true;
+option bool o_enablePolygonLights = true;
+option bool o_enableSimplePointLights = true;
+option bool o_enableSimpleSpotLights = true;
+option bool o_enableSimpleSpotLightShadows = true;
+option bool o_enableDecals = true;
+
 option bool o_enableIBL = true;
 option bool o_enableSubsurfaceScattering = false;
-option bool o_meshUseForwardPassIBLSpecular = false;
-option bool o_materialUseForwardPassIBLSpecular = false;
 option bool o_area_light_validation = false;
 
 #if ENABLE_CLEAR_COAT

@@ -13,17 +13,19 @@ namespace AZ::DocumentPropertyEditor::Tests
 {
     void DocumentPropertyEditorTestFixture::SetUp()
     {
-        UnitTest::AllocatorsFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
         NameDictionary::Create();
-        AZ::AllocatorInstance<Dom::ValueAllocator>::Create();
+        DocumentAdapter::SetDebugModeEnabled(true);
+        m_system = AZStd::make_unique<PropertyEditorSystem>();
         m_adapter = AZStd::make_unique<BasicAdapter>();
     }
 
     void DocumentPropertyEditorTestFixture::TearDown()
     {
         m_adapter.reset();
-        AZ::AllocatorInstance<Dom::ValueAllocator>::Destroy();
+        m_system.reset();
+        DocumentAdapter::SetDebugModeEnabled(false);
         NameDictionary::Destroy();
-        UnitTest::AllocatorsFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 }

@@ -44,7 +44,9 @@ private:
     void UpdateMenuItems();
     void SetSourceControlEnabledState(bool state);
     void UpdateAndShowMenu();
-    
+private Q_SLOTS:
+    void OnOpenSettings();
+
 private:
     std::unique_ptr<QMenu> m_menu;
     QAction* m_settingsAction;
@@ -56,7 +58,7 @@ private:
     QIcon m_scIconWarning;
     QIcon m_scIconDisabled;
     bool m_sourceControlAvailable;
-    AzToolsFramework::SourceControlState m_SourceControlState; 
+    AzToolsFramework::SourceControlState m_SourceControlState;
 };
 
 

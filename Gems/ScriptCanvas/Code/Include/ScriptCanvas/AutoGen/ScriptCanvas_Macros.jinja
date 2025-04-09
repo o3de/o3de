@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {% macro Required(attribute, element, Class) %}
 {% set name = "unknown" %}
 {% if element.attrib['Name'] is defined %}{% set name = element.attrib['Name'] %}{% endif %}
-{% if element.attrib[attribute] is not defined %}
+{% if element.attrib[attribute] is not defined or not element.attrib[attribute] %}
 {{ AddError(Class, "| You must specify the attribute: " + attribute + " for " + name) }}
 {% endif %}
 {% endmacro %}
@@ -40,6 +40,27 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 {%- macro CleanName(name) -%}
 {{name|replace(' ','')|replace('"','')|replace('/','')}}
+{%- endmacro -%}
+
+{# ------- #}
+
+{%- macro GenerateFunctionMetaData(function) -%}
+{% set parameters = function.findall('Parameter') %}
+{% if not parameters %}
+{ { } }
+{%- else -%}
+{ {
+{% for index in range(0, parameters|length()) %}
+{% set parameterName = parameters[index].attrib['Name'] %}
+{% set parameterDefaultValue = parameters[index].attrib['DefaultValue'] %}
+{% set parameterDescription = parameters[index].attrib['Description'] %}
+    { {%- if parameterName is defined %}"{{parameterName}}"{% else %}""{% endif %},
+      {%- if parameterDescription is defined %} "{{parameterDescription}}"{% else %} ""{% endif %},
+      {%- if parameterDefaultValue is defined %} behaviorContext->MakeDefaultValue({{parameterDefaultValue}}){% else %} nullptr{% endif %} }{% if index != parameters|length() - 1 %},{% endif %}
+
+{% endfor %}
+} }
+{%- endif -%}
 {%- endmacro -%}
 
 {# ------- #}

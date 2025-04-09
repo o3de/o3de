@@ -28,6 +28,8 @@
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphActionManager.h>
 
+#include <GraphCanvas/Editor/EditorTypes.h>
+
 #include <QDockWidget>
 #include <QStackedWidget>
 
@@ -55,15 +57,14 @@ namespace EMStudio
     class NavigateWidget;
     class BlendTreeVisualNode;
     class AttributesWindow;
-    class GameControllerWindow;
     class GraphNodeFactory;
     class ParameterWindow;
-    class NodeGroupWindow;
     class BlendGraphViewWidget;
     class AnimGraphPlugin;
     class TimeViewPlugin;
-    class SaveDirtyAnimGraphFilesCallback;
     class NavigationHistory;
+
+    static constexpr GraphCanvas::EditorId AnimGraphEditorId = AZ_CRC_CE("AnimGraphEditor");
 
     // our anim graph event handler
     class AnimGraphEventHandler
@@ -113,7 +114,13 @@ namespace EMStudio
             DISPLAYFLAG_PLAYSPEED       = 1 << 0,
             DISPLAYFLAG_GLOBALWEIGHT    = 1 << 1,
             DISPLAYFLAG_SYNCSTATUS      = 1 << 2,
-            DISPLAYFLAG_PLAYPOSITION    = 1 << 3
+            DISPLAYFLAG_PLAYPOSITION    = 1 << 3,
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+            DISPLAYFLAG_PROFILING_UPDATE = 1 << 5,
+            DISPLAYFLAG_PROFILING_TOPDOWN = 1 << 6,
+            DISPLAYFLAG_PROFILING_POSTUPDATE = 1 << 7,
+            DISPLAYFLAG_PROFILING_OUTPUT = 1 << 8,
+#endif
         };
 
         AnimGraphPlugin();
@@ -131,10 +138,6 @@ namespace EMStudio
         void SetActiveAnimGraph(EMotionFX::AnimGraph* animGraph);
         EMotionFX::AnimGraph* GetActiveAnimGraph()           { return m_activeAnimGraph; }
 
-        void SaveAnimGraph(const char* filename, size_t animGraphIndex, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveAnimGraphAs(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
-        int SaveDirtyAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
         int OnSaveDirtyAnimGraphs();
 
         PluginOptions* GetOptions() override { return &m_options; }
@@ -194,19 +197,11 @@ namespace EMStudio
         NodePaletteWidget* GetPaletteWidget()                  { return m_paletteWidget; }
         AttributesWindow* GetAttributesWindow()                { return m_attributesWindow; }
         ParameterWindow* GetParameterWindow()                  { return m_parameterWindow; }
-        NodeGroupWindow* GetNodeGroupWidget()                  { return m_nodeGroupWindow; }
         BlendGraphViewWidget* GetViewWidget()                  { return m_viewWidget; }
         NavigationHistory* GetNavigationHistory() const        { return m_navigationHistory; }
 
-        QDockWidget* GetAttributeDock()                        { return m_attributeDock; }
         QDockWidget* GetNodePaletteDock()                      { return m_nodePaletteDock; }
         QDockWidget* GetParameterDock()                        { return m_parameterDock; }
-        QDockWidget* GetNodeGroupDock()                        { return m_nodeGroupDock; }
-
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow* GetGameControllerWindow()        { return m_gameControllerWindow; }
-        QDockWidget* GetGameControllerDock()                   { return m_gameControllerDock; }
-#endif
 
         void SetDisplayFlagEnabled(uint32 flags, bool enabled)
         {
@@ -238,15 +233,13 @@ namespace EMStudio
 
         void SetActionFilter(const AnimGraphActionFilter& actionFilter);
         const AnimGraphActionFilter& GetActionFilter() const;
+        void FileOpen(AZStd::string filename);
 
     private:
         enum EDockWindowOptionFlag
         {
             WINDOWS_PARAMETERWINDOW = 1,
-            WINDOWS_ATTRIBUTEWINDOW = 2,
-            WINDOWS_NODEGROUPWINDOW = 3,
-            WINDOWS_PALETTEWINDOW = 4,
-            WINDOWS_GAMECONTROLLERWINDOW = 5,
+            WINDOWS_PALETTEWINDOW = 2,
 
             NUM_DOCKWINDOW_OPTIONS //automatically gets the next number assigned
         };
@@ -271,23 +264,13 @@ namespace EMStudio
         NodePaletteWidget*                          m_paletteWidget;
         AttributesWindow*                           m_attributesWindow;
         ParameterWindow*                            m_parameterWindow;
-        NodeGroupWindow*                            m_nodeGroupWindow;
         BlendGraphViewWidget*                       m_viewWidget;
         NavigationHistory*                          m_navigationHistory;
 
-        SaveDirtyAnimGraphFilesCallback*            m_dirtyFilesCallback;
-
-        QDockWidget*                                m_attributeDock;
         QDockWidget*                                m_nodePaletteDock;
         QDockWidget*                                m_parameterDock;
-        QDockWidget*                                m_nodeGroupDock;
         QAction*                                    m_dockWindowActions[NUM_DOCKWINDOW_OPTIONS];
         EMotionFX::AnimGraph*                       m_activeAnimGraph;
-
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow*                       m_gameControllerWindow;
-        QPointer<QDockWidget>                       m_gameControllerDock;
-#endif
 
         float                                       m_lastPlayTime;
         float                                       m_totalTime;

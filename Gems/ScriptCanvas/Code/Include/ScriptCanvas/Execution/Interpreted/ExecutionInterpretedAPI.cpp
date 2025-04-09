@@ -16,6 +16,7 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
@@ -23,6 +24,7 @@
 
 #include "ExecutionInterpretedClassAPI.h"
 #include "ExecutionInterpretedCloningAPI.h"
+#include "ExecutionInterpretedComponentAPI.h"
 #include "ExecutionInterpretedDebugAPI.h"
 #include "ExecutionInterpretedEBusAPI.h"
 #include "ExecutionInterpretedOut.h"
@@ -32,23 +34,8 @@ namespace ExecutionInterpretedAPICpp
     using namespace ScriptCanvas;
     using namespace ScriptCanvas::Execution;
 
-    constexpr size_t k_StringFastSize = 32;
-
-    constexpr size_t k_UuidSize = 16;
-
-    constexpr unsigned char k_Bad = 77;
-
-    constexpr const char* const k_fastDigits = "0123456789ABCDEF";
-
-    constexpr unsigned char k_fastValues[] =
-    {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad,k_Bad, 10, 11, 12, 13, 14, 15
-    };
-
-    [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
-
     template<typename T>
-    T* GetAs(AZ::BehaviorValueParameter& argument)
+    T* GetAs(AZ::BehaviorArgument& argument)
     {
         return argument.m_typeId == azrtti_typeid<T>()
             ? reinterpret_cast<T*>(argument.GetValueAddress())
@@ -147,10 +134,10 @@ namespace ExecutionInterpretedAPICpp
             const char* aztypeidStr = lua_tostring(lua, -1);
             AZ::TypeId typeId = CreateIdFromStringFast(aztypeidStr);
             lua_pop(lua, 2);
-            // Lua: 
+            // Lua:
             AZStd::pair<void*, AZ::BehaviorContext*> multipleResults = ScriptCanvas::BehaviorContextUtils::ConstructTupleGetContext(typeId);
             AZ_Assert(multipleResults.first, "failure to construct a tuple by typeid from behavior context");
-            AZ::BehaviorValueParameter parameter;
+            AZ::BehaviorArgument parameter;
             parameter.m_value = multipleResults.first;
             parameter.m_typeId = typeId;
             AZ::StackPush(lua, multipleResults.second, parameter);
@@ -276,9 +263,9 @@ namespace ScriptCanvas
             return bcClassIter != behaviorContext.m_typeToClassMap.end() ? bcClassIter->second->m_azRtti : nullptr;
         }
 
-        AZ::BehaviorValueParameter BehaviorValueParameterFromTypeIdString(const char* aztypeidStr, AZ::BehaviorContext& behaviorContext)
+        AZ::BehaviorArgument BehaviorValueParameterFromTypeIdString(const char* aztypeidStr, AZ::BehaviorContext& behaviorContext)
         {
-            AZ::BehaviorValueParameter bvp;
+            AZ::BehaviorArgument bvp;
             bvp.m_typeId = CreateIdFromStringFast(aztypeidStr);
             bvp.m_azRtti = GetRttiHelper(bvp.m_typeId, behaviorContext);
             return bvp;
@@ -286,58 +273,18 @@ namespace ScriptCanvas
 
         AZStd::string CreateStringFastFromId(const AZ::Uuid& uuid)
         {
-            using namespace ExecutionInterpretedAPICpp;
-            static_assert(sizeof(AZ::Uuid) == k_UuidSize, "size of uuid has changed");
-
-            AZStd::string fastString;
-            fastString.resize(k_StringFastSize);
-            char* fastDigit = fastString.begin();
-
-            for (size_t i = 0; i < k_UuidSize; ++i)
-            {
-                const unsigned char value = uuid.data[i];
-                *fastDigit = k_fastDigits[value >> 4];
-                ++fastDigit;
-                *fastDigit = k_fastDigits[value & 15];
-                ++fastDigit;
-            }
-
-            return fastString;
+            constexpr bool formatBrackets = false;
+            constexpr bool formatDashes = false;
+            return uuid.ToString<AZStd::string>(formatBrackets, formatDashes);
         }
 
         AZ::Uuid CreateIdFromStringFast(const char* string)
         {
-            using namespace ExecutionInterpretedAPICpp;
-
-            AZ_Assert(string, "string argument must not be null");
-            AZ_Assert(strlen(string) == k_StringFastSize, "invalid length of string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-            const char* current = string;
-
-            AZ::Uuid id;
-            auto data = id.begin();
-            auto sentinel = id.end();
-
-            do
-            {
-                const auto index0 = *current - '0';
-                AZ_Assert(index0 < k_FastValuesIndexSentinel, "invalid value index in found in fast string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-                const auto value0 = k_fastValues[index0];
-                AZ_Assert(value0 != k_Bad, "invalid value in fast string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-                ++current;
-
-                const auto index1 = *current - '0';
-                AZ_Assert(index1 < k_FastValuesIndexSentinel, "invalid value index in found in fast string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-                const auto value1 = k_fastValues[index1];
-                AZ_Assert(value1 != k_Bad, "invalid value in fast string, fast format must be: 0123456789ABCDEF0123456789ABCDEF");
-                ++current;
-
-                *data = (value0 << 4) | value1;
-            }             while ((++data) != sentinel);
-
-            return id;
+            AZ_Assert(string != nullptr, "string argument must not be null");
+            return AZ::Uuid(string);
         }
 
-        void PushActivationArgs(lua_State* lua, AZ::BehaviorValueParameter* arguments, size_t numArguments)
+        void PushActivationArgs(lua_State* lua, AZ::BehaviorArgument* arguments, size_t numArguments)
         {
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext();
 
@@ -380,6 +327,7 @@ namespace ScriptCanvas
             lua_register(lua, k_GetRandomSwitchControlNumberName, &GetRandomSwitchControlNumber);
 
             RegisterTypeSafeEBusResultFunctions(lua);
+            RegisterComponentAPI(lua);
             RegisterCloningAPI(lua);
             RegisterDebugAPI(lua);
             RegisterEBusHandlerAPI(lua);
@@ -395,15 +343,22 @@ namespace ScriptCanvas
                 , "Failed to add ScriptCanvas user object inheritance to ScriptContext!");
         }
 
+        int ReportError(lua_State* lua, AZStd::string_view message)
+        {
+            using namespace ExecutionInterpretedAPICpp;
+            lua_pushlstring(lua, message.data(), message.length());
+            return ErrorHandler(lua);
+        }
+
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-            AZ_Error("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+            AZ_Error("ScriptCanvas", !runtimeData.m_areScriptLocalStaticsInitialized, "ScriptCanvas runtime data already initialized");
             {
-                runtimeData.m_areStaticsInitialized = true;
+                runtimeData.m_areScriptLocalStaticsInitialized = true;
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    if (!dependency.Get()->m_runtimeData.m_areStaticsInitialized)
+                    if (!dependency.Get()->m_runtimeData.m_areScriptLocalStaticsInitialized)
                     {
                         InitializeInterpretedStatics(dependency.Get()->m_runtimeData);
                     }
@@ -416,7 +371,6 @@ namespace ScriptCanvas
                 {
                     AZ::ScriptLoadResult result{};
                     AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, runtimeData.m_script, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
-                    AZ_Assert(result.status == AZ::ScriptLoadResult::Status::Initial, "ExecutionStateInterpreted script asset was valid but failed to load.");
                     AZ_Assert(result.lua, "Must have a default script context and a lua_State");
                     AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
 
@@ -474,7 +428,6 @@ namespace ScriptCanvas
         int SetExecutionOut(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
 
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
@@ -497,7 +450,6 @@ namespace ScriptCanvas
         int SetExecutionOutResult(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
 
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutResult is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutResult is not a number");
@@ -520,7 +472,7 @@ namespace ScriptCanvas
         //////////////////////////////////////////////////////////////////////////
         // \todo ScriptCanvas will probably need its own version of all of these functions
         //////////////////////////////////////////////////////////////////////////
-        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& argument)
+        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& argument)
         {
             using namespace ExecutionInterpretedAPICpp;
 
@@ -544,19 +496,14 @@ namespace ScriptCanvas
             }
         }
 
-        bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator* allocator)
+        bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* allocator)
         {
             return AZ::StackRead(lua, index, context, param, allocator);
         }
 
-        void InterpretedUnloadData(RuntimeData& runtimeData)
-        {
-            AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, runtimeData.m_script.GetId());
-        }
-
         struct DependencyConstructionPack
         {
-            ExecutionStateInterpreted* executionState;
+            ExecutionState* executionState;
             AZStd::vector<RuntimeDataOverrides>* dependencies;
             const size_t dependenciesIndex;
             RuntimeDataOverrides& runtimeOverrides;
@@ -564,7 +511,7 @@ namespace ScriptCanvas
 
         DependencyConstructionPack UnpackDependencyConstructionArgsSanitize(lua_State* lua)
         {
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to UnpackDependencyArgs is not an ExecutionStateInterpreted");
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
             auto dependentOverrides = reinterpret_cast<AZStd::vector<RuntimeDataOverrides>*>(lua_touserdata(lua, 2));
@@ -577,7 +524,7 @@ namespace ScriptCanvas
         {
             ActivationInputArray storage;
             ActivationData data(args.runtimeOverrides, storage);
-            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
+            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return static_cast<int>(range.totalCount);
         }

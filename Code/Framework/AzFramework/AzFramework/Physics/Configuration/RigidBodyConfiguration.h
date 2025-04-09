@@ -35,7 +35,10 @@ namespace AzPhysics
         MassComputeFlags GetMassComputeFlags() const;
         void SetMassComputeFlags(MassComputeFlags flags);
 
-        bool IsCCDEnabled() const;
+        bool IsCcdEnabled() const;
+        bool CcdReadOnly() const;
+        AZStd::string_view GetCcdTooltip() const;
+        AZStd::string_view GetKinematicTooltip() const;
 
         // Basic initial settings.
         AZ::Vector3 m_initialLinearVelocity = AZ::Vector3::CreateZero();
@@ -57,6 +60,7 @@ namespace AzPhysics
         bool m_ccdEnabled = false; //!< Whether continuous collision detection is enabled.
         float m_ccdMinAdvanceCoefficient = 0.15f; //!< Coefficient affecting how granularly time is subdivided in CCD.
         bool m_ccdFrictionEnabled = false; //!< Whether friction is applied when resolving CCD collisions.
+        bool m_configButton = false; //!< Required for button positioning in edit context, otherwise unused.
 
         bool m_computeCenterOfMass = true;
         bool m_computeInertiaTensor = true;
@@ -103,7 +107,7 @@ namespace AzPhysics
         AZ::Crc32 GetInterpolationVisibility() const;
         AZ::Crc32 GetGravityVisibility() const;
         AZ::Crc32 GetKinematicVisibility() const;
-        AZ::Crc32 GetCCDVisibility() const;
+        AZ::Crc32 GetCcdVisibility() const;
         AZ::Crc32 GetMaxVelocitiesVisibility() const;
 
         AZ::u16 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u16>::max)();

@@ -48,16 +48,16 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_ConnectionVisualService", 0x3877d465));
-            provided.push_back(AZ_CRC("GraphCanvas_RootVisualService", 0x9ec46d3b));
-            provided.push_back(AZ_CRC("GraphCanvas_VisualService", 0xfbb2c871));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_ConnectionVisualService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_RootVisualService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_VisualService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GraphCanvas_ConnectionVisualService", 0x3877d465));
-            incompatible.push_back(AZ_CRC("GraphCanvas_RootVisualService", 0x9ec46d3b));
-            incompatible.push_back(AZ_CRC("GraphCanvas_VisualService", 0xfbb2c871));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_ConnectionVisualService"));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_RootVisualService"));
+            incompatible.push_back(AZ_CRC_CE("GraphCanvas_VisualService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -67,7 +67,7 @@ namespace GraphCanvas
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_ConnectionService", 0x7ef98865));
+            required.push_back(AZ_CRC_CE("GraphCanvas_ConnectionService"));
         }
 
         void Init() override;
@@ -121,7 +121,7 @@ namespace GraphCanvas
         , public AssetEditorSettingsNotificationBus::Handler        
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConnectionGraphicsItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConnectionGraphicsItem, AZ::SystemAllocator);
         
         // Helper function to return the length of a vector
         // (Distance from provided point to the origin)

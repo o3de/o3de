@@ -30,5 +30,6 @@ namespace UnitTests
         MOCK_METHOD1(IsAssetPlatformEnabled, bool(const char* platform));
         MOCK_METHOD1(GetPendingAssetsForPlatform, int(const char* platform));
         MOCK_METHOD2(GetAssetsProducedBySourceUUID, bool(const AZ::Uuid& sourceUuid, AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo));
+        MOCK_METHOD1(ClearFingerprintForAsset, bool(const AZStd::string& sourcePath));
     };
 }

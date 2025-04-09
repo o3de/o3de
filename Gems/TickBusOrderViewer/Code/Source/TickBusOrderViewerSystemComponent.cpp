@@ -26,7 +26,6 @@ namespace TickBusOrderViewer
                     "TickBusOrderViewer", 
                     "Provides a console command for viewing tick bus order, print_tickbus_handlers.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -35,12 +34,12 @@ namespace TickBusOrderViewer
 
     void TickBusOrderViewerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("TickBusOrderViewerService"));
+        provided.push_back(AZ_CRC_CE("TickBusOrderViewerService"));
     }
 
     void TickBusOrderViewerSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("TickBusOrderViewerService"));
+        incompatible.push_back(AZ_CRC_CE("TickBusOrderViewerService"));
     }
 
     void TickBusOrderViewerSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

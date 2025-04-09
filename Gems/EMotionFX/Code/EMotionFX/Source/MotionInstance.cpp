@@ -23,10 +23,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionInstance, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionInstance, MotionAllocator)
 
     MotionInstance::MotionInstance(Motion* motion, ActorInstance* actorInstance)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         AZ_Assert(actorInstance, "Expecting a valid actor instance");
         AZ_Assert(motion, "Motion pointer cannot be a nullptr");
@@ -310,7 +310,7 @@ namespace EMotionFX
     }
 
     void MotionInstance::SetPlayState(const PlayStateIn& inState, const PlayStateOut& outState, bool triggerEvents)
-    {        
+    {
         m_currentTime = outState.m_currentTime;
         m_timeDiffToEnd = outState.m_timeDiffToEnd;
         m_curLoops = outState.m_numLoops;
@@ -449,7 +449,7 @@ namespace EMotionFX
             m_motion->GetEventTable()->ProcessEvents(m_lastCurTime, m_currentTime, this);
         }
     }
-           
+
     void MotionInstance::ExtractEvents(float oldTime, float newTime, AnimGraphEventBuffer* outBuffer)
     {
         const float realTimePassed = newTime - oldTime;

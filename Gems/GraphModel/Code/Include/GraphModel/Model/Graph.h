@@ -56,7 +56,7 @@ namespace GraphModel
     class Graph : public AZStd::enable_shared_from_this<Graph>
     {
     public:
-        AZ_CLASS_ALLOCATOR(Graph, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Graph, AZ::SystemAllocator);
         AZ_RTTI(Graph, "{CBF5DC3C-A0A7-45F5-A207-06433A9A10C5}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -76,7 +76,7 @@ namespace GraphModel
 
         //! Constructor
         //! \param  graphContext  interface to client system specific data and functionality
-        explicit Graph(IGraphContextPtr graphContext);
+        explicit Graph(GraphContextPtr graphContext);
 
         virtual ~Graph() = default;
 
@@ -86,7 +86,7 @@ namespace GraphModel
         //! and perform any other precedural setup that isn't stored in the 
         //! serialized data.
         //! \param  graphContext  interface to client system specific data and functionality
-        void PostLoadSetup(IGraphContextPtr graphContext);
+        void PostLoadSetup(GraphContextPtr graphContext);
 
         //! Add a node that has been deserialized to the graph
         //! This should only be necessary for cases like copy/paste where we
@@ -94,7 +94,7 @@ namespace GraphModel
         NodeId PostLoadSetup(NodePtr node);
 
         //! Returns the interface to client system specific data and functionality
-        IGraphContextPtr GetContext() const;
+        GraphContextPtr GetContext() const;
 
         //! This name is used for debug messages in GraphModel classes, to provide appropriate context for the user.
         //! It's a convenience function for GetContext()->GetSystemName()
@@ -113,12 +113,23 @@ namespace GraphModel
         //! Remove the wrapping from the specified node
         void UnwrapNode(ConstNodePtr node);
 
+        //! Return if the specified node is a wrapped node
+        bool IsNodeWrapped(NodePtr node) const;
+
         //! Return our full map of node wrappings
         const NodeWrappingMap& GetNodeWrappings();
 
+        //! Search for a note with the corresponding ID
         NodePtr GetNode(NodeId nodeId);
+
+        //! Return a map of all nodes in the graph
         const NodeMap& GetNodes();
+
+        //! Return a map of all nodes in the graph
         ConstNodeMap GetNodes() const;
+
+        //! Return the number of nodes in the graph
+        size_t GetNodeCount() const;
 
         //! Adds a new connection between sourceSlot and targetSlot and returns the
         //! new Connection, or returns the existing Connection if one already exists.
@@ -127,7 +138,11 @@ namespace GraphModel
         //! Removes a connection from the Graph, and returns whether it was found and removed
         bool RemoveConnection(ConstConnectionPtr connection);
 
+        //! Return a container of all connections in the graph
         const ConnectionList& GetConnections();
+
+        //! Return the number of connections for all nodes and slots in the graph
+        size_t GetConnectionCount() const;
 
         //! Set/gets a bundle of generic metadata that is provided by the node graph UI
         //! system. This may include node positions, comment blocks, node groupings, and 
@@ -138,12 +153,11 @@ namespace GraphModel
 
         AZStd::shared_ptr<Slot> FindSlot(const Endpoint& endpoint);
 
-    protected:
+        //! Reset any data that was cached for this graph
+        void ClearCachedData();
+
         bool Contains(SlotPtr slot) const;
         ConnectionPtr FindConnection(ConstSlotPtr sourceSlot, ConstSlotPtr targetSlot);
-
-        //! Common implementation for removing a specific connection from m_connections
-        bool RemoveConnection(ConnectionList::iterator iter);
 
     private:
         NodeMap m_nodes;
@@ -158,7 +172,7 @@ namespace GraphModel
         //! Used to store all of our node <-> wrapper node mappings
         NodeWrappingMap m_nodeWrappings;
 
-        IGraphContextPtr m_graphContext; //!< interface to client system specific data and functionality
+        GraphContextPtr m_graphContext; //!< interface to client system specific data and functionality
     };
 
 } // namespace GraphModel

@@ -18,6 +18,7 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 
 #include <AzCore/std/sort.h>
+#include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -39,16 +40,6 @@
 
 namespace AnimGraphParameterCommandsTests
 {
-    namespace AZStd
-    {
-        using namespace ::AZStd;
-    } // namespace AZStd
-
-    namespace AZ
-    {
-        using namespace ::AZ;
-    } // namespace AZ
-
     namespace MCore
     {
         using ::MCore::Command;
@@ -69,6 +60,7 @@ namespace AnimGraphParameterCommandsTests
         // Import real implementations that are not mocked
         using ::EMotionFX::AnimGraphNodeId;
         using ::EMotionFX::AnimGraphConnectionId;
+        using ::EMotionFX::AnimGraphAllocator;
 
         // Forward declare types that will be mocked
         class Actor;
@@ -114,7 +106,8 @@ namespace AnimGraphParameterCommandsTests
 #include <Tests/Mocks/CommandSystemCommandManager.h>
 #include <Tests/Mocks/BlendTreeParameterNode.h>
 
-#include <EMotionFX/CommandSystem/Source/AnimGraphParameterCommands.cpp>
+#include <EMotionFX/CommandSystem/Source/AnimGraphParameterCommands_Interface.inl>
+#include <EMotionFX/CommandSystem/Source/AnimGraphParameterCommands_Impl.inl>
 
     class TestParameter
         : public EMotionFX::ValueParameter
@@ -124,19 +117,19 @@ namespace AnimGraphParameterCommandsTests
     };
 
     class AnimGraphParameterCommandsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
             ::MCore::Initializer::Init(); // create the MCoreSystem object for MCore containers
         }
 
         void TearDown() override
         {
             ::MCore::Initializer::Shutdown();
-            UnitTest::AllocatorsTestFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
     };
 

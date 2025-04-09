@@ -141,13 +141,13 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_ClearCoatState.lua"
+                "file": "Materials/Types/StandardPBR_ClearCoatState.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_ClearCoatEnableFeature.lua"
+                "file": "Materials/Types/StandardPBR_ClearCoatEnableFeature.lua"
             }
         }
     ]

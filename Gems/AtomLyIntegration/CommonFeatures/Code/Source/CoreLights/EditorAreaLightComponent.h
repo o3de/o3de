@@ -7,9 +7,10 @@
  */
 
 #pragma once
-#include <AzCore/PlatformDef.h>
 
+#include <AzCore/PlatformDef.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <CoreLights/AreaLightComponent.h>
@@ -21,9 +22,9 @@ namespace AZ
         class EditorAreaLightComponent final
             : public EditorRenderComponentAdapter<AreaLightComponentController, AreaLightComponent, AreaLightComponentConfig>
             , private AzFramework::EntityDebugDisplayEventBus::Handler
+            , public AzFramework::BoundsRequestBus::Handler
         {
         public:
-
             using BaseClass = EditorRenderComponentAdapter<AreaLightComponentController, AreaLightComponent, AreaLightComponentConfig>;
             AZ_EDITOR_COMPONENT(AZ::Render::EditorAreaLightComponent, EditorAreaLightComponentTypeId, BaseClass);
 
@@ -35,8 +36,11 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
 
-        private:
+            // BoundsRequestBus overrides ...
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
 
+        private:
             // AzFramework::EntityDebugDisplayEventBus::Handler overrides...
             void DisplayEntityViewport(
                 const AzFramework::ViewportInfo& viewportInfo,
@@ -52,7 +56,7 @@ namespace AZ
 
             u32 OnConfigurationChanged() override;
 
-            AreaLightComponentConfig::LightType m_lightType; // Used to detect when the configuration's light type changes.
+            AreaLightComponentConfig::LightType m_lightType {AreaLightComponentConfig::LightType::Unknown}; // Used to detect when the configuration's light type changes.
         };
 
     } // namespace Render

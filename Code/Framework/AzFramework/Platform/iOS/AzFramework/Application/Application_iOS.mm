@@ -8,6 +8,7 @@
 
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 
 #include <UIKit/UIKit.h>
 
@@ -21,7 +22,7 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationIos, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplicationIos, AZ::SystemAllocator);
         ApplicationIos();
         ~ApplicationIos() override;
 
@@ -42,12 +43,6 @@ namespace AzFramework
     private:
         ApplicationLifecycleEvents::Event m_lastEvent;
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    Application::Implementation* Application::Implementation::Create()
-    {
-        return aznew ApplicationIos();
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ApplicationIos::ApplicationIos()
@@ -118,5 +113,23 @@ namespace AzFramework
             result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, MaxSecondsInRunLoop, TRUE);
         }
         while (result == kCFRunLoopRunHandledSource);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class IosApplicationImplFactory 
+        : public Application::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<Application::Implementation> Create() override
+        {
+            return AZStd::make_unique<ApplicationIos>();
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+   void NativeUISystemComponent::InitializeApplicationImplementationFactory()
+    {
+        m_applicationImplFactory = AZStd::make_unique<IosApplicationImplFactory>();
+        AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory.get());
     }
 } // namespace AzFramework

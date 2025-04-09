@@ -17,15 +17,5 @@ namespace AssetProcessor
     class AssetBuilderSDKTest
         : public ::testing::Test
     {
-    protected:
-        void SetUp() override
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-        }
     };
-}
+} // namespace AssetProcessor

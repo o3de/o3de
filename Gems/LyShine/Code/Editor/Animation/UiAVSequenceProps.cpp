@@ -14,8 +14,6 @@
 #include "UiAnimViewSequence.h"
 #include "Animation/AnimationContext.h"
 
-#include "Objects/BaseObject.h"
-
 #include "QtUtilWin.h"
 #include <Editor/Animation/ui_UiAVSequenceProps.h>
 #include <QMessageBox>
@@ -55,7 +53,7 @@ bool CUiAVSequenceProps::OnInitDialog()
 
     Range timeRange = m_pSequence->GetTimeRange();
 
-    m_timeUnit = 1;
+    m_timeUnit = 0;
     ui->START_TIME->setValue(timeRange.start);
     ui->END_TIME->setValue(timeRange.end);
 
@@ -119,7 +117,7 @@ void CUiAVSequenceProps::OnOK()
     timeRange.start = aznumeric_cast<float>(ui->START_TIME->value());
     timeRange.end = aznumeric_cast<float>(ui->END_TIME->value());
 
-    if (m_timeUnit == 0)
+    if (m_timeUnit == 1)
     {
         float invFPS = 1.0f / m_FPS;
         timeRange.start = aznumeric_cast<float>(ui->START_TIME->value() * invFPS);
@@ -129,7 +127,7 @@ void CUiAVSequenceProps::OnOK()
     m_pSequence->SetTimeRange(timeRange);
 
     CUiAnimationContext* ac = nullptr;
-    EBUS_EVENT_RESULT(ac, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(ac, &UiEditorAnimationBus::Events::GetAnimationContext);
     if (ac)
     {
         ac->UpdateTimeRange();

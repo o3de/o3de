@@ -6,9 +6,13 @@
  *
  */
 
+
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/InspectorWindow.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/NoSelectionWidget.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/ContentWidget.h>
+
 #include <QDockWidget>
 #include <QScrollArea>
 #include <QVBoxLayout>
@@ -18,12 +22,25 @@ namespace EMStudio
     InspectorWindow::~InspectorWindow()
     {
         InspectorRequestBus::Handler::BusDisconnect();
+
+        if (m_scrollArea)
+        {
+            m_scrollArea->takeWidget();
+
+            delete m_contentWidget;
+            m_contentWidget = nullptr;
+
+            delete m_noSelectionWidget;
+            m_noSelectionWidget = nullptr;
+        }
+
     }
 
     bool InspectorWindow::Init()
     {
         m_scrollArea = new QScrollArea();
         m_scrollArea->setWidgetResizable(true);
+        m_scrollArea->setFrameShape(QFrame::NoFrame);
 
         m_dock->setWidget(m_scrollArea);
 
@@ -37,7 +54,7 @@ namespace EMStudio
         return true;
     }
 
-    void InspectorWindow::Update(const QString& headerTitle, const QString& iconFilename, QWidget* widget)
+    void InspectorWindow::Update(QWidget* widget)
     {
         if (!widget)
         {
@@ -46,7 +63,20 @@ namespace EMStudio
         }
 
         m_objectEditorCardPool.ReturnAllCards();
-        m_contentWidget->Update(headerTitle, iconFilename, widget);
+        m_contentWidget->Update(widget);
+        InternalShow(m_contentWidget);
+    }
+
+    void InspectorWindow::UpdateWithHeader(const QString& headerTitle, const QString& iconFilename, QWidget* widget)
+    {
+        if (!widget)
+        {
+            Clear();
+            return;
+        }
+
+        m_objectEditorCardPool.ReturnAllCards();
+        m_contentWidget->UpdateWithHeader(headerTitle, iconFilename, widget);
         InternalShow(m_contentWidget);
     }
 
@@ -73,7 +103,7 @@ namespace EMStudio
             }
         }
 
-        m_contentWidget->Update(headerTitle, iconFilename, containerWidget);
+        m_contentWidget->UpdateWithHeader(headerTitle, iconFilename, containerWidget);
         InternalShow(m_contentWidget);
         containerWidget->show();
     }
@@ -100,6 +130,14 @@ namespace EMStudio
 
         m_contentWidget->Clear();
         InternalShow(m_noSelectionWidget);
+    }
+
+    void InspectorWindow::ClearIfShown(QWidget* widget)
+    {
+        if (m_contentWidget->GetWidget() == widget)
+        {
+            Clear();
+        }
     }
 
     AZ::SerializeContext* InspectorWindow::GetSerializeContext()

@@ -1,4 +1,0 @@
-<Material MtlFlags="524288" DccMaterialHash="0" Shader="Terrain.Layer" GenMask="200000000" StringGenMask="%TEMP_TERRAIN" SurfaceType="mat_default" Diffuse="1,1,1,1" Specular="0.045000002,0.045000002,0.045000002,0.039215688" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
- <Textures />
- <PublicParams BlendFalloff="1" DetailTextureStrength="1" BlendFactor="0" IndirectColor="0.25,0.25,0.25"/>
-</Material>

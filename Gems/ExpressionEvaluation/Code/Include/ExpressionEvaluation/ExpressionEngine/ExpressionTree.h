@@ -42,7 +42,7 @@ namespace ExpressionEvaluation
         };
 
         AZ_RTTI(ExpressionTree, "{4CCF3DFD-2EA8-47CB-AF25-353BC034EF42}");
-        AZ_CLASS_ALLOCATOR(ExpressionTree, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExpressionTree, AZ::SystemAllocator);
 
         ExpressionTree() = default;
         

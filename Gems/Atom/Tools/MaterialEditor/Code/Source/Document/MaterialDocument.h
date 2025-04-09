@@ -26,11 +26,11 @@ namespace MaterialEditor
     class MaterialDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public MaterialDocumentRequestBus::Handler
-        , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_RTTI(MaterialDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
-        AZ_CLASS_ALLOCATOR(MaterialDocument, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialDocument, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(MaterialDocument);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -46,8 +46,8 @@ namespace MaterialEditor
         bool Save() override;
         bool SaveAsCopy(const AZStd::string& savePath) override;
         bool SaveAsChild(const AZStd::string& savePath) override;
-        bool IsOpen() const override;
         bool IsModified() const override;
+        bool CanSaveAsChild() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
 
@@ -56,8 +56,8 @@ namespace MaterialEditor
         AZ::Data::Instance<AZ::RPI::Material> GetInstance() const override;
         const AZ::RPI::MaterialSourceData* GetMaterialSourceData() const override;
         const AZ::RPI::MaterialTypeSourceData* GetMaterialTypeSourceData() const override;
-        void SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value) override;
-        const AZStd::any& GetPropertyValue(const AZ::Name& propertyId) const override;
+        void SetPropertyValue(const AZStd::string& propertyId, const AZStd::any& value) override;
+        const AZStd::any& GetPropertyValue(const AZStd::string& propertyId) const override;
 
     private:
 
@@ -67,8 +67,8 @@ namespace MaterialEditor
         // Map of raw property values for undo/redo comparison and storage
         using PropertyValueMap = AZStd::unordered_map<AZ::Name, AZStd::any>;
 
-        // AZ::TickBus overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        // AZ::SystemTickBus overrides...
+        void OnSystemTick() override;
 
         bool SaveSourceData(AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
 

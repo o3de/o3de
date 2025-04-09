@@ -10,8 +10,10 @@
 #include <Processing/ImageObjectImpl.h>
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/ImageFlags.h>
+#include <Processing/ImageConvert.h>
 #include <Converters/PixelOperation.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/algorithm.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/GenericStreams.h>
@@ -31,15 +33,26 @@ namespace ImageProcessingAtom
         return aznew CImageObject(width, height, maxMipCount, pixelFormat);
     }
 
+    IImageObject* IImageObject::CreateImage(AZ::u32 width, AZ::u32 height, AZ::u32 depth, AZ::u32 maxMipCount, EPixelFormat pixelFormat)
+    {
+        return aznew CImageObject(width, height, depth, maxMipCount, pixelFormat);
+    }
+
     CImageObject::CImageObject(AZ::u32 width, AZ::u32 height, AZ::u32 maxMipCount, EPixelFormat pixelFormat)
+        : CImageObject(width, height, 1/*depth*/, maxMipCount, pixelFormat)
+    {
+    }
+
+    CImageObject::CImageObject(AZ::u32 width, AZ::u32 height, AZ::u32 depth, AZ::u32 maxMipCount, EPixelFormat pixelFormat)
         : m_pixelFormat(pixelFormat)
         , m_colMinARGB(0.0f, 0.0f, 0.0f, 0.0f)
         , m_colMaxARGB(1.0f, 1.0f, 1.0f, 1.0f)
+        , m_averageColor(0.0f, 0.0f, 0.0f, 0.0f)
         , m_averageBrightness(0.63f)
         , m_imageFlags(0)
         , m_numPersistentMips(0)
     {
-        ResetImage(width, height, maxMipCount, pixelFormat);
+        ResetImage(width, height, depth, maxMipCount, pixelFormat);
     }
 
     EPixelFormat CImageObject::GetPixelFormat() const
@@ -51,7 +64,7 @@ namespace ImageProcessingAtom
     {
         AZ_Assert(mip < (AZ::u32)m_mips.size() && m_mips[mip], "Mip doesn't exist: %d", mip);
 
-        return m_mips[mip]->m_width * m_mips[mip]->m_height;
+        return m_mips[mip]->m_width * m_mips[mip]->m_height * m_mips[mip]->m_depth;
     }
 
     AZ::u32 CImageObject::GetWidth(AZ::u32 mip) const
@@ -68,6 +81,13 @@ namespace ImageProcessingAtom
         return m_mips[mip]->m_height;
     }
 
+    AZ::u32 CImageObject::GetDepth(AZ::u32 mip) const
+    {
+        AZ_Assert(mip < (AZ::u32)m_mips.size() && m_mips[mip], "Mip doesn't exist: %d", mip);
+
+        return m_mips[mip]->m_depth;
+    }
+
     AZ::u32 CImageObject::GetMipCount() const
     {
         return (AZ::u32)m_mips.size();
@@ -75,8 +95,13 @@ namespace ImageProcessingAtom
 
     void CImageObject::ResetImage(AZ::u32 width, AZ::u32 height, AZ::u32 maxMipCount, EPixelFormat pixelFormat)
     {
+        ResetImage(width, height, 1 /* depth */, maxMipCount, pixelFormat);
+    }
+
+    void CImageObject::ResetImage(AZ::u32 width, AZ::u32 height, AZ::u32 depth, AZ::u32 maxMipCount, EPixelFormat pixelFormat)
+    {
         //check input
-        AZ_Assert(width > 0 && height > 0, "image width and height need to larger than 0. width: %d, height: %d", width, height);
+        AZ_Assert( (width > 0) && (height > 0) && (depth > 0), "image width, height and depth need to be larger than 0. width: %u, height: %u, depth: %u", width, height, depth);
 
         //clean up mipmaps
         for (AZ::u32 mip = 0; mip < AZ::u32(m_mips.size()); ++mip)
@@ -87,8 +112,9 @@ namespace ImageProcessingAtom
         m_pixelFormat = pixelFormat;
         m_colMinARGB = AZ::Color(0.0f, 0.0f, 0.0f, 0.0f);
         m_colMaxARGB = AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
+        m_averageColor = AZ::Color(0.0f, 0.0f, 0.0f, 0.0f);
         m_averageBrightness = 0.0f;
-        m_imageFlags = 0;
+        m_imageFlags = (depth > 1) ? EIF_Volumetexture : 0;
         m_numPersistentMips = 0;
         m_mips.clear();
 
@@ -96,7 +122,7 @@ namespace ImageProcessingAtom
         AZ_Assert(pFmt, "can't find pixe format info for %d", m_pixelFormat);
 
         const AZ::u32 mipCount = AZStd::min<AZ::u32>(maxMipCount,
-            CPixelFormats::GetInstance().ComputeMaxMipCount(m_pixelFormat, width, height));
+            CPixelFormats::GetInstance().ComputeMaxMipCount(m_pixelFormat, width, height, depth));
 
         m_mips.reserve(mipCount);
 
@@ -104,19 +130,13 @@ namespace ImageProcessingAtom
         {
             MipLevel* const pEntry = aznew MipLevel;
 
-            AZ::u32 localWidth = width >> mip;
-            AZ::u32 localHeight = height >> mip;
-            if (localWidth < 1)
-            {
-                localWidth = 1;
-            }
-            if (localHeight < 1)
-            {
-                localHeight = 1;
-            }
+            AZ::u32 localWidth = AZStd::max(width >> mip, 1u);
+            AZ::u32 localHeight = AZStd::max(height >> mip, 1u);
+            AZ::u32 localDepth = AZStd::max(depth >> mip, 1u);
 
             pEntry->m_width = localWidth;
             pEntry->m_height = localHeight;
+            pEntry->m_depth = localDepth;
 
             if (pFmt->bCompressed)
             {
@@ -147,6 +167,7 @@ namespace ImageProcessingAtom
         if (m_pixelFormat == other->m_pixelFormat
             && m_colMinARGB == other->m_colMinARGB
             && m_colMaxARGB == other->m_colMaxARGB
+            && m_averageColor == other->m_averageColor
             && m_averageBrightness == other->m_averageBrightness
             && m_imageFlags == other->m_imageFlags
             && m_numPersistentMips == other->m_numPersistentMips
@@ -170,7 +191,7 @@ namespace ImageProcessingAtom
         for (int mip = 0; mip < m_mips.size(); mip++)
         {
             totalSize += CPixelFormats::GetInstance().EvaluateImageDataSize(m_pixelFormat,
-                m_mips[mip]->m_width, m_mips[mip]->m_height);
+                m_mips[mip]->m_width, m_mips[mip]->m_height) * m_mips[mip]->m_depth;
         }
 
         return totalSize;
@@ -288,6 +309,7 @@ namespace ImageProcessingAtom
     {
         AZ::u32 width = GetWidth(0);
         AZ::u32 height = GetHeight(0);
+        AZ::u32 depth = GetDepth(0);
 
         if (!CPixelFormats::GetInstance().IsImageSizeValid(pixelFormat, width, height, false))
         {
@@ -296,7 +318,7 @@ namespace ImageProcessingAtom
         }
 
         maxMipCount = AZ::GetMin(maxMipCount, GetMipCount());
-        CImageObject* pRet = aznew CImageObject(width, height, maxMipCount, pixelFormat);
+        CImageObject* pRet = aznew CImageObject(width, height, depth, maxMipCount, pixelFormat);
         pRet->CopyPropertiesFrom(this);
         return pRet;
     }
@@ -354,8 +376,8 @@ namespace ImageProcessingAtom
 
     bool CImageObject::BuildSurfaceHeader(DDS_HEADER_LEGACY& header) const
     {
-        AZ::u32 dwWidth, dwMips, dwHeight;
-        GetExtent(dwWidth, dwHeight, dwMips);
+        AZ::u32 dwWidth, dwMips, dwHeight, dwDepth;
+        GetExtent(dwWidth, dwHeight, dwDepth, dwMips);
 
         if (dwMips <= 0)
         {
@@ -378,9 +400,16 @@ namespace ImageProcessingAtom
         header.dwHeaderFlags = DDSD_CAPS | DDSD_PIXELFORMAT | DDSD_WIDTH | DDSD_HEIGHT;
         header.dwWidth = dwWidth;
         header.dwHeight = dwHeight;
+        if (dwDepth > 1)
+        {
+            header.dwDepth = dwDepth;
+            header.dwSurfaceFlags |= DDS_SURFACE_FLAGS_CUBEMAP; // DDSCAPS_COMPLEX
+            header.dwCubemapFlags |= DDS_FLAGS_VOLUME; // DDSCAPS2_VOLUME
+        }
 
         if (HasImageFlags(EIF_Cubemap))
         {
+            AZ_Assert(dwDepth <= 1, "Volumetric Cubemap Textures don't exist!");
             header.dwSurfaceFlags |= DDS_SURFACE_FLAGS_CUBEMAP;
             header.dwCubemapFlags |= DDS_CUBEMAP_ALLFACES;
             //save face size instead of image size.
@@ -499,11 +528,7 @@ namespace ImageProcessingAtom
         exthead.dxgiFormat = dxgiformat;
         exthead.resourceDimension = 3; //texture2d. not used
 
-        if (HasImageFlags(EIF_Volumetexture))
-        {
-            AZ_Assert(false, "There isn't any support for volume texture");
-        }
-        else if (HasImageFlags(EIF_Cubemap))
+        if (HasImageFlags(EIF_Cubemap))
         {
             exthead.miscFlag = DDS_RESOURCE_MISC_TEXTURECUBE;
             exthead.arraySize = 6;
@@ -525,6 +550,15 @@ namespace ImageProcessingAtom
         height = m_mips[0]->m_height;
     }
 
+    void CImageObject::GetExtent(AZ::u32& width, AZ::u32& height, AZ::u32& depth, AZ::u32& mipCount) const
+    {
+        mipCount = (AZ::u32)m_mips.size();
+
+        width = m_mips[0]->m_width;
+        height = m_mips[0]->m_height;
+        depth = m_mips[0]->m_depth;
+    }
+
     AZ::u32 CImageObject::GetMipDataSize(const AZ::u32 mip) const
     {
         AZ_Assert(mip < m_mips.size(), "mip %d doesn't exist", mip);
@@ -544,7 +578,7 @@ namespace ImageProcessingAtom
     {
         AZ_Assert(mip < (AZ::u32)m_mips.size() && m_mips[mip], "requested mip doesn't exist");
 
-        return m_mips[mip]->m_rowCount * m_mips[mip]->m_pitch;
+        return m_mips[mip]->GetSize();
     }
 
 
@@ -554,10 +588,17 @@ namespace ImageProcessingAtom
         {
             return;
         }
+        uint32_t depth = m_mips[mip]->m_depth;
+        if (depth < 1)
+        {
+            depth = 1;
+            m_mips[mip]->m_depth = depth;
+        }
+
         m_mips[mip]->m_pData = mipBuf;
         m_mips[mip]->m_pitch = pitch;
-        m_mips[mip]->m_rowCount = bufSize / pitch;
-        AZ_Assert(bufSize == m_mips[mip]->m_rowCount * pitch, "Bad pitch size");
+        m_mips[mip]->m_rowCount = bufSize / pitch / depth;
+        AZ_Assert(bufSize == m_mips[mip]->m_rowCount * pitch * depth, "Bad pitch size");
     }
 
     // ARGB
@@ -582,6 +623,16 @@ namespace ImageProcessingAtom
     void CImageObject::SetAverageBrightness(const float avgBrightness)
     {
         m_averageBrightness = avgBrightness;
+    }
+
+    AZ::Color CImageObject::GetAverageColor() const
+    {
+        return m_averageColor;
+    }
+
+    void CImageObject::SetAverageColor(const AZ::Color& averageColor)
+    {
+        m_averageColor = averageColor;
     }
 
     AZ::u32 CImageObject::GetImageFlags() const
@@ -621,9 +672,9 @@ namespace ImageProcessingAtom
 
     bool CImageObject::HasPowerOfTwoSizes() const
     {
-        AZ::u32 w, h, mips;
-        GetExtent(w, h, mips);
-        return ((w & (w - 1)) == 0) && ((h & (h - 1)) == 0);
+        AZ::u32 w, h, d, mips;
+        GetExtent(w, h, d, mips);
+        return ((w & (w - 1)) == 0) && ((h & (h - 1)) == 0) && ((d & (d - 1)) == 0);
     }
 
     // use when you convert an image to another one
@@ -637,6 +688,7 @@ namespace ImageProcessingAtom
     {
         m_colMinARGB = src->m_colMinARGB;
         m_colMaxARGB = src->m_colMaxARGB;
+        m_averageColor = src->m_averageColor;
         m_averageBrightness = src->m_averageBrightness;
         m_imageFlags = src->GetImageFlags();
     }

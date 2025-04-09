@@ -61,7 +61,7 @@
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
@@ -100,6 +100,7 @@ namespace ScriptCanvasEditor
 
             for (const auto& registryPair : nodeRegistry)
             {
+                
                 const NodePaletteModelInformation* modelInformation = registryPair.second;
 
                 GraphCanvas::GraphCanvasTreeItem* parentItem = root->GetCategoryNode(modelInformation->m_categoryPath.c_str());
@@ -152,7 +153,6 @@ namespace ScriptCanvasEditor
 
         ScriptCanvasRootPaletteTreeItem::ScriptCanvasRootPaletteTreeItem(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel)
             : GraphCanvas::NodePaletteTreeItem("root", ScriptCanvasEditor::AssetEditorId)
-            , m_nodePaletteModel(nodePaletteModel)
             , m_assetModel(assetModel)
             , m_categorizer(nodePaletteModel)
         {
@@ -422,6 +422,8 @@ namespace ScriptCanvasEditor
 
         void ScriptCanvasRootPaletteTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
+            using namespace AzFramework;
+
             AZ::Data::AssetId assetId = asset.GetId();
             m_pendingAssets.erase(assetId);
 
@@ -462,19 +464,9 @@ namespace ScriptCanvasEditor
                         return;
                     }
 
+                    auto assetInfo = AssetHelpers::GetSourceInfoByProductId(assetId, asset.GetType());
 
-                    AZStd::string rootPath, absolutePath;
-                    AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-                    AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
- 
-                    AZStd::string normPath = absolutePath;
-                    AzFramework::StringFunc::Path::Normalize(normPath);
- 
-                    AZStd::string watchFolder;
-                    bool sourceInfoFound{};
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
- 
-                    if (!sourceInfoFound)
+                    if (!assetInfo.m_assetId.IsValid())
                     {
                         return;
                     }
@@ -577,8 +569,8 @@ namespace ScriptCanvasEditor
 
             if (graphInterface.IsUserNodeable())
             {
-                auto name = functionCategory->GetName().toUtf8().constData();
-                parent = parent->CreateChildNode<FunctionPaletteTreeItem>(AZStd::string::format("%s Node", name).c_str(), ScriptCanvas::Grammar::MakeFunctionSourceIdNodeable(), asset);
+                AZStd::string name = functionCategory->GetName().toUtf8().constData();
+                parent = parent->CreateChildNode<FunctionPaletteTreeItem>(name.c_str(), ScriptCanvas::Grammar::MakeFunctionSourceIdNodeable(), asset);
                 parent->SetEnabled(true);
             }
 
@@ -747,7 +739,7 @@ namespace ScriptCanvasEditor
 
         void NodePaletteDockWidget::OnNewCustomEvent()
         {
-            AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
+            AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), AZ::Uuid::CreateNull());
         }
 
         void NodePaletteDockWidget::OnActiveGraphChanged(const GraphCanvas::GraphId& graphCanvasGraphId)
@@ -855,15 +847,11 @@ namespace ScriptCanvasEditor
         {
             if (nodePaletteItem)
             {
-                AZ::IO::Path gemPath = ScriptCanvasEditorTools::Helpers::GetGemPath("ScriptCanvas");
-                gemPath = gemPath / AZ::IO::Path("TranslationAssets");
-                gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
-                gemPath.ReplaceExtension(".names");
-
+                AZ::IO::Path filePath = nodePaletteItem->GetTranslationDataPath();
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-                if (fileIO && fileIO->Exists(gemPath.c_str()))
+                if (fileIO && !filePath.empty() && fileIO->Exists(filePath.c_str()))
                 {
-                    AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
+                    AzQtComponents::ShowFileOnDesktop(filePath.c_str());
                 }
             }
         }

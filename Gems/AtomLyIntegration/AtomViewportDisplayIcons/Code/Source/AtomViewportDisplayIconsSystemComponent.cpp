@@ -20,6 +20,8 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
+#include <AtomCore/Instance/Instance.h>
+
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -54,7 +56,6 @@ namespace AZ::Render
             {
                 ec->Class<AtomViewportDisplayIconsSystemComponent>("Viewport Display Icons", "Provides an interface for drawing simple icons to the Editor viewport")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -63,18 +64,18 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ViewportDisplayIconsService"));
+        provided.push_back(AZ_CRC_CE("ViewportDisplayIconsService"));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ViewportDisplayIconsService"));
+        incompatible.push_back(AZ_CRC_CE("ViewportDisplayIconsService"));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
-        required.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
+        required.push_back(AZ_CRC_CE("RPISystem"));
+        required.push_back(AZ_CRC_CE("AtomBridgeService"));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -95,7 +96,7 @@ namespace AZ::Render
         Data::AssetBus::Handler::BusDisconnect();
         Bootstrap::NotificationBus::Handler::BusDisconnect();
 
-        auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
+        AZ::AtomBridge::PerViewportDynamicDrawInterface* perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
         if (!perViewportDynamicDrawInterface)
         {
             return;
@@ -109,113 +110,229 @@ namespace AZ::Render
         AzToolsFramework::EditorViewportIconDisplay::Unregister(this);
     }
 
-    void AtomViewportDisplayIconsSystemComponent::DrawIcon(const DrawParameters& drawParameters)
+    void AtomViewportDisplayIconsSystemComponent::AddIcon(const DrawParameters& drawParameters)
     {
-        // Ensure we have a valid viewport context & dynamic draw interface
-        auto viewportContext = RPI::ViewportContextRequests::Get()->GetViewportContextById(drawParameters.m_viewport);
+        if (drawParameters.m_viewport == AzFramework::InvalidViewportId)
+        {
+            AZ_WarningOnce("AtomViewportDisplayIconsSystemComponent", false, "Invalid viewport ID provided for icon draw request, discarded.");
+            return;
+        }
+
+        if (m_drawRequestViewportId == AzFramework::InvalidViewportId)
+        {
+            // this is the first request, initialize m_drawRequestViewportId.
+            m_drawRequestViewportId = drawParameters.m_viewport;
+        }
+        else if (m_drawRequestViewportId != drawParameters.m_viewport)
+        {
+            AZ_WarningOnce("AtomViewportDisplayIconsSystemComponent", false, "Multiple viewports provided for a single icon draw batch, discarded.");
+            return;
+        }
+        m_drawRequests[drawParameters.m_icon].emplace_back(drawParameters);
+
+        // the maximum we can batch at a time would be the largest index that can fit into a u16, (65535), and it eats 4 index values per icon
+        // since the indices go (0, 1, 2, 0, 2, 3), ie, 2 triangles making up 6 indices per quad but only using four actual index numbers (0,1,2,3) per.
+        // So we can only batch (max_uint16 / 4) icons at a time before the u16 would overflow (about 16k icons).
+        constexpr AZStd::vector<IconIndexData>::size_type maxQuads = (AZStd::numeric_limits<IconIndexData>::max() / 4) - 1;
+        if (m_drawRequests[drawParameters.m_icon].size() >= maxQuads)
+        {
+            DrawIcons(); // flush all buffers immediately.
+        }
+    }
+
+    // create a SRG specific to the viewport dimensions and icon.
+    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> AtomViewportDisplayIconsSystemComponent::CreateIconSRG(AzFramework::ViewportId viewportId, AZ::Data::Instance<AZ::RPI::Image> image)
+    {
+        using namespace AZ;
+
+        RHI::Ptr<RPI::DynamicDrawContext> dynamicDraw = GetDynamicDrawContextForViewport(m_drawRequestViewportId);
+
+        AZ::RPI::ViewportContextPtr viewportContext = RPI::ViewportContextRequests::Get()->GetViewportContextById(viewportId);
         if (viewportContext == nullptr)
         {
-            return;
-        }
-
-        auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
-        if (!perViewportDynamicDrawInterface)
-        {
-            return;
-        } 
-
-        RHI::Ptr<RPI::DynamicDrawContext> dynamicDraw =
-            perViewportDynamicDrawInterface->GetDynamicDrawContextForViewport(m_drawContextName, drawParameters.m_viewport);
-        if (dynamicDraw == nullptr)
-        {
-            return;
-        }
-
-        // Find our icon, falling back on a gray placeholder if its image is unavailable
-        AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Grey);
-        if (auto iconIt = m_iconData.find(drawParameters.m_icon); iconIt != m_iconData.end())
-        {
-            auto& iconData = iconIt->second;
-            if (iconData.m_image)
-            {
-                image = iconData.m_image;
-            }
-        }
-        else
-        {
-            return;
+            return {};
         }
 
         const auto [viewportWidth, viewportHeight] = viewportContext->GetViewportSize();
         const auto viewportSize = AzFramework::ScreenSize(viewportWidth, viewportHeight);
 
-        // Initialize our shader
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
         drawSrg->SetConstant(m_viewportSizeIndex, AzFramework::Vector2FromScreenSize(viewportSize));
         drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView());
         drawSrg->Compile();
+        return drawSrg;
+    }
 
+    RHI::Ptr<RPI::DynamicDrawContext> AtomViewportDisplayIconsSystemComponent::GetDynamicDrawContextForViewport(AzFramework::ViewportId viewportId)
+    {
+        AZ::AtomBridge::PerViewportDynamicDrawInterface* perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
+        if (!perViewportDynamicDrawInterface)
+        {
+            return {};
+        }
+        return perViewportDynamicDrawInterface->GetDynamicDrawContextForViewport(m_drawContextName, viewportId);
+    }
+
+    AZ::Data::Instance<AZ::RPI::Image> AtomViewportDisplayIconsSystemComponent::GetImageForIconId(IconId iconId)
+    {
+        if (auto iconIt = m_iconData.find(iconId); iconIt != m_iconData.end())
+        {
+            auto& iconData = iconIt->second;
+            if (iconData.m_image)
+            {
+                return iconData.m_image;
+            }
+        }
+
+        return AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Grey);
+    }
+
+    void AtomViewportDisplayIconsSystemComponent::DrawIcons()
+    {
+        // the strategy for drawing icons here is to do the expensive stuff once, and then draw all of the icons using the same texture
+        // in one go.
+
+        // To achieve this, we initialize all the variables that are per-viewport just one time in this function,
+        // then we initialize the variables that are per-texture just once per texture,
+        // then we build the vertex list once per texture by accumulating all the quads.
+        // Note that the index cache is a special case - becuase the indexes for quads are always 0,1,2, 0,2,3, etc, we don't need to update
+        // them every frame, just make sure that the index cache has ENOUGH initialized data for the amount of quads we intend to render.
+        // This allows us to re-use the index cache even between viewports and textures, the only rapidly changing data is the vertex data,
+        // and we store that in a vector so that its memory stays stable.
+
+        using ViewportRequestBus = AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
+        
+        if (m_drawRequestViewportId == AzFramework::InvalidViewportId)
+        {
+            // its possible for the hash map to have entries in it (since they represent texture slots) with no currently rendering quads.
+            return;
+        }
+
+        if (m_drawRequests.empty())
+        {
+            return;
+        }
+
+        AZ_Assert(m_drawRequestViewportId != AzFramework::InvalidViewportId, "Viewport ID is somehow invalid despite icons being in the list.");
+
+        RHI::Ptr<RPI::DynamicDrawContext> dynamicDraw = GetDynamicDrawContextForViewport(m_drawRequestViewportId);
+        AZ::RPI::ViewportContextPtr viewportContext = RPI::ViewportContextRequests::Get()->GetViewportContextById(m_drawRequestViewportId);
+        if ((viewportContext == nullptr) || (dynamicDraw == nullptr))
+        {
+            // this is not an error or assert as we might be running headlessly.
+            m_drawRequests.clear();
+            m_drawRequestViewportId = AzFramework::InvalidViewportId;
+            return;
+        }
         // Scale icons by screen DPI
         float scalingFactor = 1.0f;
+        ViewportRequestBus::EventResult(scalingFactor, m_drawRequestViewportId, &ViewportRequestBus::Events::DeviceScalingFactor);
+
+        const auto [viewportWidth, viewportHeight] = viewportContext->GetViewportSize();
+        const auto viewportSize = AzFramework::ScreenSize(viewportWidth, viewportHeight);
+
+        for (auto &[iconId, drawIconRequests] : m_drawRequests)
         {
-            using ViewportRequestBus = AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
-            ViewportRequestBus::EventResult(
-                scalingFactor, drawParameters.m_viewport, &ViewportRequestBus::Events::DeviceScalingFactor);
+            // Find our icon, falling back on a gray placeholder if its image is unavailable
+            if (drawIconRequests.empty())
+            {
+                continue;
+            }
+
+            AZ::Data::Instance<AZ::RPI::Image> image = GetImageForIconId(iconId);
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = CreateIconSRG(m_drawRequestViewportId, image);
+
+            // add all of the icons to draw buffers.
+            m_vertexCache.clear();
+            m_vertexCache.reserve(drawIconRequests.size() * 4);
+            
+            float minZ = aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::max());
+            float maxZ = aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::min());
+
+            for (const DrawParameters& drawParameters : drawIconRequests)
+            {
+                AZ::Vector3 screenPosition;
+                if (drawParameters.m_positionSpace == CoordinateSpace::ScreenSpace)
+                {
+                    screenPosition = drawParameters.m_position;
+                }
+                else if (drawParameters.m_positionSpace == CoordinateSpace::WorldSpace)
+                {
+                    // Calculate the ndc point (0.0-1.0 range) including depth
+                    const AZ::Vector3 ndcPoint = AzFramework::WorldToScreenNdc(
+                        drawParameters.m_position, viewportContext->GetCameraViewMatrixAsMatrix3x4(),
+                        viewportContext->GetCameraProjectionMatrix());
+
+                    // Calculate our screen space position using the viewport size
+                    // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
+                    const AzFramework::ScreenPoint screenPoint = AzFramework::ScreenPointFromNdc(AZ::Vector3ToVector2(ndcPoint), viewportSize);
+                    screenPosition = AzFramework::Vector3FromScreenPoint(screenPoint, ndcPoint.GetZ());
+                }
+                minZ = AZStd::GetMin(minZ, screenPosition.GetZ());
+                maxZ = AZStd::GetMin(maxZ, screenPosition.GetZ());
+
+                // Create a vertex offset from the position to draw from based on the icon size
+                // Vertex positions are in screen space coordinates
+                auto createVertex = [&](float offsetX, float offsetY, float u, float v) -> IconVertexData
+                {
+                    IconVertexData vertex;
+                    screenPosition.StoreToFloat3(vertex.m_position);
+                    vertex.m_position[0] += offsetX * drawParameters.m_size.GetX() * scalingFactor;
+                    vertex.m_position[1] += offsetY * drawParameters.m_size.GetY() * scalingFactor;
+                    vertex.m_color = drawParameters.m_color.ToU32();
+                    vertex.m_uv[0] = u;
+                    vertex.m_uv[1] = v;
+                    return vertex;
+                };
+
+                m_vertexCache.emplace_back(createVertex(-0.5f, -0.5f, 0.f, 0.f));
+                m_vertexCache.emplace_back(createVertex(0.5f,  -0.5f, 1.f, 0.f));
+                m_vertexCache.emplace_back(createVertex(0.5f,  0.5f,  1.f, 1.f));
+                m_vertexCache.emplace_back(createVertex(-0.5f, 0.5f,  0.f, 1.f));
+            }
+
+            if (!m_vertexCache.empty())
+            {
+                // the indexes are always the same (0,1,2,0,2,3, 4,5,6,4,6,7, etc) and thus don't need to be updated unless more quads are added
+                using IndexCacheSize = AZStd::vector<IconIndexData>::size_type;
+
+                IndexCacheSize numQuadsInVertexBuffer = m_vertexCache.size() / 4;
+                IndexCacheSize numIndicesRequired = numQuadsInVertexBuffer * 6;
+
+                IndexCacheSize currentIndexCacheSize = m_indexCache.size();
+                if (currentIndexCacheSize < numIndicesRequired)
+                {
+                    m_indexCache.resize_no_construct(numIndicesRequired);
+                    IconIndexData baseIndex = aznumeric_cast<IconIndexData>(currentIndexCacheSize / 6);
+                    while (currentIndexCacheSize < numIndicesRequired)
+                    {
+                        m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 0;
+                        m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 1;
+                        m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 2;
+                        m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 0;
+                        m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 2;
+                        m_indexCache[currentIndexCacheSize++] = (baseIndex * 4) + 3;
+                        ++baseIndex;
+                    }
+                }
+
+                dynamicDraw->SetSortKey((maxZ - minZ) * 0.5f  * aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::max()));
+                dynamicDraw->DrawIndexed( m_vertexCache.data(), static_cast<uint32_t>(m_vertexCache.size()),
+                                         m_indexCache.data(), static_cast<uint32_t>(numIndicesRequired), RHI::IndexFormat::Uint16,
+                    drawSrg);
+            }
+            drawIconRequests.clear(); // note - we don't remove the key, we just clear the vector and keep the memory allocated.
         }
+        m_drawRequestViewportId = AzFramework::InvalidViewportId;
+    }
 
-        AZ::Vector3 screenPosition;
-        if (drawParameters.m_positionSpace == CoordinateSpace::ScreenSpace)
-        {
-            screenPosition = drawParameters.m_position;
-        }
-        else if (drawParameters.m_positionSpace == CoordinateSpace::WorldSpace)
-        {
-            // Calculate the ndc point (0.0-1.0 range) including depth
-            const AZ::Vector3 ndcPoint = AzFramework::WorldToScreenNdc(
-                drawParameters.m_position, viewportContext->GetCameraViewMatrixAsMatrix3x4(),
-                viewportContext->GetCameraProjectionMatrix());
 
-            // Calculate our screen space position using the viewport size
-            // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
-            const AzFramework::ScreenPoint screenPoint = AzFramework::ScreenPointFromNdc(AZ::Vector3ToVector2(ndcPoint), viewportSize);
-            screenPosition = AzFramework::Vector3FromScreenPoint(screenPoint, ndcPoint.GetZ());
-        }
-
-        struct Vertex
-        {
-            float m_position[3];
-            AZ::u32 m_color;
-            float m_uv[2];
-        };
-        using Indice = AZ::u16;
-
-        // Create a vertex offset from the position to draw from based on the icon size
-        // Vertex positions are in screen space coordinates
-        auto createVertex = [&](float offsetX, float offsetY, float u, float v) -> Vertex
-        {
-            Vertex vertex;
-            screenPosition.StoreToFloat3(vertex.m_position);
-            vertex.m_position[0] += offsetX * drawParameters.m_size.GetX() * scalingFactor;
-            vertex.m_position[1] += offsetY * drawParameters.m_size.GetY() * scalingFactor;
-            vertex.m_color = drawParameters.m_color.ToU32();
-            vertex.m_uv[0] = u;
-            vertex.m_uv[1] = v;
-            return vertex;
-        };
-
-        AZStd::array<Vertex, 4> vertices = {
-            createVertex(-0.5f, -0.5f, 0.f, 0.f),
-            createVertex(0.5f,  -0.5f, 1.f, 0.f),
-            createVertex(0.5f,  0.5f,  1.f, 1.f),
-            createVertex(-0.5f, 0.5f,  0.f, 1.f)
-        };
-        AZStd::array<Indice, 6> indices = {0, 1, 2, 0, 2, 3};
-
-        dynamicDraw->SetSortKey(
-            aznumeric_cast<int64_t>(screenPosition.GetZ() * aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::max())));
-        dynamicDraw->DrawIndexed(
-            &vertices, static_cast<uint32_t>(vertices.size()), &indices, static_cast<uint32_t>(indices.size()), RHI::IndexFormat::Uint16,
-            drawSrg);
+    void AtomViewportDisplayIconsSystemComponent::DrawIcon(const DrawParameters& drawParameters)
+    {
+        AddIcon(drawParameters);
+        // Be careful when using this method as it does not support batching.
+        // Prefer using AddIcon, AddIcon, AddIcon, ..., DrawIcons() to render them in a batch.
+        DrawIcons();
     }
 
     QString AtomViewportDisplayIconsSystemComponent::FindAssetPath(const QString& path) const

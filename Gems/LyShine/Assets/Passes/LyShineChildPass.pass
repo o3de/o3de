@@ -15,7 +15,16 @@
                 {
                     "Name": "DepthInputOutput",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil"
+                        },
+                        "LoadAction": "None",
+                        "LoadActionStencil": "Clear",
+                        "StoreAction": "None",
+                        "StoreActionStencil": "DontCare"
+                    }
                 }
             ],
             "Connections": [
@@ -36,8 +45,8 @@
             ],
             "PassData": {
                 "$type": "RasterPassData",
-                "DrawListTag": "uicanvas",
-                "PipelineViewTag": "MainCamera"
+                "DrawListTag": "lyshinepass",
+                "BindViewSrg": true
             }
         }
     }

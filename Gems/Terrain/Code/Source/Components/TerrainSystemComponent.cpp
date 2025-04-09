@@ -16,6 +16,7 @@
 #include <TerrainSystem/TerrainSystem.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
+#include <TerrainRenderer/Passes/TerrainClipmapDebugPass.h>
 
 namespace Terrain
 {
@@ -30,7 +31,6 @@ namespace Terrain
             {
                 ec->Class<TerrainSystemComponent>("Terrain", "The Terrain System Component enables Terrain.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;
             }
@@ -49,6 +49,7 @@ namespace Terrain
 
     void TerrainSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void TerrainSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -76,6 +77,7 @@ namespace Terrain
         // Register terrain system related passes
         passSystem->AddPassCreator(AZ::Name("TerrainMacroClipmapGenerationPass"), &TerrainMacroClipmapGenerationPass::Create);
         passSystem->AddPassCreator(AZ::Name("TerrainDetailClipmapGenerationPass"), &TerrainDetailClipmapGenerationPass::Create);
+        passSystem->AddPassCreator(AZ::Name("TerrainClipmapDebugPass"), &TerrainClipmapDebugPass::Create);
     }
 
     void TerrainSystemComponent::Deactivate()

@@ -21,7 +21,7 @@ namespace AZ
     class JobContext
     {
     public:
-        AZ_CLASS_ALLOCATOR(JobContext, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(JobContext, ThreadPoolAllocator);
 
         JobContext(JobManager& jobManager)
             : m_jobManager(jobManager)

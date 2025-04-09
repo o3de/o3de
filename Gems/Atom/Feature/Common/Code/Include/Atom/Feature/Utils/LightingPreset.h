@@ -72,10 +72,10 @@ namespace AZ
         struct LightingPreset final
         {
             AZ_TYPE_INFO(AZ::Render::LightingPreset, "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}");
-            AZ_CLASS_ALLOCATOR(LightingPreset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LightingPreset, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
-            static constexpr const char* Extension = "lightingpreset.azasset";
+            static constexpr char const Extension[] = "lightingpreset.azasset";
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblDiffuseImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblSpecularImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_skyboxImageAsset;

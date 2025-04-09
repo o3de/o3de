@@ -1,0 +1,280 @@
+ProductName: single_mesh_multiple_materials.fbx.dbgsg
+debugSceneGraphVersion: 1
+single_mesh_multiple_materials
+Node Name: RootNode
+Node Path: RootNode
+Node Type: RootBoneData
+	WorldTransform:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: Torus
+Node Path: RootNode.Torus
+Node Type: MeshData
+	Positions: Count 2304. Hash: 12560656679477605282
+	Normals: Count 2304. Hash: 14915939258818888021
+	FaceList: Count 1152. Hash: 3035560221708475304
+	FaceMaterialIds: Count 1152. Hash: 2033667258170256242
+
+Node Name: Torus_single_mesh_multiple_materials_optimized
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized
+Node Type: MeshData
+	Positions: Count 2304. Hash: 12560656679477605282
+	Normals: Count 2304. Hash: 14915939258818888021
+	FaceList: Count 1152. Hash: 3035560221708475304
+	FaceMaterialIds: Count 1152. Hash: 2033667258170256242
+
+Node Name: transform
+Node Path: RootNode.Torus.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.Torus.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UV0
+Node Path: RootNode.Torus.UV0
+Node Type: MeshVertexUVData
+	UVs: Count 2304. Hash: 6069930558565069665
+	UVCustomName: UV0
+
+Node Name: OrangeMaterial
+Node Path: RootNode.Torus.OrangeMaterial
+Node Type: MaterialData
+	MaterialName: OrangeMaterial
+	UniqueId: 10937477720113828524
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.113346,  0.000000>
+	SpecularColor: < 0.800000,  0.113346,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: SecondTextureMaterial
+Node Path: RootNode.Torus.SecondTextureMaterial
+Node Type: MaterialData
+	MaterialName: SecondTextureMaterial
+	UniqueId: 16601413836225607467
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.800000,  0.800000,  0.800000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: OneMeshMultipleMaterials/FBXSecondTestTexture.png
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: OneMeshMultipleMaterials/FBXSecondTestTexture.png
+
+Node Name: FirstTextureMaterial
+Node Path: RootNode.Torus.FirstTextureMaterial
+Node Type: MaterialData
+	MaterialName: FirstTextureMaterial
+	UniqueId: 2580020563915538382
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.800000,  0.800000,  0.800000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: OneMeshMultipleMaterials/FBXTestTexture.png
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: OneMeshMultipleMaterials/FBXTestTexture.png
+
+Node Name: TangentSet_0
+Node Path: RootNode.Torus.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 2304. Hash: 17641066831235827929
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Torus.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 2304. Hash: 6274616552656695154
+	GenerationMethod: 1
+
+Node Name: custom_properties
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UV0
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.UV0
+Node Type: MeshVertexUVData
+	UVs: Count 2304. Hash: 6069930558565069665
+	UVCustomName: UV0
+
+Node Name: TangentSet_0
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 2304. Hash: 17641066831235827929
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 2304. Hash: 6274616552656695154
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: OrangeMaterial
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.OrangeMaterial
+Node Type: MaterialData
+	MaterialName: OrangeMaterial
+	UniqueId: 10937477720113828524
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.113346,  0.000000>
+	SpecularColor: < 0.800000,  0.113346,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: SecondTextureMaterial
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.SecondTextureMaterial
+Node Type: MaterialData
+	MaterialName: SecondTextureMaterial
+	UniqueId: 16601413836225607467
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.800000,  0.800000,  0.800000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: OneMeshMultipleMaterials/FBXSecondTestTexture.png
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: OneMeshMultipleMaterials/FBXSecondTestTexture.png
+
+Node Name: FirstTextureMaterial
+Node Path: RootNode.Torus_single_mesh_multiple_materials_optimized.FirstTextureMaterial
+Node Type: MaterialData
+	MaterialName: FirstTextureMaterial
+	UniqueId: 2580020563915538382
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.800000,  0.800000,  0.800000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: OneMeshMultipleMaterials/FBXTestTexture.png
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: OneMeshMultipleMaterials/FBXTestTexture.png
+

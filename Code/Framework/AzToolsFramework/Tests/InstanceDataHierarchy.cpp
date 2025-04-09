@@ -39,7 +39,7 @@ namespace UnitTest
         struct SubData
         {
             AZ_TYPE_INFO(SubData, "{A0165FCA-A311-4FED-B36A-DC5FD2AF2857}");
-            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator);
 
             SubData() {}
             SubData(int v) : m_int(v) {}
@@ -149,7 +149,7 @@ namespace UnitTest
     * InstanceDataHierarchyBasicTest
     */
     class InstanceDataHierarchyBasicTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         InstanceDataHierarchyBasicTest()
@@ -389,11 +389,11 @@ namespace UnitTest
                 // note: reflection serialization context values are used for lookup (crcs stored)
                 //       if a more specific address is required, start from field and work up to structures/components etc
                 //       (see addrSubDataInt below as an example)
-                InstanceDataNode::Address addrFloat = { AZ_CRC("Float") };
-                InstanceDataNode::Address addrString = { AZ_CRC("String") };
-                InstanceDataNode::Address addrNormalContainer = { AZ_CRC("NormalContainer") };
-                InstanceDataNode::Address addrSubData = { AZ_CRC("SubData") };
-                InstanceDataNode::Address addrSubDataInt = { AZ_CRC("Int"), AZ_CRC("SubData") };
+                InstanceDataNode::Address addrFloat = { AZ_CRC_CE("Float") };
+                InstanceDataNode::Address addrString = { AZ_CRC_CE("String") };
+                InstanceDataNode::Address addrNormalContainer = { AZ_CRC_CE("NormalContainer") };
+                InstanceDataNode::Address addrSubData = { AZ_CRC_CE("SubData") };
+                InstanceDataNode::Address addrSubDataInt = { AZ_CRC_CE("Int"), AZ_CRC_CE("SubData") };
 
                 // find InstanceDataNodes using partial address
                 InstanceDataNode* foundFloat = idhTestComponent.FindNodeByPartialAddress(addrFloat);
@@ -410,7 +410,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(foundSubDataInt);
 
                 // check a case where we know the address is incorrect and we will not find an InstanceDataNode
-                InstanceDataNode::Address addrInvalid = { AZ_CRC("INVALID") };
+                InstanceDataNode::Address addrInvalid = { AZ_CRC_CE("INVALID") };
                 InstanceDataNode* foundInvalid = idhTestComponent.FindNodeByPartialAddress(addrInvalid);
                 AZ_TEST_ASSERT(foundInvalid == nullptr);
 
@@ -473,7 +473,7 @@ namespace UnitTest
     static AZ::u8 s_persistentIdCounter = 0;
 
     class InstanceDataHierarchyCopyContainerChangesTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -513,7 +513,7 @@ namespace UnitTest
         class StructOuter
         {
         public:
-            AZ_TYPE_INFO(StructInner, "{FEDCED26-8D5A-41CB-BA97-AB687CF51FC6}");
+            AZ_TYPE_INFO(StructOuter, "{FEDCED26-8D5A-41CB-BA97-AB687CF51FC6}");
 
             AZStd::vector<StructInner> m_vector;
 
@@ -652,14 +652,14 @@ namespace AZ
 namespace UnitTest
 {
     class InstanceDataHierarchyEnumContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class EnumContainer
         {
         public:
             AZ_TYPE_INFO(EnumContainer, "{7F9EED53-7587-4616-B4A7-10B3AF95475E}");
-            AZ_CLASS_ALLOCATOR(EnumContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EnumContainer, AZ::SystemAllocator);
 
             TestEnum m_enum;
             AZStd::vector<TestEnum> m_enumVector;
@@ -702,8 +702,8 @@ namespace UnitTest
             idh.AddRootInstance(&ec, azrtti_typeid<EnumContainer>());
             idh.Build(&serializeContext, 0);
 
-            InstanceDataNode* enumNode = idh.FindNodeByPartialAddress({ AZ_CRC("Enum") });
-            InstanceDataNode* enumVectorNode = idh.FindNodeByPartialAddress({ AZ_CRC("EnumVector") });
+            InstanceDataNode* enumNode = idh.FindNodeByPartialAddress({ AZ_CRC_CE("Enum") });
+            InstanceDataNode* enumVectorNode = idh.FindNodeByPartialAddress({ AZ_CRC_CE("EnumVector") });
 
             ASSERT_NE(enumNode, nullptr);
             ASSERT_NE(enumVectorNode, nullptr);
@@ -711,7 +711,7 @@ namespace UnitTest
             auto getEnumData = [&ec](const AzToolsFramework::InstanceDataNode& node) -> Uuid
             {
                 Uuid id = Uuid::CreateNull();
-                auto attribute = node.GetElementMetadata()->FindAttribute(AZ_CRC("EnumType"));
+                auto attribute = node.GetElementMetadata()->FindAttribute(AZ_CRC_CE("EnumType"));
                 auto attributeData = azrtti_cast<AttributeData<AZ::TypeId>*>(attribute);
                 if (attributeData)
                 {
@@ -738,7 +738,7 @@ namespace UnitTest
         struct SubData
         {
             AZ_TYPE_INFO(SubData, "{983316B5-17C0-476E-9CEB-CA749B3ABE5D}");
-            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator);
 
             SubData() {}
             explicit SubData(int v) : m_int(v) {}
@@ -814,7 +814,7 @@ namespace UnitTest
         SubData m_subGroupForToggle;
     };
 
-    class InstanceDataHierarchyGroupTestFixture : public AllocatorsFixture
+    class InstanceDataHierarchyGroupTestFixture : public LeakDetectionFixture
     {
     public:
         InstanceDataHierarchyGroupTestFixture() = default;
@@ -826,12 +826,10 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             using AzToolsFramework::InstanceDataHierarchy;
             using AzToolsFramework::InstanceDataNode;
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
             m_serializeContext.reset(aznew AZ::SerializeContext());
             m_serializeContext.get()->CreateEditContext();
@@ -870,20 +868,19 @@ namespace UnitTest
             m_serializeContext.reset();
             testEntity1.reset();
             delete instanceDataHierarchy;
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
     class InstanceDataHierarchyKeyedContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class CustomKeyWithoutStringRepresentation
         {
         public:
             AZ_TYPE_INFO(CustomKeyWithoutStringRepresentation, "{54E838DE-1A8D-4BBA-BD3A-D41886C439A9}");
-            AZ_CLASS_ALLOCATOR(CustomKeyWithoutStringRepresentation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomKeyWithoutStringRepresentation, AZ::SystemAllocator);
 
             int m_value = 0;
 
@@ -897,7 +894,7 @@ namespace UnitTest
         {
         public:
             AZ_TYPE_INFO(CustomKeyWithStringRepresentation, "{51F7FB74-2991-4CC9-850A-8D5AA0732282}");
-            AZ_CLASS_ALLOCATOR(CustomKeyWithStringRepresentation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomKeyWithStringRepresentation, AZ::SystemAllocator);
 
             static const char* KeyPrefix() { return "CustomKey"; }
 
@@ -919,7 +916,7 @@ namespace UnitTest
 
         public:
             AZ_TYPE_INFO(KeyedContainer, "{53A7416F-2D84-4256-97B0-BE4B6EF6DBAF}");
-            AZ_CLASS_ALLOCATOR(KeyedContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(KeyedContainer, AZ::SystemAllocator);
 
             AZStd::map<AZStd::string, float> m_map;
             AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
@@ -1020,14 +1017,14 @@ namespace UnitTest
             idh.Build(&serializeContext, 0);
 
             AZStd::unordered_map<AZ::u32, AZStd::unique_ptr<KeyTestData>> keyTestData;
-            keyTestData[AZ_CRC("map")] = TypedKeyTestData<AZStd::string>::Create({"A", "B", "lorem ipsum"});
-            keyTestData[AZ_CRC("unorderedMap")] = TypedKeyTestData<AZStd::pair<int, double>>::Create({ {5, 1.0}, {5, -2.0} });
-            keyTestData[AZ_CRC("set")] = TypedKeyTestData<int>::Create({2, 4, -255, 999});
-            keyTestData[AZ_CRC("unorderedSet")] = TypedKeyTestData<AZ::u64>::Create({500000, 9, 0, 42, 42});
-            keyTestData[AZ_CRC("multiMap")] = TypedKeyTestData<int>::Create({-1, 2, -3, 4, -5, 6});
-            keyTestData[AZ_CRC("nestedMap")] = TypedKeyTestData<int>::Create({1, 10, 100, 1000});
-            keyTestData[AZ_CRC("uncollapsableMap")] = TypedKeyTestData<CustomKeyWithoutStringRepresentation>::Create({{0}, {1}});
-            keyTestData[AZ_CRC("collapsableMap")] = TypedKeyTestData<CustomKeyWithStringRepresentation>::Create({{0}, {1}});
+            keyTestData[AZ_CRC_CE("map")] = TypedKeyTestData<AZStd::string>::Create({"A", "B", "lorem ipsum"});
+            keyTestData[AZ_CRC_CE("unorderedMap")] = TypedKeyTestData<AZStd::pair<int, double>>::Create({ {5, 1.0}, {5, -2.0} });
+            keyTestData[AZ_CRC_CE("set")] = TypedKeyTestData<int>::Create({2, 4, -255, 999});
+            keyTestData[AZ_CRC_CE("unorderedSet")] = TypedKeyTestData<AZ::u64>::Create({500000, 9, 0, 42, 42});
+            keyTestData[AZ_CRC_CE("multiMap")] = TypedKeyTestData<int>::Create({-1, 2, -3, 4, -5, 6});
+            keyTestData[AZ_CRC_CE("nestedMap")] = TypedKeyTestData<int>::Create({1, 10, 100, 1000});
+            keyTestData[AZ_CRC_CE("uncollapsableMap")] = TypedKeyTestData<CustomKeyWithoutStringRepresentation>::Create({{0}, {1}});
+            keyTestData[AZ_CRC_CE("collapsableMap")] = TypedKeyTestData<CustomKeyWithStringRepresentation>::Create({{0}, {1}});
 
             auto insertKeysIntoContainer = [&serializeContext](AzToolsFramework::InstanceDataNode& node, KeyTestData* keysToInsert)
             {
@@ -1042,7 +1039,7 @@ namespace UnitTest
                 ASSERT_NE(associativeInterface, nullptr);
                 auto key = associativeInterface->CreateKey();
 
-                auto attribute = containerClassElement ->FindAttribute(AZ_CRC("KeyType"));
+                auto attribute = containerClassElement ->FindAttribute(AZ_CRC_CE("KeyType"));
                 auto attributeData = azrtti_cast<AttributeData<AZ::TypeId>*>(attribute);
                 ASSERT_NE(attributeData, nullptr);
                 auto keyId = attributeData->Get(node.FirstInstance());
@@ -1073,17 +1070,17 @@ namespace UnitTest
             for (InstanceDataNode& node : idh.GetChildren())
             {
                 const AZ::SerializeContext::ClassElement* element = node.GetElementMetadata();
-                if (element->m_nameCrc == AZ_CRC("nestedMap"))
+                if (element->m_nameCrc == AZ_CRC_CE("nestedMap"))
                 {
                     auto children = node.GetChildren();
                     // We should have entries for each inserted key in the nested map
-                    EXPECT_EQ(children.size(), keyTestData[AZ_CRC("nestedMap")]->NumberOfKeys());
+                    EXPECT_EQ(children.size(), keyTestData[AZ_CRC_CE("nestedMap")]->NumberOfKeys());
                     for (AzToolsFramework::InstanceDataNode& child : children)
                     {
                         insertKeysIntoContainer(child.GetChildren().back(), nestedKeys.get());
                     }
                 }
-                else if (element->m_nameCrc == AZ_CRC("collapsableMap"))
+                else if (element->m_nameCrc == AZ_CRC_CE("collapsableMap"))
                 {
                     auto children = node.GetChildren();
                     EXPECT_GT(children.size(), 0);
@@ -1094,7 +1091,7 @@ namespace UnitTest
                         EXPECT_NE(name.find(CustomKeyWithStringRepresentation::KeyPrefix()), AZStd::string::npos);
                     }
                 }
-                else if (element->m_nameCrc == AZ_CRC("uncollapsableMap"))
+                else if (element->m_nameCrc == AZ_CRC_CE("uncollapsableMap"))
                 {
                     auto children = node.GetChildren();
                     EXPECT_GT(children.size(), 0);
@@ -1108,8 +1105,8 @@ namespace UnitTest
                         auto valueNode = *keyValueChildrenIterator;
 
                         // Ensure key/value pairs that can't be collapsed get labels based on type
-                        EXPECT_EQ(AZ::Crc32(keyNode.GetElementEditMetadata()->m_name), AZ_CRC("Key<CustomKeyWithoutStringRepresentation>"));
-                        EXPECT_EQ(AZ::Crc32(valueNode.GetElementEditMetadata()->m_name), AZ_CRC("Value<int>"));
+                        EXPECT_EQ(AZ::Crc32(keyNode.GetElementEditMetadata()->m_name), AZ_CRC_CE("Key<CustomKeyWithoutStringRepresentation>"));
+                        EXPECT_EQ(AZ::Crc32(valueNode.GetElementEditMetadata()->m_name), AZ_CRC_CE("Value<int>"));
                     }
                 }
             }
@@ -1120,7 +1117,7 @@ namespace UnitTest
             for (InstanceDataNode& node : idh.GetChildren())
             {
                 const AZ::SerializeContext::ClassElement* element = node.GetElementMetadata();
-                if (element->m_nameCrc == AZ_CRC("map") || element->m_nameCrc == AZ_CRC("unorderedMap") || element->m_nameCrc == AZ_CRC("nestedMap"))
+                if (element->m_nameCrc == AZ_CRC_CE("map") || element->m_nameCrc == AZ_CRC_CE("unorderedMap") || element->m_nameCrc == AZ_CRC_CE("nestedMap"))
                 {
                     for (InstanceDataNode& pair : node.GetChildren())
                     {
@@ -1132,14 +1129,14 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyCompareAssociativeContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class Container
         {
         public:
             AZ_TYPE_INFO(Container, "{9920B5BD-F21C-4353-9449-9C3FD38E50FC}");
-            AZ_CLASS_ALLOCATOR(Container, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Container, AZ::SystemAllocator);
 
             AZStd::unordered_map<AZStd::string, int> m_map;
 
@@ -1153,8 +1150,6 @@ namespace UnitTest
         void run()
         {
             using namespace AzToolsFramework;
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
             AZ::SerializeContext serializeContext;
             Container::Reflect(serializeContext);
@@ -1231,38 +1226,44 @@ namespace UnitTest
             testComparison(c1, c3, {"D", "[0]", "[1]"}, {"B", "C"}, {"A"});
             testComparison(c3, c1, {"B", "C", "[0]", "[1]"}, {"D"}, {"A"});
             testComparison(c1, c2, {}, {}, {"A", "B", "C"});
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
     };
 
 
     class InstanceDataHierarchyElementTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class UIElementContainer
+            : public AZ::Component
         {
         public:
-            AZ_TYPE_INFO(UIElementContainer, "{83B7BDFD-8B60-4C52-B7C5-BF3C824620F5}");
-            AZ_CLASS_ALLOCATOR(UIElementContainer, AZ::SystemAllocator, 0);
+            AZ_COMPONENT(UIElementContainer, "{83B7BDFD-8B60-4C52-B7C5-BF3C824620F5}", AZ::Component);
 
             int m_data;
 
-            static void Reflect(AZ::SerializeContext& context)
+            static void Reflect(AZ::ReflectContext* context)
             {
-                context.Class<UIElementContainer>()
-                    ->Field("data", &UIElementContainer::m_data);
-
-                if (auto editContext = context.GetEditContext())
+                if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
                 {
-                    editContext->Class<UIElementContainer>("Test", "")
-                        ->UIElement("TestHandler", "UIElement")
-                        ->DataElement(nullptr, &UIElementContainer::m_data)
-                        ->UIElement(AZ_CRC("TestHandler2"), "UIElement2")
-                    ;
+                    serialize->Class<UIElementContainer, AZ::Component>()
+                        ->Field("data", &UIElementContainer::m_data)
+                        ;
+
+                    if (auto editContext = serialize->GetEditContext())
+                    {
+                        editContext->Class<UIElementContainer>("Test", "")
+                            ->UIElement("TestHandler", "UIElement")
+                            ->DataElement(nullptr, &UIElementContainer::m_data)
+                            ->UIElement(AZ_CRC_CE("TestHandler2"), "UIElement2")
+                            ;
+                    }
                 }
             }
+
+            // AZ::Component overrides ...
+            void Activate() override {}
+            void Deactivate() override {}
         };
 
         void run()
@@ -1271,7 +1272,8 @@ namespace UnitTest
 
             AZ::SerializeContext serializeContext;
             serializeContext.CreateEditContext();
-            UIElementContainer::Reflect(serializeContext);
+            AZ::Entity::Reflect(&serializeContext);
+            UIElementContainer::Reflect(&serializeContext);
 
             UIElementContainer test;
             InstanceDataHierarchy idh;
@@ -1279,34 +1281,140 @@ namespace UnitTest
             idh.Build(&serializeContext, 0);
 
             auto children = idh.GetChildren();
-            ASSERT_EQ(children.size(), 3);
+            ASSERT_EQ(children.size(), 4);
             auto it = children.begin();
 
+            // The first child will be the AZ::Component Id data that isn't
+            // exposed to the EditContext, so it has no edit metadata
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "BaseClass1");
+            EXPECT_EQ(it->GetElementEditMetadata(), nullptr);
+
+            ++it;
             Crc32 uiHandler = 0;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
-            EXPECT_EQ(uiHandler, AZ_CRC("TestHandler"));
+            EXPECT_EQ(uiHandler, AZ_CRC_CE("TestHandler"));
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement");
-            EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement"));
+            EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC_CE("UIElement"));
 
+            // The "data" element is in between the two UIElements
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "data");
+
+            ++it;
             uiHandler = 0;
-            ++it;
-            ++it;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
-            EXPECT_EQ(uiHandler, AZ_CRC("TestHandler2"));
+            EXPECT_EQ(uiHandler, AZ_CRC_CE("TestHandler2"));
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement2");
-            EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement2"));
+            EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC_CE("UIElement2"));
+        }
+    };
+
+    class InstanceDataHierarchyEndGroupTest
+        : public LeakDetectionFixture
+    {
+    public:
+        class EndGroupContainer
+            : public AZ::Component
+        {
+        public:
+            AZ_COMPONENT(EndGroupContainer, "{0CFC7838-9B01-4E25-8932-1C1EE4FCEC77}", AZ::Component);
+
+            int m_rootData;
+            bool m_otherRootData;
+            int m_group1Data;
+            int m_group2Data;
+            int m_finalRootData;
+
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serialize->Class<EndGroupContainer, AZ::Component>()
+                        ->Field("rootData", &EndGroupContainer::m_rootData)
+                        ->Field("otherRootData", &EndGroupContainer::m_otherRootData)
+                        ->Field("group1Data", &EndGroupContainer::m_group1Data)
+                        ->Field("group2Data", &EndGroupContainer::m_group2Data)
+                        ->Field("finalRootData", &EndGroupContainer::m_finalRootData)
+                        ;
+
+                    if (auto editContext = serialize->GetEditContext())
+                    {
+                        editContext->Class<EndGroupContainer>("EndGroupTest", "")
+                            ->DataElement(nullptr, &EndGroupContainer::m_rootData)
+                            ->DataElement(nullptr, &EndGroupContainer::m_otherRootData)
+
+                            ->ClassElement(AZ::Edit::ClassElements::Group, "First Group")
+                            ->DataElement(nullptr, &EndGroupContainer::m_group1Data)
+
+                            ->ClassElement(AZ::Edit::ClassElements::Group, "Second Group")
+                            ->DataElement(nullptr, &EndGroupContainer::m_group2Data)
+                            ->EndGroup()
+
+                            ->DataElement(nullptr, &EndGroupContainer::m_finalRootData)
+                            ;
+                    }
+                }
+            }
+
+            // AZ::Component overrides ...
+            void Activate() override {}
+            void Deactivate() override {}
+        };
+
+        void run()
+        {
+            AZ::SerializeContext serializeContext;
+            serializeContext.CreateEditContext();
+            AZ::Entity::Reflect(&serializeContext);
+            EndGroupContainer::Reflect(&serializeContext);
+
+            EndGroupContainer test;
+            AzToolsFramework::InstanceDataHierarchy idh;
+            idh.AddRootInstance(&test, azrtti_typeid<EndGroupContainer>());
+            idh.Build(&serializeContext, 0);
+
+            auto children = idh.GetChildren();
+            ASSERT_EQ(children.size(), 6);
+            auto it = children.begin();
+
+            // The first child will be the AZ::Component Id data,
+            // which we don't care about for this test
+            ++it;
+
+            // The next two children are root data, which both should
+            // have no group element
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "rootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "otherRootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
+
+            // The next data should be in the first group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "group1Data");
+            EXPECT_STREQ(it->GetGroupElementMetadata()->m_description, "First Group");
+
+            // The following data should be in the second group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "group2Data");
+            EXPECT_STREQ(it->GetGroupElementMetadata()->m_description, "Second Group");
+
+            // The final data should have no group since we ended the second group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "finalRootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
         }
     };
 
     class InstanceDataHierarchyAggregateInstanceTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class AggregatedContainer
         {
         public:
             AZ_TYPE_INFO(AggregatedContainer, "{42E09F38-2D26-4FED-9901-06003A030ED5}");
-            AZ_CLASS_ALLOCATOR(AggregatedContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AggregatedContainer, AZ::SystemAllocator);
 
             int m_aggregated;
             int m_notAggregated;
@@ -1327,7 +1435,7 @@ namespace UnitTest
                             ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->UIElement("TestHandler", "aggregatedUIElement")
                             ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
-                        ->UIElement(AZ_CRC("TestHandler2"), "notAggregatedUIElement")
+                        ->UIElement(AZ_CRC_CE("TestHandler2"), "notAggregatedUIElement")
                     ;
                 }
             }
@@ -1345,8 +1453,7 @@ namespace UnitTest
             AZStd::list<AggregatedContainer> containers;
             for (int i = 0; i < 5; ++i)
             {
-                containers.push_back();
-                AggregatedContainer& container = containers.back();
+                AggregatedContainer& container = containers.emplace_back();
                 idh.AddRootInstance(&container, azrtti_typeid<AggregatedContainer>());
                 idh.Build(&serializeContext, 0);
 
@@ -1458,6 +1565,11 @@ namespace UnitTest
         run();
     }
 
+    TEST_F(InstanceDataHierarchyEndGroupTest, TestEndGroup)
+    {
+        run();
+    }
+
     TEST_F(InstanceDataHierarchyAggregateInstanceTest, TestRespectingAggregateInstanceVisibility)
     {
         run();
@@ -1535,7 +1647,7 @@ namespace UnitTest
     {
     };
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         InstanceDataHierarchyGroupTestFixture,
         InstanceDataHierarchyGroupTestFixtureParameterized,
         ::testing::Values("GroupFloat", "GroupToggle", "ToggleGroupInt", "SubInt", "SubToggle", "SubFloat"));

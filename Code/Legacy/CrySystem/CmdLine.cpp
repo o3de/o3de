@@ -64,11 +64,11 @@ CCmdLine::CCmdLine(const char* commandLine)
             AZ::StringFunc::Replace(arg, '\\', '/');
             m_args.push_back(CCmdLineArg("filename", arg.c_str(), eCLAT_Executable));
         }
-        else
+        else if(!arg.empty())
         {
             bool bSecondCharIsNumber = false;
 
-            if (arg[0] && arg[1] >= '0' && arg[1] <= '9')
+            if ((arg.length() > 1) && arg[1] >= '0' && arg[1] <= '9')
             {
                 bSecondCharIsNumber = true;
             }

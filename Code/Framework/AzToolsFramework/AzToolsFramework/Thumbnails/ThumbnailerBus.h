@@ -37,9 +37,6 @@ namespace AzToolsFramework
 
             //! Return whether the thumbnail is loading.
             virtual bool IsLoading(SharedThumbnailKey thumbnailKey) = 0;
-
-            //! Get thread pool for drawing thumbnails
-            virtual QThreadPool* GetThreadPool() = 0;
         };
 
         using ThumbnailerRequestBus = AZ::EBus<ThumbnailerRequests>;

@@ -12,7 +12,7 @@
 
 #include <AzCore/UserSettings/UserSettings.h>
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
@@ -27,7 +27,7 @@ namespace ScriptCanvasEditor
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(TargetManagerModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TargetManagerModel, AZ::SystemAllocator);
 
         TargetManagerModel();
 
@@ -36,18 +36,17 @@ namespace ScriptCanvasEditor
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
         ////
 
-        void TargetJoinedNetwork(AzFramework::TargetInfo info);
-        void TargetLeftNetwork(AzFramework::TargetInfo info);
+        void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
+        void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
 
-        AzFramework::TargetInfo FindTargetInfoForRow(int row);
+        AzFramework::RemoteToolsEndpointInfo FindTargetInfoForRow(int row);
         int GetRowForTarget(AZ::u32 targetId);
 
     private:
 
         void ScrapeTargetInfo();
 
-        AzFramework::TargetInfo                  m_selfInfo;
-        AZStd::vector< AzFramework::TargetInfo > m_targetInfo;
+        AZStd::vector<AzFramework::RemoteToolsEndpointInfo> m_targetInfo;
     };
 
     class LiveLoggingUserSettings
@@ -57,7 +56,7 @@ namespace ScriptCanvasEditor
         static AZStd::intrusive_ptr<LiveLoggingUserSettings> FindSettingsInstance();
 
         AZ_RTTI(LiveLoggingUserSettings, "{2E32C949-5766-480D-B569-781BE9166B2E}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(LiveLoggingUserSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LiveLoggingUserSettings, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -77,23 +76,22 @@ namespace ScriptCanvasEditor
     
     class LiveLoggingWindowSession
         : public LoggingWindowSession
-        , public AzFramework::TargetManagerClient::Bus::Handler
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , public ScriptCanvas::Debugger::ServiceNotificationsBus::Handler
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(LiveLoggingWindowSession, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LiveLoggingWindowSession, AZ::SystemAllocator);
         
         LiveLoggingWindowSession(QWidget* parent = nullptr);
         ~LiveLoggingWindowSession() override;
         
         // AzFramework::TargetManagerClient
-        void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId) override;
-        void DesiredTargetConnected(bool connected) override;
+        void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
+        void DesiredTargetConnected(bool connected);
 
-        void TargetJoinedNetwork(AzFramework::TargetInfo info) override;
-        void TargetLeftNetwork(AzFramework::TargetInfo info) override;
+        void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
+        void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
         ////
 
         // AzToolsFramework::EditorEntityContextNotificationBus::Handler
@@ -102,7 +100,7 @@ namespace ScriptCanvasEditor
         ////
 
         // ScriptCavnas::Debugger::ServiceNotificationsBus
-        void Connected(const ScriptCanvas::Debugger::Target& target) override;
+        void Connected(ScriptCanvas::Debugger::Target& target) override;
         ////
         
     protected:

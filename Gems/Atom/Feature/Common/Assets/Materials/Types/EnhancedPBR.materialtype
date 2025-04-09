@@ -1,6 +1,6 @@
 {
     "description": "Material Type with properties used to define Enhanced PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model, with advanced features like subsurface scattering, transmission, and anisotropy.",
-    "version": 5,
+    "version": 6,
     "versionUpdates": [
         {
             "toVersion": 4,
@@ -19,12 +19,22 @@
                 {"op": "rename", "from": "detailUV.rotateDegrees", "to": "detailLayerGroup.detailUV.rotateDegrees"},
                 {"op": "rename", "from": "detailUV.scale", "to": "detailLayerGroup.detailUV.scale"}
             ]
+        },
+        {
+            "toVersion": 6,
+            "actions": [
+                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"},
+                {"op": "setValue", "name": "irradiance.irradianceColorSource", "value": "Manual"}
+            ]
         }
     ],
     "propertyLayout": {
         "propertyGroups": [
             { 
                 "$import": "MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/VertexColorPropertyGroup.json"
             },
             { 
                 "$import": "MaterialInputs/MetallicPropertyGroup.json"
@@ -43,7 +53,7 @@
             },
             {
                 "name": "anisotropy",
-                "displayName": "Anisotropic Material Response",
+                "displayName": "Anisotropic Response",
                 "description": "How much is this material response anisotropic.",
                 "properties": [
                     {
@@ -88,7 +98,8 @@
                     {
                         "type": "Lua",
                         "args": {
-                            "file": "EnhancedPBR_Anisotropy.lua"
+                            //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                            "file": "Materials/Types/EnhancedPBR_Anisotropy.lua"
                         }
                     }
                 ]
@@ -122,52 +133,9 @@
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "./EnhancedPBR_ForwardPass.shader",
-            "tag": "ForwardPass"
-        },
-        {
-            "file": "./EnhancedPBR_ForwardPass_EDS.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "./EnhancedPBR_Shadowmap_WithPS.shader",
-            "tag": "Shadowmap_WithPS"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "./EnhancedPBR_DepthPass_WithPS.shader",
-            "tag": "DepthPass_WithPS"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        },
-        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMin.shader",
-            "tag": "DepthPassTransparentMin"
-        },
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMax.shader",
-            "tag": "DepthPassTransparentMax"
-        }        
-    ],
+    "lightingModel": "Enhanced",
+    "materialShaderCode": "EnhancedPBR.azsli",
     "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_ShaderEnable.lua"
-            }
-        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",

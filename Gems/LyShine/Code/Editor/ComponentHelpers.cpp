@@ -83,7 +83,7 @@ namespace Internal
 
     bool AppearsInUIComponentMenu(const AZ::SerializeContext::ClassData& componentClassData, bool forCanvasEntity)
     {
-        return AzToolsFramework::AppearsInAddComponentMenu(componentClassData, forCanvasEntity ? AZ_CRC("CanvasUI", 0xe1e05605) : AZ_CRC("UI", 0x27ff46b0));
+        return AzToolsFramework::AppearsInAddComponentMenu(componentClassData, forCanvasEntity ? AZ_CRC_CE("CanvasUI") : AZ_CRC_CE("UI"));
     }
 
     bool IsAddableByUser(const AZ::SerializeContext::ClassData& componentClassData)
@@ -119,7 +119,7 @@ namespace Internal
     {
         // Get the componentDescriptor from the componentClassData
         AZ::ComponentDescriptor* componentDescriptor = nullptr;
-        EBUS_EVENT_ID_RESULT(componentDescriptor, componentType, AZ::ComponentDescriptorBus, GetDescriptor);
+        AZ::ComponentDescriptorBus::EventResult(componentDescriptor, componentType, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
         if (!componentDescriptor)
         {
             AZStd::string message = AZStd::string::format("ComponentDescriptor not found for component %s.", GetFriendlyComponentNameFromType(componentType).c_str());
@@ -142,7 +142,8 @@ namespace Internal
         for (const AZ::TypeId& otherComponentType : otherComponentTypes)
         {
             AZ::ComponentDescriptor* otherComponentDescriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(otherComponentDescriptor, otherComponentType, AZ::ComponentDescriptorBus, GetDescriptor);
+            AZ::ComponentDescriptorBus::EventResult(
+                otherComponentDescriptor, otherComponentType, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
             if (!otherComponentDescriptor)
             {
                 AZStd::string message = AZStd::string::format("ComponentDescriptor not found for component %s.", GetFriendlyComponentNameFromType(otherComponentType).c_str());
@@ -333,7 +334,8 @@ namespace Internal
             const AZ::Uuid& componentTypeId = AzToolsFramework::GetUnderlyingComponentType(*component);
 
             AZ::ComponentDescriptor* componentDescriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(componentDescriptor, componentTypeId, AZ::ComponentDescriptorBus, GetDescriptor);
+            AZ::ComponentDescriptorBus::EventResult(
+                componentDescriptor, componentTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
             if (!componentDescriptor)
             {
                 AZStd::string message = AZStd::string::format("ComponentDescriptor not found for component %s.", GetFriendlyComponentNameFromType(componentTypeId).c_str());
@@ -382,7 +384,8 @@ namespace Internal
                 const AZ::Uuid& componentToRemoveTypeId = AzToolsFramework::GetUnderlyingComponentType(*componentToRemove);
 
                 AZ::ComponentDescriptor* componentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(componentDescriptor, componentToRemoveTypeId, AZ::ComponentDescriptorBus, GetDescriptor);
+                AZ::ComponentDescriptorBus::EventResult(
+                    componentDescriptor, componentToRemoveTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
                 if (!componentDescriptor)
                 {
                     AZStd::string message = AZStd::string::format("ComponentDescriptor not found for component %s.", GetFriendlyComponentNameFromType(componentToRemoveTypeId).c_str());
@@ -493,7 +496,7 @@ namespace Internal
     AzToolsFramework::EntityIdList GetSelectedEntities(bool* isCanvasSelectedOut = nullptr)
     {
         AzToolsFramework::EntityIdList selectedEntities;
-        EBUS_EVENT_RESULT(selectedEntities, UiEditorInternalRequestBus, GetSelectedEntityIds);
+        UiEditorInternalRequestBus::BroadcastResult(selectedEntities, &UiEditorInternalRequestBus::Events::GetSelectedEntityIds);
 
         if (isCanvasSelectedOut)
         {
@@ -502,7 +505,7 @@ namespace Internal
         if (selectedEntities.empty())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_RESULT(canvasEntityId, UiEditorInternalRequestBus, GetActiveCanvasEntityId);
+            UiEditorInternalRequestBus::BroadcastResult(canvasEntityId, &UiEditorInternalRequestBus::Events::GetActiveCanvasEntityId);
             selectedEntities.push_back(canvasEntityId);
             if (isCanvasSelectedOut)
             {
@@ -535,7 +538,7 @@ namespace Internal
 
     void HandleSelectedEntitiesPropertiesChanged()
     {
-        EBUS_EVENT(UiEditorInternalNotificationBus, OnSelectedEntitiesPropertyChanged);
+        UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnSelectedEntitiesPropertyChanged);
     }
 
     void RemoveComponents(const AZ::Entity::ComponentArrayType& componentsToRemove)
@@ -565,7 +568,7 @@ namespace Internal
             return;
         }
 
-        EBUS_EVENT(UiEditorInternalNotificationBus, OnBeginUndoableEntitiesChange);
+        UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
 
         for (auto componentsByEntityIdItr : m_componentsByEntityId)
         {
@@ -607,7 +610,9 @@ namespace Internal
             }
         }
 
-        EBUS_EVENT(UiEditorInternalNotificationBus, OnEndUndoableEntitiesChange, componentsToRemove.size() > 1 ? "delete components" : "delete component");
+        UiEditorInternalNotificationBus::Broadcast(
+            &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange,
+            componentsToRemove.size() > 1 ? "delete components" : "delete component");
 
         HandleSelectedEntitiesPropertiesChanged();
     }
@@ -704,7 +709,7 @@ namespace ComponentHelpers
         // Create a component list that is in the same order that the components were registered in
         const AZStd::vector<AZ::Uuid>* componentOrderList;
         ComponentsList orderedComponentsList;
-        EBUS_EVENT_RESULT(componentOrderList, UiSystemBus, GetComponentTypesForMenuOrdering);
+        UiSystemBus::BroadcastResult(componentOrderList, &UiSystemBus::Events::GetComponentTypesForMenuOrdering);
         for (auto& componentType : *componentOrderList)
         {
             auto iter = AZStd::find_if(componentsList.begin(), componentsList.end(),
@@ -766,7 +771,7 @@ namespace ComponentHelpers
                     hierarchy,
                     [hierarchy, componentClass, items]([[maybe_unused]] bool checked)
                 {
-                    EBUS_EVENT(UiEditorInternalNotificationBus, OnBeginUndoableEntitiesChange);
+                    UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
 
                     AzToolsFramework::EntityIdList entitiesSelected;
                     if (items.empty())
@@ -794,13 +799,15 @@ namespace ComponentHelpers
 
                             entity->Deactivate();
                             AZ::Component* component;
-                            EBUS_EVENT_ID_RESULT(component, componentClass->m_typeId, AZ::ComponentDescriptorBus, CreateComponent);
+                            AZ::ComponentDescriptorBus::EventResult(
+                                component, componentClass->m_typeId, &AZ::ComponentDescriptorBus::Events::CreateComponent);
                             entity->AddComponent(component);
                             entity->Activate();
                         }
                     }
 
-                    EBUS_EVENT(UiEditorInternalNotificationBus, OnEndUndoableEntitiesChange, "add component");
+                    UiEditorInternalNotificationBus::Broadcast(
+                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "add component");
 
                     Internal::HandleSelectedEntitiesPropertiesChanged();
                 });
@@ -822,7 +829,7 @@ namespace ComponentHelpers
             []()
         {
             AZ::Entity::ComponentArrayType componentsToRemove;
-            EBUS_EVENT_RESULT(componentsToRemove, UiEditorInternalRequestBus, GetSelectedComponents);
+            UiEditorInternalRequestBus::BroadcastResult(componentsToRemove, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
 
             Internal::RemoveComponents(componentsToRemove);
 
@@ -835,7 +842,7 @@ namespace ComponentHelpers
     void UpdateRemoveComponentsAction(QAction* action)
     {
         AZ::Entity::ComponentArrayType componentsToRemove;
-        EBUS_EVENT_RESULT(componentsToRemove, UiEditorInternalRequestBus, GetSelectedComponents);
+        UiEditorInternalRequestBus::BroadcastResult(componentsToRemove, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
 
         action->setText(componentsToRemove.size() > 1 ? "Delete components" : "Delete component");
 
@@ -860,7 +867,7 @@ namespace ComponentHelpers
             []()
         {
             AZ::Entity::ComponentArrayType componentsToCut;
-            EBUS_EVENT_RESULT(componentsToCut, UiEditorInternalRequestBus, GetSelectedComponents);
+            UiEditorInternalRequestBus::BroadcastResult(componentsToCut, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
 
             AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCut);
 
@@ -876,7 +883,7 @@ namespace ComponentHelpers
     void UpdateCutComponentsAction(QAction* action)
     {
         AZ::Entity::ComponentArrayType componentsToCut;
-        EBUS_EVENT_RESULT(componentsToCut, UiEditorInternalRequestBus, GetSelectedComponents);
+        UiEditorInternalRequestBus::BroadcastResult(componentsToCut, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
 
         AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCut);
 
@@ -906,7 +913,7 @@ namespace ComponentHelpers
             []()
         {
             AZ::Entity::ComponentArrayType componentsToCopy;
-            EBUS_EVENT_RESULT(componentsToCopy, UiEditorInternalRequestBus, GetSelectedComponents);
+            UiEditorInternalRequestBus::BroadcastResult(componentsToCopy, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
 
             // Get the components of the first selected elements to copy onto the clipboard
             AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCopy);
@@ -920,7 +927,7 @@ namespace ComponentHelpers
     void UpdateCopyComponentsAction(QAction* action)
     {
         AZ::Entity::ComponentArrayType componentsToCopy;
-        EBUS_EVENT_RESULT(componentsToCopy, UiEditorInternalRequestBus, GetSelectedComponents);
+        UiEditorInternalRequestBus::BroadcastResult(componentsToCopy, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
 
         // Get the components of the first selected elements to copy onto the clipboard
         AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCopy);
@@ -963,7 +970,7 @@ namespace ComponentHelpers
                 AZ_Error("UI Editor", componentsToAdd.size() == classDataForComponentsToAdd.size(), "Component mime data's components list size is different from class data list size.");
                 if (componentsToAdd.size() == classDataForComponentsToAdd.size())
                 {
-                    EBUS_EVENT(UiEditorInternalNotificationBus, OnBeginUndoableEntitiesChange);
+                    UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
 
                     // Paste to all selected entities
                     for (const AZ::EntityId& entityId : selectedEntities)
@@ -1006,7 +1013,8 @@ namespace ComponentHelpers
                         }
                     }
 
-                    EBUS_EVENT(UiEditorInternalNotificationBus, OnEndUndoableEntitiesChange, "paste component");
+                    UiEditorInternalNotificationBus::Broadcast(
+                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "paste component");
 
                     Internal::HandleSelectedEntitiesPropertiesChanged();
                 }
@@ -1055,12 +1063,12 @@ namespace ComponentHelpers
 
     void AddComponentsWithAssetToSelectedEntities(const ComponentAssetHelpers::ComponentAssetPairs& componentAssetPairs)
     {
-        EBUS_EVENT(UiEditorInternalNotificationBus, OnBeginUndoableEntitiesChange);
+        UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
 
         AzToolsFramework::EntityIdList selectedEntities = Internal::GetSelectedEntities();
         Internal::AddComponentsWithAssetToEntities(componentAssetPairs, selectedEntities);
 
-        EBUS_EVENT(UiEditorInternalNotificationBus, OnEndUndoableEntitiesChange, "add component");
+        UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "add component");
 
         Internal::HandleSelectedEntitiesPropertiesChanged();
     }
@@ -1119,7 +1127,7 @@ namespace ComponentHelpers
             const AZ::Data::AssetId& assetId = pair.second;
             
             AZ::Component* component;
-            EBUS_EVENT_ID_RESULT(component, componentType, AZ::ComponentDescriptorBus, CreateComponent);
+            AZ::ComponentDescriptorBus::EventResult(component, componentType, &AZ::ComponentDescriptorBus::Events::CreateComponent);
             entity->AddComponent(component);
 
             newComponentAssetPairs.push_back(AZStd::make_pair(component, assetId));
@@ -1154,7 +1162,7 @@ namespace ComponentHelpers
         AZ::SerializeContext* serializeContext = Internal::GetSerializeContext();
 
         const AZStd::list<AZ::ComponentDescriptor*>* lyShineComponentDescriptors;
-        EBUS_EVENT_RESULT(lyShineComponentDescriptors, UiSystemBus, GetLyShineComponentDescriptors);
+        UiSystemBus::BroadcastResult(lyShineComponentDescriptors, &UiSystemBus::Events::GetLyShineComponentDescriptors);
 
         // Gather all components that match our filter and group by category.
         serializeContext->EnumerateDerived<AZ::Component>(

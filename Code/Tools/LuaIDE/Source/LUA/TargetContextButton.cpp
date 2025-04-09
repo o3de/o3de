@@ -22,7 +22,8 @@ namespace LUA
         LUAEditor::Context_ControlManagement::Handler::BusConnect();
 
         AZStd::string context("Default");
-        EBUS_EVENT(LUAEditor::LUATargetContextRequestMessages::Bus, SetCurrentTargetContext, context);
+        LUAEditor::LUATargetContextRequestMessages::Bus::Broadcast(
+            &LUAEditor::LUATargetContextRequestMessages::Bus::Events::SetCurrentTargetContext, context);
         this->setText("Context: Default");
 
         QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -43,14 +44,11 @@ namespace LUA
 
     void TargetContextButton::DoPopup()
     {
-        AzFramework::TargetContainer targets;
-
-        EBUS_EVENT(AzFramework::TargetManager::Bus, EnumTargetInfos, targets);
-
         QMenu menu;
 
         AZStd::vector<AZStd::string> contexts;
-        EBUS_EVENT_RESULT(contexts, LUAEditor::LUATargetContextRequestMessages::Bus, RequestTargetContexts);
+        LUAEditor::LUATargetContextRequestMessages::Bus::BroadcastResult(
+            contexts, &LUAEditor::LUATargetContextRequestMessages::Bus::Events::RequestTargetContexts);
 
         for (AZStd::vector<AZStd::string>::const_iterator it = contexts.begin(); it != contexts.end(); ++it)
         {
@@ -65,7 +63,8 @@ namespace LUA
         {
             AZStd::string context = resultAction->property("context").toString().toUtf8().data();
             this->setText("Context: None"); // prepare for failure
-            EBUS_EVENT(LUAEditor::LUATargetContextRequestMessages::Bus, SetCurrentTargetContext, context);
+            LUAEditor::LUATargetContextRequestMessages::Bus::Broadcast(
+                &LUAEditor::LUATargetContextRequestMessages::Bus::Events::SetCurrentTargetContext, context);
         }
     }
 

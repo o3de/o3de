@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString TubeShapeNode::TITLE = QObject::tr("Tube Shape");
+    const char* TubeShapeNode::TITLE = "Tube Shape";
 
     TubeShapeNode::TubeShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

@@ -15,7 +15,7 @@ namespace AZ
     //
 
     template<typename StackBaseType>
-    const TypeId& ConfigurableStack<StackBaseType>::GetNodeType() const
+    TypeId ConfigurableStack<StackBaseType>::GetNodeType() const
     {
         return azrtti_typeid<NodeValue>();
     }
@@ -115,20 +115,20 @@ namespace AZ
     }
 
     template<typename StackBaseType>
-    const Uuid& SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GenericConfigurableStackInfo::GetTemplatedTypeId(
+    AZ::TypeId SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GenericConfigurableStackInfo::GetTemplatedTypeId(
         [[maybe_unused]] size_t element)
     {
         return SerializeGenericTypeInfo<StackBaseType>::GetClassTypeId();
     }
 
     template<typename StackBaseType>
-    const Uuid& SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GenericConfigurableStackInfo::GetSpecializedTypeId() const
+    AZ::TypeId SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GenericConfigurableStackInfo::GetSpecializedTypeId() const
     {
         return azrtti_typeid<ConfigurableStackType>();
     }
 
     template<typename StackBaseType>
-    const Uuid& SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GenericConfigurableStackInfo::GetGenericTypeId() const
+    AZ::TypeId SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GenericConfigurableStackInfo::GetGenericTypeId() const
     {
         return TYPEINFO_Uuid();
     }
@@ -153,7 +153,7 @@ namespace AZ
     }
 
     template<typename StackBaseType>
-    const Uuid& SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GetClassTypeId()
+    AZ::TypeId SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GetClassTypeId()
     {
         return GetGenericInfo()->GetClassData()->m_typeId;
     }

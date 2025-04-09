@@ -14,6 +14,14 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/any.h>
 
+namespace AZ
+{
+    // Added definition of type info and rtti for the DataPatchTypeUpgrade class
+    // to this Unit Test file to allow rtti functions to be accessible from the SerializeContext::TypeChange
+    // call
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(SerializeContext::DataPatchTypeUpgrade, "DataPatchTypeUpgrade", "{E5A2F519-261C-4B81-925F-3730D363AB9C}", AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
+    AZ_RTTI_NO_TYPE_INFO_IMPL((SerializeContext::DataPatchTypeUpgrade, AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS), DataPatchUpgrade);
+}
 using namespace AZ;
 
 namespace UnitTest
@@ -70,7 +78,7 @@ namespace UnitTest
         class ContainedObjectNoPersistentId
         {
         public:
-            AZ_CLASS_ALLOCATOR(ContainedObjectNoPersistentId, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ContainedObjectNoPersistentId, SystemAllocator);
             AZ_TYPE_INFO(ContainedObjectNoPersistentId, "{A9980498-6E7A-42C0-BF9F-DFA48142DDAB}");
 
             ContainedObjectNoPersistentId()
@@ -94,7 +102,7 @@ namespace UnitTest
         {
         public:
             AZ_TYPE_INFO(SimpleClassContainingVectorOfInts, "{82FE64FA-23DB-40B5-BD1B-9DC145CB86EA}");
-            AZ_CLASS_ALLOCATOR(SimpleClassContainingVectorOfInts, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SimpleClassContainingVectorOfInts, AZ::SystemAllocator);
 
             virtual ~SimpleClassContainingVectorOfInts() = default;
 
@@ -111,7 +119,7 @@ namespace UnitTest
         {
         public:
             AZ_RTTI(CommonPatch, "{81FE64FA-23DB-40B5-BD1B-9DC145CB86EA}");
-            AZ_CLASS_ALLOCATOR(CommonPatch, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommonPatch, AZ::SystemAllocator);
 
             virtual ~CommonPatch() = default;
 
@@ -127,7 +135,7 @@ namespace UnitTest
         {
         public:
             AZ_RTTI(ObjectToPatch, "{47E5CF10-3FA1-4064-BE7A-70E3143B4025}", CommonPatch);
-            AZ_CLASS_ALLOCATOR(ObjectToPatch, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectToPatch, AZ::SystemAllocator);
 
             ObjectToPatch() = default;
             ObjectToPatch(const ObjectToPatch&) = delete;
@@ -161,7 +169,7 @@ namespace UnitTest
         {
         public:
             AZ_RTTI(DifferentObjectToPatch, "{2E107ABB-E77A-4188-AC32-4CA8EB3C5BD1}", CommonPatch);
-            AZ_CLASS_ALLOCATOR(DifferentObjectToPatch, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DifferentObjectToPatch, AZ::SystemAllocator);
 
             float m_data;
 
@@ -175,7 +183,7 @@ namespace UnitTest
         class ObjectsWithGenerics
         {
         public:
-            AZ_CLASS_ALLOCATOR(ObjectsWithGenerics, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectsWithGenerics, SystemAllocator);
             AZ_TYPE_INFO(ObjectsWithGenerics, "{DE1EE15F-3458-40AE-A206-C6C957E2432B}");
 
             static void Reflect(AZ::SerializeContext& sc)
@@ -190,7 +198,7 @@ namespace UnitTest
         class ObjectWithPointer
         {
         public:
-            AZ_CLASS_ALLOCATOR(ObjectWithPointer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectWithPointer, SystemAllocator);
             AZ_TYPE_INFO(ObjectWithPointer, "{D1FD3240-A7C5-4EA3-8E55-CD18193162B8}");
 
             static void Reflect(AZ::SerializeContext& sc)
@@ -208,7 +216,7 @@ namespace UnitTest
         class ObjectWithMultiPointers
         {
         public:
-            AZ_CLASS_ALLOCATOR(ObjectWithMultiPointers, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectWithMultiPointers, SystemAllocator);
             AZ_TYPE_INFO(ObjectWithMultiPointers, "{EBA25BFA-CFA0-4397-929C-A765BA72DE28}");
 
             static void Reflect(AZ::SerializeContext& sc)
@@ -242,7 +250,7 @@ namespace UnitTest
 
         struct ObjectWithNumericFieldV1
         {
-            AZ_CLASS_ALLOCATOR(ObjectWithNumericFieldV1, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectWithNumericFieldV1, SystemAllocator);
             AZ_TYPE_INFO(ObjectWithNumericFieldV1, "{556A83B0-77BC-41D1-B3BC-C1CD0A4F5845}");
 
             static void Reflect(AZ::ReflectContext* reflectContext)
@@ -268,7 +276,7 @@ namespace UnitTest
 
         struct ObjectWithNumericFieldV2
         {
-            AZ_CLASS_ALLOCATOR(ObjectWithNumericFieldV2, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectWithNumericFieldV2, SystemAllocator);
             AZ_TYPE_INFO(ObjectWithNumericFieldV2, "{556A83B0-77BC-41D1-B3BC-C1CD0A4F5845}");
 
             static void Reflect(AZ::ReflectContext* reflectContext)
@@ -298,7 +306,7 @@ namespace UnitTest
         class InnerObjectFieldConverterV1
         {
         public:
-            AZ_CLASS_ALLOCATOR(InnerObjectFieldConverterV1, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InnerObjectFieldConverterV1, SystemAllocator);
             AZ_RTTI(InnerObjectFieldConverterV1, "{28E61B17-F321-4D4E-9F4C-00846C6631DE}");
             virtual ~InnerObjectFieldConverterV1() = default;
 
@@ -327,7 +335,7 @@ namespace UnitTest
             : public BaseClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(InnerObjectFieldConverterDerivedV1Template, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InnerObjectFieldConverterDerivedV1Template, SystemAllocator);
             AZ_RTTI(InnerObjectFieldConverterDerivedV1Template, "{C68BE9B8-33F8-4969-B521-B44F5BA1C0DE}", BaseClass);
 
             static void Reflect(AZ::ReflectContext* reflectContext)
@@ -351,7 +359,7 @@ namespace UnitTest
         class ObjectFieldConverterV1
         {
         public:
-            AZ_CLASS_ALLOCATOR(ObjectFieldConverterV1, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectFieldConverterV1, SystemAllocator);
             AZ_TYPE_INFO(ObjectFieldConverterV1, "{5722C4E4-25DE-48C5-BC89-0EE9D38DF433}");
 
             static void Reflect(AZ::ReflectContext* reflectContext)
@@ -382,7 +390,7 @@ namespace UnitTest
         class ObjectBaseClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(ObjectBaseClass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectBaseClass, SystemAllocator);
             AZ_RTTI(ObjectBaseClass, "{9CFEC143-9C78-4566-A541-46F9CA6FE66E}");
 
             virtual ~ObjectBaseClass() = default;
@@ -396,7 +404,7 @@ namespace UnitTest
         class ObjectDerivedClass1 : public ObjectBaseClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(ObjectDerivedClass1, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectDerivedClass1, SystemAllocator);
             AZ_RTTI(ObjectDerivedClass1, "{9D6502E8-999D-46B8-AF37-EAAA0D53385A}", ObjectBaseClass);
             static void Reflect(AZ::SerializeContext& sc)
             {
@@ -408,7 +416,7 @@ namespace UnitTest
         class ObjectDerivedClass2 : public ObjectBaseClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(ObjectDerivedClass2, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectDerivedClass2, SystemAllocator);
             AZ_RTTI(ObjectDerivedClass2, "{91D1812E-17A2-4BC3-A9A1-13196BE50803}", ObjectBaseClass);
             static void Reflect(AZ::SerializeContext& sc)
             {
@@ -419,8 +427,8 @@ namespace UnitTest
         class ObjectDerivedClass3 : public ObjectBaseClass
         {
             public:
-            AZ_CLASS_ALLOCATOR(ObjectDerivedClass3, SystemAllocator, 0);
-            AZ_RTTI(ObjectDerivedClass2, "{E80E926B-5750-4E8D-80E0-D06057692847}", ObjectBaseClass);
+            AZ_CLASS_ALLOCATOR(ObjectDerivedClass3, SystemAllocator);
+            AZ_RTTI(ObjectDerivedClass3, "{E80E926B-5750-4E8D-80E0-D06057692847}", ObjectBaseClass);
             static void Reflect(AZ::SerializeContext& sc)
             {
                 sc.Class<ObjectDerivedClass3>();
@@ -436,7 +444,7 @@ namespace UnitTest
         class ObjectWithVectorOfBaseClasses
         {
         public:
-            AZ_CLASS_ALLOCATOR(ObjectWithVectorOfBaseClasses, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectWithVectorOfBaseClasses, SystemAllocator);
             AZ_TYPE_INFO(ObjectWithVectorOfBaseClasses, "{BC9D5346-1BC5-41C4-8CF0-7ACD96F7790F}");
 
             static void Reflect(AZ::SerializeContext& sc)
@@ -459,12 +467,12 @@ namespace UnitTest
     }
 
     class PatchingTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<SerializeContext>();
 
@@ -491,7 +499,7 @@ namespace UnitTest
         {
             m_serializeContext.reset();
             m_addressTypeSerializer = nullptr;
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void LoadPatchFromXML(const AZStd::string_view& xmlSrc, DataPatch& patchDest)
@@ -619,11 +627,11 @@ namespace UnitTest
             {
                 editableAddress = GetValidAddressForXMLDataPatchV1AddressTypeIntXML();
             }
-            
+
             return AZStd::string::format(m_XMLDataPatchV1AddressTypeIntOverrideTemplate, editableAddress.c_str(), intValue);
         }
 
-        /* 
+        /*
            Sets the data values and persistentId values for the ContainedObjectPersistentId type stored in m_XMLDataPatchV1AddressTypeIntVectorOverrideTemplate's xml stream
            Can also optionally set the address of the first element otherwise defaults to a valid address if testAddress is nullptr
            The stream contains 5 elements within the vector
@@ -676,15 +684,15 @@ namespace UnitTest
         {
             ObjectToPatch sourceObj;
             sourceObj.m_intValue = 101;
-            sourceObj.m_objectArray.push_back();
-            sourceObj.m_objectArray.push_back();
-            sourceObj.m_objectArray.push_back();
+            sourceObj.m_objectArray.emplace_back();
+            sourceObj.m_objectArray.emplace_back();
+            sourceObj.m_objectArray.emplace_back();
             sourceObj.m_dynamicField.Set(aznew ContainedObjectNoPersistentId(40));
             {
                 // derived
-                sourceObj.m_derivedObjectArray.push_back();
-                sourceObj.m_derivedObjectArray.push_back();
-                sourceObj.m_derivedObjectArray.push_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
             }
 
             // test generic containers with persistent ID
@@ -706,17 +714,17 @@ namespace UnitTest
 
             ObjectToPatch targetObj;
             targetObj.m_intValue = 121;
-            targetObj.m_objectArray.push_back();
-            targetObj.m_objectArray.push_back();
-            targetObj.m_objectArray.push_back();
+            targetObj.m_objectArray.emplace_back();
+            targetObj.m_objectArray.emplace_back();
+            targetObj.m_objectArray.emplace_back();
             targetObj.m_objectArray[0].m_persistentId = 1;
             targetObj.m_objectArray[0].m_data = 301;
             targetObj.m_dynamicField.Set(aznew ContainedObjectNoPersistentId(50));
             {
                 // derived
-                targetObj.m_derivedObjectArray.push_back();
-                targetObj.m_derivedObjectArray.push_back();
-                targetObj.m_derivedObjectArray.push_back();
+                targetObj.m_derivedObjectArray.emplace_back();
+                targetObj.m_derivedObjectArray.emplace_back();
+                targetObj.m_derivedObjectArray.emplace_back();
                 targetObj.m_derivedObjectArray[0].m_persistentId = 1;
                 targetObj.m_derivedObjectArray[0].m_data = 3010;
             }
@@ -1259,7 +1267,7 @@ namespace UnitTest
             ObjectToPatch targetObj;
 
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
 
@@ -1277,7 +1285,7 @@ namespace UnitTest
             ObjectToPatch targetObj;
 
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
 
@@ -1301,7 +1309,7 @@ namespace UnitTest
             targetObj.m_intValue = 43;
 
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
             sourceFlagsMap.emplace(forceOverrideAddress, DataPatch::Flag::PreventOverrideSet);
@@ -1328,7 +1336,7 @@ namespace UnitTest
 
             // create flags that prevent m_intValue from being patched
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
             sourceFlagsMap.emplace(forceOverrideAddress, DataPatch::Flag::PreventOverrideSet);
@@ -1354,7 +1362,7 @@ namespace UnitTest
 
             // create flags that prevent m_intValue from being patched, but put them on the target instead of source
             DataPatch::AddressType forceOverrideAddress;
-            forceOverrideAddress.emplace_back(AZ_CRC("m_intValue"));
+            forceOverrideAddress.emplace_back(AZ_CRC_CE("m_intValue"));
 
             DataPatch::FlagsMap sourceFlagsMap;
 
@@ -1499,7 +1507,7 @@ namespace UnitTest
             ObjectDerivedClass3::Reflect(*m_serializeContext);
             ObjectWithVectorOfBaseClasses::Reflect(*m_serializeContext);
 
-            // step 1:  Make a patch that includes deprecated classes. 
+            // step 1:  Make a patch that includes deprecated classes.
             ObjectWithVectorOfBaseClasses sourceObject;
             ObjectWithVectorOfBaseClasses targetObject;
             targetObject.m_vectorOfBaseClasses.push_back(new ObjectDerivedClass1());
@@ -1588,7 +1596,7 @@ namespace UnitTest
             // Apply provides the remaining class data to complete the conversion
             DataPatch patch;
             LoadPatchFromXML(legacyPatchXML, patch);
-            
+
             // Apply the patch and complete conversion
             ObjectToPatch sourceObj;
             AZStd::unique_ptr<ObjectToPatch> generatedObj(patch.Apply(&sourceObj, m_serializeContext.get()));
@@ -1733,7 +1741,7 @@ namespace UnitTest
                     </Class>
             </ObjectStream>
             )";
-            
+
             // Load the patch from XML
             // This triggers the Legacy DataPatch converter
             // Patch Data will be wrapped in the StreamWrapper type until Apply is called
@@ -2433,7 +2441,7 @@ namespace UnitTest
             const int expectedAddressElement = 4321;
             const int expectedVersion = 2222;
 
-            DataPatch::AddressTypeElement addressTypeElement = 
+            DataPatch::AddressTypeElement addressTypeElement =
                 m_addressTypeSerializer->LoadAddressElementFromPath(AZStd::string::format("somecharacters(%s)#%i%s%i/",
                 expectedTypeId,
                 expectedAddressElement,
@@ -2475,7 +2483,7 @@ namespace UnitTest
 
         TEST_F(PatchingTest, AddressTypeElementLoad_TypeIdMissingParentheses_LoadFails_FT)
         {
-            AZStd::string pathMissingParentheses = AZStd::string::format("somecharacters{3A8D5EC9-D70E-41CB-879C-DEF6A6D6ED03}::classE%s3000%s", 
+            AZStd::string pathMissingParentheses = AZStd::string::format("somecharacters{3A8D5EC9-D70E-41CB-879C-DEF6A6D6ED03}::classE%s3000%s",
                                                                          V1AddressTypeElementVersionDelimiter,
                                                                          V1AddressTypeElementPathDelimiter);
 
@@ -2486,7 +2494,7 @@ namespace UnitTest
 
         TEST_F(PatchingTest, AddressTypeElementLoad_TypeIdMissingCurlyBraces_LoadFails_FT)
         {
-            AZStd::string pathMissingCurlyBraces = AZStd::string::format("somecharacters(07DEDB71-0585-5BE6-83FF-1C9029B9E5DB)::classF%s9876%s", 
+            AZStd::string pathMissingCurlyBraces = AZStd::string::format("somecharacters(07DEDB71-0585-5BE6-83FF-1C9029B9E5DB)::classF%s9876%s",
                                                                          V1AddressTypeElementVersionDelimiter,
                                                                          V1AddressTypeElementPathDelimiter);
 
@@ -2497,7 +2505,7 @@ namespace UnitTest
 
         TEST_F(PatchingTest, AddressTypeElementLoad_ClassTypePathElementMissingColons_LoadFails_FT)
         {
-            AZStd::string pathElementMissingColons = AZStd::string::format("somecharacters({861A12B0-BD91-528E-9CEC-505246EE98DE})classC%s5432%s", 
+            AZStd::string pathElementMissingColons = AZStd::string::format("somecharacters({861A12B0-BD91-528E-9CEC-505246EE98DE})classC%s5432%s",
                                                                            V1AddressTypeElementVersionDelimiter,
                                                                            V1AddressTypeElementPathDelimiter);
 
@@ -2508,7 +2516,7 @@ namespace UnitTest
 
         TEST_F(PatchingTest, AddressTypeElementLoad_IndexTypePathElementMissingPound_LoadFails_FT)
         {
-            AZStd::string pathElementMissingPound = AZStd::string::format("somecharacters({ADFD596B-7177-5519-9752-BC418FE42963})91011%s1122%s", 
+            AZStd::string pathElementMissingPound = AZStd::string::format("somecharacters({ADFD596B-7177-5519-9752-BC418FE42963})91011%s1122%s",
                                                                           V1AddressTypeElementVersionDelimiter,
                                                                           V1AddressTypeElementPathDelimiter);
 
@@ -2565,7 +2573,7 @@ namespace UnitTest
             InnerObjectFieldConverterV1::Reflect(m_serializeContext.get());
             InnerObjectFieldConverterDerivedV1::Reflect(m_serializeContext.get());
             ObjectFieldConverterV1::Reflect(m_serializeContext.get());
-            
+
             const ObjectFieldConverterV1 initialObject;
             ObjectFieldConverterV1 testObject;
             // Change the defaults of elements on the ObjectFieldConverterV1 object
@@ -2573,7 +2581,7 @@ namespace UnitTest
             testObject.m_rootStringVector.emplace_back("Test2");
             testObject.m_rootInnerObject.m_stringField = "InnerTest1";
             testObject.m_rootInnerObject.m_stringVector.emplace_back("InnerTest2");
-            
+
             auto derivedInnerObject = aznew InnerObjectFieldConverterDerivedV1;
             derivedInnerObject->m_stringField = "DerivedTest1";
             derivedInnerObject->m_stringVector.emplace_back("DerivedTest2");
@@ -2616,7 +2624,7 @@ namespace UnitTest
             class InnerObjectFieldConverterV2
             {
             public:
-                AZ_CLASS_ALLOCATOR(InnerObjectFieldConverterV2, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(InnerObjectFieldConverterV2, SystemAllocator);
                 AZ_RTTI(InnerObjectFieldConverterV2, "{28E61B17-F321-4D4E-9F4C-00846C6631DE}");
                 virtual ~InnerObjectFieldConverterV2() = default;
 
@@ -2634,7 +2642,7 @@ namespace UnitTest
                             // This occurs when patched element is a pointer to a class. In that case the entire class is serialized out
                             // Therefore when the DataPatch is loaded, the patch Data will load it's AZStd::any, which goes through the normal
                             // serialization flow, so if the class stored in the AZStd::any is an old version it needs to run through a Version Converter
-                            ->Version(2, &VersionConverter) 
+                            ->Version(2, &VersionConverter)
                             ->Field("InnerBaseIntField", &InnerObjectFieldConverterV2::m_int64Field)
                             ->TypeChange("InnerBaseStringField", 1, 2, AZStd::function<int64_t(const AZStd::string&)>(&StringToInt64))
                             ->NameChange(1, 2, "InnerBaseStringField", "InnerBaseIntField")
@@ -2648,14 +2656,14 @@ namespace UnitTest
                     if (rootElement.GetVersion() < 2)
                     {
                         AZStd::string stringField;
-                        if (!rootElement.GetChildData(AZ_CRC("InnerBaseStringField"), stringField))
+                        if (!rootElement.GetChildData(AZ_CRC_CE("InnerBaseStringField"), stringField))
                         {
                             AZ_Error("PatchingTest", false, "Unable to retrieve 'InnerBaseStringField' data for %u version of the InnerObjectFieldConverterClass",
                                 rootElement.GetVersion());
                             return false;
                         }
 
-                        rootElement.RemoveElementByName(AZ_CRC("InnerBaseStringField"));
+                        rootElement.RemoveElementByName(AZ_CRC_CE("InnerBaseStringField"));
                         rootElement.AddElementWithData(context, "InnerBaseIntField", static_cast<int64_t>(stringField.size()));
                     }
 
@@ -2676,7 +2684,7 @@ namespace UnitTest
             {
                 using ClassType = ObjectFieldConverterV1WithMemberVersionChange;
             public:
-                AZ_CLASS_ALLOCATOR(ClassType, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(ClassType, SystemAllocator);
                 AZ_TYPE_INFO(ClassType, "{5722C4E4-25DE-48C5-BC89-0EE9D38DF433}");
 
 
@@ -2736,7 +2744,7 @@ namespace UnitTest
                     AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
                     WritePatchToByteStream(testPatch, byteBuffer);
                 }
-                // Now unreflect the ObjectFieldConverterV1, InnerObjectFieldConverterDerivedV1 and InnerObjectFieldConverterDerivedV1 
+                // Now unreflect the ObjectFieldConverterV1, InnerObjectFieldConverterDerivedV1 and InnerObjectFieldConverterDerivedV1
                 // and reflect ObjectFieldConverterV1WithMemberVersionChange, InnerObjectFieldConverterV2 and InnerObjectFieldConverterDerivedV1WithV2Base
                 {
                     m_serializeContext->EnableRemoveReflection();
@@ -2751,7 +2759,7 @@ namespace UnitTest
                 }
 
                 // Read DataPatch from ByteStream after reflecting Version 2 of the InnerObjectFieldConverterV2 class
-                // the reason this is required is the testPatch variable has as part of the patch data AZStd::any 
+                // the reason this is required is the testPatch variable has as part of the patch data AZStd::any
                 // that wraps a instance of an InnerObjectFieldConverterDerivedV1 stored in an InnerObjectFieldConverterV1 pointer
                 // The virtual table points to the InnerObjectFieldConverterDerivedV1 class, which in a normal patching scenario
                 // The Data Patch would be loaded from disk after the new version of the InnerObjectFieldConverterV2 has reflected
@@ -2793,7 +2801,7 @@ namespace UnitTest
             {
                 using ClassType = ObjectFieldConverterReplaceMemberDataSerializerV2;
             public:
-                AZ_CLASS_ALLOCATOR(ObjectFieldConverterReplaceMemberDataSerializerV2, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(ObjectFieldConverterReplaceMemberDataSerializerV2, SystemAllocator);
                 AZ_TYPE_INFO(ObjectFieldConverterReplaceMemberDataSerializerV2, "{5722C4E4-25DE-48C5-BC89-0EE9D38DF433}");
 
                 static AZ::Uuid ConvertStringToUuid(const AZStd::string& value)
@@ -2836,7 +2844,7 @@ namespace UnitTest
             {
                 using ClassType = ObjectFieldConverterReplaceMemberDataSerializerV3;
             public:
-                AZ_CLASS_ALLOCATOR(ObjectFieldConverterReplaceMemberDataSerializerV3, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(ObjectFieldConverterReplaceMemberDataSerializerV3, SystemAllocator);
                 AZ_TYPE_INFO(ObjectFieldConverterReplaceMemberDataSerializerV3, "{5722C4E4-25DE-48C5-BC89-0EE9D38DF433}");
 
                 static bool ConvertStringToBool(const AZStd::string& value)
@@ -3051,7 +3059,7 @@ namespace UnitTest
             {
                 using ClassType = ObjectFieldConverterReplaceMemberDataConverterV2;
             public:
-                AZ_CLASS_ALLOCATOR(ClassType, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(ClassType, SystemAllocator);
                 AZ_TYPE_INFO(ClassType, "{5722C4E4-25DE-48C5-BC89-0EE9D38DF433}");
 
                 static AZStd::array<AZStd::string, 5> ConvertStringVectorToStringArray(const AZStd::vector<AZStd::string>& value)
@@ -3070,7 +3078,7 @@ namespace UnitTest
                     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
                     {
                         // Because containers are implicitly reflected when used as part of a class reflection
-                        // the ObjectFieldConverterV1 AZStd::vector<AZStd::string> class is not reflected 
+                        // the ObjectFieldConverterV1 AZStd::vector<AZStd::string> class is not reflected
                         // if the ObjectFieldConverterV1 did not reflect
                         serializeContext->RegisterGenericType<AZStd::vector<AZStd::string>>();
                         serializeContext->Class<ClassType>()
@@ -3103,7 +3111,7 @@ namespace UnitTest
             {
                 using ClassType = ObjectFieldConverterReplaceMemberDataConverterV3;
             public:
-                AZ_CLASS_ALLOCATOR(ClassType, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(ClassType, SystemAllocator);
                 AZ_TYPE_INFO(ClassType, "{5722C4E4-25DE-48C5-BC89-0EE9D38DF433}");
 
                 static AZStd::list<AZStd::string> ConvertStringVectorToStringList(const AZStd::vector<AZStd::string>& value)
@@ -3126,7 +3134,7 @@ namespace UnitTest
                             ->Version(3)
                             ->Field("RootStringField", &ClassType::m_rootStringField)
                             ->Field("RootStringList", &ClassType::m_rootStringList)
-                            // The TypeChange and NameChange converters are interleaved purposefully to make sure that the order of declaration 
+                            // The TypeChange and NameChange converters are interleaved purposefully to make sure that the order of declaration
                             // of the converters doesn't affect the conversion result
                             ->TypeChange("RootStringVector", 1, 3, AZStd::function<AZStd::list<AZStd::string>(const AZStd::vector<AZStd::string>&)>(&ConvertStringVectorToStringList))
                             ->NameChange(1, 3, "RootStringVector", "RootStringList")
@@ -3320,7 +3328,7 @@ namespace UnitTest
 
         struct ObjectWithAnyAndBool
         {
-            AZ_CLASS_ALLOCATOR(ObjectWithAnyAndBool, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectWithAnyAndBool, SystemAllocator);
             AZ_TYPE_INFO(ObjectWithAnyAndBool, "{266FD5C6-39AE-482F-99B7-DA2A1AFE1EA9}");
 
             static void Reflect(AZ::ReflectContext* reflectContext)

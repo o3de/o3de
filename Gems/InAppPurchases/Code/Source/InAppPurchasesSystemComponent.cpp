@@ -53,7 +53,6 @@ namespace InAppPurchases
             {
                 ec->Class<SystemComponent>("InAppPurchases", "Adds support for in app purchases on iOS and Android")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -103,12 +102,12 @@ namespace InAppPurchases
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("InAppPurchasesService"));
+        provided.push_back(AZ_CRC_CE("InAppPurchasesService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("InAppPurchasesService"));
+        incompatible.push_back(AZ_CRC_CE("InAppPurchasesService"));
     }
 
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -300,7 +299,7 @@ namespace InAppPurchases
         m_productInfoIndex++;
 
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (productDetails != nullptr)
         {
@@ -323,7 +322,8 @@ namespace InAppPurchases
         m_productInfoIndex--;
 
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (productDetails != nullptr)
         {
@@ -346,7 +346,8 @@ namespace InAppPurchases
         m_purchasedProductInfoIndex++;
 
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
 
         if (purchasedProductDetails != nullptr)
         {
@@ -369,7 +370,8 @@ namespace InAppPurchases
         m_purchasedProductInfoIndex--;
 
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
 
         if (purchasedProductDetails != nullptr)
         {
@@ -390,7 +392,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetProductId()
     {
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (productDetails != nullptr && m_productInfoIndex >= 0 && m_productInfoIndex < productDetails->size())
         {
@@ -403,7 +406,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetProductTitle()
     {
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (productDetails != nullptr && m_productInfoIndex >= 0 && m_productInfoIndex < productDetails->size())
         {
@@ -416,7 +420,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetProductDescription()
     {
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (productDetails != nullptr && m_productInfoIndex >= 0 && m_productInfoIndex < productDetails->size())
         {
@@ -429,7 +434,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetProductPrice()
     {
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (productDetails != nullptr && m_productInfoIndex >= 0 && m_productInfoIndex < productDetails->size())
         {
@@ -442,7 +448,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetProductCurrencyCode()
     {
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (productDetails != nullptr && m_productInfoIndex >= 0 && m_productInfoIndex < productDetails->size())
         {
@@ -455,7 +462,8 @@ namespace InAppPurchases
     AZ::u64 SystemComponent::GetProductPriceMicro()
     {
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (productDetails != nullptr && m_productInfoIndex >= 0 && m_productInfoIndex < productDetails->size())
         {
@@ -468,7 +476,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetPurchasedProductId()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
 
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
@@ -481,7 +490,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetOrderId()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
 
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
@@ -494,7 +504,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetDeveloperPayload()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
 
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
@@ -507,7 +518,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetPurchaseTime()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
 
         AZStd::string date;
 
@@ -528,7 +540,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetPurchaseSignature()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
             const PurchasedProductDetailsAndroid* purchasedProductsAndroid = azrtti_cast<const PurchasedProductDetailsAndroid*>(purchasedProductDetails->at(m_purchasedProductInfoIndex).get());
@@ -544,7 +557,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetPackageName()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
             const PurchasedProductDetailsAndroid* purchasedProductsAndroid = azrtti_cast<const PurchasedProductDetailsAndroid*>(purchasedProductDetails->at(m_purchasedProductInfoIndex).get());
@@ -560,7 +574,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetPurchaseToken()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
             const PurchasedProductDetailsAndroid* purchasedProductsAndroid = azrtti_cast<const PurchasedProductDetailsAndroid*>(purchasedProductDetails->at(m_purchasedProductInfoIndex).get());
@@ -576,7 +591,8 @@ namespace InAppPurchases
     bool SystemComponent::IsAutoRenewing()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
             const PurchasedProductDetailsAndroid* purchasedProductsAndroid = azrtti_cast<const PurchasedProductDetailsAndroid*>(purchasedProductDetails->at(m_purchasedProductInfoIndex).get());
@@ -592,7 +608,8 @@ namespace InAppPurchases
     AZStd::string SystemComponent::GetRestoredOrderId()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
             const PurchasedProductDetailsApple* purchasedProductsApple = azrtti_cast<const PurchasedProductDetailsApple*>(purchasedProductDetails->at(m_purchasedProductInfoIndex).get());
@@ -608,7 +625,8 @@ namespace InAppPurchases
     AZ::u64 SystemComponent::GetSubscriptionExpirationTime()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
             const PurchasedProductDetailsApple* purchasedProductsApple = azrtti_cast<const PurchasedProductDetailsApple*>(purchasedProductDetails->at(m_purchasedProductInfoIndex).get());
@@ -624,7 +642,8 @@ namespace InAppPurchases
     AZ::u64 SystemComponent::GetRestoredPurchaseTime()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
             const PurchasedProductDetailsApple* purchasedProductsApple = azrtti_cast<const PurchasedProductDetailsApple*>(purchasedProductDetails->at(m_purchasedProductInfoIndex).get());
@@ -640,7 +659,8 @@ namespace InAppPurchases
     bool SystemComponent::HasDownloads()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
         if (purchasedProductDetails != nullptr && m_purchasedProductInfoIndex >= 0 && m_purchasedProductInfoIndex < purchasedProductDetails->size())
         {
             const PurchasedProductDetailsApple* purchasedProductsApple = azrtti_cast<const PurchasedProductDetailsApple*>(purchasedProductDetails->at(m_purchasedProductInfoIndex).get());
@@ -656,10 +676,12 @@ namespace InAppPurchases
     bool SystemComponent::IsProductOwned()
     {
         const AZStd::vector<AZStd::unique_ptr<PurchasedProductDetails const> >* purchasedProductDetails = nullptr;
-        EBUS_EVENT_RESULT(purchasedProductDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedPurchasedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            purchasedProductDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedPurchasedProductInfo);
 
         const AZStd::vector<AZStd::unique_ptr<ProductDetails const> >* productDetails = nullptr;
-        EBUS_EVENT_RESULT(productDetails, InAppPurchases::InAppPurchasesRequestBus, GetCachedProductInfo);
+        InAppPurchases::InAppPurchasesRequestBus::BroadcastResult(
+            productDetails, &InAppPurchases::InAppPurchasesRequestBus::Events::GetCachedProductInfo);
 
         if (purchasedProductDetails != nullptr && productDetails != nullptr)
         {

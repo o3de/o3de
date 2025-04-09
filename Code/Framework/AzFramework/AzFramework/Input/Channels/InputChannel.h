@@ -85,7 +85,7 @@ namespace AzFramework
         //! Base struct from which to derive all custom input data
         struct CustomData
         {
-            AZ_CLASS_ALLOCATOR(CustomData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomData, AZ::SystemAllocator);
             AZ_RTTI(CustomData, "{887E38BB-64AF-4F4E-A1AE-C1B02371F9EC}");
             virtual ~CustomData() = default;
         };
@@ -94,7 +94,7 @@ namespace AzFramework
         //! Custom data struct for input channels associated with a 2D position
         struct PositionData2D : public CustomData
         {
-            AZ_CLASS_ALLOCATOR(PositionData2D, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PositionData2D, AZ::SystemAllocator);
             AZ_RTTI(PositionData2D, "{354437EC-6BFD-41D4-A0F2-7740018D3589}", CustomData);
             virtual ~PositionData2D() = default;
 
@@ -126,7 +126,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannel, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

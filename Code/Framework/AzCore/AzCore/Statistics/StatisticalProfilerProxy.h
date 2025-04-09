@@ -76,7 +76,7 @@ namespace AZ::Statistics
                 {
                     return;
                 }
-                m_startTime = AZStd::chrono::high_resolution_clock::now();
+                m_startTime = AZStd::chrono::steady_clock::now();
             }
 
             ~TimedScope()
@@ -85,8 +85,8 @@ namespace AZ::Statistics
                 {
                     return;
                 }
-                AZStd::chrono::system_clock::time_point stopTime = AZStd::chrono::high_resolution_clock::now();
-                AZStd::chrono::microseconds duration = stopTime - m_startTime;
+                auto stopTime = AZStd::chrono::steady_clock::now();
+                auto duration = stopTime - m_startTime;
                 m_profilerProxy->PushSample(m_profilerId, m_statId, static_cast<double>(duration.count()));
             }
 
@@ -100,7 +100,7 @@ namespace AZ::Statistics
             static StatisticalProfilerProxy* m_profilerProxy;
             const StatisticalProfilerId m_profilerId;
             const StatIdType& m_statId;
-            AZStd::chrono::system_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
         }; // class TimedScope
 
         friend class TimedScope;
@@ -170,6 +170,14 @@ namespace AZ::Statistics
             for (auto& iter : m_profilers)
             {
                 iter.second.m_profiler.GetStatsManager().GetAllStatisticsOfUnits(stats, units);
+            }
+        }
+        
+        void ResetAllStatistics()
+        {
+            for (auto& iter : m_profilers)
+            {
+                iter.second.m_profiler.GetStatsManager().ResetAllStatistics();
             }
         }
 

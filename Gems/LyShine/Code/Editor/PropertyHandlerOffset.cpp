@@ -22,7 +22,7 @@ void PropertyHandlerOffset::ConsumeAttribute(AzQtComponents::VectorInput* GUI, A
 {
     UIVectorPropertyHandlerBase::ConsumeAttribute(GUI, attrib, attrValue, debugName);
 
-    if (attrib == AZ_CRC("LayoutFitterType", 0x7c009203))
+    if (attrib == AZ_CRC_CE("LayoutFitterType"))
     {
         UiLayoutFitterInterface::FitType fitType = UiLayoutFitterInterface::FitType::None;
         if (attrValue->Read<UiLayoutFitterInterface::FitType>(fitType))
@@ -48,10 +48,10 @@ void PropertyHandlerOffset::WriteGUIValuesIntoProperty(size_t index, AzQtCompone
     AZ::EntityId id = GetParentEntityId(node, index);
 
     UiTransform2dInterface::Anchors anchors;
-    EBUS_EVENT_ID_RESULT(anchors, id, UiTransform2dBus, GetAnchors);
+    UiTransform2dBus::EventResult(anchors, id, &UiTransform2dBus::Events::GetAnchors);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, id, UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, id, &UiTransformBus::Events::GetPivot);
 
     AZStd::string labels[4];
     GetLabels(anchors, labels);
@@ -103,7 +103,7 @@ void PropertyHandlerOffset::WriteGUIValuesIntoProperty(size_t index, AzQtCompone
     newInternalOffset = DisplayedOffsetToInternalOffset(newDisplayedOffset, anchors, pivot);
 
     // IMPORTANT: This will indirectly update "instance".
-    EBUS_EVENT_ID(id, UiTransform2dBus, SetOffsets, newInternalOffset);
+    UiTransform2dBus::Event(id, &UiTransform2dBus::Events::SetOffsets, newInternalOffset);
 }
 
 bool PropertyHandlerOffset::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzQtComponents::VectorInput* GUI, const UiTransform2dInterface::Offsets& instance, AzToolsFramework::InstanceDataNode* node)
@@ -114,7 +114,7 @@ bool PropertyHandlerOffset::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzQ
     AZ::EntityId id = GetParentEntityId(node, index);
 
     UiTransform2dInterface::Anchors anchors;
-    EBUS_EVENT_ID_RESULT(anchors, id, UiTransform2dBus, GetAnchors);
+    UiTransform2dBus::EventResult(anchors, id, &UiTransform2dBus::Events::GetAnchors);
 
     // Set the labels.
     {
@@ -124,7 +124,7 @@ bool PropertyHandlerOffset::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzQ
     GUI->blockSignals(true);
     {
         AZ::Vector2 pivot;
-        EBUS_EVENT_ID_RESULT(pivot, id, UiTransformBus, GetPivot);
+        UiTransformBus::EventResult(pivot, id, &UiTransformBus::Events::GetPivot);
 
         UiTransform2dInterface::Offsets displayedOffset = InternalOffsetToDisplayedOffset(instance, anchors, pivot);
         InsertValuesIntoGUI(GUI, displayedOffset);
@@ -254,5 +254,6 @@ UiTransform2dInterface::Offsets PropertyHandlerOffset::DisplayedOffsetToInternal
 void PropertyHandlerOffset::Register()
 {
     qRegisterMetaType<UiTransform2dInterface::Anchors>("UiTransform2dInterface::Anchors");
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerOffset());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerOffset());
 }

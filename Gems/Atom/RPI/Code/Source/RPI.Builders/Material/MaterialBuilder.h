@@ -41,15 +41,7 @@ namespace AZ
 
         private:
 
-            enum class MaterialTypeProductSubId : u32
-            {
-                MaterialTypeAsset = 0,
-                AllPropertiesMaterialSourceFile = 1
-            };
-
-            AZ::Data::Asset<MaterialAsset> CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const;
             bool ShouldReportMaterialAssetWarningsAsErrors() const;
-            bool ShouldOutputAllPropertiesMaterial() const;
             AZStd::string GetBuilderSettingsFingerprint() const;
             
             bool m_isShuttingDown = false;

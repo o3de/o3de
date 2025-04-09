@@ -16,6 +16,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AZ
 {
@@ -23,15 +24,17 @@ namespace AZ
     {
         namespace
         {
-            static AZ::Name GetMapName(const DecalMapType mapType)
+            static const AZ::Name& GetMapName(const DecalMapType mapType)
             {
-                // Using local static to avoid cost of creating AZ::Name. Also so that this can be called from other static functions
-                static AZStd::array<AZ::Name, DecalMapType_Num> mapNames =
+                switch (mapType)
                 {
-                    AZ::Name("baseColor.textureMap"),
-                    AZ::Name("normal.textureMap")
-                };
-                return mapNames[mapType];
+                case DecalMapType_Diffuse:
+                    return AZ_NAME_LITERAL("baseColor.textureMap");
+                case DecalMapType_Normal:
+                    return AZ_NAME_LITERAL("normal.textureMap");
+                default:
+                    return AZ_NAME_LITERAL("");
+                }
             }
 
             static AZ::Data::AssetId GetImagePoolId()
@@ -257,7 +260,7 @@ namespace AZ
             return imageAsset->GetImageDescriptor().m_mipLevels;
         }
 
-        RHI::ImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
+        RHI::DeviceImageSubresourceLayout DecalTextureArray::GetLayout(const DecalMapType mapType, int mip) const
         {
             AZ_Assert(m_materials.size() > 0, "GetLayout() cannot be called unless at least one material has been added");
 
@@ -285,6 +288,11 @@ namespace AZ
             {
                 return {};
             }
+            AZ_Assert(
+                mip < image->GetImageDescriptor().m_mipLevels,
+                "It is expected that all decals in a texture array must have the same number of mips which may not be the case here. "
+                "Please ensure that all the materials within m_materials are pointing to textures with same mips.");
+
             const auto srcData = image->GetSubImageData(mip, 0);
             return srcData;
         }

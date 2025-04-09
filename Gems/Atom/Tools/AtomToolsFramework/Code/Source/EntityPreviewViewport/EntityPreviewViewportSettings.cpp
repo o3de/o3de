@@ -38,11 +38,7 @@ namespace AtomToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Min, 60.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EntityPreviewViewportSettings::m_displayMapperOperationType, "Display Mapper Type", "")
-                        ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Aces, "Aces")
-                        ->EnumAttribute(AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut")
-                        ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough")
-                        ->EnumAttribute(AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB")
-                        ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard")
+                        ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AZ::Render::DisplayMapperOperationType>())
                     ;
             }
         }

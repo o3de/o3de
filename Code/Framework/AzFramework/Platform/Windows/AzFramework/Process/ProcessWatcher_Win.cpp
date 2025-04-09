@@ -133,6 +133,13 @@ namespace AzFramework
         processData.jobHandle = CreateJobObject(nullptr, nullptr);
         if (processData.jobHandle)
         {
+            if (processLaunchInfo.m_tetherLifetime)
+            {
+                JOBOBJECT_EXTENDED_LIMIT_INFORMATION info = {};
+                info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+                ::SetInformationJobObject(processData.jobHandle, JobObjectExtendedLimitInformation, &info, sizeof(info));
+            }
+
             processData.jobCompletionPort.CompletionKey = processData.jobHandle;
             processData.jobCompletionPort.CompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
 

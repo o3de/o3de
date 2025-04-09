@@ -7,18 +7,12 @@
  */
 #pragma once
 
+#include <AzCore/std/containers/span_fwd.h>
+
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/typetraits/type_identity.h>
-
-namespace AZStd
-{
-    inline constexpr size_t dynamic_extent = numeric_limits<size_t>::max();
-
-    template <class T, size_t Extent = dynamic_extent>
-    class span;
-}
 
 namespace AZStd::Internal
 {
@@ -112,9 +106,9 @@ namespace AZStd
         template<size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
         constexpr span(type_identity_t<element_type> (&arr)[N]) noexcept;
 
-        template <class U, size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
+        template <class U, size_t N, class = enable_if_t<(extent == dynamic_extent || N == Extent) && is_convertible_v<U, T>>>
         constexpr span(array<U, N>& data) noexcept;
-        template <class U, size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
+        template <class U, size_t N, class = enable_if_t<(extent == dynamic_extent || N == Extent) && is_convertible_v<U, T>>>
         constexpr span(const array<U, N>& data) noexcept;
 
         template <class R, class = enable_if_t<ranges::contiguous_range<R> &&

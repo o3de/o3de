@@ -131,21 +131,14 @@ namespace AZ
             RHI::ImageDescriptor imgDescriptor = image.GetDescriptor();
             image.SetDescriptor(imgDescriptor);
             image.SetName(name);
-            image.m_isSwapChainImage = true;
+            image.m_isSwapChainImage = true;            
 
             return RHI::ResultCode::Success;
         }
 
-        void SwapChain::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void SwapChain::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             Image& image = static_cast<Image&>(resourceBase);
-
-            const size_t sizeInBytes = image.GetMemoryView().GetSize();
-
-            RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_reservedInBytes -= sizeInBytes;
-            memoryUsage.m_residentInBytes -= sizeInBytes;
-
             image.m_memoryView = {};
         }
 
@@ -195,6 +188,7 @@ namespace AZ
         id<MTLTexture> SwapChain::RequestDrawable(bool isFrameCaptureEnabled)
         {
             AZ_PROFILE_SCOPE(RHI, "SwapChain::RequestDrawable");
+            AZStd::lock_guard<AZStd::mutex> lock(m_drawablesMutex);
             m_metalView.metalLayer.framebufferOnly = !isFrameCaptureEnabled;
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             if(m_drawables[currentImageIndex])
@@ -230,8 +224,8 @@ namespace AZ
                     else
                     {
                         RHI::ImageDescriptor imgDescriptor = swapChainImage->GetDescriptor();
-                        imgDescriptor.m_size.m_width = mtlDrawableTexture.width;
-                        imgDescriptor.m_size.m_height = mtlDrawableTexture.height;
+                        imgDescriptor.m_size.m_width = static_cast<uint32_t>(mtlDrawableTexture.width);
+                        imgDescriptor.m_size.m_height = static_cast<uint32_t>(mtlDrawableTexture.height);
                         swapChainImage->SetDescriptor(imgDescriptor);
                         
                         RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlDrawableTexture, ResourceType::MtlTextureType, swapChainImage->m_isSwapChainImage});

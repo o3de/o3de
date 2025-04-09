@@ -13,17 +13,17 @@
 namespace LmbrCentral
 {
     /// Type ID for CapsuleShapeComponent
-    static const AZ::Uuid CapsuleShapeComponentTypeId = "{967EC13D-364D-4696-AB5C-C00CC05A2305}";
+    inline constexpr AZ::TypeId CapsuleShapeComponentTypeId{ "{967EC13D-364D-4696-AB5C-C00CC05A2305}" };
 
     /// Type ID for EditorCapsuleShapeComponent
-    static const AZ::Uuid EditorCapsuleShapeComponentTypeId = "{06B6C9BE-3648-4DA2-9892-755636EF6E19}";
+    inline constexpr AZ::TypeId EditorCapsuleShapeComponentTypeId{ "{06B6C9BE-3648-4DA2-9892-755636EF6E19}" };
 
     /// Configuration data for CapsuleShapeComponent
     class CapsuleShapeConfig
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(CapsuleShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CapsuleShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(CapsuleShapeConfig, "{00931AEB-2AD8-42CE-B1DC-FA4332F51501}", ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -53,6 +53,7 @@ namespace LmbrCentral
 
         float m_height = 1.0f; ///< The end to end height of capsule, this includes the cylinder and both caps.
         float m_radius = 0.25f; ///< The radius of this capsule.
+        AZ::Vector3 m_translationOffset = AZ::Vector3::CreateZero(); ///< Translation offset from the entity position.
     };
 
     struct CapsuleInternalEndPoints
@@ -66,16 +67,16 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual CapsuleShapeConfig GetCapsuleConfiguration() = 0;
+        virtual const CapsuleShapeConfig& GetCapsuleConfiguration() const = 0;
 
         /// @brief Returns the end to end height of the capsule, this includes the cylinder and both caps.
-        virtual float GetHeight() = 0;
+        virtual float GetHeight() const = 0;
 
         /// @brief Returns the radius of the capsule.
-        virtual float GetRadius() = 0;
+        virtual float GetRadius() const = 0;
 
         /// @brief Returns the base and top points of the capsule, corresponding to the center points of the cap spheres.
-        virtual CapsuleInternalEndPoints GetCapsulePoints() = 0;
+        virtual CapsuleInternalEndPoints GetCapsulePoints() const = 0;
 
         /// @brief Sets the end to end height of capsule, this includes the cylinder and both caps.
         /// @param height new height of the capsule.

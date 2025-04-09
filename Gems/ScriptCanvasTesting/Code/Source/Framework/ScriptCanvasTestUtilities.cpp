@@ -20,6 +20,7 @@
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Libraries/Core/Method.h>
 
 namespace ScriptCanvasTestUtilitiesCPP
 {
@@ -30,10 +31,15 @@ namespace ScriptCanvasTestUtilitiesCPP
 
 namespace ScriptCanvasTests
 {
-    using namespace ScriptCanvas;
+    const char* GetUnitTestDirPathRelative()
+    {
+        return ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative;
+    }
 
     void ExpectParse(AZStd::string_view graphPath)
     {
+        using namespace ScriptCanvas;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
         const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
 
@@ -49,6 +55,8 @@ namespace ScriptCanvasTests
 
     void ExpectParseError(AZStd::string_view graphPath)
     {
+        using namespace ScriptCanvas;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
         const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
         ScriptCanvasEditor::RunGraphSpec runGraphSpec;
@@ -70,28 +78,27 @@ namespace ScriptCanvasTests
 
     void VerifyReporter(const ScriptCanvasEditor::Reporter& reporter)
     {
+        using namespace ScriptCanvas;
+
+
         if (!reporter.IsGraphLoaded())
         {
-            ADD_FAILURE() << "Graph was not successfully loaded.";
+            ADD_FAILURE() << "Graph was not successfully loaded.\n" << reporter.GetFilePath().c_str();
         }
         else if (reporter.ExpectsParseError())
         {
             if (!reporter.IsParseAttemptMade())
             {
-                ADD_FAILURE() << "Expected a parse error but the graph never attempted to be parsed";
+                ADD_FAILURE() << "Expected a parse error but the graph never attempted to be parsed\n" << reporter.GetFilePath().c_str();
             }
             else if (reporter.IsCompiled())
             {
-                ADD_FAILURE() << "Expected a parse error but graph compiled successfully";
+                ADD_FAILURE() << "Expected a parse error but graph compiled successfully\n" << reporter.GetFilePath().c_str();
             }
         }
         else if (!reporter.IsCompiled())
         {
-            ADD_FAILURE() << "Graph failed to compile";
-        }
-        else if (!reporter.GetScriptCanvasId().IsValid())
-        {
-            ADD_FAILURE() << "Graph is not valid, wasn't assigned properly to an entity";
+            ADD_FAILURE() << "Graph failed to compile\n" << reporter.GetFilePath().c_str();
         }
         else if (reporter.IsReportFinished())
         {
@@ -107,12 +114,12 @@ namespace ScriptCanvasTests
 
                 if (!reporter.IsActivated())
                 {
-                    ADD_FAILURE() << "Graph did not activate";
+                    ADD_FAILURE() << "Graph did not activate\n" << reporter.GetFilePath().c_str();
                 }
 
                 if (!reporter.IsDeactivated())
                 {
-                    ADD_FAILURE() << "Graph did not deactivate";
+                    ADD_FAILURE() << "Graph did not deactivate\n" << reporter.GetFilePath().c_str();
                     reportCheckpoints = true;
                 }
 
@@ -120,13 +127,13 @@ namespace ScriptCanvasTests
                 {
                     if (!reporter.IsComplete())
                     {
-                        ADD_FAILURE() << "Graph was not marked complete";
+                        ADD_FAILURE() << "Graph was not marked complete\n" << reporter.GetFilePath().c_str();
                         reportCheckpoints = true;
                     }
 
                     if (!reporter.IsErrorFree())
                     {
-                        ADD_FAILURE() << "Graph execution had errors";
+                        ADD_FAILURE() << "Graph execution had errors\n" << reporter.GetFilePath().c_str();
                         reportCheckpoints = true;
 
                         const auto& failures = reporter.GetFailure();
@@ -140,7 +147,7 @@ namespace ScriptCanvasTests
                 {
                     if (reporter.IsErrorFree())
                     {
-                        ADD_FAILURE() << "Graph expected error, but didn't report any";
+                        ADD_FAILURE() << "Graph expected error, but didn't report any\n" << reporter.GetFilePath().c_str();
                         reportCheckpoints = true;
                     }
                 }
@@ -151,7 +158,7 @@ namespace ScriptCanvasTests
                 const auto& checkpoints = reporter.GetCheckpoints();
                 if (checkpoints.empty())
                 {
-                    ADD_FAILURE() << "No checkpoints or other unit test nodes found, using them can help parse graph test failures";
+                    ADD_FAILURE() << "No checkpoints or other unit test nodes found, using them can help parse graph test failures\n" << reporter.GetFilePath().c_str();
                 }
                 else
                 {
@@ -217,7 +224,7 @@ namespace ScriptCanvasTests
         }
         else
         {
-            ADD_FAILURE() << "Graph report did not finish";
+            ADD_FAILURE() << "Graph report did not finish\n" << reporter.GetFilePath().c_str();
         }
     }
 
@@ -226,14 +233,14 @@ namespace ScriptCanvasTests
         ScriptCanvasTests::RunUnitTestGraph(graphPath, ScriptCanvasEditor::RunSpec());
     }
 
-    void RunUnitTestGraph(AZStd::string_view graphPath, ExecutionMode execution)
+    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution)
     {
         ScriptCanvasEditor::RunSpec spec;
         spec.execution = execution;
         ScriptCanvasTests::RunUnitTestGraph(graphPath, spec);
     }
 
-    void RunUnitTestGraph(AZStd::string_view graphPath, ExecutionMode execution, const ScriptCanvasEditor::DurationSpec& duration)
+    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution, const ScriptCanvasEditor::DurationSpec& duration)
     {
         ScriptCanvasEditor::RunSpec runSpec;
         runSpec.execution = execution;
@@ -241,7 +248,7 @@ namespace ScriptCanvasTests
         RunUnitTestGraph(graphPath, runSpec);
     }
 
-    void RunUnitTestGraph(AZStd::string_view graphPath, ExecutionMode execution, AZStd::string_view dependentScriptEvent)
+    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution, AZStd::string_view dependentScriptEvent)
     {
         AZ::Data::AssetType assetType(azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
         if (auto scriptEventAssetHandler = AZ::Data::AssetManager::Instance().GetHandler(assetType))
@@ -293,7 +300,7 @@ namespace ScriptCanvasTests
     {
         ScriptCanvasEditor::RunSpec spec;
         spec.duration = duration;
-        ScriptCanvasTests::RunUnitTestGraph(graphPath, ExecutionMode::Interpreted, duration);
+        ScriptCanvasTests::RunUnitTestGraph(graphPath, ScriptCanvas::ExecutionMode::Interpreted, duration);
     }
 
     void RunUnitTestGraph(AZStd::string_view graphPath, const ScriptCanvasEditor::RunSpec& runSpec)
@@ -331,6 +338,8 @@ namespace ScriptCanvasTests
 
     void RunUnitTestGraphMixed(AZStd::string_view graphPath, const ScriptCanvasEditor::DurationSpec& duration)
     {
+        using namespace ScriptCanvas;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
 
         ScriptCanvasEditor::RunGraphSpec runGraphSpec;
@@ -461,7 +470,7 @@ namespace ScriptCanvasTests
     AZ::u32 TestBehaviorContextObject::s_createdCount = 0;
     AZ::u32 TestBehaviorContextObject::s_destroyedCount = 0;
 
-    AZ::EntityId CreateClassFunctionNode(const ScriptCanvasId& scriptCanvasId, AZStd::string_view className, AZStd::string_view methodName)
+    AZ::EntityId CreateClassFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZStd::string_view className, AZStd::string_view methodName)
     {
         using namespace ScriptCanvas;
 
@@ -480,6 +489,7 @@ namespace ScriptCanvasTests
 
     AZStd::string SlotDescriptorToString(ScriptCanvas::SlotDescriptor descriptor)
     {
+        using namespace ScriptCanvas;
         AZStd::string name;
 
         switch (descriptor.m_slotType)

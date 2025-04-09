@@ -22,6 +22,7 @@ namespace AZ
             : public SMAAFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(SMAAFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::SMAAFeatureProcessor, "55E360D5-4810-4932-A782-7EA9104E9374", AZ::Render::SMAAFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

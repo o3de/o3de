@@ -1,0 +1,147 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{34E20A18-CB2E-5D93-84CF-C2B9E144DA75}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridblenddistance.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{F70A2001-CC2C-5DFE-BC87-B98A4E0E57EB}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridblendirradiance.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{44260D05-99D8-5A86-83E7-B7C5EC48F297}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridborderupdaterow.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{F60AFD1E-1CED-5E33-930E-17DB4EAA1F81}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridborderupdatecolumn.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{7547FD2E-1630-58B1-9293-F4C9F33E0D72}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridclassification.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{5A28BC26-22C8-5DC2-870B-3EE03A6DC723}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridrender.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{55BDC206-9859-52D8-AE08-457F5664F509}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridraytracing.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{3E4941A5-56BF-5ECD-95B3-64E6D6803159}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridraytracingclosesthit.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{EB5538D4-1028-534C-9FC0-1421E0926E31}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridraytracingmiss.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{582D6038-5953-585B-8840-CA5B993B5B08}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridrelocation.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{E1A185DF-DC80-58B1-B77B-CE8BEDB61D3B}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/diffuseprobegridupdatepassrequest.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{522C32A8-CB02-51CE-B450-C4B8E38C084D}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/diffuseprobegridrenderpassrequest.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{B428ED95-3E5F-50D5-98A7-A2AECEAA1898}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/diffuseprobegridvisualizationpassrequest.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{A6F9D127-D963-5D78-B19F-A31E73C5C2B5}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/diffuseprobegridtemplates.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{49D6CA83-7AE4-5BF5-9428-636B9EB6DCC7}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridprepare.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{D20ADC05-ECF9-5305-93FC-F0A88AB2072D}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridquery.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{B3B664B6-4340-5A35-9A67-DC00A5361D62}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridvisualizationprepare.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{82253586-BC83-5289-8E14-4DF83E7032D2}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/diffuseprobegridscreenspacereflectionsquerypassrequest.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{2AAC574D-E80D-5D41-BE12-32B192306FD1}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridqueryfullscreenwithalbedo.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{8BC56BD7-1477-5396-A410-D8A36D4DDB25}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/diffuseprobegridpreparepassrequest.azasset"
+        }
+    ]
+}

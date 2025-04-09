@@ -12,6 +12,8 @@
 #include <Editor/Framework/ScriptCanvasTraceUtilities.h>
 #include <Editor/Framework/ScriptCanvasReporter.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
+#include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Translation/TranslationResult.h>
 
 namespace ScriptCanvas
 {

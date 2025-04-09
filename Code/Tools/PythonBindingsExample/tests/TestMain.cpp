@@ -13,6 +13,7 @@
 #include <AzTest/Utils.h>
 
 #include <AzTest/AzTest.h>
+#include <QApplication>
 DECLARE_AZ_UNIT_TEST_MAIN();
 
 int runDefaultRunner(int argc, char* argv[])
@@ -23,7 +24,9 @@ int runDefaultRunner(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     AZ::Debug::Trace::HandleExceptions(true);
+    QApplication app(argc, argv);
     AZ::Test::ApplyGlobalParameters(&argc, argv);
 
     // ran with no parameters?

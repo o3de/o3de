@@ -74,6 +74,7 @@ namespace AzQtComponents
 
     protected:
         void paintEvent(QPaintEvent* event) override;
+        bool eventFilter(QObject *object, QEvent *event) override;
 
     private:
         friend class Style;

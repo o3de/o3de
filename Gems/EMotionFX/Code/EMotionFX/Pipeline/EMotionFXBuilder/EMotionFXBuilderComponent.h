@@ -11,7 +11,6 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Module/Environment.h>
-#include <EMotionFX/Source/EMotionFXAllocatorInitializer.h>
 
 #include "MotionSetBuilderWorker.h"
 #include "AnimGraphBuilderWorker.h"
@@ -35,8 +34,7 @@ namespace EMotionFX
         public:
             AZ_COMPONENT(EMotionFXBuilderComponent, "{5484372D-E088-41CB-BFB4-73649DD9DB10}");
 
-            EMotionFXBuilderComponent();
-            ~EMotionFXBuilderComponent() override;
+            EMotionFXBuilderComponent() = default;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -51,10 +49,6 @@ namespace EMotionFX
             EMotionFXBuilderComponent(const EMotionFXBuilderComponent&) = delete;
 
             AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler> > m_assetHandlers;
-
-            // Creates a static shared pointer using the AZ EnvironmentVariable system.
-            // This will prevent the EMotionFXAllocator from destroying too early by the other component
-            static AZ::EnvironmentVariable<EMotionFXAllocatorInitializer> s_EMotionFXAllocator;
 
             MotionSetBuilderWorker m_motionSetBuilderWorker;
             AnimGraphBuilderWorker m_animGraphBuilderWorker;

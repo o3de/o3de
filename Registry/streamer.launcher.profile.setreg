@@ -1,0 +1,42 @@
+{
+    "Amazon":
+    {
+        "AzCore":
+        {
+            "Streamer":
+            {
+                "Profiles":
+                {
+                    "Generic":
+                    {
+                        "Stack":
+                        {
+                            "Remote drive":
+                            {
+                                "$type": "AzFramework::RemoteStorageDriveConfig",
+                                "$stack_after": "Splitter",
+                                "MaxFileHandles": 128 
+                            }
+                        }
+                    },
+                    "DevMode":
+                    {
+                        "Stack":
+                        {
+                            "Drive":
+                            {
+                                "$type": "AZ::IO::StorageDriveConfig",
+                                "MaxFileHandles": 128 
+                            },
+                            "Remote drive":
+                            {
+                                "$type": "AzFramework::RemoteStorageDriveConfig",
+                                "MaxFileHandles": 128 
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

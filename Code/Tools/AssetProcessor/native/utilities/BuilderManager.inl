@@ -74,7 +74,11 @@ namespace AssetProcessor
         if (!netResponse.m_response.Succeeded() || s_createRequestFileForSuccessfulJob)
         {
             // we write the request out to disk for failure or debugging
-            if (!DebugWriteRequestFile(tempFolderPath.c_str(), request, task, modulePath))
+            BuilderPurpose purpose = azrtti_typeid<TRequest>() == azrtti_typeid<AssetBuilderSDK::CreateJobsRequest>()
+                ? BuilderPurpose::CreateJobs
+                : BuilderPurpose::ProcessJob;
+
+            if (!DebugWriteRequestFile(tempFolderPath.c_str(), request, task, modulePath, purpose))
             {
                 return BuilderRunJobOutcome::FailedToWriteDebugRequest;
             }
@@ -86,7 +90,7 @@ namespace AssetProcessor
     }
 
     template<typename TRequest>
-    bool Builder::DebugWriteRequestFile(QString tempFolderPath, const TRequest& request, const AZStd::string& task, const AZStd::string& modulePath) const
+    bool Builder::DebugWriteRequestFile(QString tempFolderPath, const TRequest& request, const AZStd::string& task, const AZStd::string& modulePath, BuilderPurpose purpose) const
     {
         if (tempFolderPath.isEmpty())
         {
@@ -106,7 +110,7 @@ namespace AssetProcessor
             return false;
         }
 
-        auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile, false);
+        auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile, purpose);
         AZStd::string paramString;
         AZ::StringFunc::Join(paramString, params.begin(), params.end(), " ");
 

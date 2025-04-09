@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry EvaluateVertexGeometry_DepthPass
+#endif
+
+#include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+
+VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN, VsSystemValues SV)
+{
+    VsOutput output;
+
+    float4x4 objectToWorld = GetObjectToWorldMatrix(SV.m_instanceId);
+    float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
+    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+    output.m_worldPos = worldPosition.xyz;
+
+    if (o_prevPosition_isBound)
+    {
+        output.m_worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV.m_instanceId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
+    }
+    else
+    {
+        output.m_worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV.m_instanceId), float4(IN.m_position, 1.0)).xyz;
+    }
+#endif
+
+    return output;
+}

@@ -13,7 +13,6 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
@@ -30,7 +29,6 @@ namespace AZ
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
-            MemoryComponent::CreateDescriptor(),
             StreamerComponent::CreateDescriptor(),
             JobManagerComponent::CreateDescriptor(),
             JsonSystemComponent::CreateDescriptor(),

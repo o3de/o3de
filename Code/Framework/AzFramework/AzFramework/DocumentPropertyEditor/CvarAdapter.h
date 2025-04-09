@@ -21,8 +21,10 @@ namespace AZ::DocumentPropertyEditor
         CvarAdapter();
         ~CvarAdapter();
 
-        Dom::Value GetContents() const override;
         void OnContentsChanged(const Dom::Path& path, const Dom::Value& value);
+
+    protected:
+        Dom::Value GenerateContents() override;
 
     private:
         struct Impl;

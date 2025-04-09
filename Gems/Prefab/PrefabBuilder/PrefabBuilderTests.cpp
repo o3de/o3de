@@ -9,11 +9,13 @@
 #include "PrefabBuilderTests.h"
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace UnitTest
 {
@@ -183,6 +185,7 @@ namespace UnitTest
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         AZ::ComponentApplication::Descriptor desc;
+        desc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS;
         m_app.Start(desc);
         m_app.CreateReflectionManager();
 
@@ -208,4 +211,4 @@ namespace UnitTest
     }
 }
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

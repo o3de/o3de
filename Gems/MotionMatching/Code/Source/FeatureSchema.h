@@ -22,7 +22,7 @@ namespace EMotionFX::MotionMatching
     class EMFX_API FeatureSchema
     {
     public:
-        AZ_RTTI(FrameDatabase, "{E34F6BFE-73DB-4DED-AAB9-09FBC5113236}")
+        AZ_RTTI(FeatureSchema, "{E34F6BFE-73DB-4DED-AAB9-09FBC5113236}")
         AZ_CLASS_ALLOCATOR_DECL
 
         virtual ~FeatureSchema();
@@ -35,6 +35,8 @@ namespace EMotionFX::MotionMatching
         const AZStd::vector<Feature*>& GetFeatures() const;
 
         Feature* FindFeatureById(const AZ::TypeId& featureId) const;
+
+        AZStd::vector<AZStd::string> CollectColumnNames() const;
 
         static void Reflect(AZ::ReflectContext* context);
 

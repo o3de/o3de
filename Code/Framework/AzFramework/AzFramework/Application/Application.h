@@ -13,6 +13,7 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
+#include <AzCore/Instance/InstancePool.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/fixed_string.h>
@@ -50,16 +51,22 @@ namespace AzFramework
         class Implementation
         {
         public:
-            static Implementation* Create();
-
             virtual ~Implementation() = default;
             virtual void PumpSystemEventLoopOnce() = 0;
             virtual void PumpSystemEventLoopUntilEmpty() = 0;
             virtual void TerminateOnError(int errorCode) { exit(errorCode); }
         };
 
+        class ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{D840FD45-97BC-40D6-A92B-C83B607EA9D5}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create() = 0;
+        };
+
         AZ_RTTI(Application, "{0BD2388B-F435-461C-9C84-D0A96CAF32E4}", AZ::ComponentApplication);
-        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator);
 
         // Publicized types & methods from base ComponentApplication.
         using AZ::ComponentApplication::Descriptor;
@@ -74,6 +81,10 @@ namespace AzFramework
          */
         Application(int* argc, char*** argv);  ///< recommended:  supply &argc and &argv from void main(...) here.
         Application(); ///< for backward compatibility.  If you call this, GetArgC and GetArgV will return nullptr.
+        // Allows passing in a JSON Merge Patch string that can bootstrap
+        // the settings registry with an initial set of settings
+        explicit Application(AZ::ComponentApplicationSettings componentAppSettings);
+        Application(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         ~Application();
 
         /**
@@ -175,6 +186,8 @@ namespace AzFramework
         AZStd::unique_ptr<AZ::IO::Archive> m_archive; ///> The AZ::IO::Instance
         AZStd::unique_ptr<Implementation> m_pimpl;
         AZStd::unique_ptr<AZ::NativeUI::NativeUIRequests> m_nativeUI;
+        AZStd::unique_ptr<AZ::InstancePoolManager> m_poolManager;
+
         bool m_ownsConsole = false;
 
         bool m_exitMainLoopRequested = false;

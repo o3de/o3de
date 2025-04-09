@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/list.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/ShaderModule.h>
+#include <RHI/SpecializationConstantData.h>
 
 namespace AZ
 {
@@ -28,7 +29,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(Pipeline, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Pipeline, AZ::ThreadPoolAllocator);
             AZ_RTTI(Pipeline, "A5FCFA0C-D5B3-4833-A572-BCE8FB612C13", Base);
 
             ~Pipeline() = default;
@@ -78,6 +79,8 @@ namespace AZ
             RHI::Ptr<PipelineLayout> m_pipelineLayout;
             AZStd::list<RHI::Ptr<ShaderModule>> m_shaderModules;
             VkPipeline m_nativePipeline = VK_NULL_HANDLE;
+            // Contains the values of the specialization constants
+            SpecializationConstantData m_specializationConstantData;
         };
     }
 }

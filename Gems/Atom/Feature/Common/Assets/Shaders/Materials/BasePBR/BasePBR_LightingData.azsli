@@ -1,0 +1,121 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the LightingData class in this file without making it the final LightingData
+// used in your shader. Simply #define LightingData to your custom definition before including this file
+// 
+#ifndef LightingData
+#define LightingData        LightingData_BasePBR
+#endif
+
+#include <viewsrg_all.srgi>
+#include <Atom/Features/Debug.azsli>
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
+
+class LightingData_BasePBR
+{
+    LightCullingTileIterator tileIterator;
+    
+    uint lightingChannels;
+    
+    // Lighting outputs
+    real3 diffuseLighting;
+    real3 specularLighting;
+
+    // Factors for the amount of diffuse and specular lighting applied
+    real3 diffuseResponse;
+   
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
+    real shrinkFactor;
+
+    // Normalized direction from surface to camera
+    float3 dirToCamera;
+    
+    // Scaling term to approximate multiscattering contribution in specular BRDF
+    real3 multiScatterCompensation;
+
+    // Lighting emitted from the surface
+    real3 emissiveLighting;
+
+    // BRDF texture values
+    real2 brdf;
+
+    // Normal . View
+    float NdotV;
+
+#if ENABLE_TRANSMISSION
+    real3 translucentBackLighting;
+#endif
+
+    // Occlusion factors (0 = dark, 1 = light)
+    real diffuseAmbientOcclusion;
+    real specularOcclusion;
+
+    void Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition);
+    void CalculateMultiscatterCompensation(real3 specularF0, bool enabled);
+    void FinalizeLighting(Surface surface);
+    float GetSpecularNdotV() { return NdotV; }
+};
+
+void LightingData_BasePBR::Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition)
+{
+    diffuseLighting = real3(0.0, 0.0, 0.0);
+    specularLighting = real3(0.0, 0.0, 0.0);
+    multiScatterCompensation = real3(1.0, 1.0, 1.0);
+    emissiveLighting = real3(0.0, 0.0, 0.0);
+#if ENABLE_TRANSMISSION
+    translucentBackLighting = real3(0.0, 0.0, 0.0);
+#endif
+    diffuseAmbientOcclusion = 1.0;
+    specularOcclusion = 1.0;
+        
+    lightingChannels = 0xFFFFFFFF;
+
+    dirToCamera = normalize(viewPosition - positionWS);
+
+    // sample BRDF map (indexed by smoothness values rather than roughness)
+    NdotV = saturate(dot(specularNormal, dirToCamera));
+    float2 brdfUV = float2(NdotV, (1.0 - roughnessLinear));
+    #ifdef CS_SAMPLERS
+    brdf = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, brdfUV, 0).rg);
+    #else
+    brdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg);
+    #endif
+}
+
+void LightingData_BasePBR::CalculateMultiscatterCompensation(real3 specularF0, bool enabled)
+{
+    multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, enabled);
+}
+
+void LightingData_BasePBR::FinalizeLighting(Surface surface)
+{
+    specularLighting *= specularOcclusion;
+    diffuseLighting *= diffuseAmbientOcclusion;
+
+    if(!IsSpecularLightingEnabled())
+    {
+        specularLighting = real3(0, 0, 0);
+    }
+    if(!IsDiffuseLightingEnabled())
+    {
+        diffuseLighting = real3(0, 0, 0);
+    }
+
+    // Transmitted light
+#if ENABLE_TRANSMISSION
+    if(o_transmission_mode != TransmissionMode::None)
+    {
+        diffuseLighting += translucentBackLighting * surface.transmission.tint;
+    }
+#endif
+}

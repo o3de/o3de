@@ -7,7 +7,7 @@ set -euo pipefail
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-JDK_VERSION="8.282.08.1"
+JDK_VERSION="11.0.17.8.1"
 
 echo "Installing Corretto JDK ${JDK_VERSION}"
 curl -o /tmp/amazon-corretto-${JDK_VERSION}-macosx-x64.pkg https://corretto.aws/downloads/resources/${JDK_VERSION}/amazon-corretto-${JDK_VERSION}-macosx-x64.pkg

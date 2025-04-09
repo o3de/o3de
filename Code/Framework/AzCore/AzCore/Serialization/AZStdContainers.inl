@@ -48,6 +48,70 @@ namespace AZStd
     class intrusive_ptr;
     template<class T>
     class shared_ptr;
+
+    template<class T, class = void>
+    inline constexpr bool HasToString_v = false;
+    template<class T>
+    inline constexpr bool HasToString_v<T, AZStd::enable_if_t<
+        AZStd::is_void_v<decltype(AZStd::to_string(AZStd::declval<AZStd::string&>(), AZStd::declval<T>()), void())>> > = true;
+
+    inline namespace AssociativeInternal
+    {
+        // SFINAE expression to determine whether an associative container is an actual map with a corresponding value for each key,
+        // or is simply a keyed container, like a set or an unordered_set
+        template<class T, class = void>
+        constexpr bool IsMapType_v = false;
+        template<class T>
+        constexpr bool IsMapType_v<T, enable_if_t<Internal::sfinae_trigger_v<typename T::mapped_type>>> = true;
+
+        template <class T>
+        constexpr bool IsOrderedSetImpl_v = false;
+
+        template<class K, class C, class A>
+        constexpr bool IsOrderedSetImpl_v<AZStd::set<K, C, A>> = true;
+
+        template<class K, class C, class A>
+        constexpr bool IsOrderedSetImpl_v<AZStd::multimap<K, C, A>> = true;
+
+        template <class T>
+        constexpr bool IsOrderedMapImpl_v = false;
+
+        template<class K, class M, class C, class A>
+        constexpr bool IsOrderedMapImpl_v<AZStd::map<K, M, C, A>> = true;
+
+        template<class K, class M, class C, class A>
+        constexpr bool IsOrderedMapImpl_v<AZStd::multimap<K, M, C, A>> = true;
+
+        template <class T>
+        constexpr bool IsUnorderedSetImpl_v = false;
+
+        template <class K, class H, class E, class A>
+        constexpr bool IsUnorderedSetImpl_v<AZStd::unordered_set<K, H, E, A>> = true;
+
+        template <class K, class H, class E, class A>
+        constexpr bool IsUnorderedSetImpl_v<AZStd::unordered_multiset<K, H, E, A>> = true;
+
+        template <class T>
+        constexpr bool IsUnorderedMapImpl_v = false;
+
+        template <class K, class M, class H, class E, class A>
+        constexpr bool IsUnorderedMapImpl_v<AZStd::unordered_map<K, M, H, E, A>> = true;
+
+        template <class K, class M, class H, class E, class A>
+        constexpr bool IsUnorderedMapImpl_v<AZStd::unordered_multimap<K, M, H, E, A>> = true;
+    }
+
+    template <class T>
+    constexpr bool IsOrderedSet_v = AssociativeInternal::IsOrderedSetImpl_v<AZStd::remove_cvref_t<T>>;
+
+    template <class T>
+    constexpr bool IsOrderedMap_v = AssociativeInternal::IsOrderedMapImpl_v<AZStd::remove_cvref_t<T>>;
+
+    template <class T>
+    constexpr bool IsUnorderedSet_v = AssociativeInternal::IsUnorderedSetImpl_v<AZStd::remove_cvref_t<T>>;
+
+    template <class T>
+    constexpr bool IsUnorderedMap_v = AssociativeInternal::IsUnorderedMapImpl_v<AZStd::remove_cvref_t<T>>;
 }
 
 namespace AZ
@@ -66,13 +130,6 @@ namespace AZ
             classElement.m_typeId = SerializeGenericTypeInfo<ValueClass>::GetClassTypeId();
             classElement.m_editData = nullptr;
             classElement.m_attributeOwnership = SerializeContext::ClassElement::AttributeOwnership::Self;
-            /**
-             * This should technically bind the reference value from the GetCurrentSerializeContextModule() call
-             * as that will always return the current module that set the allocator.
-             * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
-             * created within then this will return this .dll/.exe module allocator
-             */
-            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
 
             // Flag the field with the EnumType attribute if we're an enumeration type aliased by RemoveEnum
             const bool isSpecializedEnum = AZStd::is_enum<ValueType>::value && !AzTypeInfo<ValueType>::Uuid().IsNull();
@@ -80,18 +137,18 @@ namespace AZ
             {
                 auto uuid = AzTypeInfo<ValueType>::Uuid();
 
-                classElement.m_attributes.emplace_back(AZ_CRC("EnumType", 0xb177e1b5), CreateModuleAttribute(AZStd::move(uuid)));
+                classElement.m_attributes.emplace_back(AZ_CRC_CE("EnumType"), CreateModuleAttribute(AZStd::move(uuid)));
             }
         }
 
         template <class T>
-        AZStd::enable_if_t<std::is_pod<T>::value> InitializeDefaultIfPodType(T& t)
+        AZStd::enable_if_t<std::is_trivial<T>::value> InitializeDefaultIfPodType(T& t)
         {
             t = T{};
         }
 
         template <class T>
-        AZStd::enable_if_t<!std::is_pod<T>::value> InitializeDefaultIfPodType(T& t)
+        AZStd::enable_if_t<!std::is_trivial<T>::value> InitializeDefaultIfPodType(T& t)
         {
             (void)t;
         }
@@ -140,6 +197,11 @@ namespace AZ
         // Converts an integral index into a string with value = "Value" + #Index, where #Index is the stringification of the Index value
         template<size_t Index>
         struct IndexToCStr : IndexToCStrHelper<Index> {};
+
+        template<class Container>
+        constexpr bool IsForwardList_v = false;
+        template<class T, class Alloc>
+        inline constexpr bool IsForwardList_v<AZStd::forward_list<T, Alloc>> = true;
 
         template<class T, bool IsStableIterators>
         class AZStdBasicContainer
@@ -202,9 +264,9 @@ namespace AZ
             size_t  Size(void* instance) const override
             {
                 const T* arrayPtr = reinterpret_cast<const T*>(instance);
-                return arrayPtr->size();
+                return AZStd::ranges::distance(*arrayPtr);
             }
-            
+
             /// Returns the capacity of the container. Returns 0 for objects without fixed capacity.
             size_t Capacity(void* instance) const override
             {
@@ -228,13 +290,49 @@ namespace AZ
             /// Returns true if elements can be retrieved by index.
             bool    CanAccessElementsByIndex() const override   { return false; }
 
+            bool SwapElements(void* instance, size_t firstIndex, size_t secondIndex) override
+            {
+                T* arrayPtr = reinterpret_cast<T*>(instance);
+                size_t containerSize = Size(instance);
+                // Make sure the indices to swap are in range of the container
+                if (firstIndex >= containerSize || secondIndex >= containerSize)
+                {
+                    return false;
+                }
+
+                AZStd::ranges::iter_swap(AZStd::next(arrayPtr->begin(), firstIndex), AZStd::next(arrayPtr->begin(), secondIndex));
+                return true;
+            }
+
+            bool IsSequenceContainer() const override { return true; }
+
             /// Reserve element
             void*   ReserveElement(void* instance, const SerializeContext::ClassElement* classElement) override
             {
                 (void)classElement;
-                T* arrayPtr = reinterpret_cast<T*>(instance);
-                arrayPtr->push_back();
-                return &arrayPtr->back();
+                if constexpr (IsForwardList_v<T>)
+                {
+                    auto FindLastValidElementBefore = [](const T& forwardList,
+                        typename T::const_iterator last)
+                    {
+                        auto lastValidIter = forwardList.before_begin();
+                        for (auto first = forwardList.begin(); first != last; lastValidIter = first, ++first)
+                        {
+                        }
+
+                        return lastValidIter;
+                    };
+
+                    T* forwardListPtr = reinterpret_cast<T*>(instance);
+                    return AZStd::to_address(forwardListPtr->emplace_after(
+                        FindLastValidElementBefore(*forwardListPtr, forwardListPtr->end())
+                    ));
+                }
+                else
+                {
+                    T* arrayPtr = reinterpret_cast<T*>(instance);
+                    return &arrayPtr->emplace_back();
+                }
             }
 
             /// Get an element's address by its index (called before the element is loaded).
@@ -259,19 +357,35 @@ namespace AZ
             bool    RemoveElement(void* instance, const void* element, SerializeContext* deletePointerDataContext) override
             {
                 T* arrayPtr = reinterpret_cast<T*>(instance);
-                for (typename T::iterator it = arrayPtr->begin(); it != arrayPtr->end(); ++it)
+                // forward_list can only erase the element after the found one
+                // so keep track of the element before the last
+                [[maybe_unused]] typename T::iterator prevIter{};
+                if constexpr (IsForwardList_v<T>)
                 {
-                    void* arrayElement = &(*it);
-                    if (arrayElement == element)
+                    prevIter = arrayPtr->before_begin();
+                }
+
+                for (auto foundIt = arrayPtr->begin(); foundIt != arrayPtr->end(); prevIter = foundIt, ++foundIt)
+                {
+                    if (void* containerElem = AZStd::to_address(foundIt);
+                        containerElem == element)
                     {
                         if (deletePointerDataContext)
                         {
-                            DeletePointerData(deletePointerDataContext, &m_classElement, arrayElement);
+                            DeletePointerData(deletePointerDataContext, &m_classElement, containerElem);
                         }
-                        arrayPtr->erase(it);
+                        if constexpr (IsForwardList_v<T>)
+                        {
+                            arrayPtr->erase_after(prevIter);
+                        }
+                        else
+                        {
+                            arrayPtr->erase(foundIt);
+                        }
                         return true;
                     }
                 }
+
                 return false;
             }
 
@@ -363,7 +477,7 @@ namespace AZ
         public:
             typedef typename T::value_type ValueType;
             typedef typename AZStd::remove_pointer<typename T::value_type>::type ValueClass;
-            
+
             /// Returns the capacity of the container. Returns 0 for objects without fixed capacity.
             size_t Capacity(void* instance) const override
             {
@@ -381,7 +495,7 @@ namespace AZ
                 T* arrayPtr = reinterpret_cast<T*>(instance);
                 if (arrayPtr->size() < N)
                 {
-                    arrayPtr->push_back();
+                    arrayPtr->emplace_back();
                     return &arrayPtr->back();
                 }
                 return nullptr;
@@ -472,7 +586,7 @@ namespace AZ
                 (void)instance;
                 return N;
             }
-            
+
             /// Returns the capacity of the container. Returns 0 for objects without fixed capacity.
             size_t Capacity(void* instance) const override
             {
@@ -547,7 +661,7 @@ namespace AZ
             bool    RemoveElement(void* instance, const void* element, SerializeContext* deletePointerDataContext) override
             {
                 (void)element;
-                
+
                 AZ_Assert((reinterpret_cast<uintptr_t>(element) & (alignof(ValueType) - 1)) == 0, "element memory address does not match alignment of ValueType");
                 ContainerType* arrayPtr = reinterpret_cast<ContainerType*>(instance);
                 ptrdiff_t arrayIndex = reinterpret_cast<const ValueType*>(element) - arrayPtr->data();
@@ -562,7 +676,7 @@ namespace AZ
                 {
                     DeletePointerData(deletePointerDataContext, &m_classElement, element);
                 }
-                
+
                 // If the element that's removed is the last added element, decrement the insertion counter.
                 GenericClassInfo* containerClassInfo = SerializeGenericTypeInfo<ContainerType>::GetGenericInfo();
                 const bool eventHandlerAvailable = containerClassInfo && containerClassInfo->GetClassData() && containerClassInfo->GetClassData()->m_eventHandler;
@@ -601,8 +715,8 @@ namespace AZ
 
         template<class T>
         class AZStdAssociativeContainer
-            : public SerializeContext::IDataContainer
-            , public SerializeContext::IDataContainer::IAssociativeDataContainer
+            : public Serialize::IDataContainer
+            , public Serialize::IDataContainer::IAssociativeDataContainer
         {
             using ValueType = typename T::value_type;
             using ValueClass = AZStd::remove_pointer_t<ValueType>;
@@ -642,15 +756,7 @@ namespace AZ
                 // Register our key type within an lvalue to rvalue wrapper as an attribute
                 AZ::TypeId uuid = azrtti_typeid<WrappedKeyType>();
 
-               /**
-                * This should technically bind the reference value from the GetCurrentSerializeContextModule() call 
-                * as that will always return the current module that set the allocator.
-                * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
-                * created within then this will return this .dll/.exe module allocator
-                */
-                m_classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
-
-                m_classElement.m_attributes.emplace_back(AZ_CRC("KeyType", 0x15bc5303), CreateModuleAttribute(AZStd::move(uuid)));
+                m_classElement.m_attributes.emplace_back(AZ_CRC_CE("KeyType"), CreateModuleAttribute(AZStd::move(uuid)));
             }
 
             // Reflect our wrapped key and value types to serializeContext so that may later be used
@@ -711,7 +817,7 @@ namespace AZ
                 const T* arrayPtr = reinterpret_cast<const T*>(instance);
                 return arrayPtr->size();
             }
-            
+
             /// Returns the capacity of the container. Returns 0 for objects without fixed capacity.
             size_t Capacity(void* instance) const override
             {
@@ -741,12 +847,17 @@ namespace AZ
                 return this;
             }
 
+            const SerializeContext::IDataContainer::IAssociativeDataContainer* GetAssociativeContainerInterface() const override
+            {
+                return this;
+            }
+
             /// Reserve element
             void*   ReserveElement(void* instance, const  SerializeContext::ClassElement* classElement) override
             {
                 (void)classElement;
                 T* containerPtr = reinterpret_cast<T*>(instance);
-                return new(containerPtr->get_allocator().allocate(sizeof(ValueType), AZStd::alignment_of<ValueType>::value))ValueType;
+                return new (containerPtr->get_allocator().allocate(sizeof(ValueType), AZStd::alignment_of<ValueType>::value)) ValueType{};
             }
 
         protected:
@@ -767,22 +878,80 @@ namespace AZ
             }
 
         public:
+            Serialize::IDataContainer::IAssociativeDataContainer::AssociativeType GetAssociativeType() const override
+            {
+                using AssociativeType = Serialize::IDataContainer::IAssociativeDataContainer::AssociativeType;
+                if constexpr (AZStd::IsOrderedSet_v<T>)
+                {
+                    return AssociativeType::Set;
+                }
+                else if constexpr (AZStd::IsOrderedMap_v<T>)
+                {
+                    return AssociativeType::Map;
+                }
+                else if constexpr (AZStd::IsUnorderedSet_v<T>)
+                {
+                    return AssociativeType::UnorderedSet;
+                }
+                else if constexpr (AZStd::IsUnorderedMap_v<T>)
+                {
+                    return AssociativeType::UnorderedMap;
+                }
+                else
+                {
+                    return AssociativeType::Unknown;
+                }
+            }
+
             /// Get an element's address by its index (called before the element is loaded).
             void*   GetElementByIndex(void* instance, const SerializeContext::ClassElement* classElement, size_t index) override
             {
-                (void)instance;
                 (void)classElement;
-                (void)index;
+                // Linear iteration of the container.   If possible, use GetElementByKey, but this is implemented to be compatible
+                // with things that present the container as if it is a linear container (such as UIs)
+                T* containerPtr = reinterpret_cast<T*>(instance);
+                if (index < containerPtr->size())
+                {
+                    auto elementIterator = containerPtr->begin();
+                    AZStd::advance(elementIterator, index);
+                    
+                    return (elementIterator != containerPtr->end()) ? &(*elementIterator) : nullptr;
+                }
                 return nullptr;
             }
 
             /// Get an element's address by its key. Not used for serialization.
-            void*   GetElementByKey(void* instance, const SerializeContext::ClassElement* classElement, const void* key) override
+            void*   GetElementByKey(void* instance, const SerializeContext::ClassElement* classElement, const void* key) const override
             {
                 (void)classElement;
                 T* containerPtr = reinterpret_cast<T*>(instance);
                 auto elementIterator = containerPtr->find(*reinterpret_cast<const KeyType*>(key));
                 return (elementIterator != containerPtr->end()) ? &(*elementIterator) : nullptr;
+            }
+
+            /// Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is
+            /// the key itself
+            virtual void* GetValueByKey(void* instance, const void* key) const override
+            {
+                void* value = nullptr;
+                T* containerPtr = reinterpret_cast<T*>(instance);
+                auto elementIterator = containerPtr->find(*reinterpret_cast<const KeyType*>(key));
+
+                if constexpr (AZStd::AssociativeInternal::IsMapType_v<T>)
+                {
+                    if (elementIterator != containerPtr->end())
+                    {
+                        value = &(elementIterator->second);
+                    }
+                }
+                else
+                {
+                    if (elementIterator != containerPtr->end())
+                    {
+                        value = &(*elementIterator);
+                    }
+                }
+                return value;
             }
 
             /// Store element
@@ -802,7 +971,7 @@ namespace AZ
                 {
                     DeletePointerData(deletePointerDataContext, &m_classElement, element);
                 }
-                
+
                 T* containerPtr = reinterpret_cast<T*>(instance);
                 ValueType* valuePtr = reinterpret_cast<ValueType*>(element);
                 valuePtr->~ValueType();
@@ -817,7 +986,7 @@ namespace AZ
                 const auto& key = T::traits_type::key_from_value(*reinterpret_cast<const ValueType*>(element));
                 AZStd::pair<typename T::iterator, typename T::iterator> valueRange = containerPtr->equal_range(key);
                 while (valueRange.first != valueRange.second) // in a case of multi key support iterate over all elements with that key until we find the one
-                { 
+                {
                     if (&(*valueRange.first) == element)
                     {
                         // Extracts the node from the associative container without deleting it
@@ -837,7 +1006,7 @@ namespace AZ
             }
 
             /// Inserts an entry at key in the container (for keyed containers only). Not used for serialization.
-            void    SetElementKey(void* element, void* key) override
+            void    SetElementKey(void* element, void* key) const override
             {
                 KeyHelper<ValueType>::SetElementKey(reinterpret_cast<ValueType*>(element), *reinterpret_cast<KeyType*>(key));
             }
@@ -895,12 +1064,12 @@ namespace AZ
             {
                 // FIXME: We should properly fill in all the other fields as well.
                 m_value1ClassElement.m_name = "value1";
-                m_value1ClassElement.m_nameCrc = AZ_CRC("value1", 0xa2756c5a);
+                m_value1ClassElement.m_nameCrc = AZ_CRC_CE("value1");
                 m_value1ClassElement.m_offset = 0;
                 SetupClassElementFromType<T1>(m_value1ClassElement);
 
                 m_value2ClassElement.m_name = "value2";
-                m_value2ClassElement.m_nameCrc = AZ_CRC("value2", 0x3b7c3de0);
+                m_value2ClassElement.m_nameCrc = AZ_CRC_CE("value2");
                 m_value2ClassElement.m_offset = sizeof(T1);
                 SetupClassElementFromType<T2>(m_value2ClassElement);
             }
@@ -960,7 +1129,7 @@ namespace AZ
                 (void)instance;
                 return 2;
             }
-            
+
             /// Returns the capacity of the container. Returns 0 for objects without fixed capacity.
             size_t Capacity(void* instance) const override
             {
@@ -1378,7 +1547,7 @@ namespace AZ
             AZRValueContainer()
             {
                 m_valueClassElement.m_name = "value";
-                m_valueClassElement.m_nameCrc = AZ_CRC("value", 0x1d775834);
+                m_valueClassElement.m_nameCrc = AZ_CRC_CE("value");
                 m_valueClassElement.m_offset = 0;
                 SetupClassElementFromType<T>(m_valueClassElement);
             }
@@ -1599,7 +1768,7 @@ namespace AZ
                 (void)instance;
                 return 1;
             }
-            
+
             /// Returns the capacity of the container. Returns 0 for objects without fixed capacity.
             size_t Capacity(void* instance) const override
             {
@@ -1783,7 +1952,7 @@ namespace AZ
             /// Returns true if the container is a smart pointer.
             bool IsSmartPointer() const override             { return true; }
 
-            /// Returns true if the container elements can be addressesd by index, otherwise false.
+            /// Returns true if the container elements can be addressed by index, otherwise false.
             bool CanAccessElementsByIndex() const override   { return false; }
 
             /// Reserve element
@@ -1796,6 +1965,7 @@ namespace AZ
             }
 
             /// Get an element's address by its index (called before the element is loaded).
+            /// Caller should ensure CanAccessElementsByIndex returns true for this to be valid.
             void* GetElementByIndex(void* instance, const SerializeContext::ClassElement* classElement, size_t index) override
             {
                 (void)classElement;
@@ -1808,7 +1978,7 @@ namespace AZ
                     return false;
                 };
                 EnumElements(instance, captureValue);
-                typename T::value_type *valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
+                typename T::value_type* valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
                 return valuePtr;
             }
 
@@ -2057,9 +2227,9 @@ namespace AZ
         };
     } // namespace Internal
 
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZ::Internal::RValueToLValueWrapper, "{2590807F-5748-4CD0-A475-83EF5FD216CF}", AZ_TYPE_INFO_TYPENAME);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZ::Internal::RValueToLValueWrapper, "RValueToLValueWrapper", "{2590807F-5748-4CD0-A475-83EF5FD216CF}", AZ_TYPE_INFO_TYPENAME);
 
-    AZ_INLINE static const Uuid GetGenericClassInfoVectorTypeId()
+    AZ_INLINE static constexpr AZ::TypeId GetGenericClassInfoVectorTypeId()
     {
         return Uuid("{2BADE35A-6F1B-4698-B2BC-3373D010020C}");
     };
@@ -2077,7 +2247,7 @@ namespace AZ
             AZ_TYPE_INFO(GenericClassInfoVector, GetGenericClassInfoVectorTypeId());
             GenericClassInfoVector()
             {
-                m_classData = SerializeContext::ClassData::Create<ContainerType>("AZStd::vector", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage);
+                m_classData = SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage);
             }
 
             SerializeContext::ClassData* GetClassData() override
@@ -2090,25 +2260,28 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
 
-            const Uuid& GetLegacySpecializedTypeId() const override
+            AZ::TypeId GetLegacySpecializedTypeId() const override
             {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
+                // There are still legacy slice, uicanvas and ScriptCanvas files that serialize
+                // an `AZStd::vector<Component*, Alloc>` using the typeid for `AZStd::vector<Component, Alloc>`
+                // All of these files were created before 2018
+                return AZ::AzTypeInfo<T>::GetPointeeTypeId() + AZ::AzTypeInfo<A>::GetCanonicalTypeId() + AZ::AzGenericTypeInfo::Uuid<AZStd::vector>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2134,13 +2307,13 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
     };
 
-    AZ_INLINE static const Uuid GetGenericClassInfoFixedVectorTypeId()
+    AZ_INLINE static constexpr AZ::TypeId GetGenericClassInfoFixedVectorTypeId()
     {
         return Uuid("{6C6751B0-392A-4E71-8BF8-179484D7D22F}");
     };
@@ -2157,7 +2330,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassInfoFixedVector, GetGenericClassInfoFixedVectorTypeId());
             GenericClassInfoFixedVector()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::fixed_vector", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -2171,25 +2344,20 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2215,7 +2383,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -2233,7 +2401,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassInfoList, "{B845AD64-B5A0-4ccd-A86B-3477A36779BE}");
             GenericClassInfoList()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::list", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -2247,25 +2415,20 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2291,7 +2454,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -2309,7 +2472,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassInfoForwardList, "{D48E20E1-D3A3-46F7-A869-927F5EF50127}");
             GenericClassInfoForwardList()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::forward_list", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -2323,25 +2486,20 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2367,13 +2525,13 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
     };
 
-    AZ_INLINE static const Uuid GetGenericClassInfoArrayTypeId()
+    AZ_INLINE static constexpr AZ::TypeId GetGenericClassInfoArrayTypeId()
     {
         return Uuid("{286E1198-0867-4198-95D3-6CC569658E07}");
     };
@@ -2390,7 +2548,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassInfoArray, GetGenericClassInfoArrayTypeId());
             GenericClassInfoArray()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::array", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
                 m_classData.m_eventHandler = &m_eventHandler;
             }
@@ -2405,25 +2563,20 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2450,13 +2603,13 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
     };
 
-    AZ_INLINE static const Uuid GetGenericClassSetTypeId()
+    AZ_INLINE static constexpr AZ::TypeId GetGenericClassSetTypeId()
     {
         return Uuid("{4A64D2A5-7265-4E3D-805C-BA2D0626F542}");
     };
@@ -2473,7 +2626,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassSet, GetGenericClassSetTypeId());
             GenericClassSet()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::set", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -2487,24 +2640,19 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t /*element*/) override
+            AZ::TypeId GetTemplatedTypeId(size_t /*element*/) override
             {
-                return SerializeGenericTypeInfo<K>::GetClassTypeId();               
+                return SerializeGenericTypeInfo<K>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2531,13 +2679,13 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
     };
 
-    AZ_INLINE static const Uuid GetGenericClassUnorderedSetTypeId()
+    AZ_INLINE static constexpr AZ::TypeId GetGenericClassUnorderedSetTypeId()
     {
         return Uuid("{B04E902E-C6F7-4212-A166-1B52F7437D3C}");
     };
@@ -2554,7 +2702,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassUnorderedSet, GetGenericClassUnorderedSetTypeId());
             GenericClassUnorderedSet()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::unordered_set", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -2568,25 +2716,20 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<K>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2613,7 +2756,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -2631,7 +2774,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassUnorderedMultiSet, "{B619DA0D-F050-41AA-B092-416CACB7C710}");
             GenericClassUnorderedMultiSet()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::unordered_multiset", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -2645,25 +2788,20 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<K>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2690,13 +2828,13 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
     };
 
-    AZ_INLINE static const Uuid GetGenericOutcomeTypeId()
+    AZ_INLINE static constexpr AZ::TypeId GetGenericOutcomeTypeId()
     {
         return Uuid("{DF6803FE-1C95-4DB8-8C08-6CDA5353ACD7}");
     };
@@ -2713,7 +2851,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassOutcome, GetGenericOutcomeTypeId());
             GenericClassOutcome()
-                : m_classData{ SerializeContext::ClassData::Create<OutcomeType>("AZ::Outcome", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr) }
+                : m_classData{ SerializeContext::ClassData::Create<OutcomeType>(AZ::AzTypeInfo<OutcomeType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr) }
             {
             }
 
@@ -2727,7 +2865,7 @@ namespace AZ
                 return 2;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 if (element == 0)
                 {
@@ -2739,12 +2877,12 @@ namespace AZ
                 }
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<OutcomeType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
@@ -2775,13 +2913,13 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<OutcomeType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
     };
 
-    AZ_INLINE const Uuid GetGenericClassPairTypeId()
+    AZ_INLINE constexpr AZ::TypeId GetGenericClassPairTypeId()
     {
         return Uuid("{9F3F5302-3390-407a-A6F7-2E011E3BB686}");
     };
@@ -2798,8 +2936,29 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassPair, GetGenericClassPairTypeId());
             GenericClassPair()
-                : m_classData{ SerializeContext::ClassData::Create<PairType>("AZStd::pair", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_pairContainer) }
+                : m_classData{ SerializeContext::ClassData::Create<PairType>(AZ::AzTypeInfo<PairType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_pairContainer) }
             {
+                // Convert a pair to a string, if both types of the pair
+                // supports the AZStd::to_string function
+                auto PairToString = [](const void* pairInst) -> AZStd::string
+                {
+                    [[maybe_unused]] auto pairElement = reinterpret_cast<const PairType*>(pairInst);
+                    AZStd::string result;
+                    if constexpr (AZStd::HasToString_v<T1> && AZStd::HasToString_v<T2>)
+                    {
+                        AZStd::string value;
+                        AZStd::to_string(value, pairElement->first);
+                        result += "<";
+                        result += value;
+                        result += ", ";
+                        AZStd::to_string(value, pairElement->second);
+                        result += value;
+                        result += ">";
+                    }
+
+                    return result;
+                };
+                m_classData.m_attributes.emplace_back(AZ::Crc32("ToString"), CreateModuleAttribute(AZStd::move(PairToString)));
             }
 
             SerializeContext::ClassData* GetClassData() override
@@ -2812,7 +2971,7 @@ namespace AZ
                 return 2;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 if (element == 0)
                 {
@@ -2824,19 +2983,14 @@ namespace AZ
                 }
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<PairType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<PairType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2867,10 +3021,15 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<PairType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
+    };
+
+    AZ_INLINE constexpr AZ::TypeId GetGenericClassTupleTypeId()
+    {
+        return Uuid("{F98DF943-F870-4FE2-B6A9-3E8BC5861782}");
     };
 
     /// Generic specialization for AZStd::tuple
@@ -2883,9 +3042,9 @@ namespace AZ
             : public GenericClassInfo
         {
         public:
-            AZ_TYPE_INFO(GenericClassTuple, "{F98DF943-F870-4FE2-B6A9-3E8BC5861782}");
+            AZ_TYPE_INFO(GenericClassTuple, GetGenericClassTupleTypeId());
             GenericClassTuple()
-                : m_classData{ SerializeContext::ClassData::Create<TupleType>("AZStd::tuple", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_tupleContainer) }
+                : m_classData{ SerializeContext::ClassData::Create<TupleType>(AZ::AzTypeInfo<TupleType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_tupleContainer) }
             {
             }
 
@@ -2899,7 +3058,7 @@ namespace AZ
                 return Internal::AZStdTupleContainer<TupleType>::s_tupleSize;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 if (GenericClassInfo* valueGenericClassInfo = m_tupleContainer.m_valueClassElements[element].m_genericClassInfo)
                 {
@@ -2908,19 +3067,14 @@ namespace AZ
                 return m_tupleContainer.m_valueClassElements[element].m_typeId;
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<TupleType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<TupleType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -2950,7 +3104,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<TupleType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -2965,9 +3119,11 @@ namespace AZ
         class GenericClassWrapper
             : public GenericClassInfo
         {
+            inline static const AZStd::fixed_string<128> ClassName = AZStd::fixed_string<128>("Internal::RValueToLValueWrapper<")
+                + AZ::AzTypeInfo<T>::Name() + ">";
         public:
             GenericClassWrapper()
-                : m_classData{ SerializeContext::ClassData::Create<WrapperType>("Internal::RValueToLValueWrapper", "{642ABA5E-BB70-40EF-A986-933420D89F85}", Internal::NullFactory::GetInstance(), nullptr, &m_wrapperContainer) }
+                : m_classData{ SerializeContext::ClassData::Create<WrapperType>(ClassName.c_str(), AZ::TypeId("{642ABA5E-BB70-40EF-A986-933420D89F85}"), Internal::NullFactory::GetInstance(), nullptr, &m_wrapperContainer) }
             {
             }
 
@@ -2981,13 +3137,13 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<WrapperType>();
             }
@@ -3015,13 +3171,13 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<WrapperType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
     };
 
-    AZ_INLINE const Uuid GetGenericClassMapTypeId()
+    AZ_INLINE constexpr AZ::TypeId GetGenericClassMapTypeId()
     {
         return Uuid("{DB825311-453D-45C8-B07F-B9CD9A32ACB4}");
     };
@@ -3038,7 +3194,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassMap, GetGenericClassMapTypeId());
             GenericClassMap()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::map", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -3052,7 +3208,7 @@ namespace AZ
                 return 2;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 if (element == 0)
                 {
@@ -3064,19 +3220,14 @@ namespace AZ
                 }
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -3103,13 +3254,13 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
     };
 
-    AZ_INLINE static const Uuid GetGenericClassUnorderedMapTypeId()
+    AZ_INLINE static constexpr AZ::TypeId GetGenericClassUnorderedMapTypeId()
     {
         return Uuid("{18456A80-63CC-40c5-BF16-6AF94F9A9ECC}");
     };
@@ -3126,7 +3277,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassUnorderedMap, GetGenericClassUnorderedMapTypeId());
             GenericClassUnorderedMap()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::unordered_map", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -3140,7 +3291,7 @@ namespace AZ
                 return 2;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 if (element == 0)
                 {
@@ -3152,19 +3303,14 @@ namespace AZ
                 }
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -3191,7 +3337,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -3209,7 +3355,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassUnorderedMultiMap, "{119669B8-92BF-468F-97D9-9D45F298BCD4}");
             GenericClassUnorderedMultiMap()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::unordered_multimap", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -3223,7 +3369,7 @@ namespace AZ
                 return 2;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 if (element == 0)
                 {
@@ -3235,19 +3381,14 @@ namespace AZ
                 }
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -3274,7 +3415,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -3292,8 +3433,18 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassBasicString, "{EF8FF807-DDEE-4eb0-B678-4CA3A2C490A4}");
             GenericClassBasicString()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::string", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), &m_stringSerializer, nullptr) }
             {
+                const char* className = "";
+                if constexpr (AZStd::is_same_v<ContainerType, AZStd::string>)
+                {
+                    className = "AZStd::string";
+                }
+                else
+                {
+                    className = AZ::AzTypeInfo<ContainerType>::Name();
+                }
+                m_classData = SerializeContext::ClassData::Create<ContainerType>(className, GetSpecializedTypeId(),
+                    Internal::NullFactory::GetInstance(), &m_stringSerializer, nullptr);
             }
 
             SerializeContext::ClassData* GetClassData() override
@@ -3306,25 +3457,20 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<E>::GetClassTypeId();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -3346,7 +3492,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -3378,18 +3524,18 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
-                return SerializeGenericTypeInfo<AZ::u8>::GetClassTypeId();
+                return AzTypeInfo<AZ::u8>::Uuid();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
@@ -3413,7 +3559,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -3430,7 +3576,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassBitSet, "{1C0270B7-F5E1-4bd6-B7BC-8D25A74B79B4}");
             GenericClassBitSet()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("BitSet", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), &m_dataSerializer, nullptr) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), &m_dataSerializer, nullptr) }
             {
             }
 
@@ -3444,18 +3590,18 @@ namespace AZ
                 return 0;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
-                return SerializeGenericTypeInfo<AZ::u8>::GetClassTypeId();
+                return AzTypeInfo<AZ::u8>::Uuid();
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
@@ -3479,7 +3625,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -3496,7 +3642,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassSharedPtr, "{D5B5ACA6-A81E-410E-8151-80C97B8CD2A0}");
             GenericClassSharedPtr()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::shared_ptr", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -3510,26 +3656,21 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
             // AZStdSmartPtrContainer uses the underlying smart_ptr container value_type typedef type id for serialization
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -3546,7 +3687,7 @@ namespace AZ
 
             bool CanStoreType(const Uuid& typeId) const override
             {
-                return GetSpecializedTypeId() == typeId || GetGenericTypeId() == typeId || m_containerStorage.m_classElement.m_typeId == typeId || GetLegacySpecializedTypeId() == typeId;
+                return GetSpecializedTypeId() == typeId || GetGenericTypeId() == typeId || m_containerStorage.m_classElement.m_typeId == typeId;
             }
 
             Internal::AZStdSmartPtrContainer<ContainerType> m_containerStorage;
@@ -3560,7 +3701,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -3577,7 +3718,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassIntrusivePtr, "{C4B5400B-5CDC-4B14-932E-BFA30BC1DE35}");
             GenericClassIntrusivePtr()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::intrusive_ptr", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -3591,26 +3732,21 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
             // AZStdSmartPtrContainer uses the underlying smart_ptr container value_type typedef type id for serialization
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -3627,7 +3763,7 @@ namespace AZ
 
             bool CanStoreType(const Uuid& typeId) const override
             {
-                return GetSpecializedTypeId() == typeId || GetGenericTypeId() == typeId || m_containerStorage.m_classElement.m_typeId == typeId || GetLegacySpecializedTypeId() == typeId;
+                return GetSpecializedTypeId() == typeId || GetGenericTypeId() == typeId || m_containerStorage.m_classElement.m_typeId == typeId;
             }
 
             Internal::AZStdSmartPtrContainer<ContainerType> m_containerStorage;
@@ -3641,7 +3777,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -3658,7 +3794,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassUniquePtr, "{D37DF835-5B18-4F9E-9C8F-03B967483080}");
             GenericClassUniquePtr()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::unique_ptr", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -3672,26 +3808,21 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
             // AZStdSmartPtrContainer uses the smart_ptr container type id for serialization
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
-            }
-
-            const Uuid& GetLegacySpecializedTypeId() const override
-            {
-                return AZ::AzTypeInfo<ContainerType>::template Uuid<AZ::PointerRemovedTypeIdTag>();
             }
 
             void Reflect(SerializeContext* serializeContext) override
@@ -3708,7 +3839,7 @@ namespace AZ
 
             bool CanStoreType(const Uuid& typeId) const override
             {
-                return GetSpecializedTypeId() == typeId || GetGenericTypeId() == typeId || m_containerStorage.m_classElement.m_typeId == typeId || GetLegacySpecializedTypeId() == typeId;
+                return GetSpecializedTypeId() == typeId || GetGenericTypeId() == typeId || m_containerStorage.m_classElement.m_typeId == typeId;
             }
 
             Internal::AZStdSmartPtrContainer<ContainerType> m_containerStorage;
@@ -3722,7 +3853,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }
@@ -3739,7 +3870,7 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassOptional, "{2C75B779-4661-4102-9D40-B2A680B6DE36}");
             GenericClassOptional()
-                : m_classData{ SerializeContext::ClassData::Create<ContainerType>("AZStd::optional", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
+                : m_classData{ SerializeContext::ClassData::Create<ContainerType>(AZ::AzTypeInfo<ContainerType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_containerStorage) }
             {
             }
 
@@ -3753,19 +3884,19 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
             }
 
             // AZStdOptionalContainer uses the underlying container value_type typedef type id for serialization
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
             {
                 return azrtti_typeid<ContainerType>();
             }
 
-            const Uuid& GetGenericTypeId() const override
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return TYPEINFO_Uuid();
             }
@@ -3793,7 +3924,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }

@@ -25,7 +25,7 @@ class PropertyUiParticleColorKeyframeCtrl
 
 public:
 
-    AZ_CLASS_ALLOCATOR(PropertyUiParticleColorKeyframeCtrl, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyUiParticleColorKeyframeCtrl, AZ::SystemAllocator);
 
     PropertyUiParticleColorKeyframeCtrl(QWidget* parent = nullptr);
 
@@ -48,9 +48,9 @@ class PropertyHandlerUiParticleColorKeyframe
     : public AzToolsFramework::PropertyHandler < UiParticleEmitterInterface::ParticleColorKeyframe, PropertyUiParticleColorKeyframeCtrl >
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerUiParticleColorKeyframe, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerUiParticleColorKeyframe, AZ::SystemAllocator);
 
-    AZ::u32 GetHandlerName(void) const override { return AZ_CRC("UiParticleColorKeyframeCtrl", 0xe3ef28b6); }
+    AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("UiParticleColorKeyframeCtrl"); }
     bool IsDefaultHandler() const override { return true; }
     QWidget* CreateGUI(QWidget* pParent) override;
     void ConsumeAttribute(PropertyUiParticleColorKeyframeCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;

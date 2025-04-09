@@ -13,8 +13,9 @@
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 
-AZ_DECLARE_BUDGET(RPI);
+ATOM_RPI_REFLECT_API AZ_DECLARE_BUDGET(RPI);
 
 namespace UnitTest
 {
@@ -25,7 +26,7 @@ namespace AZ
 {
     namespace RPI
     {
-        class Validation
+        class ATOM_RPI_REFLECT_API Validation
         {
             friend class UnitTest::RPITestFixture;
         public:
@@ -34,10 +35,12 @@ namespace AZ
                 return s_isEnabled;
             }
         private:
+            static void SetEnabled(bool enabled);
+
             static bool s_isEnabled;
         };
 
-        class PassValidation
+        class ATOM_RPI_REFLECT_API PassValidation
         {
         public:
             static constexpr bool IsEnabled()
@@ -62,6 +65,7 @@ namespace AZ
             static constexpr uint32_t Pass = 4;
             static constexpr uint32_t View = 5;
             static constexpr uint32_t Scene = 6;
+            static constexpr uint32_t Bindless = 7;
         };
     }
 }

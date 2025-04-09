@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/containers/unordered_set.h>

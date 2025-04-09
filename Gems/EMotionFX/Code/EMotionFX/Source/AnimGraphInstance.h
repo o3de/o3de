@@ -13,7 +13,7 @@
 #include <EMotionFX/Source/AnimGraphEventBuffer.h>
 #include <EMotionFX/Source/AnimGraphObject.h>
 #include <EMotionFX/Source/AnimGraphSnapshot.h>
-#include <EMotionFX/Source/BaseObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <MCore/Source/Attribute.h>
 #include <AzCore/std/containers/vector.h>
@@ -43,7 +43,7 @@ namespace EMotionFX
      * The anim graph instance class.
      */
     class EMFX_API AnimGraphInstance
-        : public BaseObject
+        : public MCore::RefCounted
     {
     public:
         AZ_RTTI(AnimGraphInstance, "{2CC86AA2-AFC0-434B-A317-B102FD02E76D}")

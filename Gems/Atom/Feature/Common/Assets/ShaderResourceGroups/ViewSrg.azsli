@@ -12,19 +12,20 @@
 
 partial ShaderResourceGroup ViewSrg
 {
-    row_major float4x4 m_viewProjectionMatrix;
-    row_major float4x4 m_viewMatrix;
-    row_major float4x4 m_viewMatrixInverse;
-    row_major float4x4 m_projectionMatrix;
-    row_major float4x4 m_projectionMatrixInverse;
-    row_major float4x4 m_viewProjectionInverseMatrix;
+    row_major float4x4 m_viewProjectionMatrix;          // World -> Projection
+    row_major float4x4 m_viewMatrix;                    // World -> View
+    row_major float4x4 m_viewMatrixInverse;             // View -> World
+    row_major float4x4 m_projectionMatrix;              // View -> Projection
+    row_major float4x4 m_projectionMatrixInverse;       // Projection -> View
+    row_major float4x4 m_viewProjectionInverseMatrix;   // Projection -> World
 
     // view projection matrix of last frame
     row_major float4x4 m_viewProjectionPrevMatrix;
 
     float3 m_worldPosition;
 
-    float4 m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ;
+    // Constants to help calculate linear depth in an optimized manner
+    float4 m_linearizeDepthConstants;
 
     // Constants used to unproject depth values and reconstruct the view-space position (Z-forward & Y-up)
     // See the GetViewSpacePosition( ) function below
@@ -40,28 +41,28 @@ partial ShaderResourceGroup ViewSrg
 
     float GetNearZ()
     {
-        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.x;
+        return m_linearizeDepthConstants.x;
     }
 
     float GetFarZ()
     {
-        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.y;
+        return m_linearizeDepthConstants.y;
     }
 
     float GetFarZTimesNearZ()
     {
-        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.z;
+        return m_linearizeDepthConstants.z;
     }
 
     float GetFarZMinusNearZ()
     {
-        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.w;
+        return m_linearizeDepthConstants.w;
     }
 
     // Uses linearDepth value at screenUV to reconstruct view-space position (Z-forward & Y-up)
     float3 GetViewSpacePosition(float2 screenUV, float linearDepth)
     {
-        float2 screenRay = (screenUV * ViewSrg::m_unprojectionConstants.xy + ViewSrg::m_unprojectionConstants.zw);
+        float2 screenRay = (screenUV * m_unprojectionConstants.xy + m_unprojectionConstants.zw);
         return float3(screenRay * linearDepth, linearDepth);
     }
 }

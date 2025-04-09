@@ -9,8 +9,11 @@
 
 #include <QSettings>
 #include <QMouseEvent>
+
+#include <Atom/RPI.Public/SceneBus.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <EMStudio/AnimViewportRequestBus.h>
@@ -26,6 +29,7 @@ namespace EMStudio
         : public AtomToolsFramework::RenderViewportWidget
         , private AnimViewportRequestBus::Handler
         , private ViewportPluginRequestBus::Handler
+        , private AZ::RPI::SceneNotificationBus::Handler
     {
     public:
         AnimViewportWidget(AtomRenderPlugin* parentPlugin);
@@ -47,17 +51,22 @@ namespace EMStudio
         void OnContextMenuEvent(QMouseEvent* event);
 
         // AnimViewportRequestBus::Handler overrides
-        void UpdateCameraViewMode(RenderOptions::CameraViewMode mode);
-        void UpdateCameraFollowUp(bool follow);
-        void UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags);
+        void UpdateCameraViewMode(RenderOptions::CameraViewMode mode) override;
+        void UpdateCameraFollowUp(bool follow) override;
+        void UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags) override;
 
         // ViewportPluginRequestBus::Handler overrides
         AZ::s32 GetViewportId() const;
+
+        // SceneNotificationBus overrides ...
+        void OnBeginPrepareRender() override;
 
         // MouseEvent
         void mousePressEvent(QMouseEvent* event) override;
         void mouseMoveEvent(QMouseEvent* event) override;
         void mouseReleaseEvent(QMouseEvent* event) override;
+
+        void resizeEvent(QResizeEvent* event) override;
 
         static constexpr float CameraDistance = 2.0f;
 
@@ -87,5 +96,10 @@ namespace EMStudio
         QPoint m_prevMousePoint;
         int m_pixelsSinceClick = 0;
         const int MinMouseMovePixes = 5;
+
+        AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUiManager;
+        QWidget m_renderOverlay;
+
+        AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
     };
 }

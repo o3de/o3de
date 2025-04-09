@@ -8,6 +8,7 @@
 
 #include "LyShineEditorSystemComponent.h"
 #include "EditorWindow.h"
+#include "PropertyHandlerCanvasAsset.h"
 
 // UI_ANIMATION_REVISIT, added includes so that we can register the UI Animation system on startup
 #include "Animation/UiAnimViewSequenceManager.h"
@@ -18,27 +19,12 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 
 #include <LyViewPaneNames.h>
-#include <ISystem.h>
-#include <IConsole.h>
 
 #include <QScreen>
 #include <QApplication>
 
 namespace LyShineEditor
 {
-    bool IsCanvasEditorEnabled()
-    {
-        bool isCanvasEditorEnabled = false;
-
-        const ICVar* isCanvasEditorEnabledCVar = (gEnv && gEnv->pConsole) ? gEnv->pConsole->GetCVar("sys_enableCanvasEditor") : NULL;
-        if (isCanvasEditorEnabledCVar && (isCanvasEditorEnabledCVar->GetIVal() == 1))
-        {
-            isCanvasEditorEnabled = true;
-        }
-
-        return isCanvasEditorEnabled;
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -53,7 +39,6 @@ namespace LyShineEditor
                 auto editInfo = ec->Class<LyShineEditorSystemComponent>("UI Canvas Editor", "UI Canvas Editor System Component");
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "UI")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -63,19 +48,19 @@ namespace LyShineEditor
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiCanvasEditorService"));
+        provided.push_back(AZ_CRC_CE("UiCanvasEditorService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiCanvasEditorService"));
+        incompatible.push_back(AZ_CRC_CE("UiCanvasEditorService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("LyShineService", 0xae98ab29));
+        required.push_back(AZ_CRC_CE("LyShineService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -105,18 +90,16 @@ namespace LyShineEditor
         AzToolsFramework::EditorEventsBus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         LyShine::LyShineRequestBus::Handler::BusConnect();
+        CanvasAssetPropertyHandler::Register();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::Deactivate()
     {
-        if (IsCanvasEditorEnabled())
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
-            AzToolsFramework::UnregisterViewPane(LyViewPane::UiEditor);
+        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::UnregisterViewPane(LyViewPane::UiEditor);
 
-            CUiAnimViewSequenceManager::Destroy();
-        }
+        CUiAnimViewSequenceManager::Destroy();
         LyShine::LyShineRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -125,41 +108,45 @@ namespace LyShineEditor
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineEditorSystemComponent::NotifyRegisterViews()
     {
-        if (IsCanvasEditorEnabled())
+        // Calculate default editor size and position.
+        // For landscape screens, use 75% of the screen. For portrait screens, use 95% of screen width and 4:3 aspect ratio
+        QRect deskRect = QApplication::primaryScreen()->availableGeometry();
+        float availableWidth = (float)deskRect.width() * ((deskRect.width() > deskRect.height()) ? 0.75f : 0.95f);
+        float availableHeight = (float)deskRect.height() * 0.75f;
+        float editorWidth = availableWidth;
+        float editorHeight = (deskRect.width() > deskRect.height()) ? availableHeight : (editorWidth * 3.0f / 4.0f);
+        if ((availableWidth / availableHeight) > (editorWidth / editorHeight))
         {
-            // Calculate default editor size and position.
-            // For landscape screens, use 75% of the screen. For portrait screens, use 95% of screen width and 4:3 aspect ratio
-            QRect deskRect = QApplication::primaryScreen()->availableGeometry();
-            float availableWidth = (float)deskRect.width() * ((deskRect.width() > deskRect.height()) ? 0.75f : 0.95f);
-            float availableHeight = (float)deskRect.height() * 0.75f;
-            float editorWidth = availableWidth;
-            float editorHeight = (deskRect.width() > deskRect.height()) ? availableHeight : (editorWidth * 3.0f / 4.0f);
-            if ((availableWidth / availableHeight) > (editorWidth / editorHeight))
-            {
-                editorWidth = editorWidth * availableHeight / editorHeight;
-                editorHeight = availableHeight;
-            }
-            else
-            {
-                editorWidth = availableWidth;
-                editorHeight = editorHeight * availableWidth / editorWidth;
-            }
-            int x = (int)((float)deskRect.left() + (((float)deskRect.width() - availableWidth) / 2.0f) + ((availableWidth - editorWidth) / 2.0f));
-            int y = (int)((float)deskRect.top() + (((float)deskRect.height() - availableHeight) / 2.0f) + ((availableHeight - editorHeight) / 2.0f));
-
-            AzToolsFramework::ViewPaneOptions opt;
-            opt.isPreview = true;
-            opt.paneRect = QRect(x, y, (int)editorWidth, (int)editorHeight);
-            opt.isDeletable = true; // we're in a plugin; make sure we can be deleted
-            opt.showOnToolsToolbar = true;
-            opt.toolbarIcon = ":/Menu/ui_editor.svg";
-            // opt.canHaveMultipleInstances = true; // uncomment this when CUiAnimViewSequenceManager::CanvasUnloading supports multiple canvases
-            AzToolsFramework::RegisterViewPane<EditorWindow>(LyViewPane::UiEditor, LyViewPane::CategoryTools, opt);
-
-            CUiAnimViewSequenceManager::Create();
-
-            AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+            editorWidth = editorWidth * availableHeight / editorHeight;
+            editorHeight = availableHeight;
         }
+        else
+        {
+            editorWidth = availableWidth;
+            editorHeight = editorHeight * availableWidth / editorWidth;
+        }
+        int x = (int)((float)deskRect.left() + (((float)deskRect.width() - availableWidth) / 2.0f) + ((availableWidth - editorWidth) / 2.0f));
+        int y = (int)((float)deskRect.top() + (((float)deskRect.height() - availableHeight) / 2.0f) + ((availableHeight - editorHeight) / 2.0f));
+
+        AzToolsFramework::ViewPaneOptions opt;
+        opt.isPreview = true;
+        opt.paneRect = QRect(x, y, (int)editorWidth, (int)editorHeight);
+#if defined(AZ_PLATFORM_LINUX)
+        // Work-around for issue on Linux where closing (and destroying) the window and re-opening causes the Editor
+        // to hang or crash. So instead of closing this window, replicate the action of unchecking UI Editor from the
+        // Editor toolbar by hiding the parent view pane instead
+        opt.isDeletable = false;
+#else
+        opt.isDeletable = true;
+#endif
+        opt.showOnToolsToolbar = true;
+        opt.toolbarIcon = ":/Menu/ui_editor.svg";
+        // opt.canHaveMultipleInstances = true; // uncomment this when CUiAnimViewSequenceManager::CanvasUnloading supports multiple canvases
+        AzToolsFramework::RegisterViewPane<EditorWindow>(LyViewPane::UiEditor, LyViewPane::CategoryTools, opt);
+
+        CUiAnimViewSequenceManager::Create();
+
+        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,12 +171,12 @@ namespace LyShineEditor
     {
         if (AZStd::wildcard_match("*.uicanvas", fullSourceFileName))
         {
-            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/UICanvas_16.png");
+            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/UICanvas_80.svg");
         }
 
         if (AZStd::wildcard_match("*.sprite", fullSourceFileName))
         {
-            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/Sprite_16.png");
+            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/Sprite_80.svg");
         }
         return AzToolsFramework::AssetBrowser::SourceFileDetails();
     }

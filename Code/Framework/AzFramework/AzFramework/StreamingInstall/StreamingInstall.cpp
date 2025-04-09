@@ -96,7 +96,6 @@ namespace AzFramework
                 {
                     ec->Class<StreamingInstallSystemComponent>("StreamingInstall", "Support for streaming install")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }
@@ -125,13 +124,13 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////
         void StreamingInstallSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("StreamingInstallService", 0xb3cf7bef));
+            provided.push_back(AZ_CRC_CE("StreamingInstallService"));
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////
         void StreamingInstallSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("StreamingInstallService", 0xb3cf7bef));
+            incompatible.push_back(AZ_CRC_CE("StreamingInstallService"));
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////

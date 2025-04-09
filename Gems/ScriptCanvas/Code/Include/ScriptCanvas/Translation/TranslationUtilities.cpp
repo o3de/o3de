@@ -112,23 +112,20 @@ namespace ScriptCanvas
     {
         AZStd::string EntityIdValueToString(const AZ::EntityId& entityId, const Configuration& config)
         {
+            // #scriptcanvas_component_extension
             if (entityId == GraphOwnerId)
             {
                 return config.m_executionStateEntityIdRef;
             }
             else if (entityId == UniqueId)
             {
-                return config.m_executionStateScriptCanvasIdRef;
+                return config.m_executionStateName;
             }
             else
             {
-                return EntityIdToU64String(entityId);
+                // return the invalid id constructor, the only viable remaining option, since direct references are not supported
+                return "EntityId()";
             }
-        }
-
-        AZStd::string EntityIdToU64String(const AZ::EntityId& entityId)
-        {
-            return AZStd::string::format("%llu", AZ::u64(entityId));
         }
 
         AZStd::string_view GetAutoNativeNamespace()

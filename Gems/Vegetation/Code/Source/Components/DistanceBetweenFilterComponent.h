@@ -27,7 +27,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DistanceBetweenFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DistanceBetweenFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(DistanceBetweenFilterConfig, "{8CD110EE-95FA-4B26-B10E-95079BE4CB11}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_allowOverrides = false;
@@ -37,7 +37,7 @@ namespace Vegetation
         bool IsRadiusReadOnly() const;
     };
 
-    static const AZ::Uuid DistanceBetweenFilterComponentTypeId = "{B1F3B6E1-A3C4-44EE-B70B-D69013073E82}";
+    inline constexpr AZ::TypeId DistanceBetweenFilterComponentTypeId{ "{B1F3B6E1-A3C4-44EE-B70B-D69013073E82}" };
 
     /**
     * Component implementing VegetationFilterRequestBus that accepts/rejects based on distance between instances

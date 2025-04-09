@@ -6,77 +6,29 @@
  *
  */
 
-#include "GraphToLuaUtility.h"
-
-#include <clocale>
 
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
+#include <AzCore/Serialization/Locale.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/ScopedDataConnectionEvent.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/GraphTranslationValidation/GraphTranslationValidations.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidations.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-#include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
+#include <ScriptCanvas/Grammar/Primitives.h>
+#include <ScriptCanvas/Translation/GraphToLua.h>
 
-#include "GraphToLua.h"
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
-namespace GraphToLuaUtilityCpp
-{
-    class ScopedLocale
-    {
-    public:
-        ScopedLocale()
-        {
-            m_previousLocale = std::setlocale(LC_NUMERIC, "en_US.UTF-8");
-        }
-
-        ~ScopedLocale()
-        {
-            std::setlocale(LC_NUMERIC, m_previousLocale);
-        }
-
-    private:
-        char* m_previousLocale = nullptr;
-    };
-
-    AZStd::string EqualSigns(size_t numEqualSignsRequired)
-    {
-        AZStd::string equalSigns = "";
-        while (numEqualSignsRequired--)
-        {
-            equalSigns += "=";
-        }
-
-        return equalSigns;
-    }
-
-    AZStd::string MakeLongBracketString(const AZStd::string& formattedString)
-    {
-        size_t numEqualSignsRequired = 0;
-
-        for (;;)
-        {
-            auto candidate = AZStd::string::format("]%s]", EqualSigns(numEqualSignsRequired).c_str());
-
-            if (formattedString.find(candidate) == AZStd::string::npos)
-            {
-                break;
-            }
-
-            ++numEqualSignsRequired;
-        }
-
-        return EqualSigns(numEqualSignsRequired);
-    }
-}
 
 namespace ScriptCanvas
 {
     namespace Translation
     {
+
         void CheckConversionStringPost(Writer& writer, Grammar::VariableConstPtr source, const Grammar::ConversionByIndex& conversions, size_t index)
         {
             auto iter = conversions.find(index);
@@ -99,6 +51,7 @@ namespace ScriptCanvas
             case Data::eType::BehaviorContextObject:
             case Data::eType::Color:
             case Data::eType::CRC:
+            case Data::eType::AssetId:
             case Data::eType::EntityID:
             case Data::eType::NamedEntityID:
             case Data::eType::Matrix3x3:
@@ -142,6 +95,7 @@ namespace ScriptCanvas
             case Data::eType::BehaviorContextObject:
             case Data::eType::Color:
             case Data::eType::CRC:
+            case Data::eType::AssetId:
             case Data::eType::EntityID:
             case Data::eType::NamedEntityID:
             case Data::eType::Matrix3x3:
@@ -173,6 +127,7 @@ namespace ScriptCanvas
             case Data::eType::Boolean:
             case Data::eType::Number:
             case Data::eType::String:
+            case Data::eType::AssetId:
             case Data::eType::EntityID:
             case Data::eType::NamedEntityID:
             case Data::eType::BehaviorContextObject:
@@ -202,7 +157,7 @@ namespace ScriptCanvas
 
         AZStd::string ToValueString(const Datum& datum, const Configuration& config)
         {
-            GraphToLuaUtilityCpp::ScopedLocale scopedLocal;
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
 
             switch (datum.GetType().GetType())
             {
@@ -222,7 +177,14 @@ namespace ScriptCanvas
 
             case Data::eType::BehaviorContextObject:
             {
-                return "nil";
+                if (datum.GetType().GetAZType() != azrtti_typeid<ExecutionState>())
+                {
+                    return "nil";
+                }
+                else
+                {
+                    return config.m_executionStateName;
+                }
             }
 
             case Data::eType::Boolean:
@@ -329,7 +291,7 @@ namespace ScriptCanvas
             case Data::eType::Quaternion:
                 if (datum.IsDefaultValue())
                 {
-                    return "Quaternion()";
+                    return "Quaternion(0, 0, 0, 1)";
                 }
                 else
                 {
@@ -403,8 +365,18 @@ namespace ScriptCanvas
             case Data::eType::String:
             {
                 const AZStd::string& formattedString = *datum.GetAs<Data::StringType>();
-                const AZStd::string bracketString = GraphToLuaUtilityCpp::MakeLongBracketString(formattedString);
-                return AZStd::string::format("[%s[%s]%s]", bracketString.c_str(), formattedString.c_str(), bracketString.c_str());
+                return MakeRuntimeSafeStringLiteral(formattedString);
+            }
+
+            case Data::eType::AssetId:
+            {
+                const AZ::Data::AssetId& value = *datum.GetAs<Data::AssetIdType>();
+                if (value.IsValid())
+                {
+                    const AZStd::string valueString = MakeRuntimeSafeStringLiteral(value.ToString<AZStd::string>());
+                    return AZStd::string::format("AssetId.CreateString(%s)", valueString.c_str());
+                }
+                return "AssetId()";
             }
 
             case Data::eType::EntityID:
@@ -418,6 +390,42 @@ namespace ScriptCanvas
                 AZ_Error("ScriptCanvas", false, "Invalid type found in GraphToLua::ToValueString()!");
                 return "";
             }
+        }
+
+        AZStd::string EqualSigns(size_t numEqualSignsRequired)
+        {
+            AZStd::string equalSigns = "";
+            while (numEqualSignsRequired--)
+            {
+                equalSigns += "=";
+            }
+
+            return equalSigns;
+        }
+
+        AZStd::string MakeLongBracketString(const AZStd::string& formattedString)
+        {
+            size_t numEqualSignsRequired = 0;
+
+            for (;;)
+            {
+                auto candidate = AZStd::string::format("]%s", EqualSigns(numEqualSignsRequired).c_str());
+
+                if (formattedString.find(candidate) == AZStd::string::npos)
+                {
+                    break;
+                }
+
+                ++numEqualSignsRequired;
+            }
+
+            return EqualSigns(numEqualSignsRequired);
+        }
+
+        AZStd::string MakeRuntimeSafeStringLiteral(const AZStd::string& formattedString)
+        {
+            const AZStd::string bracketString = MakeLongBracketString(formattedString);
+            return AZStd::string::format("[%s[%s]%s]", bracketString.c_str(), formattedString.c_str(), bracketString.c_str());
         }
 
     } 

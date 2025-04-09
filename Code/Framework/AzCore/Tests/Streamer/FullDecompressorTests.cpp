@@ -31,25 +31,13 @@ namespace AZ::IO
         {
             return FullFileDecompressor(2, 2, m_arbitrarilyLargeAlignment);
         }
-
-        void SetUp() override
-        {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-        }
     };
 
-    INSTANTIATE_TYPED_TEST_CASE_P(
+    INSTANTIATE_TYPED_TEST_SUITE_P(
         Streamer_FullFileDecompressorConformityTests, StreamStackEntryConformityTests, FullFileDecompressorTestDescription);
 
     class Streamer_FullDecompressorTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         enum CompressionState
@@ -66,14 +54,6 @@ namespace AZ::IO
             Canceled
         };
 
-        void SetUp() override
-        {
-            UnitTest::AllocatorsFixture::SetUp();
-
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
         void TearDown() override
         {
             m_decompressor.reset();
@@ -88,10 +68,7 @@ namespace AZ::IO
             delete m_context;
             m_context = nullptr;
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void SetupEnvironment(u32 maxNumReads, u32 maxNumJobs)
@@ -175,7 +152,7 @@ namespace AZ::IO
             AZ_Assert(compressedSize == uncompressedBufferSize, "Fake decompression algorithm only supports copying data.");
             if (sleep)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(80));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(1));
             }
             memcpy(uncompressed, compressed, compressedSize);
             return true;

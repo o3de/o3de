@@ -18,7 +18,7 @@ namespace GameState
     {
     public:
         AZ_RTTI(GameStateModule, "{33EF4B1E-388F-4F05-B73A-6560FE0CF4E3}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(GameStateModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameStateModule, AZ::SystemAllocator);
 
         GameStateModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace GameState
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), GameState::GameStateModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_GameState, GameState::GameStateModule)
+#endif

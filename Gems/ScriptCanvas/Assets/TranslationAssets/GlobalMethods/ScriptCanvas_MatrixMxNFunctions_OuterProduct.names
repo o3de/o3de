@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MatrixMxNFunctions_OuterProduct",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Outer Product"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MatrixMxNFunctions_OuterProduct",
+                    "details": {
+                        "name": "Outer Product"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "Vector 1"
+                            }
+                        },
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "Vector 2"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B751D885-87D0-40BF-A6B3-48EFF0147AFA}",
+                            "details": {
+                                "name": "Matrix MxN"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

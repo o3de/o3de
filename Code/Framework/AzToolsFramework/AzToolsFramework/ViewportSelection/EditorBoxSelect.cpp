@@ -26,7 +26,7 @@ namespace AzToolsFramework
         m_clickDetector.SetDoubleClickInterval(0.0f);
     }
 
-    void EditorBoxSelect::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    bool EditorBoxSelect::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -77,6 +77,8 @@ namespace AzToolsFramework
         }
 
         m_previousModifiers = mouseInteraction.m_mouseInteraction.m_keyboardModifiers;
+
+        return m_boxSelectRegion.has_value();
     }
 
     void EditorBoxSelect::Display2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PacketGroup Name="AzFrameworkPackets" PacketStart="CorePackets::PacketType::MAX">
+	<Include File="AzFramework/TargetManagement/NeighborhoodAPI.h" />
+	<Include File="AzNetworking/AutoGen/CorePackets.AutoPackets.h" />
+
+	<Packet Name="TargetConnect" Desc="Connects a Neighbor Target to a Host">
+		<Member Type="uint32_t" Name="capabilities" Init="0" />
+		<Member Type="uint32_t" Name="persistentId" Init="0" />
+		<Member Type="AZStd::string" Name="displayName" />
+	</Packet>
+
+	<Packet Name="TargetMessage" Desc="Transmits buffers between Neighbor Targets">
+		<Member Type="Neighborhood::NeighborMessageBuffer" Name="messageBuffer" />
+		<Member Type="uint32_t" Name="size" Init="0" />
+		<Member Type="uint32_t" Name="persistentId" Init="0" />
+	</Packet>
+</PacketGroup>

@@ -70,7 +70,7 @@ public:
     void ReleaseCanvasDeferred(AZ::EntityId canvas) override;
 
     ISprite* LoadSprite(const AZStd::string& pathname) override;
-    ISprite* CreateSprite(const AZStd::string& renderTargetName) override;
+    ISprite* CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
     bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) override;
     AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathname) override;
 
@@ -93,6 +93,7 @@ public:
     bool IsUiCursorVisible() override;
     void SetUiCursor(const char* cursorImagePath) override;
     AZ::Vector2 GetUiCursorPosition() override;
+    void SetUiCursorPosition(const AZ::Vector2&) override;
     // ~UiCursorInterface
 
     // InputChannelEventListener

@@ -11,33 +11,29 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <qcoreapplication.h>
-#include "native/tests/AssetProcessorTest.h"
+#include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include "native/assetprocessor.h"
-#include "native/unittests/UnitTestRunner.h"
-#include "native/AssetManager/assetProcessorManager.h"
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/unittests/MockApplicationManager.h"
+#include <native/assetprocessor.h>
+#include <native/unittests/UnitTestUtils.h>
+#include <native/AssetManager/assetProcessorManager.h>
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/unittests/MockApplicationManager.h>
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <QTemporaryDir>
 #include <QMetaObject>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <tests/UnitTestUtilities.h>
 
 #include "resourcecompiler/rccontroller.h"
 
 class AssetProcessorManager_Test;
-
-class MockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-{
-public:
-    MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-};
 
 class AssetProcessorManager_Test : public AssetProcessor::AssetProcessorManager
 {
@@ -58,6 +54,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_Reverse_BasicTest);
     friend class GTEST_TEST_CLASS_NAME_(
         AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_MissingFiles_ReturnsNoPathWithPlaceholders);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_DependenciesOnNonAssetsIncluded);
 
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_BeforeComputingDirtiness_AllDirty);
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_EmptyDatabase_AllDirty);
@@ -145,6 +142,9 @@ public:
 
     using AssetProcessorManager::m_stateData;
     using AssetProcessorManager::ComputeBuilderDirty;
+
+    using AssetProcessorManager::m_anyBuilderChange;
+    using AssetProcessorManager::m_buildersAddedOrRemoved;
 };
 
 class AssetProcessorManagerTest
@@ -165,20 +165,32 @@ protected:
     void SetUp() override;
     void TearDown() override;
 
-    QTemporaryDir m_tempDir;
+    virtual void CreateSourceAndFile(const char* tempFolderRelativePath);
+    virtual void PopulateDatabase();
+
+    QDir m_assetRootDir;
 
     AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
     AZStd::unique_ptr<AssetProcessor::MockApplicationManager> m_mockApplicationManager;
+    AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
     AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
+    ::UnitTests::MockVirtualFileIO m_virtualFileIO;
+    AzToolsFramework::UuidUtilComponent m_uuidUtil;
+    AzToolsFramework::MetadataManager m_metadataManager;
+    AssetProcessor::UuidManager m_uuidManager;
     QString m_gameName;
     QDir m_normalizedCacheRootDir;
     AZStd::atomic_bool m_isIdling;
     QMetaObject::Connection m_idleConnection;
 
+    AZ::Uuid m_aUuid;
+    AZ::Uuid m_bUuid;
+    AZ::Uuid m_cUuid;
+    AZ::Uuid m_dUuid;
+
     struct StaticData
     {
         AZStd::string m_databaseLocation;
-        ::testing::NiceMock<MockDatabaseLocationListener> m_databaseLocationListener;
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -211,6 +223,8 @@ struct AbsolutePathProductDependencyTest
 
 struct SourceFileDependenciesTest : AssetProcessorManagerTest
 {
+    void SetUp() override;
+
     void SetupData(
         const AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies,
         const AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
@@ -218,6 +232,8 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
         bool createFile2Dummies,
         bool primeMap,
         AssetProcessor::AssetProcessorManager::JobToProcessEntry& job);
+
+    void PopulateDatabase() override;
 
     auto GetDependencyList();
 
@@ -227,7 +243,7 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
     AssetBuilderSDK::JobDependency MakeJobDependency(AZ::Uuid uuid);
 
     QString m_absPath;
-    QString m_watchFolderPath; 
+    QString m_watchFolderPath;
     QString m_dependsOnFile1_Source;
     QString m_dependsOnFile2_Source;
     QString m_dependsOnFile1_Job;
@@ -236,10 +252,11 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
     const AssetProcessor::ScanFolderInfo* m_scanFolder = nullptr;
 
     AZ::Uuid m_dummyBuilderUuid;
-    AZ::Uuid m_uuidOfA = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
-    AZ::Uuid m_uuidOfB = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
-    AZ::Uuid m_uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
-    AZ::Uuid m_uuidOfD = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
+    AZ::Uuid m_sourceFileUuid;
+    AZ::Uuid m_uuidOfA;
+    AZ::Uuid m_uuidOfB;
+    AZ::Uuid m_uuidOfC;
+    AZ::Uuid m_uuidOfD;
 };
 
 
@@ -264,6 +281,12 @@ struct PathDependencyTest
     bool ProcessAsset(TestAsset& asset, const OutputAssetSet& outputAssets, const AssetBuilderSDK::ProductPathDependencySet& dependencies = {}, const AZStd::string& folderPath = "subfolder1/", const AZStd::string& extension = ".txt");
 
     void RunWildcardTest(bool useCorrectDatabaseSeparator, AssetBuilderSDK::ProductPathDependencyType pathDependencyType, bool buildDependenciesFirst);
+
+    void RunWildcardDependencyTestOnPaths(
+        const AZStd::string& wildcardDependency,
+        const AZStd::vector<AZStd::string>& expectedMatchingPaths,
+        const AZStd::vector<AZStd::string>& expectedNotMatchingPaths);
+
     AssetProcessor::AssetDatabaseConnection* m_sharedConnection{};
 };
 
@@ -304,7 +327,7 @@ struct FingerprintTest
     void RunFingerprintTest(QString builderFingerprint, QString jobFingerprint, bool expectedResult);
 
     QString m_absolutePath;
-    UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
+    UnitTests::MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
     AZStd::vector<AssetProcessor::JobDetails> m_jobResults;
 };
 
@@ -316,37 +339,12 @@ struct JobDependencyTest
 
     struct StaticData
     {
-        UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockMultiBuilderInfoHandler::AssetBuilderExtraInfo m_assetBuilderConfig;
         AZ::Uuid m_builderUuid;
     };
 
     AZStd::unique_ptr<StaticData> m_data;
-};
-
-struct MockMultiBuilderInfoHandler
-    : public AssetProcessor::AssetBuilderInfoBus::Handler
-{
-    ~MockMultiBuilderInfoHandler();
-
-    struct AssetBuilderExtraInfo
-    {
-        QString m_jobDependencyFilePath;
-    };
-
-    //! AssetProcessor::AssetBuilderInfoBus Interface
-    void GetMatchingBuildersInfo(const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList) override;
-    void GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList) override;
-
-    void CreateJobs(AssetBuilderExtraInfo extraInfo, const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response);
-    void ProcessJob(AssetBuilderExtraInfo extraInfo, const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);
-
-    void CreateBuilderDesc(const QString& builderName, const QString& builderId, const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns, AssetBuilderExtraInfo extraInfo);
-
-    AZStd::vector<AssetBuilderSDK::AssetBuilderDesc> m_builderDesc;
-    AZStd::vector<AssetUtilities::BuilderFilePatternMatcher> m_matcherBuilderPatterns;
-    AZStd::unordered_map<AZ::Uuid, AssetBuilderSDK::AssetBuilderDesc> m_builderDescMap;
-
-    int m_createJobsCount = 0;
 };
 
 struct ChainJobDependencyTest
@@ -357,7 +355,7 @@ struct ChainJobDependencyTest
 
     struct StaticData
     {
-        MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
         AZStd::unique_ptr<AssetProcessor::RCController> m_rcController;
     };
 

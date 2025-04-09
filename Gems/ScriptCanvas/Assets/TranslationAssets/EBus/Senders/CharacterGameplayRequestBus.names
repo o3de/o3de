@@ -19,13 +19,24 @@
                         "tooltip": "Signaled after Get Falling Velocity is invoked"
                     },
                     "details": {
-                        "name": "Get Falling Velocity"
+                        "name": "Get Falling Velocity",
+                        "tooltip": "Get the component of the character's velocity related to gravity"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Falling Velocity"
+                                "name": "Falling Velocity",
+                                "tooltip": "The component of the character's velocity related to gravity"
                             }
                         }
                     ]
@@ -41,13 +52,24 @@
                         "tooltip": "Signaled after Get Gravity Multiplier is invoked"
                     },
                     "details": {
-                        "name": "Get Gravity Multiplier"
+                        "name": "Get Gravity Multiplier",
+                        "tooltip": "Get the factor by which the scene gravity is multiplied when applying gravity to the character"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Gravity Multiplier"
+                                "name": "Gravity Multiplier",
+                                "tooltip": "The factor by which the scene gravity is multiplied when applying gravity to the character"
                             }
                         }
                     ]
@@ -63,13 +85,15 @@
                         "tooltip": "Signaled after Set Gravity Multiplier is invoked"
                     },
                     "details": {
-                        "name": "Set Gravity Multiplier"
+                        "name": "Set Gravity Multiplier",
+                        "tooltip": "Set the factor by which the scene gravity is multiplied when applying gravity to the character"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Gravity Multiplier"
+                                "name": "Gravity Multiplier",
+                                "tooltip": "The factor by which the scene gravity is multiplied when applying gravity to the character"
                             }
                         }
                     ]
@@ -85,13 +109,24 @@
                         "tooltip": "Signaled after Is On Ground is invoked"
                     },
                     "details": {
-                        "name": "Is On Ground"
+                        "name": "Is On Ground",
+                        "tooltip": "Check whether the character is standing on something"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Is On Ground"
+                                "name": "Is On Ground",
+                                "tooltip": "Whether the character is standing on something"
                             }
                         }
                     ]
@@ -107,13 +142,72 @@
                         "tooltip": "Signaled after Set Falling Velocity is invoked"
                     },
                     "details": {
-                        "name": "Set Falling Velocity"
+                        "name": "Set Falling Velocity",
+                        "tooltip": "Set the component of the character's velocity related to gravity"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Falling Velocity"
+                                "name": "Falling Velocity",
+                                "tooltip": "The component of the character's velocity related to gravity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetGroundDetectionBoxHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Ground Detection Box Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Ground Detection Box Height is invoked"
+                    },
+                    "details": {
+                        "name": "Get Ground Detection Box Height",
+                        "tooltip": "Get the height of the box used for detecting ground contact (centered on the character's base)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height",
+                                "tooltip": "Height of the box used for detecting ground contact"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetGroundDetectionBoxHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Ground Detection Box Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Ground Detection Box Height is invoked"
+                    },
+                    "details": {
+                        "name": "Set Ground Detection Box Height",
+                        "tooltip": "Set the height of the box used for detecting ground contact (centered on the character's base)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height",
+                                "tooltip": "Height of the box used for detecting ground contact"
                             }
                         }
                     ]

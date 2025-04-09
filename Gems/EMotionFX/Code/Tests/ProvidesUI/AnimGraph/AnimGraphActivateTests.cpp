@@ -96,6 +96,7 @@ namespace EMotionFX
             GetEMotionFX().GetActorManager()->UnregisterAllActors();
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
             delete m_animGraph;
+            m_actorAsset.Reset();
             UIFixture::TearDown();
         }
 
@@ -116,11 +117,11 @@ namespace EMotionFX
         // This test checks that activating a filled anim graph will not crash and create an animgraph instance
         RecordProperty("test_case_id", "C1559131");
 
-        // Find QComboBox that indicates preview of motionset
+        // Find QComboBox that indicates preview of motionSet
         QComboBox* motionSetPreviewSelector = qobject_cast<QComboBox*>(PopulatedAnimGraphFixture::FindTopLevelWidget("EMFX.AttributesWindowWidget.AnimGraph.MotionSetComboBox"));
 
         // Set Preview motionset as created MotionSet
-        motionSetPreviewSelector->setCurrentIndex(0);
+        motionSetPreviewSelector->setCurrentIndex(1);
         ASSERT_EQ(motionSetPreviewSelector->currentText(), "motionSet0") << "Preview Motionset could not be set";
 
         // Find activate animigraph button

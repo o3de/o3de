@@ -87,6 +87,20 @@
         <file>trackview_keys_03.png</file>
         <file>clapperboard_cancel.png</file>
         <file>clapperboard_ready.png</file>
+
+    </qresource>
+    <qresource prefix="/Trackview">
+        <file>Pause.svg</file>
+        <file>PlayBackward.svg</file>
+        <file>PlayForward.svg</file>
+        <file>Stop.svg</file>
+        <file>StopRecorder.svg</file>
+        <file>Loop.svg</file>
+        <file>Pause.svg</file>
+        <file>RecordButton.svg</file>
+        <file>SequenceEnd.svg</file>
+        <file>SequenceStart.svg</file>
+        <file>AutoRecord.svg</file>
     </qresource>
     <qresource prefix="/TrackViewCurveEditor">
         <file>spline_edit_bar_00.png</file>

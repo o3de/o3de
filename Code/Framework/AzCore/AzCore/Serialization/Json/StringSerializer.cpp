@@ -92,7 +92,7 @@ namespace AZ
         }
     } // namespace Internal
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonStringSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonStringSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonStringSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -115,7 +115,7 @@ namespace AZ
     }
 
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonOSStringSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonOSStringSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonOSStringSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)

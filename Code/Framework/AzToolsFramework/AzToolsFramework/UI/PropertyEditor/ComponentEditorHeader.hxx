@@ -45,6 +45,12 @@ namespace AzToolsFramework
         /// Set an icon. Passing a null icon will hide the widget.
         void SetIcon(const QIcon& icon);
 
+        /// Set a secondary icon to be drawn on top of the main icon.
+        void SetIconOverlay(const QIcon& icon);
+
+        // Set whether the component icon is clickable
+        void SetComponentIconClickable(bool clickable);
+
         /// Set whether the header has an expand/contract button.
         /// Note that the header itself will not change size or hide, it
         /// simply causes the OnExpanderChanged signal to fire.
@@ -70,6 +76,7 @@ namespace AzToolsFramework
         void ClearHelpURL();
 
         void SetFilterString(const AZStd::string& str);
+        bool TitleMatchesFilter() const;
     Q_SIGNALS:
         void OnContextMenuClicked(const QPoint& position);
         void OnExpanderChanged(bool expanded);

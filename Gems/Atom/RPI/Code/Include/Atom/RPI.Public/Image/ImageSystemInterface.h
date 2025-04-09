@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <AtomCore/Instance/Instance.h>
 
 namespace AZ
@@ -40,7 +40,7 @@ namespace AZ
             static constexpr char Missing[] = "textures/defaults/missing.png.streamingimage";
         }
 
-        class ImageSystemInterface
+        class ATOM_RPI_PUBLIC_API ImageSystemInterface
         {
         public:
             AZ_RTTI(ImageSystemInterface, "{C05FE364-927F-4669-ADDA-5562E20D5DC1}");
@@ -56,12 +56,15 @@ namespace AZ
             //! Returns a system image generated at runtime.
             virtual const Data::Instance<Image>& GetSystemImage(SystemImage systemImage) const = 0;
 
-            //! Returns the system streaming image pool. Use this if you do not need a custom pool for your allocation.
-            //! This pool's budget is usually small and it's preferred to use it only for streaming images which data were
-            //! generated during runtime instead of from streaming image assets.
+            //! Returns a system attachment image generated at runtime for the given format. Supports
+            //! color, depth, and depth/stencil attachment images
+            virtual const Data::Instance<AttachmentImage>& GetSystemAttachmentImage(RHI::Format format) = 0;
+
+            //! Returns the system streaming image pool. 
             virtual const Data::Instance<StreamingImagePool>& GetSystemStreamingPool() const = 0;
 
-            //! Returns streaming image pool which is dedicated for streaming images created from streaming image assets.
+            //! O3DE_DEPRECATION_NOTICE(GHI-12058)
+            //! @deprecated use GetSystemStreamingPool()
             virtual const Data::Instance<StreamingImagePool>& GetStreamingPool() const = 0;
 
             //! Returns the system attachment image pool. Use this if you do not need a custom pool for your allocation.
@@ -78,7 +81,7 @@ namespace AZ
             virtual void UnregisterAttachmentImage(AttachmentImage* attachmentImage) = 0;
 
             //! Find an attachment image by its unique name (same as its attachment id) from registered attachment images.
-            //! Note: only attachment image created with an uqniue name will be registered.
+            //! Note: only attachment image created with an unique name will be registered.
             virtual Data::Instance<AttachmentImage> FindRegisteredAttachmentImage(const Name& uniqueName) const = 0;
 
             virtual void Update() = 0;

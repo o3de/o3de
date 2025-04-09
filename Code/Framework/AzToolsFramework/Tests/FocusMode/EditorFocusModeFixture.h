@@ -19,7 +19,7 @@
 
 namespace UnitTest
 {
-    class EditorFocusModeFixture : public ToolsApplicationFixture
+    class EditorFocusModeFixture : public ToolsApplicationFixture<>
     {
     protected:
         void SetUpEditorFixtureImpl() override;
@@ -32,6 +32,7 @@ namespace UnitTest
 
         AzToolsFramework::ContainerEntityInterface* m_containerEntityInterface = nullptr;
         AzToolsFramework::FocusModeInterface* m_focusModeInterface = nullptr;
+        bool m_ed_enableOutlinerOverrideManagement = false;
 
     public:
         AzToolsFramework::EntityIdList GetSelectedEntities();

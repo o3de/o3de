@@ -18,7 +18,7 @@ namespace MathNodeUtilitiesCPP
     {
     public:
         AZ_TYPE_INFO(RandomEngineInternal, "{94DF8BDF-FF9F-434B-BF0B-FC215EA44069}");
-        AZ_CLASS_ALLOCATOR(RandomEngineInternal, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RandomEngineInternal, AZ::SystemAllocator);
 
         std::mt19937 m_randomEngine;
 

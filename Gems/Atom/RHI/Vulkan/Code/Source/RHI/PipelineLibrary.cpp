@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
             return m_nativePipelineCache;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::PipelineLibraryDescriptor& descriptor)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::DevicePipelineLibraryDescriptor& descriptor)
         {
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
@@ -41,7 +42,8 @@ namespace AZ
                 createInfo.pInitialData = descriptor.m_serializedData->GetData().data();
             }
 
-            const VkResult result = vkCreatePipelineCache(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineCache);
+            const VkResult result = device.GetContext().CreatePipelineCache(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativePipelineCache);
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
@@ -54,12 +56,12 @@ namespace AZ
             if (m_nativePipelineCache != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyPipelineCache(device.GetNativeDevice(), m_nativePipelineCache, nullptr);
+                device.GetContext().DestroyPipelineCache(device.GetNativeDevice(), m_nativePipelineCache, VkSystemAllocator::Get());
                 m_nativePipelineCache = VK_NULL_HANDLE;
             }
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary * const> libraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::DevicePipelineLibrary * const> libraries)
         {
             auto& device = static_cast<Device&>(GetDevice());
             if (libraries.empty())
@@ -69,14 +71,14 @@ namespace AZ
 
             AZStd::vector<VkPipelineCache> pipelineCaches;
             pipelineCaches.reserve(libraries.size());
-            for (const RHI::PipelineLibrary* libraryBase : libraries)
+            for (const RHI::DevicePipelineLibrary* libraryBase : libraries)
             {
                 const auto* library = static_cast<const PipelineLibrary*>(libraryBase);
                 pipelineCaches.emplace_back(library->GetNativePipelineCache());
             }
 
-            const VkResult result = vkMergePipelineCaches(device.GetNativeDevice(), m_nativePipelineCache,
-                static_cast<uint32_t>(pipelineCaches.size()), pipelineCaches.data());
+            const VkResult result = device.GetContext().MergePipelineCaches(
+                device.GetNativeDevice(), m_nativePipelineCache, static_cast<uint32_t>(pipelineCaches.size()), pipelineCaches.data());
             AssertSuccess(result);
 
             return ConvertResult(result);
@@ -87,7 +89,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
 
             size_t dataSize = 0;
-            VkResult result = vkGetPipelineCacheData(device.GetNativeDevice(), m_nativePipelineCache, &dataSize, nullptr);
+            VkResult result = device.GetContext().GetPipelineCacheData(device.GetNativeDevice(), m_nativePipelineCache, &dataSize, nullptr);
             AssertSuccess(result);
             if (result != VK_SUCCESS)
             {
@@ -95,7 +97,7 @@ namespace AZ
             }
 
             AZStd::vector<uint8_t> data(dataSize);
-            result = vkGetPipelineCacheData(device.GetNativeDevice(), m_nativePipelineCache, &dataSize, data.data());
+            result = device.GetContext().GetPipelineCacheData(device.GetNativeDevice(), m_nativePipelineCache, &dataSize, data.data());
             AssertSuccess(result);
 
             return RHI::PipelineLibraryData::Create(AZStd::move(data));

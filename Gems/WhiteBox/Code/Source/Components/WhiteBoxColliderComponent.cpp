@@ -33,14 +33,21 @@ namespace WhiteBox
         }
     }
 
+    void WhiteBoxColliderComponent::GetProvidedServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+    }
+
     void WhiteBoxColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void WhiteBoxColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        // Incompatible with other rigid bodies because it handles its own rigid body
+        // internally and it would conflict if another rigid body is added to the entity.
+        incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     WhiteBoxColliderComponent::WhiteBoxColliderComponent(

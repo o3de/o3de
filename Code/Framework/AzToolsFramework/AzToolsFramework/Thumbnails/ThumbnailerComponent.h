@@ -14,9 +14,7 @@
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
-#include <QList>
 #include <QObject>
-#include <QThreadPool>
 #endif
 
 class QString;
@@ -29,7 +27,6 @@ namespace AzToolsFramework
         class ThumbnailerComponent
             : public AZ::Component
             , public ThumbnailerRequestBus::Handler
-            , public QObject
         {
         public:
             AZ_COMPONENT(ThumbnailerComponent, "{80090CA5-6A3A-4554-B5FE-A6D74ECB2D84}")
@@ -49,11 +46,10 @@ namespace AzToolsFramework
             void UnregisterThumbnailProvider(const char* providerName) override;
             SharedThumbnail GetThumbnail(SharedThumbnailKey thumbnailKey) override;
             bool IsLoading(SharedThumbnailKey thumbnailKey) override;
-            QThreadPool* GetThreadPool() override;
-
-            void RedrawThumbnail();
 
         private:
+            void Cleanup();
+
             struct ProviderCompare
             {
                 bool operator()(const SharedThumbnailProvider& lhs, const SharedThumbnailProvider& rhs) const
@@ -69,9 +65,10 @@ namespace AzToolsFramework
             SharedThumbnail m_missingThumbnail;
             //! Default loading thumbnail used when thumbnail is found by is not yet generated
             SharedThumbnail m_loadingThumbnail;
-            //! There is only a limited number of threads on global threadPool, because there can be many thumbnails rendering at once
-            //! an individual threadPool is needed to avoid deadlocks
-            QThreadPool m_threadPool;
+            //! Using placeholder object rather than inheritance for connecting signals and slots
+            AZStd::unique_ptr<QObject> m_placeholderObject;
+            //! Current number of jobs running.
+            AZStd::set<SharedThumbnail> m_thumbnailsBeingLoaded;
         };
     } // Thumbnailer
 } // namespace AssetBrowser

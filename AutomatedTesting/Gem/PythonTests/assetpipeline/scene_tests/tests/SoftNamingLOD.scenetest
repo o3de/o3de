@@ -1,0 +1,52 @@
+{
+    "test_name": "SoftNamingLOD_RunAP_SuccessWithMatchingProducts",
+    "asset_folder": "SoftNamingLOD",
+    "override_asset_folder": null,
+    "scene_debug_file": "lodtest.dbgsg",
+    "override_scene_debug_file": null,
+    "assets": {
+        "source_file_name": "lodtest.fbx",
+        "uuid": "44c8627fe2c25aae91fe3ff9547be3b9",
+        "jobs": {
+            "job_key": "Scene compilation",
+            "builder_guid": "bd8bf65894854fe3830e8ec3a23c35f3",
+            "status": 4,
+            "error_count": 0,
+            "products": [
+                {
+                    "product_name": "softnaminglod/lodtest.assetinfo.dbg",
+                    "sub_id": 1928041548,
+                    "asset_type": "48a78be7b3f244b88aa6f0607e9a75a5"
+                },
+                {
+                    "product_name": "softnaminglod/lodtest.dbgsg",
+                    "sub_id": -632012261,
+                    "asset_type": "07f289d14dc74c4094b40a53bbcb9f0b"
+                },
+                {
+                    "product_name" : "softnaminglod/lodtest.dbgsg.json",
+                    "sub_id" : 1220784361,
+                    "asset_type" : "4342b27e0e1449c3b3b9bcdb9a5fca23"
+                },
+                {
+                    "product_name": "softnaminglod/lodtest.dbgsg.xml",
+                    "sub_id": -2036095434,
+                    "asset_type": "51f376140d774f369ac67ed70a0ac868"
+                },
+                {
+                    "product_name": "softnaminglod/lodtest_fbx.procprefab",
+                    "sub_id": 838906682,
+                    "asset_type": "9b7c8459471e4eada3637990cc4065a9"
+                },
+                {
+                    "product_name": "softnaminglod/lodtest_fbx.procprefab.json",
+                    "sub_id": -71923453,
+                    "asset_type": "00000000000000000000000000000000"
+                }
+            ]
+        }
+    },
+    "override_assets": null,
+    "id": "33887870",
+    "marks": "pytest.mark.test_case_id('33887870')"
+}

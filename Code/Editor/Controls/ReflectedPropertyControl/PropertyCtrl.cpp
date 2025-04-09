@@ -10,7 +10,6 @@
 
 // Editor
 #include "PropertyCtrl.h"
-#include "PropertyGenericCtrl.h"
 #include "PropertyMiscCtrl.h"
 #include "PropertyMotionCtrl.h"
 
@@ -20,13 +19,12 @@ void RegisterReflectedVarHandlers()
     if (!registered)
     {
         registered = true;
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew SequencePropertyHandler());
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew SequenceIdPropertyHandler());
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew LocalStringPropertyHandler());
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew LightAnimationPropertyHandler());
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew UserPopupWidgetHandler());
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew FloatCurveHandler());
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew MotionPropertyWidgetHandler());
+        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew UserPopupWidgetHandler());
+        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew FloatCurveHandler());
+        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew MotionPropertyWidgetHandler());
     }
 }
 

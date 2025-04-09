@@ -12,6 +12,7 @@ set(FILES
     UnitTest/Mocks/MockFocusModeInterface.h
     UnitTest/Mocks/MockEditorVisibleEntityDataCacheInterface.h
     UnitTest/Mocks/MockEditorViewportIconDisplayInterface.h
+    UnitTest/Mocks/MockViewportInteractionRequests.h
     UnitTest/ToolsTestApplication.cpp
     UnitTest/ToolsTestApplication.h
 )

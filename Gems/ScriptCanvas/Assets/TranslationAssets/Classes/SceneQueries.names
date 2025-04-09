@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "CreateRayCastRequest",
-                    "context": "SceneQueries",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreateRayCastRequest"
@@ -20,8 +19,7 @@
                         "tooltip": "Signaled after CreateRayCastRequest is invoked"
                     },
                     "details": {
-                        "name": "SceneQueries::CreateRayCastRequest",
-                        "category": "Other"
+                        "name": "Create Ray Cast Request"
                     },
                     "params": [
                         {
@@ -57,7 +55,7 @@
                         {
                             "typeid": "{53EAD088-A391-48F1-8370-2A1DBA31512F}",
                             "details": {
-                                "name": "RayCastRequest",
+                                "name": "Ray Cast Request",
                                 "tooltip": "Parameters for raycast"
                             }
                         }

@@ -123,7 +123,8 @@ namespace FastNoiseGem
                     ->Attribute(AZ::Edit::Attributes::Visibility, &FastNoiseGradientConfig::GetFrequencyParameterVisbility)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &FastNoiseGradientConfig::m_octaves, "Octaves", "Number of recursions in the pattern generation, higher octaves refine the pattern")
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
-                    ->Attribute(AZ::Edit::Attributes::Max, 8)
+                    ->Attribute(AZ::Edit::Attributes::Max, 20)
+                    ->Attribute(AZ::Edit::Attributes::SoftMax, 8)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &FastNoiseGradientConfig::GetFractalParameterVisbility)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &FastNoiseGradientConfig::m_lacunarity, "Lacunarity", "The frequency multiplier between each octave")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
@@ -195,17 +196,17 @@ namespace FastNoiseGem
 
     void FastNoiseGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void FastNoiseGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void FastNoiseGradientComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
     }
 
     void FastNoiseGradientComponent::Reflect(AZ::ReflectContext* context)

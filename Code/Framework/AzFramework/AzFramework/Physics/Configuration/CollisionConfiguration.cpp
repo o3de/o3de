@@ -13,7 +13,7 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionConfiguration, AZ::SystemAllocator);
 
     void CollisionConfiguration::Reflect(AZ::ReflectContext* context)
     {

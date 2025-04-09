@@ -113,7 +113,7 @@ namespace AZ::Dom
 
     size_t PathEntry::GetIndex() const
     {
-        AZ_Assert(IsIndex(), "GetIndex called on PathEntry that is not an index");
+        AZ_Assert(!IsEndOfArray() && IsIndex(), "GetIndex called on PathEntry that is not an index");
         return AZStd::get<size_t>(m_value);
     }
 
@@ -269,6 +269,11 @@ namespace AZ::Dom
             return m_entries[index];
         }
         return {};
+    }
+
+    PathEntry Path::Back() const
+    {
+        return m_entries.back();
     }
 
     size_t Path::Size() const
@@ -438,6 +443,18 @@ namespace AZ::Dom
         FormatString(output.data() + startIndex, stringLength + 1);
     }
 
+    bool Path::ContainsNormalizedEntries() const
+    {
+        for (const PathEntry& entry : m_entries)
+        {
+            if (entry.IsEndOfArray())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void Path::FromString(AZStd::string_view pathString)
     {
         m_entries.clear();
@@ -447,7 +464,7 @@ namespace AZ::Dom
         }
 
         size_t pathEntryCount = 0;
-        for (size_t i = 1; i <= pathString.size(); ++i)
+        for (size_t i = 1; i < pathString.size(); ++i)
         {
             if (pathString[i] == PathSeparator)
             {

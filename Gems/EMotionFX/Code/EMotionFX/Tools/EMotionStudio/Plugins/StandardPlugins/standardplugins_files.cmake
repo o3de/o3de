@@ -12,14 +12,6 @@ set(FILES
     Source/ActionHistory/ActionHistoryCallback.h
     Source/ActionHistory/ActionHistoryPlugin.cpp
     Source/ActionHistory/ActionHistoryPlugin.h
-    Source/Attachments/AttachmentNodesWindow.cpp
-    Source/Attachments/AttachmentNodesWindow.h
-    Source/Attachments/AttachmentsHierarchyWindow.cpp
-    Source/Attachments/AttachmentsHierarchyWindow.h
-    Source/Attachments/AttachmentsPlugin.cpp
-    Source/Attachments/AttachmentsPlugin.h
-    Source/Attachments/AttachmentsWindow.cpp
-    Source/Attachments/AttachmentsWindow.h
     Source/AnimGraph/AnimGraphActionManager.cpp
     Source/AnimGraph/AnimGraphActionManager.h
     Source/AnimGraph/AnimGraphEditor.cpp
@@ -58,10 +50,6 @@ set(FILES
     Source/AnimGraph/AnimGraphPlugin.h
     Source/AnimGraph/AnimGraphPluginCallbacks.cpp
     Source/AnimGraph/ContextMenu.cpp
-    Source/AnimGraph/GameController.cpp
-    Source/AnimGraph/GameController.h
-    Source/AnimGraph/GameControllerWindow.cpp
-    Source/AnimGraph/GameControllerWindow.h
     Source/AnimGraph/GraphNode.cpp
     Source/AnimGraph/GraphNode.h
     Source/AnimGraph/GraphNodeFactory.cpp
@@ -78,12 +66,12 @@ set(FILES
     Source/AnimGraph/NodeGraph.h
     Source/AnimGraph/NodeGraphWidget.cpp
     Source/AnimGraph/NodeGraphWidget.h
-    Source/AnimGraph/NodeGroupWindow.cpp
-    Source/AnimGraph/NodeGroupWindow.h
+    Source/AnimGraph/NodePaletteModelUpdater.h
+    Source/AnimGraph/NodePaletteModelUpdater.cpp
     Source/AnimGraph/NodePaletteWidget.cpp
     Source/AnimGraph/NodePaletteWidget.h
-    Source/AnimGraph/ParameterCreateEditDialog.cpp
-    Source/AnimGraph/ParameterCreateEditDialog.h
+    Source/AnimGraph/ParameterCreateEditWidget.cpp
+    Source/AnimGraph/ParameterCreateEditWidget.h
     Source/AnimGraph/ParameterSelectionWindow.cpp
     Source/AnimGraph/ParameterSelectionWindow.h
     Source/AnimGraph/ParameterWidget.cpp
@@ -98,6 +86,10 @@ set(FILES
     Source/AnimGraph/StateFilterSelectionWindow.h
     Source/AnimGraph/StateGraphNode.cpp
     Source/AnimGraph/StateGraphNode.h
+    Source/AnimGraph/SolidColorIconEngine.cpp
+    Source/AnimGraph/SolidColorIconEngine.h
+    Source/AnimGraph/ZoomableLineEdit.cpp
+    Source/AnimGraph/ZoomableLineEdit.h
     Source/AnimGraph/ParameterEditor/BoolParameterEditor.cpp
     Source/AnimGraph/ParameterEditor/BoolParameterEditor.h
     Source/AnimGraph/ParameterEditor/ColorParameterEditor.cpp
@@ -160,8 +152,6 @@ set(FILES
     Source/MotionEvents/MotionEventPresetsWidget.h
     Source/MotionEvents/MotionEventWidget.cpp
     Source/MotionEvents/MotionEventWidget.h
-    Source/MotionEvents/MotionEventsPlugin.cpp
-    Source/MotionEvents/MotionEventsPlugin.h
     Source/MotionSetsWindow/MotionSetManagementWindow.cpp
     Source/MotionSetsWindow/MotionSetManagementWindow.h
     Source/MotionSetsWindow/MotionSetsWindowPlugin.cpp
@@ -170,20 +160,8 @@ set(FILES
     Source/MotionSetsWindow/MotionSetWindow.h
     Source/MotionWindow/MotionExtractionWindow.cpp
     Source/MotionWindow/MotionExtractionWindow.h
-    Source/MotionWindow/MotionListWindow.cpp
-    Source/MotionWindow/MotionListWindow.h
     Source/MotionWindow/MotionPropertiesWindow.cpp
     Source/MotionWindow/MotionPropertiesWindow.h
-    Source/MotionWindow/MotionRetargetingWindow.cpp
-    Source/MotionWindow/MotionRetargetingWindow.h
-    Source/MotionWindow/MotionWindowPlugin.cpp
-    Source/MotionWindow/MotionWindowPlugin.h
-    Source/NodeGroups/NodeGroupManagementWidget.cpp
-    Source/NodeGroups/NodeGroupManagementWidget.h
-    Source/NodeGroups/NodeGroupsPlugin.cpp
-    Source/NodeGroups/NodeGroupsPlugin.h
-    Source/NodeGroups/NodeGroupWidget.cpp
-    Source/NodeGroups/NodeGroupWidget.h
     Source/NodeWindow/ActorInfo.cpp
     Source/NodeWindow/ActorInfo.h
     Source/NodeWindow/MeshInfo.cpp
@@ -194,8 +172,6 @@ set(FILES
     Source/NodeWindow/NodeInfo.h
     Source/NodeWindow/NodeGroupInfo.cpp
     Source/NodeWindow/NodeGroupInfo.h
-    Source/NodeWindow/NodeWindowPlugin.cpp
-    Source/NodeWindow/NodeWindowPlugin.h
     Source/NodeWindow/SubMeshInfo.cpp
     Source/NodeWindow/SubMeshInfo.h
     Source/SceneManager/ActorPropertiesWindow.cpp

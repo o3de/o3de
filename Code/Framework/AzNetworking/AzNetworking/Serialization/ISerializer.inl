@@ -14,8 +14,6 @@
 #include <AzCore/std/typetraits/is_enum.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
-#include <AzCore/Name/Name.h>
-#include <AzCore/Name/NameDictionary.h>
 
 namespace AzNetworking
 {
@@ -51,13 +49,13 @@ namespace AzNetworking
         };
 
         template <typename TYPE>
-        static typename AZStd::Utils::enable_if_c<HasReserveMethod<TYPE>::value>::type ReserveContainer(TYPE& value, typename TYPE::size_type size)
+        static AZStd::enable_if_t<HasReserveMethod<TYPE>::value> ReserveContainer(TYPE& value, typename TYPE::size_type size)
         {
             value.reserve(size);
         }
 
         template<typename TYPE>
-        static typename AZStd::Utils::enable_if_c<!HasReserveMethod<TYPE>::value>::type ReserveContainer(TYPE&, typename TYPE::size_type)
+        static AZStd::enable_if_t<!HasReserveMethod<TYPE>::value> ReserveContainer(TYPE&, typename TYPE::size_type)
         {
             ;
         }
@@ -78,7 +76,7 @@ namespace AzNetworking
     {
         static bool SerializeObject(ISerializer& serializer, TYPE& value)
         {
-            return value.Serialize(serializer);
+            return SerializeType<TYPE>::Serialize(serializer, value);
         }
     };
 
@@ -102,6 +100,11 @@ namespace AzNetworking
         m_serializerValid = false;
     }
 
+    inline bool ISerializer::Serialize(char& value, const char* name, uint8_t minValue, uint8_t maxValue)
+    {
+        return Serialize(reinterpret_cast<uint8_t&>(value), name, minValue, maxValue);
+    }
+
     template <typename TYPE>
     inline bool ISerializer::Serialize(TYPE& value, const char* name)
     {
@@ -110,24 +113,25 @@ namespace AzNetworking
         return SerializeHelper<IsEnum, IsTypeSafeIntegral>::Serialize(*this, value, name);
     }
 
-    // SerializeHelper for objects and structures
+    // Helper for objects and structures
     template <>
     struct ISerializer::SerializeHelper<false, false>
     {
         template <typename TYPE>
         static bool Serialize(ISerializer& serializer, TYPE& value, const char* name)
         {
-            if (serializer.BeginObject(name, "Type name unknown"))
+            if (serializer.BeginObject(name))
             {
                 if (SerializeObjectHelper<TYPE>::SerializeObject(serializer, value))
                 {
-                    return serializer.EndObject(name, "Type name unknown");
+                    return serializer.EndObject(name);
                 }
             }
             return false;
         }
     };
 
+    // Helper for enums
     template <>
     struct ISerializer::SerializeHelper<true, false>
     {
@@ -153,6 +157,7 @@ namespace AzNetworking
         }
     };
 
+    // Helper for type-safe integrals
     template <>
     struct ISerializer::SerializeHelper<true, true>
     {
@@ -169,22 +174,6 @@ namespace AzNetworking
             }
 
             return true;
-        }
-    };
-
-    template<>
-    struct SerializeObjectHelper<AZ::Name>
-    {
-        static bool SerializeObject(ISerializer& serializer, AZ::Name& value)
-        {
-            AZ::Name::Hash nameHash = value.GetHash();
-            bool result = serializer.Serialize(nameHash, "NameHash");
-
-            if (result && serializer.GetSerializerMode() == SerializerMode::WriteToObject)
-            {
-                value = AZ::NameDictionary::Instance().FindName(nameHash);
-            }
-            return result;
         }
     };
 }

@@ -226,7 +226,7 @@ namespace MysticQt
 
     void RecentFiles::AddRecentFile(AZStd::string filename)
     {
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         // Remove filename duplicates and add the new filename to the top of the recent files.
         if (!filename.empty())

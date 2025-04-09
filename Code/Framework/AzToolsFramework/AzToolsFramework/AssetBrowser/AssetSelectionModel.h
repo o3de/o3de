@@ -26,7 +26,7 @@ namespace AzToolsFramework
         class AssetSelectionModel
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetSelectionModel, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(AssetSelectionModel, AZ::SystemAllocator)
 
             AssetSelectionModel();
             ~AssetSelectionModel() = default;
@@ -60,10 +60,12 @@ namespace AzToolsFramework
 
             QString GetTitle() const;
 
-            static AssetSelectionModel AssetTypeSelection(const AZ::Data::AssetType& assetType, bool multiselect = false);
-            static AssetSelectionModel AssetTypeSelection(const char* assetTypeName, bool multiselect = false);
-            static AssetSelectionModel AssetTypesSelection(const AZStd::vector<AZ::Data::AssetType>& assetTypes, bool multiselect = false);
-            static AssetSelectionModel AssetGroupSelection(const char* group, bool multiselect = false);
+            static AssetSelectionModel AssetTypeSelection(
+                const AZ::Data::AssetType& assetType, bool multiselect = false, bool supportSelectingSources = false);
+            static AssetSelectionModel AssetTypeSelection(
+                const char* assetTypeName, bool multiselect = false, bool supportSelectingSources = false);
+            static AssetSelectionModel AssetTypeSelection(
+                const AZStd::vector<AZ::Data::AssetType>& assetTypes, bool multiselect = false, bool supportSelectingSources = false);
             static AssetSelectionModel SourceAssetTypeSelection(const QRegExp& pattern, bool multiselect = false);
             static AssetSelectionModel EverythingSelection(bool multiselect = false);
 

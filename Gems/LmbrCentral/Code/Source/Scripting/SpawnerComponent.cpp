@@ -14,6 +14,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/Asset/AssetManager.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Entity/SliceGameEntityOwnershipServiceBus.h>
 
@@ -129,42 +130,12 @@ namespace LmbrCentral
                 ->Field("DestroyOnDeactivate", &SpawnerComponent::m_destroyOnDeactivate)
                 ;
         }
- 
-        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
-        if (behaviorContext)
-        {
-            behaviorContext->EBus<SpawnerComponentRequestBus>("SpawnerComponentRequestBus")
-                ->Event("Spawn", &SpawnerComponentRequestBus::Events::Spawn)
-                ->Event("SpawnRelative", &SpawnerComponentRequestBus::Events::SpawnRelative)
-                ->Event("SpawnAbsolute", &SpawnerComponentRequestBus::Events::SpawnAbsolute)
-                ->Event("DestroySpawnedSlice", &SpawnerComponentRequestBus::Events::DestroySpawnedSlice)
-                ->Event("DestroyAllSpawnedSlices", &SpawnerComponentRequestBus::Events::DestroyAllSpawnedSlices)
-                ->Event("GetCurrentlySpawnedSlices", &SpawnerComponentRequestBus::Events::GetCurrentlySpawnedSlices)
-                ->Event("HasAnyCurrentlySpawnedSlices", &SpawnerComponentRequestBus::Events::HasAnyCurrentlySpawnedSlices)
-                ->Event("GetCurrentEntitiesFromSpawnedSlice", &SpawnerComponentRequestBus::Events::GetCurrentEntitiesFromSpawnedSlice)
-                ->Event("GetAllCurrentlySpawnedEntities", &SpawnerComponentRequestBus::Events::GetAllCurrentlySpawnedEntities)
-                ->Event("SetDynamicSlice", &SpawnerComponentRequestBus::Events::SetDynamicSliceByAssetId)
-                ->Event("IsReadyToSpawn", &SpawnerComponentRequestBus::Events::IsReadyToSpawn)
-                ;
-
-            behaviorContext->EBus<SpawnerComponentNotificationBus>("SpawnerComponentNotificationBus")
-                ->Handler<BehaviorSpawnerComponentNotificationBusHandler>()
-                ;
-
-            behaviorContext->Constant("SpawnerComponentTypeId", BehaviorConstant(SpawnerComponentTypeId));
-
-            behaviorContext->Class<SpawnerConfig>()
-                //->Property("sliceAsset", BehaviorValueProperty(&SpawnerConfig::m_sliceAsset))
-                ->Property("spawnOnActivate", BehaviorValueProperty(&SpawnerConfig::m_spawnOnActivate))
-                ->Property("destroyOnDeactivate", BehaviorValueProperty(&SpawnerConfig::m_destroyOnDeactivate))
-                ;
-        }
     }
 
     //=========================================================================
     void SpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SpawnerService", 0xd2f1d7a3));
+        provided.push_back(AZ_CRC_CE("SpawnerService"));
     }
 
     //=========================================================================
@@ -175,7 +146,7 @@ namespace LmbrCentral
     //=========================================================================
     void SpawnerComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        dependent.push_back(AZ_CRC_CE("TransformService"));
     }
 
     //=========================================================================
@@ -326,7 +297,7 @@ namespace LmbrCentral
     AzFramework::SliceInstantiationTicket SpawnerComponent::SpawnSliceInternalRelative(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Transform& relative)
     {
         AZ::Transform transform = AZ::Transform::Identity();
-        EBUS_EVENT_ID_RESULT(transform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
         transform *= relative;
 
@@ -450,7 +421,7 @@ namespace LmbrCentral
     {
         const AzFramework::SliceInstantiationTicket ticket = (*AzFramework::SliceInstantiationResultBus::GetCurrentBusId());
 
-        EBUS_EVENT_ID(GetEntityId(), SpawnerComponentNotificationBus, OnSpawnBegin, ticket);
+        SpawnerComponentNotificationBus::Event(GetEntityId(), &SpawnerComponentNotificationBus::Events::OnSpawnBegin, ticket);
     }
 
     //=========================================================================
@@ -479,12 +450,14 @@ namespace LmbrCentral
             m_entityToTicketMap.emplace(AZStd::make_pair(currEntityId, ticket));
             AZ::EntityBus::MultiHandler::BusConnect(currEntityId);
 
-            EBUS_EVENT_ID(GetEntityId(), SpawnerComponentNotificationBus, OnEntitySpawned, ticket, currEntityId);
+            SpawnerComponentNotificationBus::Event(
+                GetEntityId(), &SpawnerComponentNotificationBus::Events::OnEntitySpawned, ticket, currEntityId);
         }
 
-        EBUS_EVENT_ID(GetEntityId(), SpawnerComponentNotificationBus, OnSpawnEnd, ticket);
+        SpawnerComponentNotificationBus::Event(GetEntityId(), &SpawnerComponentNotificationBus::Events::OnSpawnEnd, ticket);
 
-        EBUS_EVENT_ID(GetEntityId(), SpawnerComponentNotificationBus, OnEntitiesSpawned, ticket, entityIds);
+        SpawnerComponentNotificationBus::Event(
+            GetEntityId(), &SpawnerComponentNotificationBus::Events::OnEntitiesSpawned, ticket, entityIds);
 
         // If slice had no entities, clean it up
         if (entities.empty())

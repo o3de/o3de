@@ -11,6 +11,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 #include <System/FabricCooker.h>
@@ -31,14 +32,6 @@ namespace UnitTest
         explicit NvClothToolsTestApplication(AZStd::string applicationName)
             : ToolsTestApplication(applicationName)
         {
-        }
-
-    protected:
-        bool IsPrefabSystemEnabled() const override
-        {
-            // The NvCloth unit tests currently have a crash on teardown when the prefab system is enabled,
-            // so they can only be run with prefabs disabled at this time.
-            return false;
         }
     };
 
@@ -118,4 +111,4 @@ namespace UnitTest
     }
 } // namespace UnitTest
 
-AZ_UNIT_TEST_HOOK(new UnitTest::NvClothEditorTestEnvironment);
+AZ_TOOLS_UNIT_TEST_HOOK(new UnitTest::NvClothEditorTestEnvironment);

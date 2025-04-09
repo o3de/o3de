@@ -30,8 +30,9 @@ namespace SubgraphInterfaceCpp
         AddConstructionParameterRequirement,
         AddConstructionParameterRequirementForDependencies,
         SeparateClassDefinitionFromNodeableDefinition,
-        // add your entry above
-        Current
+        Last,
+        // DO NOT VERSION
+        DoNotVersionAssetsBumpTheBuilderVersionInstead,
     };
 
     [[maybe_unused]] const size_t k_maxTabs = 20;
@@ -623,6 +624,11 @@ namespace ScriptCanvas
             m_isActiveDefaultObject = true;
         }
 
+        void SubgraphInterface::MarkRefersToSelfEntityId()
+        {
+            m_refersToSelfEntityId = true;
+        }
+
         void SubgraphInterface::MarkRequiresConstructionParameters()
         {
             m_requiresConstructionParameters = true;
@@ -759,6 +765,11 @@ namespace ScriptCanvas
             return AZ::Success();
         }
 
+        bool SubgraphInterface::RefersToSelfEntityId() const
+        {
+            return m_refersToSelfEntityId;
+        }
+
         void SubgraphInterface::Reflect(AZ::ReflectContext* refectContext)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(refectContext))
@@ -797,7 +808,7 @@ namespace ScriptCanvas
                     ;
 
                 serializeContext->Class<SubgraphInterface>()
-                    ->Version(SubgraphInterfaceCpp::Version::Current)
+                    ->Version(SubgraphInterfaceCpp::Version::DoNotVersionAssetsBumpTheBuilderVersionInstead)
                     ->Field("areAllChildrenPure", &SubgraphInterface::m_areAllChildrenPure)
                     ->Field("hasOnGraphStart", &SubgraphInterface::m_hasOnGraphStart)
                     ->Field("isActiveDefaultObject", &SubgraphInterface::m_isActiveDefaultObject)
@@ -810,6 +821,7 @@ namespace ScriptCanvas
                     ->Field("requiresConstructionParametersForDependencies", &SubgraphInterface::m_requiresConstructionParametersForDependencies)
                     ->Field("isBaseClass ", &SubgraphInterface::m_isBaseClass)
                     ->Field("parentClassName", &SubgraphInterface::m_parentClassName)
+                    ->Field("refersToSelfEntityId", &SubgraphInterface::m_refersToSelfEntityId)
                     ;
             }
         }

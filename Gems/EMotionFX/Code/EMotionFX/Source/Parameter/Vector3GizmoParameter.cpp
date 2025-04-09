@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Vector3GizmoParameter, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Vector3GizmoParameter, AnimGraphAllocator)
 
 
     void Vector3GizmoParameter::Reflect(AZ::ReflectContext* context)

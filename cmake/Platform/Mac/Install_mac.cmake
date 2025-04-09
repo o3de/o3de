@@ -27,7 +27,7 @@ set(installed_binaries_path_template [[
 )
 
 # This setreg file will be used by all of our installed app bundles to locate installed
-# runtime dependencies. It contains the path to binary install directory relative to 
+# runtime dependencies. It contains the path to binary install directory relative to
 # the installed engine root.
 string(CONFIGURE "${installed_binaries_path_template}" configured_setreg_file)
 file(GENERATE
@@ -36,7 +36,7 @@ file(GENERATE
 )
 
 # ly_install_run_script isn't defined yet so we use install(SCRIPT) directly.
-# This needs to be done here because it needs to update the install prefix 
+# This needs to be done here because it needs to update the install prefix
 # before cmake does anything else in the install process.
 configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake @ONLY)
 ly_install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
@@ -48,19 +48,28 @@ function(ly_setup_target_install_targets_override)
     set(oneValueArgs TARGET ARCHIVE_DIR LIBRARY_DIR RUNTIME_DIR LIBRARY_SUBDIR RUNTIME_SUBDIR)
     set(multiValueArgs)
     cmake_parse_arguments(ly_platform_install_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(target_name "${ly_platform_install_target_TARGET}")
 
     # For bundles on Mac, we set the icons by passing in a path to the Images.xcassets directory.
-    # However, the CMake install command expects paths to files for the the RESOURCE property.
+    # However, the CMake install command expects paths to files for the RESOURCE property.
     # More details can be found in the CMake issue: https://gitlab.kitware.com/cmake/cmake/-/issues/22409
-    get_target_property(is_bundle ${ly_platform_install_target_TARGET} MACOSX_BUNDLE)
-    if (${is_bundle})
-        get_target_property(cached_resources_dir ${ly_platform_install_target_TARGET} RESOURCE)
-        set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE "")
+    get_property(is_bundle TARGET ${target_name} PROPERTY MACOSX_BUNDLE)
+    if (is_bundle)
+        get_target_property(cached_resources_dir ${target_name} RESOURCE)
+        set_property(TARGET ${target_name} PROPERTY RESOURCE "")
+        # Set the target_bundle_dir and target_bundle_content_dir variables to CONFIGURE into
+        # the InstallUtils_mac.cmake.in template file
+        set(target_bundle_dir "$<TARGET_BUNDLE_DIR:${target_name}>")
+        set(target_bundle_content_dir "$<TARGET_BUNDLE_CONTENT_DIR:${target_name}>")
     endif()
-    
+
+    # Set the target_file_dir variables to CONFIGURE into
+    # the InstallUtils_mac.cmake.in template file
+    set(target_file_dir "$<TARGET_FILE_DIR:${target_name}>")
+
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
         string(TOUPPER ${conf} UCONF)
-        ly_install(TARGETS ${TARGET_NAME}
+        ly_install(TARGETS ${target_name}
             ARCHIVE
                 DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
@@ -86,24 +95,24 @@ function(ly_setup_target_install_targets_override)
 
     set(install_relative_binaries_path "${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}")
 
-    if (${is_bundle})
-        set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE ${cached_resources_dir})
-        set(runtime_output_filename "$<TARGET_FILE_NAME:${ly_platform_install_target_TARGET}>.app")
+    if (is_bundle)
+        set_property(TARGET ${target_name} PROPERTY RESOURCE ${cached_resources_dir})
+        set(runtime_output_filename "$<TARGET_FILE_NAME:${target_name}>.app")
     else()
-        set(runtime_output_filename "$<TARGET_FILE_NAME:${ly_platform_install_target_TARGET}>")
+        set(runtime_output_filename "$<TARGET_FILE_NAME:${target_name}>")
     endif()
-    
-    get_target_property(target_type ${ly_platform_install_target_TARGET} TYPE)
+
+    get_target_property(target_type ${target_name} TYPE)
     if(target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
-        get_target_property(entitlement_file ${ly_platform_install_target_TARGET} ENTITLEMENT_FILE_PATH)
+        get_target_property(entitlement_file ${target_name} ENTITLEMENT_FILE_PATH)
         if (NOT entitlement_file)
             set(entitlement_file "none")
         endif()
-        
+
         ly_file_read(${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_install_mac.cmake.in template_file)
         string(CONFIGURE "${template_file}" configured_template_file @ONLY)
         file(GENERATE
-            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${ly_platform_install_target_TARGET}.cmake
+            OUTPUT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target_name}.cmake
             CONTENT "${configured_template_file}"
         )
     endif()
@@ -136,7 +145,7 @@ function(ly_post_install_steps)
         if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
             continue()
         endif()
-        
+
         ly_install_run_script(${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
     endforeach()
 

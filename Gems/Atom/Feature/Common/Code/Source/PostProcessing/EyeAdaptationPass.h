@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
@@ -35,7 +35,7 @@ namespace AZ
 
         public:
             AZ_RTTI(EyeAdaptationPass, "{CC66CFD9-3266-4FD7-A5A8-ACA3753BDF4A}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(EyeAdaptationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EyeAdaptationPass, SystemAllocator);
             ~EyeAdaptationPass() = default;
 
             // Creates a EyeAdaptationPass

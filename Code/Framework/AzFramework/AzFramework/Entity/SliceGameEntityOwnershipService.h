@@ -19,7 +19,7 @@ namespace AzFramework
         , private SliceInstantiationResultBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceGameEntityOwnershipService, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceGameEntityOwnershipService, AZ::SystemAllocator);
         explicit SliceGameEntityOwnershipService(const EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
 
         virtual ~SliceGameEntityOwnershipService();

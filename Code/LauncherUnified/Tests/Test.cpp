@@ -8,6 +8,10 @@
 
 #include <AzCore/std/string/string_view.h>
 
+// this is a mock O3DE Launcher implementation for unit tests and is used
+// instead of LauncherProject.cpp.  If you modify LauncherProject.cpp or the interface launcher.h, make sure
+// to update this file as well.
+
 namespace O3DELauncher
 {
     bool WaitForAssetProcessorConnect()
@@ -23,6 +27,11 @@ namespace O3DELauncher
     const char* GetLogFilename()
     {
         return "@log@/Game.log";
+    }
+
+    const char* GetLauncherTypeSpecialization()
+    {
+        return "client";
     }
 
     AZStd::string_view GetBuildTargetName()
@@ -41,5 +50,10 @@ namespace O3DELauncher
     AZStd::string_view GetProjectPath()
     {
         return { "Tests" };
+    }
+
+    bool IsGenericLauncher()
+    {
+        return false;
     }
 }

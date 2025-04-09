@@ -28,7 +28,6 @@ namespace GameState
             {
                 ec->Class<GameStateSystemComponent>("GameState", "A generic framework for managing game states and the transitions between them.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -38,13 +37,13 @@ namespace GameState
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GameStateSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GameStateService"));
+        provided.push_back(AZ_CRC_CE("GameStateService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void GameStateSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GameStateService"));
+        incompatible.push_back(AZ_CRC_CE("GameStateService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

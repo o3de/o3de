@@ -129,6 +129,9 @@ namespace AZ
 
         void DynamicDrawSystem::FrameEnd()
         {
+            // The DynamicDrawSystem::Init function must have been invoked
+            // for m_bufferAlloc to be non-nullptr
+            if (m_bufferAlloc != nullptr)
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutexBufferAlloc);
                 m_bufferAlloc->FrameEnd();

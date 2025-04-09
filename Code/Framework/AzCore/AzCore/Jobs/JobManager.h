@@ -13,8 +13,6 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Jobs/Internal/JobManagerWorkStealing.h>
 
-//#define JOBMANAGER_ENABLE_STATS
-
 namespace AZ
 {
     class Job;

@@ -13,19 +13,19 @@ import ly_test_tools.o3de.editor_test_utils as editor_test_utils
 
 pytestmark = pytest.mark.SUITE_smoke
 
+
 class TestEditorTestUtils(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.process_utils.kill_processes_named')
     def test_KillAllLyProcesses_IncludeAP_CallsCorrectly(self, mock_kill_processes_named):
-        process_list = ['Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher', 'AssetProcessor', 'AssetProcessorBatch',
-                        'AssetBuilder']
+        process_list = ['Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher',
+                        'MaterialEditor', 'MaterialCanvas', 'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder']
 
         editor_test_utils.kill_all_ly_processes(include_asset_processor=True)
         mock_kill_processes_named.assert_called_once_with(process_list, ignore_extensions=True)
 
     @mock.patch('ly_test_tools.environment.process_utils.kill_processes_named')
     def test_KillAllLyProcesses_NotIncludeAP_CallsCorrectly(self, mock_kill_processes_named):
-        process_list = ['Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher']
         ap_process_list = ['AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder']
 
         editor_test_utils.kill_all_ly_processes(include_asset_processor=False)

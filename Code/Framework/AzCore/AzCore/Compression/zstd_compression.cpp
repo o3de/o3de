@@ -42,7 +42,7 @@ ZStd::~ZStd()
 void* ZStd::AllocateMem(void* userData, size_t size)
 {
     IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
-    return allocator->Allocate(size, 4, 0, "ZStandard", __FILE__, __LINE__);
+    return allocator->Allocate(size, 4);
 }
 
 void ZStd::FreeMem(void* userData, void* address)
@@ -61,7 +61,7 @@ void ZStd::StartCompressor(unsigned int compressionLevel)
 
     AZ_UNUSED(compressionLevel);
     m_streamCompression = (ZSTD_createCStream_advanced(customAlloc));
-    AZ_Assert( m_streamCompression , "ZStandard internal error - failed to create compression stream\n");
+    AZ_Assert(m_streamCompression , "ZStandard internal error - failed to create compression stream\n");
 }
 
 void ZStd::StopCompressor()
@@ -75,8 +75,14 @@ void ZStd::StopCompressor()
 void ZStd::ResetCompressor()
 {
     AZ_Assert(m_streamCompression, "Compressor not started!");
-    size_t r = ZSTD_resetCStream(m_streamCompression,0);
-    AZ_UNUSED(r);
+    // The change to ZSTD_Ctx_reset api occured first occured in ZStd version 1.3.8
+    // https://github.com/facebook/zstd/commit/ff8d37170808931cdca10846da1c23aaf27084fb#diff-e51691a217ef645007ebc5dd6db0539c32d0a531aad5823873adb12d995341b5
+#if ZSTD_VERSION_NUMBER >= 10308
+    ZSTD_CCtx_reset(m_streamCompression, ZSTD_reset_session_only);
+    [[maybe_unused]] size_t r = ZSTD_CCtx_setPledgedSrcSize(m_streamCompression, ZSTD_CONTENTSIZE_UNKNOWN);
+#else
+    [[maybe_unused]] size_t r = ZSTD_resetCStream(m_streamCompression,0);
+#endif
     AZ_Assert(!ZSTD_isError(r), "Can't reset compressor");
 }
 
@@ -155,7 +161,13 @@ unsigned int ZStd::Decompress(const void* compressedData, unsigned int compresse
 
     if (m_nextBlockSize == 0)
     {
+        // The ZSTD_DCtx_reset function was updated in 1.3.8 to support the reset directive enum
+        // https://github.com/facebook/zstd/commit/5c68639186e80469e9a426553a578864902133c4
+#if ZSTD_VERSION_NUMBER >= 10308
+        m_nextBlockSize = ZSTD_DCtx_reset(m_streamDecompression, ZSTD_reset_session_only);
+#else
         m_nextBlockSize = ZSTD_resetDStream(m_streamDecompression);
+#endif
     }
 
     m_compressedBufferIndex += azlossy_cast<unsigned int>(m_inBuffer.pos);

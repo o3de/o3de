@@ -35,7 +35,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(TranslationManipulators, "{D5E49EA2-30E0-42BC-A51D-6A7F87818260}")
-        AZ_CLASS_ALLOCATOR(TranslationManipulators, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TranslationManipulators, AZ::SystemAllocator)
 
         TranslationManipulators(TranslationManipulators&&) = delete;
         TranslationManipulators& operator=(TranslationManipulators&&) = delete;
@@ -98,8 +98,6 @@ namespace AzToolsFramework
 
         // Manipulators
         void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) override;
-
-        const Dimensions m_dimensions; //!< How many dimensions of freedom does this manipulator have.
 
         AZStd::vector<AZStd::shared_ptr<LinearManipulator>> m_linearManipulators;
         AZStd::vector<AZStd::shared_ptr<PlanarManipulator>> m_planarManipulators;

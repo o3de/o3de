@@ -21,7 +21,7 @@ namespace AZ
             : public AZ::Module
         {
         public:
-            AZ_RTTI(DebugCameraModule, "{C4F5D301-5C7F-42C2-8326-08F685B2D7A3}", AZ::Module);
+            AZ_RTTI(CameraModule, "{C4F5D301-5C7F-42C2-8326-08F685B2D7A3}", AZ::Module);
             
             CameraModule()
             {
@@ -45,7 +45,8 @@ namespace AZ
     } // namespace Debug
 } // namespace AZ
 
-  // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-  // The first parameter should be GemName_GemIdLower
-  // The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Debug::CameraModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Atom_Component_DebugCamera, AZ::Debug::CameraModule)
+#endif

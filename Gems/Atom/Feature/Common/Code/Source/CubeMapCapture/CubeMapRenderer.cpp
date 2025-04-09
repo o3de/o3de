@@ -35,6 +35,7 @@ namespace AZ
             environmentCubeMapPipelineDesc.m_renderSettings.m_multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
             environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_width = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
             environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_height = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
+            environmentCubeMapPipelineDesc.m_allowModification = true; // Enable pipeline modification since we need to have GI lighting for the baking
 
             // create a unique name for the pipeline
             AZ::Uuid uuid = AZ::Uuid::CreateRandom();
@@ -58,8 +59,8 @@ namespace AZ
 
             // store the current exposure values
             Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
-            m_previousGlobalIblExposure = sceneSrg->GetConstant<float>(m_globalIblExposureConstantIndex);
-            m_previousSkyBoxExposure = sceneSrg->GetConstant<float>(m_skyBoxExposureConstantIndex);
+            m_previousGlobalIblExposure = sceneSrg->GetConstant<float>(m_globalIblExposureConstantIndex.GetConstantIndex());
+            m_previousSkyBoxExposure = sceneSrg->GetConstant<float>(m_skyBoxExposureConstantIndex.GetConstantIndex());
 
             // add the pipeline to the scene
             m_scene->AddRenderPipeline(environmentCubeMapPipeline);
@@ -67,27 +68,13 @@ namespace AZ
 
         void CubeMapRenderer::Update()
         {
-            if (m_renderingCubeMap && m_environmentCubeMapPass)
+            if (m_renderingCubeMap)
             {
                 Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
 
-                if (m_environmentCubeMapPass->IsFinished())
-                {
-                    // all faces of the cubemap have been rendered, invoke the callback
-                    m_callback(m_environmentCubeMapPass->GetTextureData(), m_environmentCubeMapPass->GetTextureFormat());
-
-                    // restore exposures
-                    sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_previousGlobalIblExposure);
-                    sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_previousSkyBoxExposure);
-
-                    m_renderingCubeMap = false;
-                }
-                else
-                {
-                    // set exposures to the user specified value while baking the cubemap
-                    sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_exposure);
-                    sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_exposure);
-                }
+                // set exposures to the user specified value while baking the cubemap
+                sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_exposure);
+                sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_exposure);
             }
         }
 
@@ -95,6 +82,17 @@ namespace AZ
         {
             if (m_environmentCubeMapPass && m_environmentCubeMapPass->IsFinished())
             {
+                Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
+
+                // all faces of the cubemap have been rendered, invoke the callback
+                m_callback(m_environmentCubeMapPass->GetTextureData(), m_environmentCubeMapPass->GetTextureFormat());
+
+                // restore exposures
+                sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_previousGlobalIblExposure);
+                sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_previousSkyBoxExposure);
+
+                m_renderingCubeMap = false;
+
                 // remove the cubemap pipeline
                 // Note: this must not be called in the scope of a feature processor Simulate or Render to avoid a race condition with other feature processors
                 m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);

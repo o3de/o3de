@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AzCore/Math/Color.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
 {
@@ -18,7 +20,7 @@ namespace AZ
         //! Constructs an instance of an StreamingImageAsset.
         //! (Note this class generally follows the builder design pattern, but is called a "creator" rather 
         //! than a "builder" to avoid confusion with the AssetBuilderSDK).
-        class StreamingImageAssetCreator
+        class ATOM_RPI_REFLECT_API StreamingImageAssetCreator
             : public AssetCreator<StreamingImageAsset>
         {
         public:
@@ -44,7 +46,12 @@ namespace AZ
 
             //! Set streaming image asset's flags.
             void SetFlags(StreamingImageFlags flag);
-            
+
+            //! Set the average color of the image.
+            void SetAverageColor(Color avgColor);
+
+            void AddTag(AZ::Name tag);
+
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.
             bool End(Data::Asset<StreamingImageAsset>& result);

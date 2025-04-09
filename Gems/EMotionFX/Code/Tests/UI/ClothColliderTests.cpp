@@ -6,12 +6,13 @@
  *
  */
 
+#include "Editor/ColliderHelpers.h"
 #include <gtest/gtest.h>
 
 #include <QtTest>
 #include <QTreeView>
 
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ReselectingTreeView.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
@@ -70,7 +71,7 @@ namespace EMotionFX
             m_treeView = m_skeletonOutliner->GetDockWidget()->findChild<ReselectingTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
 
             m_indexList.clear();
-            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0), m_indexList);
+            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0, m_treeView->model()->index(0, 0)), m_indexList);
         }
 
     protected:
@@ -93,11 +94,7 @@ namespace EMotionFX
 
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(ClothColliderTestsFixture, DISABLED_RemoveClothColliders)
-#else
     TEST_F(ClothColliderTestsFixture, RemoveClothColliders)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         const int numJoints = 8;
         const int firstIndex = 3;
@@ -136,7 +133,7 @@ namespace EMotionFX
         // Check colliders are in model
         for (int i = firstIndex; i <= lastIndex; ++i)
         {
-            EXPECT_TRUE(ClothJointInspectorPlugin::IsJointInCloth(m_indexList[i]));
+            EXPECT_TRUE(ColliderHelpers::NodeHasClothCollider(m_indexList[i]));
         }
 
         // Remove context menu as it is rebuild below
@@ -159,7 +156,7 @@ namespace EMotionFX
         // Check colliders have been removed
         for (int i = firstIndex; i <= lastIndex; ++i)
         {
-            EXPECT_FALSE(ClothJointInspectorPlugin::IsJointInCloth(m_indexList[i]));
+            EXPECT_FALSE(ColliderHelpers::NodeHasClothCollider(m_indexList[i]));
         }
     }
 }

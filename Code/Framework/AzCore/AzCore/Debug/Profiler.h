@@ -47,9 +47,16 @@
 #endif
 
 #ifndef AZ_PROFILE_DATAPOINT
-#define AZ_PROFILE_DATAPOINT(...)
+#define AZ_PROFILE_DATAPOINT(budget, value, counterName)\
+    ::AZ::Debug::Profiler::ReportCounter(AZ_BUDGET_GETTER(budget)(), counterName, value)
 #define AZ_PROFILE_DATAPOINT_PERCENT(...)
 #endif
+
+#ifndef AZ_PROFILE_EVENT
+#define AZ_PROFILE_EVENT(budget, eventName) \
+    ::AZ::Debug::Profiler::ReportProfileEvent(AZ_BUDGET_GETTER(budget)(), eventName)
+#endif
+
 
 namespace AZStd
 {
@@ -67,25 +74,27 @@ namespace AZ::Debug
         Profiler() = default;
         virtual ~Profiler() = default;
 
-        virtual void BeginRegion(const Budget* budget, const char* eventName, size_t eventNameArgCount, ...) = 0;
+        virtual void BeginRegion(const Budget* budget, const char* eventName, ...) = 0;
         virtual void EndRegion(const Budget* budget) = 0;
+
+        template<typename T>
+        static void ReportCounter(const Budget* budget, const wchar_t* counterName, const T& value);
+        static void ReportProfileEvent(const Budget* budget, const char* eventName);
     };
 
     class ProfileScope
     {
     public:
-        template<typename... T>
-        static void BeginRegion(Budget* budget, const char* eventName, T const&... args);
+        static void BeginRegion(Budget* budget, const char* eventName, ...);
         static void EndRegion(Budget* budget);
 
-        template<typename... T>
-        ProfileScope(Budget* budget, const char* eventName, T const&... args);
-
+        ProfileScope(Budget* budget, const char* eventName, ...);
         ~ProfileScope();
 
     private:
         Budget* m_budget;
+
+        // Optimization to avoid calling Interface<Profiler>::Get
+        static AZStd::optional<Profiler*> m_cachedProfiler;
     };
 } // namespace AZ::Debug
-
-#include <AzCore/Debug/Profiler.inl>

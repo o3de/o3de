@@ -6,6 +6,7 @@
  *
  */
 
+#include <EMotionFX/Source/AnimGraphNodeGroup.h>
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphConnectionCommands.h>
 #include <EMotionFX/Source/ActorManager.h>
@@ -21,7 +22,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraph.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/StateGraphNode.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <QMouseEvent>
@@ -347,13 +347,11 @@ namespace EMStudio
     }
 
 
-    QPoint NodeGraphWidget::SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize) const
+    QPoint NodeGraphWidget::SnapLocalToGrid(const QPoint& inPoint) const
     {
-        MCORE_UNUSED(cellSize);
-
         QPoint snapped;
-        snapped.setX(inPoint.x() - aznumeric_cast<int>(MCore::Math::FMod(aznumeric_cast<float>(inPoint.x()), 10.0f)));
-        snapped.setY(inPoint.y() - aznumeric_cast<int>(MCore::Math::FMod(aznumeric_cast<float>(inPoint.y()), 10.0f)));
+        snapped.setX(inPoint.x() - inPoint.x() % s_snapCellSize);
+        snapped.setY(inPoint.y() - inPoint.y() % s_snapCellSize);
         return snapped;
     }
 
@@ -374,7 +372,7 @@ namespace EMStudio
             QPoint oldTopRight = m_moveNode->GetRect().topRight();
             QPoint scaledMouseDelta = (mousePos - m_mouseLastPos) * (1.0f / m_activeGraph->GetScale());
             QPoint unSnappedTopRight = oldTopRight + scaledMouseDelta;
-            QPoint snappedTopRight = SnapLocalToGrid(unSnappedTopRight, 10);
+            QPoint snappedTopRight = SnapLocalToGrid(unSnappedTopRight);
             snapDelta = snappedTopRight - unSnappedTopRight;
         }
 
@@ -696,13 +694,13 @@ namespace EMStudio
             return;
         }
 
+        // get the node we click on
+        GraphNode* node = UpdateMouseCursor(mousePos, globalPos);
+
         // if we press the left mouse button
         if (event->button() == Qt::LeftButton)
         {
             m_leftMousePressed = true;
-
-            // get the node we click on
-            GraphNode* node = UpdateMouseCursor(mousePos, globalPos);
 
             // if we pressed the visualize icon
             GraphNode* orgNode = m_activeGraph->FindNode(mousePos);
@@ -744,48 +742,33 @@ namespace EMStudio
                 // Update time view if time view window is opened and animgraph node supports preview motion.
                 if (timeViewPlugin)
                 {
+                    bool motionSelected = false;
                     if (animGraphNode->GetSupportsPreviewMotion())
                     {
-                        MCore::CommandGroup commandGroup("Preview Motion Time View");
-                        AZStd::string commandString, result;
                         EMotionFX::AnimGraphMotionNode* motionNode = static_cast<EMotionFX::AnimGraphMotionNode*>(animGraphNode);
-
                         if (motionNode->GetNumMotions() == 1)
                         {
-                            GetCommandManager()->GetCurrentSelection().ClearMotionSelection();
                             const char* motionId = motionNode->GetMotionId(0);
                             EMotionFX::MotionSet::MotionEntry* motionEntry = MotionSetsWindowPlugin::FindBestMatchMotionEntryById(motionId);
-                            const EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
-
                             if (motionEntry && motionEntry->GetMotion())
                             {
-                                EMotionFX::Motion* motion = motionEntry->GetMotion();
-                                size_t motionIndex = motionManager.FindMotionIndexByName(motion->GetName());
-                                commandString = AZStd::string::format("Select -motionIndex %zu", motionIndex);
-                                commandGroup.AddCommandString(commandString);
-                            }
-                        }
+                                // Update motion list window to select motion.
+                                EMStudioPlugin* motionSetBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
+                                MotionSetsWindowPlugin* motionSetWindowPlugin = static_cast<MotionSetsWindowPlugin*>(motionSetBasePlugin);
+                                if (motionSetWindowPlugin)
+                                {
+                                    motionSetWindowPlugin->GetMotionSetWindow()->Select(motionEntry);
 
-                        if (commandGroup.GetNumCommands() > 0)
-                        {
-                            if (!EMStudio::GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
-                            {
-                                AZ_Error("EMotionFX", false, result.c_str());
-                            }
+                                    // Update time view plugin with new motion related data.
+                                    timeViewPlugin->SetMode(TimeViewMode::Motion);
 
-                            // Update motion list window to select motion.
-                            EMStudioPlugin* motionBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-                            MotionWindowPlugin* motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-                            if (motionWindowPlugin)
-                            {
-                                motionWindowPlugin->ReInit();
+                                    motionSelected = true;
+                                }
                             }
-
-                            // Update time view plugin with new motion related data.
-                            timeViewPlugin->SetMode(TimeViewMode::Motion);
                         }
                     }
-                    else
+
+                    if (!motionSelected)
                     {
                         // If not clicked on another animgraph node, clear time view window.
                         timeViewPlugin->SetMode(TimeViewMode::AnimGraph);
@@ -797,7 +780,7 @@ namespace EMStudio
                 // If clicked away from nodes, set time view window to animgraph mode.
                 timeViewPlugin->SetMode(TimeViewMode::AnimGraph);
             }
-            
+
             if (!m_activeGraph->IsInReferencedGraph())
             {
                 // check if we are clicking on an input port
@@ -874,22 +857,35 @@ namespace EMStudio
                 }
             }
 
-            // get the node we click on
-            node = UpdateMouseCursor(mousePos, globalPos);
+            EMotionFX::AnimGraphNodeGroup* nodeGroup = m_activeGraph->FindNodeGroup(mousePos);
+
             if (node && m_shiftPressed)
             {
                 OnShiftClickedNode(node);
             }
             else
             {
-                if (node && m_shiftPressed == false && m_controlPressed == false && m_altPressed == false &&
-                    actionFilter.m_editNodes &&
+                // Start dragging the node when the mouse is moved
+                if (node && m_shiftPressed == false && m_controlPressed == false && m_altPressed == false && actionFilter.m_editNodes &&
                     !m_activeGraph->IsInReferencedGraph())
                 {
                     m_moveNode   = node;
                     m_panning    = false;
                     setCursor(Qt::ClosedHandCursor);
                 }
+                // Start dragging all nodes in the group when the mouse is moved
+                else if (nodeGroup)
+                {
+                    // The node within the group which is assigned to m_moveNode is arbitrary,
+                    // so pick the first one because it should always exist if the group exists
+                    // (otherwise something has gone very wrong if there is a group without any nodes).
+                    EMotionFX::AnimGraphNode* nodeInGroup = m_plugin->GetActiveAnimGraph()->RecursiveFindNodeById(nodeGroup->GetNode(0));
+                    AZ_Assert(nodeInGroup, "No AnimGraphNode in clicked group");
+                    m_moveNode = m_activeGraph->FindGraphNode(nodeInGroup);
+                    m_panning = false;
+                    setCursor(Qt::ClosedHandCursor);
+                }
+                // Not dragging any nodes to move
                 else
                 {
                     m_moveNode       = nullptr;
@@ -915,24 +911,57 @@ namespace EMStudio
                     // check the node we're clicking on
                     if (!m_controlPressed)
                     {
-                        // only reset the selection in case we clicked in empty space or in case the node we clicked on is not part of
-                        if (!node || (node && !node->GetIsSelected()))
+                        // Reset the selection if either:
+                        //   * Clicked on empty background
+                        //   * Clicked node is not already selected
+                        //   * Clicked node is in group
+                        //
+                        // When multiple nodes are selected, normally clicking and dragging one of them
+                        // moves them all together, while clicking outside of a node clears the selection.
+                        //
+                        // However, this is a bit different in groups. With groups, clicking the group
+                        // background area selects all nodes of the group, and dragging moves all the nodes
+                        // together. After selecting a group, selecting a single node within the group
+                        // requires clearing the selection first. Otherwise, the user would need to click
+                        // empty space outside the group to clear the selection before being able to select
+                        // the single node.
+                        bool allNodesInGroupSelected = false;
+                        if (nodeGroup && node)
+                        {
+                            allNodesInGroupSelected = true;
+                            for (size_t n = 0; n < nodeGroup->GetNumNodes(); n++)
+                            {
+                                EMotionFX::AnimGraphNode* animGraphNode =
+                                    m_plugin->GetActiveAnimGraph()->RecursiveFindNodeById(nodeGroup->GetNode(n));
+                                AZ_Assert(animGraphNode, "No AnimGraphNode in group");
+
+                                const EMStudio::GraphNode* graphNode = m_activeGraph->FindGraphNode(animGraphNode);
+                                if (!m_plugin->GetAnimGraphModel().GetSelectionModel().isSelected(graphNode->GetModelIndex()))
+                                {
+                                    allNodesInGroupSelected = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!node || (node && !node->GetIsSelected()) || allNodesInGroupSelected)
                         {
                             m_plugin->GetAnimGraphModel().GetSelectionModel().clear();
                         }
                     }
 
-                    // node clicked with shift only
                     if (nodeClicked && m_controlPressed)
                     {
-                        m_plugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
-                            QItemSelectionModel::Toggle | QItemSelectionModel::Rows);
+                        m_plugin->GetAnimGraphModel().GetSelectionModel().select(
+                            node->GetModelIndex(), QItemSelectionModel::Toggle | QItemSelectionModel::Rows);
                     }
-                    // node clicked with ctrl only
                     else if (nodeClicked && !m_controlPressed)
                     {
-                        m_plugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
-                            QItemSelectionModel::Select | QItemSelectionModel::Rows);
+                        m_plugin->GetAnimGraphModel().GetSelectionModel().select(
+                            node->GetModelIndex(), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+                    }
+                    else if (nodeGroup)
+                    {
+                        SelectNodesInGroup(nodeGroup);
                     }
                     // in case we didn't click on a node, check if we click on a connection
                     else if (!nodeClicked)
@@ -1283,7 +1312,16 @@ namespace EMStudio
         {
             // check if double clicked on a node
             GraphNode* node = m_activeGraph->FindNode(mousePos);
-            if (node == nullptr)
+            EMotionFX::AnimGraphNodeGroup* nodeGroup = m_activeGraph->FindNodeGroup(mousePos);
+
+            if (nodeGroup)
+            {
+                if (m_activeGraph->CheckInsideNodeGroupTitleRect(nodeGroup, mousePos) && !nodeGroup->IsNameEditOngoing())
+                {
+                    m_activeGraph->EnableNameEditForNodeGroup(nodeGroup);
+                }
+            }
+            else if (node == nullptr)
             {
                 // if we didn't double click on a node zoom in to the clicked area
                 m_activeGraph->ScrollTo(-LocalToGlobal(mousePos) + geometry().center());
@@ -1610,6 +1648,20 @@ namespace EMStudio
         AZ_UNUSED(oldTargetNode);
         AZ_UNUSED(newSourceNode);
         AZ_UNUSED(newTargetNode);
+    }
+
+    void NodeGraphWidget::SelectNodesInGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup)
+    {
+        AZ_Assert(nodeGroup->GetNumNodes() > 0, "No nodes in selected group");
+        for (size_t n = 0; n < nodeGroup->GetNumNodes(); n++)
+        {
+            EMotionFX::AnimGraphNode* animGraphNode = m_plugin->GetActiveAnimGraph()->RecursiveFindNodeById(nodeGroup->GetNode(n));
+            AZ_Assert(animGraphNode, "No AnimGraphNode in selected group");
+
+            const EMStudio::GraphNode* graphNode = m_activeGraph->FindGraphNode(animGraphNode);
+            m_plugin->GetAnimGraphModel().GetSelectionModel().select(
+                graphNode->GetModelIndex(), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        }
     }
 } // namespace EMStudio
 

@@ -9,6 +9,7 @@
 
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/tuple.h>
 
 namespace AZStd::ranges::views::Internal
 {
@@ -61,16 +62,74 @@ namespace AZStd::ranges::views::Internal
     template<class RangeAdaptor>
     struct range_adaptor_closure;
 
-    // Return a closure new in which the outer range adaptor invokes the inner range adaptor
+    // Return a closure in which the outer range adaptor invokes the inner range adaptor
     template<class RangeAdaptorFunctor>
     struct range_adaptor_closure_forwarder
         : RangeAdaptorFunctor
-        , range_adaptor_closure_forwarder<range_adaptor_closure<RangeAdaptorFunctor>>
+        , range_adaptor_closure<range_adaptor_closure_forwarder<RangeAdaptorFunctor>>
     {
         constexpr explicit range_adaptor_closure_forwarder(RangeAdaptorFunctor&& closure)
             : RangeAdaptorFunctor{ AZStd::forward<RangeAdaptorFunctor>(closure) }
         {}
     };
+
+    // Returns a adaptor in which range_adaptor_closure in which a set of bound arguments can
+    // be forwarded to a supplied closure
+    template<class Adaptor, class... Args>
+    struct range_adaptor_argument_forwarder
+        : range_adaptor_closure<range_adaptor_argument_forwarder<Adaptor, Args...>>
+    {
+        template<class UAdaptor, class... UArgs, class = enable_if_t<
+            convertible_to<UAdaptor, Adaptor>
+            && convertible_to<tuple<UArgs...>, tuple<Args...>>
+            >>
+        constexpr explicit range_adaptor_argument_forwarder(UAdaptor adaptor, UArgs&&... args)
+            : m_adaptor{ AZStd::forward<UAdaptor>(adaptor) }
+            , m_forwardArgs{ AZStd::forward<UArgs>(args)... }
+        {}
+
+        template<class Range>
+        constexpr decltype(auto) operator()(Range&& range) &
+        {
+            auto ForwardRangeAndArgs = [&adpator = m_adaptor, &range](auto&... args)
+            {
+                return adaptor(AZStd::forward<Range>(range), args...);
+            };
+            return AZStd::apply(ForwardRangeAndArgs, m_forwardArgs);
+        }
+        template<class Range>
+        constexpr decltype(auto) operator()(Range&& range) const&
+        {
+            auto ForwardRangeAndArgs = [&adpator = m_adaptor, &range](const auto&... args)
+            {
+                return adaptor(AZStd::forward<Range>(range), args...);
+            };
+            return AZStd::apply(ForwardRangeAndArgs, m_forwardArgs);
+        }
+        // rvalue overloads
+        template<class Range>
+        constexpr decltype(auto) operator()(Range&& range) &&
+        {
+            auto ForwardRangeAndArgs = [&adaptor = m_adaptor, &range](auto&... args)
+            {
+                return adaptor(AZStd::forward<Range>(range), AZStd::move(args)...);
+            };
+            return AZStd::apply(ForwardRangeAndArgs, m_forwardArgs);
+        }
+        // It doesn't make sense to move invoke a const range_adaptor_argument_forwarder
+        // that has been moved.
+        template<class Range>
+        constexpr decltype(auto) operator()(Range&& range) const&& = delete;
+    private:
+        Adaptor m_adaptor;
+        tuple<Args...> m_forwardArgs;
+    };
+
+    // deduction guide - range_adpator_argument_forwarder
+    template<class Adaptor, class... Args>
+    range_adaptor_argument_forwarder(Adaptor&&, Args&&...)
+        -> range_adaptor_argument_forwarder<AZStd::decay_t<Adaptor>, AZStd::decay_t<Args>...>;
+
 
     template<class RangeAdaptor>
     using is_range_closure_t = bool_constant<derived_from<remove_cvref_t<RangeAdaptor>,
@@ -116,43 +175,54 @@ namespace AZStd::ranges::views::Internal
 
 namespace AZStd::ranges::Internal
 {
-    // Copyable Wrapper - https://eel.is/c++draft/ranges#range.copy.wrap
-    // Used to wrap a class that copy constructible, but not necessarily copy assignable
-    // and implements a copy assignment operator using the optional emplace function
+    // Movable Wrapper - https://eel.is/c++draft/ranges#range.copy.wrap
+    // Used to wrap a class that is copy constructible/move constructible,
+    // but not necessarily copy assignable/move assignable
+    // and implements the assignment operator using the optional emplace function
     // to construct in place
     template<class T, class = void>
-    class copyable_box;
+    class movable_box;
+
 
     template<class T>
-    class copyable_box<T, enable_if_t<is_copy_constructible_v<T>&& is_object_v<T>>>
+    class movable_box<T, enable_if_t<move_constructible<T>&& is_object_v<T>>>
     {
     public:
         template<class U = T, class = enable_if_t<default_initializable<U>>>
-        constexpr copyable_box() noexcept(is_nothrow_constructible_v<T>)
-            : copyable_box{ in_place }
+        constexpr movable_box() noexcept(is_nothrow_constructible_v<T>)
+            : movable_box{ in_place }
         {}
 
         template<class... Args>
-        explicit constexpr copyable_box(in_place_t, Args&&... args) noexcept(is_nothrow_constructible_v<T>)
-            : m_copyable_wrapper{ in_place, AZStd::forward<Args>(args)... }
+        explicit constexpr movable_box(in_place_t, Args&&... args) noexcept(is_nothrow_constructible_v<T>)
+            : m_value{ in_place, AZStd::forward<Args>(args)... }
         {}
 
-        constexpr copyable_box(const copyable_box&) = default;
-        constexpr copyable_box(copyable_box&&) = default;
+        explicit constexpr movable_box(const T& rawValue) noexcept(is_nothrow_copy_constructible_v<T>)
+            : m_value{ rawValue }
+        {}
+        explicit constexpr movable_box(T&& rawValue) noexcept(is_nothrow_copy_constructible_v<T>)
+            : m_value{ AZStd::move(rawValue) }
+        {}
 
-        constexpr copyable_box& operator=(const copyable_box& other) noexcept(is_nothrow_copy_constructible_v<T>)
+        constexpr movable_box(const movable_box&) = default;
+        constexpr movable_box(movable_box&&) = default;
+
+        // requires that the T is copy_constructible to implement copy assignment
+        constexpr auto operator=(const movable_box& other) noexcept(is_nothrow_copy_constructible_v<T>)
+            -> enable_if_t<copy_constructible<T>, movable_box&>
         {
-            if (this != &other)
+            if (this != addressof(other))
             {
                 if constexpr (copyable<T>)
                 {
-                    m_copyable_wrapper = other.m_copyable_wrapper;
+                    m_value = other.m_value;
                 }
                 else
                 {
                     if (other)
                     {
-                        emplace(other.m_copyable_wrapper);
+                        emplace(other.m_value);
                     }
                     else
                     {
@@ -164,19 +234,19 @@ namespace AZStd::ranges::Internal
             return *this;
         }
 
-        constexpr copyable_box& operator=(copyable_box&& other) noexcept(is_nothrow_move_constructible_v<T>)
+        constexpr movable_box& operator=(movable_box&& other) noexcept(is_nothrow_move_constructible_v<T>)
         {
-            if (this != &other)
+            if (this != addressof(other))
             {
                 if constexpr (movable<T>)
                 {
-                    m_copyable_wrapper = AZStd::move(other.m_copyable_wrapper);
+                    m_value = AZStd::move(other.m_value);
                 }
                 else
                 {
                     if (other)
                     {
-                        emplace(AZStd::move(other.m_copyable_wrapper));
+                        emplace(AZStd::move(other.m_value));
                     }
                     else
                     {
@@ -189,47 +259,47 @@ namespace AZStd::ranges::Internal
         }
         constexpr T& operator*() & noexcept
         {
-            return *m_copyable_wrapper;
+            return *m_value;
         }
         constexpr const T& operator*() const& noexcept
         {
-            return *m_copyable_wrapper;
+            return *m_value;
         }
         constexpr T&& operator*() && noexcept
         {
-            return AZStd::move(*m_copyable_wrapper);
+            return AZStd::move(*m_value);
         }
         constexpr const T&& operator*() const&& noexcept
         {
-            return AZStd::move(*m_copyable_wrapper);
+            return AZStd::move(*m_value);
         }
 
         constexpr T* operator->() noexcept
         {
-            return m_copyable_wrapper.operator->();
+            return m_value.operator->();
         }
         constexpr const T* operator->() const noexcept
         {
-            return m_copyable_wrapper.operator->();
+            return m_value.operator->();
         }
 
         constexpr explicit operator bool()
         {
-            return m_copyable_wrapper.has_value();
+            return m_value.has_value();
         }
 
         template<class... Args>
         constexpr T& emplace(Args&&... args)
         {
-            return m_copyable_wrapper.emplace(AZStd::forward<Args>(args)...);
+            return m_value.emplace(AZStd::forward<Args>(args)...);
         }
 
         constexpr void reset() noexcept
         {
-            m_copyable_wrapper.reset();
+            m_value.reset();
         }
     private:
-        optional<T> m_copyable_wrapper;
+        optional<T> m_value;
     };
 
     // Non-propagating cache - https://eel.is/c++draft/ranges#range.nonprop.cache

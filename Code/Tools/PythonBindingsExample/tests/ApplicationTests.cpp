@@ -24,18 +24,12 @@ namespace PythonBindingsExample
     }
 
     class PythonBindingsExampleTest
-        : public ::testing::Test
-        , public ::UnitTest::AllocatorsBase
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
 
-        static void SetUpTestCase()
+        void SetUp() override
         {
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            }
-
             s_application = AZStd::make_unique<PythonBindingsExample::Application>(nullptr, nullptr);
             // The AZ::ComponentApplication constructor creates the settings registry
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
@@ -43,15 +37,10 @@ namespace PythonBindingsExample
             s_application->SetUp();
         }
 
-        static void TearDownTestCase()
+        void TearDown() override
         {
             s_application->TearDown();
             s_application.reset();
-
-            if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
         }
 
         static AZStd::unique_ptr<PythonBindingsExample::Application> s_application;
@@ -59,9 +48,9 @@ namespace PythonBindingsExample
 
     AZStd::unique_ptr<PythonBindingsExample::Application> PythonBindingsExampleTest::s_application;
 
-    TEST_F(PythonBindingsExampleTest, Application_Run_Succeeds)
+    TEST_F(PythonBindingsExampleTest, Application_Run_WithoutParameters_Returns_False)
     {
-        EXPECT_TRUE(s_application->Run());
+        EXPECT_FALSE(s_application->Run());
     }
 
     TEST_F(PythonBindingsExampleTest, Application_RunWithParameters_Works)

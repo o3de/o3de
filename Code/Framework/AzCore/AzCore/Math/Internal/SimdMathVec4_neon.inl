@@ -43,7 +43,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec3(Vec3::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec3 the last element could be garbage.
+            return NeonQuad::ReplaceIndex3(value, 0.0f); // {value.x, value.y, value.z, 0.0f}
         }
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::LoadAligned(const float* __restrict addr)
@@ -96,24 +97,24 @@ namespace AZ
             NeonQuad::StreamAligned(addr, value);
         }
 
-        AZ_MATH_INLINE float Vec4::SelectFirst(FloatArgType value)
+        AZ_MATH_INLINE float Vec4::SelectIndex0(FloatArgType value)
         {
-            return NeonQuad::SelectFirst(value);
+            return NeonQuad::SelectIndex0(value);
         }
 
-        AZ_MATH_INLINE float Vec4::SelectSecond(FloatArgType value)
+        AZ_MATH_INLINE float Vec4::SelectIndex1(FloatArgType value)
         {
-            return NeonQuad::SelectSecond(value);
+            return NeonQuad::SelectIndex1(value);
         }
 
-        AZ_MATH_INLINE float Vec4::SelectThird(FloatArgType value)
+        AZ_MATH_INLINE float Vec4::SelectIndex2(FloatArgType value)
         {
-            return NeonQuad::SelectThird(value);
+            return NeonQuad::SelectIndex2(value);
         }
 
-        AZ_MATH_INLINE float Vec4::SelectFourth(FloatArgType value)
+        AZ_MATH_INLINE float Vec4::SelectIndex3(FloatArgType value)
         {
-            return NeonQuad::SelectFourth(value);
+            return NeonQuad::SelectIndex3(value);
         }
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::Splat(float value)
@@ -126,64 +127,64 @@ namespace AZ
             return NeonQuad::Splat(value);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatFirst(FloatArgType value)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatIndex0(FloatArgType value)
         {
-            return NeonQuad::SplatFirst(value);
+            return NeonQuad::SplatIndex0(value);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatSecond(FloatArgType value)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatIndex1(FloatArgType value)
         {
-            return NeonQuad::SplatSecond(value);
+            return NeonQuad::SplatIndex1(value);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatThird(FloatArgType value)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatIndex2(FloatArgType value)
         {
-            return NeonQuad::SplatThird(value);
+            return NeonQuad::SplatIndex2(value);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatFourth(FloatArgType value)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatIndex3(FloatArgType value)
         {
-            return NeonQuad::SplatFourth(value);
+            return NeonQuad::SplatIndex3(value);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFirst(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex0(FloatArgType a, float b)
         {
-            return NeonQuad::ReplaceFirst(a, b);
+            return NeonQuad::ReplaceIndex0(a, b);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFirst(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex0(FloatArgType a, FloatArgType b)
         {
-            return NeonQuad::ReplaceFirst(a, b);
+            return NeonQuad::ReplaceIndex0(a, b);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceSecond(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex1(FloatArgType a, float b)
         {
-            return NeonQuad::ReplaceSecond(a, b);
+            return NeonQuad::ReplaceIndex1(a, b);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceSecond(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex1(FloatArgType a, FloatArgType b)
         {
-            return NeonQuad::ReplaceSecond(a, b);
+            return NeonQuad::ReplaceIndex1(a, b);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceThird(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex2(FloatArgType a, float b)
         {
-            return NeonQuad::ReplaceThird(a, b);
+            return NeonQuad::ReplaceIndex2(a, b);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceThird(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex2(FloatArgType a, FloatArgType b)
         {
-            return NeonQuad::ReplaceThird(a, b);
+            return NeonQuad::ReplaceIndex2(a, b);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFourth(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex3(FloatArgType a, float b)
         {
-            return NeonQuad::ReplaceFourth(a, b);
+            return NeonQuad::ReplaceIndex3(a, b);
         }
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFourth(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex3(FloatArgType a, FloatArgType b)
         {
-            return NeonQuad::ReplaceFourth(a, b);
+            return NeonQuad::ReplaceIndex3(a, b);
         }
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::LoadImmediate(float x, float y, float z, float w)
@@ -533,6 +534,11 @@ namespace AZ
             return Common::Atan2<Vec4>(y, x);
         }
 
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ExpEstimate(FloatArgType x)
+        {
+            return Common::ExpEstimate<Vec4>(x);
+        }
+
         AZ_MATH_INLINE Vec1::FloatType Vec4::Dot(FloatArgType arg1, FloatArgType arg2)
         {
             return Vec1::LoadImmediate(vaddvq_f32(vmulq_f32(arg1, arg2)));
@@ -643,7 +649,7 @@ namespace AZ
 
         AZ_MATH_INLINE void Vec4::Mat3x4InverseFast(const FloatType* __restrict rows, FloatType* __restrict out)
         {
-            const FloatType pos = Sub(ZeroFloat(), Madd(rows[0], SplatFourth(rows[0]), Madd(rows[1], SplatFourth(rows[1]), Mul(rows[2], SplatFourth(rows[2])))));
+            const FloatType pos = Sub(ZeroFloat(), Madd(rows[0], SplatIndex3(rows[0]), Madd(rows[1], SplatIndex3(rows[1]), Mul(rows[2], SplatIndex3(rows[2])))));
             const FloatType tmp0 = vtrn1q_f32(rows[0], rows[1]);
             const FloatType tmp1 = vtrn2q_f32(rows[0], rows[1]);
             const FloatType tmp2 = vtrn1q_f32(rows[2], pos);
@@ -698,6 +704,11 @@ namespace AZ
         AZ_MATH_INLINE void Vec4::Mat4x4Multiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out)
         {
             Common::Mat4x4Multiply<Vec4>(rowsA, rowsB, out);
+        }
+
+        AZ_MATH_INLINE void Vec4::Mat4x4MultiplyAdd(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, const FloatType* __restrict add, FloatType* __restrict out)
+        {
+            Common::Mat4x4MultiplyAdd<Vec4>(rowsA, rowsB, add, out);
         }
 
         AZ_MATH_INLINE void Vec4::Mat4x4TransposeMultiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out)

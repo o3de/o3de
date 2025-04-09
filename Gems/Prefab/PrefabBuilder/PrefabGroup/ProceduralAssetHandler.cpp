@@ -28,7 +28,7 @@ namespace AZ::Prefab
         , protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetTypeInfoHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetTypeInfoHandler, AZ::SystemAllocator);
         AssetTypeInfoHandler();
         ~AssetTypeInfoHandler() override;
         AZ::Data::AssetType GetAssetType() const override;
@@ -38,7 +38,7 @@ namespace AZ::Prefab
         void GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions) override;
 
         // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
-        void AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
+        void AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
         bool SaveAsAuthoredPrefab(const AZ::Data::AssetId& assetId, const char* destinationFilename);
     };
 
@@ -66,12 +66,12 @@ namespace AZ::Prefab
 
     const char* PrefabGroupAssetHandler::AssetTypeInfoHandler::GetGroup() const
     {
-        return "Prefab";
+        return "Procedural Prefab";
     }
 
     const char* PrefabGroupAssetHandler::AssetTypeInfoHandler::GetBrowserIcon() const
     {
-        return "Icons/Components/Box.png";
+        return "Icons/AssetBrowser/ProcPrefab_80.svg";
     }
 
     void PrefabGroupAssetHandler::AssetTypeInfoHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
@@ -82,7 +82,7 @@ namespace AZ::Prefab
     void PrefabGroupAssetHandler::AssetTypeInfoHandler::AddContextMenuActions(
         [[maybe_unused]] QWidget* caller,
         QMenu* menu,
-        const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
+        const AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
     {
         using namespace AzToolsFramework::AssetBrowser;
         auto entryIt = AZStd::find_if
@@ -99,9 +99,9 @@ namespace AZ::Prefab
         {
             return;
         }
-        else  if ((*entryIt)->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+        else if ((*entryIt)->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
         {
-            ProductAssetBrowserEntry* product = azrtti_cast<ProductAssetBrowserEntry*>(*entryIt);
+            const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(*entryIt);
             if (product->GetAssetType() == azrtti_typeid<ProceduralPrefabAsset>())
             {
                 AZ::Data::AssetId assetId = product->GetAssetId();

@@ -163,7 +163,7 @@ namespace ScriptCanvasEditor
 
     void VariablePropertiesComponent::OnVariableRemoved()
     {
-        ScriptCanvas::VariableNotificationBus::Handler::BusDisconnect();        
+        ScriptCanvas::VariableNotificationBus::Handler::BusDisconnect();
 
         m_variableName = AZStd::string();
         m_variable = nullptr;
@@ -179,7 +179,10 @@ namespace ScriptCanvasEditor
     void VariablePropertiesComponent::OnVariableRenamed(AZStd::string_view variableName)
     {
         m_variableName = variableName;
-        PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RefreshPropertyGrid);
+
+        m_variable->ModDatum().SetLabel(m_variableName);
+
+        PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RebuildPropertyGrid);
     }
 
     void VariablePropertiesComponent::OnVariableScopeChanged()
@@ -251,9 +254,9 @@ namespace ScriptCanvasEditor
             GraphVariablesTableView::CopyVariableToClipboard(dockWidget->GetActiveScriptCanvasId(), varId);
         });
 
-        QAction* pasteAction = new QAction(QObject::tr("Paste").arg(variableName.c_str()), this);
-        pasteAction->setToolTip(QObject::tr("Pastes the variable currently on the clipboard").arg(variableName.c_str()));
-        pasteAction->setStatusTip(QObject::tr("Pastes the variable currently on the clipboard").arg(variableName.c_str()));
+        QAction* pasteAction = new QAction(QObject::tr("Paste %1").arg(variableName.c_str()), this);
+        pasteAction->setToolTip(QObject::tr("Pastes the variable %1 currently on the clipboard").arg(variableName.c_str()));
+        pasteAction->setStatusTip(QObject::tr("Pastes the variable %1 currently on the clipboard").arg(variableName.c_str()));
 
         pasteAction->setEnabled(GraphVariablesTableView::HasCopyVariableData());
 
@@ -338,7 +341,6 @@ namespace ScriptCanvasEditor
 
     VariableDockWidget::VariableDockWidget(QWidget* parent /*= nullptr*/)
         : AzQtComponents::StyledDockWidget(parent)
-        , m_manipulatingSelection(false)
         , ui(new Ui::VariableDockWidget())
     {
         ui->setupUi(this);
@@ -679,7 +681,7 @@ namespace ScriptCanvasEditor
         QAction* sortByType = actionGroup.addAction("Sort by type");
         sortByType->setCheckable(true);
 
-        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
 
         if (settings->m_variablePanelSorting == GraphVariablesModel::ColumnIndex::Name)
         {
@@ -764,7 +766,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            ResetPool();            
+            ResetPool();
         }
 
         AZStd::vector<AZ::EntityId> selection;
@@ -782,7 +784,7 @@ namespace ScriptCanvasEditor
 
             if (propertiesComponent)
             {
-                ScriptCanvas::GraphVariable* graphVariable = owningGraph->FindVariableById(varId);;
+                ScriptCanvas::GraphVariable* graphVariable = owningGraph->FindVariableById(varId);
                 propertiesComponent->SetVariable(graphVariable);
 
                 selection.push_back(propertiesComponent->GetEntityId());
@@ -1019,4 +1021,3 @@ namespace ScriptCanvasEditor
 
 #include <Editor/View/Widgets/VariablePanel/moc_VariableDockWidget.cpp>
 }
-

@@ -68,4 +68,10 @@ namespace AZ
     void SetPerspectiveMatrixFOV(Matrix4x4& out, float fovY, float aspectRatio);
     float GetPerspectiveMatrixFOV(const Matrix4x4& m);
 
+    //! Adjust the near/far planes of an existing right-handed perspective projection matrix.
+    //! @param out Matrix which stores output result.
+    //! @param near Distance to the near view-plane. Must be no less than zero.
+    //! @param far Distance to the far view-plane. Must be greater than zero.
+    //! @param reverseDepth Set to true to reverse depth which means near distance maps to 1 and far distance maps to 0.
+    void SetPerspectiveMatrixNearFar(Matrix4x4& out, float nearDist, float farDist, bool reverseDepth = true);
 } // namespace AZ

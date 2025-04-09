@@ -10,9 +10,6 @@
 
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AzCore/Asset/AssetCommon.h>
 
 namespace AZ
 {
@@ -48,11 +45,11 @@ namespace MaterialEditor
         virtual const AZ::RPI::MaterialTypeSourceData* GetMaterialTypeSourceData() const = 0;
 
         //! Modify property value
-        virtual void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) = 0;
+        virtual void SetPropertyValue(const AZStd::string& propertyFullName, const AZStd::any& value) = 0;
 
         //! Return property value
         //! If the document is not open or the id can't be found, an invalid value is returned instead.
-        virtual const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const = 0;
+        virtual const AZStd::any& GetPropertyValue(const AZStd::string& propertyFullName) const = 0;
     };
 
     using MaterialDocumentRequestBus = AZ::EBus<MaterialDocumentRequests>;

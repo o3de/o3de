@@ -15,6 +15,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <LyShineSystemComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <World/UiCanvasAssetRefComponent.h>
@@ -55,7 +56,7 @@
 #include <UiParticleEmitterComponent.h>
 #include <UiCanvasManager.h>
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 
 using namespace AZ;
 using ::testing::NiceMock;
@@ -90,7 +91,9 @@ protected:
         registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-        m_app.Start(m_descriptor);
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_app.Start(m_descriptor, startupParameters);
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
@@ -152,23 +155,7 @@ protected:
         m_componentDescriptors.push_back(AZStd::unique_ptr<AZ::ComponentDescriptor>(UiRadioButtonGroupComponent::CreateDescriptor()));
         m_componentDescriptors.push_back(AZStd::unique_ptr<AZ::ComponentDescriptor>(UiParticleEmitterComponent::CreateDescriptor()));
 
-        context->ClassDeprecate("SimpleAssetReference_MaterialAsset", "{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}",
-            [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-        {
-            AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-            for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-            {
-                childNodeElements.push_back(rootElement.GetSubElement(index));
-            }
-            // Convert the rootElement now, the existing child DataElmentNodes are now removed
-            rootElement.Convert<AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>>(context);
-            for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-            {
-                rootElement.AddElement(AZStd::move(childNodeElement));
-            }
-            return true;
-        });
-        context->ClassDeprecate("SimpleAssetReference_TextureAsset", "{68E92460-5C0C-4031-9620-6F1A08763243}",
+        context->ClassDeprecate("SimpleAssetReference_TextureAsset", AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
             [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
         {
             AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
@@ -184,7 +171,6 @@ protected:
             }
             return true;
         });
-        AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>::Register(*context);
         AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>::Register(*context);
 
         for(const auto& descriptor : m_componentDescriptors)

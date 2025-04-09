@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
+#include <QIcon>
 #include <QSharedPointer>
 
 namespace AssetBundler
@@ -23,6 +24,7 @@ namespace AssetBundler
 
         QString m_relativePath;
         QString m_platformList;
+        QString m_errorMessage; // If the asset isn't available, this will contain an error message to display instead.
     };
 
     using AdditionalSeedInfoPtr = AZStd::shared_ptr<AdditionalSeedInfo>;
@@ -71,12 +73,14 @@ namespace AssetBundler
         };
 
     private:
-        AZ::Outcome<AzFramework::SeedInfo&, void> GetSeedInfo(const QModelIndex& index) const;
+        AZ::Outcome<AZStd::reference_wrapper<const AzFramework::SeedInfo>, void> GetSeedInfo(const QModelIndex& index) const;
 
         AZ::Outcome<AdditionalSeedInfoPtr, void> GetAdditionalSeedInfo(const QModelIndex& index) const;
 
         AZStd::shared_ptr<AzToolsFramework::AssetSeedManager> m_seedListManager;
         AdditionalSeedInfoMap m_additionalSeedInfoMap;
+
+        QIcon m_errorImage;
 
         bool m_hasUnsavedChanges = false;
         bool m_isFileOnDisk = true;

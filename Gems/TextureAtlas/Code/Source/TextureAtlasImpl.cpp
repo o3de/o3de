@@ -13,7 +13,7 @@
 
 namespace TextureAtlasNamespace
 {
-    const static char* s_CoordinatePairsName = "Coordinate Pairs";
+    constexpr const char* s_CoordinatePairsName = "Coordinate Pairs";
 
     TextureAtlasImpl::TextureAtlasImpl()
     {
@@ -36,14 +36,14 @@ namespace TextureAtlasNamespace
         if (rootElement.GetVersion() < 2)
         {
             AZStd::unordered_map<AZStd::string, AtlasCoordinates> oldData;
-            if (!rootElement.GetChildData(AZ_CRC(s_CoordinatePairsName), oldData))
+            if (!rootElement.GetChildData(AZ_CRC_CE(s_CoordinatePairsName), oldData))
             {
                 AZ_Error("TextureAtlas", false, "Failed to find old %s unordered_map element on version %u", s_CoordinatePairsName, rootElement.GetVersion());
                 return false;
             }
 
             AZStd::unordered_map<AZStd::string, AtlasCoordinates, hash_case_insensitive, equal_to_case_insensitive> newData{ oldData.begin(), oldData.end() };
-            rootElement.RemoveElementByName(AZ_CRC(s_CoordinatePairsName));
+            rootElement.RemoveElementByName(AZ_CRC_CE(s_CoordinatePairsName));
             rootElement.AddElementWithData(context, s_CoordinatePairsName, newData);
         }
 
@@ -55,7 +55,7 @@ namespace TextureAtlasNamespace
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->ClassDeprecate("SimpleAssetReference_TextureAtlasAsset", "{6F612FE6-A054-4E49-830C-0288F3C79A52}",
+            serialize->ClassDeprecate("SimpleAssetReference_TextureAtlasAsset", AZ::Uuid("{6F612FE6-A054-4E49-830C-0288F3C79A52}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
             {
                 AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;

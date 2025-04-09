@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class OrderedEventTests
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     };
 

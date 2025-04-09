@@ -13,7 +13,7 @@
 namespace UnitTest
 {
     class ConceptsTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(ConceptsTestFixture, GeneralConcepts)
@@ -21,20 +21,22 @@ namespace UnitTest
 
         // concept same_as
         static_assert(AZStd::same_as<ConceptsTestFixture, ConceptsTestFixture>);
-        static_assert(!AZStd::same_as<ConceptsTestFixture, ScopedAllocatorSetupFixture>);
+        static_assert(!AZStd::same_as<ConceptsTestFixture, LeakDetectionFixture>);
 
         // concept derived_from
-        static_assert(AZStd::derived_from<ConceptsTestFixture, ScopedAllocatorSetupFixture>);
-        static_assert(!AZStd::derived_from<ScopedAllocatorSetupFixture, ConceptsTestFixture>);
+        static_assert(AZStd::derived_from<ConceptsTestFixture, LeakDetectionFixture>);
+        static_assert(!AZStd::derived_from<LeakDetectionFixture, ConceptsTestFixture>);
 
         // concept convertible_to
-        static_assert(AZStd::convertible_to<ConceptsTestFixture&, ScopedAllocatorSetupFixture&>);
-        static_assert(!AZStd::convertible_to<ScopedAllocatorSetupFixture&, ConceptsTestFixture&>);
+        static_assert(AZStd::convertible_to<ConceptsTestFixture&, LeakDetectionFixture&>);
+        static_assert(!AZStd::convertible_to<LeakDetectionFixture&, ConceptsTestFixture&>);
 
 
         // Test structs to validate common_reference_with and common_with concepts
         struct Base {};
         struct TestBase : Base {};
+        struct TestDerived : TestBase {};
+        struct TestDerived2 : TestBase {};
         struct NoMove
         {
             NoMove(NoMove&&) = delete;
@@ -67,11 +69,11 @@ namespace UnitTest
         // concept common_reference_with
         static_assert(AZStd::common_reference_with<TestBase&, Base&>);
         static_assert(AZStd::same_as<AZStd::common_reference_t<const TestBase&, Base&>, const Base&>);
-        static_assert(!AZStd::common_reference_with<AllocatorsTestFixture, ScopedAllocatorSetupFixture>);
+        static_assert(!AZStd::common_reference_with<TestDerived2, TestDerived>);
 
         // concept common_with
         static_assert(AZStd::common_with<TestBase, Base>);
-        static_assert(!AZStd::common_with<AllocatorsTestFixture, AllocatorsBenchmarkFixture>);
+        static_assert(!AZStd::common_with<LeakDetectionFixture, AllocatorsBenchmarkFixture>);
 
         // arithmetic concepts
         // concept integral

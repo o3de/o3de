@@ -22,7 +22,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     class PrefabConversionPipeline final
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabConversionPipeline, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabConversionPipeline, AZ::SystemAllocator);
         
         using PrefabProcessorStack = AZ::ConfigurableStack<PrefabProcessor>;
 

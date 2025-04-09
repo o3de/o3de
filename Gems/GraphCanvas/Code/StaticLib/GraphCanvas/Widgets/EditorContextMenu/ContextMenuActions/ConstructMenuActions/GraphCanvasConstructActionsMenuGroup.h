@@ -15,7 +15,7 @@ namespace GraphCanvas
     class GraphCanvasConstructActionsMenuGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasConstructActionsMenuGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasConstructActionsMenuGroup, AZ::SystemAllocator);
         
         GraphCanvasConstructActionsMenuGroup();
         ~GraphCanvasConstructActionsMenuGroup();

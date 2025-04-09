@@ -15,7 +15,7 @@ class CUiAnimEventNode
     : public CUiAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CUiAnimEventNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CUiAnimEventNode, AZ::SystemAllocator);
     AZ_RTTI(CUiAnimEventNode, "{51C82937-293D-4E20-8966-5288D1580615}", CUiAnimNode);
 
     CUiAnimEventNode();

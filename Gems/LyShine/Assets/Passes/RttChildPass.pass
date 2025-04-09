@@ -39,19 +39,34 @@
                     }
                 }
             ],
-            "Connections": [
+            "ImageAttachments": [
                 {
-                    "LocalSlot": "DepthInputOutput",
-                    "AttachmentRef": {
+                    "Name": "DepthInputOutputImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "RenderTargetOutput"
+                        }
+                    },
+                    "FormatSource": {
                         "Pass": "Parent",
                         "Attachment": "DepthInputOutput"
                     }
                 }
             ],
+            "Connections": [
+                {
+                    "LocalSlot": "DepthInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DepthInputOutputImage"
+                    }
+                }
+            ],
             "PassData": {
                 "$type": "RasterPassData",
-                "DrawListTag": "uicanvas",
-                "PipelineViewTag": "MainCamera"
+                "DrawListTag": "lyshinerttpass",
+                "BindViewSrg": true
             }
         }
     }

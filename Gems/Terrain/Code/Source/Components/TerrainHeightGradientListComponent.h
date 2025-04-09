@@ -38,14 +38,14 @@ namespace Terrain
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainHeightGradientListConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainHeightGradientListConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainHeightGradientListConfig, "{C5FD71A9-0722-4D4C-B605-EBEBF90C628F}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
         AZStd::vector<AZ::EntityId> m_gradientEntities;
     };
 
-    static const AZ::Uuid TerrainHeightGradientListComponentTypeId = "{1BB3BA6C-6D4A-4636-B542-F23ECBA8F2AB}";
+    inline constexpr AZ::TypeId TerrainHeightGradientListComponentTypeId{ "{1BB3BA6C-6D4A-4636-B542-F23ECBA8F2AB}" };
 
     class TerrainHeightGradientListComponent
         : public AZ::Component
@@ -81,6 +81,7 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // LmbrCentral::DependencyNotificationBus
         void OnCompositionChanged() override;
+        void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Terrain::TerrainDataNotificationBus
@@ -89,14 +90,13 @@ namespace Terrain
     private:
         TerrainHeightGradientListConfig m_configuration;
 
-        float m_cachedMinWorldHeight{ 0.0f };
-        float m_cachedMaxWorldHeight{ 0.0f };
+        AzFramework::Terrain::FloatRange m_cachedHeightBounds{ 0.0f, 0.0f };
         AZ::Aabb m_cachedShapeBounds;
 
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
 
-        // The TerrainAreaHeightRequestBus has lockless dispatch, so make sure that queries don't happen at the same
-        // time as bus connects / disconnects.
+        // The TerrainAreaHeightRequestBus allows parallel dispatches, so make sure that queries don't happen at the same
+        // time as cached data updates.
         AZStd::shared_mutex m_queryMutex;
     };
 }

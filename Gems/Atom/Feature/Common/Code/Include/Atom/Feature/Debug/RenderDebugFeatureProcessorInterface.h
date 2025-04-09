@@ -19,7 +19,7 @@ namespace AZ::Render
         : public RPI::FeatureProcessor
     {
     public:
-        AZ_RTTI(AZ::Render::RenderDebugFeatureProcessorInterface, "{9774C763-178C-4CE2-99CD-3ABDE12445A4}", RPI::FeatureProcessor);
+        AZ_RTTI(AZ::Render::RenderDebugFeatureProcessorInterface, "{9774C763-178C-4CE2-99CD-3ABDE12445A4}", AZ::RPI::FeatureProcessor);
 
         //! Retrieves existing settings. If none found, returns nullptr.
         virtual RenderDebugSettingsInterface* GetSettingsInterface() = 0;

@@ -16,10 +16,12 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
@@ -35,6 +37,15 @@
 
 namespace AzToolsFramework
 {
+    namespace ComponentModeFramework
+    {
+        class ComponentModeSwitcher;
+    }
+
+    class ActionManagerInterface;
+    class HotKeyManagerInterface;
+    class MenuManagerInterface;
+
     class EditorVisibleEntityDataCacheInterface;
 
     //! Entity related data required by manipulators during action.
@@ -131,8 +142,7 @@ namespace AzToolsFramework
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
-        , public EditorContextMenuBus::Handler
-        , private EditorEventsBus::Handler
+        , public ActionManagerRegistrationNotificationBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
@@ -183,6 +193,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
+        void CreateComponentModeSwitcher();
         void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();
@@ -195,7 +206,6 @@ namespace AzToolsFramework
 
         bool IsEntitySelected(AZ::EntityId entityId) const;
         void SetSelectedEntities(const EntityIdList& entityIds);
-        void DeselectEntities();
         bool SelectDeselect(AZ::EntityId entityId);
         void ChangeSelectedEntity(AZ::EntityId entityId);
 
@@ -205,8 +215,10 @@ namespace AzToolsFramework
 
         void SetupBoxSelect();
 
-        void RegisterActions();
-        void UnregisterActions();
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionUpdaterRegistrationHook() override;
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
         void BeginRecordManipulatorCommand();
         void EndRecordManipulatorCommand();
@@ -242,17 +254,11 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualLocal(float scale) override;
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
+        void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) override;
+        void DeselectEntities() override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
         void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
-
-        // EditorContextMenuBus overrides ...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
-        int GetMenuPosition() const override;
-        AZStd::string GetMenuIdentifier() const override;
-
-        // EditorEventsBus overrides ...
-        void OnEscape() override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
@@ -329,7 +335,6 @@ namespace AzToolsFramework
         Mode m_mode = Mode::Translation; //!< Manipulator mode - default to translation.
         Pivot m_pivotMode = Pivot::Object; //!< Entity pivot mode - default to object (authored root).
         ReferenceFrame m_referenceFrame = ReferenceFrame::Local; //!< What reference frame is the Manipulator currently operating in.
-        Influence m_influence = Influence::Group; //!< What sphere of influence does the Manipulator have.
         Frame m_axisPreview; //!< Axes of entity at the time of mouse down to indicate delta of translation.
         bool m_triedToRefresh = false; //!< Did a refresh event occur to recalculate the current Manipulator transform.
         //! Was EditorTransformComponentSelection responsible for the most recent entity selection change.
@@ -346,7 +351,18 @@ namespace AzToolsFramework
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
+        //! Viewport UI Switcher for showing component mode components.
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher;
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
+
+        ActionManagerInterface* m_actionManagerInterface = nullptr;
+        HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
+        MenuManagerInterface* m_menuManagerInterface = nullptr;
+
+    private:
+        // static void in order to ensure that the 'this' pointer is not captured in any lamba functions
+        // as the actions are global.
+        static void RegisterActions();
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.

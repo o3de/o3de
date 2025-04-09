@@ -71,7 +71,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(NetworkFileIO, "{A863335E-9330-44E2-AD89-B5309F3B8B93}", FileIOBase);
-            AZ_CLASS_ALLOCATOR(NetworkFileIO, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NetworkFileIO, OSAllocator);
 
             NetworkFileIO();
             virtual ~NetworkFileIO();
@@ -127,7 +127,7 @@ namespace AZ
         class RemoteFileCache
         {
         public:
-            AZ_CLASS_ALLOCATOR(RemoteFileCache, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemoteFileCache, OSAllocator);
 
             RemoteFileCache() = default;
             RemoteFileCache(const RemoteFileCache& other) = default;
@@ -175,7 +175,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(RemoteFileIO, "{E2939E15-3B83-402A-A6DA-A436EDAB2ED2}", NetworkFileIO);
-            AZ_CLASS_ALLOCATOR(RemoteFileIO, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemoteFileIO, OSAllocator);
 
             RemoteFileIO(FileIOBase* excludedFileIO = nullptr);
             virtual ~RemoteFileIO();

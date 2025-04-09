@@ -10,29 +10,27 @@
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! Describes a buffer scope attachment, which is the specific usage of a frame graph attachment on a scope.
+    struct BufferScopeAttachmentDescriptor
+        : public ScopeAttachmentDescriptor
     {
-        /**
-         * Describes a buffer scope attachment, which is the specific usage of a frame graph attachment on a scope.
-         */
-        struct BufferScopeAttachmentDescriptor
-            : public ScopeAttachmentDescriptor
-        {
-            AZ_TYPE_INFO(BufferScopeAttachmentDescriptor, "{D40FFADC-DDD4-497A-877F-11E84FD96210}");
+        AZ_TYPE_INFO(BufferScopeAttachmentDescriptor, "{D40FFADC-DDD4-497A-877F-11E84FD96210}");
 
-            static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            BufferScopeAttachmentDescriptor() = default;
+        BufferScopeAttachmentDescriptor() = default;
 
-            explicit BufferScopeAttachmentDescriptor(
-                const AttachmentId& attachmentId,
-                const BufferViewDescriptor& bufferViewDescriptor = BufferViewDescriptor(),
-                const AttachmentLoadStoreAction& bufferScopeLoadStoreAction = AttachmentLoadStoreAction());
+        explicit BufferScopeAttachmentDescriptor(
+            const AttachmentId& attachmentId,
+            const BufferViewDescriptor& bufferViewDescriptor = BufferViewDescriptor(),
+            const AttachmentLoadStoreAction& bufferScopeLoadStoreAction = AttachmentLoadStoreAction());
 
-            /// The buffer view associated with the binding.
-            BufferViewDescriptor m_bufferViewDescriptor;
-        };
-    }
+        /// Returns the descriptor for the BufferView
+        const BufferViewDescriptor& GetViewDescriptor() const;
+
+        /// The buffer view associated with the binding.
+        BufferViewDescriptor m_bufferViewDescriptor;
+    };
 }

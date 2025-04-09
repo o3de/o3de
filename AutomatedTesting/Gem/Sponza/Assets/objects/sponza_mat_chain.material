@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureBlendMode": "Lerp",
         "baseColor.textureMap": "../Textures/chain_basecolor.png",
@@ -13,6 +13,7 @@
         "general.doubleSided": true,
         "metallic.factor": 0.8899999856948853,
         "normal.textureMap": "../Textures/chain_normal.jpg",
+        "normal.flipY": true,
         "opacity.alphaSource": "Split",
         "opacity.factor": 1.0,
         "opacity.mode": "Cutout",

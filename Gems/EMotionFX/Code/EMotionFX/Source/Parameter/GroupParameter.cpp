@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(GroupParameter, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(GroupParameter, AnimGraphAllocator)
 
 
     GroupParameter::~GroupParameter()

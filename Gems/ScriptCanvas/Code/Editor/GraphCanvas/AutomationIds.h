@@ -15,10 +15,10 @@ namespace ScriptCanvasEditor
 {
     namespace AutomationIds
     {
-        static const AZ::Crc32 NodePaletteDockWidget = AZ_CRC("SC_NodePaletteDockWidget", 0xc86d3ceb);
-        static const AZ::Crc32 NodePaletteWidget = AZ_CRC("SC_NodePaletteWidget", 0x8c80dbb1);
+        static const AZ::Crc32 NodePaletteDockWidget = AZ_CRC_CE("SC_NodePaletteDockWidget");
+        static const AZ::Crc32 NodePaletteWidget = AZ_CRC_CE("SC_NodePaletteWidget");
 
-        static const AZ::Crc32 CreateScriptCanvasButton = AZ_CRC("SC_CreateRuntimeScriptCanvas", 0x07075136);
-        static const AZ::Crc32 CreateScriptCanvasFunctionButton = AZ_CRC("SC_CreateScriptCanvasFunction", 0x3b3be68a);
+        static const AZ::Crc32 CreateScriptCanvasButton = AZ_CRC_CE("SC_CreateRuntimeScriptCanvas");
+        static const AZ::Crc32 CreateScriptCanvasFunctionButton = AZ_CRC_CE("SC_CreateScriptCanvasFunction");
     }
 }

@@ -28,27 +28,27 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include "IEditor.h"
+
+#include <Core/EditorActionsHandler.h>
 #endif
 
+class ActionManager;
 class AssetImporterManager;
-class LevelEditorMenuHandler;
-class CMainFrame;
-class UndoStackStateAdapter;
-class QComboBox;
-class KeyboardCustomizationSettings;
-class QToolButton;
-class MainStatusBar;
-class CLayoutWnd;
-struct QtViewPane;
 class CLayoutViewPane;
+class CLayoutWnd;
+class CMainFrame;
+class EngineConnectionListener;
+class LevelEditorMenuHandler;
+class MainStatusBar;
+class UndoStackStateAdapter;
+
+class QComboBox;
+class QToolButton;
 class QtViewport;
 class QtViewPaneManager;
-class EngineConnectionListener;
-class ToolbarManager;
-class ToolbarCustomizationDialog;
 class QWidgetAction;
-class ActionManager;
-class ShortcutDispatcher;
+
+struct QtViewPane;
 
 namespace AzQtComponents
 {
@@ -74,8 +74,8 @@ namespace AzToolsFramework
 #define MAINFRM_LAYOUT_NORMAL "NormalLayout"
 #define MAINFRM_LAYOUT_PREVIEW "PreviewLayout"
 
-// Subclassing so we can add slots to our toolbar widgets
-// Using lambdas is crashy since the lamdba doesn't know when the widget is deleted.
+// Sub-classing so we can add slots to our toolbar widgets
+// Using lambdas is prone to crashes since the lambda doesn't know when the widget is deleted.
 
 class UndoRedoToolButton
     : public QToolButton
@@ -106,8 +106,6 @@ public:
     HWND GetNativeHandle();
 #endif // #ifdef Q_OS_WIN
 
-    ActionManager* GetActionManager() const;
-
     void Initialize();
 
     // Returns the old and original main frame which we're porting away from.
@@ -123,16 +121,10 @@ public:
     MainStatusBar* StatusBar() const;
     CLayoutWnd* GetLayout() const;
 
-    KeyboardCustomizationSettings* GetShortcutManager() const;
-    ToolbarManager* GetToolbarManager() const;
-
     void OpenViewPane(int paneId);
     void OpenViewPane(QtViewPane* pane);
 
     void SetActiveView(CLayoutViewPane* vp);
-
-    QMenu* createPopupMenu() override;
-    bool IsCustomizingToolbars() const;
 
     /**
      * Returns the active view layout (Perspective, Top, Bottom, or Left, etc).
@@ -151,18 +143,15 @@ public:
     void RefreshStyle();
 
     //! Reset timers used for auto saving.
-    void ResetAutoSaveTimers(bool bForceInit = false);
+    void StopAutoSaveTimers();
+    void StartAutoSaveTimers();
+    void ResetAutoSaveTimers();
     void ResetBackgroundUpdateTimer();
-
-    void UpdateToolsMenu();
-
-    int ViewPaneVersion() const;
 
     LevelEditorMenuHandler* GetLevelEditorMenuHandler() { return m_levelEditorMenuHandler; }
 
     bool event(QEvent* event) override;
 
-    void OnGotoSliceRoot();
 Q_SIGNALS:
     void ToggleRefCoordSys();
     void UpdateRefCoordSys();
@@ -181,19 +170,12 @@ protected:
     bool focusNextPrevChild(bool next) override;
 
 private:
-    void OnGameModeChanged(bool inGameMode);
-    QWidget* CreateToolbarWidget(int id);
-    void ShowCustomizeToolbarDialog();
     void OnGotoSelected();
 
     void ToggleConsole();
     void RegisterOpenWndCommands();
     void InitCentralWidget();
-    void InitActions();
-    void InitToolActionHandlers();
-    void InitToolBars();
     void InitStatusBar();
-    void OnViewPaneCreated(const QtViewPane* pane);
 
     template <class TValue>
     void ReadConfigValue(const QString& key, TValue& value)
@@ -206,12 +188,7 @@ private:
 
     QWidget* CreateSpacerRightWidget();
 
-    QToolButton* CreateUndoRedoButton(int command);
-
 private Q_SLOTS:
-    void ShowKeyboardCustomization();
-    void ExportKeyboardShortcuts();
-    void ImportKeyboardShortcuts();
     void OnStopAllSounds();
     void OnRefreshAudioSystem();
     void SaveLayout();
@@ -225,8 +202,11 @@ private Q_SLOTS:
     void OnEscapeAction();
 
     void OnOpenAssetImporterManager(const QStringList& list);
+    void OnOpenAssetImporterManagerAtPath(const QStringList& list, const QString& path);
 
 private:
+    friend class EditorActionsHandler;
+
     bool IsGemEnabled(const QString& uuid, const QString& version) const;
 
     // Broadcast the SystemTick event
@@ -236,17 +216,13 @@ private:
     void RegisterStdViewClasses();
     CMainFrame* m_oldMainFrame;
     QtViewPaneManager* m_viewPaneManager;
-    ShortcutDispatcher* m_shortcutDispatcher = nullptr;
-    ActionManager* m_actionManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
-    KeyboardCustomizationSettings* m_keyboardCustomization;
     CLayoutViewPane* m_activeView;
     QSettings m_settings;
-    ToolbarManager* const m_toolbarManager;
 
     AssetImporterManager* m_assetImporterManager;
-    LevelEditorMenuHandler* m_levelEditorMenuHandler;
+    LevelEditorMenuHandler* m_levelEditorMenuHandler = nullptr;
 
     CLayoutWnd* m_pLayoutWnd;
 
@@ -254,9 +230,9 @@ private:
     AZStd::shared_ptr<EngineConnectionListener> m_connectionListener;
     QTimer* m_connectionLostTimer;
 
-    QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
-    AZ::Event<bool>::Handler m_handleImGuiStateChangeHandler;
+
+    EditorActionsHandler m_editorActionsHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     static MainWindow* m_instance;
@@ -271,7 +247,6 @@ private:
     bool m_showAPDisconnectDialog = false;
     bool m_selectedEntityHasRoot = false;
 
-    friend class ToolbarManager;
     friend class WidgetAction;
     friend class LevelEditorMenuHandler;
 };

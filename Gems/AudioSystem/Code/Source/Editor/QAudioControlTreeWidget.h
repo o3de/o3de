@@ -49,6 +49,8 @@ public:
     explicit QAudioControlSortProxy(QObject* pParent = 0);
     bool setData(const QModelIndex& index, const QVariant& value, int role /* = Qt::EditRole */) override;
 
+    QStandardItem* GetStandardItemFromIndex(const QModelIndex& index);
+
 protected:
     bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
 };

@@ -8,13 +8,20 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Serialization/SerializeContext.h>
-
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+
+namespace AZ
+{
+    class Capsule;
+    class Obb;
+    class ReflectContext;
+    class Sphere;
+} // namespace AZ
 
 namespace Physics
 {
@@ -33,56 +40,78 @@ namespace Physics
         Heightfield ///< Interacts with the physics system heightfield
     };
 
+    namespace ShapeConstants
+    {
+        static constexpr float DefaultCapsuleRadius = 0.25f;
+        static constexpr float DefaultCapsuleHeight = 1.0f;
+        static constexpr float DefaultSphereRadius = 0.5f;
+        static const AZ::Vector3 DefaultBoxDimensions = AZ::Vector3::CreateOne();
+        static const AZ::Vector3 DefaultScale = AZ::Vector3::CreateOne();
+        static constexpr float DefaultCylinderRadius = 1.0f;
+        static constexpr float DefaultCylinderHeight = 1.0f;
+        static constexpr AZ::u8 DefaultCylinderSubdivisionCount = 16;
+    } // namespace ShapeConstants
+
     class ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(ShapeConfiguration, "{1FD56C72-6055-4B35-9253-07D432B94E91}");
         static void Reflect(AZ::ReflectContext* context);
+        explicit ShapeConfiguration(const AZ::Vector3& scale = ShapeConstants::DefaultScale);
         virtual ~ShapeConfiguration() = default;
         virtual ShapeType GetShapeType() const = 0;
 
-        AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
+        AZ::Vector3 m_scale = ShapeConstants::DefaultScale;
     };
 
     class SphereShapeConfiguration : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(SphereShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SphereShapeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(SphereShapeConfiguration, "{0B9F3D2E-0780-4B0B-BFEE-B41C5FDE774A}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit SphereShapeConfiguration(float radius = 0.5f);
+        SphereShapeConfiguration(
+            float radius = ShapeConstants::DefaultSphereRadius, const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Sphere; }
+        AZ::Sphere ToSphere(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
-        float m_radius = 0.5f;
+        float m_radius = ShapeConstants::DefaultSphereRadius;
     };
 
     class BoxShapeConfiguration : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(BoxShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BoxShapeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(BoxShapeConfiguration, "{E58040ED-3E50-4882-B0E9-525E7A548F8D}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit BoxShapeConfiguration(const AZ::Vector3& boxDimensions = AZ::Vector3::CreateOne());
+        BoxShapeConfiguration(
+            const AZ::Vector3& boxDimensions = ShapeConstants::DefaultBoxDimensions,
+            const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Box; }
+        AZ::Obb ToObb(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
-        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne();
+        AZ::Vector3 m_dimensions = ShapeConstants::DefaultBoxDimensions;
     };
 
     class CapsuleShapeConfiguration : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CapsuleShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CapsuleShapeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(CapsuleShapeConfiguration, "{19C6A07E-5644-46B7-A49E-48703B56ED32}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit CapsuleShapeConfiguration(float height = 1.0f, float radius = 0.25f);
+        CapsuleShapeConfiguration(
+            float height = ShapeConstants::DefaultCapsuleHeight,
+            float radius = ShapeConstants::DefaultCapsuleRadius,
+            const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Capsule; }
+        AZ::Capsule ToCapsule(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
-        float m_height = 1.0f;
-        float m_radius = 0.25f;
+        float m_height = ShapeConstants::DefaultCapsuleHeight; //!< Total height, including hemispherical caps, oriented along z-axis.
+        float m_radius = ShapeConstants::DefaultCapsuleRadius;
 
     private:
         void OnHeightChanged();
@@ -92,7 +121,7 @@ namespace Physics
     class ConvexHullShapeConfiguration : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConvexHullShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConvexHullShapeConfiguration, AZ::SystemAllocator);
 
         ShapeType GetShapeType() const override { return ShapeType::ConvexHull; }
 
@@ -114,7 +143,7 @@ namespace Physics
     class TriangleMeshShapeConfiguration : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(TriangleMeshShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TriangleMeshShapeConfiguration, AZ::SystemAllocator);
 
         ShapeType GetShapeType() const override { return ShapeType::TriangleMesh; }
 
@@ -130,11 +159,11 @@ namespace Physics
                                 ///< and don't need to be kept alive by the caller;
     };
 
-    class PhysicsAssetShapeConfiguration 
+    class PhysicsAssetShapeConfiguration
         : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysicsAssetShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysicsAssetShapeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(PhysicsAssetShapeConfiguration, "{1C0046D9-BC9E-4F93-9F0E-D62654FB18EA}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
         ShapeType GetShapeType() const override;
@@ -148,7 +177,7 @@ namespace Physics
     class NativeShapeConfiguration : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeShapeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(NativeShapeConfiguration, "{6CB8FE4A-A577-49AF-81F4-4F1AD245859A}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -158,11 +187,11 @@ namespace Physics
         AZ::Vector3 m_nativeShapeScale = AZ::Vector3::CreateOne(); ///< Native shape scale. This will be serialised
     };
 
-    class CookedMeshShapeConfiguration 
+    class CookedMeshShapeConfiguration
         : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CookedMeshShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CookedMeshShapeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(CookedMeshShapeConfiguration, "{D9E58241-36BB-4A4F-B50C-1736EB7E841F}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -171,7 +200,7 @@ namespace Physics
             TriangleMesh = 0,
             Convex
         };
-        
+
         CookedMeshShapeConfiguration() = default;
         CookedMeshShapeConfiguration(const CookedMeshShapeConfiguration&);
         CookedMeshShapeConfiguration& operator=(const CookedMeshShapeConfiguration&);
@@ -184,7 +213,7 @@ namespace Physics
         //! (e.g. in PhysX: result of cookTriangleMesh or cookConvexMesh).
         void SetCookedMeshData(const AZ::u8* cookedData, size_t cookedDataSize, MeshType type);
         const AZStd::vector<AZ::u8>& GetCookedMeshData() const;
-        
+
         MeshType GetMeshType() const;
 
         void* GetCachedNativeMesh();
@@ -196,7 +225,7 @@ namespace Physics
 
         AZStd::vector<AZ::u8> m_cookedData;
         MeshType m_type = MeshType::TriangleMesh;
-        
+
         //! Cached native mesh object (e.g. PxConvexMesh or PxTriangleMesh). This data is not serialized.
         void* m_cachedNativeMesh = nullptr;
     };
@@ -205,7 +234,7 @@ namespace Physics
         : public ShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(HeightfieldShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HeightfieldShapeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(HeightfieldShapeConfiguration, "{8DF47C83-D2A9-4E7C-8620-5E173E43C0B3}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
         HeightfieldShapeConfiguration() = default;
@@ -223,12 +252,14 @@ namespace Physics
         void SetCachedNativeHeightfield(void* cachedNativeHeightfield);
         const AZ::Vector2& GetGridResolution() const;
         void SetGridResolution(const AZ::Vector2& gridSpacing);
-        int32_t GetNumColumns() const;
-        void SetNumColumns(int32_t numColumns);
-        int32_t GetNumRows() const;
-        void SetNumRows(int32_t numRows);
+        size_t GetNumColumnVertices() const;
+        size_t GetNumColumnSquares() const;
+        void SetNumColumnVertices(size_t numColumns);
+        size_t GetNumRowVertices() const;
+        size_t GetNumRowSquares() const;
+        void SetNumRowVertices(size_t numRows);
         const AZStd::vector<Physics::HeightMaterialPoint>& GetSamples() const;
-        void ModifySample(int32_t row, int32_t column, const Physics::HeightMaterialPoint& point);
+        void ModifySample(size_t column, size_t row, const Physics::HeightMaterialPoint& point);
         void SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples);
         float GetMinHeightBounds() const;
         void SetMinHeightBounds(float minBounds);
@@ -239,9 +270,9 @@ namespace Physics
         //! The number of meters between each heightfield sample in x and y.
         AZ::Vector2 m_gridResolution{ 1.0f };
         //! The number of columns in the heightfield sample grid.
-        int32_t m_numColumns{ 0 };
+        uint32_t m_numColumns{ 0 };
         //! The number of rows in the heightfield sample grid.
-        int32_t m_numRows{ 0 };
+        uint32_t m_numRows{ 0 };
         //! The minimum and maximum heights that can be used by this heightfield.
         //! This can be used by the physics system to choose a more optimal heightfield data type internally (ex: int16, uint8)
         float m_minHeightBounds{AZStd::numeric_limits<float>::lowest()};

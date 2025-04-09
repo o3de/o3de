@@ -26,12 +26,22 @@ namespace AZ::Dom
         static constexpr size_t AlwaysFullReplace = 0;
 
         //! The threshold of changed values in a node or array which, if exceeded, will cause the generation to create an
-        //! entire "replace" oepration instead. If set to NoReplace, no replacement will occur.
+        //! entire "replace" operation instead. If set to NoReplace, no replacement will occur.
         size_t m_replaceThreshold = 3;
+        //! If set, the patches generated will avoid using "EndOfPath" entries in favor of explicitly specifying indices.
+        //! This will generate nonconformant JSON patches, but can be useful if there's downstream book-keeping for the patch
+        //! paths themselves. This is used by e.g. DocumentPropertyEditor so that systems can handle patches without introspecting
+        //! the previous DOM to generate indices.
+        bool m_generateDenormalizedPaths = false;
+
+        /*! this is an optional function that specifies whether to allow generation of a delta replacement patch that replaces the
+        *   entire \param before value with the \param after value once at least m_replaceThreshold changes have been detected */
+        AZStd::function<bool(const Value& before, const Value& after)> m_allowReplacement;
     };
 
     //! Generates a set of patches such that m_forwardPatches.Apply(beforeState) shall produce a document equivalent to afterState, and
     //! a subsequent m_inversePatches.Apply(beforeState) shall produce the original document. This patch generation strategy does a
     //! hierarchical comparison and is not guaranteed to create the minimal set of patches required to transform between the two states.
-    PatchUndoRedoInfo GenerateHierarchicalDeltaPatch(const Value& beforeState, const Value& afterState, const DeltaPatchGenerationParameters& params = {});
+    PatchUndoRedoInfo GenerateHierarchicalDeltaPatch(
+        const Value& beforeState, const Value& afterState, const DeltaPatchGenerationParameters& params = {});
 } // namespace AZ::Dom

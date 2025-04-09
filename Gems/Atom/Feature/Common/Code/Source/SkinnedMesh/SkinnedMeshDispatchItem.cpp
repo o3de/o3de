@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 #include <limits>
 
@@ -27,16 +27,21 @@ namespace AZ
     {
         SkinnedMeshDispatchItem::SkinnedMeshDispatchItem(
             AZStd::intrusive_ptr<SkinnedMeshInputBuffers> inputBuffers,
-            const AZStd::vector<uint32_t>& outputBufferOffsetsInBytes,
-            size_t lodIndex,
+            const SkinnedMeshOutputVertexOffsets& outputBufferOffsetsInBytes,
+            uint32_t positionHistoryOutputBufferOffsetInBytes,
+            uint32_t lodIndex,
+            uint32_t meshIndex,
             Data::Instance<RPI::Buffer> boneTransforms,
             const SkinnedMeshShaderOptions& shaderOptions,
             SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphTargetInstanceMetaData,
             float morphTargetDeltaIntegerEncoding)
-            : m_inputBuffers(inputBuffers)
+            : m_dispatchItem(RHI::MultiDevice::AllDevices)
+            , m_inputBuffers(inputBuffers)
             , m_outputBufferOffsetsInBytes(outputBufferOffsetsInBytes)
+            , m_positionHistoryBufferOffsetInBytes(positionHistoryOutputBufferOffsetInBytes)
             , m_lodIndex(lodIndex)
+            , m_meshIndex(meshIndex)
             , m_boneTransforms(AZStd::move(boneTransforms))
             , m_shaderOptions(shaderOptions)
             , m_morphTargetInstanceMetaData(morphTargetInstanceMetaData)
@@ -48,10 +53,6 @@ namespace AZ
             if (m_morphTargetInstanceMetaData.m_accumulatedPositionDeltaOffsetInBytes != MorphTargetConstants::s_invalidDeltaOffset)
             {
                 m_shaderOptions.m_applyMorphTargets = true;
-            }
-            if (inputBuffers->GetLod(lodIndex).HasDynamicColors())
-            {
-                m_shaderOptions.m_applyColorMorphTargets = true;
             }
 
             // CreateShaderOptionGroup will also connect to the SkinnedMeshShaderOptionNotificationBus
@@ -76,7 +77,7 @@ namespace AZ
             const RPI::ShaderVariant& shaderVariant = m_skinningShader->GetVariant(m_shaderOptionGroup.GetShaderVariantId());
 
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, m_shaderOptionGroup);
 
             auto perInstanceSrgLayout = m_skinningShader->FindShaderResourceGroupLayout(AZ::Name{ "InstanceSrg" });
             if (!perInstanceSrgLayout)
@@ -93,12 +94,12 @@ namespace AZ
             }
 
             // If the shader variation is not fully baked, set the fallback key to use a runtime branch for the shader options
-            if (!shaderVariant.IsFullyBaked() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
+            if (shaderVariant.UseKeyFallback() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
             {
                 m_instanceSrg->SetShaderVariantKeyFallbackValue(m_shaderOptionGroup.GetShaderVariantKeyFallbackValue());
             }
 
-            m_inputBuffers->SetBufferViewsOnShaderResourceGroup(m_lodIndex, m_instanceSrg);
+            m_inputBuffers->SetBufferViewsOnShaderResourceGroup(m_lodIndex, m_meshIndex, m_instanceSrg);
 
             // Set the SRG indices
             RHI::ShaderInputBufferIndex actorInstanceBoneTransformsIndex;
@@ -120,23 +121,17 @@ namespace AZ
                     return false;
                 }
             }
+            else if (m_shaderOptions.m_skinningMethod == SkinningMethod::NoSkinning)
+            {
+                // Do nothing if no skinning
+            }
             else
             {
                 AZ_Assert(false, "Invalid skinning method for SkinnedMeshDispatchItem.");
             }
 
-            AZ_Assert(aznumeric_cast<uint8_t>(m_outputBufferOffsetsInBytes.size()) == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams) && m_shaderOptions.m_applyColorMorphTargets
-                   || aznumeric_cast<uint8_t>(m_outputBufferOffsetsInBytes.size()) == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams) - 1 && !m_shaderOptions.m_applyColorMorphTargets,
-                "Not enough offsets were given to the SkinnedMeshDispatchItem");
-
             for (uint8_t outputStream = 0; outputStream < static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams); outputStream++)
             {
-                // Skip colors if they are not being morphed
-                if (outputStream == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Color) && !m_shaderOptions.m_applyColorMorphTargets)
-                {
-                    continue;
-                }
-
                 // Set the buffer offsets
                 const SkinnedMeshOutputVertexStreamInfo& outputStreamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(static_cast<SkinnedMeshOutputVertexStreams>(outputStream));
                 {
@@ -151,9 +146,28 @@ namespace AZ
                     // Divide the byte offset here so it doesn't need to be done in the shader
                     m_instanceSrg->SetConstant(outputOffsetIndex, m_outputBufferOffsetsInBytes[outputStream] / 4);
                 }
+
+                // Set the position history buffer offset
+                RHI::ShaderInputConstantIndex outputOffsetIndex =
+                    m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_targetPositionHistory" });
+                if (!outputOffsetIndex.IsValid())
+                {
+                    AZ_Error(
+                        "SkinnedMeshDispatchItem", false,
+                        "Failed to find shader input index for m_targetPositionHistory in the skinning compute shader per-instance SRG.");
+                    return false;
+                }
+
+                // The shader has a view with 4 bytes per element
+                // Divide the byte offset here so it doesn't need to be done in the shader
+                m_instanceSrg->SetConstant(outputOffsetIndex, m_positionHistoryBufferOffsetInBytes / 4);
             }
 
-            m_instanceSrg->SetBuffer(actorInstanceBoneTransformsIndex, m_boneTransforms);
+            // Ignore bone transform buffer for actors with skinning disabled
+            if (m_shaderOptions.m_skinningMethod != SkinningMethod::NoSkinning)
+            {
+                m_instanceSrg->SetBuffer(actorInstanceBoneTransformsIndex, m_boneTransforms);
+            }
 
             // Set the morph target related srg constants
             RHI::ShaderInputConstantIndex morphPositionOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetPositionDeltaOffset" });
@@ -169,24 +183,16 @@ namespace AZ
             // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
             m_instanceSrg->SetConstant(morphBitangentOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
 
-            if (m_shaderOptions.m_applyColorMorphTargets)
-            {
-                RHI::ShaderInputConstantIndex morphColorOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetColorDeltaOffset" });
-                // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
-                m_instanceSrg->SetConstant(morphColorOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedColorDeltaOffsetInBytes / 4);
-            }
-
             RHI::ShaderInputConstantIndex morphDeltaIntegerEncodingIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetDeltaInverseIntegerEncoding" });
             m_instanceSrg->SetConstant(morphDeltaIntegerEncodingIndex, 1.0f / m_morphTargetDeltaIntegerEncoding);
-            
-            // Set the vertex count
-            const uint32_t vertexCount = m_inputBuffers->GetVertexCount(m_lodIndex);
 
-            RHI::ShaderInputConstantIndex numVerticesIndex;
-            numVerticesIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_numVertices" });
+            // Set the vertex count
+            const uint32_t vertexCount = GetVertexCount();
+
+            RHI::ShaderInputConstantIndex numVerticesIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_numVertices" });
             AZ_Error("SkinnedMeshInputBuffers", numVerticesIndex.IsValid(), "Failed to find shader input index for m_numVerticies in the skinning compute shader per-instance SRG.");
             m_instanceSrg->SetConstant(numVerticesIndex, vertexCount);
-            
+
             uint32_t xThreads = 0;
             uint32_t yThreads = 0;
             CalculateSkinnedMeshTotalThreadsPerDimension(vertexCount, xThreads, yThreads);
@@ -198,19 +204,21 @@ namespace AZ
             m_instanceSrg->SetConstant(totalNumberOfThreadsXIndex, xThreads);
 
             m_instanceSrg->Compile();
-            m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup();
-            m_dispatchItem.m_pipelineState = m_skinningShader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.SetUniqueShaderResourceGroup(m_instanceSrg->GetRHIShaderResourceGroup());
+            m_dispatchItem.SetPipelineState(m_skinningShader->AcquirePipelineState(pipelineStateDescriptor));
 
-            auto& arguments = m_dispatchItem.m_arguments.m_direct;
+            RHI::DispatchDirect arguments;
             const auto outcome = RPI::GetComputeShaderNumThreads(m_skinningShader->GetAsset(), arguments);
             if (!outcome.IsSuccess())
             {
                 AZ_Error("SkinnedMeshInputBuffers", false, outcome.GetError().c_str());
             }
- 
+
             arguments.m_totalNumberOfThreadsX = xThreads;
             arguments.m_totalNumberOfThreadsY = yThreads;
             arguments.m_totalNumberOfThreadsZ = 1;
+
+            m_dispatchItem.SetArguments(arguments);
 
             return true;
         }
@@ -225,19 +233,24 @@ namespace AZ
             return m_boneTransforms;
         }
 
-        AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshDispatchItem::GetSourceUnskinnedBufferViews() const
+        uint32_t SkinnedMeshDispatchItem::GetVertexCount() const
         {
-            return m_inputBuffers->GetInputBufferViews(m_lodIndex);
+            return m_inputBuffers->GetVertexCount(m_lodIndex, m_meshIndex);
         }
 
-        AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshDispatchItem::GetTargetSkinnedBufferViews() const
+        void SkinnedMeshDispatchItem::Enable()
         {
-            return m_actorInstanceBufferViews;
+            m_isEnabled = true;
         }
 
-        size_t SkinnedMeshDispatchItem::GetVertexCount() const
+        void SkinnedMeshDispatchItem::Disable()
         {
-            return aznumeric_cast<size_t>(m_inputBuffers->GetVertexCount(m_lodIndex));
+            m_isEnabled = false;
+        }
+
+        bool SkinnedMeshDispatchItem::IsEnabled() const
+        {
+            return m_isEnabled;
         }
 
         void SkinnedMeshDispatchItem::OnShaderReinitialized(const CachedSkinnedMeshShaderOptions* cachedShaderOptions)
@@ -267,10 +280,10 @@ namespace AZ
                 yThreads = 0;
                 return;
             }
-            
+
             // Get the minimum number of threads in the y dimension needed to cover all the vertices in the mesh
             yThreads = vertexCount % maxVerticesPerDimension != 0 ? vertexCount / maxVerticesPerDimension + 1 : vertexCount / maxVerticesPerDimension;
-            
+
             // Divide the total number of threads across y dimensions, rounding the number of xThreads up to cover any remainder
             xThreads = 1 + ((vertexCount - 1) / yThreads);
         }

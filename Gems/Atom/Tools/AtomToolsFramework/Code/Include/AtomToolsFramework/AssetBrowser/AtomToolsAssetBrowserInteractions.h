@@ -30,12 +30,12 @@ namespace AtomToolsFramework
     class AtomToolsAssetBrowserInteractions : public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AtomToolsAssetBrowserInteractions, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsAssetBrowserInteractions, AZ::SystemAllocator);
 
         AtomToolsAssetBrowserInteractions();
         ~AtomToolsAssetBrowserInteractions();
 
-        using AssetBrowserEntryVector = AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>;
+        using AssetBrowserEntryVector = AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>;
         using FilterCallback = AZStd::function<bool(const AssetBrowserEntryVector&)>;
         using ActionCallback = AZStd::function<void(QWidget* caller, QMenu* menu, const AssetBrowserEntryVector&)>;
 

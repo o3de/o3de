@@ -36,7 +36,8 @@ PropertyPivotCtrl::PropertyPivotCtrl(QWidget* parent)
                     m_propertyVectorCtrl->setValuebyIndex(presetValues.GetX(), 0);
                     m_propertyVectorCtrl->setValuebyIndex(presetValues.GetY(), 1);
 
-                    EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                        &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 },
                 this);
 
@@ -50,7 +51,8 @@ PropertyPivotCtrl::PropertyPivotCtrl(QWidget* parent)
 
         QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::valueChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             });
 
         m_propertyVectorCtrl->setMinimum(-std::numeric_limits<float>::max());
@@ -126,20 +128,20 @@ void PropertyHandlerPivot::WriteGUIValuesIntoProperty(size_t index, PropertyPivo
     AZ::EntityId entityId = GetParentEntityId(node, index);
     bool isControlledByParent = false;
     AZ::Entity* parentElement = nullptr;
-    EBUS_EVENT_ID_RESULT(parentElement, entityId, UiElementBus, GetParent);
+    UiElementBus::EventResult(parentElement, entityId, &UiElementBus::Events::GetParent);
     if (parentElement)
     {
-        EBUS_EVENT_ID_RESULT(isControlledByParent, parentElement->GetId(), UiLayoutBus, IsControllingChild, entityId);
+        UiLayoutBus::EventResult(isControlledByParent, parentElement->GetId(), &UiLayoutBus::Events::IsControllingChild, entityId);
     }
 
     // IMPORTANT: This will indirectly update "instance".
     if (isControlledByParent)
     {
-        EBUS_EVENT_ID(entityId, UiTransformBus, SetPivot, newPivot);
+        UiTransformBus::Event(entityId, &UiTransformBus::Events::SetPivot, newPivot);
     }
     else
     {
-        EBUS_EVENT_ID(entityId, UiTransform2dBus, SetPivotAndAdjustOffsets, newPivot);
+        UiTransform2dBus::Event(entityId, &UiTransform2dBus::Events::SetPivotAndAdjustOffsets, newPivot);
     }
 }
 
@@ -179,7 +181,8 @@ AZ::EntityId PropertyHandlerPivot::GetParentEntityId(AzToolsFramework::InstanceD
 
 void PropertyHandlerPivot::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerPivot());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerPivot());
 }
 
 #include <moc_PropertyHandlerPivot.cpp>

@@ -20,7 +20,7 @@
 
 namespace AZStd
 {
-    // Everything unless specified is based on C++ standard 20 (lib.iterators).
+    // Everything unless specified is based on C++ 20 (lib.iterators).
 
     /// Identifying tag for input iterators.
     using input_iterator_tag = std::input_iterator_tag;
@@ -35,6 +35,11 @@ namespace AZStd
     /// Identifying tag for contagious iterators
     struct contiguous_iterator_tag
         : public random_access_iterator_tag {};
+
+
+    /// Add the default_sentinel struct from C++20
+    struct default_sentinel_t {};
+    inline constexpr default_sentinel_t default_sentinel{};
 }
 
 namespace AZStd::Internal
@@ -84,7 +89,7 @@ namespace AZStd
     /**
      * Default iterator traits struct.
     */
-    template <class Iterator>
+    template <class Iterator, class>
     struct iterator_traits
         : Internal::iterator_traits_type_aliases<Iterator, Internal::has_iterator_type_aliases_v<Iterator>>
     {
@@ -114,10 +119,6 @@ namespace AZStd
     using std::reverse_iterator;
     using std::make_reverse_iterator;
 
-    // Alias the C++ standard move_iterator into the AZStd:: namespace
-    using std::move_iterator;
-    using std::make_move_iterator;
-
     // Alias the C++ standard insert iterators into the AZStd:: namespace
     using std::back_insert_iterator;
     using std::back_inserter;
@@ -125,7 +126,33 @@ namespace AZStd
     using std::front_inserter;
     using std::insert_iterator;
     using std::inserter;
-  
+
+#if !defined(__cpp_lib_concepts)
+    // In order for pre C++20 back_inserter_iterator, front_inserter_iterator and insert_iterator
+    // to work with the range algorithms which require a weakly_incrementable iterator
+    // the difference_type type alias must not be void as it is in C++17
+    // https://en.cppreference.com/w/cpp/iterator/back_insert_iterator
+    // We workaround this by specializing AZStd::iterator_traits for these types
+    // to provide a difference_type type alias
+    template<class Container>
+    struct iterator_traits<back_insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+
+    template<class Container>
+    struct iterator_traits<front_insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+    template<class Container>
+    struct iterator_traits<insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+
+#endif
+
     enum iterator_status_flag
     {
         isf_none = 0x00,     ///< Iterator is invalid.
@@ -153,7 +180,7 @@ namespace AZStd
     // Both functions are constexpr as of C++17
     using std::next;
     using std::prev;
-    
+
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -175,7 +202,7 @@ namespace AZStd
     using std::size;
     using std::empty;
     using std::data;
-   
+
     namespace Debug
     {
         // Keep macros around for backwards compatibility
@@ -199,3 +226,5 @@ namespace AZStd
     }
 } // namespace AZStd
 
+// Include the AZStd::move_iterator implementation after alias in the std:: iterator names
+#include <AzCore/std/iterator/move_iterator.h>

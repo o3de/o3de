@@ -54,10 +54,10 @@ namespace AZ
                     editContext->Class<SoftNameSetting>("Soft name setting", "A pattern matcher to setup project specific naming conventions.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                            ->Attribute(Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+                            ->Attribute(Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                         ->DataElement(Edit::UIHandlers::Default, &SoftNameSetting::m_pattern, "Pattern", 
                             "The pattern the matcher will check against.")
-                            ->Attribute(Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+                            ->Attribute(Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                         ->DataElement(Edit::UIHandlers::ComboBox, &SoftNameSetting::m_virtualType, "Virtual Type", 
                             "The node(s) will be converted to this type after their pattern matches.")
                             ->Attribute(Edit::Attributes::StringList, &SoftNameSetting::GetAllVirtualTypes);
@@ -69,7 +69,7 @@ namespace AZ
         {
             using namespace SceneAPI::Events;
 
-            AZStd::set<Crc32> virtualTypes;
+            GraphMetaInfo::VirtualTypesSet virtualTypes;
             GraphMetaInfoBus::Broadcast(&GraphMetaInfoBus::Events::GetAllVirtualTypes, virtualTypes);
 
             AZStd::vector<AZStd::string> result;

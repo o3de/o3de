@@ -38,10 +38,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorInstance, ActorInstanceAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorInstance, ActorInstanceAllocator)
 
     ActorInstance::ActorInstance(Actor* actor, AZ::Entity* entity, uint32 threadIndex)
-        : BaseObject()
+        : RefCounted()
         , m_entity(entity)
         , m_ragdollInstance(nullptr)
     {
@@ -140,6 +140,13 @@ namespace EMotionFX
         {
             UpdateMeshDeformers(0.0f, true); // TODO: not really thread safe because of shared meshes, although it probably will output correctly
             UpdateStaticBasedAabbDimensions();
+
+            // If the aabb is still not valid, this can happen for example when the actor has no nodes,
+            // generate a valid aabb at the global location.
+            if (!m_staticAabb.IsValid())
+            {
+                m_staticAabb.AddPoint(m_worldTransform.m_position);
+            }
         }
 
         // update the bounds
@@ -627,13 +634,18 @@ namespace EMotionFX
         }
 
         // Expand the bounding volume by a tolerance area in case set.
-        if (!AZ::IsClose(m_boundsExpandBy, 0.0f) && m_aabb.IsValid())
+        ExpandBounds(m_aabb, m_boundsExpandBy);
+    }
+
+    void ActorInstance::ExpandBounds(AZ::Aabb& aabb, float expandByPercentage)
+    {
+        if (!AZ::IsClose(expandByPercentage, 0.0f) && aabb.IsValid())
         {
-            const AZ::Vector3 center = m_aabb.GetCenter();
-            const AZ::Vector3 halfExtents = m_aabb.GetExtents() * 0.5f;
-            const AZ::Vector3 scaledHalfExtents = halfExtents * (1.0f + m_boundsExpandBy);
-            m_aabb.SetMin(center - scaledHalfExtents);
-            m_aabb.SetMax(center + scaledHalfExtents);
+            const AZ::Vector3 center = aabb.GetCenter();
+            const AZ::Vector3 halfExtents = aabb.GetExtents() * 0.5f;
+            const AZ::Vector3 scaledHalfExtents = halfExtents * (1.0f + expandByPercentage);
+            aabb.SetMin(center - scaledHalfExtents);
+            aabb.SetMax(center + scaledHalfExtents);
         }
     }
 
@@ -1420,15 +1432,11 @@ namespace EMotionFX
             return;
         }
 
-        *outResult = m_staticAabb;
-        EMFX_SCALECODE(
-            if (m_staticAabb.IsValid())
-            {
-                outResult->SetMin(m_staticAabb.GetMin() * m_worldTransform.m_scale);
-                outResult->SetMax(m_staticAabb.GetMax() * m_worldTransform.m_scale);
-            }
-        )
-        outResult->Translate(m_worldTransform.m_position);
+        if (const AZ::Aabb& staticAabb = m_actor->GetStaticAabb();
+            staticAabb.IsValid())
+        {
+            *outResult = staticAabb.GetTransformedAabb(m_worldTransform.ToAZTransform());
+        }
     }
 
     // adjust the anim graph instance

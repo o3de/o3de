@@ -15,7 +15,7 @@
 namespace UnitTest
 {
     class SerializationFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -43,7 +43,7 @@ namespace UnitTest
             {
                 // Create SerializeContext ClassElement for a uint32_t type that is not a pointer
                 m_classElement.m_name = "Test";
-                m_classElement.m_nameCrc = AZ_CRC("Test");
+                m_classElement.m_nameCrc = AZ_CRC_CE("Test");
                 m_classElement.m_typeId = azrtti_typeid<uint32_t>();
                 m_classElement.m_dataSize = sizeof(uint32_t);
                 m_classElement.m_offset = 0;

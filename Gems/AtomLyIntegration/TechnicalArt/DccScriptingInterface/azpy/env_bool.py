@@ -14,7 +14,11 @@ import os
 # -- envar util ----------------------------------------------------------
 # not putting this in the env_util.py to reduce cyclical importing
 def env_bool(envar, default=False):
-    """cast a env bool to a python bool"""
+    """! cast a env bool to a python bool
+    :@param envar: str
+        the envar key
+    :@param default: bool
+        the default value if not set"""
     envar_test = os.getenv(envar, default)
     # check 'False', 'false', and '0' since all are non-empty
     # env comes back as string and normally coerced to True.

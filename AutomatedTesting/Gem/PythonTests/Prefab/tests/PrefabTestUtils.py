@@ -5,24 +5,26 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
+import math
 
-from azlmbr.entity import EntityId
-from azlmbr.math import Vector3
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.prefab_utils import Prefab
+from editor_python_test_tools.wait_utils import PrefabWaiter
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
 
 import azlmbr.bus as bus
-import azlmbr.components as components
+import azlmbr.editor as editor
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
+import azlmbr.globals as globals
+
 
 def get_linear_nested_items_name(nested_items_name_prefix, current_level):
     return f"{nested_items_name_prefix}{current_level}"
 
-def create_linear_nested_entities(nested_entities_name_prefix, level_count, pos):
+
+def create_linear_nested_entities(nested_entities_name_prefix, level_count, pos, parent_id=None):
     """
     This is a helper function which helps create nested entities 
     where each nested entity has only one child entity at most. For example:
@@ -35,18 +37,20 @@ def create_linear_nested_entities(nested_entities_name_prefix, level_count, pos)
     :param nested_entities_name_prefix: Name prefix which will be used to generate names of newly created nested entities.
     :param level_count: Number of levels which the newly constructed nested entities will have.
     :param pos: The position where the nested entities will be.
+    :param parent_id: EntityId of the intended parent to the root entity
     :return: Root of the newly created nested entities.
     """
     assert level_count > 0, "Can't create nested entities with less than one level"
 
     current_entity = EditorEntity.create_editor_entity_at(
-        pos, name=get_linear_nested_items_name(nested_entities_name_prefix, 0))
+        pos, name=get_linear_nested_items_name(nested_entities_name_prefix, 0), parent_id=parent_id)
     root_entity = current_entity
     for current_level in range(1, level_count):
         current_entity = EditorEntity.create_editor_entity(
             parent_id=current_entity.id, name=get_linear_nested_items_name(nested_entities_name_prefix, current_level))
 
     return root_entity
+
 
 def validate_linear_nested_entities(nested_entities_root, expected_level_count, expected_pos):
     """
@@ -88,6 +92,7 @@ def validate_linear_nested_entities(nested_entities_root, expected_level_count, 
     assert level_count == expected_level_count, \
         f"Number of levels of nested entities should be {expected_level_count}, not {level_count}"
 
+
 def create_linear_nested_prefabs(entities, nested_prefabs_file_name_prefix, nested_prefabs_instance_name_prefix, level_count):
     """
     This is a helper function which helps create nested prefabs 
@@ -117,8 +122,16 @@ def create_linear_nested_prefabs(entities, nested_prefabs_file_name_prefix, nest
         created_prefabs.append(current_prefab)
         created_prefab_instances.append(current_prefab_instance)
         entities = current_prefab_instance.get_direct_child_entities()
+
+        # Focus on the newly created prefab instance before next creation to perform a prefab edit rather than override edit.
+        current_prefab_instance.container_entity.focus_on_owning_prefab()
     
+    # Switch focus back on the originally focused instance.
+    parent_entity = EditorEntity(created_prefab_instances[0].container_entity.get_parent_id())
+    parent_entity.focus_on_owning_prefab()
+
     return created_prefabs, created_prefab_instances
+
 
 def validate_linear_nested_prefab_instances_hierarchy(nested_prefab_instances):
     """
@@ -167,6 +180,7 @@ def validate_linear_nested_prefab_instances_hierarchy(nested_prefab_instances):
         assert entity.get_parent_id() == most_inner_prefab_instance_container_entity.id, \
             f"Entity '{entity.get_name()}' should be under prefab '{most_inner_prefab_instance_container_entity.get_name()}'" 
 
+
 def check_entity_children_count(entity_id, expected_children_count):
     entity_children_count_matched_result = (
         "Entity with a unique name found",
@@ -182,6 +196,182 @@ def check_entity_children_count(entity_id, expected_children_count):
 
     return entity_children_count_matched
 
+
+def validate_count_for_named_editor_entity(entity_name, expected_count):
+    """
+    This is a helper function which helps validate the number of entities for a given name in editor.
+
+    :param entity_name: Entity name for the entities to be validated.
+    :param expected_count: Expected number of entities.
+    """
+    entities = EditorEntity.find_editor_entities([entity_name])
+    assert len(entities) == expected_count, f"{len(entities)} entity(s) found. " \
+                                            f"Expected {expected_count} {entity_name} entity(s)."
+
+
+def validate_child_count_for_named_editor_entity(entity_name, expected_child_count):
+    """
+    This is a helper function which helps validate the number of children of entities for a given name in editor.
+
+    :param entity_name: Entity name for the entities to be validated.
+    :param expected_child_count: Expected number of children.
+    """
+    entities = EditorEntity.find_editor_entities([entity_name])
+    for entity in entities:
+        child_entities = entity.get_children()
+        assert len(child_entities) == expected_child_count, f"{len(child_entities)} children found. " \
+                                                            f"Expected {expected_child_count} children for all {entity_name} entity(s)."
+
+
 def open_base_tests_level():
     helper.init_idle()
     helper.open_level("Prefab", "Base")
+
+
+def validate_undo_redo_on_prefab_creation(prefab_instance, original_parent_id):
+    """
+    This is a helper function which helps validate undo/redo functionality after creating a prefab.
+
+    :param prefab_instance: A prefab instance generated by Prefab.create_prefab()
+    :param original_parent_id: The EntityId of the original parent to the entity that a prefab was created from
+    """
+    # Get information on prefab instance's child entities
+    child_entities = prefab_instance.get_direct_child_entities()
+    child_entity_names = []
+    for child_entity in child_entities:
+        child_entity_names.append(child_entity.get_name())
+
+    # Undo the create prefab operation
+    general.undo()
+    PrefabWaiter.wait_for_propagation()
+
+    # Validate that undo has reverted the addition of the EditorPrefabComponent
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", prefab_instance.container_entity.id,
+                                             globals.property.EditorPrefabComponentTypeId)
+    assert not is_prefab, "Undo operation failed. Entity is still recognized as a prefab."
+
+    # Validate that undo has restored the original parent entity of the entity used to create the prefab
+    search_filter = entity.SearchFilter()
+    search_filter.names = child_entity_names
+    entities_found = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
+    for child_entity in entities_found:
+        assert EditorEntity(child_entity).get_parent_id() == original_parent_id, \
+            "Original parent was not restored on Undo."
+
+    # Redo the create prefab operation
+    general.redo()
+    PrefabWaiter.wait_for_propagation()
+
+    # Validate that redo has re-added the EditorPrefabComponent to the prefab instance
+    is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", prefab_instance.container_entity.id,
+                                             globals.property.EditorPrefabComponentTypeId)
+    assert is_prefab, "Redo operation failed. Entity is not recognized as a prefab."
+
+    # Validate the redo has restored the child entities under the container entity
+    entities_found = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
+    for child_entity in entities_found:
+        assert EditorEntity(child_entity).get_parent_id() == prefab_instance.container_entity.id, \
+            "Prefab parent was not restored on Redo."
+
+
+def validate_spawned_entity_rotation(entity, expected_rotation):
+    """
+    This is a helper function which helps validate the rotation of entities spawned via the spawnable API
+    :param entity: The spawned entity on which to validate transform values
+    :param expected_rotation: The expected world rotation of the spawned entity
+    """
+    spawned_entity_rotation = entity.get_world_rotation()
+    x_rotation_success = math.isclose(spawned_entity_rotation.x, expected_rotation.x,
+                                      rel_tol=1e-5)
+    y_rotation_success = math.isclose(spawned_entity_rotation.y, expected_rotation.y,
+                                      rel_tol=1e-5)
+    z_rotation_success = math.isclose(spawned_entity_rotation.z, expected_rotation.z,
+                                      rel_tol=1e-5)
+    Report.info(f"Spawned Entity Rotation: Found {spawned_entity_rotation}, expected {expected_rotation}")
+    return x_rotation_success and y_rotation_success and z_rotation_success
+
+
+def validate_spawned_entity_scale(entity, expected_scale):
+    """
+    This is a helper function which helps validate the scale of entities spawned via the spawnable API
+    :param entity: The spawned entity on which to validate transform values
+    :param expected_scale: The expected world scale of the spawned entity
+    """
+    spawned_entity_scale = entity.get_world_uniform_scale()
+    scale_success = spawned_entity_scale == expected_scale
+    Report.info(f"Spawned Entity Scale: Found {spawned_entity_scale}, expected {expected_scale}")
+    return scale_success
+
+
+def validate_spawned_entity_translation(entity, expected_position):
+    """
+    This is a helper function which helps validate the world position of entities spawned via the spawnable API
+    :param entity: The spawned entity on which to validate transform values
+    :param expected_position: The expected world translation of the spawned entity
+    """
+    spawned_entity_position = entity.get_world_translation()
+    position_success = spawned_entity_position == expected_position
+    Report.info(f"Spawned Entity Translation: Found {spawned_entity_position}, expected {expected_position}")
+    return position_success
+
+
+def validate_spawned_entity_transform(entity, expected_position, expected_rotation, expected_scale):
+    """
+    This is a helper function which helps validate the transform of entities spawned via the spawnable API
+    :param entity: The spawned entity on which to validate transform values
+    :param expected_position: The expected world position of the spawned entity
+    :param expected_rotation: The expected world rotation of the spawned entity
+    :param expected_scale: The expected local scale of the spawned entity
+    """
+
+    position_success = helper.wait_for_condition(lambda: validate_spawned_entity_translation(entity, expected_position),
+                                                 5.0)
+    rotation_success = helper.wait_for_condition(lambda: validate_spawned_entity_rotation(entity, expected_rotation),
+                                                 5.0)
+    scale_success = helper.wait_for_condition(lambda: validate_spawned_entity_scale(entity, expected_scale),
+                                              5.0)
+
+    assert position_success, \
+        f"Entity was not spawned in the position expected: Found {entity.get_world_translation()}, " \
+        f"expected {expected_position}"
+    assert rotation_success, \
+        f"Entity was not spawned with the rotation expected: Found {entity.get_world_rotation()}, " \
+        f"expected {expected_rotation}"
+    assert scale_success, \
+        f"Entity was not spawned with the scale expected: Found {entity.get_world_uniform_scale()}, " \
+        f"expected {expected_scale}"
+
+    return position_success and rotation_success and scale_success
+
+
+def validate_expected_override_status(entity: EditorEntity, expected_override_status: bool) -> None:
+    """
+    Validates the expected override status of the given entity. NOTE: This should only be used on an entity within a
+    prefab as this will currently always return as True on a container entity.
+    :param entity: The EditorEntity to validate the status of overrides on
+    :param expected_override_status: True if overrides are expected, False otherwise
+    :return: None
+    """
+    if expected_override_status:
+        assert entity.has_overrides(), \
+            f"Found no overrides on expected entity: {entity.id}"
+    else:
+        assert not entity.has_overrides(), \
+            f"Found overrides present on unexpected entity: {entity.id}"
+
+
+def validate_expected_components(entity: EditorEntity, expected_components: list = None,
+                                 unexpected_components: list = None) -> None:
+    """
+    Validates that the entity has the given expected components, and none of the unexpected components.
+    Useful for ensuring prefab overrides have affected only specific entities.
+    :return: None
+    """
+    if expected_components:
+        for component in expected_components:
+            assert entity.has_component(component), \
+                f"Failed to find expected {component} component on {entity.get_name()} with id {entity.id}"
+    if unexpected_components:
+        for component in unexpected_components:
+            assert not entity.has_component(component), \
+                f"Unexpectedly found {component} component on {entity.get_name()} with id {entity.id}"

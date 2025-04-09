@@ -175,7 +175,6 @@ namespace AzFramework
                     "File Logging", "Listens to AZ trace messages and forwards them to a log file")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Profiling")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LogComponent::m_logFileBaseName, "Log file name", "The base name of the file to log to")
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &LogComponent::m_rolloverLength, "Rollover length", "Max size of a log file before saving and opening a new one")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LogComponent::m_machineReadable, "Machine Readable", "")
@@ -186,12 +185,12 @@ namespace AzFramework
 
     void LogComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LoggingService", 0x64b9f716));
+        provided.push_back(AZ_CRC_CE("LoggingService"));
     }
 
     void LogComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LoggingService", 0x64b9f716));
+        incompatible.push_back(AZ_CRC_CE("LoggingService"));
     }
 
     void LogComponent::SetMachineReadable(bool newValue)

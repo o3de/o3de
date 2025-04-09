@@ -47,10 +47,10 @@ namespace AZ::IO
     };
 
     using ReadSplitterTestTypes = ::testing::Types<ReadSplitterTestDescription, ReadSplitterWithBufferTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(Streamer_ReadSplitterConformityTests, StreamStackEntryConformityTests, ReadSplitterTestTypes);
+    INSTANTIATE_TYPED_TEST_SUITE_P(Streamer_ReadSplitterConformityTests, StreamStackEntryConformityTests, ReadSplitterTestTypes);
 
     class Streamer_ReadSplitterTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         static constexpr u64 SplitSize = 1_kib;

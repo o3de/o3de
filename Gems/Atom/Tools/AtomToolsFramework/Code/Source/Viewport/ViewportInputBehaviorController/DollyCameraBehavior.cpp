@@ -21,10 +21,10 @@ namespace AtomToolsFramework
 
     void DollyCameraBehavior::TickInternal([[maybe_unused]] float x, float y, [[maybe_unused]] float z)
     {
-        m_distanceToObject = m_distanceToObject + y;
+        m_objectDistance += y;
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTM);
-        AZ::Vector3 position = m_objectPosition - transform.GetRotation().TransformVector(AZ::Vector3::CreateAxisY(m_distanceToObject));
+        AZ::Vector3 position = m_objectPosition - transform.GetRotation().TransformVector(AZ::Vector3::CreateAxisY(m_objectDistance));
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetWorldTranslation, position);
     }
 

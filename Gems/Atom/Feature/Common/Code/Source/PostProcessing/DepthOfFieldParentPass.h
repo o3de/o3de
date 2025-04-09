@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::DepthOfFieldParentPass, "{6033066A-CA95-422E-9BF2-8C203171C1A8}", AZ::RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(DepthOfFieldParentPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthOfFieldParentPass, SystemAllocator);
             virtual ~DepthOfFieldParentPass() = default;
 
             //! Creates a DepthOfFieldParentPass

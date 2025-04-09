@@ -9,8 +9,14 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Color.h>
+#include <AtomCore/Instance/InstanceData.h>
 
 class ISprite;
+
+namespace AZ::RPI
+{
+    class AttachmentImageAsset;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiImageInterface
@@ -92,11 +98,9 @@ public: // member functions
     //! Returns whether the sprite changed
     virtual bool SetSpritePathnameIfExists(AZStd::string spritePath) = 0;
 
-    //! Gets the name of the render target
-    virtual AZStd::string GetRenderTargetName() = 0;
+    virtual AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> GetAttachmentImageAsset() = 0;
 
-    //! Sets the name of the render target
-    virtual void SetRenderTargetName(AZStd::string renderTargetName) = 0;
+    virtual void SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) = 0;
 
     //! Gets whether the render target is in sRGB color space
     virtual bool GetIsRenderTargetSRGB() = 0;

@@ -114,7 +114,7 @@ namespace UnitTest
 
         ::testing::NiceMock<StreamerMock> m_mockStreamer;
 
-        AZStd::chrono::milliseconds m_deadline;
+        AZ::IO::IStreamerTypes::Deadline m_deadline;
         AZ::IO::IStreamerTypes::Priority m_priority;
         IO::StreamerContext m_context;
         AZ::IO::IStreamer::OnCompleteCallback m_callback;
@@ -132,6 +132,7 @@ namespace UnitTest
         : public MockLoadAssetCatalogAndHandler
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockLoadAssetWithNonZeroSizeCatalogAndHandler, AZ::SystemAllocator)
         MockLoadAssetWithNonZeroSizeCatalogAndHandler(
             AZStd::unordered_set<AZ::Data::AssetId> ids
             , AZ::Data::AssetType assetType
@@ -166,7 +167,7 @@ namespace UnitTest
         }
 
         // Provides controllable default values for deadlines and priorities.
-        void GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type, AZStd::chrono::milliseconds& defaultDeadline,
+        void GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type, AZ::IO::IStreamerTypes::Deadline& defaultDeadline,
             AZ::IO::IStreamerTypes::Priority& defaultPriority) const override
         {
             defaultDeadline = GetDefaultDeadline();

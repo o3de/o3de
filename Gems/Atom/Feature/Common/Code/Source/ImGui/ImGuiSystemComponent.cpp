@@ -31,17 +31,17 @@ namespace AZ
 
         void ImGuiSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ImGuiSystemComponent", 0x2f08b9a7));
+            provided.push_back(AZ_CRC_CE("ImGuiSystemComponent"));
         }
 
         void ImGuiSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            required.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void ImGuiSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile)
         {
-            incompatbile.push_back(AZ_CRC("ImGuiSystemComponent", 0x2f08b9a7));
+            incompatbile.push_back(AZ_CRC_CE("ImGuiSystemComponent"));
         }
 
         ImGuiSystemComponent::ImGuiSystemComponent()
@@ -141,12 +141,22 @@ namespace AZ
                 {
                     m_defaultImguiPassStack.erase(m_defaultImguiPassStack.begin() + i);
 
-                    // If the pass being removed as default is active, assume the current active should be changed
-                    // to whatever's on the top of the default stack as long as it has at least one entry.
+                    // If the pass being removed as default is at the top of the active stack, replace it
+                    // with whatever's now on the top of the default pass stack.
                     if (GetActiveContext() == imguiPass->GetContext())
                     {
                         PushActiveContextFromDefaultPass();
                     }
+                    break;
+                }
+            }
+
+            // The ImGuiPass will delete its context so we need to remove it from the active list
+            for (size_t i = 0; i < m_activeContextStack.size(); ++i)
+            {
+                if (imguiPass->GetContext() == m_activeContextStack.at(i))
+                {
+                    m_activeContextStack.erase(m_activeContextStack.begin() + i);
                     break;
                 }
             }

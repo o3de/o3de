@@ -16,9 +16,11 @@
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 
-#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Math/MatrixUtils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <LyShine/IDraw2d.h>
 
@@ -92,11 +94,20 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
 
 AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportContext> viewportContext)
 {
-    // Create a scene with the necessary feature processors
+    // Create and register a scene with feature processors defined in the viewport settings
     AZ::RPI::SceneDescriptor sceneDesc;
     sceneDesc.m_nameId = AZ::Name("UiRenderer");
+    auto settingsRegistry = AZ::SettingsRegistry::Get();
+    const char* viewportSettingPath = "/O3DE/Editor/Viewport/UI/Scene";
+    bool sceneDescLoaded = settingsRegistry->GetObject(sceneDesc, viewportSettingPath);
     AZ::RPI::ScenePtr atomScene = AZ::RPI::Scene::CreateScene(sceneDesc);
-    atomScene->EnableAllFeatureProcessors(); // [LYSHINE_ATOM_TODO][GHI #6272] Enable minimal feature processors
+
+    if (!sceneDescLoaded)
+    {
+        AZ_Warning("UiRenderer", false, "Settings registry is missing the scene settings for this viewport, so all feature processors will be enabled. "
+                    "To enable only a minimal set, add the specific list of feature processors with a registry path of '%s'.", viewportSettingPath);
+        atomScene->EnableAllFeatureProcessors();
+    }
 
     // Assign the new scene to the specified viewport context
     viewportContext->SetRenderScene(atomScene);
@@ -105,6 +116,10 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
     AZStd::optional<AZ::RPI::RenderPipelineDescriptor> renderPipelineDesc =
         AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath, AZStd::string::format("_%i", viewportContext->GetId()));
     AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
+
+    const AZ::RHI::MultisampleState multiSampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+    renderPipelineDesc.value().m_renderSettings.m_multisampleState = multiSampleState;
+    AZ_Printf("UiRenderer", "UI renderer starting with multi sample %d", multiSampleState.m_samples);
 
     auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *viewportContext->GetWindowContext().get());
     atomScene->AddRenderPipeline(renderPipeline);
@@ -120,11 +135,6 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
 AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
     AZ::Data::Instance<AZ::RPI::Shader> uiShader)
 {
-    // Find the pass that renders the UI canvases after the rtt passes
-    AZ::RPI::RasterPass* uiCanvasPass = nullptr;
-    AZ::RPI::SceneId sceneId = m_scene->GetId();
-    LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
-
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
 
     // Initialize the dynamic draw context
@@ -135,18 +145,10 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode |
+        AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
 
-    if (uiCanvasPass)
-    {
-        dynamicDraw->SetOutputScope(uiCanvasPass);
-    }
-    else
-    {
-        // Render target support is disabled
-        dynamicDraw->SetOutputScope(m_scene);
-    }
+    dynamicDraw->SetOutputScope(m_scene);
     dynamicDraw->EndInit();
 
     return dynamicDraw;
@@ -265,11 +267,11 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContextFo
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode |
+        AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
 
     dynamicDraw->SetOutputScope(rttPass);
-
+    dynamicDraw->InitDrawListTag(rttPass->GetDrawListTag());
     dynamicDraw->EndInit();
 
     return dynamicDraw;
@@ -305,6 +307,11 @@ AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
 AZ::Vector2 UiRenderer::GetViewportSize()
 {
     auto viewportContext = GetViewportContext();
+    if (!viewportContext)
+    {
+        return AZ::Vector2::CreateZero();
+    }
+
     auto windowContext = viewportContext->GetWindowContext();
 
     const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
@@ -355,13 +362,13 @@ AZ::RPI::ShaderVariantId UiRenderer::GetCurrentShaderVariant()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32 UiRenderer::GetStencilRef()
+uint32_t UiRenderer::GetStencilRef()
 {
     return m_stencilRef;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::SetStencilRef(uint32 stencilRef)
+void UiRenderer::SetStencilRef(uint32_t stencilRef)
 {
     m_stencilRef = stencilRef;
 }

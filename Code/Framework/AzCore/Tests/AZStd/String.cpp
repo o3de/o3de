@@ -16,10 +16,14 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/ranges/join_view.h>
+#include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/typetraits/is_convertible.h>
+#include <AzCore/Serialization/Locale.h> // for locale-independent string to float conversions
 
 // we need this for AZ_TEST_FLOAT compare
 #include <cinttypes>
@@ -156,7 +160,7 @@ namespace UnitTest
     }
 
     class String
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -603,7 +607,7 @@ namespace UnitTest
 
         AZ_TEST_ASSERT(rbegin == crbegin1);
         AZ_TEST_ASSERT(crbegin1 == crbegin2);
-        
+
         AZ_TEST_ASSERT(rbegin != rend);
 
         str1.set_capacity(3);
@@ -626,6 +630,7 @@ namespace UnitTest
 
     TEST_F(String, Algorithms)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for reading/writing floats with "." in them
         AZStd::string str = AZStd::string::format("%s %d", "BlaBla", 5);
         AZ_TEST_VALIDATE_STRING(str, 8);
 
@@ -774,9 +779,6 @@ namespace UnitTest
         AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, "Alpha 2") == 0);
         AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, "Alpha 2A") < 0);
         AZ_TEST_ASSERT(AZStd::alphanum_comp("Alpha 2 B", strA) > 0);
-        AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, strdup("Alpha 2")) == 0);
-        AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, strdup("Alpha 2A")) < 0);
-        AZ_TEST_ASSERT(AZStd::alphanum_comp(strdup("Alpha 2 B"), strA) > 0);
 
         // show usage of the comparison functor with a set
         using StringSetType = AZStd::set<AZStd::string, AZStd::alphanum_less<AZStd::string>>;
@@ -992,7 +994,7 @@ namespace UnitTest
         static_assert(!IsToStringInvocable<decltype("NarrowStrLiteral")>);
         static_assert(!IsToStringInvocable<decltype(L"WideStrLiteral")>);
 
-        // AZStd::to_string should
+        // AZStd::to_string should be invocable with the following types
         static_assert(IsToStringInvocable<bool>);
         static_assert(IsToStringInvocable<AZ::s8>);
         static_assert(IsToStringInvocable<AZ::u8>);
@@ -1008,7 +1010,7 @@ namespace UnitTest
     }
 
     class Regex
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1136,7 +1138,7 @@ namespace UnitTest
         AZStd::regex longerThan16(".*\\/Presets\\/GeomCache\\/.*", AZStd::regex::flag_type::icase | AZStd::regex::flag_type::ECMAScript);
         AZStd::regex longerThan32(".*\\/Presets\\/GeomCache\\/Whatever\\/Much\\/Test\\/Very\\/Memory\\/.*", AZStd::regex::flag_type::icase);
     }
-    
+
     TEST_F(Regex, SmileyFaceParseRegression)
     {
         AZStd::regex smiley(":)");
@@ -1259,11 +1261,11 @@ namespace UnitTest
         // compare
         AZStd::size_t compareResult = view2.compare(1, view2.size() - 1, dest, copyResult);
         EXPECT_EQ(0, compareResult);
-        
+
         AZStd::string_view compareView = "Stackhay in Needle";
         compareResult = compareView.compare(view2);
         EXPECT_NE(0, compareResult);
-        
+
         compareResult = compareView.compare(12, 6, view2, 0, 6);
         EXPECT_EQ(0, compareResult);
 
@@ -1365,7 +1367,7 @@ namespace UnitTest
         AZStd::string_view prefixRemovalView = view2;
         prefixRemovalView.remove_prefix(6);
         EXPECT_EQ(" in Haystack", prefixRemovalView);
-        
+
         // remove_suffix
         AZStd::string_view suffixRemovalView = view2;
         suffixRemovalView.remove_suffix(8);
@@ -1396,7 +1398,7 @@ namespace UnitTest
         AZStd::string_view view2("Needle in Haystack");
         AZStd::string_view emptyBeaverView;
         AZStd::string_view superEmptyBeaverView("");
-        
+
         EXPECT_EQ("", emptyBeaverView);
         EXPECT_EQ("", superEmptyBeaverView);
 
@@ -1438,7 +1440,7 @@ namespace UnitTest
         EXPECT_LE("Busy Beaver", beaverView);
         EXPECT_LE(microBeaverStr, view1);
         EXPECT_LE(compareStr, beaverView);
-        
+
         AZStd::string bigBeaver("Big Beaver");
         EXPECT_GE(view1, view2);
         EXPECT_GE(view1, view1);
@@ -1527,7 +1529,7 @@ namespace UnitTest
         AZStd::string_view view2{&s[10], 4};
 
         AZStd::string result;
-        
+
         result = AZStd::string::format("%s %.*s %s", "[", AZ_STRING_ARG(view0), "]");
         EXPECT_EQ(AZStd::string{"[  ]"}, result);
 
@@ -1543,15 +1545,23 @@ namespace UnitTest
         // Testing AZ_STRING_FORMATTER too
         result = AZStd::string::format("%s" AZ_STRING_FORMAT "%s", "[", AZ_STRING_ARG(view2), "]");
         EXPECT_EQ(AZStd::string{"[long]"}, result);
+
+        // Test the AZ_TRAIT_FORMAT_STRING_WPRINTF_* variants for wstrings
+        constexpr AZStd::wstring_view wideView = L"This is a long string";
+        AZStd::wstring wideResult = AZStd::wstring::format(AZ_TRAIT_FORMAT_STRING_WPRINTF_STRING_WITH_SIZE, AZ_STRING_ARG(view1));
+        EXPECT_EQ(wideView, wideResult);
+
+        wideResult = AZStd::wstring::format(AZ_TRAIT_FORMAT_STRING_WPRINTF_WSTRING_WITH_SIZE, AZ_STRING_ARG(wideView));
+        EXPECT_EQ(wideView, wideResult);
     }
 
     template<typename T>
     class BasicStringViewConstexprFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     using StringViewElementTypes = ::testing::Types<char, wchar_t>;
-    TYPED_TEST_CASE(BasicStringViewConstexprFixture, StringViewElementTypes);
+    TYPED_TEST_SUITE(BasicStringViewConstexprFixture, StringViewElementTypes);
     TYPED_TEST(BasicStringViewConstexprFixture, StringView_DefaultConstructorsIsConstexpr)
     {
         constexpr AZStd::basic_string_view<TypeParam> defaultView1;
@@ -2470,18 +2480,47 @@ namespace UnitTest
         // Is the size of the pointer (used for storing the memory address of the string)
         // + the size of the string "size" member used to store the size of the string
         // + the size of the string "capacity" member used to store the capacity of the string
-        size_t constexpr ExpectedBasicStringSize = sizeof(void*) + 2 * sizeof(size_t) + sizeof(AZStd::allocator);
+        size_t constexpr ExpectedBasicStringSize = sizeof(void*) + 2 * sizeof(size_t);
         static_assert(ExpectedBasicStringSize == sizeof(AZStd::string),
-            "Using Stateful allocator with basic_string class should result in a 32-byte string class"
+            "Using Stateful allocator with basic_string class should result in a 24-byte string class"
             " on 64-bit platforms ");
+    }
+
+    TEST_F(String, VectorOfChar_ConvertibleToStringView_Compiles)
+    {
+        // Validates the c++23 range constructor for AZStd::string_view
+        static_assert(AZStd::constructible_from<AZStd::string_view, AZStd::vector<char>>);
+        static_assert(AZStd::constructible_from<AZStd::string, AZStd::vector<char>>);
+        const auto testString = AZStd::string(AZStd::vector<char>{'H', 'e', 'l', 'l', 'o'});
+        EXPECT_EQ("Hello", testString);
+    }
+
+    TEST_F(String, AZStdString_DeductionGuide_Compiles)
+    {
+        constexpr AZStd::string_view testView{ "Hello" };
+        {
+            // legacy common iterator deduction guide
+            AZStd::basic_string testString(testView.begin(), testView.end());
+            EXPECT_EQ("Hello", testString);
+        }
+        {
+            // basic_string_view deduction guide
+            AZStd::basic_string testString(testView);
+            EXPECT_EQ("Hello", testString);
+        }
+        {
+            // basic_string_view with position and size deduction guide
+            AZStd::basic_string testString(testView, 1, 3);
+            EXPECT_EQ("ell", testString);
+        }
     }
 
     template <typename StringType>
     class ImmutableStringFunctionsFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
     using StringTypesToTest = ::testing::Types<AZStd::string_view, AZStd::string, AZStd::fixed_string<1024>>;
-    TYPED_TEST_CASE(ImmutableStringFunctionsFixture, StringTypesToTest);
+    TYPED_TEST_SUITE(ImmutableStringFunctionsFixture, StringTypesToTest);
 
     TYPED_TEST(ImmutableStringFunctionsFixture, Contains_Succeeds)
     {
@@ -2511,12 +2550,12 @@ namespace UnitTest
 
     template<typename T>
     class StringFormatFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     };
 
     using StringFormatTypesToTest = ::testing::Types<AZStd::string>; //, AZStd::wstring>;
-    TYPED_TEST_CASE(StringFormatFixture, StringFormatTypesToTest);
+    TYPED_TEST_SUITE(StringFormatFixture, StringFormatTypesToTest);
 
     TYPED_TEST(StringFormatFixture, CanFormatStringLongerThan2048Chars)
     {
@@ -2525,6 +2564,140 @@ namespace UnitTest
         EXPECT_EQ(str, formatted);
     }
 
+    template<typename T>
+    class StringTypeFixture
+        : public LeakDetectionFixture
+    {};
+
+    using StringTypeWithRangeFunctions = ::testing::Types<AZStd::string, AZStd::fixed_string<32>>;
+    TYPED_TEST_SUITE(StringTypeFixture, StringTypeWithRangeFunctions);
+
+    TYPED_TEST(StringTypeFixture, RangeConstructor_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        TypeParam testString(AZStd::from_range, testView);
+        EXPECT_EQ("abc", testString);
+
+        testString = TypeParam(AZStd::from_range, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::set<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::span(testView));
+        EXPECT_EQ("abc", testString);
+
+        AZStd::fixed_string<8> testValue(testView);
+        testString = TypeParam(AZStd::from_range, testValue);
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::string(testView));
+        EXPECT_EQ("abc", testString);
+
+        // Test Range views
+        testString = TypeParam(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_EQ("bcd", testString);
+
+        // Test Ranges with different sentinel types
+        testString = TypeParam(AZStd::from_range, testValue | AZStd::views::transform([](const char elem)
+            { return AZStd::fixed_string<2>{ char(elem + 1) }; }) | AZStd::views::join);
+        EXPECT_EQ("bcd", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, InsertRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+        TypeParam testString{ 'd', 'e', 'f' };
+        testString.insert_range(testString.begin(), AZStd::vector<char>{testView.begin(), testView.end()});
+        testString.insert_range(testString.end(), testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_EQ("abcdefghi", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, AppendRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        TypeParam testString{ 'a', 'b', 'c' };
+        testString.append_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testString.append_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_THAT(testString, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+        EXPECT_EQ("abcdefghi", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, AssignRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        TypeParam testString{ 'a', 'b', 'c' };
+        testString.assign_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("def", testString);
+        testString.assign_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_EQ("ghi", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, ReplaceWithRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        TypeParam testString{ 'a', 'b', 'c' };
+        // Replace 'a' with 'd', 'e', 'f'
+        testString.replace_with_range(testString.begin(), testString.begin() + 1, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("defbc", testString);
+        // Replace 'b', 'c' with 'g', 'h', 'i'
+        testString.replace_with_range(testString.begin() + 3, testString.end() + 5, testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_EQ("defghi", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, ResizeAndOverwrite_AddChars_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abcdef";
+        TypeParam testString("abc");
+        auto AppendCharacters = [oldSize = testString.size()](char* dataPtr, size_t newSize) -> size_t
+        {
+            constexpr AZStd::string_view appendChars = "def";
+            ::memcpy(dataPtr + oldSize, appendChars.data(), appendChars.size());
+            EXPECT_LE(oldSize + appendChars.size(), newSize);
+            return oldSize + appendChars.size();
+        };
+        testString.resize_and_overwrite(testView.size(), AppendCharacters);
+        ASSERT_EQ(testView.size(), testString.size());
+        EXPECT_EQ(testView, testString);
+
+        // Validate that a size larger than the new resize, shrinks to the
+        // exact size used
+        auto ReplaceCharacters = [&testView](char* dataPtr, size_t newSize) -> size_t
+        {
+            ::memcpy(dataPtr, testView.data(), testView.size());
+            EXPECT_LE(testView.size(), newSize);
+            return testView.size();
+        };
+        // Resize to 25 characters
+        testString.resize_and_overwrite(testView.size() + 25, ReplaceCharacters);
+        // Size of testString should be the size of the testView which is 6
+        ASSERT_EQ(testView.size(), testString.size());
+        EXPECT_EQ(testView, testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, ResizeAndOverwrite_RemoveChars_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+        TypeParam testString("abcdef");
+        auto RemoveCharacters = [&testView](char* dataPtr, size_t newSize) -> size_t
+        {
+            ::memcpy(dataPtr, testView.data(), testView.size());
+            EXPECT_LE(testView.size(), newSize);
+            return testView.size();
+        };
+        // Resize from 6 to 3 characters
+        testString.resize_and_overwrite(testView.size(), RemoveCharacters);
+        ASSERT_EQ(testView.size(), testString.size());
+        EXPECT_EQ(testView, testString);
+    }
 }
 
 #if defined(HAVE_BENCHMARK)

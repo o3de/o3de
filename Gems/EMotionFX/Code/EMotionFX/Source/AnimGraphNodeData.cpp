@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeData, AnimGraphObjectDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeData, AnimGraphObjectDataAllocator)
 
     // constructor
     AnimGraphNodeData::AnimGraphNodeData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
@@ -33,6 +33,10 @@ namespace EMotionFX
         , m_isMirrorMotion(false)
         , m_refCountedData(nullptr)
         , m_syncTrack(nullptr)
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+        , mTotalUpdateTime(0)
+        , mInputNodesUpdateTime(0)
+#endif
     {
     }
 
@@ -57,6 +61,9 @@ namespace EMotionFX
         m_isMirrorMotion = false;
         m_syncIndex = InvalidIndex;
         m_syncTrack = nullptr;
+        #if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+            ClearUpdateTimes();
+        #endif
     }
 
 

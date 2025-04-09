@@ -19,6 +19,28 @@ namespace AZ
 {
     namespace Render
     {
+        namespace Internal
+        {
+            struct EditorHDRColorGradingNotificationBusHandler final
+                : public EditorHDRColorGradingNotificationBus::Handler
+                , public AZ::BehaviorEBusHandler
+            {
+                AZ_EBUS_BEHAVIOR_BINDER(
+                    EditorHDRColorGradingNotificationBusHandler, "{61FFB210-C2F9-4A82-9088-4C974C3E0EE7}", AZ::SystemAllocator
+                        , OnGenerateLutCompleted, OnActivateLutCompleted);
+
+                void OnGenerateLutCompleted(const AZStd::string& lutAssetAbsolutePath) override
+                {
+                    Call(FN_OnGenerateLutCompleted, lutAssetAbsolutePath);
+                }
+
+                void OnActivateLutCompleted() override
+                {
+                    Call(FN_OnActivateLutCompleted);
+                }
+            };
+        }
+
         void EditorHDRColorGradingComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
@@ -35,7 +57,7 @@ namespace AZ
                     editContext->Class<EditorHDRColorGradingComponent>(
                         "HDR Color Grading", "Tune and apply color grading in HDR.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::Category, "Atom")
+                        ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
@@ -124,11 +146,11 @@ namespace AZ
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Channel Mixing")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingRed, "Channel Mixing Red", "Channel Mixing Red Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingRed, "Channel Mixing Red", "Channel Mixing Red Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingGreen, "Channel Mixing Green", "Channel Mixing Green Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingGreen, "Channel Mixing Green", "Channel Mixing Green Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingBlue, "Channel Mixing Blue", "Channel Mixing Blue Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingBlue, "Channel Mixing Blue", "Channel Mixing Blue Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow Midtones Highlights")
@@ -186,11 +208,41 @@ namespace AZ
                         ;
                 }
             }
+
+            if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->EBus<EditorHDRColorGradingRequestBus>("EditorHDRColorGradingRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Event("GenerateLutAsync", &EditorHDRColorGradingRequests::GenerateLutAsync)
+                    ->Event("ActivateLutAsync", &EditorHDRColorGradingRequests::ActivateLutAsync)
+                    ;
+
+                behaviorContext->EBus<EditorHDRColorGradingNotificationBus>("EditorHDRColorGradingNotificationBus")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Handler<Internal::EditorHDRColorGradingNotificationBusHandler>()
+                    ->Event("OnGenerateLutCompleted", &EditorHDRColorGradingNotificationBus::Events::OnGenerateLutCompleted)
+                    ->Event("OnActivateLutCompleted", &EditorHDRColorGradingNotificationBus::Events::OnActivateLutCompleted)
+                    ;
+            }
         }
 
         EditorHDRColorGradingComponent::EditorHDRColorGradingComponent(const HDRColorGradingComponentConfig& config)
             : BaseClass(config)
         {
+        }
+
+        void EditorHDRColorGradingComponent::Activate()
+        {
+            BaseClass::Activate();
+            EditorHDRColorGradingRequestBus::Handler::BusConnect(GetEntityId());
+        }
+
+        void EditorHDRColorGradingComponent::Deactivate()
+        {
+            BaseClass::Deactivate();
+            EditorHDRColorGradingRequestBus::Handler::BusDisconnect();
         }
 
         void EditorHDRColorGradingComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -202,10 +254,13 @@ namespace AZ
             }
 
             const char* LutAttachment = "LutOutput";
-            auto renderPipelineName = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()
-                                            ->GetDefaultViewportContext()
-                                            ->GetCurrentPipeline()
-                                            ->GetId();
+            auto currentPipeline =
+                AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetDefaultViewportContext()->GetCurrentPipeline();
+            if (!currentPipeline)
+            {
+                return;
+            }
+            auto renderPipelineName = currentPipeline->GetId();
             const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{
                 renderPipelineName.GetCStr(),
                 "LutGenerationPass"
@@ -218,24 +273,32 @@ namespace AZ
             AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
             AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
 
-            bool startedCapture = false;
+            AZ::Render::FrameCaptureOutcome captureOutcome;
             AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                startedCapture,
+                captureOutcome,
                 &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
+                m_currentTiffFilePath,
                 LutGenerationPassHierarchy,
                 AZStd::string(LutAttachment),
-                m_currentTiffFilePath,
                 AZ::RPI::PassAttachmentReadbackOption::Output);
 
-            if (startedCapture)
+            if (captureOutcome.IsSuccess())
             {
+                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(captureOutcome.GetValue());
                 AZ::TickBus::Handler::BusDisconnect();
-                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
             }
+
+            AZ_Error(
+                "EditorHDRColorGradingComponent",
+                captureOutcome.IsSuccess(),
+                "Frame capture initialization failed. %s",
+                captureOutcome.GetError().m_errorMessage.c_str());
         }
 
-        void EditorHDRColorGradingComponent::OnCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
+        void EditorHDRColorGradingComponent::OnFrameCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
         {
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+
             char resolvedInputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedInputFilePath, AZ_MAX_PATH_LEN);
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
@@ -260,11 +323,9 @@ namespace AZ
             m_controller.OnConfigChanged();
 
             m_generatedLutAbsolutePath = resolvedOutputFilePath + AZStd::string(".azasset");
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
 
-            AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+            EditorHDRColorGradingNotificationBus::Event(GetEntityId(), &EditorHDRColorGradingNotificationBus::Handler::OnGenerateLutCompleted, m_generatedLutAbsolutePath);
         }
 
         void EditorHDRColorGradingComponent::GenerateLut()
@@ -306,6 +367,11 @@ namespace AZ
                 ActivateLutAssetPythonScriptPath,
                 pythonArgs);
 
+            // Remark, when LUT activation is complete, a notification should be sent
+            // via EditorHDRColorGradingNotificationBus::OnActivateLutCompleted, but the completion will occur
+            // inside the python script @ActivateLutAssetPythonScriptPath, so the
+            // responsibility to send this notification is on @ActivateLutAssetPythonScriptPath.
+
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 
@@ -319,5 +385,18 @@ namespace AZ
             m_controller.OnConfigChanged();
             return Edit::PropertyRefreshLevels::AttributesAndValues;
         }
+
+        //! EditorHDRColorGradingRequestBus overrides...
+        void EditorHDRColorGradingComponent::GenerateLutAsync()
+        {
+            GenerateLut();
+        }
+
+        void EditorHDRColorGradingComponent::ActivateLutAsync()
+        {
+            ActivateLut();
+        }
+        ////////////////////////////////////////////////
+
     } // namespace Render
 } // namespace AZ

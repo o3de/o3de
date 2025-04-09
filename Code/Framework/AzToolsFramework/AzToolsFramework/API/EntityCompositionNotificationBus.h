@@ -11,7 +11,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 

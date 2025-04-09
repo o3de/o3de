@@ -12,6 +12,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+#include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
 #include <Editor/SimulatedObjectBus.h>
 #include <Editor/SimulatedObjectModel.h>
 #include <MCore/Source/Command.h>
@@ -26,7 +27,6 @@ namespace EMotionFX
 {
     class Actor;
     class ActorInstance;
-    class SimulatedJointWidget;
 
     class SimulatedObjectWidget
         : public EMStudio::DockWidgetPlugin
@@ -59,8 +59,6 @@ namespace EMotionFX
         bool Init() override;
         void Reinit();
 
-        void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
-        void LegacyRenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance, const AZ::Color& color);
         void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         void RenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance, const AZ::Color& color);
 
@@ -81,6 +79,12 @@ namespace EMotionFX
 
         EMStudio::SimulatedObjectActionManager* GetActionManager() const { return m_actionManager.get(); }
 
+        Actor* GetActor() const;
+        ActorInstance* GetActorInstance() const;
+        Node* GetNode() const;
+        Physics::CharacterColliderNodeConfiguration* GetNodeConfig() const;
+        QModelIndexList GetSelectedModelIndices() const;
+
     public slots:
         void OnContextMenu(const QPoint& position);
         void OnRemoveSimulatedObject(const QModelIndex& objectIndex);
@@ -88,6 +92,7 @@ namespace EMotionFX
         void OnRemoveSimulatedJoints(const QModelIndexList& jointIndices);
 
         void OnAddCollider();
+        void OnAddColliderByType(const AZ::TypeId& colliderType);
         void OnClearColliders();
 
     private:
@@ -104,6 +109,9 @@ namespace EMotionFX
         SimulatedJointWidget* m_simulatedJointWidget = nullptr;
         QPushButton* m_addSimulatedObjectButton = nullptr;
 
+        QLabel* m_instruction1 = nullptr;
+        QLabel* m_instruction2 = nullptr;
+
         // Rendering
         AZStd::vector<AZ::Vector3> m_vertexBuffer;
         AZStd::vector<AZ::u32> m_indexBuffer;
@@ -116,5 +124,7 @@ namespace EMotionFX
         MCORE_DEFINECOMMANDCALLBACK(AddSimulatedJointsCallback);
         // static bool DataChanged(AZ::u32 actorId);
         AZStd::vector<MCore::Command::Callback*> m_commandCallbacks;
+
+        static int s_jointLabelSpacing;
     };
 } // namespace EMotionFX

@@ -66,7 +66,7 @@ namespace LyShine
         {
             serialize->Class<LyShineSystemComponent, AZ::Component>()
                 ->Version(1)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ->Field("CursorImagePath", &LyShineSystemComponent::m_cursorImagePathname);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
@@ -74,7 +74,6 @@ namespace LyShine
                 auto editInfo = ec->Class<LyShineSystemComponent>("LyShine", "In-game User Interface System");
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "UI")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
                 editInfo->DataElement(0, &LyShineSystemComponent::m_cursorImagePathname, "CursorImagePath", "The cursor image path.")
@@ -97,6 +96,7 @@ namespace LyShine
                 ->Event("IsUiCursorVisible", &UiCursorBus::Events::IsUiCursorVisible)
                 ->Event("SetUiCursor", &UiCursorBus::Events::SetUiCursor)
                 ->Event("GetUiCursorPosition", &UiCursorBus::Events::GetUiCursorPosition)
+                ->Event("SetUiCursorPosition", &UiCursorBus::Events::SetUiCursorPosition)
                 ;
         }
         
@@ -106,28 +106,28 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LyShineService", 0xae98ab29));
+        provided.push_back(AZ_CRC_CE("LyShineService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LyShineService", 0xae98ab29));
+        incompatible.push_back(AZ_CRC_CE("LyShineService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
 #if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
-        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        required.push_back(AZ_CRC_CE("RPISystem"));
 #endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-        dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,8 +150,6 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::Activate()
     {
-        LyShineAllocatorScope::ActivateAllocators();
-
         UiSystemBus::Handler::BusConnect();
         UiSystemToolsBus::Handler::BusConnect();
         UiFrameworkBus::Handler::BusConnect();
@@ -221,8 +219,6 @@ namespace LyShine
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
-
-        LyShineAllocatorScope::DeactivateAllocators();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -17,12 +17,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionQueue, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionQueue, MotionAllocator)
 
 
     // constructor
     MotionQueue::MotionQueue(ActorInstance* actorInstance, MotionSystem* motionSystem)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         MCORE_ASSERT(actorInstance && motionSystem);
 

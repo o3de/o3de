@@ -11,8 +11,8 @@ if(LY_TOOLCHAIN_NDK_API_LEVEL)
 endif()
 
 # Verify that the NDK environment is set and points to the support NDK
-if(NOT ${LY_NDK_DIR})
-    if($ENV{LY_NDK_DIR})
+if(NOT LY_NDK_DIR)
+    if(DEFINED ENV{LY_NDK_DIR})
         set(LY_NDK_DIR $ENV{LY_NDK_DIR})
     endif()
 endif()
@@ -86,7 +86,7 @@ endif()
 list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES LY_NDK_DIR)
 
 
-# The Native Activity Glue source file needs to be included in any project that will be loaded 
+# The Native Activity Glue source file needs to be included in any project that will be loaded
 # through the android launcher APK. This source file resides directly in the NDK source folder structure
 # based on the configured NDK Path set with ${LY_NDK_DIR}
 

@@ -35,7 +35,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(StylingComponentSaveData, "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}", ComponentSaveData);
-            AZ_CLASS_ALLOCATOR(StylingComponentSaveData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StylingComponentSaveData, AZ::SystemAllocator);
 
             StylingComponentSaveData() = default;
             StylingComponentSaveData(const AZStd::string& subStyle);

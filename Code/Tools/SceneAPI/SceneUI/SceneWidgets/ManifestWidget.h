@@ -57,10 +57,23 @@ namespace AZ
                 AZStd::shared_ptr<Containers::Scene> GetScene();
                 AZStd::shared_ptr<const Containers::Scene> GetScene() const;
 
+                void ResetScene();
+
+                void SetInspectButtonVisibility(bool enableInspector);
+
                 //! Finds this ManifestWidget if the given widget is it's child, otherwise returns null.
                 static ManifestWidget* FindRoot(QWidget* child);
                 //! Finds this ManifestWidget if the given widget is it's child, otherwise returns null.
                 static const ManifestWidget* FindRoot(const QWidget* child);
+
+            signals:
+                void SaveClicked();
+                void OnInspect();
+                void OnSceneResetRequested();
+                void OnClearUnsavedChangesRequested();
+                void OnAssignScript();
+                void AppendUnsavedChangesToTitle(bool hasUnsavedChanges);
+                void EnableInspector(bool enableInspector);
 
             protected:
                 void BuildPages();

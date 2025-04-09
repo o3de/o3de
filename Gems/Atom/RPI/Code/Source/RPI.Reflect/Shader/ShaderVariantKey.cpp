@@ -12,8 +12,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const ShaderVariantStableId RootShaderVariantStableId{0};
-
         void ShaderVariantId::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -77,7 +75,7 @@ namespace AZ
 
         bool ShaderVariantId::IsEmpty() const
         {
-            return m_key.none();
+            return m_mask.none();
         }
 
         ShaderVariantSearchResult::ShaderVariantSearchResult(ShaderVariantStableId stableId, uint32_t dynamicOptionCount)

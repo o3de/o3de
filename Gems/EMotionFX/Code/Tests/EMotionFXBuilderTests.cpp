@@ -20,9 +20,6 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <Tests/Asset/MockLoadAssetCatalogAndHandler.h>
 
-using namespace AZ;
-using namespace AssetBuilderSDK;
-
 namespace EMotionFX
 {
     class EMotionFXBuilderTests
@@ -41,11 +38,7 @@ namespace EMotionFX
         }
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(EMotionFXBuilderTests, DISABLED_TestAnimGraphAsset_HasReferenceNode_OutputProductDependencies)
-#else
     TEST_F(EMotionFXBuilderTests, TestAnimGraphAsset_HasReferenceNode_OutputProductDependencies)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         AZ::Data::AssetId referencedAnimGraph("96025290-BCC9-5382-AFC0-8B47CEF63018", 0);
         AZ::Data::AssetId referencedMotionSet("6455D020-F4CE-5F57-8557-315C0C968122", 0);
@@ -101,19 +94,19 @@ namespace EMotionFX
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_HasReferenceNode_OutputProductDependencies)
     {
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
-        ProductPathDependencySet productDependencies;
+        AssetBuilderSDK::ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
         ASSERT_TRUE(builderWorker.ParseProductDependencies(fileName, fileName, productDependencies));
         ASSERT_THAT(productDependencies, testing::ElementsAre(
-            ProductPathDependency{ "animationsamples/advanced_rinlocomotion/motions/rin_forward_dive_roll.motion", AssetBuilderSDK::ProductPathDependencyType::ProductFile },
-            ProductPathDependency{ "animationsamples/advanced_rinlocomotion/motions/rin_come_to_stop.motion", AssetBuilderSDK::ProductPathDependencyType::ProductFile }));
+            AssetBuilderSDK::ProductPathDependency{ "animationsamples/advanced_rinlocomotion/motions/rin_forward_dive_roll.motion", AssetBuilderSDK::ProductPathDependencyType::ProductFile },
+            AssetBuilderSDK::ProductPathDependency{ "animationsamples/advanced_rinlocomotion/motions/rin_come_to_stop.motion", AssetBuilderSDK::ProductPathDependencyType::ProductFile }));
     }
 
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_NoDependency_OutputNoProductDependencies)
     {
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset";
-        ProductPathDependencySet productDependencies;
+        AssetBuilderSDK::ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
         ASSERT_TRUE(builderWorker.ParseProductDependencies(fileName, fileName, productDependencies));
@@ -123,7 +116,7 @@ namespace EMotionFX
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_InvalidFilePath_OutputNoProductDependencies)
     {
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.motionset";
-        ProductPathDependencySet productDependencies;
+        AssetBuilderSDK::ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
         ASSERT_FALSE(builderWorker.ParseProductDependencies(fileName, fileName, productDependencies));
@@ -133,7 +126,7 @@ namespace EMotionFX
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_EmptyFile_OutputNoProductDependencies)
     {
         const AZStd::string fileName = "@gemroot:EMotionFX@/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyMotionSetExample.motionset";
-        ProductPathDependencySet productDependencies;
+        AssetBuilderSDK::ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
         AZ_TEST_START_ASSERTTEST;

@@ -6,13 +6,18 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/containers/vector.h>
 
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h>
 #include <ScriptCanvas/Debugger/API.h>
 #include <ScriptCanvas/Asset/ExecutionLogAssetBus.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvasEditor
 {
@@ -112,7 +117,7 @@ namespace ScriptCanvasEditor
         RemoveStaticRegistration(namedEntityId, oldGraphIdentifier);
     }
 
-    void LiveLoggingDataAggregator::Connected([[maybe_unused]] const ScriptCanvas::Debugger::Target& target)
+    void LiveLoggingDataAggregator::Connected([[maybe_unused]] ScriptCanvas::Debugger::Target& target)
     {
         AZStd::lock(m_notificationMutex);
         SetupExternalEntities();
@@ -362,7 +367,12 @@ namespace ScriptCanvasEditor
         if (m_captureType == CaptureType::Editor)
         {
             bool isDesiredTargetConnected = false;
-            AzFramework::TargetManager::Bus::BroadcastResult(isDesiredTargetConnected, &AzFramework::TargetManager::IsDesiredTargetOnline);
+            AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                const AzFramework::RemoteToolsEndpointInfo& desiredTarget = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                isDesiredTargetConnected = desiredTarget.IsOnline();
+            }
 
             if (isDesiredTargetConnected)
             {

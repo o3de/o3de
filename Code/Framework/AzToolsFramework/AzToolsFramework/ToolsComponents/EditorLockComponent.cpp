@@ -11,6 +11,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityLockComponentNotifications);
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -36,12 +38,12 @@ namespace AzToolsFramework
 
         void EditorLockComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorLockService", 0x6b15eacf));
+            services.push_back(AZ_CRC_CE("EditorLockService"));
         }
 
         void EditorLockComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorLockService", 0x6b15eacf));
+            services.push_back(AZ_CRC_CE("EditorLockService"));
         }
 
         EditorLockComponent::~EditorLockComponent()

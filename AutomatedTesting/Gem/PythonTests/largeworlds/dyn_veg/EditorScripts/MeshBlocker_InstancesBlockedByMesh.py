@@ -46,6 +46,7 @@ def MeshBlocker_InstancesBlockedByMesh():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -57,7 +58,7 @@ def MeshBlocker_InstancesBlockedByMesh():
 
     # Create entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
     entity_position = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "MeshBlocker_PinkFlower")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", entity_position, 10.0, 10.0, 10.0,
                                                                pink_flower_prefab)
@@ -74,9 +75,11 @@ def MeshBlocker_InstancesBlockedByMesh():
     if blocker_entity.id.IsValid():
         print(f"'{blocker_entity.name}' created")
     cubeId = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.azmodel"), math.Uuid(),
+        bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.fbx.azmodel"), math.Uuid(),
         False)
+
     blocker_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", cubeId)
+    PrefabWaiter.wait_for_propagation()
     components.TransformBus(bus.Event, "SetLocalUniformScale", blocker_entity.id, 2.0)
 
     # Verify spawned instance counts are accurate after addition of Blocker Entity

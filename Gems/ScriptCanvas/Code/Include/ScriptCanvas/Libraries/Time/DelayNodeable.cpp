@@ -50,7 +50,7 @@ namespace ScriptCanvas
             void DelayNodeable::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
             {
                 AZ_PROFILE_FUNCTION(ScriptCanvas);
-                SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
+                SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT_NODEABLE
                 m_currentTime -= static_cast<float>(deltaTime);
                 if (m_currentTime <= 0.f)
                 {

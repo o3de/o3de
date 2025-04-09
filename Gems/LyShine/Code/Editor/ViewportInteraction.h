@@ -13,6 +13,7 @@
 #include <QObject>
 
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/std/optional.h>
 #endif
 
 class EditorWindow;
@@ -199,7 +200,7 @@ private: // member functions
     //
     //! Note that this method is private since ViewportInteraction matrix exclusively manages
     //! the viewport-to-canvas matrix.
-    void SetCanvasToViewportScale(float newScale, Vec2i* optionalPivotPoint = nullptr);
+    void SetCanvasToViewportScale(float newScale, const AZStd::optional<AZ::Vector2>& pivotPoint = AZStd::nullopt);
 
     //! Given a zoom scale quantize it to be a multiple of the zoom step
     float QuantizeZoomScale(float newScale);

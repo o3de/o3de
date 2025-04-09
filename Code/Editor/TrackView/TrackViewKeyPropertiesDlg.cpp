@@ -9,10 +9,14 @@
 
 #include "EditorDefs.h"
 
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
 
 // Qt
 #include <QMessageBox>
+
+// AzCore
+#include <AzCore/std/sort.h>
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimValueType.h>
@@ -25,7 +29,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyUIControls::OnInternalVariableChange(IVariable* var)
 {
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -37,7 +40,6 @@ void CTrackViewKeyUIControls::OnInternalVariableChange(IVariable* var)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     : QWidget(hParentWnd)
     , m_pLastTrackSelected(nullptr)
@@ -59,20 +61,29 @@ CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     m_pVarBlock = new CVarBlock;
 
     // Add key UI classes
-    std::vector<IClassDesc*> classes;
-    GetIEditor()->GetClassFactory()->GetClassesByCategory("TrackViewKeyUI", classes);  // BySystemID(ESYSTEM_CLASS_TRACKVIEW_KEYUI, classes);
-    for (IClassDesc* iclass : classes)
-    {
-        if (QObject* pObj = iclass->CreateQObject())
-        {
-            auto keyControl = qobject_cast<CTrackViewKeyUIControls*>(pObj);
-            Q_ASSERT(keyControl);
-            m_keyControls.push_back(keyControl);
-        }
-    }
+    // Compound tracks
+    m_keyControls.push_back(new CQuatKeyUIControls());
+    m_keyControls.push_back(new CRgbKeyUIControls());
+    m_keyControls.push_back(new CVectorKeyUIControls());
+    m_keyControls.push_back(new CVector4KeyUIControls());
+    // Simple tracks
+    m_keyControls.push_back(new C2DBezierKeyUIControls());
+    m_keyControls.push_back(new CAssetBlendKeyUIControls());
+    m_keyControls.push_back(new CCaptureKeyUIControls());
+    m_keyControls.push_back(new CCommentKeyUIControls());
+    m_keyControls.push_back(new CConsoleKeyUIControls());
+    m_keyControls.push_back(new CEventKeyUIControls());
+    m_keyControls.push_back(new CGotoKeyUIControls());
+    m_keyControls.push_back(new CScreenFaderKeyUIControls());
+    m_keyControls.push_back(new CSelectKeyUIControls());
+    m_keyControls.push_back(new CSequenceKeyUIControls());
+    m_keyControls.push_back(new CSoundKeyUIControls());
+    m_keyControls.push_back(new CStringKeyUIControls());
+    m_keyControls.push_back(new CTimeRangeKeyUIControls());
+    m_keyControls.push_back(new CTrackEventKeyUIControls());
 
     // Sort key controls by descending priority
-    std::stable_sort(m_keyControls.begin(), m_keyControls.end(),
+    AZStd::stable_sort(m_keyControls.begin(), m_keyControls.end(),
         [](const _smart_ptr<CTrackViewKeyUIControls>& a, const _smart_ptr<CTrackViewKeyUIControls>& b)
         {
             return a->GetPriority() > b->GetPriority();
@@ -82,7 +93,6 @@ CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     CreateAllVars();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::OnVarChange(IVariable* pVar)
 {
     // If it was a motion that just changed, we need to rebuild the controls
@@ -93,17 +103,15 @@ void CTrackViewKeyPropertiesDlg::OnVarChange(IVariable* pVar)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::CreateAllVars()
 {
-    for (int i = 0; i < (int)m_keyControls.size(); i++)
+    for (const auto& keyControl : m_keyControls)
     {
-        m_keyControls[i]->SetKeyPropertiesDlg(this);
-        m_keyControls[i]->OnCreateVars();
+        keyControl->SetKeyPropertiesDlg(this);
+        keyControl->OnCreateVars();
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::PopulateVariables()
 {
     // Must first clear any selection in properties window.
@@ -117,7 +125,6 @@ void CTrackViewKeyPropertiesDlg::PopulateVariables()
     ReloadValues();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::PopulateVariables(ReflectedPropertyControl* propCtrl)
 {
     propCtrl->RemoveAllItems();
@@ -126,66 +133,102 @@ void CTrackViewKeyPropertiesDlg::PopulateVariables(ReflectedPropertyControl* pro
     propCtrl->ReloadValues();
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::OnKeysChanged(CTrackViewSequence* pSequence)
 {
-    CTrackViewKeyBundle selectedKeys = pSequence->GetSelectedKeys();
+    const CTrackViewKeyBundle& selectedKeys = pSequence->GetSelectedKeys();
 
-    if (selectedKeys.GetKeyCount() > 0 && selectedKeys.AreAllKeysOfSameType())
+    const auto numSelectedKeys = selectedKeys.GetKeyCount();
+    if (numSelectedKeys > 0 && selectedKeys.AreAllKeysOfSameType())
     {
-        CTrackViewTrack* pTrack = selectedKeys.GetKey(0).GetTrack();
-
-        CAnimParamType paramType = pTrack->GetParameterType();
-        EAnimCurveType trackType = pTrack->GetCurveType();
-        AnimValueType valueType = pTrack->GetValueType();
-
-        for (int i = 0; i < (int)m_keyControls.size(); i++)
+        auto pTrack = selectedKeys.GetKey(0).GetTrack();
+        if (!pTrack)
         {
-            if (m_keyControls[i]->SupportTrackType(paramType, trackType, valueType))
+            return;
+        }
+
+        const bool areSubTrackKeysSelected = (numSelectedKeys > 1) && pTrack->IsSubTrack();
+        if (areSubTrackKeysSelected)
+        {
+            if (const auto pParentNode = pTrack->GetParentNode())
             {
-                m_keyControls[i]->OnKeySelectionChange(selectedKeys);
+                if (pParentNode->GetNodeType() == ETrackViewNodeType::eTVNT_Track)
+                {
+                    pTrack = static_cast<CTrackViewTrack*>(pParentNode);
+                }
+            }
+        }
+
+        const CAnimParamType paramType = pTrack->GetParameterType();
+        const EAnimCurveType trackType = pTrack->GetCurveType();
+        const AnimValueType valueType = pTrack->GetValueType();
+
+        for (const auto& keyControl : m_keyControls)
+        {
+            if (keyControl->SupportTrackType(paramType, trackType, valueType))
+            {
+                keyControl->OnKeySelectionChange(selectedKeys);
                 break;
             }
         }
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* sequence)
 {
-    m_sequence = sequence;
-
-    if (nullptr == sequence)
+    auto cleanup = [this]()
     {
         m_wndProps->ClearSelection();
         m_pVarBlock->DeleteAllVariables();
         m_wndProps->setEnabled(false);
         m_wndTrackProps->setEnabled(false);
+        m_pLastTrackSelected = nullptr;
+    };
+
+    m_sequence = sequence;
+    if (!sequence)
+    {
+        cleanup();
         return;
     }
 
-    CTrackViewKeyBundle selectedKeys = sequence->GetSelectedKeys();
+    const CTrackViewKeyBundle& selectedKeys = sequence->GetSelectedKeys();
+    const auto numSelectedKeys = selectedKeys.GetKeyCount();
+    if (numSelectedKeys < 1 || !selectedKeys.AreAllKeysOfSameType())
+    {
+        cleanup();
+        return;
+    }
 
     m_wndTrackProps->OnKeySelectionChange(selectedKeys);
 
-    bool bSelectChangedInSameTrack
-        = m_pLastTrackSelected
-            && selectedKeys.GetKeyCount() == 1
-            && selectedKeys.GetKey(0).GetTrack() == m_pLastTrackSelected;
+    const auto pFirstTrack = selectedKeys.GetKey(0).GetTrack();
+    if (!pFirstTrack)
+    {
+        cleanup();
+        return;
+    }
+
+    auto pTrack = pFirstTrack;
+    // Check if a Compound track is selected with keys selected in sub-tracks?
+    if ((numSelectedKeys > 1) && pFirstTrack->IsSubTrack())
+    {
+        if (const auto pParentNode = pFirstTrack->GetParentNode())
+        {
+            if (pParentNode->GetNodeType() == ETrackViewNodeType::eTVNT_Track)
+            {
+                pTrack = static_cast<CTrackViewTrack*>(pParentNode);
+            }
+        }
+    }
+
+    const bool bSelectChangedInSameTrack = m_pLastTrackSelected && pTrack == m_pLastTrackSelected;
 
     // Every Key in an Asset Blend track can have different min/max values on the float sliders
     // because it's based on the duration of the motion that is set. So don't try to
     // reuse the controls when the selection changes, otherwise the tooltips may be wrong.
-    bool reuseControls = bSelectChangedInSameTrack && m_pLastTrackSelected && (m_pLastTrackSelected->GetValueType() != AnimValueType::AssetBlend);
+    const bool reuseControls = bSelectChangedInSameTrack && m_pLastTrackSelected && (m_pLastTrackSelected->GetValueType() != AnimValueType::AssetBlend);
 
-    if (selectedKeys.GetKeyCount() == 1)
-    {
-        m_pLastTrackSelected = selectedKeys.GetKey(0).GetTrack();
-    }
-    else
-    {
-        m_pLastTrackSelected = nullptr;
-    }
+    m_pLastTrackSelected = pTrack;
 
     if (reuseControls)
     {
@@ -200,21 +243,19 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
     m_wndTrackProps->setEnabled(false);
     if (selectedKeys.GetKeyCount() > 0 && selectedKeys.AreAllKeysOfSameType())
     {
-        CTrackViewTrack* pTrack = selectedKeys.GetKey(0).GetTrack();
-
-        CAnimParamType paramType = pTrack->GetParameterType();
-        EAnimCurveType trackType = pTrack->GetCurveType();
-        AnimValueType valueType = pTrack->GetValueType();
-
-        for (int i = 0; i < (int)m_keyControls.size(); i++)
+        if (!reuseControls)
         {
-            if (m_keyControls[i]->SupportTrackType(paramType, trackType, valueType))
+            const CAnimParamType paramType = pTrack->GetParameterType();
+            const EAnimCurveType trackType = pTrack->GetCurveType();
+            const AnimValueType  valueType = pTrack->GetValueType();
+
+            for (const auto& keyControl : m_keyControls)
             {
-                if (!reuseControls)
+                if (keyControl->SupportTrackType(paramType, trackType, valueType))
                 {
-                    AddVars(m_keyControls[i]);
+                    AddVars(keyControl);
+                    break;
                 }
-                break;
             }
         }
 
@@ -235,9 +276,9 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
     {
         PopulateVariables();
     }
+    OnKeysChanged(sequence);
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::AddVars(CTrackViewKeyUIControls* pUI)
 {
     CVarBlock* pVB = pUI->GetVarBlock();
@@ -248,7 +289,6 @@ void CTrackViewKeyPropertiesDlg::AddVars(CTrackViewKeyUIControls* pUI)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyPropertiesDlg::ReloadValues()
 {
     m_wndProps->ReloadValues();
@@ -260,9 +300,6 @@ void CTrackViewKeyPropertiesDlg::OnSequenceChanged(CTrackViewSequence* sequence)
     m_wndTrackProps->OnSequenceChanged();
 }
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 CTrackViewTrackPropsDlg::CTrackViewTrackPropsDlg(QWidget* parent /* = 0 */)
     : QWidget(parent)
     , ui(new Ui::CTrackViewTrackPropsDlg)
@@ -284,7 +321,6 @@ CTrackViewTrackPropsDlg::~CTrackViewTrackPropsDlg()
 {
 }
 
-//////////////////////////////////////////////////////////////////////////
 void CTrackViewTrackPropsDlg::OnSequenceChanged()
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
@@ -296,82 +332,99 @@ void CTrackViewTrackPropsDlg::OnSequenceChanged()
     }
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-bool CTrackViewTrackPropsDlg::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CTrackViewTrackPropsDlg::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
-    m_keyHandle = CTrackViewKeyHandle();
+    auto keyHandle = selectedKeys.GetSingleSelectedKey();
 
-    if (selectedKeys.GetKeyCount() == 1)
+    if (keyHandle.IsValid())
     {
-        m_keyHandle = selectedKeys.GetKey(0);
-    }
+        m_selectedKeys = selectedKeys;
 
-    if (m_keyHandle.IsValid())
-    {
         // Block the callback, the values is already set in m_keyHandle.GetTime(), no need to
         // reset it and create an undo even like the user was setting it via the UI.
         ui->TIME->blockSignals(true);
-        ui->TIME->setValue(m_keyHandle.GetTime());
+        ui->TIME->setValue(keyHandle.GetTime());
         ui->TIME->blockSignals(false);
-        ui->PREVNEXT->setText(QString::number(m_keyHandle.GetIndex() + 1));
 
+        ui->PREVNEXT->setText(QString::number(keyHandle.GetIndex() + 1));
         ui->PREVNEXT->setEnabled(true);
         ui->TIME->setEnabled(true);
     }
     else
     {
+        m_selectedKeys = CTrackViewKeyBundle();
+
+        ui->PREVNEXT->setText(QString());
         ui->PREVNEXT->setEnabled(false);
         ui->TIME->setEnabled(false);
     }
-    return true;
+
+    return keyHandle.IsValid();
 }
 
 void CTrackViewTrackPropsDlg::OnUpdateTime()
 {
-    if (!m_keyHandle.IsValid())
+    if (m_selectedKeys.GetKeyCount() < 1)
     {
         return;
     }
 
-    const float time = (float)ui->TIME->value();
-
-    // Check if the sequence is legacy
-    CTrackViewTrack* track = m_keyHandle.GetTrack();
-    if (nullptr != track)
+    const bool isDuringUndo = AzToolsFramework::UndoRedoOperationInProgress();
+    AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
+    if (!isDuringUndo)
     {
-        CTrackViewSequence* sequence = track->GetSequence();
-        if (nullptr != sequence && !AZ::IsClose(m_keyHandle.GetTime(), time, AZ::Constants::FloatEpsilon))
+        undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Change Keys Time");
+    }
+
+    const float time = (float)ui->TIME->value();
+    bool allowDeletingKeys = false;
+
+    for (unsigned int i = 0; i < m_selectedKeys.GetKeyCount(); ++i)
+    {
+        auto keyHandle = m_selectedKeys.GetKey(i);
+        auto track = keyHandle.GetTrack();
+        if (!keyHandle.IsValid() || !track)
         {
-            bool isDuringUndo = false;
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
+            AZ_Assert(false, "Invalid key handle for a selected key %u.", i);
+            continue;
+        }
 
-            if (isDuringUndo)
+        if (AZ::IsClose(keyHandle.GetTime(), time, AZ::Constants::FloatEpsilon))
+        {
+            continue; // nothing to do
+        }
+
+        // Check if the sequence is legacy
+        const auto sequence = track->GetSequence();
+        if (!sequence)
+        {
+            AZ_Assert(false, "Each track should have a sequence, invalid key handle for a selected key %u.", i);
+            continue;
+        }
+        const auto sequenceId = sequence->GetSequenceComponentEntityId();
+
+        if (!isDuringUndo)
+        {
+            CTrackViewKeyHandle existingKey = track->GetKeyByTime(time);
+
+            // If there is an existing key at this time, remove it so the
+            // new key at this time is the only one here. Make sure it's actually a different
+            // key, because time can "change" but then be quantized (or snapped) to the same time by track->GetKeyByTime(time).
+            if (existingKey.IsValid() && (existingKey.GetIndex() != keyHandle.GetIndex()))
             {
-                m_keyHandle.SetTime(time);
-            }
-            else
-            {
-                // Let the AZ Undo system manage the nodes on the sequence entity
-                AzToolsFramework::ScopedUndoBatch undoBatch("Change key time");
+                // Save the old time before we set the new time so we
+                // can reselect the m_keyHandle after the Delete.
+                float currentTime = keyHandle.GetTime();
 
-                CTrackViewKeyHandle existingKey = track->GetKeyByTime(time);
-
-                // If there is an existing key at this time, remove it so the
-                // new key at this time is the only one here. Make sure it's actually a different
-                // key, because time can "change" but then be quantized (or snapped) to the same time by track->GetKeyByTime(time).
-                if (existingKey.IsValid() && (existingKey.GetIndex() != m_keyHandle.GetIndex()))
+                if (!allowDeletingKeys) // Open dialog asking to allow deleting existing key - only once.
                 {
-                    // Save the old time before we set the new time so we
-                    // can reselect the m_keyHandle after the Delete.
-                    float currentTime = m_keyHandle.GetTime();
-
                     // There is a bug in QT where editingFinished will get fired a second time if we show a QMessageBox
                     // so work around it by blocking signal before we do it.
-                    ui->TIME->blockSignals(true);
 
+                    ui->TIME->blockSignals(true);
                     QString msgBody = "There is an existing key at the specified time. If you continue, the existing key will be removed.";
-                    if (QMessageBox::warning(this, "Overwrite Existing Key?", msgBody, QMessageBox::Cancel | QMessageBox::Yes) == QMessageBox::Cancel)
+                    if (QMessageBox::warning(this, "Overwrite Existing Key?", msgBody, QMessageBox::Cancel | QMessageBox::Yes) ==
+                        QMessageBox::Cancel)
                     {
                         // Restore the old value and return.
                         ui->TIME->setValue(currentTime);
@@ -380,21 +433,39 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
                     }
                     else
                     {
+                        allowDeletingKeys = true;
                         ui->TIME->blockSignals(false);
                     }
-
-                    // Delete the key that is able to get replaced. This will
-                    // cause a sort and may cause m_keyHandle to become invalid.
-                    existingKey.Delete();
-
-                    // Reselect the key handle by time.
-                    m_keyHandle = track->GetKeyByTime(currentTime);
                 }
 
-                m_keyHandle.SetTime(time);
+                // Delete the key that is able to get replaced. This will
+                // cause a sort and may cause m_keyHandle to become invalid.
+                existingKey.Delete();
 
-                undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+                // Reselect the key handle by time.
+                keyHandle = track->GetKeyByTime(currentTime);
+
+                keyHandle.SetTime(time);
+
+                if (undoBatch)
+                {
+                    undoBatch->MarkEntityDirty(sequenceId);
+                }
+
+                m_selectedKeys = sequence->GetSelectedKeys(); // Re-save selected keys as key index has been changed.
             }
+            else
+            {
+                keyHandle.SetTime(time);
+                if (undoBatch)
+                {
+                    undoBatch->MarkEntityDirty(sequenceId);
+                }
+            }
+        }
+        else // During Undo/Redo
+        {
+            keyHandle.SetTime(time);
         }
     }
 }

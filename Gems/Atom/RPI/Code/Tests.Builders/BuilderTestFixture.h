@@ -24,7 +24,7 @@ namespace UnitTest
      * Unit test fixture for setting up things commonly needed by builders' unit tests
      */
     class BuilderTestFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         // Only used to provide the serialize context for now
         , public AZ::ComponentApplicationBus::Handler
     {
@@ -55,7 +55,7 @@ namespace UnitTest
         AZ::SerializeContext* GetSerializeContext() override;
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override;
 
-        // AllocatorsFixture overrides...
+        // LeakDetectionFixture overrides...
         void SetUp() override;
         void TearDown() override;
 

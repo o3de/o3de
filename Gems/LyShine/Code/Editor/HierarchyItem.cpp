@@ -51,13 +51,13 @@ HierarchyItem::HierarchyItem(EditorWindow* editWindow,
         HierarchyItem* parentHierarchyItem = HierarchyItem::RttiCast(&parent);
         if (parentHierarchyItem)
         {
-            EBUS_EVENT_ID_RESULT(element, parentHierarchyItem->GetEntityId(), UiElementBus,
-                CreateChildElement, label.toStdString().c_str());
+            UiElementBus::EventResult(
+                element, parentHierarchyItem->GetEntityId(), &UiElementBus::Events::CreateChildElement, label.toStdString().c_str());
         }  
         else
         {
-            EBUS_EVENT_ID_RESULT(element, editWindow->GetCanvas(), UiCanvasBus,
-                CreateChildElement, label.toStdString().c_str());
+            UiCanvasBus::EventResult(
+                element, editWindow->GetCanvas(), &UiCanvasBus::Events::CreateChildElement, label.toStdString().c_str());
         }
 
         if (element->GetState() == AZ::Entity::State::Active)
@@ -90,9 +90,9 @@ HierarchyItem::HierarchyItem(EditorWindow* editWindow,
             }
 
             AZ::EntityId insertBeforeEntityId;
-            EBUS_EVENT_ID_RESULT(insertBeforeEntityId, parentEntityId, UiElementBus, GetChildEntityId, childIndex);
+            UiElementBus::EventResult(insertBeforeEntityId, parentEntityId, &UiElementBus::Events::GetChildEntityId, childIndex);
 
-            EBUS_EVENT_ID(m_elementId, UiElementBus, ReparentByEntityId, parentEntityId, insertBeforeEntityId);
+            UiElementBus::Event(m_elementId, &UiElementBus::Events::ReparentByEntityId, parentEntityId, insertBeforeEntityId);
         }
     }
 
@@ -152,7 +152,7 @@ void HierarchyItem::DeleteElement()
     // been deleted. In which case GetElement() will return nullptr.
     // ~HierarchyItem() is the ONLY place where GetElement() is allowed
     // return nullptr.
-    EBUS_EVENT_ID(m_elementId, UiElementBus, DestroyElement);
+    UiElementBus::Event(m_elementId, &UiElementBus::Events::DestroyElement);
 }
 
 AZ::Entity* HierarchyItem::GetElement() const
@@ -184,7 +184,7 @@ void HierarchyItem::SetMouseIsHovering(bool isHovering)
 void HierarchyItem::SetIsExpanded(bool isExpanded)
 {
     // Runtime-side.
-    EBUS_EVENT_ID(m_elementId, UiEditorBus, SetIsExpanded, isExpanded);
+    UiEditorBus::Event(m_elementId, &UiEditorBus::Events::SetIsExpanded, isExpanded);
 
     // Editor-side.
     setExpanded(isExpanded);
@@ -193,7 +193,7 @@ void HierarchyItem::SetIsExpanded(bool isExpanded)
 void HierarchyItem::ApplyElementIsExpanded()
 {
     bool isExpanded = false;
-    EBUS_EVENT_ID_RESULT(isExpanded, m_elementId, UiEditorBus, GetIsExpanded);
+    UiEditorBus::EventResult(isExpanded, m_elementId, &UiEditorBus::Events::GetIsExpanded);
 
     setExpanded(isExpanded);
 }
@@ -201,7 +201,7 @@ void HierarchyItem::ApplyElementIsExpanded()
 void HierarchyItem::SetIsSelectable(bool isSelectable)
 {
     // Runtime-side.
-    EBUS_EVENT_ID(m_elementId, UiEditorBus, SetIsSelectable, isSelectable);
+    UiEditorBus::Event(m_elementId, &UiEditorBus::Events::SetIsSelectable, isSelectable);
 
     // Editor-side.
     UpdateIcon();
@@ -212,7 +212,7 @@ void HierarchyItem::SetIsSelectable(bool isSelectable)
 void HierarchyItem::SetIsSelected(bool isSelected)
 {
     // Runtime-side.
-    EBUS_EVENT_ID(m_elementId, UiEditorBus, SetIsSelected, isSelected);
+    UiEditorBus::Event(m_elementId, &UiEditorBus::Events::SetIsSelected, isSelected);
 
     // Editor-side.
     setSelected(isSelected);
@@ -223,7 +223,7 @@ void HierarchyItem::SetIsSelected(bool isSelected)
 void HierarchyItem::SetIsVisible(bool isVisible)
 {
     // Runtime-side.
-    EBUS_EVENT_ID(m_elementId, UiEditorBus, SetIsVisible, isVisible);
+    UiEditorBus::Event(m_elementId, &UiEditorBus::Events::SetIsVisible, isVisible);
 
     // Editor-side.
     UpdateIcon();
@@ -238,14 +238,14 @@ void HierarchyItem::UpdateIcon()
         const char* textureName = nullptr;
 
         bool isVisible = false;
-        EBUS_EVENT_ID_RESULT(isVisible, m_elementId, UiEditorBus, GetIsVisible);
+        UiEditorBus::EventResult(isVisible, m_elementId, &UiEditorBus::Events::GetIsVisible);
 
         if (isVisible)
         {
             // This item is visible.
 
             bool areAllAncestorsVisible = true;
-            EBUS_EVENT_ID_RESULT(areAllAncestorsVisible, m_elementId, UiEditorBus, AreAllAncestorsVisible);
+            UiEditorBus::EventResult(areAllAncestorsVisible, m_elementId, &UiEditorBus::Events::AreAllAncestorsVisible);
 
             textureName = (m_mouseIsHovering ? UICANVASEDITOR_HIERARCHY_ICON_OPEN_HOVER : (areAllAncestorsVisible ? UICANVASEDITOR_HIERARCHY_ICON_OPEN : UICANVASEDITOR_HIERARCHY_ICON_OPEN_HIDDEN));
         }
@@ -263,7 +263,7 @@ void HierarchyItem::UpdateIcon()
         const char* textureName = nullptr;
 
         bool isSelectable = false;
-        EBUS_EVENT_ID_RESULT(isSelectable, m_elementId, UiEditorBus, GetIsSelectable);
+        UiEditorBus::EventResult(isSelectable, m_elementId, &UiEditorBus::Events::GetIsSelectable);
 
         if (isSelectable)
         {
@@ -349,11 +349,11 @@ void HierarchyItem::ReplaceElement(const AZStd::string& xml, const AZStd::unorde
         LyShine::EntityArray childElements;
         if (parentEntity)
         {
-            EBUS_EVENT_ID_RESULT(childElements, parentEntity->GetId(), UiElementBus, GetChildElements);
+            UiElementBus::EventResult(childElements, parentEntity->GetId(), &UiElementBus::Events::GetChildElements);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(childElements, m_editorWindow->GetCanvas(), UiCanvasBus, GetChildElements);
+            UiCanvasBus::EventResult(childElements, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::GetChildElements);
         }
 
         // find the enity we are replacing in the list (it must exist)
@@ -413,7 +413,7 @@ void HierarchyItem::UpdateSliceInfo()
 
         //determine if entity parent belongs to a slice
         AZ::EntityId parentId;
-        EBUS_EVENT_ID_RESULT(parentId, m_elementId, UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(parentId, m_elementId, &UiElementBus::Events::GetParentEntityId);
 
         AZ::SliceComponent::SliceInstanceAddress parentSliceAddress;
         AzFramework::SliceEntityRequestBus::EventResult(parentSliceAddress, parentId,

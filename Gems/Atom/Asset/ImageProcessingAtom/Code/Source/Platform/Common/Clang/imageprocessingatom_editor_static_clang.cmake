@@ -6,7 +6,12 @@
 #
 #
 
-set(LY_COMPILE_OPTIONS
+# ImageLoader/ExrLoader.cpp uses exceptions
+if(MSVC)
+    set(LY_COMPILE_OPTIONS PRIVATE /EHsc)
+else()
+    set(LY_COMPILE_OPTIONS
     PRIVATE
-        -fexceptions #ImageLoader/ExrLoader.cpp uses exceptions
-)
+        -fexceptions
+    )
+endif()

@@ -19,7 +19,9 @@
 #include "GeneratedTransforms/CalculateLuminance_LinearSrgb.azsli"
 #include "GeneratedTransforms/CalculateLuminance_AcesCg.azsli"
 
-enum class ColorSpaceId
+// !! THIS ENUM MUST MATCH THE ONE IN: TransformColor.h !!
+// Removing enum class so that variables can be created using this type without causing compile errors.
+enum ColorSpaceId
 {
     SRGB = 0,
     LinearSRGB,
@@ -30,13 +32,27 @@ enum class ColorSpaceId
     Invalid
 };
 
-float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace)
+real3 TransformColorSRGBToAces(in real3 color)
+{
+    color = Srgb_To_LinearSrgb(color);
+    color = LinearSrgb_To_AcesCg(color);
+    return color;
+}
+
+real3 TransformColorAcesToSRGB(in real3 color)
+{
+    color = AcesCg_To_LinearSrgb(color);
+    color = LinearSrgb_To_Srgb(color);
+    return color;
+}
+
+real3 TransformColor(in real3 color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace)
 {
     if(fromColorSpace == toColorSpace)
     {
         return color;
     }
-    
+
     if (fromColorSpace == ColorSpaceId::LinearSRGB && toColorSpace == ColorSpaceId::ACEScg)
     {
         color = LinearSrgb_To_AcesCg(color);
@@ -47,13 +63,11 @@ float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId
     }
     else if (fromColorSpace == ColorSpaceId::SRGB && toColorSpace == ColorSpaceId::ACEScg)
     {
-        color = Srgb_To_LinearSrgb(color);
-        color = LinearSrgb_To_AcesCg(color);
+        color = TransformColorSRGBToAces(color);
     }
     else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::SRGB)
     {
-        color = AcesCg_To_LinearSrgb(color);
-        color = LinearSrgb_To_Srgb(color);
+        color = TransformColorAcesToSRGB(color);
     }
     else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::LinearSRGB)
     {
@@ -73,15 +87,22 @@ float3 TransformColor(in float3 color, ColorSpaceId fromColorSpace, ColorSpaceId
     }
     else
     {
-        color = float3(1, 0, 1);
+        color = real3(1, 0, 1);
     }
 
     return color;
+    
 }
 
-float CalculateLuminance(in float3 color, ColorSpaceId colorSpace)
+real4 TransformColor4(in real4 color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace)
 {
-    float luminance = 0.0f;
+    color.rgb = TransformColor(color.rgb, fromColorSpace, toColorSpace);
+    return color;
+}
+
+real CalculateLuminance(in real3 color, ColorSpaceId colorSpace)
+{
+    real luminance = 0.0;
     switch (colorSpace)
     {
         case ColorSpaceId::LinearSRGB:
@@ -126,3 +147,4 @@ float3 HsvToRgb(float3 color)
     const float3 p = abs(frac(color.xxx + k.xyz) * 6.0f - k.www);
     return color.z * lerp(k.xxx, saturate(p - k.xxx), color.y);
 }
+

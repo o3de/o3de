@@ -25,7 +25,7 @@ namespace EMotionFX
     const char* AnimGraphPlayTimeCondition::s_modeReachedEnd = "Reached End";
     const char* AnimGraphPlayTimeCondition::s_modeHasLessThanXSecondsLeft = "Less Than X Seconds Left";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphPlayTimeCondition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphPlayTimeCondition, AnimGraphAllocator)
 
     AnimGraphPlayTimeCondition::AnimGraphPlayTimeCondition()
         : AnimGraphTransitionCondition()
@@ -313,10 +313,10 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphNodeId", 0xadadb878), &AnimGraphPlayTimeCondition::m_nodeId, "Node", "The node to use.")
+            ->DataElement(AZ_CRC_CE("AnimGraphNodeId"), &AnimGraphPlayTimeCondition::m_nodeId, "Node", "The node to use.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphPlayTimeCondition::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphPlayTimeCondition::GetAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphPlayTimeCondition::GetAnimGraph)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AnimGraphPlayTimeCondition::m_mode, "Mode", "The way how to check the given play time set in this condition with the playtime from the node.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphPlayTimeCondition::GetModeVisibility)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

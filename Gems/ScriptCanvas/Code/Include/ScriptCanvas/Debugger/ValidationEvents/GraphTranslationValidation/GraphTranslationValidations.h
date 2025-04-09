@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(InvalidFunctionCallNameValidation, "{928CF581-2561-4AC2-9623-A9572A43A0DD}", ValidationEvent);
-        AZ_CLASS_ALLOCATOR(InvalidFunctionCallNameValidation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InvalidFunctionCallNameValidation, AZ::SystemAllocator);
 
         InvalidFunctionCallNameValidation(AZ::EntityId, SlotId)
             : ValidationEvent(ValidationSeverity::Error)

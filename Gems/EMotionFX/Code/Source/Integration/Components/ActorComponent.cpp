@@ -32,8 +32,6 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/AttachmentNode.h>
 
-#include <MCore/Source/AzCoreConversions.h>
-
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace EMotionFX
@@ -146,9 +144,8 @@ namespace EMotionFX
                 ActorRenderFlagsReflect(*serializeContext);
 
                 serializeContext->Class<Configuration>()
-                    ->Version(5)
+                    ->Version(8)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
-                    ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
@@ -156,6 +153,9 @@ namespace EMotionFX
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
                     ->Field("RenderFlags", &Configuration::m_renderFlags)
+                    ->Field("ExcludeFromReflectionCubeMaps", &Configuration::m_excludeFromReflectionCubeMaps)
+                    ->Field("LightingChannelConfig", &Configuration::m_lightingChannelConfig)
+                    ->Field("RayTracingEnabled", &Configuration::m_rayTracingEnabled)
                 ;
             }
         }
@@ -166,28 +166,6 @@ namespace EMotionFX
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                // Register the AZStd::vector<AzFramework::SimpleAssetReference<MaterialAsset>> class using
-                // the old AZ_TYPE_INFO_SPECIALIZE TypeID specialization for the SimpleAssetReference<MaterialAsset>
-                // Performs a sha1 calculation of the following typeids AzFramework::SimpleAssetReference<MaterialAsset> + AZStd::allocator + AZStd::vector
-                AZ::TypeId deprecatedTypeId = AZ::TypeId("{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}") + AZ::AzTypeInfo<AZStd::allocator>::Uuid()
-                    + AZ::TypeId("{A60E3E61-1FF6-4982-B6B8-9E4350C4C679}");
-                serializeContext->ClassDeprecate("AZStd::vector<SimpleAssetReference_MaterialAsset>", deprecatedTypeId,
-                    [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-                {
-                    AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-                    for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-                    {
-                        childNodeElements.push_back(rootElement.GetSubElement(index));
-                    }
-
-                    rootElement.Convert<AZStd::vector<AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>>>(context);
-                    for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-                    {
-                        rootElement.AddElement(AZStd::move(childNodeElement));
-                    }
-                    return true;
-                });
-
                 Configuration::Reflect(context);
 
                 serializeContext->Class<ActorComponent, AZ::Component>()
@@ -216,6 +194,8 @@ namespace EMotionFX
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
                     ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
+                    ->Event("SetRayTracingEnabled", &ActorComponentRequestBus::Events::SetRayTracingEnabled)
+                    ->Event("EnableInstanceUpdate", &ActorComponentRequestBus::Events::EnableInstanceUpdate)
                     ->VirtualProperty("RenderCharacter", "GetRenderCharacter", "SetRenderCharacter")
                 ;
 
@@ -231,11 +211,18 @@ namespace EMotionFX
         void ActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_configuration.m_actorAsset = actorAsset;
+            CheckActorCreation();
+        }
 
-            Actor* actor = m_configuration.m_actorAsset->GetActor();
-            if (actor)
+        void ActorComponent::EnableInstanceUpdate(bool enable)
+        {
+            if (m_actorInstance)
             {
-                CheckActorCreation();
+                m_actorInstance->SetIsEnabled(enable);
+            }
+            else
+            {
+                AZ_ErrorOnce("EMotionFX", false, "Cannot enable the actor instance update because actor instance haven't been created.");
             }
         }
 
@@ -278,9 +265,11 @@ namespace EMotionFX
             AZ::TickBus::Handler::BusConnect();
 
             const AZ::EntityId entityId = GetEntityId();
+            ActorComponentRequestBus::Handler::BusConnect(entityId);
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusConnect(entityId);
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusConnect(entityId);
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
 
             if (cfg.m_attachmentTarget.IsValid())
             {
@@ -291,6 +280,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::Deactivate()
         {
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusDisconnect();
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusDisconnect();
             m_sceneFinishSimHandler.Disconnect();
@@ -310,11 +300,12 @@ namespace EMotionFX
         {
             if (targetEntityId.IsValid() && targetEntityId != GetEntityId())
             {
+                m_attachmentTargetEntityId = targetEntityId;
+
                 ActorComponentNotificationBus::Handler::BusDisconnect();
                 ActorComponentNotificationBus::Handler::BusConnect(targetEntityId);
 
                 AZ::TransformNotificationBus::MultiHandler::BusConnect(targetEntityId);
-                m_attachmentTargetEntityId = targetEntityId;
 
                 // There's no guarantee that we will receive a on transform change call for the target entity because of the entity activate order.
                 // Enforce a transform query on target to get the correct initial transform.
@@ -332,10 +323,16 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::DetachFromEntity()
         {
-            if (m_attachmentTargetActor)
+            if (!m_actorInstance)
             {
-                m_attachmentTargetActor->RemoveAttachment(m_actorInstance.get());
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, AZ::EntityId());
+                return;
+            }
+
+            ActorInstance* attachedTo = m_actorInstance->GetAttachedTo();
+            if (attachedTo)
+            {
+                attachedTo->RemoveAttachment(m_actorInstance.get());
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentPreviousParent);
                 AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
 
                 AZ::TransformNotificationBus::MultiHandler::BusDisconnect(m_attachmentTargetEntityId);
@@ -376,6 +373,17 @@ namespace EMotionFX
             }
             return false;
         }
+
+        //////////////////////////////////////////////////////////////////////////
+        void ActorComponent::SetRayTracingEnabled(bool enabled)
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->SetRayTracingEnabled(enabled);
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
         SkinningMethod ActorComponent::GetSkinningMethod() const
         {
             return m_configuration.m_skinningMethod;
@@ -387,7 +395,12 @@ namespace EMotionFX
             m_configuration.m_actorAsset = asset;
             AZ_Assert(m_configuration.m_actorAsset.IsReady() && m_configuration.m_actorAsset->GetActor(), "Actor asset should be loaded and actor valid.");
 
-            CheckActorCreation();
+            // We'll defer actor creation until the next tick on the tick bus. This is because OnAssetReady() can sometimes get
+            // triggered while in the middle of the render tick, since the rendering system sometimes contains blocking loads
+            // which will still process any pending OnAssetReady() commands while waiting. If that occurs, the actor creation
+            // would generate errors from trying to create a rendering actor while in the middle of processing the rendering data.
+            // We can avoid the problem by just always waiting until the next tick to create the actor.
+            m_processLoadedAsset = true;
         }
 
         void ActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -407,6 +420,8 @@ namespace EMotionFX
 
         void ActorComponent::CheckActorCreation()
         {
+            DestroyActor();
+
             // Create actor instance.
             auto* actorAsset = m_configuration.m_actorAsset.GetAs<ActorAsset>();
             AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
@@ -415,8 +430,6 @@ namespace EMotionFX
                 return;
             }
 
-            DestroyActor();
-
             m_actorInstance = actorAsset->CreateInstance(GetEntity());
             if (!m_actorInstance)
             {
@@ -424,14 +437,13 @@ namespace EMotionFX
                 return;
             }
 
-            ActorComponentRequestBus::Handler::BusConnect(GetEntityId());
-
             ActorComponentNotificationBus::Event(
                 GetEntityId(),
                 &ActorComponentNotificationBus::Events::OnActorInstanceCreated,
                 m_actorInstance.get());
 
             m_actorInstance->SetLODLevel(m_configuration.m_lodLevel);
+            m_actorInstance->SetLightingChannelMask(m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
 
             // Setup initial transform and listen for transform changes.
             AZ::Transform transform = AZ::Transform::CreateIdentity();
@@ -440,7 +452,7 @@ namespace EMotionFX
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
 
             m_actorInstance->UpdateWorldTransform();
-            // Set bounds update mode and compute bbox first time 
+            // Set bounds update mode and compute bbox first time
             m_configuration.m_bboxConfig.SetAndUpdate(m_actorInstance.get());
             m_actorInstance->UpdateBounds(0, ActorInstance::EBoundsType::BOUNDS_STATIC_BASED);
 
@@ -456,15 +468,19 @@ namespace EMotionFX
                 m_renderActorInstance.reset(renderBackend->CreateActorInstance(GetEntityId(),
                     m_actorInstance,
                     m_configuration.m_actorAsset,
-                    m_configuration.m_materialPerLOD,
                     m_configuration.m_skinningMethod,
-                    transform));
+                    transform,
+                    m_configuration.m_rayTracingEnabled));
 
                 if (m_renderActorInstance)
                 {
                     m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
+                    m_renderActorInstance->SetExcludeFromReflectionCubeMaps(m_configuration.m_excludeFromReflectionCubeMaps);
                 }
             }
+
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
 
             // Reattach all attachments
             for (AZ::EntityId& attachment : m_attachments)
@@ -487,38 +503,53 @@ namespace EMotionFX
         void ActorComponent::CheckAttachToEntity()
         {
             // Attach to the target actor if we're both ready.
-            // Note that m_attachmentTargetActor will always be null if we're not configured to attach to anything.
-            if (m_actorInstance && m_attachmentTargetActor)
+            if (m_actorInstance)
             {
-                DetachFromEntity();
-
-                // Make sure we don't generate some circular loop by attaching to each other.
-                if (!m_attachmentTargetActor.get()->CheckIfCanHandleAttachment(m_actorInstance.get()))
+                if (m_attachmentTargetEntityId.IsValid())
                 {
-                    AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies!\n");
-                    return;
-                }
+                    // Create the attachment if the target instance is already created.
+                    // Otherwise, listen to the actor instance creation event.
+                    ActorInstance* targetActorInstance = nullptr;
+                    ActorComponentRequestBus::EventResult(targetActorInstance, m_attachmentTargetEntityId, &ActorComponentRequestBus::Events::GetActorInstance);
+                    if (targetActorInstance)
+                    {
+                        DetachFromEntity();
 
-                // Create the attachment.
-                AZ_Assert(m_configuration.m_attachmentType == AttachmentType::SkinAttachment, "Expected a skin attachment.");
-                Attachment* attachment = AttachmentSkin::Create(m_attachmentTargetActor.get(), m_actorInstance.get());
-                m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
-                m_attachmentTargetActor->AddAttachment(attachment);
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentTargetActor->GetEntityId());
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
+                        // Make sure we don't generate some circular loop by attaching to each other.
+                        if (!targetActorInstance->CheckIfCanHandleAttachment(m_actorInstance.get()))
+                        {
+                            AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies!\n");
+                            return;
+                        }
+
+                        // Remember the parent entity before we re-parent (attach) it.
+                        AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
+                        // Create the attachment.
+                        AZ_Assert(m_configuration.m_attachmentType == AttachmentType::SkinAttachment, "Expected a skin attachment.");
+                        Attachment* attachment = AttachmentSkin::Create(targetActorInstance, m_actorInstance.get());
+                        m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
+                        targetActorInstance->AddAttachment(attachment);
+                        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, targetActorInstance->GetEntityId());
+                        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
+                    }
+                }
+                else
+                {
+                    DetachFromEntity();
+                }
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::DestroyActor()
         {
+            DetachFromEntity();
+
             m_renderActorInstance.reset();
 
             if (m_actorInstance)
             {
-                DetachFromEntity();
-
-                m_attachmentTargetActor = nullptr;
 
                 ActorComponentNotificationBus::Event(
                     GetEntityId(),
@@ -559,6 +590,13 @@ namespace EMotionFX
         {
             AZ_PROFILE_FUNCTION(Animation);
 
+            // If we've got an asset that finished loading (denoted by an OnAssetReady() call), create the actor instance here.
+            if (m_processLoadedAsset)
+            {
+                CheckActorCreation();
+                m_processLoadedAsset = false;
+            }
+
             if (!m_actorInstance || !m_actorInstance->GetIsEnabled())
             {
                 return;
@@ -582,14 +620,22 @@ namespace EMotionFX
                     const bool updateTransforms = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, s_requireUpdateTransforms);
                     m_actorInstance->SetIsVisible(isInCameraFrustum && updateTransforms);
                 }
-
-                m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
             }
         }
 
         int ActorComponent::GetTickOrder()
         {
             return AZ::TICK_PRE_RENDER;
+        }
+
+        void ActorComponent::DisplayEntityViewport(
+            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
+        {
+            if (m_renderActorInstance)
+            {
+                m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
+            }
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -605,8 +651,6 @@ namespace EMotionFX
             }
             else
             {
-                m_attachmentTargetActor.reset(actorInstance);
-
                 CheckAttachToEntity();
             }
         }
@@ -614,8 +658,6 @@ namespace EMotionFX
         void ActorComponent::OnActorInstanceDestroyed([[maybe_unused]] ActorInstance* actorInstance)
         {
             DetachFromEntity();
-
-            m_attachmentTargetActor = nullptr;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -752,17 +794,17 @@ namespace EMotionFX
             {
             case Space::LocalSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetLocalSpaceTransform(index));
+                return currentPose->GetLocalSpaceTransform(index).ToAZTransform();
             }
 
             case Space::ModelSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetModelSpaceTransform(index));
+                return currentPose->GetModelSpaceTransform(index).ToAZTransform();
             }
 
             case Space::WorldSpace:
             {
-                return MCore::EmfxTransformToAzTransform(currentPose->GetWorldSpaceTransform(index));
+                return currentPose->GetWorldSpaceTransform(index).ToAZTransform();
             }
 
             default:

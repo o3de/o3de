@@ -122,7 +122,7 @@ namespace AzNetworking
         return true;
     }
 
-    bool TlsSocket::Connect(const IpAddress& address)
+    bool TlsSocket::Connect(const IpAddress& address, uint16_t localPort)
     {
         Close();
 
@@ -141,7 +141,7 @@ namespace AzNetworking
             return false;
         }
 
-        if (!BindSocketForConnectInternal(address))
+        if (!BindSocketForConnectInternal(address, localPort))
         {
             Close();
             return false;

@@ -42,10 +42,10 @@ namespace ScriptCanvasEditor
     VariablePaletteTableView::VariablePaletteTableView(QWidget* parent)
         : QTableView(parent)
     {
-        m_containerWizard = aznew ContainerWizard(parent);
+        m_containerWizard = aznew ContainerWizard(this);
 
-        m_model = aznew DataTypePaletteModel(parent);
-        m_proxyModel = aznew DataTypePaletteSortFilterProxyModel(parent);
+        m_model = aznew DataTypePaletteModel(this);
+        m_proxyModel = aznew DataTypePaletteSortFilterProxyModel(this);
         
         m_proxyModel->setSourceModel(m_model);
         m_proxyModel->sort(DataTypePaletteModel::ColumnIndex::Type);
@@ -112,7 +112,7 @@ namespace ScriptCanvasEditor
             variableTypes.insert(typeId);
         }
 
-        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
 
         for (const AZ::Uuid& objectId : objectTypes)
         {

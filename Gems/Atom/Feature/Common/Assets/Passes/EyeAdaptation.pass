@@ -20,13 +20,13 @@
             ],
             "PassData": {
                 "$type": "ComputePassData",
-                "Target Thread Count X": "1",
-                "Target Thread Count Y": "1",
-                "Target Thread Count Z": "1",
+                "ThreadCountX": "1",
+                "ThreadCountY": "1",
+                "ThreadCountZ": "1",
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/EyeAdaptation.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

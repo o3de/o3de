@@ -18,7 +18,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(HighlightEntityEffect, "{20EA6019-5F3C-43C5-88AF-6F4BF840B2D2}");
-        AZ_CLASS_ALLOCATOR(HighlightEntityEffect, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HighlightEntityEffect, AZ::SystemAllocator);
         
         HighlightEntityEffect() = default;
         virtual ~HighlightEntityEffect() = default;
@@ -30,7 +30,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(HighlightVariableEffect, "{0E684546-FEAD-486C-A166-5C4C9DCAC8D0}");
-        AZ_CLASS_ALLOCATOR(HighlightVariableEffect, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HighlightVariableEffect, AZ::SystemAllocator);
         
         HighlightVariableEffect() = default;
         virtual ~HighlightVariableEffect() = default;

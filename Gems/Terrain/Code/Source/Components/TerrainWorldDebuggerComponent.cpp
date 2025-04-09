@@ -30,15 +30,85 @@ namespace Terrain
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<TerrainWorldDebuggerConfig, AZ::ComponentConfig>()
+            serialize->Class<TerrainDebugQueryVisualizerConfig>()
                 ->Version(1)
+                ->Field("DrawQueries", &TerrainDebugQueryVisualizerConfig::m_drawQueries)
+                ->Field("Sampler", &TerrainDebugQueryVisualizerConfig::m_sampler)
+                ->Field("PointsPerDirection", &TerrainDebugQueryVisualizerConfig::m_pointsPerDirection)
+                ->Field("Spacing", &TerrainDebugQueryVisualizerConfig::m_spacing)
+                ->Field("DrawHeights", &TerrainDebugQueryVisualizerConfig::m_drawHeights)
+                ->Field("HeightPointSize", &TerrainDebugQueryVisualizerConfig::m_heightPointSize)
+                ->Field("DrawNormals", &TerrainDebugQueryVisualizerConfig::m_drawNormals)
+                ->Field("NormalHeight", &TerrainDebugQueryVisualizerConfig::m_normalHeight)
+                ->Field("UseCameraPos", &TerrainDebugQueryVisualizerConfig::m_useCameraPosition)
+                ->Field("CenterPos", &TerrainDebugQueryVisualizerConfig::m_centerPosition)
+                ;
+
+            serialize->Class<TerrainWorldDebuggerConfig, AZ::ComponentConfig>()
+                ->Version(2)
                 ->Field("DebugWireframe", &TerrainWorldDebuggerConfig::m_drawWireframe)
                 ->Field("DebugWorldBounds", &TerrainWorldDebuggerConfig::m_drawWorldBounds)
-            ;
+                ->Field("DebugDirtyRegion", &TerrainWorldDebuggerConfig::m_drawLastDirtyRegion)
+                ->Field("DebugQueries", &TerrainWorldDebuggerConfig::m_debugQueries)
+                ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
             {
+                edit->Class<TerrainDebugQueryVisualizerConfig>(
+                    "Terrain Debug Queries", "Settings related to visualizing the results of terrain queries.")
+                    ->GroupElementToggle("Show Terrain Queries", &TerrainDebugQueryVisualizerConfig::m_drawQueries)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainDebugQueryVisualizerConfig::m_sampler, "Sampler",
+                        "The type of query sampler to use for querying the terrain values (Exact, Clamp, Bilinear)")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, "Exact")
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, "Clamp")
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, "Bilinear")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_pointsPerDirection, "Point count",
+                        "The number of points in each direction to visualize")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->Attribute(AZ::Edit::Attributes::Min, 1)
+                        ->Attribute(AZ::Edit::Attributes::Max, 64)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_spacing, "Spacing (m)",
+                        "Determines how far apart the query results should be drawn in meters")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawHeights, "Draw Heights",
+                        "Enable visualization of terrain height queries")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_heightPointSize,
+                        "Height Point Size (m)", "Determines the size of the height point in meters")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableHeights)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f / 128.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawNormals, "Draw Normals",
+                        "Enable visualization of terrain normal queries")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_normalHeight, "Normal Height (m)",
+                        "Determines the height of the normal line in meters")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableNormals)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_useCameraPosition, "Use Camera Position",
+                        "Determines whether to use the current camera position or a specified position")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_centerPosition, "World Position",
+                        "Center of the area to draw query results in")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableCenterPosition)
+                    ;
+
                 edit->Class<TerrainWorldDebuggerConfig>(
                     "Terrain World Debugger Component", "Optional component for enabling terrain debugging features.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -46,8 +116,17 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWireframe, "Show Wireframe", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWorldBounds, "Show World Bounds", "");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWireframe, "Show Wireframe",
+                        "Draw a wireframe for the terrain quads in an area around the camera")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWorldBounds, "Show World Bounds",
+                        "Draw the current world bounds for the terrain")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawLastDirtyRegion,
+                        "Show Dirty Region", "Draw the most recent dirty region for the terrain")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_debugQueries, "Show Normals",
+                        "Settings for drawing terrain normals")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ;
             }
         }
     }
@@ -145,7 +224,7 @@ namespace Terrain
         return false;
     }
 
-    AZ::Aabb TerrainWorldDebuggerComponent::GetWorldBounds()
+    AZ::Aabb TerrainWorldDebuggerComponent::GetWorldBounds() const
     {
         AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -154,7 +233,7 @@ namespace Terrain
         return terrainAabb;
     }
 
-    AZ::Aabb TerrainWorldDebuggerComponent::GetLocalBounds()
+    AZ::Aabb TerrainWorldDebuggerComponent::GetLocalBounds() const
     {
         // This is a level component, so the local bounds will always be the same as the world bounds.
         return GetWorldBounds();
@@ -180,6 +259,29 @@ namespace Terrain
         }
     }
 
+    void TerrainWorldDebuggerComponent::DrawLastDirtyRegion(AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        using DataChangedMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask;
+
+        if (!m_configuration.m_drawLastDirtyRegion)
+        {
+            return;
+        }
+
+        // Draw a translucent box around the terrain dirty region
+        const AZ::Color dirtyRegionColor(
+            (m_lastDirtyData & (DataChangedMask::HeightData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            (m_lastDirtyData & (DataChangedMask::SurfaceData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            (m_lastDirtyData & (DataChangedMask::ColorData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            0.25f);
+
+        if (m_lastDirtyRegion.IsValid())
+        {
+            debugDisplay.SetColor(dirtyRegionColor);
+            debugDisplay.DrawSolidBox(m_lastDirtyRegion.GetMin(), m_lastDirtyRegion.GetMax());
+        }
+    }
+
     void TerrainWorldDebuggerComponent::DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         if (!m_configuration.m_drawWorldBounds)
@@ -188,11 +290,117 @@ namespace Terrain
         }
 
         // Draw a wireframe box around the entire terrain world bounds
-        AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
-        AZ::Aabb aabb = GetWorldBounds();
+        const AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
+        const AZ::Aabb aabb = GetWorldBounds();
 
-        debugDisplay.SetColor(outlineColor);
-        debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        if (aabb.IsValid())
+        {
+            debugDisplay.SetColor(outlineColor);
+            debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        }
+    }
+
+    void TerrainWorldDebuggerComponent::DrawQueries(
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        AZ_PROFILE_FUNCTION(Terrain);
+
+        if (!m_configuration.m_debugQueries.m_drawQueries)
+        {
+            return;
+        }
+
+        // Early out if none of our draw toggles are enabled.
+        if (!(m_configuration.m_debugQueries.m_drawHeights || m_configuration.m_debugQueries.m_drawNormals))
+        {
+            return;
+        }
+
+        const float spacing = m_configuration.m_debugQueries.m_spacing;
+        const float halfDistance = spacing * (m_configuration.m_debugQueries.m_pointsPerDirection / 2.0f);
+        const size_t totalPositions =
+            m_configuration.m_debugQueries.m_pointsPerDirection * m_configuration.m_debugQueries.m_pointsPerDirection;
+
+        // Get the center point for our visualization area either from the camera or a configured location.
+        AZ::Vector3 centerPos = m_configuration.m_debugQueries.m_centerPosition;
+        if (m_configuration.m_debugQueries.m_useCameraPosition)
+        {
+            if (auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get(); viewportContextRequests)
+            {
+                AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
+                const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+
+                // Get our camera's center point
+                centerPos = cameraTransform.GetTranslation();
+            }
+        }
+
+        // Build up the list of positions to query.
+        AZStd::vector<AZ::Vector3> positionList;
+        positionList.reserve(totalPositions);
+
+        for (size_t yPoint = 0; yPoint < m_configuration.m_debugQueries.m_pointsPerDirection; yPoint++)
+        {
+            for (size_t xPoint = 0; xPoint < m_configuration.m_debugQueries.m_pointsPerDirection; xPoint++)
+            {
+                float x = centerPos.GetX() - halfDistance + (spacing * xPoint);
+                float y = centerPos.GetY() - halfDistance + (spacing * yPoint);
+                positionList.emplace_back(x, y, 0.0f);
+            }
+        }
+
+        // Process the terrain data query and turn the results into debug visualizations.
+        // We'll reuse the normalLineVertices buffer for drawing both heights and normals. The first point of each normal line
+        // always starts at the height position, so we can use those to draw heights.
+        const float normalHeight = m_configuration.m_debugQueries.m_normalHeight;
+        AZStd::vector<AZ::Vector3> normalLineVertices;
+        normalLineVertices.reserve(totalPositions * 2);
+        auto ProcessSurfacePoint =
+            [normalHeight, &normalLineVertices](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+        {
+            if (terrainExists)
+            {
+                normalLineVertices.emplace_back(surfacePoint.m_position);
+                normalLineVertices.emplace_back(surfacePoint.m_position + (surfacePoint.m_normal * normalHeight));
+            }
+        };
+
+        // Query for the terrain data. For now we'll just query both heights and normals all the time, but we could eventually
+        // get more selective and only query for heights if we've disabled drawing normals. We can never query just for normals
+        // because we still need the heights in that case to know where to draw the normals at.
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequests::QueryList,
+            positionList,
+            static_cast<AzFramework::Terrain::TerrainDataRequests::TerrainDataMask>(
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights |
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Normals),
+            ProcessSurfacePoint,
+            m_configuration.m_debugQueries.m_sampler);
+
+        // Draw the heights
+        if (m_configuration.m_debugQueries.m_drawHeights && !normalLineVertices.empty())
+        {
+            const AZ::Color heightColor = AZ::Color(0.0f, 0.0f, 1.0f, 1.0f);
+            const AZ::Vector3 boxHalfSize(m_configuration.m_debugQueries.m_heightPointSize / 2.0f);
+            debugDisplay.SetColor(heightColor);
+            for (size_t index = 0; index < normalLineVertices.size(); index += 2)
+            {
+                // We use SolidBox instead of Point because DX12 doesn't support point sizes, so they're too small to see.
+                debugDisplay.DrawSolidBox(normalLineVertices[index] - boxHalfSize, normalLineVertices[index] + boxHalfSize);
+            }
+        }
+
+        // Draw the normals
+        if (m_configuration.m_debugQueries.m_drawNormals && !normalLineVertices.empty())
+        {
+            for (size_t index = 0; index < normalLineVertices.size(); index += 2)
+            {
+                AZ::Vector3 normal = (normalLineVertices[index + 1] - normalLineVertices[index]).GetNormalized();
+                const AZ::Vector4 normalColor = (AZ::Vector4(normal, 1.0f) + AZ::Vector4(1.0f)) / 2.0f;
+                debugDisplay.DrawLine(normalLineVertices[index], normalLineVertices[index + 1], normalColor, normalColor);
+            }
+        }
+
     }
 
     void TerrainWorldDebuggerComponent::DrawWireframe(
@@ -282,16 +490,21 @@ namespace Terrain
                     AZ::Vector3(sectorX * sectorSize.GetX(), sectorY * sectorSize.GetY(), worldMinZ),
                     AZ::Vector3((sectorX + 1) * sectorSize.GetX(), (sectorY + 1) * sectorSize.GetY(), worldMinZ));
 
-                // Clamp it to the terrain world bounds.
-                sectorAabb.Clamp(worldBounds);
-
                 // If the world space box for the sector doesn't match, set it and mark the sector as dirty so we refresh the height data.
                 {
                     AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
                     if (sector.m_aabb != sectorAabb)
                     {
                         sector.m_aabb = sectorAabb;
-                        sector.SetDirty();
+                        if (worldBounds.Overlaps(sector.m_aabb))
+                        {
+                            sector.SetDirty();
+                        }
+                        else
+                        {
+                            // If this sector doesn't appear in the terrain world bounds, just clear it out.
+                            sector.m_lineVertices.clear();
+                        }
                     }
                 }
             }
@@ -325,8 +538,9 @@ namespace Terrain
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         DrawWorldBounds(debugDisplay);
+        DrawLastDirtyRegion(debugDisplay);
         DrawWireframe(viewportInfo, debugDisplay);
-
+        DrawQueries(viewportInfo, debugDisplay);
     }
 
     void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, float gridResolution)
@@ -339,36 +553,30 @@ namespace Terrain
 
         sector.m_isDirty = false;
 
-        // To rebuild the wireframe, we walk through the sector by X, then by Y.  For each point, we add two lines in a _| shape.
-        // To do that, we'll need to cache the height from the previous point to draw the _ line, and from the previous row to draw
-        // the | line.
+        // To rebuild the wireframe for the sector, we grab all the sector vertex positions and whether or not that vertex has
+        // terrain data that exists.              _
+        // For each point, we add two lines in a |  shape. (inverted L)
+        // We need to query one extra point in each direction so that we can get the endpoints for the final lines in each direction.
+        AzFramework::Terrain::TerrainQueryRegion queryRegion(
+            sector.m_aabb.GetMin(), SectorSizeInGridPoints + 1, SectorSizeInGridPoints + 1, AZ::Vector2(gridResolution));
 
-        // When walking through the bounding box, the loops will be inclusive on one side, and exclusive on the other.  However, since
-        // our box is exactly aligned with grid points, we want to get the grid points on both sides in each direction, so we need to
-        // expand our query region by one extra point.
-        // For example, if our AABB is 2 m and our grid resolution is 1 m, we'll want to query (*--*--*--), not (*--*--).
-        // Since we're processing lines based on the grid points and going backwards, this will give us (*--*--*).
+        const size_t numSamplesX = queryRegion.m_numPointsX;
+        const size_t numSamplesY = queryRegion.m_numPointsY;
 
-        AZ::Aabb region = sector.m_aabb;
-        region.SetMax(region.GetMax() + AZ::Vector3(gridResolution, gridResolution, 0.0f));
-
-        // We need 4 vertices for each grid point in our sector to hold the _| shape.
-        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution));
-        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(region.GetExtents().GetY() / gridResolution));
+        // We need 4 vertices for each grid point in our sector to hold the inverted L shape.
         sector.m_lineVertices.clear();
-        sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
+        sector.m_lineVertices.reserve(SectorSizeInGridPoints * SectorSizeInGridPoints * 4);
 
-        // This keeps track of the height from the previous point for the _ line.
-        sector.m_previousHeight = 0.0f;
+        // Clear and prepare our temporary buffers to hold all the vertex position data and "exists" flags.
+        // (If we're multithreading, there's no guaranteed order to which each point will get filled in)
+        sector.m_sectorVertices.clear();
+        sector.m_sectorVertexExists.clear();
+        sector.m_sectorVertices.resize(numSamplesX * numSamplesY);
+        sector.m_sectorVertexExists.resize(numSamplesX * numSamplesY);
 
-        // This keeps track of the heights from the previous row for the | line.
-        sector.m_rowHeights.clear();
-        sector.m_rowHeights.resize(numSamplesX);
-
-        // For each terrain height value in the region, create the _| grid lines for that point and cache off the height value
-        // for use with subsequent grid line calculations.
-        auto ProcessHeightValue = [gridResolution, &sector]
-            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        // Cache off the vertex position data and "exists" flags.
+        auto ProcessHeightValue = [numSamplesX, &sector]
+            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
             if (sector.m_isDirty)
@@ -377,50 +585,65 @@ namespace Terrain
                 return;
             }
 
-            // Don't add any vertices for the first column or first row.  These grid lines will be handled by an adjacent sector, if
-            // there is one.
-            if ((xIndex > 0) && (yIndex > 0))
-            {
-                float x = surfacePoint.m_position.GetX() - gridResolution;
-                float y = surfacePoint.m_position.GetY() - gridResolution;
-
-                sector.m_lineVertices.emplace_back(AZ::Vector3(x, surfacePoint.m_position.GetY(), sector.m_previousHeight));
-                sector.m_lineVertices.emplace_back(surfacePoint.m_position);
-
-                sector.m_lineVertices.emplace_back(AZ::Vector3(surfacePoint.m_position.GetX(), y, sector.m_rowHeights[xIndex]));
-                sector.m_lineVertices.emplace_back(surfacePoint.m_position);
-            }
-
-            // Save off the heights so that we can use them to draw subsequent columns and rows.
-            sector.m_previousHeight = surfacePoint.m_position.GetZ();
-            sector.m_rowHeights[xIndex] = surfacePoint.m_position.GetZ();
+            sector.m_sectorVertices[(yIndex * numSamplesX) + xIndex] = surfacePoint.m_position;
+            sector.m_sectorVertexExists[(yIndex * numSamplesX) + xIndex] = terrainExists;
         };
 
-        auto completionCallback = [&sector](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+        // When we've finished gathering all the height data, create all the wireframe lines.
+        auto completionCallback =
+            [&sector, numSamplesX, numSamplesY](AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>)
         {
-            // This must happen outside the lock,
-            // otherwise we will get a deadlock if
-            // WireframeSector::Reset is waiting for
-            // the completion event to be signalled.
+            // This must happen outside the lock, otherwise we will get a deadlock if
+            // WireframeSector::Reset is waiting for the completion event to be signalled.
             sector.m_jobCompletionEvent->release();
 
             // Reset the job context once the async request has completed,
             // clearing the way for future requests to be made for this sector.
             AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
             sector.m_jobContext.reset();
+
+            // For each vertex in the sector, try to create the inverted L shape. We'll only draw a wireframe line
+            // if both the start and the end vertex has terrain data.
+            for (size_t yIndex = 0; yIndex < (numSamplesY - 1); yIndex++)
+            {
+                for (size_t xIndex = 0; xIndex < (numSamplesX - 1); xIndex++)
+                {
+                    size_t curIndex = (yIndex * numSamplesX) + xIndex;
+                    size_t rightIndex = (yIndex * numSamplesX) + xIndex + 1;
+                    size_t bottomIndex = ((yIndex + 1) * numSamplesX) + xIndex;
+
+                    if (sector.m_sectorVertexExists[curIndex] && sector.m_sectorVertexExists[bottomIndex])
+                    {
+                        sector.m_lineVertices.emplace_back(sector.m_sectorVertices[curIndex]);
+                        sector.m_lineVertices.emplace_back(sector.m_sectorVertices[bottomIndex]);
+                    }
+
+                    if (sector.m_sectorVertexExists[curIndex] && sector.m_sectorVertexExists[rightIndex])
+                    {
+                        sector.m_lineVertices.emplace_back(sector.m_sectorVertices[curIndex]);
+                        sector.m_lineVertices.emplace_back(sector.m_sectorVertices[rightIndex]);
+                    }
+                }
+            }
+
+            // We're done with our temporary height buffers so clear them back out.
+            sector.m_sectorVertices.clear();
+            sector.m_sectorVertexExists.clear();
         };
 
-        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
-            = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+        AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
+            = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
         asyncParams->m_completionCallback = completionCallback;
 
+        // Only allow one thread per sector because we'll likely have multiple sectors processing at once.
+        asyncParams->m_desiredNumberOfJobs = 1;
+
+        // We can use an "EXACT" sampler here because our points are guaranteed to be aligned with terrain grid points.
         sector.m_jobCompletionEvent = AZStd::make_unique<AZStd::semaphore>();
-        AZ::Vector2 stepSize = AZ::Vector2(gridResolution);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            sector.m_jobContext,
-            &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegionAsync,
-            region,
-            stepSize,
+            sector.m_jobContext, &AzFramework::Terrain::TerrainDataRequests::QueryRegionAsync,
+            queryRegion,
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
             ProcessHeightValue,
             AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
             asyncParams);
@@ -429,13 +652,13 @@ namespace Terrain
 
     void TerrainWorldDebuggerComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if (dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData))
+        m_lastDirtyRegion = dirtyRegion;
+        m_lastDirtyData = dataChangedMask;
+
+        if ((dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData)) != TerrainDataChangedMask::None)
         {
             MarkDirtySectors(dirtyRegion);
-        }
 
-        if (dataChangedMask & TerrainDataChangedMask::Settings)
-        {
             // Any time the world bounds potentially changes, notify that the terrain debugger's visibility bounds also changed.
             AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
                 &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
@@ -448,8 +671,8 @@ namespace Terrain
         m_jobContext = other.m_jobContext;
         m_aabb = other.m_aabb;
         m_lineVertices = other.m_lineVertices;
-        m_rowHeights = other.m_rowHeights;
-        m_previousHeight = other.m_previousHeight;
+        m_sectorVertices = other.m_sectorVertices;
+        m_sectorVertexExists = other.m_sectorVertexExists;
         m_isDirty = other.m_isDirty;
     }
 
@@ -459,8 +682,8 @@ namespace Terrain
         m_jobContext = AZStd::move(other.m_jobContext);
         m_aabb = AZStd::move(other.m_aabb);
         m_lineVertices = AZStd::move(other.m_lineVertices);
-        m_rowHeights = AZStd::move(other.m_rowHeights);
-        m_previousHeight = AZStd::move(other.m_previousHeight);
+        m_sectorVertices = AZStd::move(other.m_sectorVertices);
+        m_sectorVertexExists = AZStd::move(other.m_sectorVertexExists);
         m_isDirty = AZStd::move(other.m_isDirty);
     }
 
@@ -470,8 +693,8 @@ namespace Terrain
         m_jobContext = other.m_jobContext;
         m_aabb = other.m_aabb;
         m_lineVertices = other.m_lineVertices;
-        m_rowHeights = other.m_rowHeights;
-        m_previousHeight = other.m_previousHeight;
+        m_sectorVertices = other.m_sectorVertices;
+        m_sectorVertexExists = other.m_sectorVertexExists;
         m_isDirty = other.m_isDirty;
         return *this;
     }
@@ -482,8 +705,8 @@ namespace Terrain
         m_jobContext = AZStd::move(other.m_jobContext);
         m_aabb = AZStd::move(other.m_aabb);
         m_lineVertices = AZStd::move(other.m_lineVertices);
-        m_rowHeights = AZStd::move(other.m_rowHeights);
-        m_previousHeight = AZStd::move(other.m_previousHeight);
+        m_sectorVertices = AZStd::move(other.m_sectorVertices);
+        m_sectorVertexExists = AZStd::move(other.m_sectorVertexExists);
         m_isDirty = AZStd::move(other.m_isDirty);
         return *this;
     }
@@ -501,8 +724,8 @@ namespace Terrain
         }
         m_aabb = AZ::Aabb::CreateNull();
         m_lineVertices.clear();
-        m_rowHeights.clear();
-        m_previousHeight = 0.0f;
+        m_sectorVertices.clear();
+        m_sectorVertexExists.clear();
         m_isDirty = true;
     }
 

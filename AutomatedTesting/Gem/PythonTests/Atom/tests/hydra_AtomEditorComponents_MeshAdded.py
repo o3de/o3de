@@ -18,9 +18,9 @@ class Tests:
     mesh_component_added = (
         "Entity has a Mesh component",
         "P0: Entity failed to find Mesh component")
-    mesh_asset_specified = (
-        "Mesh asset set",
-        "P0: Mesh asset not set")
+    model_asset_specified = (
+        "Model Asset set",
+        "P0: Model Asset not set")
     enter_game_mode = (
         "Entered game mode",
         "P0: Failed to enter game mode")
@@ -78,6 +78,12 @@ class Tests:
     mesh_component_removed = (
         "Mesh component removed successfully",
         "P1: Mesh component was not correctly removed from the entity")
+    model_asset_is_optimized = (
+        "tube.fbx.azmodel has <= 66 vertices",
+        "P0: Model has not been fully optimized")
+    model_different_bone_ids_same_position_should_weld_vertices = (
+        "sameposition_differentboneIds_shouldnotweldvertices.fbx.azmodel has 48 vertices",
+        "P0: Vertices were welded when they shouldnt be")
 
 
 def AtomEditorComponents_Mesh_AddedToEntity():
@@ -113,23 +119,59 @@ def AtomEditorComponents_Mesh_AddedToEntity():
     17) Remove Mesh component then UNDO the remove
     18) Enter/Exit game mode.
     19) Test IsHidden.
-    10) Test IsVisible.
-    21) Delete Mesh entity.
-    22) UNDO deletion.
-    23) REDO deletion.
-    24) Look for errors.
+    20) Test IsVisible.
+    21) Verify that vertex welding is functioning
+    22) Verify that vertices with the same position but different joint ids aren't welded
+    23) Delete Mesh entity.
+    24) UNDO deletion.
+    25) REDO deletion.
+    26) Look for errors.
 
     :return: None
     """
 
     import os
 
-    import azlmbr.legacy.general as general
+    from PySide2 import QtWidgets
 
+    import azlmbr.bus
+    from functools import partial
+    import azlmbr.legacy.general as general
+    from Atom.atom_utils.atom_constants import (MESH_LOD_TYPE,
+                                                AtomComponentProperties)
+    import pyside_utils
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import AtomComponentProperties, MESH_LOD_TYPE
+    from editor_python_test_tools.utils import Report, TestHelper, Tracer
+
+    class OnModelReadyHelper:
+        def __init__(self):
+            self.isModelReady = False
+        
+        def model_is_ready_predicate(self):
+            """
+            A predicate function what will be used in wait_for_condition.
+            """
+            return self.isModelReady
+
+        def on_model_ready(self, parameters):
+            self.isModelReady = True
+
+        def wait_for_on_model_ready(self, entityId, mesh_component, model_id):
+            self.isModelReady = False
+            # Connect to the MeshNotificationBus
+            # Listen for notifications when entities are created/deleted
+            self.onModelReadyHandler = azlmbr.bus.NotificationHandler('MeshComponentNotificationBus')
+            self.onModelReadyHandler.connect(entityId)
+            self.onModelReadyHandler.add_callback('OnModelReady', self.on_model_ready)
+            
+            waitCondition = partial(self.model_is_ready_predicate)
+            
+            mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model_id)
+            if TestHelper.wait_for_condition(waitCondition, 20.0):
+                return True
+            else:
+                return False
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -173,12 +215,12 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         Report.result(Tests.creation_redo, mesh_entity.exists())
 
         # 5. Set Mesh component asset property
-        model_path = os.path.join('Objects', 'sphere_5lods_fbx_psphere_base_1.azmodel')
+        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.fbx.azmodel')
         model = Asset.find_asset_by_path(model_path)
-        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
-        Report.result(Tests.mesh_asset_specified,
+        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
+        Report.result(Tests.model_asset_specified,
                       mesh_component.get_component_property_value(
-                          AtomComponentProperties.mesh('Mesh Asset')) == model.id)
+                          AtomComponentProperties.mesh('Model Asset')) == model.id)
 
         # 6. Set Mesh component Sort Key property
         # This part of the test is currently disabled due to a bug.
@@ -253,8 +295,12 @@ def AtomEditorComponents_Mesh_AddedToEntity():
                           AtomComponentProperties.mesh('Lod Type')) == MESH_LOD_TYPE['default'])
 
         # 16. Set Mesh component Add Material Component and confirm a Material component added
-        mesh_component.set_component_property_value(
-            AtomComponentProperties.mesh('Add Material Component'), value=True)
+        # Make sure the Entity Inspector is open and trigger the "Add Material Component" button
+        general.open_pane("Inspector")
+        editor_window = pyside_utils.get_editor_main_window()
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
+        add_material_component_button = pyside_utils.find_child_by_pattern(entity_inspector, "Add Material Component")
+        add_material_component_button.click()
         Report.result(Tests.has_material, mesh_entity.has_component(AtomComponentProperties.material()))
 
         # 17. Remove Mesh component then UNDO the remove
@@ -278,22 +324,48 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         mesh_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, mesh_entity.is_visible() is True)
+        
+        # 21. Test that vertex welding is functioning
+        model_path = os.path.join('testdata', 'objects', 'tube.fbx.azmodel')
+        model = Asset.find_asset_by_path(model_path)
+        onModelReadyHelper = OnModelReadyHelper()
+        onModelReadyHelper.wait_for_on_model_ready(mesh_entity.id, mesh_component, model.id)
+        Report.result(Tests.model_asset_specified,
+                      mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Model Asset')) == model.id)
 
-        # 21. Delete Mesh entity.
+        Report.result(Tests.model_asset_is_optimized,
+                      mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Vertex Count LOD0')) <= 66)
+
+        # 22. Test that vertices with the same position but different boneId's aren't unintentionally welded
+        model_path = os.path.join('testdata', 'objects', 'skinnedmesh', 'meshoptimization', 'sameposition_differentjointids_shouldnotweldvertices.fbx.azmodel')
+        model = Asset.find_asset_by_path(model_path)
+        onModelReadyHelper = OnModelReadyHelper()
+        onModelReadyHelper.wait_for_on_model_ready(mesh_entity.id, mesh_component, model.id)
+        Report.result(Tests.model_asset_specified,
+                      mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Model Asset')) == model.id)
+
+        Report.result(Tests.model_different_bone_ids_same_position_should_weld_vertices,
+                      mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Vertex Count LOD0')) == 48)
+
+        # 23. Delete Mesh entity.
         mesh_entity.delete()
         Report.result(Tests.entity_deleted, not mesh_entity.exists())
 
-        # 22. UNDO deletion.
+        # 24. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, mesh_entity.exists())
 
-        # 23. REDO deletion.
+        # 25. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not mesh_entity.exists())
 
-        # 24. Look for errors or asserts.
+        # 26. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

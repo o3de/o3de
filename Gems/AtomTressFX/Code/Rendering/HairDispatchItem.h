@@ -46,7 +46,7 @@ namespace AZ
                 : public Data::InstanceData
             {
             public:
-                AZ_CLASS_ALLOCATOR(HairDispatchItem, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairDispatchItem, AZ::SystemAllocator);
 
                 HairDispatchItem() = default;
 
@@ -65,7 +65,7 @@ namespace AZ
                 RHI::DispatchItem* GetDispatchItem() { return &m_dispatchItem;  }
 
             private:
-                RHI::DispatchItem m_dispatchItem;
+                RHI::DispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
                 RPI::Shader* m_shader;
             };
 

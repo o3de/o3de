@@ -42,7 +42,7 @@ public:
     CPluginManager();
     virtual ~CPluginManager();
 
-    bool LoadPlugins(const char* pPathWithMask);
+    bool LoadPlugins(const char* pluginsPath);
 
     // release all plugins (ie, call Release() on them) - but don't drop their DLL
     void ReleaseAllPlugins();

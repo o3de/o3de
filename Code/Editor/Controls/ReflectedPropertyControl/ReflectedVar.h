@@ -55,7 +55,7 @@ public:
     //If we're an unnamed container, just show our children in flat list.  Otherwise show the container name with children underneath
     AZ::u32 GetVisibility() const
     {
-        return m_varName.empty() ? AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20) : AZ_CRC("PropertyVisibility_Show", 0xa43c82dd);
+        return m_varName.empty() ? AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly") : AZ_CRC_CE("PropertyVisibility_Show");
     }
 
     void SetAutoExpand(bool autoExpand) { m_autoExpand = autoExpand; }
@@ -79,7 +79,7 @@ class CReflectedVarAny
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarAny<T>, "{EE8293C3-9B1E-470B-9922-2CBB8DA13D78}", T), CReflectedVar)
+    AZ_RTTI((CReflectedVarAny, "{EE8293C3-9B1E-470B-9922-2CBB8DA13D78}", T), CReflectedVar);
 
     CReflectedVarAny(const AZStd::string& name, const T& val = T())
         : CReflectedVar(name)
@@ -102,7 +102,7 @@ class CReflectedVarRanged
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarRanged, "{6AB4EC29-E17B-4B3B-A153-BFDAA48B8CF8}", T, R), CReflectedVar)
+    AZ_RTTI((CReflectedVarRanged, "{6AB4EC29-E17B-4B3B-A153-BFDAA48B8CF8}", T, R), CReflectedVar);
 
     CReflectedVarRanged(const AZStd::string& name, const T& val = T())
         : CReflectedVar(name)
@@ -169,7 +169,7 @@ class CReflectedVarEnum
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarEnum<T>, "{40AE7D74-7E3A-41A9-8F71-2BBC3067118B}", T), CReflectedVar)
+    AZ_RTTI((CReflectedVarEnum, "{40AE7D74-7E3A-41A9-8F71-2BBC3067118B}", T), CReflectedVar);
 
     CReflectedVarEnum(const AZStd::string& name)
         : CReflectedVar(name) {}
@@ -388,11 +388,9 @@ public:
     AZ_RTTI(CReflectedVarMotion, "{66397EFB-620A-40B8-8C66-D6AECF690DF5}", CReflectedVar)
 
     CReflectedVarMotion(const AZStd::string& name)
-        : CReflectedVar(name)
-        , m_assetId(0) {}
+        : CReflectedVar(name) {}
 
-    CReflectedVarMotion()
-        : m_assetId(0) {}
+    CReflectedVarMotion() = default;
 
     AZStd::string varName() const { return m_varName; }
     AZStd::string description() const { return m_description; }

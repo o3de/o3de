@@ -14,6 +14,7 @@
 #include <GradientSignal/Ebuses/SurfaceMaskGradientRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfacePointList.h>
@@ -30,7 +31,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskGradientConfig, "{E59D0A4C-BA3D-4288-B409-A00B7D5566AA}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         SurfaceData::SurfaceTagVector m_surfaceTagList;
@@ -41,7 +42,7 @@ namespace GradientSignal
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid SurfaceMaskGradientComponentTypeId = "{4661F063-7126-4BE1-886F-5A6FFC6DAC71}";
+    inline constexpr AZ::TypeId SurfaceMaskGradientComponentTypeId{ "{4661F063-7126-4BE1-886F-5A6FFC6DAC71}" };
 
     /**
     * calculates a gradient value based on percent contribution from surface tags
@@ -50,6 +51,7 @@ namespace GradientSignal
         : public AZ::Component
         , private GradientRequestBus::Handler
         , private SurfaceMaskGradientRequestBus::Handler
+        , private SurfaceData::SurfaceDataSystemNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -81,6 +83,14 @@ namespace GradientSignal
         AZ::Crc32 GetTag(int tagIndex) const override;
         void RemoveTag(int tagIndex) override;
         void AddTag(AZStd::string tag) override;
+
+        //////////////////////////////////////////////////////////////////////////
+        // SurfaceDataSystemNotificationBus
+        void OnSurfaceChanged(
+            const AZ::EntityId& entityId,
+            const AZ::Aabb& oldBounds,
+            const AZ::Aabb& newBounds,
+            const SurfaceData::SurfaceTagSet& changedSurfaceTags) override;
 
     private:
         SurfaceMaskGradientConfig m_configuration;
