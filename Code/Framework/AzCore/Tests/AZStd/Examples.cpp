@@ -57,10 +57,9 @@ namespace UnitTest
             // Make sure the buffer pointer is aligned to 16 bytes.
             AZ_TEST_ASSERT((AZStd::size_t(&myAlignedBuffer) & 15) == 0);
 
-            // POD
-            // Checks if a type is POD (Plain Old Data).
-            AZ_TEST_STATIC_ASSERT(is_pod<MyStruct>::value == true);
-            AZ_TEST_STATIC_ASSERT(is_pod<MyClass>::value == false);
+            // Checks if a type is trivial
+            AZ_TEST_STATIC_ASSERT(is_trivial<MyStruct>::value == true);
+            AZ_TEST_STATIC_ASSERT(is_trivial<MyClass>::value == false);
 
             // TypeTraitExample-End
         }
