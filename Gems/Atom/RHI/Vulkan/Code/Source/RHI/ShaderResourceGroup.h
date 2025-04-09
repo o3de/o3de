@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/vector.h>
@@ -24,9 +24,9 @@ namespace AZ
         class ShaderResourceGroupPool;
 
         class ShaderResourceGroup
-            : public RHI::ShaderResourceGroup
+            : public RHI::DeviceShaderResourceGroup
         {
-            using Base = RHI::ShaderResourceGroup;
+            using Base = RHI::DeviceShaderResourceGroup;
             friend class ShaderResourceGroupPool;
 
         public:
@@ -48,7 +48,6 @@ namespace AZ
             /// The current index into the compiled data array.
             uint32_t m_compiledDataIndex = 0;
             uint64_t m_lastCompileFrameIteration = 0;
-            RHI::Ptr<DescriptorSetLayout> m_descriptorSetLayout;
             AZStd::vector<RHI::Ptr<DescriptorSet>> m_compiledData;
         };
     }

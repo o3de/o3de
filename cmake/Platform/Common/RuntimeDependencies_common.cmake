@@ -179,7 +179,7 @@ function(o3de_get_dependencies_for_target)
     get_target_property(is_imported ${target} IMPORTED)
     if(is_imported)
         set(skip_imported FALSE)
-        if(target_type MATCHES "(STATIC_LIBRARY)")
+        if(target_type MATCHES "(STATIC_LIBRARY|OBJECT_LIBRARY)")
             # No need to copy these dependencies since the outputs are not used at runtime
             set(skip_imported TRUE)
         endif()
@@ -310,7 +310,7 @@ function(o3de_get_command_for_dependency)
     if(TARGET ${dependency})
 
         get_target_property(target_type ${dependency} TYPE)
-        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS OR target_type STREQUAL UTILITY)
             return()
         endif()
 
@@ -370,10 +370,9 @@ function(o3de_get_file_from_dependency)
     unset(source_file)
     if(TARGET ${dependency})
         get_property(target_type TARGET ${dependency} PROPERTY TYPE)
-        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS OR target_type STREQUAL UTILITY)
             return()
         endif()
-
         set(source_file $<TARGET_FILE:${dependency}>)
     else()
         string(REGEX MATCH "^([^\n]*)[\n]?(.*)$" file_regex "${dependency}")
@@ -498,6 +497,17 @@ function(ly_delayed_generate_runtime_dependencies)
             set(target_file_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
             unset(target_file)
         endif()
+
+        if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
+            set(PYTHON_ROOT_PATH "$ENV{USERPROFILE}/.o3de/Python") # Windows
+        else()
+            set(PYTHON_ROOT_PATH "$ENV{HOME}/.o3de/Python") # Unix
+        endif()
+        set(PYTHON_PACKAGES_ROOT_PATH "${PYTHON_ROOT_PATH}/packages")
+        cmake_path(NORMAL_PATH PYTHON_PACKAGES_ROOT_PATH )
+
+        set(LY_CURRENT_PYTHON_PACKAGE_PATH "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}")
+        cmake_path(NORMAL_PATH LY_CURRENT_PYTHON_PACKAGE_PATH )
 
         ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
         string(CONFIGURE "${LY_COPY_COMMANDS}" LY_COPY_COMMANDS @ONLY)

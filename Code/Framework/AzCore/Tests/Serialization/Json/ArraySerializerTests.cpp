@@ -291,7 +291,7 @@ namespace JsonSerializationTests
     };
 
     using ArraySerializerConformityTestTypes = ::testing::Types<SimpleArraySerializerTestDescription, ComplexArraySerializerTestDescription>;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonArraySerializer, JsonSerializerConformityTests, ArraySerializerConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(JsonArraySerializer, JsonSerializerConformityTests, ArraySerializerConformityTestTypes));
 
     class JsonArraySerializerTests
         : public BaseJsonSerializerFixture

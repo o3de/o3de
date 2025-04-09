@@ -43,6 +43,7 @@ namespace AzFramework
         void LoadDefaultQualityGroup(QualityLevel qualityLevel = QualityLevel::LevelFromDeviceRules) override;
 
     private:
+        void EvaluateDeviceRules();
         void RegisterCvars();
 
         AZStd::string m_defaultGroupName;

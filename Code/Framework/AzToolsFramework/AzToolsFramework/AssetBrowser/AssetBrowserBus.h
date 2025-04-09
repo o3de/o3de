@@ -298,6 +298,9 @@ namespace AzToolsFramework
 
             virtual void BeginRemoveEntry(AssetBrowserEntry* entry) = 0;
             virtual void EndRemoveEntry() = 0;
+
+            virtual void BeginReset() = 0;
+            virtual void EndReset() = 0;
         };
 
         using AssetBrowserModelRequestBus = AZ::EBus<AssetBrowserModelRequests>;
@@ -355,7 +358,10 @@ namespace AzToolsFramework
             virtual void ClearPreview(){};
 
             //! Preview the selected entry in the scene settings window, returns true if successful 
-            virtual bool PreviewSceneSettings([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){ return false; };
+            virtual void PreviewSceneSettings([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){};
+
+            //! Check if the source asset can be opened in the scene settings
+            virtual bool HandleSource([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const { return false; };
 
             //! Opens and returns the scene settings window
             virtual QMainWindow* GetSceneSettings() { return nullptr; }

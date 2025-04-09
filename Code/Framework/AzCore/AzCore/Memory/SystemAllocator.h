@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Memory/AllocatorBase.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -42,13 +43,13 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         // IAllocator
 
-        pointer         allocate(size_type byteSize, size_type alignment) override;
-        void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
-        pointer         reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override;
+        size_type       deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
         size_type get_allocated_size(pointer ptr, size_type alignment) const override;
         void            GarbageCollect() override                 { m_subAllocator->GarbageCollect(); }
 
-        size_type       NumAllocatedBytes() const override       { return m_subAllocator->NumAllocatedBytes(); }
+        size_type       NumAllocatedBytes() const override;
 
         //////////////////////////////////////////////////////////////////////////
 

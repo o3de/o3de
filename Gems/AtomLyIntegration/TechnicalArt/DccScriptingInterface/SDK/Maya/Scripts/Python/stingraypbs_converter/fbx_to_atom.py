@@ -20,7 +20,7 @@ ToDo:
 Add FBX2glTF subprocess to the script. 
 """
 
-atom_material = atomMat("C:\\atom\\dev\\AtomTest\\Editor\\Scripts\\atom\\maya\\StandardPBR_AllProperties.material")
+atom_material = atomMat("C:\\atom\\dev\\AtomTest\\Editor\\Scripts\\atom\\maya\\StandardPBR_AllProperties.json")
 
 """ All these path could be in configure file or bootstrapped """
 fbx_root = 'C:\\atom\\dev\\Gems\\AtomContent\\AtomDemoContent\\Assets\\Objects\\Peccy\\'

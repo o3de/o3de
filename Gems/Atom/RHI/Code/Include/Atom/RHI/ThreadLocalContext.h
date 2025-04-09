@@ -191,7 +191,7 @@ namespace AZ::RHI
 
         if (!counter)
         {
-            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC("ThreadContextMapIdMonotonicCounter", 0xb3e370ec), 1);
+            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC_CE("ThreadContextMapIdMonotonicCounter"), 1);
         }
 
         return counter->fetch_add(1);

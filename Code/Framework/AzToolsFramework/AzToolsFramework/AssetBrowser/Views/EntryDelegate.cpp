@@ -114,9 +114,9 @@ namespace AzToolsFramework
                 ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
                 : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-            if (!m_searchString.empty())
+            if (!m_searchString.isEmpty())
             {
-                displayString = AzToolsFramework::RichTextHighlighter::HighlightText(displayString, m_searchString.c_str());
+                displayString = AzToolsFramework::RichTextHighlighter::HighlightText(displayString, m_searchString);
             }
 
             RichTextHighlighter::PaintHighlightedRichText(displayString, painter, actualOption, remainingRect);
@@ -214,9 +214,9 @@ namespace AzToolsFramework
             return m_iconSize;
         }
 
-        void EntryDelegate::SetSearchString(QString searchString)
+        void EntryDelegate::SetSearchString(const QString& searchString)
         {
-            m_searchString = searchString.toUtf8().data();
+            m_searchString = searchString;
         }
 
         SearchEntryDelegate::SearchEntryDelegate(QWidget* parent)

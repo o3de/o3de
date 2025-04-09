@@ -13,7 +13,7 @@
 
 namespace TextureAtlasNamespace
 {
-    const static char* s_CoordinatePairsName = "Coordinate Pairs";
+    constexpr const char* s_CoordinatePairsName = "Coordinate Pairs";
 
     TextureAtlasImpl::TextureAtlasImpl()
     {
@@ -36,14 +36,14 @@ namespace TextureAtlasNamespace
         if (rootElement.GetVersion() < 2)
         {
             AZStd::unordered_map<AZStd::string, AtlasCoordinates> oldData;
-            if (!rootElement.GetChildData(AZ_CRC(s_CoordinatePairsName), oldData))
+            if (!rootElement.GetChildData(AZ_CRC_CE(s_CoordinatePairsName), oldData))
             {
                 AZ_Error("TextureAtlas", false, "Failed to find old %s unordered_map element on version %u", s_CoordinatePairsName, rootElement.GetVersion());
                 return false;
             }
 
             AZStd::unordered_map<AZStd::string, AtlasCoordinates, hash_case_insensitive, equal_to_case_insensitive> newData{ oldData.begin(), oldData.end() };
-            rootElement.RemoveElementByName(AZ_CRC(s_CoordinatePairsName));
+            rootElement.RemoveElementByName(AZ_CRC_CE(s_CoordinatePairsName));
             rootElement.AddElementWithData(context, s_CoordinatePairsName, newData);
         }
 

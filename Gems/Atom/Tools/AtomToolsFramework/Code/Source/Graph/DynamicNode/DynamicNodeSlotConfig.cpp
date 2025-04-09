@@ -89,7 +89,6 @@ namespace AtomToolsFramework
                 ->Property("name", BehaviorValueProperty(&DynamicNodeSlotConfig::m_name))
                 ->Property("displayName", BehaviorValueProperty(&DynamicNodeSlotConfig::m_displayName))
                 ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
-                ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
                 ->Property("enumValues", BehaviorValueProperty(&DynamicNodeSlotConfig::m_enumValues))
                 ->Property("supportedDataTypeRegex", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportedDataTypeRegex))
                 ->Property("defaultDataType", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultDataType))

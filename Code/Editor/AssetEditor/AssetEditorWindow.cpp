@@ -112,7 +112,7 @@ void AssetEditorWindow::SaveAssetAs(const AZStd::string_view assetPath)
 void AssetEditorWindow::RegisterViewClass()
 {
     AzToolsFramework::ViewPaneOptions options;
-    options.preferedDockingArea = Qt::LeftDockWidgetArea;
+    options.preferedDockingArea = Qt::NoDockWidgetArea;
     options.showOnToolsToolbar = true;
     options.toolbarIcon = ":/Menu/asset_editor.svg";
     AzToolsFramework::RegisterViewPane<AssetEditorWindow>(LyViewPane::AssetEditor, LyViewPane::CategoryTools, options);

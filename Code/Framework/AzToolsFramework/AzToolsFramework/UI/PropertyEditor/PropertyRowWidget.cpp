@@ -298,7 +298,7 @@ namespace AzToolsFramework
                 typeUuid = dataNode->GetClassMetadata()->m_typeId;
             }
 
-            m_handlerName = AZ_CRC("Default", 0xe35e00df);
+            m_handlerName = AZ_CRC_CE("Default");
 
             if (dataNode->GetElementEditMetadata())
             {
@@ -306,7 +306,7 @@ namespace AzToolsFramework
             }
 
             // If we're an enum type under the hood, our default handler should be the enum ComboBox handler
-            if (!m_handlerName || m_handlerName == AZ_CRC("Default", 0xe35e00df))
+            if (!m_handlerName || m_handlerName == AZ_CRC_CE("Default"))
             {
                 auto elementMetadata = dataNode->GetElementMetadata();
                 if (elementMetadata)
@@ -577,12 +577,12 @@ namespace AzToolsFramework
                         }
                         else
                         {
-                            m_defaultLabel->setText(QString("%1 elements").arg(m_containerSize));
+                            m_defaultLabel->setText(QString("%1 element%2").arg(m_containerSize).arg(m_containerSize > 1 ? "s" : ""));
                         }
                     }
                     else
                     {
-                        m_defaultLabel->setText(QString("%1 elements").arg(m_containerSize));
+                        m_defaultLabel->setText(QString("%1 element%2").arg(m_containerSize).arg(m_containerSize > 1 ? "s" : ""));
                     }
                 }
                 else
@@ -789,7 +789,7 @@ namespace AzToolsFramework
             {
                 for (const AZ::Edit::ElementData& element : classEditData->m_elements)
                 {
-                    if (element.m_elementId == AZ_CRC("EditorData", 0xf44f1a1d))
+                    if (element.m_elementId == AZ_CRC_CE("EditorData"))
                     {
                         for (const AZ::Edit::AttributePair& attrPair : element.m_attributes)
                         {
@@ -917,7 +917,7 @@ namespace AzToolsFramework
         QString* descriptionOut/*=nullptr*/, bool* foundDescriptionOut/*=nullptr*/)
     {
         // Attribute types you are allowed to update at runtime
-        if (attributeName == AZ_CRC("ForbidExpansion", 0x966ad11a))
+        if (attributeName == AZ_CRC_CE("ForbidExpansion"))
         {
             m_forbidExpansion = true;
         }
@@ -1007,7 +1007,7 @@ namespace AzToolsFramework
                 reader.Read<bool>(m_containerEditable);
             }
         }
-        else if ((initial) && (attributeName == AZ_CRC("Handler", 0x939715cd)))
+        else if ((initial) && (attributeName == AZ_CRC_CE("Handler")))
         {
             AZ::u32 elementId = 0;
             if (reader.Read<AZ::u32>(elementId))
@@ -1074,9 +1074,10 @@ namespace AzToolsFramework
         // safe for ChangeValidate events bound to member functions.
         // Here we'll avoid inheriting child ChangeValidate attributes unless it's actually
         // type-safe to do so.
-        AZ::Edit::AttributeFunction<bool(void*, const AZ::Uuid&)>* funcBool = azdynamic_cast<AZ::Edit::AttributeFunction<bool(void*, const AZ::Uuid&)>*>(reader.GetAttribute());
+        AZ::Attribute* functionObjectAttr = reader.GetAttribute();
 
-        const AZ::Uuid handlerTypeId = funcBool ? funcBool->GetInstanceType() : AZ::Uuid::CreateNull();
+        const AZ::Uuid handlerTypeId =
+            functionObjectAttr != nullptr ? functionObjectAttr->GetPotentialClassTypeId() : AZ::Uuid::CreateNull();
         InstanceDataNode* targetNode = ResolveToNodeByType(node, handlerTypeId);
 
         if (targetNode)
@@ -1483,9 +1484,27 @@ namespace AzToolsFramework
 
                 if (nodeToNotify)
                 {
+                    // The ChangeValidate attribute stores a lambda function accepts the actual C++ class type as the first argument
+                    // however, the AZ::AttributeReader supplies a void* for the class type
+                    // and assumes that the void* is of the instance of a class type.
+                    // For example the ChangeValidate attribute associated with a member function such as
+                    // `TerrainWorldConfig::ValidateHeightMin` would store a lambda in an AttributeInvocable with the following signature
+                    // `AZ::Outcome<void, AZStd::string> (*)(TerrainWorldConfig*, void* Uuid)`
+                    // The AZ::AttributeReader is technically unsafe for reading an attribute as it accepts a void* for the instance
+                    // Internally the Attribute Get() or Invoke() member functions reinterpret_cast the void* to the template class type
+                    // 
+                    // In order to support this case, the AttributeInvocable provides the `GetVoidInstanceAttributeInvocable` function
+                    // which wraps the original function object in a lambda that accepts the same parameters, except for the the first parameter.
+                    // The first parameter type is replaced with `void*` and the function itself performs a reinterpret_cast of that void*
+                    // to the original type of the first parameter
+                    // For the example case, the `GetVoidInstanceAttributeInvocable` function takes the
+                    // `AZ::Outcome<void, AZStd::string> (*)(TerrainWorldConfig*, void* Uuid)` lambda and then wraps it in another lambda
+                    // with the signature of `AZ::Outcome<void, AZStd::string> (*)(void*, void* Uuid)` where "TerrainWorldConfig*" has been
+                    // replaced with "void*"
+                    AZ::AttributeUniquePtr attributeForVoidInstance = changeValidator.m_attribute->GetVoidInstanceAttributeInvocable();
                     for (size_t idx = 0; idx < nodeToNotify->GetNumInstances(); ++idx)
                     {
-                        PropertyAttributeReader reader(nodeToNotify->GetInstance(idx), changeValidator.m_attribute);
+                        PropertyAttributeReader reader(nodeToNotify->GetInstance(idx), attributeForVoidInstance.get());
                         AZ::Outcome<void, AZStd::string> outcome;
                         if (reader.Read<AZ::Outcome<void, AZStd::string>>(outcome, valueToValidate, valueType))
                         {

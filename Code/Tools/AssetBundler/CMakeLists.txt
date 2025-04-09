@@ -47,9 +47,22 @@ ly_add_target(
             AZ::AssetBundlerBatch.Static
 )
 
-# Adds a specialized .setreg to identify gems enabled in the active project.
-# This associates the AssetBundlerBatch target with the .Builders gem variants.
-ly_set_gem_variant_to_load(TARGETS AssetBundlerBatch VARIANTS Builders)
+if(TARGET AssetBundlerBatch)
+    # Adds a specialized .setreg to identify gems enabled in the active project.
+    # This associates the AssetBundlerBatch target with the .Builders gem variants.
+    ly_set_gem_variant_to_load(TARGETS AssetBundlerBatch VARIANTS Builders)
+
+    set_source_files_properties(
+        source/utils/AssetBundlerBatchBuildTarget.cpp
+        PROPERTIES
+            COMPILE_DEFINITIONS
+                O3DE_CMAKE_TARGET="AssetBundlerBatch"
+    )
+else()
+    message(FATAL_ERROR "Cannot set O3DE_CMAKE_TARGET define to AssetBundlerBatch as the target doesn't exist anymore."
+        " Perhaps it has been renamed")
+endif()
+
 
 # AssetBundler - Qt GUI Application
 ly_add_target(
@@ -81,9 +94,22 @@ if(LY_DEFAULT_PROJECT_PATH)
     set_property(TARGET AssetBundler AssetBundlerBatch APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
 endif()
 
-# Adds a specialized .setreg to identify gems enabled in the active project.
-# This associates the AssetBundler target with the .Builders gem variants.
-ly_set_gem_variant_to_load(TARGETS AssetBundler VARIANTS Builders)
+if(TARGET AssetBundler)
+    # Adds a specialized .setreg to identify gems enabled in the active project.
+    # This associates the AssetBundler target with the .Builders gem variants.
+    ly_set_gem_variant_to_load(TARGETS AssetBundler VARIANTS Builders)
+
+    set_source_files_properties(
+        source/utils/AssetBundlerBuildTarget.cpp
+        PROPERTIES
+            COMPILE_DEFINITIONS
+                O3DE_CMAKE_TARGET="AssetBundler"
+    )
+else()
+    message(FATAL_ERROR "Cannot set O3DE_CMAKE_TARGET define to AssetBundler as the target doesn't exist anymore."
+        " Perhaps it has been renamed")
+endif()
+
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 

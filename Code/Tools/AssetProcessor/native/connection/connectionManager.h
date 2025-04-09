@@ -22,6 +22,13 @@
 #endif
 
 class Connection;
+//! defines the callback type for registering handlers to handle messages coming from outside into Asset Processor.
+//! params are 
+//! connectionId, who its coming from
+//! messageType, type of message, for use when you bind the same handler interface to many different message types
+//! int serial number of message, to check for duplicates and also if you want to respond, you must respond with the same number
+//! QByteArray payload, the payload of the message
+//! QString platform - the platform of the sender ("pc" for example)
 typedef AZStd::function<void(unsigned int, unsigned int, unsigned int, QByteArray, QString)> regFunc;
 typedef QMap<unsigned int, Connection*> ConnectionMap;
 typedef QMultiMap<unsigned int, regFunc> RouteMultiMap;

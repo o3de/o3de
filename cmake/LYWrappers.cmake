@@ -90,7 +90,7 @@ define_property(TARGET PROPERTY RUNTIME_DEPENDENCIES_DEPENDS
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE OBJECT HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE OBJECT HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY EXPORT_ALL_SYMBOLS)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -272,6 +272,14 @@ function(ly_add_target)
         target_compile_definitions(${ly_add_target_NAME}
             ${ly_add_target_COMPILE_DEFINITIONS}
         )
+    endif()
+
+    if(ly_add_target_SHARED AND ly_add_target_EXPORT_ALL_SYMBOLS)
+        if(PAL_PLATFORM_NAME STREQUAL "Windows")
+            set_target_properties(${ly_add_target_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+        else()
+            target_compile_options(${ly_add_target_NAME} PRIVATE ${PAL_TRAIT_EXPORT_ALL_SYMBOLS_COMPILE_OPTIONS})
+        endif()
     endif()
 
     # For any target that depends on AzTest and is built as an executable, an additional 'AZ_TEST_EXECUTABLE' define will
@@ -573,28 +581,53 @@ function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
 
     # Interface dependencies may require to find_packages. So far, we are just using packages for 3rdParty, so we will
     # search for those and automatically bring those packages. The naming convention used is 3rdParty::PackageName::OptionalInterface
+    unset(all_thirdparty_dependencies_found)
+
     foreach(dependency ${ly_THIRD_PARTY_LIBRARIES})
         string(REPLACE "::" ";" dependency_list ${dependency})
         list(GET dependency_list 0 dependency_namespace)
         if(${dependency_namespace} STREQUAL "3rdParty")
+            list(APPEND all_thirdparty_dependencies_found ${dependency})
             if (NOT TARGET ${dependency})
-                list(GET dependency_list 1 dependency_package)
-                list(LENGTH dependency_list dependency_list_length)
-                ly_download_associated_package(${dependency_package})
-                if (dependency_list_length GREATER 2)
-                    # There's an optional interface specified
-                    list(GET dependency_list 2 component)
-                    list(APPEND packages_with_components ${dependency_package})
-                    list(APPEND ${dependency_package}_components ${component})
+                if (O3DE_SCRIPT_ONLY)
+                    # we don't actually need 3p deps to try to download the package or call find_package.
+                    # instead we use pre-created part-of-the-installer 3p targets baked in from the above list
+                    # which will have been made at install time.
+                    # instead, we execute a pregenerated file that was created as part of install to 
+                    # create this target:
+                    string(REPLACE "::" "__" CLEAN_TARGET_NAME "${dependency}")  
+                    # not all 3ps actually exist as real targets, so this is an OPTIONAL include.
+                    include(${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/${CLEAN_TARGET_NAME}.cmake OPTIONAL)
                 else()
-                    find_package(${dependency_package} REQUIRED MODULE)
+                    list(GET dependency_list 1 dependency_package)
+                    list(LENGTH dependency_list dependency_list_length)
+                    ly_download_associated_package(${dependency_package})
+                    if (dependency_list_length GREATER 2)
+                        # There's an optional interface specified
+                        list(GET dependency_list 2 component)
+                        list(APPEND packages_with_components ${dependency_package})
+                        list(APPEND ${dependency_package}_components ${component})
+                    else()
+                        find_package(${dependency_package} REQUIRED MODULE)
+                    endif()
                 endif()
+
             endif()
         endif()
     endforeach()
 
     foreach(dependency IN LISTS packages_with_components)
         find_package(${dependency} REQUIRED MODULE COMPONENTS ${${dependency}_components})
+    endforeach()
+    
+    foreach(dependency ${all_thirdparty_dependencies_found})
+        if (TARGET ${dependency})
+            # keep track of all the 3p dependencies we actually depended on.
+            get_property(o3de_all_3rdparty_targets GLOBAL PROPERTY O3DE_ALL_3RDPARTY_TARGETS)
+            if(NOT ${dependency} IN_LIST o3de_all_3rdparty_targets)
+                set_property(GLOBAL APPEND PROPERTY O3DE_ALL_3RDPARTY_TARGETS "${dependency}")
+            endif()
+        endif()
     endforeach()
 endfunction()
 

@@ -71,6 +71,11 @@ namespace AZ
             m_filterParameterBuffer = dataBuffer;
         }
 
+        void EsmShadowmapsPass::SetEsmExponent(float exponent)
+        {
+            m_esmExponent = exponent;
+        }
+
         void EsmShadowmapsPass::SetBlurParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t childPassIndex)
         {
             if (m_shadowmapIndexTableBufferIndices[childPassIndex].IsNull())
@@ -84,6 +89,8 @@ namespace AZ
                 m_filterParameterBufferIndices[childPassIndex] = srg->FindShaderInputBufferIndex(Name("m_filterParameters"));
             }
             srg->SetBuffer(m_filterParameterBufferIndices[childPassIndex], m_filterParameterBuffer);
+
+            srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_esmExponent")), m_esmExponent);
         }
 
         void EsmShadowmapsPass::SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, uint32_t kawaseBlurIndex)

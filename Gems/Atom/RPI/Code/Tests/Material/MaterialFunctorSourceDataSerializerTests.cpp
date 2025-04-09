@@ -123,5 +123,5 @@ namespace JsonSerializationTests
     };
 
     using MaterialFunctorSourceDataSerializerTestTypes = ::testing::Types<MaterialFunctorSourceDataSerializerTestDescription>;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(MaterialFunctorSourceDataTests, JsonSerializerConformityTests, MaterialFunctorSourceDataSerializerTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(MaterialFunctorSourceDataTests, JsonSerializerConformityTests, MaterialFunctorSourceDataSerializerTestTypes));
 } // namespace JsonSerializationTests

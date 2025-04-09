@@ -42,7 +42,6 @@
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
@@ -1069,19 +1068,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
         //////////////////////////////////////////////////////////////////////////
         // LEVEL SYSTEM
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (usePrefabSystemForLevels)
-        {
-            m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
-        }
-        else
-        {
-            // [LYN-2376] Remove once legacy slice support is removed
-            m_pLevelSystem = new LegacyLevelSystem::CLevelSystem(this, ILevelSystem::GetLevelsDirectoryName());
-        }
+        m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
 
         InlineInitializationProcessing("CSystem::Init Level System");
 
@@ -1216,6 +1203,16 @@ void CSystem::CreateSystemVars()
         []([[maybe_unused]] const AZ::ConsoleCommandContainer& params)
         {
             GetISystem()->Quit();
+        });
+
+    static AZ::ConsoleFunctor<void, false> s_functorCrash(
+        "crash",
+        "Crash the engine",
+        AZ::ConsoleFunctorFlags::IsInvisible | AZ::ConsoleFunctorFlags::DontReplicate,
+        AZ::TypeId::CreateNull(),
+        []([[maybe_unused]] const AZ::ConsoleCommandContainer& params)
+        {
+            AZ_Crash();
         });
 
     m_sys_load_files_to_memory = REGISTER_STRING(

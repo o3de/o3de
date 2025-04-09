@@ -54,8 +54,8 @@ namespace AzToolsFramework
         static const int kAddComponentMenuHeight = 150;
     }
 
-    template<typename T>
-    void AddUniqueItemToContainer(AZStd::vector<T>& container, const T& element)
+    template<typename T, typename Alloc>
+    void AddUniqueItemToContainer(AZStd::vector<T, Alloc>& container, const T& element)
     {
         if (AZStd::find(container.begin(), container.end(), element) == container.end())
         {
@@ -131,7 +131,7 @@ namespace AzToolsFramework
 
 
     //generate a list of all valid or pending sibling components that are service-incompatible with the specified set of component
-    AZStd::unordered_set<AZ::Component*> GetRelatedIncompatibleComponents(const AZStd::vector<AZ::Component*>& components)
+    AZStd::unordered_set<AZ::Component*> GetRelatedIncompatibleComponents(AZStd::span<AZ::Component* const> components)
     {
         AZStd::unordered_set<AZ::Component*> allIncompatibleComponents;
         for (auto component : components)
@@ -161,6 +161,7 @@ namespace AzToolsFramework
 
             // this DPE is going into a scroll area, don't allow it to provide its own scrollbar
             m_dpe->SetAllowVerticalScroll(false);
+            m_dpe->SetEnforceMinWidth(false); // allow the DPE to get as small as the user prefers
             m_filterAdapter->SetSourceAdapter(m_adapter);
             m_dpe->SetAdapter(m_filterAdapter);
             connect(m_dpe, &DocumentPropertyEditor::ExpanderChangedByUser, this, &ComponentEditor::OnExpansionContractionDone);
@@ -181,7 +182,7 @@ namespace AzToolsFramework
             setContentWidget(m_propertyEditor);
         }
 
-        m_savedKeySeed = AZ_CRC("WorldEditorEntityEditor_Component", 0x926c865f);
+        m_savedKeySeed = AZ_CRC_CE("WorldEditorEntityEditor_Component");
         connect(this, &AzQtComponents::Card::expandStateChanged, this, &ComponentEditor::OnExpanderChanged);
         connect(GetHeader(), &ComponentEditorHeader::OnContextMenuClicked, this, &ComponentEditor::OnContextMenuClicked);
         connect(GetHeader(), &ComponentEditorHeader::iconLabelClicked, this, &ComponentEditor::OnIconLabelClicked);
@@ -334,7 +335,7 @@ namespace AzToolsFramework
             return;
         }
 
-        AZStd::map<QString, AZStd::vector<AZ::Component*> > uniqueMessages;
+        AZStd::map<QString, AZ::Entity::ComponentArrayType > uniqueMessages;
         //Go through all of the warnings and printing them as notifications.
         for (const auto& warning : forwardPendingComponentInfo.m_warnings)
         {
@@ -432,8 +433,8 @@ namespace AzToolsFramework
 
     AzQtComponents::CardNotification* ComponentEditor::CreateNotificationForMissingComponents(
         const QString& message, 
-        const AZStd::vector<AZ::ComponentServiceType>& services, 
-        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices)
+        const AZ::ComponentDescriptor::DependencyArrayType& services,
+        const AZ::ComponentDescriptor::DependencyArrayType& incompatibleServices)
     {
         auto notification = CreateNotification(message);
         auto featureButton = notification->addButtonFeature(tr("Add Required Component \342\226\276"));
@@ -602,6 +603,19 @@ namespace AzToolsFramework
         GetPropertyEditor()->QueueInvalidation(refreshLevel);
     }
 
+    void ComponentEditor::QueuePropertyEditorInvalidationForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel refreshLevel)
+    {
+        for (const auto component : m_components)
+        {
+            if ((component->GetId() == entityComponentIdPair.GetComponentId()) 
+             && (component->GetEntityId() == entityComponentIdPair.GetEntityId()))
+            {
+                GetPropertyEditor()->QueueInvalidation(refreshLevel);
+                break;
+            }
+        }
+    }
+
     void ComponentEditor::CancelQueuedRefresh()
     {
         GetPropertyEditor()->CancelQueuedRefresh();
@@ -726,7 +740,7 @@ namespace AzToolsFramework
             return QString();
         }
 
-        const AZStd::vector<AZ::Component*>& components = entity->GetComponents();
+        const auto& components = entity->GetComponents();
 
         // Gather required services for the component.
         AZ::ComponentDescriptor::DependencyArrayType requiredServices;
@@ -864,7 +878,7 @@ namespace AzToolsFramework
                         AZ::u32 visibilityValue;
                         if (reader.Read<AZ::u32>(visibilityValue))
                         {
-                            if (visibilityValue == AZ_CRC("PropertyVisibility_Hide", 0x32ab90f7))
+                            if (visibilityValue == AZ_CRC_CE("PropertyVisibility_Hide"))
                             {
                                 visible = false;
                             }

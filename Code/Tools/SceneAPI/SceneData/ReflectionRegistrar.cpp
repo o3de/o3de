@@ -7,6 +7,7 @@
  */
 
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
+#include <SceneAPI/SceneData/Groups/ImportGroup.h>
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Groups/SkeletonGroup.h>
 #include <SceneAPI/SceneData/Groups/SkinGroup.h>
@@ -60,6 +61,7 @@ namespace AZ
             }
 
             // Groups
+            SceneData::ImportGroup::Reflect(context);
             SceneData::MeshGroup::Reflect(context);
             SceneData::SkeletonGroup::Reflect(context);
             SceneData::SkinGroup::Reflect(context);

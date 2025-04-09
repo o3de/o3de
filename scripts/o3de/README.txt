@@ -16,14 +16,14 @@ as querying existing gems and templates
 REQUIREMENTS
 ------------
 
- * Python 3.10.5 (64-bit)
+ * Python 3.10.13 (64-bit)
 
 INSTALL
 -----------
 It is recommended to set up these these tools with O3DE's CMake build commands.
 Assuming CMake is already setup on your operating system, below are some sample build commands:
     cd /path/to/od3e/
-    cmake -B windows -S . -G"Visual Studio 16"
+    cmake -B windows -S .
 
 To manually install the project in development mode using your own installed Python interpreter:
     cd /path/to/od3e/o3de

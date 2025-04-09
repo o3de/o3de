@@ -58,7 +58,7 @@ namespace UnitTest
             m_bufferPool->Init(*m_device, poolDesc);
 
             m_buffer = static_cast<Buffer*>(RHI::Factory::Get().CreateBuffer().get());
-            RHI::BufferInitRequest initRequest;
+            RHI::DeviceBufferInitRequest initRequest;
             initRequest.m_buffer = m_buffer.get();
             initRequest.m_descriptor.m_byteCount = m_writerCommandStride * m_writerNumCommands;
             initRequest.m_descriptor.m_bindFlags = poolDesc.m_bindFlags;
@@ -161,7 +161,7 @@ namespace UnitTest
             return writer;
         }
 
-        void ValidateSignature(const RHI::IndirectBufferSignature& signature)
+        void ValidateSignature(const RHI::DeviceIndirectBufferSignature& signature)
         {
             ValidateLayout(signature.GetLayout());
             EXPECT_TRUE(signature.IsInitialized());
@@ -181,7 +181,7 @@ namespace UnitTest
         AZStd::vector<RHI::IndirectCommandDescriptor> m_commands;
 
         AZStd::unique_ptr<SerializeContext> m_serializeContext;
-        RHI::IndirectBufferSignatureDescriptor m_signatureDescriptor;
+        RHI::DeviceIndirectBufferSignatureDescriptor m_signatureDescriptor;
 
         RHI::Ptr<BufferPool> m_bufferPool;
         RHI::Ptr<Buffer> m_buffer;
@@ -300,7 +300,7 @@ namespace UnitTest
                 .Times(1)
                 .WillOnce(
                     testing::Return(RHI::ResultCode::InvalidOperation));
-            RHI::IndirectBufferSignatureDescriptor descriptor;
+            RHI::DeviceIndirectBufferSignatureDescriptor descriptor;
             EXPECT_TRUE(signature->Init(*m_device, descriptor) == RHI::ResultCode::InvalidOperation);
             EXPECT_FALSE(signature->IsInitialized());
         }
@@ -483,7 +483,7 @@ namespace UnitTest
                 {
                     auto index = m_signatureDescriptor.m_layout.FindCommandIndex(RHI::IndirectBufferViewArguments{ s_vertexSlotIndex });
                     EXPECT_FALSE(index.IsNull());
-                    AZ::RHI::StreamBufferView bufferView(*m_buffer, 0, 12, 10);
+                    AZ::RHI::DeviceStreamBufferView bufferView(*m_buffer, 0, 12, 10);
                     EXPECT_CALL(*writer, SetVertexViewInternal(index, testing::_)).Times(1);
                     writer->SetVertexView(s_vertexSlotIndex, bufferView);
                     break;
@@ -492,7 +492,7 @@ namespace UnitTest
                 {
                     auto index = m_signatureDescriptor.m_layout.FindCommandIndex(command.m_type);
                     EXPECT_FALSE(index.IsNull());
-                    AZ::RHI::IndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
+                    AZ::RHI::DeviceIndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
                     EXPECT_CALL(*writer, SetIndexViewInternal(index, testing::_)).Times(1);
                     writer->SetIndexView(indexView);
                     break;
@@ -501,9 +501,10 @@ namespace UnitTest
                 {
                     auto index = m_signatureDescriptor.m_layout.FindCommandIndex(command.m_type);
                     EXPECT_FALSE(index.IsNull());
-                    AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
-                    EXPECT_CALL(*writer, DrawIndexedInternal(index, testing::_)).Times(1);
-                    writer->DrawIndexed(arguments);
+                    AZ::RHI::DrawInstanceArguments drawInstanceArgs(1, 2);
+                    AZ::RHI::DrawIndexed arguments(3, 4, 5);
+                    EXPECT_CALL(*writer, DrawIndexedInternal(index, testing::_, testing::_)).Times(1);
+                    writer->DrawIndexed(arguments, drawInstanceArgs);
                     break;
                 }
                 case RHI::IndirectCommandType::RootConstants:
@@ -539,13 +540,13 @@ namespace UnitTest
 
         // Write command on uninitialized writer
         {
-             RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
-;
-             AZ::RHI::DrawIndexed arguments(1, 2, 3, 4, 5);
-             EXPECT_CALL(*writer, DrawIndexedInternal(testing::_, testing::_)).Times(0);
-             AZ_TEST_START_TRACE_SUPPRESSION;
-             writer->DrawIndexed(arguments);
-             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+            RHI::Ptr<IndirectBufferWriter> writer = aznew NiceIndirectBufferWriter;
+            AZ::RHI::DrawInstanceArguments drawInstanceArgs(1, 2);
+            AZ::RHI::DrawIndexed arguments(3, 4, 5);
+            EXPECT_CALL(*writer, DrawIndexedInternal(testing::_, testing::_, testing::_)).Times(0);
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            writer->DrawIndexed(arguments, drawInstanceArgs);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
         // Flush
@@ -553,7 +554,7 @@ namespace UnitTest
             auto writer = CreateInitializedWriter();
             writer->Flush();
             EXPECT_FALSE(m_buffer->IsMapped());
-            AZ::RHI::IndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
+            AZ::RHI::DeviceIndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
             EXPECT_CALL(*writer, SetIndexViewInternal(testing::_, testing::_)).Times(1);
             writer->SetIndexView(indexView);
             EXPECT_TRUE(m_buffer->IsMapped());

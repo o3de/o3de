@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/FrameGraphCompileContext.h>
-#include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/FrameGraphAttachmentDatabase.h>
+#include <Atom/RHI/FrameGraphCompileContext.h>
 #include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/ImageView.h>
+
 
 namespace AZ::RHI
 {
@@ -65,7 +66,7 @@ namespace AZ::RHI
         const BufferView* bufferView = GetBufferView(attachmentId);
         if (bufferView)
         {
-            return &bufferView->GetBuffer();
+            return bufferView->GetBuffer();
         }
         return nullptr;
     }
@@ -97,7 +98,7 @@ namespace AZ::RHI
         const ImageView* imageView = GetImageView(attachmentId);
         if (imageView)
         {
-            return &imageView->GetImage();
+            return imageView->GetImage();
         }
         return nullptr;
     }

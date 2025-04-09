@@ -6,11 +6,10 @@
  *
  */
 
+#include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
-#include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <Atom/RHI.Reflect/ImageViewDescriptor.h>
+#include <Atom/RHI/ImageView.h>
 
 namespace AZ::RHI
 {
@@ -24,25 +23,20 @@ namespace AZ::RHI
     {
         return m_descriptor;
     }
-    
-    void Image::GetSubresourceLayouts(
-        const ImageSubresourceRange& subresourceRange,
-        ImageSubresourceLayout* subresourceLayouts,
-        size_t* totalSizeInBytes) const
-    {
-        const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
 
-        ImageSubresourceRange subresourceRangeClamped;
-        subresourceRangeClamped.m_mipSliceMin = subresourceRange.m_mipSliceMin;
-        subresourceRangeClamped.m_mipSliceMax = AZStd::clamp<uint16_t>(subresourceRange.m_mipSliceMax, subresourceRange.m_mipSliceMin, imageDescriptor.m_mipLevels - 1);
-        subresourceRangeClamped.m_arraySliceMin = subresourceRange.m_arraySliceMin;
-        subresourceRangeClamped.m_arraySliceMax = AZStd::clamp<uint16_t>(subresourceRange.m_arraySliceMax, subresourceRange.m_arraySliceMin, imageDescriptor.m_arraySize - 1);
-        GetSubresourceLayoutsInternal(subresourceRangeClamped, subresourceLayouts, totalSizeInBytes);
-    }
-
-    uint32_t Image::GetResidentMipLevel() const
+    void Image::GetSubresourceLayout(ImageSubresourceLayout& subresourceLayout, ImageAspectFlags aspectFlags) const
     {
-        return m_residentMipLevel;
+        ImageSubresourceRange subresourceRange;
+        subresourceRange.m_mipSliceMin = 0;
+        subresourceRange.m_mipSliceMax = 0;
+        subresourceRange.m_arraySliceMin = 0;
+        subresourceRange.m_arraySliceMax = 0;
+        subresourceRange.m_aspectFlags = aspectFlags;
+
+        IterateObjects<DeviceImage>([&subresourceRange, &subresourceLayout](auto deviceIndex, auto deviceImage)
+        {
+            deviceImage->GetSubresourceLayouts(subresourceRange, &subresourceLayout.GetDeviceImageSubresource(deviceIndex), nullptr);
+        });
     }
 
     const ImageFrameAttachment* Image::GetFrameAttachment() const
@@ -50,23 +44,29 @@ namespace AZ::RHI
         return static_cast<const ImageFrameAttachment*>(Resource::GetFrameAttachment());
     }
 
-    void Image::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
-    {
-        const ImageDescriptor& descriptor = GetDescriptor();
-
-        MemoryStatistics::Image* imageStats = builder.AddImage();
-        imageStats->m_name = GetName();
-        imageStats->m_bindFlags = descriptor.m_bindFlags;
-
-        ImageSubresourceRange subresourceRange;
-        subresourceRange.m_mipSliceMin = static_cast<uint16_t>(GetResidentMipLevel());
-        GetSubresourceLayouts(subresourceRange, nullptr, &imageStats->m_sizeInBytes);
-        imageStats->m_minimumSizeInBytes = imageStats->m_minimumSizeInBytes;
-    }
-    
     Ptr<ImageView> Image::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
     {
         return Base::GetResourceView(imageViewDescriptor);
+    }
+
+    uint32_t Image::GetResidentMipLevel() const
+    {
+        auto minLevel{AZStd::numeric_limits<uint32_t>::max()};
+        IterateObjects<DeviceImage>([&minLevel]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        {
+            minLevel = AZStd::min(minLevel, deviceImage->GetResidentMipLevel());
+        });
+        return minLevel;
+    }
+
+    bool Image::IsStreamable() const
+    {
+        bool isStreamable{true};
+        IterateObjects<DeviceImage>([&isStreamable]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        {
+            isStreamable &= deviceImage->IsStreamable();
+        });
+        return isStreamable;
     }
 
     ImageAspectFlags Image::GetAspectFlags() const
@@ -79,13 +79,23 @@ namespace AZ::RHI
         HashValue64 hash = HashValue64{ 0 };
         hash = m_descriptor.GetHash();
         hash = TypeHash64(m_supportedQueueMask, hash);
-        hash = TypeHash64(m_residentMipLevel, hash);
         hash = TypeHash64(m_aspectFlags, hash);
         return hash;
     }
 
-    bool Image::IsStreamable() const
+    void Image::Shutdown()
     {
-        return IsStreamableInternal();
+        Resource::Shutdown();
     }
-}
+
+    void ImageSubresourceLayout::Init(MultiDevice::DeviceMask deviceMask, const DeviceImageSubresourceLayout &deviceLayout)
+    {
+        MultiDeviceObject::IterateDevices(
+            deviceMask,
+            [this, deviceLayout](int deviceIndex)
+            {
+                m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
+                return true;
+            });
+    }
+} // namespace AZ::RHI

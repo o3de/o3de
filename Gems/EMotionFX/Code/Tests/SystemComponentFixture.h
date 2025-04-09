@@ -148,15 +148,15 @@ namespace EMotionFX
             // Clear the queue of messages from unit tests on our buses
             EMotionFX::Integration::ActorNotificationBus::ClearQueuedEvents();
 
+            m_app.Stop();
+
             UnitTest::LeakDetectionFixture::TearDown();
         }
 
         ~ComponentFixture() override
         {
-            if (GetSystemEntity()->GetState() == AZ::Entity::State::Active)
-            {
-                GetSystemEntity()->Deactivate();
-            }
+            // note to future maintainers, 
+            // The System Entity is destroyed in m_app.Stop(), no need to manually destroy it here.
         }
 
         AZ::SerializeContext* GetSerializeContext()

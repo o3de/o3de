@@ -806,6 +806,10 @@ namespace MaterialEditor
             AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
         m_materialSourceData.m_materialType =
             AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_materialType);
+        // If the material was previously saved with a reference to a material pipeline generated material type in the intermediate asset
+        // folder, attempt to redirect to the original source material type.
+        m_materialSourceData.m_materialType =
+            AZ::RPI::MaterialUtils::PredictOriginalMaterialTypeSourcePath(m_materialSourceData.m_materialType);
 
         // Load the material type source data which provides the layout and default values of all of the properties
         auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(m_materialSourceData.m_materialType);

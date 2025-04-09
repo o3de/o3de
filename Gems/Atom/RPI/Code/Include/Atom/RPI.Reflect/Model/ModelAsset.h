@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -27,16 +28,18 @@ namespace AZ
         //! Contains a set of RPI::ModelLodAsset objects.
         //! Serialized to a .azmodel file.
         //! Actual model data is stored in the BufferAssets referenced by ModelLodAssets.
-        class ModelAsset
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ModelAsset
             : public AZ::Data::AssetData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelAssetCreator;
             friend class ModelAssetHelpers;
 
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "ModelAsset" };
+            static constexpr const char* Group{ "Model" };
+            static constexpr const char* Extension{ "azmodel" };
 
             AZ_RTTI(ModelAsset, "{2C7477B6-69C5-45BE-8163-BCD6A275B6D8}", AZ::Data::AssetData);
             AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator);
@@ -62,6 +65,20 @@ namespace AZ
             size_t GetLodCount() const;
 
             AZStd::span<const Data::Asset<ModelLodAsset>> GetLodAssets() const;
+
+            // These two functions are used to keep references for BufferAssets so we can release them when they are done using after RPI::Model was created
+            // Sometime they might need to be stay in memory for certain cpu operations such as ray intersection etc.
+
+            //! Increase reference for an overall reference count for all BufferAssets referenced by this ModelAsset
+            //! When the ref count was 0, increase ref count would trigger block loading for all the BufferAssets
+            void AddRefBufferAssets();
+
+            //! Reduce reference for an overall reference count for all BufferAssets referenced by this ModelAsset
+            //! When the ref count reaches 0 after the reduce, it would release all the BufferAssets from the ModelAsset
+            void ReleaseRefBufferAssets();
+
+            //! Returns true if the ModelAsset contains data which is required by LocalRayIntersectionAgainstModel() function.
+            bool SupportLocalRayIntersection() const;
 
             //! Checks a ray for intersection against this model. The ray must be in the same coordinate space as the model.
             //! Important: only to be used in the Editor, it may kick off a job to calculate spatial information.
@@ -125,14 +142,23 @@ namespace AZ
                 float& distanceNormalized,
                 AZ::Vector3& normal) const;
 
+            // load/release all the BufferAsset references by this ModelAsset's ModelLodAssets.
+            void LoadBufferAssets();
+            void ReleaseBufferAssets();
+
             // Various model information used in raycasting
             AZ::Name m_positionName{ "POSITION" };
             // there is a tradeoff between memory use and performance but anywhere under a few thousand triangles or so remains under a few milliseconds per ray cast
-            static const AZ::u32 s_minimumModelTriangleCountToOptimize = 100;
+            static constexpr AZ::u32 s_minimumModelTriangleCountToOptimize = 100;
             mutable AZStd::unique_ptr<ModelKdTree> m_kdTree;
             volatile mutable bool m_isKdTreeCalculationRunning = false;
             mutable AZStd::mutex m_kdTreeLock;
             mutable AZStd::optional<AZStd::size_t> m_modelTriangleCount;
+
+            // An overall reference count for all BufferAssets referenced by this ModelAsset
+            // Set default to 1 since the ModelAsset would load all its BufferAssets by default.
+            // ModelAsset would release these BufferAssets if this ref count reach 0 to save memory
+            AZStd::atomic<size_t> m_bufferAssetsRef = 1;
             
             // Lists all of the material slots that are used by this LOD.
             // Note the same slot can appear in multiple LODs in the model, so that LODs don't have to refer back to the model asset.
@@ -146,9 +172,12 @@ namespace AZ
             AZStd::vector<AZ::Name> m_tags;
         };
 
-        class ModelAssetHandler
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_REFLECT_API ModelAssetHandler
             : public AssetHandler<ModelAsset>
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
 

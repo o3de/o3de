@@ -50,7 +50,12 @@ namespace AzNetworking
         return ProcessData(name, value);
     }
 
-    bool StringifySerializer::Serialize(int64_t& value, const char* name, int64_t, int64_t)
+    bool StringifySerializer::Serialize(long& value, const char* name, long, long)
+    {
+        return ProcessData(name, value);
+    }
+
+    bool StringifySerializer::Serialize(AZ::s64& value, const char* name, AZ::s64, AZ::s64)
     {
         return ProcessData(name, value);
     }
@@ -70,7 +75,12 @@ namespace AzNetworking
         return ProcessData(name, value);
     }
 
-    bool StringifySerializer::Serialize(uint64_t& value, const char* name, uint64_t, uint64_t)
+    bool StringifySerializer::Serialize(unsigned long& value, const char* name, unsigned long, unsigned long)
+    {
+        return ProcessData(name, value);
+    }
+
+    bool StringifySerializer::Serialize(AZ::u64& value, const char* name, AZ::u64, AZ::u64)
     {
         return ProcessData(name, value);
     }

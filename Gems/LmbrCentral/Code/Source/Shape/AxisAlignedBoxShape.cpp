@@ -57,7 +57,7 @@ namespace LmbrCentral
         BoxShape::OnTransformChanged(local, worldNoRotation);
     }
 
-    bool AxisAlignedBoxShape::IsTypeAxisAligned()
+    bool AxisAlignedBoxShape::IsTypeAxisAligned() const
     {
         return true;
     }

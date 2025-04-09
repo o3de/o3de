@@ -66,9 +66,15 @@ namespace AzToolsFramework
         QMenu* GetMenu();
         const QMenu* GetMenu() const;
 
-        // Displays the Menu
+        // Displays the menu.
         void DisplayAtPosition(QPoint screenPosition) const;
         void DisplayUnderCursor() const;
+
+        // Returns position of the menu.
+        QPoint GetMenuPosition() const;
+
+        // Returns whether the menu is currently visible.
+        bool IsMenuVisible() const;
 
         // Clears the menu and creates a new one from the EditorMenu information.
         void RefreshMenu();

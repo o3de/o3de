@@ -34,6 +34,8 @@
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzCore/Utils/Utils.h>
+
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"
 #endif
@@ -93,10 +95,18 @@ namespace LegacyFramework
     }
 
     Application::Application()
-        : Application(0, nullptr)
+        : Application(0, nullptr, {})
     {}
+
+    Application::Application(AZ::ComponentApplicationSettings componentAppSettings)
+        : Application(0, nullptr, AZStd::move(componentAppSettings))
+    {}
+
     Application::Application(int argc, char** argv)
-        : ComponentApplication(argc, argv)
+        : Application(argc, argv, {})
+    {}
+    Application::Application(int argc, char** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : ComponentApplication(argc, argv, AZStd::move(componentAppSettings))
     {
         m_isPrimary = true;
         m_desiredExitCode = 0;
@@ -138,7 +148,7 @@ namespace LegacyFramework
 
     AZStd::string Application::GetApplicationGlobalStoragePath()
     {
-        return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toUtf8().data();
+        return AZ::Utils::GetProjectUserPath().c_str();
     }
 
     void Application::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)

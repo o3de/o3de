@@ -32,13 +32,15 @@ namespace AZ
         public:
             //! AzslCompiler constructor
             //! @param inputFilePath      The target input file to compile. Should be a valid AZSL file with no preprocessing directives.
-            AzslCompiler(const AZStd::string& inputFilePath);
+            AzslCompiler(const AZStd::string& inputFilePath, const AZStd::string& tempFolder);
 
             //! compile with --full and generate all .json files
+            //! @param outputFile="" will use the input as base path.
             Outcome<ShaderBuilderUtility::AzslSubProducts::Paths> EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments,
-                const AZStd::string& outputFile = "") const;
+                                                                               const AZStd::string& outputFile = "") const;
             //! compile to HLSL independently
-            bool EmitShader(AZ::IO::GenericStream& outputStream, const AZStd::string& extraCompilerParams) const;
+            bool EmitShader(AZ::IO::GenericStream& outputStream,
+                            const AZStd::string& extraCompilerParams) const;
             //! compile with --ia independently and populate document @output
             bool EmitInputAssembler(rapidjson::Document& output) const;
             //! compile with --om  independently
@@ -59,7 +61,7 @@ namespace AZ
             //! make sense of a --srg json document and fill up the srg data container
             bool ParseSrgPopulateSrgData(const rapidjson::Document& input, SrgDataContainer& outSrgData) const;
             //! make sense of a --option json document and fill up the shader option group layout
-            bool ParseOptionsPopulateOptionGroupLayout(const rapidjson::Document& input, RPI::Ptr<RPI::ShaderOptionGroupLayout>& shaderOptionGroupLayout) const;
+            bool ParseOptionsPopulateOptionGroupLayout(const rapidjson::Document& input, RPI::Ptr<RPI::ShaderOptionGroupLayout>& shaderOptionGroupLayout, bool& outSpecializationConstants) const;
             //! make sense of a --bindingdep json documment and fill up the binding dependencies object
             bool ParseBindingdepPopulateBindingDependencies(const rapidjson::Document& input, BindingDependencies& bindingDependencies) const;
             //! make sense of a --srg json document and fill up the root constant data
@@ -96,6 +98,7 @@ namespace AZ
                 const char* outputExtension) const;
 
             AZStd::string m_inputFilePath;
+            AZStd::string m_tempFolder;
         };
     }
 }

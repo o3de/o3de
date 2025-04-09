@@ -34,6 +34,10 @@ set(CPACK_AWS_PROFILE "" CACHE STRING
 "AWS CLI profile for uploading artifacts."
 )
 
+set(CPACK_SNAP_DISTRO "" CACHE STRING
+  "Sets the base snap OS distro (core20, 22, etc) for the snap build"
+)
+
 set(CPACK_THREADS 0)
 set(CPACK_DESIRED_CMAKE_VERSION 3.22.0)
 if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})

@@ -13,6 +13,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/Component/EntityBus.h>
+#include <QObject>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -39,14 +40,14 @@ namespace AZ::DocumentPropertyEditor
         // AzToolsFramework::ToolsApplicationEvents::Bus overrides
         void InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
+        // AzToolsFramework::ToolsApplicationEvents::Bus overrides
+        void InvalidatePropertyDisplayForComponent(AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::PropertyModificationRefreshLevel level) override;
+
         // AzToolsFramework::PropertyEditorGUIMessages::Bus overrides
         void RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
         virtual void SetComponent(AZ::Component* componentInstance);
-
-        //! Trigger a refresh based on messages from the listeners
-        void DoRefresh();
 
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
@@ -63,6 +64,7 @@ namespace AZ::DocumentPropertyEditor
     private:
         //! Checks if the component is still valid in the entity.
         bool IsComponentValid() const;
+        void DoRefresh();
 
     protected:
         AZ::EntityId m_entityId;
@@ -74,6 +76,9 @@ namespace AZ::DocumentPropertyEditor
 
         enum AzToolsFramework::PropertyModificationRefreshLevel m_queuedRefreshLevel =
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
+
+        //! object, used in conjunction with a QPointer, to track if this component is still alive
+        QObject m_stillAlive;
     };
 
 } // namespace AZ::DocumentPropertyEditor

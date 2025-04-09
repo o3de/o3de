@@ -27,7 +27,16 @@ namespace AZ::SerializeContextTools
     //   it isn't used.
 
     Application::Application(int argc, char** argv, AZ::IO::FileDescriptorCapturer* stdoutCapturer)
-        : AzToolsFramework::ToolsApplication(&argc, &argv)
+        : Application(argc, argv, stdoutCapturer, {})
+    {
+    }
+
+    Application::Application(int argc, char** argv, ComponentApplicationSettings componentAppSettings)
+        : Application(argc, argv, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
+    Application::Application(int argc, char** argv, AZ::IO::FileDescriptorCapturer* stdoutCapturer, ComponentApplicationSettings componentAppSettings)
+        : AzToolsFramework::ToolsApplication(&argc, &argv, AZStd::move(componentAppSettings))
         , m_stdoutCapturer(stdoutCapturer)
     {
         // We need a specialized variant of EditorEntityContextComponent for the SliceConverter, so we register the descriptor here.

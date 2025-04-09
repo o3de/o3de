@@ -13,12 +13,14 @@
 
 #ifdef IMGUI_ENABLED
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -26,6 +28,7 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
@@ -43,6 +46,8 @@ static const constexpr uint32_t IMGUI_WHEEL_DELTA = 120; // From WinUser.h, for 
 using LyButtonImGuiNavIndexPair = AZStd::pair<AzFramework::InputChannelId, ImGuiNavInput_>;
 using LyButtonImGuiNavIndexMap = AZStd::fixed_unordered_map<AzFramework::InputChannelId, ImGuiNavInput_, 11, 32>;
 static LyButtonImGuiNavIndexMap s_lyInputToImGuiNavIndexMap;
+
+ constexpr static const char* ImguiConsoleKeyBindingRegPath = "/O3DE/Imgui/ConsoleKey";
 
 AZ_DEFINE_BUDGET(ImGui);
 
@@ -89,6 +94,26 @@ namespace
         const auto& it = AZStd::find(touches.cbegin(), touches.cend(), inputChannelId);
         return it != touches.cend() ? static_cast<unsigned int>(it - touches.cbegin()) : UINT_MAX;
     }
+
+    /**
+        Utility function to find an AzFrameworkInput device key from it's name.
+
+        @param  the name of the AzFrameworkInput device key.
+        @return the inputChannelId found or null otherwise.
+     */
+    const InputChannelId* GetAzKeyChannelId(const AZStd::string& inputChannelName)
+    {
+        const auto& keys = InputDeviceKeyboard::Key::All;
+        const auto& it = AZStd::find_if(
+            keys.cbegin(),
+            keys.cend(),
+            [&](const InputChannelId& inputChannel)
+        {
+                return AZ::StringFunc::Equal(inputChannel.GetName(), inputChannelName.c_str());
+        });
+
+        return it != keys.cend() ? it : nullptr;
+    }
 }
 
 void ImGuiManager::Initialize()
@@ -108,7 +133,7 @@ void ImGuiManager::Initialize()
     // Let the application process the path
     AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, imgGuiLibPath);
     m_imgSharedLib = AZ::DynamicModuleHandle::Create(imgGuiLibPath.c_str());
-    if (!m_imgSharedLib->Load(false))
+    if (!m_imgSharedLib->Load())
     {
         AZ_Warning("ImGuiManager", false, "%s %s", __func__, "Unable to load " AZ_DYNAMIC_LIBRARY_PREFIX "imguilib" AZ_DYNAMIC_LIBRARY_EXTENSION "-- Skipping ImGui Initialization.");
         return;
@@ -189,6 +214,17 @@ void ImGuiManager::Initialize()
     const AzFramework::InputDevice* mouseDevice = AzFramework::InputDeviceRequests::FindInputDevice(AzFramework::InputDeviceMouse::Id);
     m_hardwardeMouseConnected = mouseDevice && mouseDevice->IsConnected();
 
+    m_consoleKeyInputChannelId = InputDeviceKeyboard::Key::NavigationHome;
+    if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+    {
+        AZStd::string consoleKeyName;
+        if (settingsRegistry->Get(consoleKeyName, ImguiConsoleKeyBindingRegPath);
+            const InputChannelId* consoleKey = GetAzKeyChannelId(consoleKeyName))
+        {
+            m_consoleKeyInputChannelId = *consoleKey;
+        }
+    }
+
     AZ::Interface<ImGui::IImGuiManager>::Register(this);
 }
 
@@ -268,6 +304,16 @@ ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
         } 
         return nullptr;
     }
+    else if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+    {
+        int consoleDeactivated = 0;
+        console->GetCvarValue("sys_DeactivateConsole", consoleDeactivated);
+        if (consoleDeactivated != 0)
+        {
+            ToggleToImGuiVisibleState(DisplayState::Hidden);
+            return nullptr;
+        }
+    }
 
     ImGui::ImGuiContextScope contextScope(m_imguiContext);
 
@@ -346,13 +392,6 @@ ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
 
     // Start New Frame
     ImGui::NewFrame();
-
-    //// START FROM PREUPDATE
-    ICVar* consoleDisabled = gEnv->pConsole->GetCVar("sys_DeactivateConsole");
-    if (consoleDisabled && consoleDisabled->GetIVal() != 0)
-    {
-        m_clientMenuBarState = DisplayState::Hidden;
-    }
 
     // Advance ImGui by Elapsed Frame Time
     const AZ::TimeUs gameTickTimeUs = AZ::GetSimulationTickDeltaTimeUs();
@@ -448,8 +487,8 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         // Handle Keyboard Hotkeys
         if (inputChannel.IsStateBegan())
         {
-            // Cycle through ImGui Menu Bar States on ~ button press
-            if (inputChannelId == InputDeviceKeyboard::Key::PunctuationTilde)
+            // Cycle through ImGui Menu Bar States on the console key button press
+            if (inputChannelId == m_consoleKeyInputChannelId)
             {
                 ToggleThroughImGuiVisibleState();
             }

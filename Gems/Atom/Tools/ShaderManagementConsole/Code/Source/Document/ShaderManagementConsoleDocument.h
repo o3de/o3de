@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
 #include <Document/ShaderManagementConsoleDocumentRequestBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 namespace ShaderManagementConsole
 {
@@ -46,11 +47,20 @@ namespace ShaderManagementConsole
         bool BeginEdit() override;
         bool EndEdit() override;
 
-        // ShaderManagementConsoleDocumentRequestBus::Handler overridfes...
+        // ShaderManagementConsoleDocumentRequestBus::Handler overrides...
+        void AddOneVariantRow() override;
+        void AppendSparseVariantSet(
+            AZStd::vector<AZ::Name> optionHeaders,
+            AZStd::vector<AZ::Name> matrixOfValues) override;
+        void MultiplySparseVariantSet(
+            AZStd::vector<AZ::Name> optionHeaders,
+            AZStd::vector<AZ::Name> matrixOfValues) override;
+        void DefragmentVariantList() override;
         void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;
         const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const override;
         size_t GetShaderOptionDescriptorCount() const override;
         const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const override;
+        DocumentVerificationResult Verify() const override;
 
     private:
         // AtomToolsFramework::AtomToolsDocument overrides...
@@ -62,7 +72,7 @@ namespace ShaderManagementConsole
         // Read shader variant list source data from JSON and initialize the document
         bool LoadShaderSourceData();
 
-        // Read shader source data from JSON then find all references to to populate the shader variant list and initialize the document
+        // Read shader source data from JSON then find all references to populate the shader variant list and initialize the document
         bool LoadShaderVariantListSourceData();
 
         // Copy shaderVariantIN to shaderVariantOUT, if the targetOption exist, update the value to targetValue

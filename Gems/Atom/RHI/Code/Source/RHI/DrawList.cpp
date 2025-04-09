@@ -35,7 +35,11 @@ namespace AZ::RHI
                     {
                         return a.m_sortKey < b.m_sortKey;
                     }
-                    return a.m_depth < b.m_depth;
+                    if (a.m_depth != b.m_depth)
+                    {
+                        return a.m_depth < b.m_depth;
+                    }
+                    return a.m_item < b.m_item;
                 }
             );
             break;
@@ -47,7 +51,11 @@ namespace AZ::RHI
                     {
                         return a.m_sortKey < b.m_sortKey;
                     }
-                    return a.m_depth > b.m_depth;
+                    if (a.m_depth != b.m_depth)
+                    {
+                        return a.m_depth > b.m_depth;
+                    }
+                    return a.m_item < b.m_item;
                 }
             );
             break;
@@ -59,7 +67,11 @@ namespace AZ::RHI
                     {
                         return a.m_depth < b.m_depth;
                     }
-                    return a.m_sortKey < b.m_sortKey;
+                    if (a.m_sortKey != b.m_sortKey)
+                    {
+                        return a.m_sortKey < b.m_sortKey;
+                    }
+                    return a.m_item < b.m_item;
                 }
             );
             break;
@@ -71,7 +83,11 @@ namespace AZ::RHI
                     {
                         return a.m_depth > b.m_depth;
                     }
-                    return a.m_sortKey < b.m_sortKey;
+                    if (a.m_sortKey != b.m_sortKey)
+                    {
+                        return a.m_sortKey < b.m_sortKey;
+                    }
+                    return a.m_item < b.m_item;
                 }
             );
             break;

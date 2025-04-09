@@ -161,11 +161,14 @@ namespace AzToolsFramework
             void UpdateCachedWorldTransform();
             void ClearCachedWorldTransform();
 
-            bool ShowClearButtonHandler();
-
             // SliceEntityHierarchyRequestBus
             AZ::EntityId GetSliceEntityParentId() override;
             AZStd::vector<AZ::EntityId> GetSliceEntityChildren() override;
+
+            // For tools
+            // Returns false if the component did not exist and failed to be added.
+            // Returns true otherwise, and always updates the non-uniform scale value.
+            bool AddNonUniformScaleComponent(const AZ::Vector3& nonUniformScale);
 
         private:
             // AZ::TransformNotificationBus - Connected to parent's ID
@@ -182,10 +185,7 @@ namespace AzToolsFramework
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
             static void Reflect(AZ::ReflectContext* context);
 
-            AZ::Outcome<void, AZStd::string> ValidatePotentialParent(void* newValue, const AZ::Uuid& valueType);
-
             AZ::u32 TransformChangedInspector();
-            AZ::u32 ParentChangedInspector();
             AZ::u32 StaticChangedInspector();
 
             bool TransformChanged();

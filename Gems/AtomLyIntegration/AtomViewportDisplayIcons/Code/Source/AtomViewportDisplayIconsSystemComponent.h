@@ -8,9 +8,11 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Asset/AssetCommon.h> // for AssetBus
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
-
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
@@ -47,6 +49,9 @@ namespace AZ
 
             // AzToolsFramework::EditorViewportIconDisplayInterface overrides...
             void DrawIcon(const DrawParameters& drawParameters) override;
+            void AddIcon(const DrawParameters& drawParameters) override;
+            void DrawIcons() override;
+
             IconId GetOrLoadIconForPath(AZStd::string_view path) override;
             IconLoadStatus GetIconLoadStatus(IconId icon) override;
 
@@ -64,6 +69,9 @@ namespace AZ
             QString FindAssetPath(const QString& path) const;
             QImage RenderSvgToImage(const QString& svgPath) const;
             AZ::Data::Instance<AZ::RPI::Image> ConvertToAtomImage(AZ::Uuid assetId, QImage image) const;
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> CreateIconSRG(AzFramework::ViewportId viewportId, AZ::Data::Instance<AZ::RPI::Image> image);
+            RHI::Ptr<RPI::DynamicDrawContext> GetDynamicDrawContextForViewport(AzFramework::ViewportId viewportId);
+            AZ::Data::Instance<AZ::RPI::Image> GetImageForIconId(IconId iconId);
 
             Name m_drawContextName = Name("ViewportIconDisplay");
             bool m_shaderIndexesInitialized = false;
@@ -79,6 +87,23 @@ namespace AZ
             IconId m_currentId = 0;
 
             bool m_drawContextRegistered = false;
+
+            AZStd::unordered_map<IconId, AZStd::vector<DrawParameters>> m_drawRequests;
+            AzFramework::ViewportId m_drawRequestViewportId = AzFramework::InvalidViewportId;
+            
+            using IconIndexData = AZ::u16;
+            struct IconVertexData
+            {
+                float m_position[3];
+                AZ::u32 m_color;
+                float m_uv[2];
+            };
+
+
+            // re-used between frames so that we don't constantly allocate new memory
+            AZStd::vector<IconVertexData> m_vertexCache;
+            AZStd::vector<IconIndexData> m_indexCache;
+
         };
     } // namespace Render
 } // namespace AZ

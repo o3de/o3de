@@ -214,7 +214,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                 compareFD.write('<!-- SPDX-License-Identifier: Apache-2.0 OR MIT                                -->\n')
                 compareFD.write('\n')
                 compareFD.write('<!-- This file is generated automatically at compile time, DO NOT EDIT BY HAND -->\n')
-                compareFD.write('<!-- Template Source {0}; XML Sources {1}-->\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write('<!-- Template Source {0};\n * XML Sources {1}-->\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".lua":
                 compareFD.write('-- Copyright (c) Contributors to the Open 3D Engine Project.\n')
@@ -223,7 +223,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                 compareFD.write('-- SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write('\n')
                 compareFD.write('-- This file is generated automatically at compile time, DO NOT EDIT BY HAND\n')
-                compareFD.write('-- Template Source {0}; XML Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write('-- Template Source {0};\n * XML Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".h" or outputExtension == ".hpp" or outputExtension == ".inl" or outputExtension == ".c" or outputExtension == ".cpp":
                 compareFD.write('/*\n')
@@ -233,7 +233,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                 compareFD.write(' * SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write(' *\n')
                 compareFD.write(' * This file is generated automatically at compile time, DO NOT EDIT BY HAND\n')
-                compareFD.write(' * Template Source {0}; Data Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write(' * Template Source {0};\n * Data Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write(' */\n')
                 compareFD.write('\n')
             compareFD.write(templateJinja.render(templateVars))

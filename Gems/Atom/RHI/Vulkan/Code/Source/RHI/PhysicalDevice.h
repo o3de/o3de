@@ -35,6 +35,8 @@ namespace AZ
             BufferDeviceAddress,
             SubgroupOperation,
             MemoryBudget,
+            LoadNoneOp,
+            StoreNoneOp,
             Count // Must be last
         };
 
@@ -62,6 +64,10 @@ namespace AZ
             FragmentShadingRate,
             FragmentDensityMap,
             Renderpass2,
+            TimelineSempahore,
+            LoadStoreOpNone,
+            SubpassMergeFeedback,
+            CalibratedTimestamps,
             Count
         };
 
@@ -104,7 +110,9 @@ namespace AZ
             const VkPhysicalDeviceFragmentDensityMapFeaturesEXT& GetPhysicalDeviceFragmentDensityMapFeatures() const;
             const VkPhysicalDeviceFragmentDensityMapPropertiesEXT& GetPhysicalDeviceFragmentDensityMapProperties() const;
             const VkPhysicalDeviceFragmentShadingRatePropertiesKHR& GetPhysicalDeviceFragmentShadingRateProperties() const;
-            
+            const VkPhysicalDeviceTimelineSemaphoreFeatures& GetPhysicalDeviceTimelineSemaphoreFeatures() const;
+            const VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT& GetPhysicalSubpassMergeFeedbackFeatures() const;
+
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
@@ -112,6 +120,10 @@ namespace AZ
             void LoadSupportedFeatures(const GladVulkanContext& context);
             //! Filter optional extensions based on what the physics device support.
             RawStringList FilterSupportedOptionalExtensions();
+            //! Returns the supported vulkan version of the physical device.
+            uint32_t GetVulkanVersion() const;
+            //! Query the set of available time domains for timestamp calibration
+            AZStd::vector<VkTimeDomainEXT> GetCalibratedTimeDomains(const GladVulkanContext& context) const;
 
         private:
             
@@ -147,6 +159,9 @@ namespace AZ
             VkPhysicalDeviceFragmentDensityMapFeaturesEXT m_fragmentDensityMapFeatures{};
             VkPhysicalDeviceFragmentDensityMapPropertiesEXT m_fragmentDensityMapProperties{};
             VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_fragmentShadingRateProperties{};
+            VkPhysicalDeviceTimelineSemaphoreFeatures m_timelineSemaphoreFeatures{};
+            VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT m_subpassMergeFeedbackFeatures{};
+            uint32_t m_vulkanVersion = 0;
         };
     }
 }

@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/DescriptorPool.h>
@@ -71,7 +71,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
+        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::DeviceShaderResourceGroup& groupBase)
         {
             RHI::ResultCode result = RHI::ResultCode::Success;
 
@@ -84,7 +84,8 @@ namespace AZ
                 {
                     return RHI::ResultCode::OutOfMemory;
                 }
-                descriptorSet->SetName(GetName());
+                AZStd::string name = AZStd::string::format("%s_%d", GetName().GetCStr(), static_cast<int>(i));
+                descriptorSet->SetName(AZ::Name(name));
                 group.m_compiledData.push_back(descriptorSet);
             }
             
@@ -101,7 +102,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
+        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::DeviceShaderResourceGroup& groupBase, const RHI::DeviceShaderResourceGroupData& groupData)
         {
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
 
@@ -109,6 +110,20 @@ namespace AZ
             DescriptorSet& descriptorSet = *group.m_compiledData[group.GetCompileDataIndex()];
 
             const RHI::ShaderResourceGroupLayout* layout = groupData.GetLayout();
+
+            {
+                size_t numUpdates = 0;
+                numUpdates += layout->GetShaderInputListForBuffers().size();
+                numUpdates += layout->GetShaderInputListForImages().size();
+                numUpdates += layout->GetShaderInputListForBufferUnboundedArrays().size();
+                numUpdates += layout->GetShaderInputListForImageUnboundedArrays().size();
+                numUpdates += layout->GetShaderInputListForSamplers().size();
+                if (!groupData.GetConstantData().empty())
+                {
+                    numUpdates++;
+                }
+                descriptorSet.ReserveUpdateData(numUpdates);
+            }
 
             for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForBuffers().size()); ++groupIndex)
             {
@@ -177,7 +192,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
             for (size_t i = 0; i < m_descriptorSetCount; ++i)

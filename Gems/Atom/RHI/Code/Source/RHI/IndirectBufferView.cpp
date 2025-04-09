@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/IndirectBufferView.h>
 #include <AzCore/std/hash.h>
 
@@ -61,4 +62,4 @@ namespace AZ::RHI
     {
         return m_signature;
     }
-}
+} // namespace AZ::RHI

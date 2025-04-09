@@ -7,7 +7,7 @@ set -euo pipefail
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-PY3_VERSION="3.10.5"
+PY3_VERSION="3.10.13"
 
 echo "Installing Python ${PY3_VERSION}"
 brew install python@${PY3_VERSION} || echo "Installation failed!"; exit 1

@@ -25,11 +25,11 @@ namespace AssetProcessor
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzToolsFramework::AssetDatabase;
 
-    class AssetProcessorManager_Test
+    class AssetProcessorManagerUnit_Test
         : public AssetProcessorManager
     {
     public:
-        explicit AssetProcessorManager_Test(PlatformConfiguration* config, QObject* parent = 0)
+        explicit AssetProcessorManagerUnit_Test(PlatformConfiguration* config, QObject* parent = 0)
             : AssetProcessorManager(config, parent)
         {}
 
@@ -105,7 +105,7 @@ namespace AssetProcessor
         m_config.AddMetaDataType("exportsettings", QString());
 
         // Configure asset processor manager
-        m_assetProcessorManager = AZStd::make_unique<AssetProcessorManager_Test>(&m_config);  // note, this will 'push' the scan folders in to the db.
+        m_assetProcessorManager = AZStd::make_unique<AssetProcessorManagerUnit_Test>(&m_config);  // note, this will 'push' the scan folders in to the db.
 
         m_assetProcessorConnections.append(connect(m_assetProcessorManager.get(), &AssetProcessorManager::AssetToProcess,
             this, [&](JobDetails details)
@@ -637,19 +637,6 @@ namespace AssetProcessor
         EXPECT_NE(m_assetMessages[1].m_sizeBytes, 0);
         EXPECT_TRUE(m_assetMessages[0].m_assetId.IsValid());
         EXPECT_TRUE(m_assetMessages[1].m_assetId.IsValid());
-        EXPECT_TRUE(!m_assetMessages[0].m_legacyAssetIds.empty());
-        EXPECT_TRUE(!m_assetMessages[1].m_legacyAssetIds.empty());
-        EXPECT_TRUE(m_assetMessages[0].m_legacyAssetIds[0].IsValid());
-        EXPECT_TRUE(m_assetMessages[1].m_legacyAssetIds[0].IsValid());
-        EXPECT_NE(m_assetMessages[0].m_legacyAssetIds[0], m_assetMessages[0].m_assetId);
-        EXPECT_NE(m_assetMessages[1].m_legacyAssetIds[0], m_assetMessages[1].m_assetId);
-
-        EXPECT_EQ(m_assetMessages[0].m_legacyAssetIds.size(), 3);
-        EXPECT_EQ(m_assetMessages[1].m_legacyAssetIds.size(), 2);
-
-        EXPECT_EQ(m_assetMessages[0].m_legacyAssetIds[1].m_subId, 1234);
-        EXPECT_EQ(m_assetMessages[0].m_legacyAssetIds[2].m_subId, 5678);
-        EXPECT_EQ(m_assetMessages[1].m_legacyAssetIds[1].m_subId, 2222);
 
         EXPECT_EQ(AssetUtilities::NormalizeFilePath(m_changedInputResults[0].first), AssetUtilities::NormalizeFilePath(absolutePath));
 
@@ -1465,10 +1452,8 @@ namespace AssetProcessor
 #if defined(AZ_PLATFORM_LINUX)
         // Linux is case-sensitive, so 'basefile.txt' will stay the same case as the other subfolder versions
         constexpr const char* subfolder3BaseFilePath = "subfolder3/basefile.txt";
-        constexpr int expectedLegacyAssetIdCount = 1;
 #else
         constexpr const char* subfolder3BaseFilePath = "subfolder3/BaseFile.txt";
-        constexpr int expectedLegacyAssetIdCount = 2;
 #endif
 
         MockApplicationManager mockAppManager;
@@ -1579,10 +1564,7 @@ namespace AssetProcessor
         // we should have got only one success:
         EXPECT_EQ(m_changedInputResults.size(), 4);
         EXPECT_EQ(m_assetMessages.size(), 4);
-        for (auto element : m_assetMessages)
-        {
-            EXPECT_EQ(element.m_legacyAssetIds.size(), expectedLegacyAssetIdCount);
-        }
+
 
         // ------------- setup complete, now do the test...
         // now feed it a file that has been overridden by a more important later file
@@ -2505,7 +2487,7 @@ namespace AssetProcessor
 
         {
             // create this, which will write those scan folders into the db as-is
-            AssetProcessorManager_Test apm(&config2);
+            AssetProcessorManagerUnit_Test apm(&config2);
             apm.CheckMissingFiles();
         }
 

@@ -26,8 +26,8 @@
 //   This is necessary to clear the pixel since the probes additively write their specular values
 //   in the following passes.
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>

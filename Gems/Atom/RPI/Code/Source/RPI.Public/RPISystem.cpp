@@ -26,6 +26,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
+#include <Atom/RPI.Public/PerformanceCollectionNotificationBus.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
@@ -76,12 +77,15 @@ namespace AZ
             GpuQuerySystemDescriptor::Reflect(context);
 
             PipelineStatisticsResult::Reflect(context);
+
+            PerformaceCollectionNotification::Reflect(context);
         }
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)
         {
             // Init RHI device(s)
-            m_rhiSystem.InitDevices(AzFramework::StringFunc::Equal(RHI::GetCommandLineValue("enableMultipleDevices").c_str(), "enable") ? RHI::InitDevicesFlags::MultiDevice : RHI::InitDevicesFlags::SingleDevice);
+            auto commandLineMultipleDevicesValue{ RHI::GetCommandLineValue("device-count") };
+            m_rhiSystem.InitDevices((commandLineMultipleDevicesValue != "") ? AZStd::stoi(commandLineMultipleDevicesValue) : 1);
 
             // Gather asset handlers from sub-systems.
             ImageSystem::GetAssetHandlers(m_assetHandlers);
@@ -205,6 +209,11 @@ namespace AZ
             }
             return nullptr;
         }
+
+        uint32_t RPISystem::GetNumScenes() const
+        {
+            return aznumeric_cast<uint32_t>(m_scenes.size());
+        }
         
         ScenePtr RPISystem::GetDefaultScene() const
         {
@@ -280,6 +289,34 @@ namespace AZ
         {
             const AZ::TimeUs currentSimulationTimeUs = AZ::GetRealElapsedTimeUs();
             return AZ::TimeUsToSeconds(currentSimulationTimeUs);
+        }
+
+        void RPISystem::InitXRSystem()
+        {
+            // The creation of an XR Session requires an asset that defines
+            // the action bindings for the application. This means the asset catalog
+            // must be available before creating the XR Session.
+            AZ_Assert(m_systemAssetsInitialized, "IntXRSystem should not be called before the asset system is ready.");
+
+            if (!m_xrSystem)
+            {
+                return;
+            }
+
+            auto xrRender = m_xrSystem->GetRHIXRRenderingInterface();
+            if (!xrRender)
+            {
+                return;
+            }
+
+            RHI::Ptr<RHI::XRDeviceDescriptor> xrDescriptor = m_rhiSystem.GetDevice()->BuildXRDescriptor();
+            [[maybe_unused]] auto result = xrRender->CreateDevice(xrDescriptor.get());
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR device");
+            AZ::RHI::XRSessionDescriptor sessionDescriptor;
+            result = xrRender->CreateSession(&sessionDescriptor);
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR session");
+            result = xrRender->CreateSwapChain();
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR swapchain");
         }
 
         void RPISystem::RenderTick()
@@ -417,6 +454,10 @@ namespace AZ
 
             m_systemAssetsInitialized = true;
             AZ_TracePrintf("RPI system", "System assets initialized\n");
+
+            // Now that the asset system is up and running, we can safely initialize
+            // the XR System and the XR Session.
+            InitXRSystem();
         }
 
         bool RPISystem::IsInitialized() const

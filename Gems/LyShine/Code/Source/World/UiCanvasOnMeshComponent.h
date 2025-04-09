@@ -56,18 +56,18 @@ public: // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiCanvasOnMeshService", 0xd2539f92));
+        provided.push_back(AZ_CRC_CE("UiCanvasOnMeshService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiCanvasOnMeshService", 0xd2539f92));
+        incompatible.push_back(AZ_CRC_CE("UiCanvasOnMeshService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("MeshService", 0x71d8a455));
-        required.push_back(AZ_CRC("UiCanvasRefService", 0xb4cb5ef4));
+        required.push_back(AZ_CRC_CE("MeshService"));
+        required.push_back(AZ_CRC_CE("UiCanvasRefService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

@@ -42,6 +42,12 @@ namespace UnitTest
         m_focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
         ASSERT_TRUE(m_focusModeInterface != nullptr);
 
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_enableOutlinerOverrideManagement", m_ed_enableOutlinerOverrideManagement);
+            console->PerformCommand("ed_enableOutlinerOverrideManagement true");
+        }
+
         // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
         GetApplication()->RegisterComponentDescriptor(UnitTest::BoundsTestComponent::CreateDescriptor());
 
@@ -67,6 +73,8 @@ namespace UnitTest
 
         // Clear selection
         ClearSelectedEntities();
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableOutlinerOverrideManagement", m_ed_enableOutlinerOverrideManagement);
     }
 
     void EditorFocusModeFixture::GenerateTestHierarchy()

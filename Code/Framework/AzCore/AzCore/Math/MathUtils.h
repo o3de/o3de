@@ -72,8 +72,8 @@ namespace AZ
         return (testValue & (testValue - 1)) == 0;
     }
 
-    //! Calculates at compile-time the integral log base 2 of the input value.
-    constexpr uint32_t Log2(uint64_t maxValue)
+    //! Calculates at compile-time the number of bits required to represent the given max value.
+    constexpr uint32_t RequiredBitsForValue(uint64_t maxValue)
     {
         uint32_t bits = 0;
         do
@@ -363,6 +363,22 @@ namespace AZ
         return a > b ? a : b;
     }
 
+    //! Return the gcd of 2 values.
+    //! \note we don't use names like clamp, min and max because many implementations define it as a macro.
+    template<typename T>
+    constexpr T GetGCD(T a, T b)
+    {
+        static_assert(std::is_integral<T>::value);
+        T c = a % b;
+        while (c != 0)
+        {
+            a = b;
+            b = c;
+            c = a % b;
+        }
+        return b;
+    }
+
     //! Returns a linear interpolation between 2 values.
     template<typename T>
     constexpr T Lerp(const T& a, const T& b, float t)
@@ -390,6 +406,45 @@ namespace AZ
     inline double LerpInverse(double a, double b, double value)
     {
         return IsClose(a, b, AZStd::numeric_limits<double>::epsilon()) ? 0.0 : (value - a) / (b - a);
+    }
+
+    //! Smooths a value towards a target using a critically damped spring system.
+    //! This function adjusts `value` towards `target` while maintaining continuity of `value` and its rate of change (`valueRate`).
+    //! The smoothing is controlled by `smoothTime`, with `timeDelta` representing the time since the last update.
+    //!
+    //! @param[in,out] value      The value to be smoothed.
+    //! @param[in,out] valueRate  The rate of change of the value.
+    //! @param[in]     timeDelta  The time interval since the last update (in seconds).
+    //! @param[in]     target     The target value to smooth towards.
+    //! @param[in]     smoothTime The timescale for smoothing (lag time or 2/omega, where omega is the spring frequency).
+    //!
+    //! @note This implements a critically damped spring system for smooth ease-in/ease-out behavior.
+    //! @note Uses a polynomial approximation to the exponential function for performance, accurate within 0.1% when
+    //!       smoothTime > 2 * timeDelta. For stiff springs or large frame spikes, accuracy may degrade slightly.
+    //! @note Based on "Critically Damped Ease-In/Ease-Out Smoothing" by Thomas Lowe, Game Programming Gems IV.
+    template<typename T>
+    AZ_MATH_INLINE void SmoothCriticallyDamped(T& value, T& valueRate, float timeDelta, const T& target, float smoothTime)
+    {
+        if (smoothTime > 0.0f)
+        {
+            const float omega = 2.0f / smoothTime;
+            const float x = omega * timeDelta;
+            const float exp = 1.0f / (1.0f + x + 0.48f * x * x + 0.235f * x * x * x);
+            const T change = value - target;
+            const T temp = static_cast<T>((valueRate + change * omega) * timeDelta);
+            valueRate = static_cast<T>((valueRate - temp * omega) * exp);
+            value = static_cast<T>(target + (change + temp) * exp);
+        }
+        else if (timeDelta > 0.0f)
+        {
+            valueRate = static_cast<T>((target - value) / timeDelta);
+            value = target;
+        }
+        else
+        {
+            value = target;
+            valueRate = T(0); // Zero the rate
+        }
     }
 
     //! Returns true if the number provided is even.

@@ -230,8 +230,14 @@ namespace Multiplayer
             if (Multiplayer::GetMultiplayer()->GetAgentType() == MultiplayerAgentType::ClientServer)
             {
                 m_handleLocalAutonomousToAuthorityRpcMessageEventHandle.Connect(m_sendAutonomousToAuthorityRpcEvent);
-                m_handleLocalAuthorityToAutonomousRpcMessageEventHandle.Connect(m_sendAuthorityToAutonomousRpcEvent);
                 m_handleLocalAuthorityToClientRpcMessageEventHandle.Connect(m_sendAuthorityToClientRpcEvent);
+
+                // Ensure a client-server player calls Handle<RPC> for AuthorityToAutonomous RPCs locally. The authority is also the player in this case.
+                // Non-players should not handle AuthorityToAutonomous RPCs locally, the remote client, which has autonomy, will handle it.
+                if (m_playerHostAutonomyEnabled)
+                {
+                    m_handleLocalAuthorityToAutonomousRpcMessageEventHandle.Connect(m_sendAuthorityToAutonomousRpcEvent);
+                }
             }
         }
         if (HasController())
@@ -249,6 +255,7 @@ namespace Multiplayer
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
         m_handleLocalAutonomousToAuthorityRpcMessageEventHandle.Disconnect();
         m_handleLocalAuthorityToClientRpcMessageEventHandle.Disconnect();
+        m_handleLocalAuthorityToAutonomousRpcMessageEventHandle.Disconnect();
         if (HasController())
         {
             GetNetworkEntityManager()->NotifyControllersDeactivated(m_netEntityHandle, EntityIsMigrating::False);
@@ -394,6 +401,18 @@ namespace Multiplayer
             return;
         }
 
+        if (Multiplayer::GetMultiplayer()->GetAgentType() != MultiplayerAgentType::ClientServer)
+        {
+            AZ_Error(
+                "NetBindComponent",
+                false,
+                "Failed to enable player host autonomy for network entity (%s). The multiplayer simulation is running the wrong multiplayer agent type (%s). "
+                "Only a Client-Server multiplayer agent can host their own player entity.",
+                GetEntity()->GetName().c_str(),
+                GetEnumString(Multiplayer::GetMultiplayer()->GetAgentType()));
+            return;
+        }
+
         // If the entity is already activated then deactivate all of the entity's multiplayer controllers before changing autonomy.
         // Multiplayer controllers will commonly perform different logic during their "OnActivate" depending on if the entity is autonomous.
         if (GetEntity()->GetState() == AZ::Entity::State::Active)
@@ -410,6 +429,17 @@ namespace Multiplayer
 
             // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role
             m_playerHostAutonomyEnabled = enabled;
+
+            // Set up the client-server player to call Handle<RPC> for AuthorityToAutonomous RPCs locally. The authority is also the player in this case.
+            // Non-players should not handle AuthorityToAutonomous RPCs locally; instead, the remote client will handle it.
+            if (m_playerHostAutonomyEnabled)
+            {
+                m_handleLocalAuthorityToAutonomousRpcMessageEventHandle.Connect(m_sendAuthorityToAutonomousRpcEvent);
+            }
+            else
+            {
+                m_handleLocalAuthorityToAutonomousRpcMessageEventHandle.Disconnect();
+            }
 
             // reactivate the controllers now that allow autonomy is true
             for (auto component : components)

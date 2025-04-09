@@ -119,7 +119,7 @@ namespace EMotionFX
         Vector4ParameterT
     >;
 
-    TYPED_TEST_CASE(CanSetParameterToDefaultValueWhenInGroupFixture, TypesToTest);
+    TYPED_TEST_SUITE(CanSetParameterToDefaultValueWhenInGroupFixture, TypesToTest);
 
     TYPED_TEST(CanSetParameterToDefaultValueWhenInGroupFixture, CanSetParameterToDefaultValueWhenInGroup)
     {

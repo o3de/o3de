@@ -57,10 +57,16 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr':
 AZ_POP_DISABLE_WARNING
 #include <QAction>
 
-AZ_CVAR_EXTERNED(bool, ed_enableDPE);
-
 namespace AzToolsFramework
 {
+    AZ_CVAR(
+        bool,
+        ed_enableDPEAssetEditor,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set, enables experimental Document Property Editor for the AssetEditor");
+
     namespace AssetEditor
     {
         // Amount to add on to the save confirm dialog text width to account for the icon etc when padding.
@@ -90,11 +96,12 @@ namespace AzToolsFramework
             if (!assetFullPath.empty())
             {
                 using SCCommandBus = SourceControlCommandBus;
+                bool opComplete = false;
                 SCCommandBus::Broadcast(
                     &SCCommandBus::Events::RequestEdit,
                     assetFullPath.c_str(),
                     true,
-                    [id, asset, assetFullPath, assetCheckoutAndSaveCallback](
+                    [id, asset, assetFullPath, assetCheckoutAndSaveCallback, &opComplete](
                         bool /*success*/, const SourceControlFileInfo& info)
                     {
                         if (!info.IsReadOnly())
@@ -118,7 +125,28 @@ namespace AzToolsFramework
                                 AZStd::move(AZStd::string::format("Could not check out asset file: %s.", assetFullPath.c_str()));
                             assetCheckoutAndSaveCallback(false, error, assetFullPath);
                         }
+                        opComplete = true;
                     });
+
+                // Broadcast is asynchronous above, (it queues an operation and returns immediately),
+                // but hooks into local variables and other lambdas that might be destroyed if we exit scope here.
+                // This operation also happens while the dialog is closing, and WILL close, destroying
+                // internal buffers like the save data itself, before this async operation proceeds and calls the callback.
+                // For these reasons we MUST block here, before proceeding.
+                //
+                // The above broadcast API also ALWAYS calls the callback, even if it failed or is unavailable, so we can bank on
+                // opComplete becoming true.  It also always calls it from the Tickbus, which is always the main GUI thread.
+
+                while (!opComplete)
+                {
+                    // note that the above operation could conceivably pop up a dialog that asks the user for permission
+                    // to edit a file or to show a password dialog or accept a certificate or any number of source control
+                    // things.  If it does, it will run its OWN modal event loop inside this event loop, which will accept
+                    // user input for itself.  However, we should forbid user input events here, so that we don't end up in a
+                    // double close situation.
+                    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 16);
+                    AZ::TickBus::ExecuteQueuedEvents();
+                }
             }
             else
             {
@@ -159,8 +187,13 @@ namespace AzToolsFramework
             setObjectName("AssetEditorTab");
 
             QWidget* propertyEditor = nullptr;
-            // TODO: Re-enable the DPE in the Asset Editor
-            //m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
+
+            // use the DPE version of the AssetEditor if ed_enableDPEAssetEditor is enabled
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("ed_enableDPEAssetEditor", m_useDPE);
+            }
+
             if (!m_useDPE)
             {
                 m_propertyEditor = new ReflectedPropertyEditor(this);
@@ -207,7 +240,6 @@ namespace AzToolsFramework
 
         AssetEditorTab::~AssetEditorTab()
         {
-            AZ::SystemTickBus::Handler::BusDisconnect();
         }
 
         bool AssetEditorTab::UserRefusedSave()
@@ -841,30 +873,17 @@ namespace AzToolsFramework
             SetStatusText(Status::emptyString);
         }
 
-        void AssetEditorTab::OnSystemTick()
+        void AssetEditorTab::ApplyStatusText(QString newText)
         {
-            if (!m_queuedAssetStatus.isEmpty())
-            {
-                ApplyStatusText();
-            }
-        }
+            QString statusString =  QStringLiteral("%1").arg(m_currentAsset);
 
-        void AssetEditorTab::ApplyStatusText()
-        {
-            QString statusString = QStringLiteral("%1");
-
-            statusString = statusString.arg(m_currentAsset).arg(m_queuedAssetStatus);
-
-            if (!m_queuedAssetStatus.isEmpty())
+            if (!newText.isEmpty())
             {
                 statusString.append(" - ");
-                statusString.append(m_queuedAssetStatus);
+                statusString.append(newText);
             }
 
             m_parentEditorWidget->SetStatusText(statusString);
-            m_queuedAssetStatus.clear();
-
-            AZ::SystemTickBus::Handler::BusDisconnect();
         }
 
         void AssetEditorTab::SetupHeader()
@@ -897,8 +916,7 @@ namespace AzToolsFramework
 
         void AssetEditorTab::SetStatusText(const QString& assetStatus)
         {
-            m_queuedAssetStatus = assetStatus;
-            AZ::SystemTickBus::Handler::BusConnect();
+            QMetaObject::invokeMethod(this, "ApplyStatusText", Qt::QueuedConnection, Q_ARG(QString, assetStatus));
         }
 
     } // namespace AssetEditor

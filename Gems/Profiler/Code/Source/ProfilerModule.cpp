@@ -43,4 +43,8 @@ namespace Profiler
     };
 }// namespace Profiler
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Profiler::ProfilerModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Profiler, Profiler::ProfilerModule)
+#endif

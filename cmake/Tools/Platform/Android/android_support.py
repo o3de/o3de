@@ -6,7 +6,7 @@
 #
 #
 
-import imghdr
+import puremagic
 import configparser
 import datetime
 import fnmatch
@@ -185,8 +185,9 @@ class AndroidProjectManifestEnvironment(object):
                 'SAMSUNG_DEX_KEEP_ALIVE':           multi_window_options['SAMSUNG_DEX_KEEP_ALIVE'],
                 'SAMSUNG_DEX_LAUNCH_WIDTH':         multi_window_options['SAMSUNG_DEX_LAUNCH_WIDTH'],
                 'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT'],
+                'OCULUS_INTENT_FILTER_CATEGORY':    oculus_intent_filter_category,
 
-                'OCULUS_INTENT_FILTER_CATEGORY':    oculus_intent_filter_category
+                'ANDROID_MANIFEST_PACKAGE_OPTION': f'package="{package_name}"',  # Legacy gradle 4.x support
             }
         except KeyError as e:
             raise common.LmbrCmdError(f"Missing key from android project settings for project at {project_path}:'{e}' ")
@@ -944,6 +945,8 @@ class AndroidProjectGenerator(object):
         else:
             gradle_build_env['SIGNING_CONFIGS'] = ""
 
+        gradle_build_env['PROJECT_NAMESPACE_OPTION'] = ""
+
         az_android_gradle_file = az_android_dst_path / 'build.gradle'
         self.create_file_from_project_template(src_template_file='build.gradle.in',
                                                template_env=gradle_build_env,
@@ -996,6 +999,8 @@ class AndroidProjectGenerator(object):
         # TODO: Add substitution entries here if variables are added to gradle.properties.in
         # Refer to the Code/Tools/Android/ProjectBuilder/gradle.properties.in for reference.
         grade_properties_env = {}
+        grade_properties_env['GRADLE_JVM_ARGS'] = ''
+
         gradle_properties_file = self.build_dir / 'gradle.properties'
         self.create_file_from_project_template(src_template_file='gradle.properties.in',
                                                template_env=grade_properties_env,
@@ -1032,7 +1037,7 @@ class AndroidProjectGenerator(object):
             src_path = self.android_project_builder_path / src_file
             resolved_src = src_path.resolve(strict=True)
 
-            if imghdr.what(resolved_src) in ('rgb', 'gif', 'pbm', 'ppm', 'tiff', 'rast', 'xbm', 'jpeg', 'bmp', 'png'):
+            if puremagic.what(resolved_src) in ('rgb', 'gif', 'pbm', 'ppm', 'tiff', 'rast', 'xbm', 'jpeg', 'bmp', 'png'):
                 # If the source file is a binary asset, then perform a copy to the target path
                 logging.debug("Copy Binary file %s -> %s", str(src_path.resolve(strict=True)), str(dst_path.resolve()))
                 dst_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1346,7 +1351,8 @@ class AndroidProjectGenerator(object):
                 'SIGNING_CONFIGS': '',
                 'SIGNING_DEBUG_CONFIG': '',
                 'SIGNING_PROFILE_CONFIG': '',
-                'SIGNING_RELEASE_CONFIG': ''
+                'SIGNING_RELEASE_CONFIG': '',
+                'PROJECT_NAMESPACE_OPTION': ''
             }
             build_gradle_content = common.load_template_file(template_file_path=android_project_builder_path / 'build.gradle.in',
                                                              template_env=build_gradle_env)
@@ -1631,6 +1637,18 @@ class AndroidSDKResolver(object):
         self.available_updates = {}
         self.refresh_sdk_installation()
 
+    def call_sdk_manager(self, arguments, action):
+        result_code, result_stdout, result_stderr = self.sdk_manager.exec(arguments, capture_stdout=True, suppress_stderr=False)
+        if result_code != 0:
+            # Provide a more concise error if a known execption is thrown indicating the wrong version of JAVA is set in the environment
+            if "java.lang.UnsupportedClassVersionError" in result_stderr:
+                err_msg = "The current installed java runtime is not compatible with the sdkmanager. Make sure that " \
+                          "java runtime version 11 is installed and JAVA_HOME is set to that path."
+            else:
+                err_msg = result_stderr
+            raise common.LmbrCmdError(f"An error occurred while {action}: \n{err_msg}")
+        return result_stdout
+
     def refresh_sdk_installation(self):
         """
         Utilize the sdk_manager command line tool from the Android SDK to collect / refresh the list of
@@ -1650,7 +1668,7 @@ class AndroidSDKResolver(object):
             package_map[item_components[0]] = AndroidSDKResolver.AvailableUpdate(item_components)
 
         # Use the SDK manager to collect the available and installed packages
-        result_code, result_stdout, result_stderr = self.sdk_manager.exec(['--list'], capture_stdout=True, suppress_stderr=True)
+        result_stdout = self.call_sdk_manager(['--list'], "retrieving package list")
 
         current_append_map = None
         current_item_factory = None
@@ -1737,9 +1755,7 @@ class AndroidSDKResolver(object):
 
         # Perform the package installation
         logging.info(f"Installing {available_package_to_install.description} ...")
-        result_code, result_stdout, result_stderr = self.sdk_manager.exec(['--install', available_package_to_install.path], capture_stdout=True, suppress_stderr=True)
-        if result_code != 0:
-            raise common.LmbrCmdError(f"Error installing package {available_package_to_install.path}: \n{result_stderr}")
+        self.call_sdk_manager(['--install', available_package_to_install.path], f"installing package {available_package_to_install.path}")
 
         # Refresh the tracked SDK Contents
         self.refresh_sdk_installation()
@@ -1751,5 +1767,4 @@ class AndroidSDKResolver(object):
             logging.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Installed")
             return installed_package_detail
         else:
-            raise common.LmbrCmdError(f"Error installing package {available_package_to_install.path}: \n{result_stderr}")
-
+            raise common.LmbrCmdError(f"Unable to verify package at {available_package_to_install.path}")

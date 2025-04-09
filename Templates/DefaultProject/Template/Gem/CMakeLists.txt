@@ -6,29 +6,10 @@
 #
 # {END_LICENSE}
 
-# Query the gem name from the gem.json file if possible
-# otherwise fallback to using ${Name}
-o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
-if (NOT gem_name)
-    set(gem_name "${Name}")
-endif()
-
-# Fallback to using the current source CMakeLists.txt directory as the gem root path
-if (NOT gem_path)
-    set(gem_path ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-
-set(gem_json ${gem_path}/gem.json)
-
-o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
-
-# Currently we are in the ${Name}/Code folder: ${CMAKE_CURRENT_LIST_DIR}
-# Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
-# Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
-#       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here : ${Name}/Code/Platform/<platform_name>  or
-#            <restricted_folder>/<platform_name>/${Name}/Code
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+# Setup the gem meta variables that includes the "gem_path", "gem_name" and "gem_version"
+# The "pal_dir" variable is also set which refers to the Platform/<platform-name> directory
+# based on the directory of this CMakeLists.txt
+o3de_gem_setup("${Name}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this project
@@ -76,6 +57,19 @@ ly_add_target(
             Gem::${gem_name}.Private.Object
             AZ::AzCore
 )
+
+# Include the gem name into the Client Module source file
+# for use with the AZ_DECLARE_MODULE_CLASS macro
+# This is to allow renaming of the gem to also cause
+# the CreateModuleClass_Gem_<gem-name> function which
+# is used to bootstrap the gem in monolithic builds to link to the new gem name
+ly_add_source_properties(
+SOURCES
+    Source/${Name}Module.cpp
+PROPERTY COMPILE_DEFINITIONS
+    VALUES
+        O3DE_GEM_NAME=${gem_name}
+        O3DE_GEM_VERSION=${gem_version})
 
 # if enabled, ${gem_name} is used by all kinds of applications
 ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})

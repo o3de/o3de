@@ -7,13 +7,20 @@
  */
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
+#include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
+
 
 namespace AZ::RHI
 {
     void Buffer::SetDescriptor(const BufferDescriptor& descriptor)
     {
         m_descriptor = descriptor;
+    }
+
+    void Buffer::Invalidate()
+    {
+        m_deviceObjects.clear();
     }
 
     const RHI::BufferDescriptor& Buffer::GetDescriptor() const
@@ -26,16 +33,6 @@ namespace AZ::RHI
         return static_cast<const BufferFrameAttachment*>(Resource::GetFrameAttachment());
     }
 
-    void Buffer::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
-    {
-        const BufferDescriptor& descriptor = GetDescriptor();
-
-        MemoryStatistics::Buffer* bufferStats = builder.AddBuffer();
-        bufferStats->m_name = GetName();
-        bufferStats->m_bindFlags = descriptor.m_bindFlags;
-        bufferStats->m_sizeInBytes = descriptor.m_byteCount;
-    }
-    
     Ptr<BufferView> Buffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
     {
         return Base::GetResourceView(bufferViewDescriptor);
@@ -47,4 +44,9 @@ namespace AZ::RHI
         hash = m_descriptor.GetHash();
         return hash;
     }
-}
+
+    void Buffer::Shutdown()
+    {
+        Resource::Shutdown();
+    }
+} // namespace AZ::RHI

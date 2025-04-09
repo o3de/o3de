@@ -22,7 +22,7 @@ namespace EMotionFX
 
     // constructor
     MotionQueue::MotionQueue(ActorInstance* actorInstance, MotionSystem* motionSystem)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         MCORE_ASSERT(actorInstance && motionSystem);
 

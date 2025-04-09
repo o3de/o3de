@@ -11,6 +11,7 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
@@ -49,7 +50,7 @@ namespace
         [[maybe_unused]] AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        int index = classElement.FindElement(AZ_CRC("SupportMarkup", 0x5e81a9c7));
+        int index = classElement.FindElement(AZ_CRC_CE("SupportMarkup"));
         if (index != -1)
         {
             classElement.RemoveElement(index);
@@ -74,7 +75,7 @@ namespace
         // the flag on. So the markup would stop working.
 
         // Just for safety check that the flag doesn't already exist
-        int index = classElement.FindElement(AZ_CRC("MarkupEnabled"));
+        int index = classElement.FindElement(AZ_CRC_CE("MarkupEnabled"));
         if (index == -1)
         {
             // The element does not exist (it really never should at this version)
@@ -95,16 +96,16 @@ namespace
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        int index = classElement.FindElement(AZ_CRC("FontFileName", 0x44defd6f));
+        int index = classElement.FindElement(AZ_CRC_CE("FontFileName"));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& fontFileNameNode = classElement.GetSubElement(index);
-            index = fontFileNameNode.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+            index = fontFileNameNode.FindElement(AZ_CRC_CE("BaseClass1"));
 
             if (index != -1)
             {
                 AZ::SerializeContext::DataElementNode& baseClassNode = fontFileNameNode.GetSubElement(index);
-                index = baseClassNode.FindElement(AZ_CRC("AssetPath", 0x2c355179));
+                index = baseClassNode.FindElement(AZ_CRC_CE("AssetPath"));
 
                 if (index != -1)
                 {
@@ -127,7 +128,7 @@ namespace
 
                         // The effect indicies have flip-flopped between the "default" and "default-ui"
                         // fonts. Handle the conversion here.
-                        index = classElement.FindElement(AZ_CRC("EffectIndex", 0x4d3320e3));
+                        index = classElement.FindElement(AZ_CRC_CE("EffectIndex"));
                         if (index != -1)
                         {
                             AZ::SerializeContext::DataElementNode& effectIndexNode = classElement.GetSubElement(index);
@@ -176,7 +177,7 @@ namespace
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        int index = classElement.FindElement(AZ_CRC("WrapTextSetting"));
+        int index = classElement.FindElement(AZ_CRC_CE("WrapTextSetting"));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& wrapTextSettingNode = classElement.GetSubElement(index);
@@ -202,7 +203,7 @@ namespace
                 }
 
                 // If ShrinkToFit doesn't exist yet, add it
-                index = classElement.FindElement(AZ_CRC("ShrinkToFit"));
+                index = classElement.FindElement(AZ_CRC_CE("ShrinkToFit"));
                 if (index == -1)
                 {
                     index = classElement.AddElement<int>(context, "ShrinkToFit");
@@ -241,7 +242,7 @@ namespace
         AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
-        int index = classElement.FindElement(AZ_CRC("OverflowMode"));
+        int index = classElement.FindElement(AZ_CRC_CE("OverflowMode"));
         if (index != -1)
         {
             AZ::SerializeContext::DataElementNode& overflowModeSettingNode = classElement.GetSubElement(index);
@@ -406,6 +407,7 @@ namespace
             }
             else if (!pImageTag->m_height.empty())
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for reading/writing floats with "." in them
                 imageHeight = AZ::GetMax(0.0f, AZStd::stof(pImageTag->m_height));
             }
 
@@ -3035,6 +3037,22 @@ void UiTextComponent::OnAtlasUnloaded(const TextureAtlasNamespace::TextureAtlas*
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+//! UiTextNotificationsBusBehaviorHandler Behavior context handler class
+class UiTextNotificationsBusBehaviorHandler
+    : public UiTextNotificationsBus::Handler
+    , public AZ::BehaviorEBusHandler
+{
+public:
+    AZ_EBUS_BEHAVIOR_BINDER(
+        UiTextNotificationsBusBehaviorHandler, "{ACCB73DC-86DD-4D1C-85B3-1E016BDAA495}", AZ::SystemAllocator, OnLayoutInvalidated);
+
+    void OnLayoutInvalidated() override
+    {
+        Call(FN_OnLayoutInvalidated);
+    }
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC STATIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3071,7 +3089,7 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiText.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiText.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(0, &UiTextComponent::m_text, "Text", "The text string")
@@ -3178,6 +3196,8 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
             ->VirtualProperty("LineSpacing", "GetLineSpacing", "SetLineSpacing");
 
         behaviorContext->Class<UiTextComponent>()->RequestBus("UiTextBus");
+
+        behaviorContext->EBus<UiTextNotificationsBus>("UiTextNotificationsBus")->Handler<UiTextNotificationsBusBehaviorHandler>();
 
         behaviorContext->EBus<UiClickableTextBus>("UiClickableTextBus")
             ->Event("SetClickableTextColor", &UiClickableTextBus::Events::SetClickableTextColor);
@@ -3731,6 +3751,8 @@ void UiTextComponent::MarkDrawBatchLinesDirty(bool invalidateLayout)
     if (invalidateLayout)
     {
         InvalidateLayout();
+
+        EBUS_EVENT_ID(GetEntityId(), UiTextNotificationsBus, OnLayoutInvalidated);
     }
 }
 

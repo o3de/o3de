@@ -149,3 +149,13 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
 
     return vertexData;
 }
+
+uint GetBindlessBufferIndex()
+{
+    return RayTracingSceneSrg::m_proceduralGeometryInfo[NonUniformResourceIndex(InstanceIndex()) - RayTracingSceneSrg::m_meshInfoCount][0];
+}
+
+uint GetLocalInstanceIndex()
+{
+    return RayTracingSceneSrg::m_proceduralGeometryInfo[NonUniformResourceIndex(InstanceIndex()) - RayTracingSceneSrg::m_meshInfoCount][1];
+}

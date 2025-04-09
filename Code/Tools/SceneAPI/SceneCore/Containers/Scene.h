@@ -26,7 +26,8 @@ namespace AZ
             {
             public:
                 AZ_TYPE_INFO(Scene, "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}");
-                
+
+                Scene() = default;
                 explicit Scene(const AZStd::string& name);
                 explicit Scene(AZStd::string&& name);
 

@@ -92,10 +92,10 @@ namespace AZ
             virtual bool GetExcludeFromReflectionCubeMaps() const = 0;
 
             //! Returns the axis-aligned bounding box for the model at its world position.
-            virtual AZ::Aabb GetWorldBounds() = 0;
+            virtual AZ::Aabb GetWorldBounds() const = 0;
 
             //! Returns the axis-aligned bounding box in model space.
-            virtual AZ::Aabb GetLocalBounds() = 0;
+            virtual AZ::Aabb GetLocalBounds() const = 0;
         };
         using MeshComponentRequestBus = EBus<MeshComponentRequests>;
 

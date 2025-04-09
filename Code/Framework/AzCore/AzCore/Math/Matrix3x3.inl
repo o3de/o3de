@@ -160,16 +160,33 @@ namespace AZ
 
     AZ_MATH_INLINE void Matrix3x3::StoreToRowMajorFloat9(float* values) const
     {
+        // note: StoreToFloat4 is potentially faster, even if we overwrite the last value immediately
         GetRow(0).StoreToFloat4(values);
         GetRow(1).StoreToFloat4(values + 3);
         GetRow(2).StoreToFloat3(values + 6);
     }
 
+    AZ_MATH_INLINE void Matrix3x3::StoreToRowMajorFloat11(float* values) const
+    {
+        // for GPU constant - buffers each float3 is aligned on a 16 bit border
+        GetRow(0).StoreToFloat4(values);
+        GetRow(1).StoreToFloat4(values + 4);
+        GetRow(2).StoreToFloat3(values + 8);
+    }
+
     AZ_MATH_INLINE void Matrix3x3::StoreToColumnMajorFloat9(float* values) const
     {
+        // note: StoreToFloat4 is potentially faster, even if we overwrite the last value immediately
         GetColumn(0).StoreToFloat4(values);
         GetColumn(1).StoreToFloat4(values + 3);
         GetColumn(2).StoreToFloat3(values + 6);
+    }
+
+    AZ_MATH_INLINE void Matrix3x3::StoreToColumnMajorFloat11(float* values) const
+    {
+        GetColumn(0).StoreToFloat4(values);
+        GetColumn(1).StoreToFloat4(values + 4);
+        GetColumn(2).StoreToFloat3(values + 8);
     }
 
     AZ_MATH_INLINE float Matrix3x3::GetElement(int32_t row, int32_t col) const

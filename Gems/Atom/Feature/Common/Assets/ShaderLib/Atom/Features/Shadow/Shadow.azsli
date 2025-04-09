@@ -8,7 +8,7 @@
 
 #pragma once
 
-static const float EsmExponentialShift = 87.; // slightly smaller value of log(FLT_MAX)
+static const real EsmExponentialShift = 87.; // slightly smaller value of log(FLT_MAX)
 
 // Must match the equivalent enumeration in ShadowConstants.h
 enum PcfFilterMethod { PcfFilterMethod_BoundarySearch = 0, PcfFilterMethod_Bicubic = 1 };
@@ -19,8 +19,8 @@ struct FilterParameter
     uint2 m_shadowmapOriginInSlice;
     uint m_shadowmapSize;
     float m_lightDistanceOfCameraViewFrustum;
-    float m_n_f_n; // n / (f - n)
-    float m_n_f;   // n - f
+    float m_nf;    // nf
+    float m_f_n;   // f - n
     float m_f;     // f
                    // where n: nearDepth, f: farDepth.
 };

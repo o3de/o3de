@@ -564,7 +564,7 @@ namespace AzToolsFramework
         return AZ::Success(sortKey.value());
     }
 
-    MenuManagerOperationResult MenuManager::DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition) const
+    MenuManagerOperationResult MenuManager::DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition)
     {
         auto menuIterator = m_menus.find(menuIdentifier);
         if (menuIterator == m_menus.end())
@@ -574,11 +574,13 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
+        m_lastDisplayedMenuIdentifier = menuIdentifier;
         menuIterator->second.DisplayAtPosition(screenPosition);
+
         return AZ::Success();
     }
 
-    MenuManagerOperationResult MenuManager::DisplayMenuUnderCursor(const AZStd::string& menuIdentifier) const
+    MenuManagerOperationResult MenuManager::DisplayMenuUnderCursor(const AZStd::string& menuIdentifier)
     {
         auto menuIterator = m_menus.find(menuIdentifier);
         if (menuIterator == m_menus.end())
@@ -587,8 +589,26 @@ namespace AzToolsFramework
                 "Menu Manager - Could not display menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
         }
 
+        m_lastDisplayedMenuIdentifier = menuIdentifier;
         menuIterator->second.DisplayUnderCursor();
+
         return AZ::Success();
+    }
+
+    MenuManagerPositionResult MenuManager::GetLastContextMenuPosition() const
+    {
+        if (m_lastDisplayedMenuIdentifier.empty())
+        {
+            return AZ::Failure("Menu Manager - Could not return last context menu position. No menu was displayed yet.");
+        }
+
+        auto menuIterator = m_menus.find(m_lastDisplayedMenuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure("Menu Manager - Could not return last context menu position. Menu could not be found.");
+        }
+
+        return menuIterator->second.GetMenuPosition();
     }
 
     MenuManagerOperationResult MenuManager::QueueRefreshForMenu(const AZStd::string& menuIdentifier)
@@ -693,6 +713,18 @@ namespace AzToolsFramework
         m_menuBarsToRefresh.clear();
     }
 
+    void MenuManager::RefreshLastDisplayedMenu()
+    {
+        if (!m_lastDisplayedMenuIdentifier.empty())
+        {
+            auto menuIterator = m_menus.find(m_lastDisplayedMenuIdentifier);
+            if (menuIterator != m_menus.end() && !menuIterator->second.IsMenuVisible())
+            {
+                m_lastDisplayedMenuIdentifier.clear();
+            }
+        }
+    }
+
     MenuManagerStringResult MenuManager::SerializeMenu(const AZStd::string& menuIdentifier)
     {
         if (!m_menus.contains(menuIdentifier))
@@ -768,6 +800,7 @@ namespace AzToolsFramework
     {
         RefreshMenus();
         RefreshMenuBars();
+        RefreshLastDisplayedMenu();
     }
 
     void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)

@@ -11,8 +11,10 @@
 #include <ProjectManagerDefs.h>
 #include <ProjectButtonWidget.h>
 #include <PythonBindingsInterface.h>
+#include <PythonBindings.h>
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
+#include <ProjectExportController.h>
 #include <ScreensCtrl.h>
 #include <SettingsInterface.h>
 #include <AddRemoteProjectDialog.h>
@@ -26,6 +28,7 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -49,6 +52,7 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QFileSystemWatcher>
+#include <QProcess>
 
 namespace O3DE::ProjectManager
 {
@@ -192,6 +196,7 @@ namespace O3DE::ProjectManager
         connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
         connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
         connect(projectButton, &ProjectButton::BuildProject, this, &ProjectsScreen::QueueBuildProject);
+        connect(projectButton, &ProjectButton::ExportProject, this, &ProjectsScreen::QueueExportProject);
         connect(projectButton, &ProjectButton::OpenCMakeGUI, this, 
             [this](const ProjectInfo& projectInfo)
             {
@@ -201,6 +206,8 @@ namespace O3DE::ProjectManager
                     QMessageBox::critical(this, tr("Failed to open CMake GUI"), result.GetError(), QMessageBox::Ok);
                 }
             });
+        connect(projectButton, &ProjectButton::OpenAndroidProjectGenerator, this, &ProjectsScreen::HandleOpenAndroidProjectGenerator);
+        connect(projectButton, &ProjectButton::OpenProjectExportSettings, this, &ProjectsScreen::HandleOpenProjectExportSettings);
 
         return projectButton;
     }
@@ -245,6 +252,11 @@ namespace O3DE::ProjectManager
     void ProjectsScreen::UpdateWithProjects(const QVector<ProjectInfo>& projects)
     {
         PythonBindingsInterface::Get()->RemoveInvalidProjects();
+
+        if(projects.isEmpty() && !m_projectButtons.empty())
+        {
+            RemoveProjectButtonsFromFlowLayout(projects);
+        }
 
         if (!projects.isEmpty())
         {
@@ -330,7 +342,21 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            // Let the user can cancel builds for projects in the build queue
+            if (m_currentExporter)
+            {
+                AZ::IO::Path exportProjectPath = AZ::IO::Path(m_currentExporter->GetProjectInfo().m_path.toUtf8().constData());
+                if (!exportProjectPath.empty())
+                {
+                    //Setup export button
+                    if (auto exportProjectIter = m_projectButtons.find(exportProjectPath);
+                        exportProjectIter != m_projectButtons.end())
+                    {
+                        m_currentExporter->SetProjectButton(exportProjectIter->second);
+                    }
+                }
+            }
+
+            // Let the user cancel builds for projects in the build queue and in the export queue
             for (const ProjectInfo& project : m_buildQueue)
             {
                 auto projectIter = m_projectButtons.find(project.m_path.toUtf8().constData());
@@ -342,6 +368,20 @@ namespace O3DE::ProjectManager
                         {
                             UnqueueBuildProject(project);
                             SuggestBuildProjectMsg(project, false);
+                        });
+                }
+            }
+
+            for (const ProjectInfo& project : m_exportQueue)
+            {
+                auto projectIter = m_projectButtons.find(project.m_path.toUtf8().constData());
+                if (projectIter != m_projectButtons.end())
+                {
+                    projectIter->second->SetProjectButtonAction(
+                        tr("Cancel queued export"),
+                        [this, project]
+                        {
+                            UnqueueExportProject(project);
                         });
                 }
             }
@@ -448,7 +488,7 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::HandleAddProjectButton()
     {
-        QString title{ QObject::tr("Select Project Directory") };
+        QString title{ QObject::tr("Select Project File") };
         QString defaultPath;
 
         // get the default path to look for new projects in
@@ -458,12 +498,13 @@ namespace O3DE::ProjectManager
             defaultPath = engineInfoResult.GetValue().m_defaultProjectsFolder;
         }
 
-        QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, title, defaultPath));
+        QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, title, defaultPath, ProjectUtils::ProjectJsonFilename.data()));
         if (!path.isEmpty())
         {
             // RegisterProject will check compatibility and prompt user to continue if issues found
             // it will also handle detailed error messaging
-            if(ProjectUtils::RegisterProject(path, this))
+            path.remove(ProjectUtils::ProjectJsonFilename.data());
+            if (ProjectUtils::RegisterProject(path, this))
             {
                 // notify the user the project was added successfully
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
@@ -623,6 +664,107 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void ProjectsScreen::HandleOpenAndroidProjectGenerator(const QString& projectPath)
+    {
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetProjectEngine(projectPath);
+        AZ::Outcome projectBuildPathResult = ProjectUtils::GetProjectBuildPath(projectPath);
+
+        auto engineInfo = engineInfoResult.TakeValue();
+        auto buildPath = projectBuildPathResult.TakeValue();
+
+        QString projectName = tr("Project");
+        auto getProjectResult = PythonBindingsInterface::Get()->GetProject(projectPath);
+        if (getProjectResult)
+        {
+            projectName = getProjectResult.GetValue().m_displayName;
+        }
+
+        const QString pythonPath = ProjectUtils::GetPythonExecutablePath(engineInfo.m_path);
+        const QString apgPath = QString("%1/Code/Tools/Android/ProjectGenerator/main.py").arg(engineInfo.m_path);
+
+
+        AZ_Printf("ProjectManager", "APG Info:\nProject Name: %s\nProject Path: %s\nEngine Path: %s\n3rdParty Path: %s\nBuild Path: %s\nPython Path: %s\nAPG path: %s\n",
+            projectName.toUtf8().constData(),
+            projectPath.toUtf8().constData(),
+            engineInfo.m_path.toUtf8().constData(),
+            engineInfo.m_thirdPartyPath.toUtf8().constData(),
+            buildPath.toUtf8().constData(),
+            pythonPath.toUtf8().constData(),
+            apgPath.toUtf8().constData());
+
+        // Let's start the python script.
+        QProcess process;        
+        process.setProgram(pythonPath);
+        const QStringList commandArgs { apgPath,
+                                        "--e", engineInfo.m_path,
+                                        "--p", projectPath,
+                                        "--b", buildPath,
+                                        "--t", engineInfo.m_thirdPartyPath };
+        process.setArguments(commandArgs);
+
+        // It's important to dump the command details in the application log so the user
+        // would know how to spawn the Android Project Generator from the command terminal
+        // in case of errors and debugging is required.
+        const QString commandArgsStr = QString("%1 %2").arg(pythonPath, commandArgs.join(" "));
+        AZ_Printf("ProjectManager", "Will start the Android Project Generator with the following command:\n%s\n", commandArgsStr.toUtf8().constData()); 
+
+        if (!process.startDetached())
+        {
+            QMessageBox::warning(
+                this,
+                tr("Tool Error"),
+                tr("Failed to start Android Project Generator from path %1").arg(apgPath),
+                QMessageBox::Ok);
+        }
+        
+    }
+
+    void ProjectsScreen::HandleOpenProjectExportSettings(const QString& projectPath)
+    {
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetProjectEngine(projectPath);
+        AZ::Outcome projectBuildPathResult = ProjectUtils::GetProjectBuildPath(projectPath);
+
+        auto engineInfo = engineInfoResult.TakeValue();
+        auto buildPath = projectBuildPathResult.TakeValue();
+
+        QString projectName = tr("Project");
+        auto getProjectResult = PythonBindingsInterface::Get()->GetProject(projectPath);
+        if (getProjectResult)
+        {
+            projectName = getProjectResult.GetValue().m_displayName;
+        }
+        else
+        {
+            QMessageBox::critical(this, tr("Tool Error"), tr("Failed to retrieve project information."), QMessageBox::Ok);
+            return;
+        }
+
+        const QString pythonPath = ProjectUtils::GetPythonExecutablePath(engineInfo.m_path);
+        const QString o3dePath = QString("%1/scripts/o3de.py").arg(engineInfo.m_path);
+
+
+        // Let's start the python script.
+        QProcess process;
+        process.setProgram(pythonPath);
+        const QStringList commandArgs{ o3dePath, "export-project", "-pp", projectPath, "--configure" };
+
+        process.setArguments(commandArgs);
+
+        // It's important to dump the command details in the application log so the user
+        // would know how to spawn the Export Configuration Panel from the command terminal
+        // in case of errors and debugging is required.
+        const QString commandArgsStr = QString("%1 %2").arg(pythonPath, commandArgs.join(" "));
+        AZ_Printf(
+            "ProjectManager",
+            "Will start the Export Configuration Panel with the following command:\n%s\n",
+            commandArgsStr.toUtf8().constData());
+
+        if (!process.startDetached())
+        {
+            QMessageBox::critical(this, tr("Tool Error"), tr("Failed to start o3de.py from path %1").arg(o3dePath), QMessageBox::Ok);
+        }
+    }
+
     void ProjectsScreen::SuggestBuildProjectMsg(const ProjectInfo& projectInfo, bool showMessage)
     {
         if (RequiresBuildProjectIterator(projectInfo.m_path) == m_requiresBuild.end() || projectInfo.m_buildFailed)
@@ -671,6 +813,31 @@ namespace O3DE::ProjectManager
     void ProjectsScreen::UnqueueBuildProject(const ProjectInfo& projectInfo)
     {
         m_buildQueue.removeAll(projectInfo);
+        UpdateIfCurrentScreen();
+    }
+
+    void ProjectsScreen::QueueExportProject(const ProjectInfo& projectInfo, const QString& exportScript, bool skipDialogBox)
+    {
+        if (!ExportQueueContainsProject(projectInfo.m_path))
+        {
+            if (m_exportQueue.empty() && !m_currentExporter)
+            {
+                ProjectInfo info = projectInfo;
+                info.m_currentExportScript = exportScript;
+                StartProjectExport(info, skipDialogBox);
+                //Projects Content should be reset in function
+            }
+            else
+            {
+                m_exportQueue.append(projectInfo);
+                UpdateIfCurrentScreen();
+            }
+        }
+    }
+
+    void ProjectsScreen::UnqueueExportProject(const ProjectInfo& projectInfo)
+    {
+        m_exportQueue.removeAll(projectInfo);
         UpdateIfCurrentScreen();
     }
 
@@ -865,9 +1032,37 @@ namespace O3DE::ProjectManager
         return displayFirstTimeContent;
     }
 
+    bool ProjectsScreen::StartProjectExport(const ProjectInfo& projectInfo, bool skipDialogBox)
+    {
+        bool proceedToExport = skipDialogBox;
+        if (!proceedToExport)
+        {
+            QMessageBox::StandardButton buildProject = QMessageBox::information(
+                this,
+                tr("Exporting \"%1\"").arg(projectInfo.GetProjectDisplayName()),
+                tr("Ready to export \"%1\"? Please ensure you have configured the export settings before proceeding.").arg(projectInfo.GetProjectDisplayName()),
+                QMessageBox::No | QMessageBox::Yes);
+
+            proceedToExport = buildProject == QMessageBox::Yes;
+        }
+
+        if (proceedToExport)
+        {
+            m_currentExporter = AZStd::make_unique<ProjectExportController>(projectInfo, nullptr, this);
+            UpdateWithProjects(GetAllProjects());
+            connect(m_currentExporter.get(), &ProjectExportController::Done, this, &ProjectsScreen::ProjectExportDone);
+            m_currentExporter->Start();
+        }
+        else
+        {
+            return false;
+        }
+        return true;
+    }
+
     bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo, bool skipDialogBox)
     {
-        if (ProjectUtils::FindSupportedCompiler(this))
+        if (ProjectUtils::FindSupportedCompiler(projectInfo, this))
         {
             bool proceedToBuild = skipDialogBox;
             if (!proceedToBuild)
@@ -930,6 +1125,28 @@ namespace O3DE::ProjectManager
         UpdateIfCurrentScreen();
     }
 
+    void ProjectsScreen::ProjectExportDone(bool success)
+    {
+        ProjectInfo currentExportProject;
+        if (!success)
+        {
+            currentExportProject = m_currentExporter->GetProjectInfo();
+        }
+
+        m_currentExporter.reset();
+
+        if (!m_exportQueue.empty())
+        {
+            while (!StartProjectExport(m_exportQueue.front()) && m_exportQueue.size() > 1)
+            {
+                m_exportQueue.pop_front();
+            }
+            m_exportQueue.pop_front();
+        }
+
+        UpdateIfCurrentScreen();
+    }
+
     QList<ProjectInfo>::iterator ProjectsScreen::RequiresBuildProjectIterator(const QString& projectPath)
     {
         QString nativeProjPath(QDir::toNativeSeparators(projectPath));
@@ -957,6 +1174,20 @@ namespace O3DE::ProjectManager
             }
         }
 
+        return false;
+    }
+
+    bool ProjectsScreen::ExportQueueContainsProject(const QString& projectPath)
+    {
+        const AZ::IO::PathView path { projectPath.toUtf8().constData() };
+
+        for (const ProjectInfo& project : m_exportQueue)
+        {
+            if (AZ::IO::PathView(project.m_path.toUtf8().constData()) == path)
+            {
+                return true;
+            }
+        }
         return false;
     }
 

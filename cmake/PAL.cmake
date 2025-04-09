@@ -261,9 +261,12 @@ ly_set(PAL_HOST_PLATFORM_NAME ${LY_HOST_PLATFORM_DETECTION_${CMAKE_SYSTEM_NAME}}
 string(TOLOWER ${PAL_HOST_PLATFORM_NAME} PAL_HOST_PLATFORM_NAME_LOWERCASE)
 ly_set(PAL_HOST_PLATFORM_NAME_LOWERCASE ${PAL_HOST_PLATFORM_NAME_LOWERCASE})
 
-# In addition to host platform name, set the host platform architecture if supported
-if (LY_HOST_ARCHITECTURE_DETECTION_${CMAKE_SYSTEM_NAME})
-    ly_set(LY_HOST_ARCHITECTURE_NAME_EXTENSION "_${LY_HOST_ARCHITECTURE_DETECTION_${CMAKE_SYSTEM_NAME}}")
+# In addition to platform name, set the platform architecture if supported
+if (LY_ARCHITECTURE_DETECTION_${PAL_PLATFORM_NAME})
+    ly_set(LY_ARCHITECTURE_NAME_EXTENSION "_${LY_ARCHITECTURE_DETECTION_${PAL_PLATFORM_NAME}}")
+endif()
+if (LY_HOST_ARCHITECTURE_DETECTION_${PAL_HOST_PLATFORM_NAME})
+    ly_set(LY_HOST_ARCHITECTURE_NAME_EXTENSION "_${LY_HOST_ARCHITECTURE_DETECTION_${PAL_HOST_PLATFORM_NAME}}")
 endif()
 
 
@@ -435,6 +438,8 @@ include(${pal_cmake_dir}/Toolchain_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL
 
 set(LY_DISABLE_TEST_MODULES FALSE CACHE BOOL "Option to forcibly disable the inclusion of test targets in the build")
 
-if(LY_DISABLE_TEST_MODULES)
+if(LY_DISABLE_TEST_MODULES OR NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
+    # AzTest library, which requires google test, is not supported on this platform
+    # so none of the tests can build either.
     ly_set(PAL_TRAIT_BUILD_TESTS_SUPPORTED FALSE)
 endif()

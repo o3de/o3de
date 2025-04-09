@@ -9,7 +9,7 @@
 #include <AzCore/Math/Random.h>
 #include <Tests/SystemComponentFixture.h>
 #include <Tests/Matchers.h>
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Mesh.h>
@@ -69,6 +69,7 @@ namespace EMotionFX
         void TearDown() override
         {
             m_actorInstance->Destroy();
+            m_actor.reset();
             SystemComponentFixture::TearDown();
         }
 
@@ -150,7 +151,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<bool>
     {
     };
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsBoolParam, ::testing::Bool());
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsBoolParam, ::testing::Bool());
 
     TEST_F(PoseTests, Clear)
     {
@@ -786,7 +787,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<float>
     {
     };
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsBlendWeightParam, ::testing::ValuesIn({0.0f, 0.1f, 0.25f, 0.33f, 0.5f, 0.77f, 1.0f}));
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsBlendWeightParam, ::testing::ValuesIn({0.0f, 0.1f, 0.25f, 0.33f, 0.5f, 0.77f, 1.0f}));
 
     TEST_P(PoseTestsBlendWeightParam, Blend)
     {
@@ -902,7 +903,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<PoseTestsMultiplyFunction>
     {
     };
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsMultiply, ::testing::ValuesIn({
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsMultiply, ::testing::ValuesIn({
         PreMultiply, Multiply, MultiplyInverse}));
 
     TEST_P(PoseTestsMultiply, Multiply)
@@ -964,7 +965,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<float>
     {
     };
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsSum, ::testing::ValuesIn({0.0f, 0.1f, 0.25f, 0.33f, 0.5f, 0.77f, 1.0f}));
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsSum, ::testing::ValuesIn({0.0f, 0.1f, 0.25f, 0.33f, 0.5f, 0.77f, 1.0f}));
 
     TEST_P(PoseTestsSum, Sum)
     {
@@ -1083,7 +1084,7 @@ namespace EMotionFX
         {true, ApplyAdditiveWeight, 0.0f}, {true, ApplyAdditiveWeight, 0.25f}, {true, ApplyAdditiveWeight, 0.5f}, {true, ApplyAdditiveWeight, 1.0f}
     };
 
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsAdditive, ::testing::ValuesIn(poseTestsAdditiveData));
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsAdditive, ::testing::ValuesIn(poseTestsAdditiveData));
 
     TEST_P(PoseTestsAdditive, Additive)
     {

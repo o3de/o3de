@@ -10,6 +10,7 @@
 // This header file is for declaring types used for RPI System classes to avoid recursive includes
  
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
@@ -30,7 +31,7 @@ namespace AZ::RPI
     // The container has queues for pass building, initialization and removal. These queues
     // are so that logic modifying or removing passes isn't triggered while the passes are 
     // rendering, but instead at the start of the frame when it is safe to do so.
-    class PassTree
+    class ATOM_RPI_PUBLIC_API PassTree
     {
         friend class PassSystem;
         friend class RenderPipeline;

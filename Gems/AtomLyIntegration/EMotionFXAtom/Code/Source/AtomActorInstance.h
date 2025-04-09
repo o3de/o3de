@@ -84,7 +84,8 @@ namespace AZ
                 const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<EMotionFX::Integration::ActorAsset>& asset,
                 const AZ::Transform& worldTransform,
-                EMotionFX::Integration::SkinningMethod skinningMethod);
+                EMotionFX::Integration::SkinningMethod skinningMethod,
+                bool rayTracingEnabled);
             ~AtomActorInstance() override;
 
             // RenderActorInstance overrides ...
@@ -96,8 +97,8 @@ namespace AZ
             void SetIsVisible(bool isVisible) override;
 
             // BoundsRequestBus overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
 
             AtomActor* GetRenderActor() const;
 
@@ -126,7 +127,7 @@ namespace AZ
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             MaterialAssignmentLabelMap GetMaterialLabels() const override;
-            MaterialAssignmentMap GetDefautMaterialMap() const override;
+            MaterialAssignmentMap GetDefaultMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -203,6 +204,9 @@ namespace AZ
             void UpdateWrinkleMasks();
 
             void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
+            void HandleModelChange(const Data::Instance<RPI::Model>& model);
+
+            void UpdateLightingChannelMask();
 
             // Debug geometry rendering
             AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw;
@@ -224,11 +228,18 @@ namespace AZ
 
             AZStd::vector<Data::Instance<RPI::Image>> m_wrinkleMasks;
             AZStd::vector<float> m_wrinkleMaskWeights;
-            
-            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+
+            MeshHandleDescriptor::ModelChangedEvent::Handler m_modelChangedEventHandler
+            {
+                 [&](const Data::Instance<RPI::Model>& model) { HandleModelChange(model); } 
+            };
+
+            MeshHandleDescriptor::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
             {
                 [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
             };
+
+            bool m_rayTracingEnabled = true;
         };
 
     } // namespace Render

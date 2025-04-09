@@ -19,9 +19,9 @@ namespace ScriptCanvas
                 if (rootElement.GetVersion() < 1)
                 {
                     SlotMetadata metadata;
-                    rootElement.FindSubElementAndGetData(AZ_CRC("m_sourceAccount", 0x25f29920), metadata);
+                    rootElement.FindSubElementAndGetData(AZ_CRC_CE("m_sourceAccount"), metadata);
 
-                    rootElement.RemoveElementByName(AZ_CRC("m_sourceAccount", 0x25f29920));
+                    rootElement.RemoveElementByName(AZ_CRC_CE("m_sourceAccount"));
                     rootElement.AddElementWithData(serializeContext, "m_dataType", metadata.m_dataType);
                 }
 
@@ -98,17 +98,24 @@ namespace ScriptCanvas
             {
                 AZ_UNUSED(graphVersion);
 
-                bool isOutOfDate = false;
+                int numOutOfDate = 0;
                 for (auto propertyAccount : m_propertyAccounts)
                 {
                     if (!propertyAccount.m_getterFunction)
                     {
-                        isOutOfDate = true;
-                        break;
+                        // Print out the error message for each property that is out of date
+                        AZ_Warning("ScriptCanvas", false,"Node '%s':  Property (%s : %s) getter method could not be found in Data::PropertyMetadata.",
+                            this->GetDebugName().c_str(),
+                            propertyAccount.m_propertyName.c_str(),
+                            Data::GetName(propertyAccount.m_propertyType).c_str());
+
+                        numOutOfDate++;
                     }
                 }
 
-                return isOutOfDate;
+                AZ_Error("ScriptCanvas", numOutOfDate == 0, "Node '%s':  Out of date.  (%d/%d) properties are missing a getter function.", this->GetDebugName().c_str(), numOutOfDate, m_propertyAccounts.size());
+                return (numOutOfDate > 0);
+
             }
 
             UpdateResult ExtractProperty::OnUpdateNode()

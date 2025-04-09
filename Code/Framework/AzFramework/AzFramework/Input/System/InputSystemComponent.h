@@ -53,6 +53,15 @@ namespace AzFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AZ::ComponentDescriptor::GetDependentServices
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AZ::ComponentDescriptor::GetRequiredServices
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         InputSystemComponent();
 
@@ -121,5 +130,6 @@ namespace AzFramework
         // Other Variables
         bool m_currentlyUpdatingInputDevices;   //!< Are we currently updating input devices?
         bool m_recreateInputDevicesAfterUpdate; //!< Should we recreate devices after update?
+        bool m_captureMouseCursor;              //!< Should we capture the mouse cursor?
     };
 } // namespace AzFramework

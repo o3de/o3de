@@ -330,7 +330,7 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
     {
         editContext->Class<CEditorPreferencesPage_ViewportCamera>("Viewport Preferences", "Viewport Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(
                 AZ::Edit::UIHandlers::Default,
                 &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings,

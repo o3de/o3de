@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroupPool.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -46,9 +47,11 @@ namespace AZ
          * Likewise, if a getter method fails, an error is emitted and an empty value or empty array
          * is returned. If validation is disabled, the operation is always performed.
          */
-        class ShaderResourceGroup final
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API ShaderResourceGroup final
             : public AZ::Data::InstanceData
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
             friend class ShaderResourceGroupPool;
 
@@ -71,6 +74,8 @@ namespace AZ
 
             /// Returns whether the group is currently queued for compilation.
             bool IsQueuedForCompile() const;
+
+            bool IsInitialized() const;
 
             /// Finds the shader input index from the shader input name for each type of resource.
             RHI::ShaderInputBufferIndex    FindShaderInputBufferIndex(const Name& name) const;
@@ -141,7 +146,7 @@ namespace AZ
             // Methods for assignment / access of RHI Image types.
                                     
             /// Sets one image view for the given shader input index.
-            bool SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex = 0);
+            bool SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView *imageView, uint32_t arrayIndex = 0);
             bool SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex = 0);
 
             /// Sets an array of image view for the given shader input index.
@@ -149,17 +154,17 @@ namespace AZ
             bool SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::span<const RHI::ImageView* const> imageViews, uint32_t arrayIndex = 0);
 
             /// Sets an unbounded array of image views for the given shader input index.
-            bool SetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const RHI::ImageView* const> imageViews);
+            bool SetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const RHI::ImageView * const> imageViews);
 
             /// Update the indirect buffer view with the indices of all the image views which reside in the global gpu heap.
             void SetBindlessViews(
                 RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::ImageView* const> imageViews,
-                uint32_t* outIndices,
+                AZStd::unordered_map<int, uint32_t*> outIndices,
                 AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
-            
+
             /// Returns a single image view associated with the image shader input index and array offset.
             const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex = 0) const;
@@ -176,7 +181,7 @@ namespace AZ
             bool SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::BufferView* bufferView, uint32_t arrayIndex = 0);
 
             /// Sets an array of buffer view for the given shader input index.
-            bool SetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const RHI::BufferView* const> bufferViews, uint32_t arrayIndex = 0);
+            bool SetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const RHI::BufferView * const> bufferViews, uint32_t arrayIndex = 0);
             bool SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::span<const RHI::BufferView* const> bufferViews, uint32_t arrayIndex = 0);
 
             /// Sets an unbounded array of buffer views for the given shader input index.
@@ -187,10 +192,10 @@ namespace AZ
                 RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::BufferView* const> bufferViews,
-                uint32_t* outIndices,
+                AZStd::unordered_map<int, uint32_t*> outIndices,
                 AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
-            
+
             /// Returns a single buffer view associated with the buffer shader input index and array offset.
             const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
@@ -198,7 +203,7 @@ namespace AZ
             /// Returns a span of buffer views associated with the given buffer shader input index.
             AZStd::span<const RHI::ConstPtr<RHI::BufferView>> GetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const RHI::ConstPtr<RHI::BufferView>> GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const;
-            
+
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RHI Sampler types.
 
@@ -298,6 +303,24 @@ namespace AZ
             AZStd::span<const uint8_t> GetConstantRaw(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const uint8_t> GetConstantRaw(RHI::ShaderInputConstantIndex inputIndex) const;
 
+            /**
+            * Copies the Shader Resource Group Data from another ShaderResourceGroup. It only copies the
+            * Shader Inputs that are present in both ShaderResourceGroups.
+            * Return true if all values from the ShaderResourceGroup were updated. False means that some
+            * shader inputs were not present in the "other" ShaderResourceGroup.
+            */
+            bool CopyShaderResourceGroupData(const ShaderResourceGroup& other);
+
+            /**
+            * Returns the ShaderAsset that this ShaderResourceGroup is using.
+            */
+            const Data::Asset<ShaderAsset>& GetShaderAsset() const;
+
+            /**
+            * Returns the SuperVariantIndex that this ShaderResourceGroup is using.
+            */
+            SupervariantIndex GetSupervariantIndex() const;
+
         private:
             ShaderResourceGroup() = default;
 
@@ -324,14 +347,14 @@ namespace AZ
             //! @param shaderAsset: The shader asset where the ShaderResourceGroupLayout will be searched.
             //! @param supervariantIndex: The supervariant index in @shaderAsset where the search will be conducted.
             //! @param srgName: Name of the ShaderResourceGroup as it was declared in the azsl file of origin.
-            static Data::InstanceId MakeInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
+            static Data::InstanceId MakeSrgPoolInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
             RHI::ResultCode Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
             static AZ::Data::Instance<ShaderResourceGroup> CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* srgInitParams);
 
             /// A name to be used in error messages
-            static const char* s_traceCategoryName;
+            static constexpr const char* s_traceCategoryName = "ShaderResourceGroup";
 
             /// Allows us to return const& to a null Image
             static const Data::Instance<Image> s_nullImage;
@@ -370,6 +393,9 @@ namespace AZ
              * However, entries remain null when RHI buffer views are bound.
              */
             AZStd::vector<Data::Instance<Buffer>> m_bufferGroup;
+
+            /// SupervariantIndex used for initializing the SRG.
+            SupervariantIndex m_supervariantIndex;
         };
 
         template<typename T>

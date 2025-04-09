@@ -227,7 +227,7 @@ namespace AzFramework
         //! Passing InputDeviceType::Implementation::Create as the argument will create the default
         //! device implementation, while passing nullptr will delete any existing implementation.
         //! \param[in] implementationFactory Pointer to the function that creates the implementation.
-        virtual void SetCustomImplementation(typename InputDeviceType::ImplementationFactory implementationFactory) = 0;
+        virtual void SetCustomImplementation(typename InputDeviceType::ImplementationFactory* implementationFactory) = 0;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -257,14 +257,14 @@ namespace AzFramework
     protected:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref InputDeviceImplementationRequest<InputDeviceType>::SetCustomImplementation
-        AZ_INLINE void SetCustomImplementation(typename InputDeviceType::ImplementationFactory implementationFactory) override
+        AZ_INLINE void SetCustomImplementation(typename InputDeviceType::ImplementationFactory* implementationFactory) override
         {
             AZStd::unique_ptr<typename InputDeviceType::Implementation> newImplementation;
-            if (implementationFactory)
+            newImplementation = (implementationFactory != nullptr) ? implementationFactory->Create(m_inputDevice) : nullptr;
+            if (newImplementation)
             {
-                newImplementation.reset(implementationFactory(m_inputDevice));
+                m_inputDevice.SetImplementation(AZStd::move(newImplementation));
             }
-            m_inputDevice.SetImplementation(AZStd::move(newImplementation));
         }
 
     private:

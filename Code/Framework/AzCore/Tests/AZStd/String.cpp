@@ -23,6 +23,7 @@
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/typetraits/is_convertible.h>
+#include <AzCore/Serialization/Locale.h> // for locale-independent string to float conversions
 
 // we need this for AZ_TEST_FLOAT compare
 #include <cinttypes>
@@ -629,6 +630,7 @@ namespace UnitTest
 
     TEST_F(String, Algorithms)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for reading/writing floats with "." in them
         AZStd::string str = AZStd::string::format("%s %d", "BlaBla", 5);
         AZ_TEST_VALIDATE_STRING(str, 8);
 
@@ -1543,6 +1545,14 @@ namespace UnitTest
         // Testing AZ_STRING_FORMATTER too
         result = AZStd::string::format("%s" AZ_STRING_FORMAT "%s", "[", AZ_STRING_ARG(view2), "]");
         EXPECT_EQ(AZStd::string{"[long]"}, result);
+
+        // Test the AZ_TRAIT_FORMAT_STRING_WPRINTF_* variants for wstrings
+        constexpr AZStd::wstring_view wideView = L"This is a long string";
+        AZStd::wstring wideResult = AZStd::wstring::format(AZ_TRAIT_FORMAT_STRING_WPRINTF_STRING_WITH_SIZE, AZ_STRING_ARG(view1));
+        EXPECT_EQ(wideView, wideResult);
+
+        wideResult = AZStd::wstring::format(AZ_TRAIT_FORMAT_STRING_WPRINTF_WSTRING_WITH_SIZE, AZ_STRING_ARG(wideView));
+        EXPECT_EQ(wideView, wideResult);
     }
 
     template<typename T>
@@ -1551,7 +1561,7 @@ namespace UnitTest
     {};
 
     using StringViewElementTypes = ::testing::Types<char, wchar_t>;
-    TYPED_TEST_CASE(BasicStringViewConstexprFixture, StringViewElementTypes);
+    TYPED_TEST_SUITE(BasicStringViewConstexprFixture, StringViewElementTypes);
     TYPED_TEST(BasicStringViewConstexprFixture, StringView_DefaultConstructorsIsConstexpr)
     {
         constexpr AZStd::basic_string_view<TypeParam> defaultView1;
@@ -2510,7 +2520,7 @@ namespace UnitTest
         : public LeakDetectionFixture
     {};
     using StringTypesToTest = ::testing::Types<AZStd::string_view, AZStd::string, AZStd::fixed_string<1024>>;
-    TYPED_TEST_CASE(ImmutableStringFunctionsFixture, StringTypesToTest);
+    TYPED_TEST_SUITE(ImmutableStringFunctionsFixture, StringTypesToTest);
 
     TYPED_TEST(ImmutableStringFunctionsFixture, Contains_Succeeds)
     {
@@ -2545,7 +2555,7 @@ namespace UnitTest
     };
 
     using StringFormatTypesToTest = ::testing::Types<AZStd::string>; //, AZStd::wstring>;
-    TYPED_TEST_CASE(StringFormatFixture, StringFormatTypesToTest);
+    TYPED_TEST_SUITE(StringFormatFixture, StringFormatTypesToTest);
 
     TYPED_TEST(StringFormatFixture, CanFormatStringLongerThan2048Chars)
     {
@@ -2560,7 +2570,7 @@ namespace UnitTest
     {};
 
     using StringTypeWithRangeFunctions = ::testing::Types<AZStd::string, AZStd::fixed_string<32>>;
-    TYPED_TEST_CASE(StringTypeFixture, StringTypeWithRangeFunctions);
+    TYPED_TEST_SUITE(StringTypeFixture, StringTypeWithRangeFunctions);
 
     TYPED_TEST(StringTypeFixture, RangeConstructor_Succeeds)
     {

@@ -104,7 +104,7 @@ namespace AzToolsFramework
                     }
                 }
             }
-            else if (attrib == AZ_CRC("EnumValue", 0xe4f32eed))
+            else if (attrib == AZ_CRC_CE("EnumValue"))
             {
                 AZStd::pair<ValueType, AZStd::string>  enumValue;
                 AZ::Edit::EnumConstant<ValueType> enumConstant;

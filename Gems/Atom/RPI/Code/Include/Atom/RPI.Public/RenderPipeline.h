@@ -12,6 +12,7 @@
 #include <Atom/RHI/DrawFilterTagRegistry.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/PipelinePassChanges.h>
 #include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -81,7 +82,7 @@ namespace AZ
         //! RenderPipeline describes how to render a scene. It has all the passes and views for rendering.
         //! A scene may have several pipelines. Each pipeline have its own render frequency. 
         //! Pipeline can be disabled and it won't be rendered if it's disabled.
-        class RenderPipeline
+        class ATOM_RPI_PUBLIC_API RenderPipeline
         {
             friend class Pass;
             friend class PassSystem;
@@ -97,6 +98,12 @@ namespace AZ
             static RenderPipelinePtr CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
                                                                    const ViewType viewType = ViewType::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
+
+            // Anti-aliasing
+            bool SetActiveAAMethod(AZStd::string aaMethodName);
+            static AntiAliasingMode GetAAMethodByName(AZStd::string aaMethodName);
+            static AZStd::string GetAAMethodNameByIndex(AntiAliasingMode aaMethodIndex);            
+            AntiAliasingMode GetActiveAAMethod();
 
             //! Create a render pipeline which renders to the specified attachment image
             //! The render pipeline's root pass is created from the pass template specified from RenderPipelineDescriptor::m_rootPassTemplate
@@ -244,6 +251,9 @@ namespace AZ
             //! Update viewport and scissor based on pass tree's output
             void UpdateViewportScissor();
 
+            //! Return true if the pipeline allows merging of passes as subpasses.
+            bool SubpassMergingSupported() const;
+
         private:
             RenderPipeline() = default;
 
@@ -301,6 +311,11 @@ namespace AZ
             void SetDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry);
             void ReleaseDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry);
 
+            // AA method
+            static bool SetAAMethod(RenderPipeline* pipeline, AZStd::string aaMethodName);
+            static bool SetAAMethod(RenderPipeline* pipeline, AntiAliasingMode aaMethod);
+            static bool EnablePass(RenderPipeline* pipeline, Name& passName, bool enable);
+
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
 
@@ -355,12 +370,17 @@ namespace AZ
             // The descriptor used to created this render pipeline
             RenderPipelineDescriptor m_descriptor;
 
+            AntiAliasingMode m_activeAAMethod = AntiAliasingMode::MSAA;
+
             // View type associated with the Render Pipeline.
             ViewType m_viewType = ViewType::Default;
 
             // viewport and scissor for frame update
             RHI::Viewport m_viewport;
             RHI::Scissor m_scissor;
+
+            // Supports merging of passes as subpasses.
+            bool m_allowSubpassMerging = false;
         };
 
     } // namespace RPI

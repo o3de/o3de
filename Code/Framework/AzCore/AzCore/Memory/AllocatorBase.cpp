@@ -139,6 +139,12 @@ namespace
 
 namespace AZ
 {
+    AllocatorBase::AllocatorBase() = default;
+    AllocatorBase::AllocatorBase(bool enableProfiling)
+        : m_isProfilingActive{ enableProfiling }
+    {
+    }
+
     AllocatorBase::~AllocatorBase()
     {
         PreDestroy();
@@ -167,11 +173,6 @@ namespace AZ
 
     void AllocatorBase::PostCreate()
     {
-        if (m_registrationEnabled)
-        {
-            AllocatorManager::Instance().RegisterAllocator(this);
-        }
-
         const auto debugConfig = GetDebugConfig();
         if (!debugConfig.m_excludeFromDebugging)
         {
@@ -180,20 +181,29 @@ namespace AZ
                 GetName()));
         }
 
+        // Create the AllocationRecords before registering the allocator with the AllocatorManager
+        // The allocator manager stores a mapping of allocator name -> Allocation Record mode
+        // which is checked on registration to determine which tracking mode the Allocation Records should use
+        //
+        if (m_registrationEnabled)
+        {
+            AllocatorManager::Instance().RegisterAllocator(this);
+        }
+
         m_isReady = true;
     }
 
     void AllocatorBase::PreDestroy()
     {
+        if (m_registrationEnabled && AZ::AllocatorManager::IsReady())
+        {
+            AllocatorManager::Instance().UnRegisterAllocator(this);
+        }
+
         if (m_records)
         {
             delete m_records;
             SetRecords(nullptr);
-        }
-
-        if (m_registrationEnabled && AZ::AllocatorManager::IsReady())
-        {
-            AllocatorManager::Instance().UnRegisterAllocator(this);
         }
 
         m_isReady = false;

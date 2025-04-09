@@ -57,7 +57,7 @@ namespace AZ
             //! Loads extensions from a layer.
             void LoadLayerExtensions(const Descriptor& descriptor);
             //! Removes layers that were not loaded correctly.
-            void FilterAvailableExtensions();
+            void FilterAvailableExtensions(const VkDevice device = VK_NULL_HANDLE);
 
             GladVulkanContext m_context = {};
         };

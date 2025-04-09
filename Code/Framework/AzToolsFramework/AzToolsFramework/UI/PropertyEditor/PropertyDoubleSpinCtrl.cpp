@@ -246,7 +246,7 @@ namespace AzToolsFramework
             }
             return;
         }
-        else if (attrib == AZ_CRC("Multiplier", 0xa49aa95b))
+        else if (attrib == AZ_CRC_CE("Multiplier"))
         {
             if (attrValue->Read<double>(value))
             {
@@ -272,7 +272,7 @@ namespace AzToolsFramework
             }
             return;
         }
-        else if (attrib == AZ_CRC("Prefix", 0x93b1868e))
+        else if (attrib == AZ_CRC_CE("Prefix"))
         {
             AZStd::string result;
             if (attrValue->Read<AZStd::string>(result))
@@ -375,18 +375,20 @@ namespace AzToolsFramework
         return newCtrl;
     }
 
-    void doublePropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
+    bool doublePropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
     {
         GUI->setMinimum(AZStd::numeric_limits<double>::lowest());
         GUI->setMaximum(AZStd::numeric_limits<double>::max());
         ResetGUIToDefaultsCommon(GUI);
+        return true;
     }
 
-    void floatPropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
+    bool floatPropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
     {
         GUI->setMinimum(AZStd::numeric_limits<float>::lowest());
         GUI->setMaximum(AZStd::numeric_limits<float>::max());
         doublePropertySpinboxHandler::ResetGUIToDefaultsCommon(GUI);
+        return true;
     }
 
     void doublePropertySpinboxHandler::ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)

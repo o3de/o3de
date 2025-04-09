@@ -553,7 +553,7 @@ namespace SettingsRegistryScriptUtilsTests
         EXPECT_TRUE(updateNotifySent);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         SettingsRegistryBehaviorContextGetFunctions,
         SettingsRegistryBehaviorContextParamFixture,
         testing::Values(

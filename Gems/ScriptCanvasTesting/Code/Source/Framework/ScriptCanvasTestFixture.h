@@ -17,8 +17,6 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
-#include <TestAutoGenFunctionRegistry.generated.h>
-#include <TestAutoGenNodeableRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
 #include <Nodes/TestAutoGenFunctions.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
@@ -33,12 +31,10 @@
 #include "ScriptCanvasTestBus.h"
 #include "ScriptCanvasTestNodes.h"
 #include "ScriptCanvasTestUtilities.h"
+#include <AutoGen/ScriptCanvasAutoGenRegistry.h>
 
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
-
-REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
 
 namespace ScriptCanvasTests
 {
@@ -120,11 +116,24 @@ namespace ScriptCanvasTests
 
         static void TearDownTestCase()
         {
-            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticFunctionRegistry");
-            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticNodeableRegistry");
-
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
+
+            auto m_serializeContext = s_application->GetSerializeContext();
+            auto m_behaviorContext = s_application->GetBehaviorContext();
+
+            for (AZ::ReflectContext* context :
+                {static_cast<AZ::ReflectContext*>(m_serializeContext), static_cast<AZ::ReflectContext*>(m_behaviorContext)})
+            {
+                context->EnableRemoveReflection();
+                ScriptCanvasTesting::Reflect(context);
+                ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
+                TestNodeableObject::Reflect(context);
+                TestBaseClass::Reflect(context);
+                TestSubClass::Reflect(context);
+                ScriptUnitTestEventHandler::Reflect(context);
+                context->DisableRemoveReflection();
+            }
 
             if (s_application)
             {
@@ -178,6 +187,7 @@ namespace ScriptCanvasTests
             for (AZ::ComponentDescriptor* componentDescriptor : m_descriptors)
             {
                 GetApplication()->UnregisterComponentDescriptor(componentDescriptor);
+                delete componentDescriptor;
             }
 
             m_descriptors.clear();
@@ -480,8 +490,6 @@ namespace ScriptCanvasTests
         ScriptCanvas::Graph* m_graph = nullptr;
 
         int m_slotCounter = 0;
-
-        AZStd::unordered_map< AZ::EntityId, AZ::Entity* > m_entityMap;
 
     protected:
         static ScriptCanvasTests::Application* GetApplication() { return s_application; }

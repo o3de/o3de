@@ -249,7 +249,7 @@ namespace ScriptCanvas
                 AZ_Assert(datum != nullptr, "the datum must be valid");
 
                 // #functions2 slot<->variable check to verify if it is a member variable
-                auto variable = sourceVariable->GetScope() == VariableFlags::Scope::Graph
+                auto variable = (sourceVariable->GetScope() == VariableFlags::Scope::Graph)
                     ? AddMemberVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId())
                     : AddVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId());
 
@@ -2583,20 +2583,20 @@ namespace ScriptCanvas
                 Nodes::Core::FunctionCallNodeCompareConfig config;
                 const auto result = functionNode->IsOutOfDate(config, m_source.m_assetId.m_guid);
 
-                if (result == Nodes::Core::IsFunctionCallNodeOutOfDataResult::Yes)
+                if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::Yes)
                 {
-                    AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                    AZ_Warning("ScriptCanvas", false, "FunctionCallNode '%s' is out-of-date.", node.GetNodeName().c_str());
                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                     return false;
                 }
-                else if (result == Nodes::Core::IsFunctionCallNodeOutOfDataResult::EvaluateAfterLocalDefinition)
+                else if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::EvaluateAfterLocalDefinition)
                 {
                     m_locallyDefinedFunctionCallNodes.push_back(functionNode);
                 }
             }
             else if (node.IsOutOfDate(m_source.m_graph->GetVersion()))
             {
-                AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                AZ_Warning("ScriptCanvas", false, "Node '%s' is out-of-date.", node.GetNodeName().c_str());
                 AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                 return false;
             }
@@ -4872,7 +4872,7 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseOutputData(ExecutionTreePtr execution, ExecutionChild& executionChild)
         {
-            if (const auto nodeling = azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node))
+            if (azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node))
             {
                 // this nodeling will always be the Execution-In part of the function definition
                 // since a call to a user out does not enter this path
@@ -5561,3 +5561,4 @@ namespace ScriptCanvas
         }
     }
 }
+

@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
-
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
@@ -30,7 +31,7 @@ namespace AZ
             // Declarations...
 
             //! Finds the AssetId for a given product file path.
-            Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting = TraceLevel::Warning, Data::AssetType assetType = Data::s_invalidAssetType);
+            ATOM_RPI_REFLECT_API Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting = TraceLevel::Warning, Data::AssetType assetType = Data::s_invalidAssetType);
 
             //! Tries to compile the asset at the given product path.
             //! This will actively try to compile the asset every time it is called, it won't skip compilation just because the
@@ -46,7 +47,7 @@ namespace AZ
             //! know the compile state of the asset. If the AP is connected, there *should* always be a result
             //! (Compiled, Failed, Missing, etc), but if this is called *before* the AP is connected, it's possible to get Unknown
             //! even when you think the AP is (or will be) connected.
-            bool TryToCompileAsset(const AZStd::string& assetProductFilePath, TraceLevel reporting);
+            ATOM_RPI_REFLECT_API bool TryToCompileAsset(const AZStd::string& assetProductFilePath, TraceLevel reporting);
 
             //! Gets an Asset<AssetDataT> reference for a given product file path. This function does not cause the asset to load.
             //! @return a null asset if the asset could not be found.
@@ -75,7 +76,7 @@ namespace AZ
             namespace AssetUtilsInternal
             {
                 //! May call AZ_Warning, AZ_Error, or AZ_Assert depending on TraceLevel
-                void ReportIssue(TraceLevel traceLevel, const char* message);
+                ATOM_RPI_REFLECT_API void ReportIssue(TraceLevel traceLevel, const char* message);
             }
 
             // Definitions...
@@ -128,18 +129,19 @@ namespace AZ
             {
                 if (!assetId.IsValid())
                 {
-                    AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
+                    AssetUtilsInternal::ReportIssue(
+                        reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
                     return {};
                 }
 
-                Data::Asset<AssetDataT> asset = AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(
-                    assetId, AZ::Data::AssetLoadBehavior::PreLoad
-                    );
-                    asset.BlockUntilLoadComplete();
+                Data::Asset<AssetDataT> asset =
+                    AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                asset.BlockUntilLoadComplete();
 
                 if (!asset.IsReady())
                 {
-                    AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
+                    AssetUtilsInternal::ReportIssue(
+                        reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
                     return {};
                 }
 
@@ -192,40 +194,66 @@ namespace AZ
             //! multiple ebus functions to handle callbacks. It will invoke the provided callback function when the
             //! asset loads or errors. It will stop listening on destruction, so it should be held onto until the
             //! callback fires.
-            class AsyncAssetLoader
-                : private Data::AssetBus::MultiHandler
+            //! This class will always invoke the callback during OnSystemTick() to prevent
+            //! deadlocks related with StreamingImage assets. Here is a quick summary of the deadlock
+            //! this class avoids:
+             //** Main Thread                | ** Secondary Copy Queue Thread                                                
+             //AssetBus::lock(mutex)         |                                                 
+             //AssetBus::OnAssetReady        |                                                 
+             //StreamingImage::FindOrCreate  |                                                 
+             //AsyncUploadQueue::queueWork   |                                                 
+             //Wait For Work Complete        |                                                 
+             //                              |                      
+             //                              | workQueue signaled                              
+             //                              | Pop Work                                        
+             //                              | StreaminImage::Destructor()                     
+             //                              | AssetBus::Disconnect()                          
+             //                              | AssetBus::lock(mutex) <- Deadlocked             
+             //                                                                                                           
+            AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+            class ATOM_RPI_REFLECT_API AsyncAssetLoader :
+                private Data::AssetBus::Handler,
+                private SystemTickBus::Handler
             {
+                AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
             public:
-                using AssetCallback = AZStd::function<void(Data::Asset<Data::AssetData>, bool /*success*/)>;
+                AZ_RTTI(AZ::RPI::AssetUtils::AsyncAssetLoader, "{E0FB5B08-B97D-40DF-8478-226249C0B654}");
+
+                using AssetCallback = AZStd::function<void(Data::Asset<Data::AssetData>)>;
 
                 AsyncAssetLoader() = default;
                 ~AsyncAssetLoader();
 
-                template <typename AssetDataT>
-                static AsyncAssetLoader Create(const AZStd::string& path, uint32_t subId, AssetCallback callback);
+                template<typename AssetDataT>
+                static AZStd::shared_ptr<AsyncAssetLoader> Create(const AZStd::string& path, uint32_t subId, AssetCallback callback);
 
-                template <typename AssetDataT>
-                static AsyncAssetLoader Create(Data::AssetId assetId, AssetCallback callback);
+                template<typename AssetDataT>
+                static AZStd::shared_ptr<AsyncAssetLoader> Create(Data::AssetId assetId, AssetCallback callback);
 
             private:
-
                 explicit AsyncAssetLoader(AssetCallback callback);
 
-                template <typename AssetDataT>
+                template<typename AssetDataT>
                 void StartLoad(Data::AssetId& assetId);
 
-                // Data::AssetBus::MultiHandler overrides..
+                // Data::AssetBus::Handler overrides..
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
-                void HandleCallback(Data::Asset<Data::AssetData> asset, bool isError);
+                // SystemTickBus::Handler overrides..
+                void OnSystemTick() override;
+
+                // This function should never be called directly under the scope
+                // of any of the AssetBus::OnAssetXXXX() functions to avoid deadlocks
+                // when working with StreaminImage assets.
+                void HandleCallback(Data::Asset<Data::AssetData> asset);
 
                 AssetCallback m_callback;
                 Data::Asset<Data::AssetData> m_asset;
             };
-        }
-    }
-}
+        } // namespace AssetUtils
+    } // namespace RPI
+} // namespace AZ
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.inl>
-

@@ -61,7 +61,7 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AudioPreloadService", 0x20c917d8));
+            provided.push_back(AZ_CRC_CE("AudioPreloadService"));
         }
 
         static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -70,12 +70,12 @@ namespace LmbrCentral
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AudioProxyService", 0x7da4c79c));
+            dependent.push_back(AZ_CRC_CE("AudioProxyService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AudioPreloadService", 0x20c917d8));
+            incompatible.push_back(AZ_CRC_CE("AudioPreloadService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

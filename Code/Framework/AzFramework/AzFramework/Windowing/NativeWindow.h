@@ -120,7 +120,7 @@ namespace AzFramework
         bool IsActive() const;
 
         //! Get the native window handle. This is used as the bus id for the WindowRequestBus and WindowNotificationBus
-        NativeWindowHandle GetWindowHandle() const { return m_pimpl->GetWindowHandle(); }
+        NativeWindowHandle GetWindowHandle() const { return (m_pimpl != nullptr) ? m_pimpl->GetWindowHandle() : nullptr; }
 
         // WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
@@ -128,8 +128,6 @@ namespace AzFramework
         WindowSize GetMaximumClientAreaSize() const override;
         void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override;
-        void SetEnableCustomizedResolution(bool enable) override;
-        bool IsCustomizedResolutionEnabled() const override;
         WindowSize GetRenderResolution() const override;
         void SetRenderResolution(WindowSize resolution) override;
         bool GetFullScreenState() const override;
@@ -168,7 +166,8 @@ namespace AzFramework
             static Implementation* Create();
             virtual ~Implementation() = default;
 
-            virtual void InitWindow(const AZStd::string& title,
+            void InitWindow(const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks);
+            virtual void InitWindowInternal(const AZStd::string& title,
                                     const WindowGeometry& geometry,
                                     const WindowStyleMasks& styleMasks) = 0;
 
@@ -183,8 +182,6 @@ namespace AzFramework
             virtual WindowSize GetMaximumClientAreaSize() const;
             virtual void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options);
             virtual bool SupportsClientAreaResize() const;
-            virtual void SetEnableCustomizedResolution(bool enable);
-            virtual bool IsCustomizedResolutionEnabled() const;
             virtual WindowSize GetRenderResolution() const;
             virtual void SetRenderResolution(WindowSize resolution);
             virtual bool GetFullScreenState() const;
@@ -197,8 +194,17 @@ namespace AzFramework
             uint32_t m_width = 0;
             uint32_t m_height = 0;
             bool m_activated = false;
-            WindowSize m_customizedRenderResolution;
-            bool m_enableCustomizedResolution = false;
+            WindowSize m_renderResolution;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! The factory class to create a custom implementation for this native window
+        class ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{6C2B94E1-388E-4E17-A125-94E5BAE9655C}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create() = 0;
         };
 
     private:

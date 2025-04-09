@@ -8,11 +8,11 @@
 
 #include <CoreLights/PolygonLightFeatureProcessor.h>
 #include <CoreLights/LtcCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
 #include <Atom/RHI/Factory.h>
@@ -223,6 +223,14 @@ namespace AZ::Render
 
         m_deviceBufferNeedsUpdate = true;
     }
+
+    void PolygonLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+    {
+        AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PolygonLightFeatureProcessor::SetLightingChannelMask().");
+
+        m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+        m_deviceBufferNeedsUpdate = true;
+    }   
 
     void PolygonLightFeatureProcessor::SetPolygonPoints(LightHandle handle, const Vector3* vertices, const uint32_t vertexCount, const Vector3& direction)
     {

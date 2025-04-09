@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/AttachmentId.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
@@ -53,15 +54,15 @@ namespace AZ
         };
 
         //! Takes PassSlotType and returns the corresponding ScopeAttachmentAccess
-        RHI::ScopeAttachmentAccess GetAttachmentAccess(PassSlotType slotType);
+        ATOM_RPI_REFLECT_API RHI::ScopeAttachmentAccess GetAttachmentAccess(PassSlotType slotType);
 
         //! Convert PassSlotType to a string
-        const char* ToString(AZ::RPI::PassSlotType slotType);
+        ATOM_RPI_REFLECT_API const char* ToString(AZ::RPI::PassSlotType slotType);
 
         //! A slot for a PassAttachment to be bound to a Pass. Specifies what kind of
         //! PassAttachments can be bound as well as how the Pass will use the attachment.
         //! PassSlots and PassConnections are used to initialize PassAttachmentBindings.
-        struct PassSlot
+        struct ATOM_RPI_REFLECT_API PassSlot
         {
             PassSlot() { };
             ~PassSlot() { };
@@ -98,6 +99,9 @@ namespace AZ
             //! ScopeAttachmentUsage used when binding the slot's attachment with the RHI
             RHI::ScopeAttachmentUsage m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Uninitialized;
 
+            //! ScopeAttachmentStage that this slot will be used
+            RHI::ScopeAttachmentStage m_scopeAttachmentStage = RHI::ScopeAttachmentStage::Uninitialized;
+
             //! Optional image view descriptor to be applied to the slot. Note a PassSlot should have only
             //! a buffer or image view descriptor (or none at all, in which case a default is generated),
             //! but not both. If the user specifies both, the image descriptor will take precedence.
@@ -126,7 +130,7 @@ namespace AZ
         //! 'This' keyword will cause the pass to search for the attachment on itself
         //! 'Parent' keyword will cause the pass to search for the attachment on it's parent pass
         //! 'Pipeline' keyword will cause the pass to get settings directly from the render pipeline (attachment name is ignored)
-        struct PassAttachmentRef final
+        struct ATOM_RPI_REFLECT_API PassAttachmentRef final
         {
             AZ_TYPE_INFO(PassAttachmentRef, "{BEA90E90-95AB-45DB-968C-9E269AA53FC5}");
             static void Reflect(AZ::ReflectContext* context);
@@ -141,7 +145,7 @@ namespace AZ
         //! Specifies a connection from a Pass's slot to a slot on an adjacent Pass (parent, neighbor or child pass)
         //! or to an attachment owned by the Pass itself (in which case the connecting Name will be "This").
         //! PassConnections and PassSlots are used to initialize PassAttachmentBindings.
-        struct PassConnection final
+        struct ATOM_RPI_REFLECT_API PassConnection final
         {
             AZ_TYPE_INFO(PassConnection, "{AC5E6572-3D9E-4F94-BB28-373A3FB59E63}");
             static void Reflect(AZ::ReflectContext* context);
@@ -158,7 +162,7 @@ namespace AZ
 
         //! Specifies a connection from a Pass's output slot to one of it's input slots. This is used as a fallback
         //! for the output when the pass is disabled so the output can present a valid attachments to subsequent passes.
-        struct PassFallbackConnection final
+        struct ATOM_RPI_REFLECT_API PassFallbackConnection final
         {
             AZ_TYPE_INFO(PassFallbackConnection, "{281C6C09-2BB8-49C0-967E-DF6A57DE1095}");
             static void Reflect(AZ::ReflectContext* context);
@@ -176,7 +180,7 @@ namespace AZ
         // --- Pass Attachment Descriptor Classes ---
 
         //! A set of multipliers used to obtain the size of an attachment from an existing attachment's size
-        struct PassAttachmentSizeMultipliers final
+        struct ATOM_RPI_REFLECT_API PassAttachmentSizeMultipliers final
         {
             AZ_TYPE_INFO(PassAttachmentSizeMultipliers, "{218DB53E-5B33-4DD1-AC23-9BADE4148EE6}");
             static void Reflect(AZ::ReflectContext* context);
@@ -192,7 +196,7 @@ namespace AZ
         //! Used to query an attachment size from a source attachment using a PassAttachmentRef
         //! The size of the attachment is then multiplied by the width, height and depth multipliers
         //! See Pass::CreateAttachmentFromDesc
-        struct PassAttachmentSizeSource final
+        struct ATOM_RPI_REFLECT_API PassAttachmentSizeSource final
         {
             AZ_TYPE_INFO(PassAttachmentSizeSource, "{22B2D186-5496-4359-B430-7B6F2436916E}");
             static void Reflect(AZ::ReflectContext* context);
@@ -209,7 +213,7 @@ namespace AZ
         //! Describes a PassAttachment, used for building attachments in a data-driven manner.
         //! Can specify size source and format source to derive attachment size and format from
         //! an existing attachment.
-        struct PassAttachmentDesc
+        struct ATOM_RPI_REFLECT_API PassAttachmentDesc
         {
             AZ_TYPE_INFO(PassAttachmentDesc, "{79942700-3E86-48AC-8851-2148AFAFF8B7}");
             static void Reflect(AZ::ReflectContext* context);
@@ -239,7 +243,7 @@ namespace AZ
         };
 
         //! A PassAttachmentDesc used for images
-        struct PassImageAttachmentDesc final
+        struct ATOM_RPI_REFLECT_API PassImageAttachmentDesc final
             : public PassAttachmentDesc
         {
             AZ_TYPE_INFO(PassImageAttachmentDesc, "{FA075E02-6A2E-4899-B888-B22DD052FCCC}");
@@ -247,6 +251,9 @@ namespace AZ
 
             //! The image descriptor for the attachment
             RHI::ImageDescriptor m_imageDescriptor;
+
+            //! A image view descriptor which is used when no explicit descriptor is specified when using this image in a slot
+            RHI::ImageViewDescriptor m_imageViewDescriptor;
 
             //! Whether to auto generate the number of mips based on the attachment
             //! so that we get a full mip chain with the smallest mip being 1x1 in size
@@ -260,7 +267,7 @@ namespace AZ
         using PassImageAttachmentDescListView = AZStd::span<const PassAttachmentDesc>;
 
         //! A PassAttachmentDesc used for buffers
-        struct PassBufferAttachmentDesc final
+        struct ATOM_RPI_REFLECT_API PassBufferAttachmentDesc final
             : public PassAttachmentDesc
         {
             AZ_TYPE_INFO(PassBufferAttachmentDesc, "{AD8F9866-954D-4169-8041-74B946A75747}");
@@ -268,6 +275,9 @@ namespace AZ
 
             //! The buffer descriptor for the transient buffer attachment
             RHI::BufferDescriptor m_bufferDescriptor;
+
+            //! A buffer view descriptor which is used when no explicit descriptor is specified when using this buffer in a slot
+            RHI::BufferViewDescriptor m_bufferViewDescriptor;
         };
 
         using PassBufferAttachmentDescList = AZStd::vector<PassBufferAttachmentDesc>;

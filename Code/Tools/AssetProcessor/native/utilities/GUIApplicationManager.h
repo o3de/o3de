@@ -51,7 +51,9 @@ class GUIApplicationManager
 {
     Q_OBJECT
 public:
-    explicit GUIApplicationManager(int* argc, char*** argv, QObject* parent = 0);
+    GUIApplicationManager(int* argc, char*** argv, QObject* parent = nullptr);
+    GUIApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
+    GUIApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
     ~GUIApplicationManager() override;
 
     ApplicationManager::BeforeRunStatus BeforeRun() override;

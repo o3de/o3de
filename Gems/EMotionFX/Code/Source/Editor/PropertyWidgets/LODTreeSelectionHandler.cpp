@@ -34,7 +34,7 @@ namespace EMotionFX
 
             AZ::u32 LODTreeSelectionHandler::GetHandlerName() const
             {
-                return AZ_CRC("LODTreeSelection", 0x25c27718);
+                return AZ_CRC_CE("LODTreeSelection");
             }
 
             bool LODTreeSelectionHandler::IsDefaultHandler() const
@@ -53,7 +53,7 @@ namespace EMotionFX
                 }
                 SceneUI::NodeTreeSelectionHandler::ConsumeAttribute(widget, attrib, attrValue, debugNameStr.c_str());
 
-                if (attrib == AZ_CRC("HideUncheckable", 0xa5bafb99))
+                if (attrib == AZ_CRC_CE("HideUncheckable"))
                 {
                     ConsumeHideUncheckableAttribute(widget, attrValue);
                 }

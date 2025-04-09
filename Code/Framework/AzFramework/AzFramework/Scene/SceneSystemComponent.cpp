@@ -44,12 +44,12 @@ namespace AzFramework
 
     void SceneSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SceneSystemComponentService", 0xd8975435));
+        provided.push_back(AZ_CRC_CE("SceneSystemComponentService"));
     }
 
     void SceneSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("SceneSystemComponentService", 0xd8975435));
+        incompatible.push_back(AZ_CRC_CE("SceneSystemComponentService"));
     }
 
     AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> SceneSystemComponent::CreateScene(AZStd::string_view name)

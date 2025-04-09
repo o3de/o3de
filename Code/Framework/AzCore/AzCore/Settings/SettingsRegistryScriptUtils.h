@@ -22,6 +22,7 @@ namespace AZ::SettingsRegistryScriptUtils
     //! Furthermore reflects a global property that wraps the AZ::SettingsRegistry Interface<T> instance to provide access
     //! to the global settings registry
     void ReflectSettingsRegistryToBehaviorContext(AZ::BehaviorContext& behaviorContext);
+    void ReflectSettingsRegistry(AZ::ReflectContext* reflectContext);
 }
 
 namespace AZ::SettingsRegistryScriptUtils::Internal

@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Instance/InstancePool.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
@@ -45,7 +46,7 @@ namespace AzToolsFramework
         // todo: look into caching and QLayoutItem::invalidate()
     public:
         DPELayout(QWidget* parent);
-        void Init(int depth, QWidget* parentWidget = nullptr);
+        void Init(int depth, bool enforceMinWidth, QWidget* parentWidget = nullptr);
         void Clear();
         virtual ~DPELayout();
 
@@ -53,9 +54,7 @@ namespace AzToolsFramework
         void SetExpanded(bool expanded);
         bool IsExpanded() const;
 
-        void AddSharePriorColumn(size_t previousIndex, size_t widgetIndex);
-        void RemoveSharePriorColumn(size_t widgetIndex);
-        int SharedWidgetCount();
+        void SetAsStartOfNewColumn(size_t widgetIndex);
 
         // QLayout overrides
         void invalidate() override;
@@ -73,14 +72,24 @@ namespace AzToolsFramework
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
         bool m_showExpander = false;
+        bool m_enforceMinWidth = true;
         bool m_expanded = true;
         QCheckBox* m_expanderWidget = nullptr;
 
-        //! Vector containing vectors of widgets, where each vector represents a unique shared column group.
-        //! Each widget in a vector will be a widget that belongs to that shared column group.
-        AZStd::vector<AZStd::vector<size_t>> m_sharePriorColumn;
+        // Contains the indices of all widgets that start a new column.
+        AZStd::unordered_set<size_t> m_columnStarts;
 
     private:
+        void CloseColumn(
+            QHBoxLayout* currentColumnLayout,
+            QRect& itemGeometry,
+            int& currentColumnCount,
+            const int columnWidth,
+            bool allWidgetsUnstretched,
+            bool startSpacer,
+            bool endSpacer
+        );
+
         // These cached sizes must be mutable since they are set inside of an overidden const function
         mutable QSize m_cachedLayoutSize;
         mutable QSize m_cachedMinLayoutSize;
@@ -97,7 +106,6 @@ namespace AzToolsFramework
 
     public:
         explicit DPERowWidget();
-        void Init(int depth, DPERowWidget* parentRow);
         void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
 
@@ -144,8 +152,9 @@ namespace AzToolsFramework
         static bool ValueHasChildRows(const AZ::Dom::Value& rowValue);
 
         DPERowWidget* m_parentRow = nullptr;
-        int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+        int m_depth = -1; //!< number of levels deep in the tree. Used for indentation
         DPELayout* m_columnLayout = nullptr;
+        bool m_enforceMinWidth = true;
 
         //! widget children in DOM specified order; mix of row and column widgets
         AZStd::deque<QWidget*> m_domOrderedChildren;
@@ -189,6 +198,11 @@ namespace AzToolsFramework
             This is typically used when a DPE is going into another scroll area and it is undesirable
             for the DPE to provide its own vertical scrollbar */
         void SetAllowVerticalScroll(bool allowVerticalScroll);
+
+        /*! Sets whether this DPE should enforce the minimum width of its sub-widgets, or allow the user
+         *  to make the DPE arbitrarily narrow. */
+        void SetEnforceMinWidth(bool enforceMinWidth);
+
         virtual QSize sizeHint() const override;
 
         auto GetAdapter()
@@ -222,11 +236,6 @@ namespace AzToolsFramework
         // but can be overridden here
         void SetSpawnDebugView(bool shouldSpawn);
 
-        static constexpr const char* GetEnableDPECVarName()
-        {
-            return "ed_enableDPE";
-        }
-        static bool ShouldReplaceRPE();
         static bool ShouldReplaceCVarEditor();
 
         static constexpr const char* GetEnableCVarEditorName()
@@ -289,12 +298,15 @@ namespace AzToolsFramework
 
         QVBoxLayout* m_layout = nullptr;
         bool m_allowVerticalScroll = true;
+        bool m_enforceMinWidth = true;
 
         AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings> m_dpeSettings;
         bool m_isRecursiveExpansionOngoing = false;
         bool m_spawnDebugView = false;
 
         DPERowWidget* m_rootNode = nullptr;
+
+        bool m_isBeingCleared = false;
 
         // keep pools of frequently used widgets that can be recycled for efficiency without
         // incurring the cost of creating and destroying them

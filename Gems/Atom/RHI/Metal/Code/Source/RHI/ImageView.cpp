@@ -10,6 +10,7 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
+#include <Atom/RHI.Reflect/Format.h>
 
 namespace AZ
 {
@@ -20,7 +21,7 @@ namespace AZ
             return aznew ImageView();
         }
 
-        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::DeviceResource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
             auto& device = static_cast<Device&>(deviceBase);
@@ -29,8 +30,8 @@ namespace AZ
             
             BuildImageSubResourceRange(resourceBase);
             const RHI::ImageSubresourceRange& range = GetImageSubresourceRange();
-            NSRange levelRange = {range.m_mipSliceMin, static_cast<NSUInteger>(range.m_mipSliceMax - range.m_mipSliceMin + 1)};
-            NSRange sliceRange = {range.m_arraySliceMin, static_cast<NSUInteger>(range.m_arraySliceMax - range.m_arraySliceMin + 1)};
+            NSRange levelRange = {range.m_mipSliceMin, AZStd::min(static_cast<NSUInteger>(range.m_mipSliceMax - range.m_mipSliceMin + 1), static_cast<NSUInteger>(imgDesc.m_mipLevels))};
+            NSRange sliceRange = {range.m_arraySliceMin, AZStd::min(static_cast<NSUInteger>(range.m_arraySliceMax - range.m_arraySliceMin + 1), static_cast<NSUInteger>(imgDesc.m_arraySize))};
             
             id<MTLTexture> mtlTexture = image.GetMemoryView().GetGpuAddress<id<MTLTexture>>();
             MTLPixelFormat textureFormat = ConvertPixelFormat(image.GetDescriptor().m_format);
@@ -52,10 +53,19 @@ namespace AZ
                 textureLength = textureLength * RHI::ImageDescriptor::NumCubeMapSlices;
             }
             
+            MTLTextureType imgTextureType = mtlTexture.textureType;
+            //Recreate the texture if the existing texture is not flagged as an array but the view is of an array.
+            //Essentially this will tag a 2d texture as 2darray texture to ensure that sampling works correctly.
+            if(!IsTextureTypeAnArray(imgTextureType) && viewDescriptor.m_isArray)
+            {
+                isViewFormatDifferent = true;
+                imgTextureType = ConvertTextureType(imgDesc.m_dimension, imgDesc.m_arraySize, imgDesc.m_isCubemap, viewDescriptor.m_isArray);
+            }
+            
             //Create a new view if the format, mip range or slice range has changed
             if( isViewFormatDifferent ||
-                levelRange.length != mtlTexture.mipmapLevelCount ||
-                sliceRange.length != textureLength)
+                levelRange.location != 0 || levelRange.length != mtlTexture.mipmapLevelCount ||
+                sliceRange.location != 0 || sliceRange.length != textureLength)
             {
                 //Protection against creating a view with an invalid format
                 //If view format is invalid use the base texture's format
@@ -65,7 +75,7 @@ namespace AZ
                 }
 
                 textureView = [mtlTexture newTextureViewWithPixelFormat : textureViewFormat
-                                                            textureType : mtlTexture.textureType
+                                                            textureType : imgTextureType
                                                                  levels : levelRange
                                                                  slices : sliceRange];
             }
@@ -88,8 +98,12 @@ namespace AZ
             if(textureView)
             {
                 m_format = textureView.pixelFormat;
-                AZ_Assert(m_format != MTLPixelFormatInvalid, "Invalid pixel format");
             }
+            else
+            {
+                m_format = textureFormat;
+            }
+            AZ_Assert(m_format != MTLPixelFormatInvalid, "Invalid pixel format");
 
             // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
             // a render target and do not need to be added to the bindless heap
@@ -121,6 +135,7 @@ namespace AZ
                 }
             }
             
+            m_memoryView.SetName(AZStd::string::format("%s_View_%s", image.GetName().GetCStr(), AZ::RHI::ToString(image.GetDescriptor().m_format)));
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
             m_hash = TypeHash64(m_format, m_hash);
             return RHI::ResultCode::Success;
@@ -199,7 +214,7 @@ namespace AZ
             return m_imageSubresourceRange;
         }
         
-        void ImageView::BuildImageSubResourceRange(const RHI::Resource& resourceBase)
+        void ImageView::BuildImageSubResourceRange(const RHI::DeviceResource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageDescriptor& imageDesc = image.GetDescriptor();

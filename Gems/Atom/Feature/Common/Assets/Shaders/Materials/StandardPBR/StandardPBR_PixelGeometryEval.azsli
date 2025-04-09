@@ -16,7 +16,9 @@
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
+#if ENABLE_PARALLAX
 #include "../MaterialFunctions/ParallaxDepth.azsli"
+#endif
 #include <Atom/Features/InstancedTransforms.azsli>
 
 #include <Atom/Features/Debug.azsli>
@@ -37,11 +39,13 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
 
     geoData.isDisplacementClipped = false;
 
+#if ENABLE_PARALLAX
     if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
                       geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
+#endif
 
     return geoData;
 }

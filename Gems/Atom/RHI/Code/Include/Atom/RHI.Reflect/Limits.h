@@ -32,7 +32,7 @@ namespace AZ::RHI
             constexpr uint32_t DrawFilterTagCountMax = 32;
             constexpr uint32_t MultiSampleCustomLocationsCountMax = 16;
             constexpr uint32_t MultiSampleCustomLocationGridSize = 16;
-            constexpr uint32_t SubpassCountMax = 10;
+            constexpr uint32_t SubpassCountMax = 13;
             constexpr uint32_t RenderAttachmentCountMax = 2 * AttachmentColorCountMax + 2; // RenderAttachments + ResolveAttachments + DepthStencilAttachment +  ShadingRateAttachment
             constexpr uint32_t UnboundedArraySize = 100000u;
         }
@@ -52,7 +52,7 @@ namespace AZ::RHI
 #else
             constexpr uint32_t FrameCountMax = 3;
 #endif
-            
+
             // Due to the fact that D3D12 only supports the flip model we need to allocate at least
             // a minimum of 2 swapChain images or the drivers will complain.
             constexpr uint32_t MinSwapChainImages = 2;
@@ -70,7 +70,7 @@ namespace AZ::RHI
     {
         namespace Memory
         {
-            constexpr uint64_t StagingBufferBudgetInBytes          = 128ul * 1024 * 1024;
+            constexpr uint64_t StagingBufferBudgetInBytes          = 0u;
             constexpr uint64_t AsyncQueueStagingBufferSizeInBytes  = 4ul   * 1024 * 1024;
             constexpr uint64_t MediumStagingBufferPageSizeInBytes  = 2ul   * 1024 * 1024;
             constexpr uint64_t LargestStagingBufferPageSizeInBytes = 128ul * 1024 * 1024;
@@ -92,11 +92,14 @@ namespace AZ::RHI
         enum class DeviceMask : uint32_t
         {
         };
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(DeviceMask);
+        constexpr DeviceMask NoDevices{ 0u };
         constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
         constexpr DeviceMask DefaultDevice{ 1u };
 
-        constexpr uint32_t DefaultDeviceIndex { 0 };
+        constexpr int DefaultDeviceIndex{ 0 };
+        constexpr int InvalidDeviceIndex{ -1 };
     }
 
-    constexpr uint32_t InvalidIndex = AZStd::numeric_limits<uint32_t>::max();
+    constexpr int InvalidIndex = AZStd::numeric_limits<int>::max();
 }

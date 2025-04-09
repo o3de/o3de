@@ -91,7 +91,6 @@ namespace ScriptCanvasEditor
                 // only emitted on container types
                 OnCreateVariable(variableType);
                 OnNameChanged(variableName.c_str());
-                accept();
             });
 
         // Tell the widget to auto create our context menu, for now

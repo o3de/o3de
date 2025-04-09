@@ -131,12 +131,12 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    bool BoxShape::IsTypeAxisAligned()
+    bool BoxShape::IsTypeAxisAligned() const
     {
         return false;
     }
 
-    AZ::Aabb BoxShape::GetEncompassingAabb()
+    AZ::Aabb BoxShape::GetEncompassingAabb() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
@@ -144,7 +144,7 @@ namespace LmbrCentral
         return m_intersectionDataCache.m_aabb;
     }
 
-    void BoxShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void BoxShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         const AZ::Vector3 extent(m_boxShapeConfig.m_dimensions * m_currentNonUniformScale * 0.5f);
         const AZ::Vector3 scaledOffset(m_boxShapeConfig.m_translationOffset * m_currentNonUniformScale);
@@ -152,7 +152,7 @@ namespace LmbrCentral
         transform = m_currentTransform;
     }
 
-    bool BoxShape::IsPointInside(const AZ::Vector3& point)
+    bool BoxShape::IsPointInside(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
@@ -165,7 +165,7 @@ namespace LmbrCentral
         return m_intersectionDataCache.m_obb.Contains(point);
     }
 
-    float BoxShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float BoxShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
@@ -178,7 +178,7 @@ namespace LmbrCentral
         return m_intersectionDataCache.m_obb.GetDistanceSq(point);
     }
 
-    bool BoxShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool BoxShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
@@ -203,7 +203,7 @@ namespace LmbrCentral
         return intersection;
     }
 
-    AZ::Vector3 BoxShape::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution)
+    AZ::Vector3 BoxShape::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);

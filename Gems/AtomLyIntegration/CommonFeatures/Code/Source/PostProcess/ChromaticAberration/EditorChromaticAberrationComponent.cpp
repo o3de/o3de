@@ -31,11 +31,11 @@ namespace AZ
                         ->Attribute(
                             AZ::Edit::Attributes::ViewportIcon,
                             "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(
                             Edit::Attributes::HelpPageURL,
-                            "https://docs.o3de.org/docs/user-guide/components/reference/atom/chromatic-aberration/") // [TODO ATOM-2672][PostFX] need create page for PostProcessing.
+                            "https://docs.o3de.org/docs/user-guide/components/reference/atom/chromatic-aberration/")
                         ;
 
                     editContext->Class<ChromaticAberrationComponentController>("ChromaticAberrationComponentController", "")

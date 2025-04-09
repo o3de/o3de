@@ -70,6 +70,9 @@ namespace AZ
                 AZ::RPI::ScenePtr GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene) override;
                 bool EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext) override;
                 void SwitchRenderPipeline(const AZ::RPI::RenderPipelineDescriptor& newRenderPipelineDesc, AZ::RPI::ViewportContextPtr viewportContext) override;
+                void SwitchAntiAliasing(const AZStd::string& newAntiAliasing, AZ::RPI::ViewportContextPtr viewportContext) override;
+                void SwitchMultiSample(const uint16_t newSampleCount, AZ::RPI::ViewportContextPtr viewportContext) override;
+                void RefreshWindowResolution() override;
 
             protected:
                 // Component overrides ...
@@ -78,6 +81,7 @@ namespace AZ
 
                 // WindowNotificationBus::Handler overrides ...
                 void OnWindowClosed() override;
+                void OnWindowResized(uint32_t width, uint32_t height) override;
 
                 // TickBus::Handler overrides ...
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -99,6 +103,10 @@ namespace AZ
                 void RemoveRenderPipeline();
 
                 void CreateViewportContext();
+                void SetWindowResolution();
+
+                //! Run the BRDF pipeline to generate the BRDF texture
+                void RunBRDFPipeline(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext);
 
                 //! Load a render pipeline from disk and add it to the scene
                 RPI::RenderPipelinePtr LoadPipeline(
@@ -125,9 +133,6 @@ namespace AZ
                 // Save a reference to the image created by the BRDF pipeline so it doesn't get auto deleted if it's ref count goes to zero
                 // For example, if we delete all the passes, we won't have to recreate the BRDF pipeline to recreate the BRDF texture
                 Data::Instance<RPI::AttachmentImage> m_brdfTexture;
-
-                // Save a reference to the image used for variable rate shading in XR so it doesn't get auto deleted if it's ref count goes to zero
-                Data::Instance<RPI::AttachmentImage> m_xrVrsTexture;
 
                 bool m_createDefaultScene = true;
                 bool m_defaultSceneReady = false;

@@ -43,8 +43,6 @@ namespace EMotionFX
     {
         namespace Behavior
         {
-            const int ActorGroupBehavior::s_animationsPreferredTabOrder = 3;
-
             void ActorGroupBehavior::Reflect(AZ::ReflectContext* context)
             {
                 Group::ActorGroup::Reflect(context);
@@ -81,7 +79,7 @@ namespace EMotionFX
                 const bool hasRequiredData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBoneData>(scene, false);
                 if (SceneHasActorGroup(scene) || hasRequiredData)
                 {
-                    categories.emplace_back("Actors", Group::ActorGroup::TYPEINFO_Uuid(), s_animationsPreferredTabOrder);
+                    categories.emplace_back("Actors", Group::ActorGroup::TYPEINFO_Uuid(), s_actorsPreferredTabOrder);
                 }
             }
 

@@ -18,6 +18,8 @@
 #include <Atom/RHI.Reflect/Format.h>
 
 #include <Atom/RHI/Device.h>
+#include <Atom/RHI/DrawList.h>
+#include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
@@ -49,6 +51,10 @@ namespace AZ::RHI
     //! Returns true if the Atom/GraphicsDevMode settings registry key is set
     bool IsGraphicsDevModeEnabled();
 
+    //! Returns the default supervariant name of an empty string if float16 is supported and the name of "NoFloat16" if float16 is not
+    //! supported. This is useful for loading the correct supervariant when a shader needs to have a version with and without float16.
+    const AZ::Name& GetDefaultSupervariantNameWithNoFloat16Fallback();
+
     //! Utility function to write captured pool data to a json document
     //! Ensure the passed pool won't be modified during the call to this function
     //! Available externally to the RHI through the RHIMemoryStatisticsInterface
@@ -68,5 +74,14 @@ namespace AZ::RHI
     //! Intended to be used for gpu memory failure debugging.
     //! Available externally to the RHI through the RHIMemoryStatisticsInterface
     void DumpPoolInfoToJson();
+
+    //! Utility function to get the DrawListTagRegistry
+    RHI::DrawListTagRegistry* GetDrawListTagRegistry();
+ 
+    //! Utility function to get the Name associated with a DrawListTag
+    Name GetDrawListName(DrawListTag drawListTag);
+
+    AZStd::string DrawListMaskToString(const RHI::DrawListMask& drawListMask);
+
 }
 

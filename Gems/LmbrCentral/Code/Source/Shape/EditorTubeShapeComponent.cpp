@@ -40,9 +40,9 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tube_Shape.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tube_Shape.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/tube-shape/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/tube-shape/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTubeShapeComponent::m_tubeShape, "TubeShape", "Tube Shape Configuration")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorTubeShapeComponent::ConfigurationChanged)
                         //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
@@ -156,6 +156,9 @@ namespace LmbrCentral
         ShapeComponentNotificationsBus::Event(
             GetEntityId(), &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+
+        // refresh the UI for this component, too
+        InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values);
     }
 
     void EditorTubeShapeComponent::OnSplineChanged()
@@ -165,30 +168,22 @@ namespace LmbrCentral
 
     void EditorTubeShapeComponent::OnAttributeAdded([[maybe_unused]] size_t index)
     {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+       InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorTubeShapeComponent::OnAttributeRemoved([[maybe_unused]] size_t index)
     {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorTubeShapeComponent::OnAttributesSet([[maybe_unused]] size_t size)
     {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorTubeShapeComponent::OnAttributesCleared()
     {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorTubeShapeComponent::BuildGameEntity(AZ::Entity* gameEntity)

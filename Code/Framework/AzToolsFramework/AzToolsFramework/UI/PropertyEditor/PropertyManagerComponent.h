@@ -48,12 +48,12 @@ namespace AzToolsFramework
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
+                provided.push_back(AZ_CRC_CE("PropertyManagerService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
+                incompatible.push_back(AZ_CRC_CE("PropertyManagerService"));
             }
 
             static void Reflect(AZ::ReflectContext* context);

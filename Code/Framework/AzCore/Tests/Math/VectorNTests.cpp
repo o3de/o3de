@@ -54,17 +54,29 @@ namespace UnitTest
         }
     }
 
-    TEST_F(Math_VectorN, TestLength)
+    TEST_F(Math_VectorN, TestNorms)
     {
         AZ::VectorN vec1 = AZ::VectorN::CreateZero(5);
-        float vec1Length = vec1.GetLength();
+        float vec1Length = vec1.L1Norm();
+        EXPECT_FLOAT_EQ(vec1Length, 0.0f);
+        vec1Length = vec1.L2Norm();
         EXPECT_FLOAT_EQ(vec1Length, 0.0f);
 
         AZ::VectorN vec2 = AZ::VectorN::CreateOne(16);
-        float vec2LengthSq = vec2.GetLengthSq();
+        float vec2Length = vec2.L1Norm();
+        EXPECT_FLOAT_EQ(vec2Length, 16.0f);
+        float vec2LengthSq = vec2.Dot(vec2);
         EXPECT_FLOAT_EQ(vec2LengthSq, 16.0f);
-        float vec2Length = vec2.GetLength();
+        vec2Length = vec2.L2Norm();
         EXPECT_FLOAT_EQ(vec2Length, 4.0f);
+
+        AZ::VectorN vec3 = AZ::VectorN(4, 2.0f);
+        float vec3Length = vec3.L1Norm();
+        EXPECT_FLOAT_EQ(vec3Length, 8.0f);
+        float vec3LengthSq = vec3.Dot(vec3);
+        EXPECT_FLOAT_EQ(vec3LengthSq, 16.0f);
+        vec3Length = vec3.L2Norm();
+        EXPECT_FLOAT_EQ(vec3Length, 4.0f);
     }
 
     TEST_F(Math_VectorN, TestNormalize)

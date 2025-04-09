@@ -75,6 +75,20 @@ VsOutput EvaluateVertexGeometry_Skin(
     return output;
 }
 
+// Added this version to make it compatible with the number of arguments in BasePBR.
+// Avoids compilation errors for compute shaders, listed in a materialpipeline,
+// that call EvaluateVertexGeometry().
+VsOutput EvaluateVertexGeometry_Skin(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0_tiled,
+    float2 uv1_unwrapped,
+    uint instanceId)
+{
+    return EvaluateVertexGeometry_Skin(position, normal, tangent, uv0_tiled, uv1_unwrapped, float4(0, 0, 0, 0), instanceId);
+}
+
 VsOutput EvaluateVertexGeometry_Skin(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_Skin(

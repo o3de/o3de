@@ -22,6 +22,7 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/RHISystem.h>
+#include <Tests/Device.h>
 #include <Tests/Factory.h>
 
 namespace UnitTest
@@ -71,7 +72,7 @@ namespace UnitTest
 
             m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
 
-            m_rhiSystem->InitDevices(AZ::RHI::InitDevicesFlags::MultiDevice);
+            m_rhiSystem->InitDevices(DeviceCount);
             m_rhiSystem->Init();
         }
 

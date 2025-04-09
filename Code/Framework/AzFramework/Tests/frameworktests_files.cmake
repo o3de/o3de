@@ -26,15 +26,12 @@ set(FILES
     OctreePerformanceTests.cpp
     OctreeTests.cpp
     AssetCatalog.cpp
-    AssetRegistry.cpp
     AssetProcessorConnection.cpp
-    NativeWindow.cpp
     ProcessLaunchParseTests.cpp
     Application.cpp
     PlatformHelper.cpp
     Scene.cpp
     CameraState.cpp
-    InputTests.cpp
     DocumentPropertyEditor/AdapterBuilderTests.cpp
     DocumentPropertyEditor/SchemaTests.cpp
     DocumentPropertyEditor/CvarAdapterTests.cpp
@@ -45,4 +42,5 @@ set(FILES
     PaintBrush/PaintBrushPaintSettingsTests.cpp
     PaintBrush/PaintBrushSmoothLocationTests.cpp
     QualitySystemComponentTests.cpp
+    DeviceAttributeSystemComponentTests.cpp
 )

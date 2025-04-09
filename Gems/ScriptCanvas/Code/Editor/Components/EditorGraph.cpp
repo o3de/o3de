@@ -130,13 +130,13 @@ namespace ScriptCanvasEditor
 
         if (rootDataElementNode.GetVersion() < 7)
         {
-            rootDataElementNode.RemoveElementByName(AZ_CRC("m_pureDataNodesConvertedToVariables", 0x8823e2c4));
+            rootDataElementNode.RemoveElementByName(AZ_CRC_CE("m_pureDataNodesConvertedToVariables"));
         }
 
         // Always check and remove this unused field to keep asset clean
-        if (rootDataElementNode.FindElement(AZ_CRC("unitTestNodesConverted", 0x4389126a)) != -1)
+        if (rootDataElementNode.FindElement(AZ_CRC_CE("unitTestNodesConverted")) != -1)
         {
-            rootDataElementNode.RemoveElementByName(AZ_CRC("unitTestNodesConverted", 0x4389126a));
+            rootDataElementNode.RemoveElementByName(AZ_CRC_CE("unitTestNodesConverted"));
         }
         return true;
     }
@@ -180,7 +180,7 @@ namespace ScriptCanvasEditor
         GeneralEditorNotificationBus::Handler::BusConnect(scriptCanvasId);
 
         ScriptCanvas::Graph::Activate();
-        PostActivate();
+
         m_undoHelper.SetSource(this);
     }
 
@@ -1142,7 +1142,14 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::UpdateCorrespondingImplicitConnection(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint)
     {
-        if (FindSlot(sourceEndpoint)->IsExecution() || FindSlot(targetEndpoint)->IsExecution())
+        auto sourceSlot = FindSlot(sourceEndpoint);
+        auto targetSlot = FindSlot(targetEndpoint);
+        if (!sourceSlot || !targetSlot)
+        {
+            return;
+        }
+
+        if (sourceSlot->IsExecution() || targetSlot->IsExecution())
         {
             return;
         }
@@ -1186,11 +1193,11 @@ namespace ScriptCanvasEditor
                 int numDataConnectionsBetween = 0;
 
                 // Count the number of data connections between the nodes
-                for (const ScriptCanvas::Slot* sourceSlot : sourceNodeDataSlots)
+                for (const ScriptCanvas::Slot* sourceDataSlot : sourceNodeDataSlots)
                 {
-                    for (const ScriptCanvas::Slot* targetSlot : targetNodeDataSlots)
+                    for (const ScriptCanvas::Slot* targetDataSlot : targetNodeDataSlots)
                     {
-                        if (FindConnection(sourceSlot->GetEndpoint(), targetSlot->GetEndpoint()))
+                        if (FindConnection(sourceDataSlot->GetEndpoint(), targetDataSlot->GetEndpoint()))
                         {
                             numDataConnectionsBetween++;
                         }
@@ -1444,6 +1451,28 @@ namespace ScriptCanvasEditor
             else if (slotType.IS_A(ScriptCanvas::Data::Type::AssetId()))
             {
                 dataInterface = aznew ScriptCanvasAssetIdDataInterface(scriptCanvasNodeId, scriptCanvasSlotId);
+                if (ScriptCanvas::Nodes::Core::Method* method = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(slot->GetNode()))
+                {
+                    // Try to find the AssetType attribute
+                    if (AZ::Attribute* assetTypeAttribute = FindAttribute(AZ::Script::Attributes::AssetType, method->GetMethod()->m_attributes))
+                    {
+                        AZ::AttributeReader attributeReader(nullptr, assetTypeAttribute);
+                        AZ::Data::AssetType assetType;
+                        attributeReader.Read<AZ::Data::AssetType>(assetType);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetAssetType(assetType);
+                    }
+
+                    if (AZ::Attribute* sourceAssetFilterAttribute = FindAttribute(AZ::Edit::Attributes::SourceAssetFilterPattern, method->GetMethod()->m_attributes))
+                    {
+                        AZ::AttributeReader attributeReader(nullptr, sourceAssetFilterAttribute);
+                        AZStd::string filterPattern;
+                        attributeReader.Read<AZStd::string>(filterPattern);
+                        ScriptCanvasAssetIdDataInterface* assetIdinterface = static_cast<ScriptCanvasAssetIdDataInterface*>(dataInterface);
+                        assetIdinterface->SetStringFilter(filterPattern);
+                    }
+                }
+
                 GraphCanvas::GraphCanvasRequestBus::BroadcastResult(dataDisplay, &GraphCanvas::GraphCanvasRequests::CreateAssetIdNodePropertyDisplay, static_cast<GraphCanvas::AssetIdDataInterface*>(dataInterface));
             }
             else if (slotType.IS_A(ScriptCanvas::Data::Type::BehaviorContextObject(ScriptCanvas::GraphScopedVariableId::TYPEINFO_Uuid())))
@@ -1535,7 +1564,7 @@ namespace ScriptCanvasEditor
     {
         GraphCanvas::SceneMemberGlowOutlineConfiguration glowConfiguration;
 
-        glowConfiguration.m_blurRadius = 5;
+        glowConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
         glowConfiguration.m_pen = QPen();
         glowConfiguration.m_pen.setBrush(QColor(243,129,29));
@@ -2342,7 +2371,11 @@ namespace ScriptCanvasEditor
             ScriptCanvas::GraphVariableManagerRequestBus::EventResult(hasValidDefault, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameValid, defaultName);
         } while (!hasValidDefault);
 
-        bool nameAvailable = false;
+        bool nameAvailable = hasValidDefault.IsSuccess();
+        if (nameAvailable)
+        {
+            variableName = defaultName;
+        }
 
         QWidget* mainWindow = nullptr;
         UIRequestBus::BroadcastResult(mainWindow, &UIRequests::GetMainWindow);
@@ -2395,7 +2428,8 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, true);
+        constexpr bool functionScope = false; // Promoted variables are used as references, thus they need to be a member variable
+        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, functionScope);
 
         if (addOutcome.IsSuccess())
         {
@@ -3350,6 +3384,47 @@ namespace ScriptCanvasEditor
         GraphCanvas::SlotRequestBus::EventResult(graphCanvasEndpoint.m_nodeId, graphCanvasEndpoint.GetSlotId(), &GraphCanvas::SlotRequests::GetNode);
 
         return graphCanvasEndpoint;
+    }
+
+    void EditorGraph::SetOriginalToNewIdsMap(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIds)
+    {
+        m_originalIdToNewIds = originalIdToNewIds;
+    }
+
+    void EditorGraph::GetOriginalToNewIdsMap(AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& originalIdToNewIdsOut) const
+    {
+        originalIdToNewIdsOut = m_originalIdToNewIds;
+    }
+
+    AZ::EntityId EditorGraph::FindNewIdFromOriginal(const AZ::EntityId& originalId) const
+    {
+        if (m_originalIdToNewIds.empty())
+        {
+            return originalId;
+        }
+
+        if (!m_originalIdToNewIds.contains(originalId))
+        {
+            return AZ::EntityId();
+        }
+
+        return m_originalIdToNewIds.at(originalId);
+    }
+
+    AZ::EntityId EditorGraph::FindOriginalIdFromNew(const AZ::EntityId& newId) const
+    {
+        if (m_originalIdToNewIds.empty())
+        {
+            return newId;
+        }
+
+        const auto it = m_originalIdToNewIds.find(newId);
+        if (it == m_originalIdToNewIds.end())
+        {
+            return AZ::EntityId();
+        }
+
+        return it->first;
     }
 
     void EditorGraph::OnSaveDataDirtied(const AZ::EntityId& savedElement)

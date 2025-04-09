@@ -83,7 +83,7 @@ namespace AZ
     //-----------------------------------------------------------------------------
     void UserSettingsComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UserSettingsService", 0xa0eadff5));
+        provided.push_back(AZ_CRC_CE("UserSettingsService"));
     }
 
     //-----------------------------------------------------------------------------

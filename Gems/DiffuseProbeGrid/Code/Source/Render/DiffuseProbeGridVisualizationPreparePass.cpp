@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -14,7 +15,6 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridVisualizationPreparePass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -30,8 +30,7 @@ namespace AZ
             : RenderPass(descriptor)
         {
             // disable this pass if we're on a platform that doesn't support raytracing
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false || !AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices || !AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
             {
                 SetEnabled(false);
             }
@@ -103,7 +102,6 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationPreparePass::FrameBeginInternal(FramePrepareParams params)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
@@ -126,6 +124,7 @@ namespace AZ
                 {
                     tlasDescriptorBuild->Instance()
                         ->InstanceID(index)
+                        ->InstanceMask(1)
                         ->HitGroupIndex(0)
                         ->Blas(diffuseProbeGridFeatureProcessor->GetVisualizationBlas())
                         ->Transform(transform)
@@ -134,7 +133,7 @@ namespace AZ
 
                 // create the TLAS buffers from on the descriptor
                 RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                visualizationTlas->CreateBuffers(*device, &tlasDescriptor, diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools());                    
+                visualizationTlas->CreateBuffers(RHI::MultiDevice::AllDevices, &tlasDescriptor, diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools());
             }
 
             RenderPass::FrameBeginInternal(params);
@@ -179,7 +178,7 @@ namespace AZ
                         desc.m_bufferViewDescriptor = bufferViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
+                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentStage::ComputeShader);
                     }
 
                     // TLAS Instances buffer
@@ -199,7 +198,7 @@ namespace AZ
                         desc.m_bufferViewDescriptor = bufferViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
+                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write, RHI::ScopeAttachmentStage::ComputeShader);
                     }
 
                     // grid data
@@ -209,7 +208,7 @@ namespace AZ
                         desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::ComputeShader);
                     }
 
                     // probe data
@@ -226,7 +225,7 @@ namespace AZ
                         desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDataImageViewDescriptor;
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::ComputeShader);
                     }
                 }
             }
@@ -247,7 +246,10 @@ namespace AZ
                 // the DiffuseProbeGrid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateVisualizationPrepareSrg(m_shader, m_srgLayout);
-                diffuseProbeGrid->GetVisualizationPrepareSrg()->Compile();
+                if (!diffuseProbeGrid->GetVisualizationPrepareSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetVisualizationPrepareSrg()->Compile();
+                }
             }
         }
 
@@ -267,12 +269,12 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup();
+                const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                RHI::DispatchItem dispatchItem;
+                RHI::DeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
-                dispatchItem.m_pipelineState = m_pipelineState;
+                dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = diffuseProbeGrid->GetTotalProbeCount();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = 1;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;

@@ -14,9 +14,9 @@ namespace AzToolsFramework
 {
     namespace Logging
     {
-        AZ::Crc32 LogEntry::s_messageField = AZ_CRC("message", 0xb6bd307f);
+        AZ::Crc32 LogEntry::s_messageField = AZ_CRC_CE("message");
         const char* LogEntry::s_messageFieldName = "message";
-        AZ::Crc32 LogEntry::s_windowField = AZ_CRC("window", 0x8be4f9dd);
+        AZ::Crc32 LogEntry::s_windowField = AZ_CRC_CE("window");
         const char* LogEntry::s_windowFieldName = "window";
 
         LogEntry::Field::Field(Field&& rhs)

@@ -16,20 +16,20 @@ import stat
 import pathlib
 import re
 import shutil
-import subprocess
+import string
 import sys
 import urllib.request
 from urllib.parse import ParseResult
 import uuid
 import zipfile
-from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
 from o3de import github_utils, git_utils, validation as valid
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
 from typing import List, Tuple
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
+UI_MSG_FORMAT = '%(message)s'
 
 logger = logging.getLogger('o3de.utils')
 logging.basicConfig(format=LOG_FORMAT)
@@ -112,20 +112,19 @@ class CLICommand(object):
             line = process.stdout.readline()
             if not line: break
 
-            log_line = line.decode('utf-8', 'ignore')
+            log_line = line.decode('utf-8', 'ignore').rstrip()
             self._stdout_lines.append(log_line)
             self.logger.info(log_line)
     
-    def _cleanup_process(self, process) -> str:
+    def _cleanup_process(self, process) -> None:
         # flush remaining log lines
         log_lines = process.stdout.read().decode('utf-8', 'ignore')
         self._stdout_lines += log_lines.split('\n')
         self.logger.info(log_lines)
-        stderr = process.stderr.read()
 
         safe_kill_processes(process, process_logger = self.logger)
 
-        return stderr
+
     
     def run(self) -> int:
         """
@@ -135,25 +134,20 @@ class CLICommand(object):
         """
         ret = 1
         try:
-            with Popen(self.args, cwd=self.cwd, env=self.env, stdout=PIPE, stderr=PIPE) as process:
+            with Popen(self.args, cwd=self.cwd, env=self.env, stdout=PIPE, stderr=STDOUT) as process:
                 self.logger.info(f"Running process '{self.args[0]}' with PID({process.pid}): {self.args}")
                 
                 self._poll_process(process)
-                stderr = self._cleanup_process(process)
+
+                self._cleanup_process(process)
 
                 ret = process.returncode
 
-                # print out errors if there are any      
-                if stderr:
-                    # bool(ret) --> if the process returns a FAILURE code (>0)
-                    logger_func = self.logger.error if bool(ret) else self.logger.warning
-                    err_txt = stderr.decode('utf-8', 'ignore')
-                    logger_func(err_txt)
-                    self._stderr_lines = err_txt.split("\n")
+                return ret
+
         except Exception as err:
             self.logger.error(err)
             raise err
-        return ret
 
 
 # Per Python documentation, only strings should be inserted into sys.path
@@ -294,15 +288,31 @@ def sanitize_identifier_for_cpp(identifier: str) -> str:
     :param identifier: the name which needs to be sanitized
     :return: str: sanitized identifier
     """
+    cpp_keywords = [
+        'alignas', 'constinit', 'false', 'public', 'true', 'alignof', 'const_cast', 'float', 'register',
+        'try', 'asm', 'continue', 'for', 'reinterpret_cast', 'typedef', 'auto', 'co_await', 'friend',
+        'requires', 'typeid', 'bool', 'co_return', 'goto', 'return', 'typename', 'break', 'co_yield',
+        'if', 'short', 'union', 'case', 'decltype', 'inline', 'signed', 'unsigned', 'catch', 'default',
+        'int', 'sizeof', 'using', 'char', 'delete', 'long', 'static', 'virtual', 'char8_t', 'do', 'mutable',
+        'static_assert', 'void', 'char16_t', 'double', 'namespace', 'static_cast', 'volatile', 'char32_t',
+        'dynamic_cast', 'new', 'struct', 'wchar_t', 'class', 'else', 'noexcept', 'switch', 'while', 'concept',
+        'enum', 'nullptr', 'template', 'const', 'explicit', 'operator', 'this', 'consteval', 'export', 'private',
+        'thread_local', 'constexpr', 'extern', 'protected', 'throw', 'and', 'and_eq', 'bitand', 'bitor', 'compl',
+        'not', 'not_eq', 'or', 'or_eq', 'xor', 'xor_eq']
+    
     if not identifier:
         return ''
     
-    sanitized_identifier = list(identifier)
-    for index, character in enumerate(sanitized_identifier):
+    identifier_chars = list(identifier)
+    for index, character in enumerate(identifier_chars):
         if not (character.isalnum() or character == '_'):
-            sanitized_identifier[index] = '_'
+            identifier_chars[index] = '_'
             
-    return "".join(sanitized_identifier)
+    sanitized_identifier = "".join(identifier_chars)
+    if sanitized_identifier in cpp_keywords:
+        sanitized_identifier += '_'
+            
+    return sanitized_identifier
 
 
 def validate_uuid4(uuid_string: str) -> bool:
@@ -787,3 +797,47 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
     except Exception:  # purposefully broad
         process_logger.error("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 
+
+def load_template_file(template_file_path: pathlib.Path, template_env: dict, read_encoding:str = 'UTF-8', encoding_error_action:str='ignore') -> str:
+    """
+    Helper method to load in a template file and return the processed template based on the input template environment
+    This will also handle '###' tokens to strip out of the final output completely to support things like adding
+    copyrights to the template that is not intended for the output text
+
+    :param template_file_path:  The path to the template file to load
+    :param template_env:        The template environment dictionary for the template file to process
+    :param read_encoding:       The text encoding to use to read from the file
+    :param  encoding_error_action:  The action to take on encoding errors
+    :return:    The processed content from the template file
+    :raises:    FileNotFoundError: If the template file path cannot be found
+    """
+    try:
+        template_file_content = template_file_path.resolve(strict=True).read_text(encoding=read_encoding,
+                                                                                  errors=encoding_error_action)
+        # Filter out all lines that start with '###' before replacement
+        filtered_template_file_content = (str(re.sub('###.*', '', template_file_content)).strip())
+
+        return string.Template(filtered_template_file_content).substitute(template_env)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Invalid file path. Cannot find template file located at {str(template_file_path)}")
+
+
+def remove_link(link:pathlib.PurePath):
+    """
+    Helper function to either remove a symlink, or remove a folder
+    """
+    link = pathlib.PurePath(link)
+    if os.path.isdir(link):
+        try:
+            os.unlink(link)
+        except OSError:
+            # If unlink fails use shutil.rmtree
+            def remove_readonly(func, path, _):
+                # Clear the readonly bit and reattempt the removal
+                os.chmod(path, stat.S_IWRITE)
+                func(path)
+
+            try:
+                shutil.rmtree(link, onerror=remove_readonly)
+            except shutil.Error as shutil_error:
+                raise RuntimeError(f'Error trying remove directory {link}: {shutil_error}', shutil_error.errno)

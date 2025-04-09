@@ -6,26 +6,66 @@
  *
  */
 
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
 {
-    ResultCode IndirectBufferSignature::Init(Device& device, const IndirectBufferSignatureDescriptor& descriptor)
+    DeviceIndirectBufferSignatureDescriptor IndirectBufferSignatureDescriptor::GetDeviceIndirectBufferSignatureDescriptor(
+        int deviceIndex) const
     {
-        ResultCode result = InitInternal(device, descriptor);
-        if (result == ResultCode::Success)
+        DeviceIndirectBufferSignatureDescriptor descriptor{ m_layout };
+
+        if (m_pipelineState)
         {
-            Base::Init(device);
-            m_descriptor = descriptor;
+            descriptor.m_pipelineState = m_pipelineState->GetDevicePipelineState(deviceIndex).get();
         }
 
-        return result;
+        return descriptor;
+    }
+
+    ResultCode IndirectBufferSignature::Init(
+        MultiDevice::DeviceMask deviceMask, const IndirectBufferSignatureDescriptor& descriptor)
+    {
+        MultiDeviceObject::Init(deviceMask);
+
+        ResultCode resultCode{ ResultCode::Success };
+
+        IterateDevices(
+            [this, &descriptor, &resultCode](int deviceIndex)
+            {
+                auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                m_deviceObjects[deviceIndex] = Factory::Get().CreateIndirectBufferSignature();
+
+                resultCode = GetDeviceIndirectBufferSignature(deviceIndex)->Init(
+                    *device, descriptor.GetDeviceIndirectBufferSignatureDescriptor(deviceIndex));
+
+                if(m_byteStride == UNINITIALIZED_VALUE)
+                {
+                    // Cache byteStride since it is the same for all devices
+                    m_byteStride = GetDeviceIndirectBufferSignature(deviceIndex)->GetByteStride();
+                }
+
+                return resultCode == ResultCode::Success;
+            });
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
+        m_descriptor = descriptor;
+
+        return resultCode;
     }
 
     uint32_t IndirectBufferSignature::GetByteStride() const
     {
         AZ_Assert(IsInitialized(), "Signature is not initialized");
-        return GetByteStrideInternal();
+        return m_byteStride;
     }
 
     uint32_t IndirectBufferSignature::GetOffset(IndirectCommandIndex index) const
@@ -46,7 +86,21 @@ namespace AZ::RHI
             }
         }
 
-        return GetOffsetInternal(index);
+        auto offset{ UNINITIALIZED_VALUE };
+
+        IterateObjects<DeviceIndirectBufferSignature>([&offset, &index]([[maybe_unused]] auto deviceIndex, auto deviceSignature)
+        {
+            auto deviceOffset{ deviceSignature->GetOffset(index) };
+
+            if (offset == UNINITIALIZED_VALUE)
+            {
+                offset = deviceOffset;
+            }
+
+            AZ_Assert(deviceOffset == offset, "Device Signature offsets do not match");
+        });
+
+        return offset;
     }
 
     const IndirectBufferSignatureDescriptor& IndirectBufferSignature::GetDescriptor() const
@@ -61,7 +115,6 @@ namespace AZ::RHI
 
     void IndirectBufferSignature::Shutdown()
     {
-        ShutdownInternal();
-        DeviceObject::Shutdown();
+        MultiDeviceObject::Shutdown();
     }
-}
+} // namespace AZ::RHI

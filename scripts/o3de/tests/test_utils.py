@@ -29,6 +29,17 @@ def test_validate_identifier(value, expected_result):
     result = utils.validate_identifier(value)
     assert result == expected_result
 
+@pytest.mark.parametrize(
+    "value, expected_result", [
+        pytest.param('new', 'new_'),
+        pytest.param('default', 'default_'),
+        pytest.param('Default', 'Default'),
+        pytest.param('test-', 'test_'),
+        
+    ]
+)
+def test_sanitize_identifier_for_cpp(value, expected_result):
+    assert utils.sanitize_identifier_for_cpp(value) == expected_result
 
 @pytest.mark.parametrize(
     "value, expected_result", [

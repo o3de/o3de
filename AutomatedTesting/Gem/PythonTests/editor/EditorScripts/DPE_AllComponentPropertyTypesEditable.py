@@ -67,7 +67,7 @@ def DPE_AllComponentPropertyTypesEditable():
         TestHelper.open_level("", "Base")
 
         # Verify the DPE is enabled
-        Report.critical_result(Tests.dpe_enabled, general.get_cvar("ed_enableDPE") == "true")
+        Report.critical_result(Tests.dpe_enabled, general.get_cvar("ed_enableDPEInspector") == "true")
 
         # Create several new entities to hold various components
         dither_entity = EditorEntity.create_editor_entity("DitherComponentTestEntity")

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ
@@ -22,7 +23,7 @@ namespace AZ
         //! needs to connect to "m_layer1_baseColor_texture" and the same property definition is repeated inside a "layer2"
         //! group where it connects to "m_layer2_baseColor_texture". This data structure provides the name context, like
         //! "m_layer1_" or "m_layer2_".
-        class MaterialNameContext
+        class ATOM_RPI_REFLECT_API MaterialNameContext
         {
         public:
             AZ_TYPE_INFO(MaterialNameContext, "{AAC9BB28-F463-455D-8467-F877E50E1FA7}")

@@ -34,11 +34,11 @@ namespace ScriptCanvas
             AZ_RTTI(Logger, "{BBA556C4-973B-4B2F-B2B9-357188086F78}");
             
             Logger();
-            ~Logger();
+            ~Logger() override;
                 
             //////////////////////////////////////////////////////////////////////////
             // ServiceNotificationsBus::Handler
-            void Connected(const ScriptCanvas::Debugger::Target&) override;
+            void Connected(ScriptCanvas::Debugger::Target&) override;
             void GraphActivated(const ScriptCanvas::GraphActivation&) override;
             void GraphDeactivated(const ScriptCanvas::GraphDeactivation&) override;
             void NodeStateChanged(const ScriptCanvas::NodeStateChange&) override;
@@ -59,16 +59,16 @@ namespace ScriptCanvas
         protected:
             AZ_FORCE_INLINE bool IsLoggingExecution() const 
             {
-                return m_target.m_script.m_logExecution
+                return m_target->m_script.m_logExecution
                     || (m_logExecutionOverrideEnabled && m_logExecutionOverride);
             }
 
             template<typename t_Event>
             void AddToLog([[maybe_unused]] const t_Event& loggableEvent)
             {
-#if defined(SC_EXECUTION_TRACE_ENABLED) 
+#if defined(SC_EXECUTION_TRACE_ENABLED)
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Logging: %s", loggableEvent.ToString().data());
-                m_logAsset.GetData().m_events.emplace_back(loggableEvent.Duplicate());
+                m_logData.m_events.push_back(loggableEvent);
 #endif
             }
 
@@ -78,10 +78,10 @@ namespace ScriptCanvas
             bool m_logExecutionOverrideEnabled = false;
             bool m_logExecutionOverride = false;
 
-#if defined(SC_EXECUTION_TRACE_ENABLED) 
-            ExecutionLogAsset m_logAsset;
+#if defined(SC_EXECUTION_TRACE_ENABLED)
+            ExecutionLogData m_logData;
 #endif
-            ScriptCanvas::Debugger::Target m_target;
+            ScriptCanvas::Debugger::Target* m_target;
         };
     }
 }

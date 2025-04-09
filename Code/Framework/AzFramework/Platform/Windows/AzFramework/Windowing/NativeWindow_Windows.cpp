@@ -8,67 +8,18 @@
 
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Windows.h>
 #include <AzFramework/Windowing/NativeWindow.h>
+#include <AzFramework/Windowing/NativeWindow_Windows.h>
+#include <AzFramework/Windowing/Resources.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/conversions.h>
 
+#include <dbt.h>
+
 namespace AzFramework
 {
-    class NativeWindowImpl_Win32 final
-        : public NativeWindow::Implementation
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Win32, AZ::SystemAllocator);
-        NativeWindowImpl_Win32();
-        ~NativeWindowImpl_Win32() override;
-
-        // NativeWindow::Implementation overrides...
-        void InitWindow(const AZStd::string& title,
-                        const WindowGeometry& geometry,
-                        const WindowStyleMasks& styleMasks) override;
-        void Activate() override;
-        void Deactivate() override;
-        NativeWindowHandle GetWindowHandle() const override;
-        void SetWindowTitle(const AZStd::string& title) override;
-
-        WindowSize GetMaximumClientAreaSize() const override;
-        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
-        bool SupportsClientAreaResize() const override { return true; }
-        bool GetFullScreenState() const override;
-        void SetFullScreenState(bool fullScreenState) override;
-        bool CanToggleFullScreenState() const override { return true; }
-        float GetDpiScaleFactor() const override;
-        uint32_t GetDisplayRefreshRate() const override;
-
-    private:
-        RECT GetMonitorRect() const;
-        static HWND GetWindowedPriority();
-
-        static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
-        static LRESULT CALLBACK WindowCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-        static const wchar_t* s_defaultClassName;
-
-        void WindowSizeChanged(const uint32_t width, const uint32_t height);
-
-        void EnterBorderlessWindowFullScreen();
-        void ExitBorderlessWindowFullScreen();
-
-        HWND m_win32Handle = nullptr;
-        RECT m_windowRectToRestoreOnFullScreenExit; //!< The position and size of the window to restore when exiting full screen.
-        UINT m_windowStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
-        UINT m_windowExtendedStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
-
-        bool m_isInBorderlessWindowFullScreenState = false; //!< Was a borderless window used to enter full screen state?
-        bool m_shouldEnterFullScreenStateOnActivate = false; //!< Should we enter full screen state when the window is activated?
-
-        using GetDpiForWindowType = UINT(HWND hwnd);
-        GetDpiForWindowType* m_getDpiFunction = nullptr;
-        uint32_t m_mainDisplayRefreshRate = 0;
-    };
-
     const wchar_t* NativeWindowImpl_Win32::s_defaultClassName = L"O3DEWin32Class";
 
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
@@ -79,9 +30,9 @@ namespace AzFramework
     NativeWindowImpl_Win32::NativeWindowImpl_Win32()
     {
         // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
-        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load(false))
+        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load())
         {
-            m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType*>("GetDpiForWindow");
+            m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType>("GetDpiForWindow");
         }
     }
 
@@ -92,9 +43,35 @@ namespace AzFramework
         m_win32Handle = nullptr;
     }
 
-    void NativeWindowImpl_Win32::InitWindow(const AZStd::string& title,
-                                            const WindowGeometry& geometry,
-                                            const WindowStyleMasks& styleMasks)
+    void DrawSplash(HWND hWnd)
+    {
+        const HINSTANCE hInstance = GetModuleHandle(0);
+        auto hImage = (HBITMAP)LoadImageA(hInstance, MAKEINTRESOURCEA(IDB_SPLASH1), IMAGE_BITMAP, 0, 0, 0);
+        if (hImage)
+        {
+            HDC hDC = GetDC(hWnd);
+            HDC hDCBitmap = CreateCompatibleDC(hDC);
+            BITMAP bm;
+
+            GetObjectA(hImage, sizeof(bm), &bm);
+            SelectObject(hDCBitmap, hImage);
+
+            RECT Rect;
+            GetWindowRect(hWnd, &Rect);
+
+            DWORD x = ((Rect.right - Rect.left) - bm.bmWidth) >> 1;
+            DWORD y = ((Rect.bottom - Rect.top) - bm.bmHeight) >> 1;
+            BitBlt(hDC, x, y, bm.bmWidth, bm.bmHeight, hDCBitmap, 0, 0, SRCCOPY);
+
+            DeleteObject(hImage);
+            DeleteDC(hDCBitmap);
+        }
+    }
+
+    void NativeWindowImpl_Win32::InitWindowInternal(
+        const AZStd::string& title,
+        const WindowGeometry& geometry,
+        const WindowStyleMasks& styleMasks)
     {
         const HINSTANCE hInstance = GetModuleHandle(0);
 
@@ -110,7 +87,7 @@ namespace AzFramework
             windowClass.hInstance = hInstance;
             windowClass.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
             windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-            windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+            windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
             windowClass.lpszMenuName = NULL;
             windowClass.lpszClassName = s_defaultClassName;
             windowClass.hIconSm = LoadIcon(hInstance, IDI_APPLICATION);
@@ -170,6 +147,7 @@ namespace AzFramework
             // This will result in a WM_SIZE message which will send the OnWindowResized notification
             ShowWindow(m_win32Handle, SW_SHOW);
             UpdateWindow(m_win32Handle);
+            DrawSplash(m_win32Handle);
         }
     }
 
@@ -410,6 +388,12 @@ namespace AzFramework
             shouldBubbleEventUp = true;
             break;
         }
+        case WM_DEVICECHANGE:
+            if (wParam == DBT_DEVNODES_CHANGED)
+            {
+                // If any device changes were detected, broadcast to the input device notification
+                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+            }
         default:
             shouldBubbleEventUp = true;
             break;
@@ -429,13 +413,11 @@ namespace AzFramework
             m_width = width;
             m_height = height;
 
+            DrawSplash(m_win32Handle);
+
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
-                if (!m_enableCustomizedResolution)
-                {
-                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
-                }
             }
         }
     }

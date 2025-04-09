@@ -10,6 +10,7 @@
 
 #include <Atom/RHI/BindlessSrgDescriptor.h>
 #include <Atom/RHI/ObjectCollector.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 #include <Atom/RHI.Reflect/DeviceDescriptor.h>
 #include <Atom/RHI.Reflect/DeviceFeatures.h>
 #include <Atom/RHI.Reflect/DeviceLimits.h>
@@ -127,6 +128,9 @@ namespace AZ::RHI
         //! Converts a GPU timestamp to microseconds
         virtual AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, HardwareQueueClass queueClass) const = 0;
 
+        //! Get a calibrated timestamp that returns a "simultaneous" timestamp on the GPU and CPU
+        virtual AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp(HardwareQueueClass queueClass = HardwareQueueClass::Graphics) = 0;
+
         //! Called before the device is going to be shutdown. This lets the device release any resources
         //! that also hold on to a Ptr to Device.
         virtual void PreShutdown() = 0;
@@ -158,6 +162,9 @@ namespace AZ::RHI
         // Accessors
         void SetLastExecutingScope(const AZStd::string_view scopeName);
         AZStd::string_view GetLastExecutingScope() const;
+
+        //! Builds an implementation specific XR device descriptor based on this graphics device.
+        virtual Ptr<XRDeviceDescriptor> BuildXRDescriptor() const { return nullptr; }
 
     protected:
 

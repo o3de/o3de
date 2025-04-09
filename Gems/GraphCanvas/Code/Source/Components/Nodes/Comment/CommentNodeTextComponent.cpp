@@ -42,8 +42,8 @@ namespace GraphCanvas
     {
         if (classElement.GetVersion() <= 2)
         {
-            AZ::Crc32 commentId = AZ_CRC("Comment", 0x9474526c);
-            AZ::Crc32 fontId = AZ_CRC("FontSettings", 0x9d90b4cf);
+            AZ::Crc32 commentId = AZ_CRC_CE("Comment");
+            AZ::Crc32 fontId = AZ_CRC_CE("FontSettings");
 
             CommentNodeTextSaveData saveData;
 
