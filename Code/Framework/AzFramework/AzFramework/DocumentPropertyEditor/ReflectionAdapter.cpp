@@ -177,8 +177,9 @@ namespace AZ::DocumentPropertyEditor
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
 
-                impl->m_adapter->NotifyResetDocument(); // rebuild the view based on the new contents, which could be many rows
-                m_reservedElementInstance = nullptr;
+                // rebuild the view based on the new contents, which could be many rows.
+                // This deletes the 'this' pointer!
+                impl->m_adapter->NotifyResetDocument(); 
             }
 
             void OnAddElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
@@ -1528,6 +1529,8 @@ namespace AZ::DocumentPropertyEditor
             }
         };
 
+        // note that most container operations delete the 'this' pointer as they cause a refresh, which
+        // clears the container nodes.
         auto handleContainerOperation = [&]()
         {
             if (message.m_messageOrigin.Size() == 0)
