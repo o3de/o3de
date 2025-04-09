@@ -39,5 +39,6 @@ ly_add_target(
         PRIVATE
             AZ::TestImpact.Runtime.Common.Headers
         PUBLIC
+            AZ::AzCore
             AZ::TestImpact.Frontend.Console.Common.Headers
 )

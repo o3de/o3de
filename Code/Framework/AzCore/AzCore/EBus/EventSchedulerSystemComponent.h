@@ -16,6 +16,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/queue.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -44,7 +45,7 @@ namespace AZ
 
     //! @class EventSchedulerSystemComponent
     //! @brief This is scheduled event queue class to run all scheduled events at appropriate intervals.
-    class EventSchedulerSystemComponent
+    class AZCORE_API EventSchedulerSystemComponent
         : public Component
         , public TickBus::Handler
         , public IEventSchedulerRequestBus::Handler

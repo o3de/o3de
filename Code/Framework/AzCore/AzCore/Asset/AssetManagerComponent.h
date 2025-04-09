@@ -10,13 +10,14 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
     /**
      *
      */
-    class AssetManagerComponent
+    class AZCORE_API AssetManagerComponent
         : public Component
         , public SystemTickBus::Handler
     {

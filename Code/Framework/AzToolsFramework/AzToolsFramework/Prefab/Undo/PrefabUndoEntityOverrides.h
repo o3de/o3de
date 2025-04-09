@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -17,7 +18,7 @@ namespace AzToolsFramework::Prefab
     class PrefabOverridePublicInterface;
 
     //! Undo class for handling updating entities to an instance as override of focused instance.
-    class PrefabUndoEntityOverrides
+    class AZTF_API PrefabUndoEntityOverrides
         : public UndoSystem::URSequencePoint
     {
     public:
@@ -25,6 +26,9 @@ namespace AzToolsFramework::Prefab
         AZ_CLASS_ALLOCATOR(PrefabUndoEntityOverrides, AZ::SystemAllocator);
 
         explicit PrefabUndoEntityOverrides(const AZStd::string& undoOperationName);
+
+        PrefabUndoEntityOverrides(PrefabUndoEntityOverrides const&) = delete;
+        PrefabUndoEntityOverrides& operator=(PrefabUndoEntityOverrides const&) = delete;
 
         bool Changed() const override;
         void Undo() override;

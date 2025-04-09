@@ -9,10 +9,11 @@
 #pragma once
 
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::IO
 {
-    class WindowsStorageDriveConfig final :
+    class AZCORE_API WindowsStorageDriveConfig final :
         public IStreamerStackConfig
     {
     public:

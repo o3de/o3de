@@ -125,7 +125,7 @@ namespace AZ
         /*
          * AssetBusCallbacks is a utility class that maps AssetBus events to user callbacks
          */
-        class AssetBusCallbacks
+        class AZCORE_API AssetBusCallbacks
             : public AssetBus::Handler
         {
         public:

@@ -33,7 +33,6 @@ set(FILES
     ../Common/VisualStudio/AzCore/Natvis/rapidjson.natvis
     AzCore/Debug/StackTracer_Windows.cpp
     ../Common/WinAPI/AzCore/Debug/Trace_WinAPI.cpp
-    ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.h
     ../Common/WinAPI/AzCore/Memory/OSAllocator_WinAPI.h

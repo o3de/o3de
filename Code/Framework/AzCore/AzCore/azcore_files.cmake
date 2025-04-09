@@ -8,6 +8,8 @@
 
 set(FILES
     base.h
+    AzCoreModuleStatic.h
+    AzCoreModuleStatic.cpp
     Asset/AssetInternal/WeakAsset.h
     Asset/AssetCommon.cpp
     Asset/AssetCommon.h
@@ -22,8 +24,6 @@ set(FILES
     Asset/AssetManager.h
     Asset/AssetManagerBus.cpp
     Asset/AssetManagerBus.h
-    Asset/AssetManagerComponent.cpp
-    Asset/AssetManagerComponent.h
     Asset/AssetSerializer.cpp
     Asset/AssetSerializer.h
     Casting/lossy_cast.h
@@ -43,6 +43,8 @@ set(FILES
     Component/EntityUtils.h
     Component/NamedEntityId.cpp
     Component/NamedEntityId.h
+    Component/TransformBus.cpp
+    Component/TransformBus.h
     Console/ConsoleFunctor.cpp
     Console/ConsoleFunctor.h
     Console/ConsoleFunctor.inl
@@ -54,6 +56,8 @@ set(FILES
     Debug/StackTracer.h
     Debug/Trace.cpp
     Debug/Trace.h
+    Debug/TraceMessageBus.cpp
+    Debug/TraceMessageBus.h
     Dependency/Dependency.h
     Dependency/Dependency.inl
     Dependency/Version.h
@@ -71,8 +75,6 @@ set(FILES
     Debug/ProfilerReflection.cpp
     Debug/ProfilerReflection.h
     Debug/Timer.h
-    Debug/TraceReflection.cpp
-    Debug/TraceReflection.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
     DOM/DomBackend.cpp
@@ -94,8 +96,6 @@ set(FILES
     EBus/Environment.h
     EBus/Event.h
     EBus/Event.inl
-    EBus/EventSchedulerSystemComponent.cpp
-    EBus/EventSchedulerSystemComponent.h
     EBus/IEventScheduler.h
     EBus/OrderedEvent.h
     EBus/OrderedEvent.inl
@@ -248,6 +248,8 @@ set(FILES
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h
+    Module/Module.cpp
+    Module/Module.h
     Name/Name.h
     Name/Name.cpp
     Name/Internal/NameData.h

@@ -12,6 +12,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzFramework/AzFrameworkStatic.h>
 
 namespace UnitTest
 {

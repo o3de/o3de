@@ -14,7 +14,6 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ConsoleFunctor.h>
 #include <AzCore/Name/NameDictionary.h>
-#include <AzCore/AzCoreAPI.h>
 
 namespace AZ
 {
@@ -29,7 +28,7 @@ namespace AZ
      * This class must perform tasks such as reflecting the classes within
      * the module and adding critical components to the system entity.
      */
-    class AZCORE_API Module
+    class Module
     {
     public:
         AZ_RTTI(Module, "{59682E0E-731F-4361-BC0B-039BC5376CA1}");

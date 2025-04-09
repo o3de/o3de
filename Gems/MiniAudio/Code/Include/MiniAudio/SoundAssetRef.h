@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/std/containers/vector.h>
 #include <MiniAudio/SoundAsset.h>

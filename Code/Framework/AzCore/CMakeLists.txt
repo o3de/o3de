@@ -82,8 +82,6 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PRIVATE
             AZCORE_STATIC_EXPORTS
-    PLATFORM_INCLUDE_FILES
-        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -108,6 +106,8 @@ ly_add_target(
     FILES_CMAKE
         AzCore/azcoreshared_files.cmake
         ${pal_dir}/platform_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     COMPILE_DEFINITIONS
         PRIVATE
             AZCORE_EXPORTS

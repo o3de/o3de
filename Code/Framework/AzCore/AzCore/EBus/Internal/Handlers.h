@@ -144,16 +144,87 @@ namespace AZ
         public:
             using BusType = AZ::EBus<Interface, Traits>;
 
-            NonIdHandler();
-            NonIdHandler(const NonIdHandler& rhs);
-            NonIdHandler& operator=(const NonIdHandler& rhs);
-            NonIdHandler(NonIdHandler&& rhs);
-            NonIdHandler& operator=(NonIdHandler&& rhs);
-            virtual ~NonIdHandler();
+            AZ_FORCE_INLINE NonIdHandler()
+                : m_node(nullptr)
+            {
+            }
 
-            void BusConnect();
-            void BusDisconnect();
-            bool BusIsConnected() const;
+            AZ_FORCE_INLINE NonIdHandler(const NonIdHandler& rhs)
+                : m_node(nullptr)
+            {
+                *this = rhs;
+            }
+
+            AZ_FORCE_INLINE NonIdHandler& operator=(const NonIdHandler& rhs)
+            {
+                BusDisconnect();
+                if (rhs.BusIsConnected())
+                {
+                    BusConnect();
+                }
+                return *this;
+            }
+
+            AZ_FORCE_INLINE NonIdHandler(NonIdHandler&& rhs)
+                : m_node(nullptr)
+            {
+                *this = AZStd::move(rhs);
+            }
+
+            AZ_FORCE_INLINE NonIdHandler& operator=(NonIdHandler&& rhs)
+            {
+                BusDisconnect();
+                if (rhs.BusIsConnected())
+                {
+                    rhs.BusDisconnect();
+                    BusConnect();
+                }
+                return *this;
+            }
+
+            AZ_FORCE_INLINE virtual ~NonIdHandler()
+            {
+                AZ_PUSH_DISABLE_WARNING(
+                    4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+                AZ_Assert(
+                    (!AZStd::is_polymorphic<typename BusType::InterfaceType>::value ||
+                     AZStd::is_same<typename BusType::MutexType, AZ::NullMutex>::value || !BusIsConnected()),
+                    "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+                AZ_POP_DISABLE_WARNING
+
+                if (BusIsConnected())
+                {
+                    BusDisconnect();
+                }
+                EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+            }
+
+            AZ_FORCE_INLINE void BusConnect()
+            {
+                typename BusType::Context& context = BusType::GetOrCreateContext();
+                typename BusType::Context::ConnectLockGuard contextLock(context.m_contextMutex);
+                if (!BusIsConnected())
+                {
+                    typename Traits::BusIdType id;
+                    m_node = this;
+                    BusType::ConnectInternal(context, m_node, contextLock, id);
+                }
+            }
+            AZ_FORCE_INLINE void BusDisconnect()
+            {
+                if (typename BusType::Context* context = BusType::GetContext())
+                {
+                    typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
+                    if (BusIsConnected())
+                    {
+                        BusType::DisconnectInternal(*context, m_node);
+                    }
+                }
+            }
+            AZ_FORCE_INLINE bool BusIsConnected() const
+            {
+                return static_cast<Interface*>(m_node) != nullptr;
+            }
 
         private:
             // Must be a member and not a base type so that Interface may be an incomplete type.
@@ -173,18 +244,118 @@ namespace AZ
         public:
             using BusType = AZ::EBus<Interface, Traits>;
 
-            IdHandler();
-            IdHandler(const IdHandler& rhs);
-            IdHandler& operator=(const IdHandler& rhs);
-            IdHandler(IdHandler&& rhs);
-            IdHandler& operator=(IdHandler&& rhs);
-            virtual ~IdHandler();
+            AZ_FORCE_INLINE IdHandler()
+                : m_node(nullptr)
+            {
+            }
 
-            void BusConnect(const IdType& id);
-            void BusDisconnect(const IdType& id);
-            void BusDisconnect();
-            bool BusIsConnectedId(const IdType& id) const;
-            bool BusIsConnected() const;
+            AZ_FORCE_INLINE IdHandler(const IdHandler& rhs)
+                : m_node(nullptr)
+            {
+                *this = rhs;
+            }
+
+            AZ_FORCE_INLINE IdHandler& operator=(const IdHandler& rhs)
+            {
+                BusDisconnect();
+                if (rhs.BusIsConnected())
+                {
+                    BusConnect(rhs.m_node.GetBusId());
+                }
+                return *this;
+            }
+
+            AZ_FORCE_INLINE IdHandler(IdHandler&& rhs)
+                : m_node(nullptr)
+            {
+                *this = AZStd::move(rhs);
+            }
+
+            AZ_FORCE_INLINE IdHandler& operator=(IdHandler&& rhs)
+            {
+                BusDisconnect();
+                if (rhs.BusIsConnected())
+                {
+                    IdType id = rhs.m_node.GetBusId();
+                    rhs.BusDisconnect(id);
+                    BusConnect(id);
+                }
+                return *this;
+            }
+
+            AZ_FORCE_INLINE virtual ~IdHandler()
+            {
+                AZ_PUSH_DISABLE_WARNING(
+                    4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+                AZ_Assert(
+                    (!AZStd::is_polymorphic<typename BusType::InterfaceType>::value ||
+                     AZStd::is_same_v<typename BusType::MutexType, AZ::NullMutex> || !BusIsConnected()),
+                    "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+                AZ_POP_DISABLE_WARNING
+
+                if (BusIsConnected())
+                {
+                    BusDisconnect();
+                }
+                EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+            }
+
+            AZ_FORCE_INLINE void BusConnect(const IdType& id)
+            {
+                typename BusType::Context& context = BusType::GetOrCreateContext();
+                typename BusType::Context::ConnectLockGuard contextLock(context.m_contextMutex);
+                if (BusIsConnected())
+                {
+                    // Connecting on the BusId that is already connected is a no-op
+                    if (m_node.GetBusId() == id)
+                    {
+                        return;
+                    }
+                    AZ_Assert(
+                        false,
+                        "Connecting to a different id on this bus without disconnecting first! Please ensure you call BusDisconnect before "
+                        "calling BusConnect again, or if multiple connections are desired you must use a MultiHandler instead.");
+                    BusType::DisconnectInternal(context, m_node);
+                }
+
+                m_node = this;
+                BusType::ConnectInternal(context, m_node, contextLock, id);
+            }
+
+            AZ_FORCE_INLINE void BusDisconnect(const IdType& id)
+            {
+                if (typename BusType::Context* context = BusType::GetContext())
+                {
+                    typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
+                    if (BusIsConnectedId(id))
+                    {
+                        BusType::DisconnectInternal(*context, m_node);
+                    }
+                }
+            }
+
+            AZ_FORCE_INLINE void BusDisconnect()
+            {
+                if (typename BusType::Context* context = BusType::GetContext())
+                {
+                    typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
+                    if (BusIsConnected())
+                    {
+                        BusType::DisconnectInternal(*context, m_node);
+                    }
+                }
+            }
+
+            AZ_FORCE_INLINE bool BusIsConnectedId(const IdType& id) const
+            {
+                return BusIsConnected() && m_node.GetBusId() == id;
+            }
+
+            AZ_FORCE_INLINE bool BusIsConnected() const
+            {
+                return m_node.m_holder != nullptr;
+            }
+
 
         private:
             // Must be a member and not a base type so that Interface may be an incomplete type.
@@ -205,18 +376,114 @@ namespace AZ
         public:
             using BusType = AZ::EBus<Interface, Traits>;
 
-            MultiHandler();
-            MultiHandler(const MultiHandler& rhs);
-            MultiHandler& operator=(const MultiHandler& rhs);
-            MultiHandler(MultiHandler&& rhs);
-            MultiHandler& operator=(MultiHandler&& rhs);
-            virtual ~MultiHandler();
+            AZ_FORCE_INLINE MultiHandler() = default;
 
-            void BusConnect(const IdType& id);
-            void BusDisconnect(const IdType& id);
-            void BusDisconnect();
-            bool BusIsConnectedId(const IdType& id) const;
-            bool BusIsConnected() const;
+            AZ_FORCE_INLINE MultiHandler(const MultiHandler& rhs)
+            {
+                *this = rhs;
+            }
+
+            AZ_FORCE_INLINE MultiHandler& operator=(const MultiHandler& rhs)
+            {
+                BusDisconnect();
+                for (const auto& nodePair : rhs.m_handlerNodes)
+                {
+                    BusConnect(nodePair.first);
+                }
+                return *this;
+            }
+
+            AZ_FORCE_INLINE MultiHandler(MultiHandler&& rhs)
+            {
+                *this = AZStd::move(rhs);
+            }
+
+            AZ_FORCE_INLINE MultiHandler& operator=(MultiHandler&& rhs)
+            {
+                BusDisconnect();
+                for (const auto& nodePair : rhs.m_handlerNodes)
+                {
+                    BusConnect(nodePair.first);
+                }
+                rhs.BusDisconnect();
+                return *this;
+            }
+
+            AZ_FORCE_INLINE virtual ~MultiHandler()
+            {
+                AZ_PUSH_DISABLE_WARNING(
+                    4127, "-Wunknown-warning-option") // conditional expression is constant (for Traits::LocklessDispatch in asserts)
+                AZ_Assert(
+                    (!AZStd::is_polymorphic<typename BusType::InterfaceType>::value ||
+                     AZStd::is_same<typename BusType::MutexType, AZ::NullMutex>::value || !BusIsConnected()),
+                    "EBus handlers must be disconnected prior to destruction on multi-threaded buses with virtual functions");
+                AZ_POP_DISABLE_WARNING
+
+                if (BusIsConnected())
+                {
+                    BusDisconnect();
+                }
+                EBUS_ASSERT(!BusIsConnected(), "Internal error: Bus was not properly disconnected!");
+            }
+
+            AZ_FORCE_INLINE void BusConnect(const IdType& id)
+            {
+                typename BusType::Context& context = BusType::GetOrCreateContext();
+                typename BusType::Context::ConnectLockGuard contextLock(context.m_contextMutex);
+                if (m_handlerNodes.find(id) == m_handlerNodes.end())
+                {
+                    void* handlerNodeAddr =
+                        m_handlerNodes.get_allocator().allocate(sizeof(HandlerNode), AZStd::alignment_of<HandlerNode>::value);
+                    auto handlerNode = new (handlerNodeAddr) HandlerNode(this);
+                    m_handlerNodes.emplace(id, AZStd::move(handlerNode));
+                    BusType::ConnectInternal(context, *handlerNode, contextLock, id);
+                }
+            }
+            AZ_FORCE_INLINE void BusDisconnect(const IdType& id)
+            {
+                if (typename BusType::Context* context = BusType::GetContext())
+                {
+                    typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
+                    auto nodeIt = m_handlerNodes.find(id);
+                    if (nodeIt != m_handlerNodes.end())
+                    {
+                        HandlerNode* handlerNode = nodeIt->second;
+                        BusType::DisconnectInternal(*context, *handlerNode);
+                        m_handlerNodes.erase(nodeIt);
+                        handlerNode->~HandlerNode();
+                        m_handlerNodes.get_allocator().deallocate(handlerNode, sizeof(HandlerNode), alignof(HandlerNode));
+                    }
+                }
+            }
+
+            AZ_FORCE_INLINE void BusDisconnect()
+            {
+                decltype(m_handlerNodes) handlerNodesToDisconnect;
+                if (typename BusType::Context* context = BusType::GetContext())
+                {
+                    typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
+                    handlerNodesToDisconnect = AZStd::move(m_handlerNodes);
+
+                    for (const auto& nodePair : handlerNodesToDisconnect)
+                    {
+                        BusType::DisconnectInternal(*context, *nodePair.second);
+
+                        nodePair.second->~HandlerNode();
+                        handlerNodesToDisconnect.get_allocator().deallocate(
+                            nodePair.second, sizeof(HandlerNode), AZStd::alignment_of<HandlerNode>::value);
+                    }
+                }
+            }
+
+            AZ_FORCE_INLINE bool BusIsConnectedId(const IdType& id) const
+            {
+                return m_handlerNodes.end() != m_handlerNodes.find(id);
+            }
+
+            AZ_FORCE_INLINE bool BusIsConnected() const
+            {
+                return !m_handlerNodes.empty();
+            }
 
         private:
             AZStd::unordered_map<IdType, HandlerNode*, AZStd::hash<IdType>, AZStd::equal_to<IdType>, typename Traits::AllocatorType> m_handlerNodes;

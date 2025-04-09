@@ -303,7 +303,7 @@ namespace AzToolsFramework
     //! EditorVertexSelectionFixed provides selection and editing for a fixed length number of
     //! vertices. New vertices cannot be inserted/added or removed.
     template<typename Vertex>
-    class EditorVertexSelectionFixed
+    class AZTF_API EditorVertexSelectionFixed
         : public EditorVertexSelectionBase<Vertex>
     {
     public:
@@ -326,7 +326,7 @@ namespace AzToolsFramework
     //! EditorVertexSelectionVariable provides selection and editing for a variable length number of
     //! vertices. New vertices can be inserted/added or removed from the collection.
     template<typename Vertex>
-    class EditorVertexSelectionVariable
+    class AZTF_API EditorVertexSelectionVariable
         : public EditorVertexSelectionBase<Vertex>
         , private AzToolsFramework::EditorVertexSelectionVariableRequestBus::Handler
     {
@@ -382,12 +382,11 @@ namespace AzToolsFramework
     extern template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
     extern template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
-    //extern template class AZCORE_API_EXTERN EditorVertexSelectionBase<AZ::Vector2>;
-    //extern template class AZCORE_API_EXTERN EditorVertexSelectionBase<AZ::Vector3>;
-    //extern template class AZCORE_API_EXTERN EditorVertexSelectionFixed<AZ::Vector2>;
-    //extern template class AZCORE_API_EXTERN EditorVertexSelectionFixed<AZ::Vector3>;
-    //extern template class AZCORE_API_EXTERN EditorVertexSelectionVariable<AZ::Vector2>;
-    //extern template class AZCORE_API_EXTERN EditorVertexSelectionVariable<AZ::Vector3>;
+    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionBase<AZ::Vector2>;
+    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionBase<AZ::Vector3>;
+    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionFixed<AZ::Vector2>;
+    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionFixed<AZ::Vector3>;
+    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionVariable<AZ::Vector2>;
+    //AZTF_API_EXTERN template class AZTF_API EditorVertexSelectionVariable<AZ::Vector3>;
 
 } // namespace AzToolsFramework
-

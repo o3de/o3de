@@ -488,6 +488,6 @@ namespace AZ
     /// @endcond
 }
 
-AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::TransformInterface);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::TransformNotification);
-AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::TransformHierarchyInformation);
+//AZ_DECLARE_EBUS_EXTERN_SINGLE_ADDRESS(AZ::TransformInterface);
+//AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::TransformNotification);
+//AZ_DECLARE_EBUS_EXTERN_MULTI_ADDRESS(AZ::TransformHierarchyInformation);

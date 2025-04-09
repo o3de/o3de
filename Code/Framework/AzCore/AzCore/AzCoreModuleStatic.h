@@ -10,15 +10,15 @@
 #include <AzCore/Module/Module.h>
 namespace AZ
 {
-    class AzCoreModule
+    class AzCoreModuleStatic
         : public AZ::Module
     {
     public:
-        AZ_RTTI(AzCoreModule, "{898CE9C5-B4CC-4331-811E-3B44B967A1C1}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AzCoreModule, AZ::OSAllocator);
+        AZ_RTTI(AzCoreModuleStatic, "{95A21E30-2806-40B0-AF2F-36C0E3EE8631}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(AzCoreModuleStatic, AZ::OSAllocator);
 
-        AzCoreModule();
-        ~AzCoreModule() override = default;
+        AzCoreModuleStatic();
+        ~AzCoreModuleStatic() override = default;
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };

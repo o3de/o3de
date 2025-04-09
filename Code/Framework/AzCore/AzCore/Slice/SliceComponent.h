@@ -1132,7 +1132,7 @@ namespace AZ
         }
 
         // Deserialize a slice without using asset processor and read root entity from it
-        AZ::Entity* LoadRootEntityFromSlicePath(const char* filePath, SerializeContext* context);
+        AZCORE_API AZ::Entity* LoadRootEntityFromSlicePath(const char* filePath, SerializeContext* context);
     } // namespace EntityUtils
 
     namespace IdUtils

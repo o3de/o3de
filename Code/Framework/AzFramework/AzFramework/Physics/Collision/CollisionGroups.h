@@ -70,8 +70,8 @@ namespace AzPhysics
     //! @code{.cpp}
     //! CollisionGroup group1 = CollisionLayer(0) | CollisionLayer(1) | CollisionLayer(2).
     //! @endcode
-    CollisionGroup operator|(CollisionLayer layer1, CollisionLayer layer2);
-    CollisionGroup operator|(CollisionGroup group, CollisionLayer layer);
+    AZF_API CollisionGroup operator|(CollisionLayer layer1, CollisionLayer layer2);
+    AZF_API CollisionGroup operator|(CollisionGroup group, CollisionLayer layer);
 
     //! Collision groups can be defined and edited in the PhysXConfiguration window.
     //! The idea is that collision groups are authored there, and then assigned to components via the

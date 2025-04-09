@@ -29,4 +29,5 @@ set(FILES
     ../Common/WinAPI/AzCore/Socket/AzSocket_fwd_WinAPI.h
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.cpp
     ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.h
+    ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
 )

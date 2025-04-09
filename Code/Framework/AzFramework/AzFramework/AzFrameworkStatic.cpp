@@ -8,7 +8,7 @@
 
 #include <AzFramework/AzFrameworkStatic.h>
 #include <AzFramework/Archive/ArchiveVars.h>
-
+#include <AzCore/Console/IConsoleTypes.h>
 namespace AZ::IO
 {
     AZ_CVAR(int, sys_PakPriority, aznumeric_cast<int>(ArchiveVars{}.m_fileSearchPriority), nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -20,4 +20,11 @@ namespace AZ::IO
     AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Sets the verbosity level for logging Archive operations\n"
         ">=1 - Turns on verbose logging of all operations");
-}
+} // namespace AZ::IO
+
+namespace AzFramework
+{
+    AZ_CVAR(bool, ed_cameraSystemUseCursor, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Should the camera use cursor absolute positions or motion deltas");
+} // namespace AzFramework
+

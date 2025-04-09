@@ -43,5 +43,6 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
+            AZ::AzCore
             AZ::TestImpact.Frontend.Console.Native.Static
 )

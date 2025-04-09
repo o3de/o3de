@@ -11,7 +11,7 @@
 #include <AzCore/Statistics/StatisticalProfiler.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/shared_mutex.h>
-
+#include <AzCore/AzCoreAPI.h>
 
 namespace AZ::Statistics
 {
@@ -44,7 +44,7 @@ namespace AZ::Statistics
     //! The StatisticalProfilerProxySystemComponent guarantees that the StatisticalProfilerProxy singleton exists
     //! as soon as the AZ::Environment is fully initialized.
     //! See StatisticalProfiler.h for more details and info.
-    class StatisticalProfilerProxy
+    class AZCORE_API StatisticalProfilerProxy
     {
     public:
         AZ_TYPE_INFO(StatisticalProfilerProxy, "{1103D0EB-1C32-4854-B9D9-40A2D65BDBD2}");
@@ -64,15 +64,16 @@ namespace AZ::Statistics
                 : m_profilerId(profilerId)
                 , m_statId(statId)
             {
-                if (!m_profilerProxy)
+                StatisticalProfilerProxy* profilerProxy = TimedScope::GetProfilerProxy();
+                if (!profilerProxy)
                 {
-                    m_profilerProxy = AZ::Interface<StatisticalProfilerProxy>::Get();
-                    if (!m_profilerProxy)
+                    profilerProxy = AZ::Interface<StatisticalProfilerProxy>::Get();
+                    if (!profilerProxy)
                     {
                         return;
                     }
                 }
-                if (!m_profilerProxy->IsProfilerActive(profilerId))
+                if (!profilerProxy->IsProfilerActive(profilerId))
                 {
                     return;
                 }
@@ -81,23 +82,26 @@ namespace AZ::Statistics
 
             ~TimedScope()
             {
-                if (!m_profilerProxy)
+                StatisticalProfilerProxy* profilerProxy = TimedScope::GetProfilerProxy();
+                if (!profilerProxy)
                 {
                     return;
                 }
                 auto stopTime = AZStd::chrono::steady_clock::now();
                 auto duration = stopTime - m_startTime;
-                m_profilerProxy->PushSample(m_profilerId, m_statId, static_cast<double>(duration.count()));
+                profilerProxy->PushSample(m_profilerId, m_statId, static_cast<double>(duration.count()));
             }
 
             //! Required only for UnitTests
             static void ClearCachedProxy()
             {
-                m_profilerProxy = nullptr;
+                TimedScope::SetProfilerProxy(nullptr);
             }
 
         private:
-            static StatisticalProfilerProxy* m_profilerProxy;
+            AZCORE_API static StatisticalProfilerProxy* GetProfilerProxy();
+            AZCORE_API static void SetProfilerProxy(StatisticalProfilerProxy* profilerProxy);
+
             const StatisticalProfilerId m_profilerId;
             const StatIdType& m_statId;
             AZStd::chrono::steady_clock::time_point m_startTime;

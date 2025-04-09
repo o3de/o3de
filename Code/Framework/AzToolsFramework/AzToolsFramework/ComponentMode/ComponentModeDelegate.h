@@ -153,7 +153,7 @@ namespace AzToolsFramework
 
         /// If this Entity had a Component supporting a ComponentMode, would
         /// it be possible for it to enter it given the current Editor state.
-        bool CouldBeginComponentModeWithEntity(AZ::EntityId entityId);
+        AZTF_API bool CouldBeginComponentModeWithEntity(AZ::EntityId entityId);
 
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

@@ -13,6 +13,8 @@ set(FILES
     Asset/AssetBus.h
     Asset/AssetTypeInfoBus.cpp
     Asset/AssetTypeInfoBus.h
+    Asset/AssetManagerComponent.cpp
+    Asset/AssetManagerComponent.h
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.cpp
@@ -20,15 +22,13 @@ set(FILES
     Component/ComponentApplicationLifecycle.cpp
     Component/ComponentApplicationLifecycle.h
     Component/ComponentExport.h
+    Component/EntityId.h
     Component/EntityBus.cpp
     Component/EntityBus.h
-    Component/EntityId.h
     Component/NonUniformScaleBus.cpp
     Component/NonUniformScaleBus.h
     Component/TickBus.cpp
     Component/TickBus.h
-    Component/TransformBus.cpp
-    Component/TransformBus.h
     Compression/compression.cpp
     Compression/Compression.h
     Compression/zstd_compression.cpp
@@ -41,8 +41,8 @@ set(FILES
     Console/ConsoleTypeHelpers.inl
     Console/LoggerSystemComponent.cpp
     Console/LoggerSystemComponent.h
-    Debug/TraceMessageBus.cpp
-    Debug/TraceMessageBus.h
+    Debug/TraceReflection.cpp
+    Debug/TraceReflection.h
     DOM/DomPatch.cpp
     DOM/DomPatch.h
     DOM/DomComparison.cpp
@@ -50,6 +50,8 @@ set(FILES
     DOM/DomPrefixTree.h
     DOM/DomPrefixTree.inl
     DOM/Backends/JSON/JsonBackend.h
+    EBus/EventSchedulerSystemComponent.cpp
+    EBus/EventSchedulerSystemComponent.h
     IO/AnsiTerminalUtils.cpp
     IO/AnsiTerminalUtils.h
     IO/ByteContainerStream.h
@@ -215,8 +217,6 @@ set(FILES
     Module/AZStdInstantiations.cpp
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
-    Module/Module.cpp
-    Module/Module.h
     Module/ModuleManagerBus.cpp
     Module/ModuleManagerBus.h
     Module/ModuleManager.cpp

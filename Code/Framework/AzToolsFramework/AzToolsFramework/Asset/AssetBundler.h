@@ -6,7 +6,6 @@
  *
  */
 #pragma once
-//AZTF-SHARED
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -111,7 +110,7 @@ namespace AzToolsFramework
         };
         static const char* FilePatternTypeNames[aznumeric_cast<int>(FilePatternType::NumPatterns)];
 
-        struct ComparisonData
+        struct AZTF_API ComparisonData
         {
             AZ_TYPE_INFO(ComparisonData, "{B39A7148-AC9D-4038-A85E-2C86A0B2DEF6}");
             ComparisonData(const ComparisonType& type, const AZStd::string& destinationPath, const AZStd::string& filePattern = AZStd::string(), FilePatternType filePatternType = FilePatternType::Default, unsigned int intersectionCount = 0);

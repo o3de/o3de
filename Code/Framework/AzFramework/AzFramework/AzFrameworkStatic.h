@@ -14,4 +14,9 @@ namespace AZ::IO
     AZ_CVAR_EXTERNED(int, sys_PakPriority);
     AZ_CVAR_EXTERNED(int, sys_report_files_not_found_in_paks);
     AZ_CVAR_EXTERNED(int32_t, az_archive_verbosity);
-}
+} // namespace AZ::IO
+
+namespace AzFramework
+{
+    AZ_CVAR_EXTERNED(bool, ed_cameraSystemUseCursor);
+} // namespace AzFramework
