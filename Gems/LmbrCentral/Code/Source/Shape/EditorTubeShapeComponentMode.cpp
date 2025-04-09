@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 #include <LmbrCentral/Shape/EditorTubeShapeComponentBus.h>
@@ -348,7 +349,9 @@ namespace LmbrCentral
 
         // ensure property grid values are refreshed
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+            &AzToolsFramework::ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent, 
+            GetEntityComponentIdPair(),
+            AzToolsFramework::Refresh_Values);
     }
 
     void EditorTubeShapeComponentMode::OnOpenCloseChanged(const bool /*closed*/)

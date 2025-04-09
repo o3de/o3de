@@ -149,9 +149,6 @@ namespace AZ
 
             bool IsAftermathInitialized() const;
 
-            //! Indicate that we need to compact the shader visible srv/uav/cbv shader visible heap. 
-            void DescriptorHeapCompactionNeeded();
-
             //! Check the opResult return true if it was success
             //! If it's device lost, triggers device removal handling
             bool AssertSuccess(HRESULT opResult);
@@ -159,13 +156,16 @@ namespace AZ
             // callback function which is called when device was removed
             void OnDeviceRemoved();
 
+            // return the binding slot of the bindless srg
+            uint32_t GetBindlessSrgSlot() const;
+
         private:
             Device();
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-
+            RHI::ResultCode InitInternalBindlessSrg(const RHI::BindlessSrgDescriptor& bindlessSrgDesc) override;
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
             void UpdateCpuTimingStatisticsInternal() const override;
@@ -173,6 +173,7 @@ namespace AZ
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
+            AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp(RHI::HardwareQueueClass queueClass) override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
             RHI::ResultCode InitializeLimits() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
@@ -180,7 +181,6 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor & descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
-            RHI::ResultCode CompactSRGMemory() override;
             RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -231,14 +231,14 @@ namespace AZ
 
             bool m_isAftermathInitialized = false;
 
-            // Boolean used to compact the view specific shader visible heap
-            bool m_isDescriptorHeapCompactionNeeded = false;
-
             // device remover fence            
             RHI::Ptr<ID3D12Fence> m_deviceFence;
             bool m_onDeviceRemoved = false;
             AZStd::mutex m_onDeviceRemovedMutex;
             HANDLE m_waitHandle;
+
+            // Cache bindless srg bind slot
+            uint32_t m_bindlesSrgBindingSlot = AZ::RHI::InvalidIndex;
         };
     }
 }

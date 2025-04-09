@@ -29,7 +29,7 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class AssetBrowserListModel;
         class AssetBrowserModel;
-        class AssetBrowserTableFilterModel;
+        class AssetBrowserFilterModel;
         class AssetBrowserTreeView;
 
         enum class AssetBrowserDisplayState : int
@@ -57,7 +57,7 @@ public:
     explicit AzAssetBrowserWindow(QWidget* parent = nullptr);
     virtual ~AzAssetBrowserWindow();
 
-    void SelectAsset(const QString& assetPath);
+    void SelectAsset(const QString& assetPath, bool assetIsFolder = false);
 
     static void RegisterViewClass();
 
@@ -68,6 +68,8 @@ public:
     AzToolsFramework::AssetBrowser::AssetBrowserMode GetCurrentMode() const;
     void SetCurrentMode(const AzToolsFramework::AssetBrowser::AssetBrowserMode mode);
 
+    void SetFavoritesWindowHeight(int height);
+
 Q_SIGNALS:
     void SizeChangedSignal(int newWidth);
 
@@ -77,6 +79,8 @@ protected:
 private:
     void UpdateDisplayInfo();
     void SetNarrowMode(bool narrow);
+    void SelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+    int GetSelectionCount();
 
 protected slots:
     void CreateToolsMenu();
@@ -86,12 +90,14 @@ protected slots:
     void UpdateWidgetAfterFilter();
     void SetTwoColumnMode(QWidget* viewToShow);
     void SetOneColumnMode();
+    void AddFavoriteSearchButtonPressed();
+    void AddFavoriteEntriesButtonPressed();
     void OnDoubleClick(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry);
 
 private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
-    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserListModel> m_tableModel;
+    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserListModel> m_listModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     QMenu* m_toolsMenu = nullptr;
     QMenu* m_createMenu = nullptr;
@@ -111,6 +117,7 @@ private Q_SLOTS:
     void CurrentIndexChangedSlot(const QModelIndex& idx) const;
     void DoubleClickedItem(const QModelIndex& element);
     void BreadcrumbsPathChangedSlot(const QString& path) const;
+    void OnFilterCriteriaChanged();
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

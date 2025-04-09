@@ -6,12 +6,10 @@
 #
 # {END_LICENSE}
 
-# Query the gem name from the gem.json file if possible
-# otherwise fallback to using ${GemName}
-o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
-if (NOT gem_name)
-    set(gem_name "${GemName}")
-endif()
+# Setup the gem meta variables that includes the "gem_path", "gem_name" and "gem_version"
+# The "pal_dir" variable is also set which refers to the Platform/<platform-name> directory
+# based on the directory of this CMakeLists.txt
+o3de_gem_setup("${Name}")
 
 ly_add_target(
     NAME ${Name}.Object OBJECT
@@ -27,7 +25,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::ScriptCanvas
+            Gem::ScriptCanvas.Shared
             Gem::ScriptCanvas.Extensions
     AUTOGEN_RULES
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h

@@ -39,6 +39,9 @@
                 "GlossBias": 0.0,
                 "Streaming": false,
                 "Enable": false
+            },
+            "server": {
+                "Enable": false
             }
         },
         "PresetsByFileMask": {

@@ -8,6 +8,7 @@
 
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
+#include <ProjectManager_Traits_Platform.h>
 #include <PythonBindingsInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
@@ -22,6 +23,7 @@
 #include <QGuiApplication>
 #include <QProgressDialog>
 #include <QSpacerItem>
+#include <QStandardPaths>
 #include <QGridLayout>
 #include <QTextEdit>
 #include <QByteArray>
@@ -302,14 +304,14 @@ namespace O3DE::ProjectManager
             else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
             {
                 // provide a couple more user friendly error messages for uncommon cases
-                if (incompatibleObjects.at(0).contains("engine.json", Qt::CaseInsensitive))
+                if (incompatibleObjects.at(0).contains(EngineJsonFilename.data(), Qt::CaseInsensitive))
                 {
-                    errorTitle = "Failed to read engine.json";
+                    errorTitle = errorTitle.format("Failed to read %s", EngineJsonFilename.data());
                     generalError = "The projects compatibility with this engine could not be checked because the engine.json could not be read";
                 }
-                else if (incompatibleObjects.at(0).contains("project.json", Qt::CaseInsensitive))
+                else if (incompatibleObjects.at(0).contains(ProjectJsonFilename.data(), Qt::CaseInsensitive))
                 {
-                    errorTitle = "Invalid project, failed to read project.json";
+                    errorTitle = errorTitle.format("Invalid project, failed to read %s", ProjectJsonFilename.data());
                     generalError = "The projects compatibility with this engine could not be checked because the project.json could not be read.";
                 }
                 else
@@ -460,8 +462,36 @@ namespace O3DE::ProjectManager
             if (projectDirectory.exists())
             {
                 // Check if there is an actual project here or just force it
-                if (force || PythonBindingsInterface::Get()->GetProject(path).IsSuccess())
+                auto pythonBindingsPtr = PythonBindingsInterface::Get();
+                if (pythonBindingsPtr)
                 {
+                    // if we can obtain the python interface, then we will ONLY delete the folder
+                    // if its a real project, unless force is specified.
+
+                    AZ::Outcome<ProjectInfo> pInfo = pythonBindingsPtr->GetProject(path);
+                    if (force || pInfo.IsSuccess())
+                    {
+                        if (pInfo.IsSuccess())
+                        {
+                            //determine if we have a restricted directory to worry about
+                            if (!pInfo.GetValue().m_restricted.isEmpty())
+                            {
+                                QDir restrictedDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first());
+                        
+                                if (restrictedDirectory.cd("O3DE/Restricted/Projects") &&
+                                    restrictedDirectory.cd(pInfo.GetValue().m_restricted) &&
+                                    !restrictedDirectory.isEmpty())
+                                {
+                                    restrictedDirectory.removeRecursively();
+                                }
+                            }
+                        }
+                        return projectDirectory.removeRecursively();
+                    }
+                }
+                else
+                {
+                    // we don't have any python bindings available, we're likely in test mode.
                     return projectDirectory.removeRecursively();
                 }
             }
@@ -541,9 +571,9 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool FindSupportedCompiler(QWidget* parent)
+        bool FindSupportedCompiler(const ProjectInfo& projectInfo, QWidget* parent)
         {
-            auto findCompilerResult = FindSupportedCompilerForPlatform();
+            auto findCompilerResult = FindSupportedCompilerForPlatform(projectInfo);
 
             if (!findCompilerResult.IsSuccess())
             {
@@ -715,6 +745,15 @@ namespace O3DE::ProjectManager
             }
 
             return AZ::Success(QString(projectBuildPath.c_str()));
+        }
+
+        QString GetPythonExecutablePath(const QString& enginePath)
+        {
+            // append lib path to Python paths
+            AZ::IO::FixedMaxPath libPath = enginePath.toUtf8().constData();
+            libPath /= AZ::IO::FixedMaxPathString(AZ_TRAIT_PROJECT_MANAGER_PYTHON_EXECUTABLE_SUBPATH);
+            libPath = libPath.LexicallyNormal();
+            return QString(libPath.String().c_str());
         }
 
         QString GetDefaultProjectPath()

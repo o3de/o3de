@@ -33,7 +33,7 @@ class Editor_PySide_Example_Works(BaseClass):
 
         # Waiting for one frame so that the widgets in the UI are updated with the new component information
         general.idle_enable(True)
-        general.open_pane("Entity Inspector")
+        general.open_pane("Inspector")
         general.idle_wait_frames(1)
 
         values = pyside_component_utils.get_component_combobox_values(typenameList[0], 'Intensity mode', print)

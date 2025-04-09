@@ -700,8 +700,12 @@ namespace ImageProcessingAtom
 
     bool BuilderSettingManager::DoesSupportPlatform(AZStd::string_view platformId)
     {
-        bool rv = m_builderSettings.find(platformId) != m_builderSettings.end();
-        return rv;
+        if (const auto& itr = m_builderSettings.find(platformId); itr != m_builderSettings.end())
+        {
+            return itr->second.m_enablePlatform;
+        }
+
+        return false;
     }
     
     void BuilderSettingManager::SavePresets(AZStd::string_view outputFolder)

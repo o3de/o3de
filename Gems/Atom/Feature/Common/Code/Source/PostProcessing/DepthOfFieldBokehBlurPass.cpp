@@ -106,7 +106,7 @@ namespace AZ
         {
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            AZ::RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            AZ::RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
             if (fp)
             {
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -172,11 +172,11 @@ namespace AZ
             commandList->SetViewport(m_viewportState);
             commandList->SetScissor(m_scissorState);
 
-            SetSrgsForDraw(commandList);
+            SetSrgsForDraw(context);
 
-            m_item.m_pipelineState = GetPipelineStateFromShaderVariant();
+            m_item.SetPipelineState(GetPipelineStateFromShaderVariant());
 
-            commandList->Submit(m_item);
+            commandList->Submit(m_item.GetDeviceDrawItem(context.GetDeviceIndex()));
         }
 
         void DepthOfFieldBokehBlurPass::SetRadiusMinMax(float min, float max)

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactModuloNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:noNamespaceSchemaLocation="../../../AutoGen/ScriptCanvasNodeable.xsd">
+    <Class Name="CompactModuloNodeable"
+        QualifiedName="Nodeables::CompactModuloNodeable"
+        PreferredClassName="mod"
+        Category="Compact/Mathematical Functions"
+        Namespace="ScriptCanvas"
+        Description="Gets the remainder of the first input number divided by the second input number"
+        Preset="compact">
+
+        <Input Name="In" OutputName="Out">
+            <Parameter Name="a" Type="float"/>
+            <Parameter Name="b" Type="float"/>
+            <Return Name="Out" Type="float"/>
+        </Input>
+
+    </Class>
+</ScriptCanvas>

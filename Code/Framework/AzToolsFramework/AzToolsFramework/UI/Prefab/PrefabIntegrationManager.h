@@ -11,8 +11,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <AzToolsFramework/API/EntityPropertyEditorNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
@@ -42,14 +42,13 @@ namespace AzToolsFramework
         class PrefabPublicInterface;
 
         class PrefabIntegrationManager final
-            : public EditorContextMenuBus::Handler
-            , public EditorEventsBus::Handler
-            , public PrefabInstanceContainerNotificationBus::Handler
+            : public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
             , private PrefabFocusNotificationBus::Handler
             , private PrefabPublicNotificationBus::Handler
             , private EditorEntityContextNotificationBus::Handler
             , private ActionManagerRegistrationNotificationBus::Handler
+            , private EntityPropertyEditorNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator);
@@ -59,17 +58,13 @@ namespace AzToolsFramework
 
             static void Reflect(AZ::ReflectContext* context);
 
-            // EditorContextMenuBus overrides ...
-            int GetMenuPosition() const override;
-            AZStd::string GetMenuIdentifier() const override;
-            void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
-
-            // EditorEventsBus overrides ...
-            void OnEscape() override;
-
             // EditorEntityContextNotificationBus overrides ...
             void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
+
+            // EntityPropertyEditorNotificationBus ...
+            void OnComponentSelectionChanged(
+                EntityPropertyEditor* entityPropertyEditor, const AZStd::unordered_set<AZ::EntityComponentIdPair>& selectedEntityComponentIds) override;
 
             // PrefabFocusNotificationBus overrides ...
             void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
@@ -88,6 +83,7 @@ namespace AzToolsFramework
             void OnActionUpdaterRegistrationHook() override;
             void OnActionRegistrationHook() override;
             void OnWidgetActionRegistrationHook() override;
+            void OnMenuRegistrationHook() override;
             void OnMenuBindingHook() override;
             void OnToolBarBindingHook() override;
             void OnPostActionManagerRegistrationHook() override;
@@ -132,10 +128,6 @@ namespace AzToolsFramework
             void ContextMenu_DeleteSelected();
             void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
             void ContextMenu_RevertOverrides(AZ::EntityId entityId);
-
-            // Shortcut setup handlers (for legacy action manager)
-            void InitializeShortcuts();
-            void UninitializeShortcuts();
 
             // Reference detection
             static void GatherAllReferencedEntitiesAndCompare(

@@ -249,7 +249,7 @@ namespace ScriptCanvas
                 AZ_Assert(datum != nullptr, "the datum must be valid");
 
                 // #functions2 slot<->variable check to verify if it is a member variable
-                auto variable = sourceVariable->GetScope() == VariableFlags::Scope::Graph
+                auto variable = (sourceVariable->GetScope() == VariableFlags::Scope::Graph)
                     ? AddMemberVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId())
                     : AddVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId());
 
@@ -2583,20 +2583,20 @@ namespace ScriptCanvas
                 Nodes::Core::FunctionCallNodeCompareConfig config;
                 const auto result = functionNode->IsOutOfDate(config, m_source.m_assetId.m_guid);
 
-                if (result == Nodes::Core::IsFunctionCallNodeOutOfDataResult::Yes)
+                if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::Yes)
                 {
-                    AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                    AZ_Warning("ScriptCanvas", false, "FunctionCallNode '%s' is out-of-date.", node.GetNodeName().c_str());
                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                     return false;
                 }
-                else if (result == Nodes::Core::IsFunctionCallNodeOutOfDataResult::EvaluateAfterLocalDefinition)
+                else if (result == Nodes::Core::IsFunctionCallNodeOutOfDateResult::EvaluateAfterLocalDefinition)
                 {
                     m_locallyDefinedFunctionCallNodes.push_back(functionNode);
                 }
             }
             else if (node.IsOutOfDate(m_source.m_graph->GetVersion()))
             {
-                AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
+                AZ_Warning("ScriptCanvas", false, "Node '%s' is out-of-date.", node.GetNodeName().c_str());
                 AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                 return false;
             }
@@ -3317,7 +3317,27 @@ namespace ScriptCanvas
 
             // \todo Infinite loop handling both in code and in the graph will have to occur here.
             auto executionOutNodes = execution->GetId().m_node->GetConnectedNodes(outSlot);
-            auto numConnections = executionOutNodes.size();
+
+            // Sort the out node connections to ensure that implicit execution connections are always parsed first
+            EndpointsResolved sortedExecutionOutNodes;
+            for (const EndpointResolved& endpoint : executionOutNodes)
+            {
+                // If this connection is implicit, only parse it if the recieving node has parsed all of its implicit
+                // connections already
+                if (endpoint.second->CreatesImplicitConnections() && !HasUnparsedImplicitConnections(&outSlot, endpoint.second))
+                {
+                    sortedExecutionOutNodes.emplace_back(endpoint);
+                }
+            }
+            for (const EndpointResolved& endpoint : executionOutNodes)
+            {
+                if (!endpoint.second->CreatesImplicitConnections())
+                {
+                    sortedExecutionOutNodes.emplace_back(endpoint);
+                }
+            }
+
+            auto numConnections = sortedExecutionOutNodes.size();
 
             if (numConnections == 0)
             {
@@ -3332,13 +3352,13 @@ namespace ScriptCanvas
             }
             else if (numConnections == 1)
             {
-                ParseExecutionFunctionRecurse(execution, execution->ModChild(0), outSlot, executionOutNodes[0]);
+                ParseExecutionFunctionRecurse(execution, execution->ModChild(0), outSlot, sortedExecutionOutNodes[0]);
             }
             else
             {
                 AZStd::vector<const Slot*> outSlots;
-                outSlots.resize(executionOutNodes.size(), &outSlot);
-                ParseExecutionMultipleOutSyntaxSugar(execution, executionOutNodes, outSlots);
+                outSlots.resize(sortedExecutionOutNodes.size(), &outSlot);
+                ParseExecutionMultipleOutSyntaxSugar(execution, sortedExecutionOutNodes, outSlots);
             }
 
             ParseMultiExecutionPost(execution);
@@ -3784,6 +3804,51 @@ namespace ScriptCanvas
                     return;
                 }
             }
+        }
+
+        bool AbstractCodeModel::HasUnparsedImplicitConnections(const Slot* outSlot, const Slot* inSlot)
+        {
+            if (inSlot->CreatesImplicitConnections())
+            {
+                // Get each endpoint connected to the input slot
+                EndpointsResolved connectedNodes;
+                if (const Node* inNode = inSlot->GetNode())
+                {
+                    connectedNodes = inNode->GetConnectedNodes(*inSlot);
+                }
+                for (const EndpointResolved& connectedNode : connectedNodes)
+                {
+                    // If the endpoint's slot is not the same as the output slot currently being processed, check if it has already been parsed
+                    if (connectedNode.second != outSlot)
+                    {
+                        // If there are no connections to ignore yet, that must mean there are still more slots on this node to parse
+                        if (m_parsedImplicitConnections.empty())
+                        {
+                            m_parsedImplicitConnections.push_back(AZStd::make_pair(outSlot, inSlot));
+                            return true;
+                        }
+                        else
+                        {
+                            bool foundConnectionInParsed = false;
+                            for (const auto& connection : m_parsedImplicitConnections)
+                            {
+                                if (connection.first == connectedNode.second && connection.second == inSlot)
+                                {
+                                    foundConnectionInParsed = true;
+                                }
+                            }
+                            // If the connection we are currently checking is not in the connections to ignore vector, that means there are
+                            // still more implicit slots on this node that we must parse
+                            if (!foundConnectionInParsed)
+                            {
+                                m_parsedImplicitConnections.push_back(AZStd::make_pair(outSlot, inSlot));
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         void AbstractCodeModel::ParseExecutionOnce(ExecutionTreePtr once)
@@ -4807,7 +4872,7 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseOutputData(ExecutionTreePtr execution, ExecutionChild& executionChild)
         {
-            if (const auto nodeling = azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node))
+            if (azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node))
             {
                 // this nodeling will always be the Execution-In part of the function definition
                 // since a call to a user out does not enter this path
@@ -5496,3 +5561,4 @@ namespace ScriptCanvas
         }
     }
 }
+

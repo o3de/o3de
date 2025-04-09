@@ -9,16 +9,17 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/AliasedHeap.h>
-#include <RHI/Memory.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
+        class Device;
         class Resource;
         class Scope;
         class Buffer;
         class Image;
+        class VulkanMemoryAllocation;
 
         class AliasedHeap final
             : public RHI::AliasedHeap
@@ -34,9 +35,8 @@ namespace AZ
                 : public RHI::AliasedHeapDescriptor
             {
                 AZ_CLASS_ALLOCATOR(Descriptor, SystemAllocator)
-                uint32_t m_memoryTypeMask = 0;
-                VkMemoryPropertyFlags m_memoryFlags = 0;
-            };            
+                VkMemoryRequirements m_memoryRequirements = {};
+            };
 
             const Descriptor& GetDescriptor() const final;
 
@@ -47,21 +47,21 @@ namespace AZ
             // RHI::AliasedHeap
             AZStd::unique_ptr<RHI::AliasingBarrierTracker> CreateBarrierTrackerInternal() override;
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::AliasedHeapDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::ImageInitRequest& request, size_t heapOffset) override;
-            RHI::ResultCode InitBufferInternal(const RHI::BufferInitRequest& request, size_t heapOffset) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request, size_t heapOffset) override;
+            RHI::ResultCode InitBufferInternal(const RHI::DeviceBufferInitRequest& request, size_t heapOffset) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resource) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////////
 
             Device& GetVulkanRHIDevice() const;
 
             Descriptor m_descriptor;
 
-            RHI::Ptr<Memory> m_heapMemory;
+            RHI::Ptr<VulkanMemoryAllocation> m_heapMemory;
         };
     }
 }

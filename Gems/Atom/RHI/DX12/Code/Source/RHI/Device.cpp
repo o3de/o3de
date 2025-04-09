@@ -22,6 +22,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/AllocatorInstance.h>
 
+#include <Atom/RHI.Reflect/DX12/DX12Bus.h>
+
 namespace AZ
 {
     namespace DX12
@@ -29,7 +31,7 @@ namespace AZ
 #ifdef USE_AMD_D3D12MA
         namespace
         {
-            constexpr D3D12MA::ALLOCATOR_FLAGS s_D3d12maAllocatorFlags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
+            constexpr D3D12MA::ALLOCATOR_FLAGS s_D3d12maAllocatorFlags = static_cast<D3D12MA::ALLOCATOR_FLAGS>(D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED);
             D3D12MA::ALLOCATION_CALLBACKS s_AllocationCallbacks = {};
 
             // constant value attached to D3D12MA cpu memory allocations
@@ -208,7 +210,6 @@ namespace AZ
 
         void Device::InitFeatures()
         {
-            m_features.m_tessellationShader = true;
             m_features.m_geometryShader = true;
             m_features.m_computeShader = true;
             m_features.m_independentBlend = true;
@@ -231,6 +232,13 @@ namespace AZ
             m_features.m_indirectDrawCountBufferSupported = true;
             m_features.m_indirectDispatchCountBufferSupported = true;
             m_features.m_indirectDrawStartInstanceLocationSupported = true;
+            m_features.m_signalFenceFromCPU = true;
+
+            // DXGI_SCALING_ASPECT_RATIO_STRETCH is only compatible with CreateSwapChainForCoreWindow or CreateSwapChainForComposition,
+            // not Win32 window handles and associated methods (cannot find an MSDN source for that)
+            // Source: https://stackoverflow.com/questions/58586223/d3d11-createswapchainforhwnd-fails-with-either-dxgi-error-invalid-call-or-e-inva
+            // Create swapchain would fail if uses DXGI_SCALING_ASPECT_RATIO_STRETCH
+            m_features.m_swapchainScalingFlags = RHI::ScalingFlags::Stretch;
                         
             D3D12_FEATURE_DATA_D3D12_OPTIONS options;
             GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
@@ -239,8 +247,16 @@ namespace AZ
 
             // Check support of wive operation
             D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
-            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel));
-            m_features.m_waveOperation = shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0;
+            shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_0;
+            if (FAILED(GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel))))
+            {
+                AZ_Warning("DX12",  false, "Failed to check feature D3D12_FEATURE_SHADER_MODEL");
+                m_features.m_waveOperation = false;
+            }
+            else
+            {
+                m_features.m_waveOperation = shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0;
+            }
 
 #ifdef AZ_DX12_DXR_SUPPORT
             D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
@@ -249,6 +265,8 @@ namespace AZ
 #else
             m_features.m_rayTracing = false;
 #endif
+
+            m_features.m_float16 = (options.MinPrecisionSupport & D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT) != 0;
 
             m_features.m_unboundedArrays = true;
 
@@ -350,6 +368,11 @@ namespace AZ
         {
             auto durationInSeconds = AZStd::chrono::duration<double>(double(gpuTimestamp) / m_commandQueueContext.GetCommandQueue(queueClass).GetGpuTimestampFrequency());
             return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(durationInSeconds);
+        }
+
+        AZStd::pair<uint64_t, uint64_t> Device::GetCalibratedTimestamp(RHI::HardwareQueueClass queueClass)
+        {
+            return m_commandQueueContext.GetCommandQueue(queueClass).GetClockCalibration();
         }
 
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
@@ -517,15 +540,17 @@ namespace AZ
                 clearValue = ConvertClearValue(imageDescriptor.m_format, *optimizedClearValue);
             }
 
+            D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE;
+            DX12RequirementBus::Broadcast(&DX12RequirementBus::Events::CollectAllocatorExtraHeapFlags, heapFlags, heapType);
+
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
             HRESULT result = m_dx12Device->CreateCommittedResource(
-                &heapProperties, 
-                D3D12_HEAP_FLAG_NONE, 
-                &resourceDesc, 
-                initialState, 
-                (isOutputMergerAttachment && optimizedClearValue) ? &clearValue : nullptr, 
-                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())
-            );
+                &heapProperties,
+                heapFlags,
+                &resourceDesc,
+                initialState,
+                (isOutputMergerAttachment && optimizedClearValue) ? &clearValue : nullptr,
+                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf()));
 
             AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
             AssertSuccess(result);
@@ -533,7 +558,7 @@ namespace AZ
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             GetImageAllocationInfo(imageDescriptor, allocationInfo);
 
-            return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image);
+            return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image, nullptr, 0);
         }
 
         void Device::ConvertBufferDescriptorToResourceDesc(
@@ -561,6 +586,7 @@ namespace AZ
 
             D3D12MA::ALLOCATION_DESC allocDesc = {};
             allocDesc.HeapType = heapType;
+            DX12RequirementBus::Broadcast(&DX12RequirementBus::Events::CollectAllocatorExtraHeapFlags, allocDesc.ExtraHeapFlags, heapType);
 
             D3D12MA::Allocation* allocation = nullptr;
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
@@ -584,16 +610,13 @@ namespace AZ
             D3D12_RESOURCE_DESC resourceDesc;
             ConvertBufferDescriptorToResourceDesc(bufferDescriptor, initialState, resourceDesc);
 
+            D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE;
+            DX12RequirementBus::Broadcast(&DX12RequirementBus::Events::CollectAllocatorExtraHeapFlags, heapFlags, heapType);
+
             CD3DX12_HEAP_PROPERTIES heapProperties(heapType);
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
             HRESULT result = m_dx12Device->CreateCommittedResource(
-                &heapProperties, 
-                D3D12_HEAP_FLAG_NONE, 
-                &resourceDesc, 
-                initialState, 
-                nullptr, 
-                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())
-            );
+                &heapProperties, heapFlags, &resourceDesc, initialState, nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf()));
             AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
             AssertSuccess(result);
 
@@ -601,7 +624,7 @@ namespace AZ
             allocationInfo.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
             allocationInfo.SizeInBytes = RHI::AlignUp(resourceDesc.Width, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
 
-            return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Buffer);
+            return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Buffer, nullptr, 0);
         }
 
         MemoryView Device::CreateBufferPlaced(
@@ -629,7 +652,8 @@ namespace AZ
             AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
             AssertSuccess(result);
 
-            return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Buffer);
+            return MemoryView(
+                resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Buffer, heap, heapByteOffset);
         }
 
         static uint64_t GetPlacedTextureAlignment(const RHI::ImageDescriptor& imageDescriptor)
@@ -685,7 +709,8 @@ namespace AZ
             AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
             AssertSuccess(result);
 
-            return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image);
+            return MemoryView(
+                resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image, heap, heapByteOffset);
         }
 
         MemoryView Device::CreateImageReserved(
@@ -732,7 +757,7 @@ namespace AZ
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             GetImageAllocationInfo(imageDescriptor, allocationInfo);
 
-            return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image);
+            return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image, nullptr, 0);
         }
 
         void Device::GetImageAllocationInfo(
@@ -852,24 +877,20 @@ namespace AZ
             return m_isAftermathInitialized;
         }
 
-        RHI::ResultCode Device::CompactSRGMemory()
-        {
-            if (m_isDescriptorHeapCompactionNeeded)
-            {
-                m_isDescriptorHeapCompactionNeeded = false;
-                return m_descriptorContext->CompactDescriptorHeap();
-            }
-            return RHI::ResultCode::Success;
-        }
-
         RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate) const
         {            
             return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
         }
 
-        void Device::DescriptorHeapCompactionNeeded()
+        RHI::ResultCode Device::InitInternalBindlessSrg(const RHI::BindlessSrgDescriptor& bindlessSrgDesc)
         {
-            m_isDescriptorHeapCompactionNeeded = true;
+            m_bindlesSrgBindingSlot = bindlessSrgDesc.m_bindlesSrgBindingSlot;
+            return RHI::ResultCode::Success;
+        }
+
+        uint32_t Device::GetBindlessSrgSlot() const
+        {
+            return m_bindlesSrgBindingSlot;
         }
     }
 }

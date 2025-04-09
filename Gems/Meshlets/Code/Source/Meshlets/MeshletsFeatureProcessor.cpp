@@ -21,7 +21,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <Atom/Feature/RenderCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <MeshletsRenderObject.h>
 #include <MeshletsFeatureProcessor.h>

@@ -75,7 +75,7 @@ namespace EMotionFX
                     return false;
                 }
 
-                AZ::SerializeContext::DataElementNode* metaDataStringNode = rootElementNode.FindSubElement(AZ_CRC("metaData"));
+                AZ::SerializeContext::DataElementNode* metaDataStringNode = rootElementNode.FindSubElement(AZ_CRC_CE("metaData"));
                 AZStd::vector<AZStd::string> commands;
                 if (metaDataStringNode)
                 {

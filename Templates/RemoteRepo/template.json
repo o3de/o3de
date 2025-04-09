@@ -1,0 +1,46 @@
+{
+    "template_name": "RemoteRepo",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Remote Repository",
+    "summary": "This is an O3DE remote repository template.",
+    "canonical_tags": [
+        "Template",
+        "Repo"
+    ],
+    "user_tags": [
+        "RemoteRepo"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "repo.json",
+            "isTemplated": true
+        },
+        {
+            "file": "Gems/README.md",
+            "isTemplated": false
+        },
+        {
+            "file": "Templates/README.md",
+            "isTemplated": false
+        },
+        {
+            "file": "Projects/README.md",
+            "isTemplated": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Gems"
+        },
+        {
+            "dir": "Templates"
+        },
+        {
+            "dir": "Projects"
+        }
+    ]
+}

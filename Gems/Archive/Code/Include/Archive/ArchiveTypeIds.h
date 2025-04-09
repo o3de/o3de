@@ -23,4 +23,18 @@ namespace Archive
 
     // Interface TypeIds
     inline constexpr const char* ArchiveRequestsTypeId = "{0C10E90B-F810-454C-A7AA-D3A30FDD431E}";
+
+    // Archive Writer TypeIds
+    inline constexpr const char* IArchiveWriterTypeId = "{6C966C29-8D98-4FCD-AEE5-CFFF80EEB561}";
+    inline constexpr const char* ArchiveWriterTypeId = "{DACA9F90-C8D5-41CB-8400-F0B39BFC4A28}";
+
+    // Archive Reader TypeIds
+    inline constexpr const char* IArchiveReaderTypeId = "{FF23A098-E900-4361-94DC-34CC56E0C67E}";
+    inline constexpr const char* ArchiveReaderTypeId = "{03CF9E2D-D063-4912-9789-56275DCD4DFD}";
+
+    // Archive Factory TypeIds
+    inline constexpr const char* IArchiveWriterFactoryTypeId = "{D96EB527-D174-4BF5-8521-EB2658821ED7}";
+    inline constexpr const char* ArchiveWriterFactoryTypeId = "{1B4F8F63-5D36-4BF4-B88E-003A0B8F667B}";
+    inline constexpr const char* IArchiveReaderFactoryTypeId = "{6E33EEA8-2059-47EE-B614-90BA1D9F03A7}";
+    inline constexpr const char* ArchiveReaderFactoryTypeId = "{9B27ABB6-A3C1-4548-BA80-42BECDD0510F}";
 } // namespace Archive

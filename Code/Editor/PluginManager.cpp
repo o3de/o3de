@@ -123,10 +123,9 @@ namespace
     }
 }
 
-bool CPluginManager::LoadPlugins(const char* pPathWithMask)
+bool CPluginManager::LoadPlugins(const char* pluginsPath)
 {
-    QString strPath = PathUtil::GetPath(pPathWithMask).c_str();
-    QString strMask = PathUtil::GetFile(pPathWithMask);
+    QString strPath{ pluginsPath }; 
 
     CLogFile::WriteLine("[Plugin Manager] Loading plugins...");
 

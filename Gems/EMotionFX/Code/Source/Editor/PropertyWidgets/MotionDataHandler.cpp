@@ -20,7 +20,7 @@ namespace EMotionFX
 
     AZ::u32 MotionDataHandler::GetHandlerName() const
     {
-        return AZ_CRC("MotionData");
+        return AZ_CRC_CE("MotionData");
     }
 
     QWidget* MotionDataHandler::CreateGUI(QWidget* parent)

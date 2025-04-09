@@ -12,6 +12,7 @@
 #include <RHI/ImageView.h>
 #include <RHI/RenderPass.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI/ImageScopeAttachment.h>
 
 namespace AZ
 {
@@ -104,6 +105,26 @@ namespace AZ
             return m_size;
         }
 
+        const AZStd::vector<RHI::ConstPtr<ImageView>>& Framebuffer::GetImageViews() const
+        {
+            return m_attachments;
+        }
+
+        AZStd::optional<uint32_t> Framebuffer::FindImageViewIndex(RHI::ImageScopeAttachment& scopeAttachment) const
+        {
+            auto deviceIndex = m_attachments.front()->GetDevice().GetDeviceIndex();
+            const ImageView* imageView =
+                static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(deviceIndex).get());
+            for (uint32_t i = 0; i < m_attachments.size(); ++i)
+            {
+                if (imageView == m_attachments[i])
+                {
+                    return i;
+                }
+            }
+            return AZStd::optional<uint32_t>();
+        }
+
         void Framebuffer::SetNameInternal(const AZStd::string_view& name)
         {
             if (IsInitialized() && !name.empty())
@@ -116,7 +137,7 @@ namespace AZ
         {
             for (const RHI::ConstPtr<ImageView>& imageView : m_attachments)
             {
-                const RHI::Image& image = imageView->GetImage();
+                const RHI::DeviceImage& image = imageView->GetImage();
                 RHI::ResourceInvalidateBus::MultiHandler::BusDisconnect(&image);
             }
             Invalidate();
@@ -148,9 +169,18 @@ namespace AZ
             AZ_Assert(!m_attachments.empty(), "Attachment image view is empty.");
 
             AZStd::vector<VkImageView> imageViews(m_attachments.size(), VK_NULL_HANDLE);
+            uint32_t maxLayers = 1;
             for (size_t index = 0; index < imageViews.size(); ++index)
             {
                 imageViews[index] = m_attachments[index]->GetNativeImageView();
+                if (m_attachments[index]->GetDescriptor().m_isArray)
+                {
+                    maxLayers = AZStd::max(
+                        maxLayers,
+                        static_cast<uint32_t>(
+                            m_attachments[index]->GetImageSubresourceRange().m_arraySliceMax -
+                            m_attachments[index]->GetImageSubresourceRange().m_arraySliceMin + 1));
+                }
             }
 
             VkFramebufferCreateInfo createInfo{};
@@ -161,8 +191,8 @@ namespace AZ
             createInfo.pAttachments = imageViews.data();
             createInfo.width = m_size.m_width;
             createInfo.height = m_size.m_height;
-            createInfo.layers = 1;
-            
+            createInfo.layers = maxLayers;
+
             auto& device = static_cast<Device&>(GetDevice());
             const VkResult result = device.GetContext().CreateFramebuffer(
                 device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeFramebuffer);

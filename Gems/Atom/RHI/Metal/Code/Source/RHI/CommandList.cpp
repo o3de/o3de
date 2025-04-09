@@ -41,10 +41,11 @@ namespace AZ
             
             m_state.m_pipelineState = nullptr;
             m_state.m_pipelineLayout = nullptr;
-            m_state.m_streamsHash = AZ::HashValue64{0};
-            m_state.m_indicesHash = AZ::HashValue64{0};
+            m_state.m_rasterizerStateHash = AZ::HashValue64{0};
+            m_state.m_depthStencilStateHash = 0;
             m_state.m_stencilRef = -1;
-
+            AZStd::fill(m_state.m_streamsHashes.begin(), m_state.m_streamsHashes.end(), AZ::HashValue64{0});
+            
             CommandListBase::Reset();
         }
 
@@ -59,7 +60,7 @@ namespace AZ
             CommandListBase::FlushEncoder();
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceCopyItem& copyItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
             CreateEncoder(CommandEncoderType::Blit);
@@ -69,7 +70,7 @@ namespace AZ
             {
                 case RHI::CopyItemType::Buffer:
                 {
-                    const RHI::CopyBufferDescriptor& descriptor = copyItem.m_buffer;
+                    const RHI::DeviceCopyBufferDescriptor& descriptor = copyItem.m_buffer;
                     const auto* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -84,7 +85,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::Image:
                 {
-                    const RHI::CopyImageDescriptor& descriptor = copyItem.m_image;
+                    const RHI::DeviceCopyImageDescriptor& descriptor = copyItem.m_image;
                     const Image* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                     const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -115,7 +116,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::BufferToImage:
                 {
-                    const RHI::CopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
+                    const RHI::DeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                     const Buffer* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -127,7 +128,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    MTLBlitOption mtlBlitOption = GetBlitOption(destinationImage->GetDescriptor().m_format, descriptor.m_destinationSubresource.m_aspect);
+                    MTLBlitOption mtlBlitOption = GetBlitOption(descriptor.m_sourceFormat, descriptor.m_destinationSubresource.m_aspect);
                     [blitEncoder copyFromBuffer: sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
                                    sourceOffset: sourceBuffer->GetMemoryView().GetOffset() + descriptor.m_sourceOffset
                               sourceBytesPerRow: descriptor.m_sourceBytesPerRow
@@ -144,7 +145,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::ImageToBuffer:
                 {
-                    const RHI::CopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
+                    const RHI::DeviceCopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
                     const auto* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -156,7 +157,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    MTLBlitOption mtlBlitOption = GetBlitOption(sourceImage->GetDescriptor().m_format, descriptor.m_sourceSubresource.m_aspect);
+                    MTLBlitOption mtlBlitOption = GetBlitOption(descriptor.m_destinationFormat, descriptor.m_sourceSubresource.m_aspect);
                     [blitEncoder copyFromTexture: sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
                                      sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
                                      sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
@@ -178,7 +179,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchItem& dispatchItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -201,7 +202,7 @@ namespace AZ
 
         }
 
-        void CommandList::Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -273,8 +274,10 @@ namespace AZ
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[slot];
                 uint32_t slotIndex = static_cast<uint32_t>(pipelineLayout->GetIndexBySlot(slot));
  
-                //Check explicitly for Bindless SRG. This needs to be data driven (todo)
-                if (slotIndex == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId && shaderResourceGroup == nullptr)
+                //Check explicitly for Bindless SRG.
+                if (slot == m_device->GetBindlessArgumentBuffer().GetBindlessSrgBindingSlot() &&
+                    slotIndex != RHI::Limits::Pipeline::ShaderResourceGroupCountMax &&
+                    shaderResourceGroup == nullptr)
                 {
                     //Skip if the global static bindless heap is already bound
                     if (m_state.m_bindBindlessHeap)
@@ -424,28 +427,29 @@ namespace AZ
             return true;
         }
 
-        CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::ShaderResourceGroupData::BindlessResourceType resourceType,
-                                                                        const RHI::ResourceView* resourceView)
+        CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::BindlessResourceType resourceType,
+                                                                    const RHI::DeviceResourceView* resourceView)
         {
             id<MTLResource> mtlResourceView = nil;
             bool isReadOnlyResource = false;
             switch(resourceType)
             {
-                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture:
+                case RHI::BindlessResourceType::m_Texture2D:
+                case RHI::BindlessResourceType::m_TextureCube:
                 {
                     isReadOnlyResource = true;
                 }
-                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture:
+                case RHI::BindlessResourceType::m_RWTexture2D:
                 {
                     const ImageView* imageView = static_cast<const ImageView*>(resourceView);
                     mtlResourceView = imageView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
                     break;
                 }
-                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer:
+                case RHI::BindlessResourceType::m_ByteAddressBuffer:
                 {
                     isReadOnlyResource = true;
                 }
-                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer:
+                case RHI::BindlessResourceType::m_RWByteAddressBuffer:
                 {
                     const BufferView* bufferView = static_cast<const BufferView*>(resourceView);
                     mtlResourceView = bufferView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
@@ -507,7 +511,7 @@ namespace AZ
                     }
                     else
                     {
-                        untrackedResourcesGfxReadWrite[RHI::ShaderStageVertex].insert(resourceInfo.second);
+                        //For RW resources we do not call UseResouce for vertex shader as that causes a gpu crash
                         untrackedResourcesGfxReadWrite[RHI::ShaderStageFragment].insert(resourceInfo.second);
                     }
                 }
@@ -579,7 +583,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDrawItem& drawItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -617,21 +621,17 @@ namespace AZ
                 return;
             }
 
-            SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+            SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
             SetStencilRef(drawItem.m_stencilRef);
 
             MTLPrimitiveType mtlPrimType = pipelineState->GetPipelineTopology();
 
-            switch (drawItem.m_arguments.m_type)
+            switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
                 case RHI::DrawType::Indexed:
                 {
-                    const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-
-                    const RHI::IndexBufferView& indexBuffDescriptor = *drawItem.m_indexBufferView;
-                    AZ::HashValue64 indicesHash = indexBuffDescriptor.GetHash();
-
-                    m_state.m_indicesHash = indicesHash;
+                    const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                    const RHI::DeviceIndexBufferView& indexBuffDescriptor = drawItem.m_geometryView->GetIndexBufferView();
                     const Buffer * buff = static_cast<const Buffer*>(indexBuffDescriptor.GetBuffer());
                     id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
                     MTLIndexType mtlIndexType = (indexBuffDescriptor.GetIndexFormat() == RHI::IndexFormat::Uint16) ?
@@ -645,20 +645,20 @@ namespace AZ
                                                indexType: mtlIndexType
                                              indexBuffer: mtlBuff
                                        indexBufferOffset: indexOffset
-                                           instanceCount: indexed.m_instanceCount
+                                           instanceCount: drawItem.m_drawInstanceArgs.m_instanceCount
                                               baseVertex: indexed.m_vertexOffset
-                                            baseInstance: indexed.m_instanceOffset];
+                                            baseInstance: drawItem.m_drawInstanceArgs.m_instanceOffset];
                     break;
                 }
 
                 case RHI::DrawType::Linear:
                 {
-                    const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                    const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
                     [renderEncoder drawPrimitives: mtlPrimType
                                       vertexStart: linear.m_vertexOffset
                                       vertexCount: linear.m_vertexCount
-                                    instanceCount: linear.m_instanceCount
-                                     baseInstance: linear.m_instanceOffset];
+                                    instanceCount: drawItem.m_drawInstanceArgs.m_instanceCount
+                                     baseInstance: drawItem.m_drawInstanceArgs.m_instanceOffset];
                     break;
                 }
             }
@@ -694,8 +694,11 @@ namespace AZ
                     {
                         id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
                         SetRasterizerState(pipelineState->GetRasterizerState());
-                        if(pipelineState->GetDepthStencilState())
+                        
+                        id<MTLDepthStencilState> mtlDSstate = pipelineState->GetDepthStencilState();
+                        if(mtlDSstate && m_state.m_depthStencilStateHash != mtlDSstate.hash)
                         {
+                            m_state.m_depthStencilStateHash = mtlDSstate.hash;
                             [renderEncoder setDepthStencilState: pipelineState->GetDepthStencilState()];
                         }
                         [renderEncoder setRenderPipelineState: pipelineState->GetGraphicsPipelineState()];
@@ -738,32 +741,37 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryBufferViews, const RHI::StreamBufferIndices& streamIndices)
         {
-            uint16_t bufferArrayLen = 0;
+            auto streamIter = geometryBufferViews.CreateStreamIterator(streamIndices);
+            bool needsBinding = false;
+            for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
+            {
+                if (m_state.m_streamsHashes[index] != streamIter->GetHash())
+                {
+                    m_state.m_streamsHashes[index] = streamIter->GetHash();
+                    needsBinding = true;
+                }
+            }
+            
             AZStd::array<id<MTLBuffer>, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBuffers;
             AZStd::array<NSUInteger, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBufferOffsets;
-
-            AZ::HashValue64 streamsHash = AZ::HashValue64{0};
-            for (uint32_t i = 0; i < count; ++i)
+            if (needsBinding)
             {
-                streamsHash = AZ::TypeHash64(streams[i].GetHash(), streamsHash);
-            }
-
-            if (streamsHash != m_state.m_streamsHash)
-            {
-                m_state.m_streamsHash = streamsHash;
+                uint16_t bufferArrayLen = 0;
+                streamIter.Reset();
+                u8 count = streamIndices.Size();
                 AZ_Assert(count <= METAL_MAX_ENTRIES_BUFFER_ARG_TABLE , "Slots needed cannot exceed METAL_MAX_ENTRIES_BUFFER_ARG_TABLE");
 
                 NSRange range = {METAL_MAX_ENTRIES_BUFFER_ARG_TABLE - count, count};
                 //The stream buffers are populated from bottom to top as the top slots are taken by argument buffers
                 for (int i = count-1; i >= 0; --i)
                 {
-                    if (streams[i].GetBuffer())
+                    if (streamIter[i].GetBuffer())
                     {
-                        const Buffer * buff = static_cast<const Buffer*>(streams[i].GetBuffer());
+                        const Buffer * buff = static_cast<const Buffer*>(streamIter[i].GetBuffer());
                         id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
-                        uint32_t offset = static_cast<uint32_t>(streams[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
+                        uint32_t offset = static_cast<uint32_t>(streamIter[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
                         mtlStreamBuffers[bufferArrayLen] = mtlBuff;
                         mtlStreamBufferOffsets[bufferArrayLen] = offset;
                         bufferArrayLen++;
@@ -778,20 +786,24 @@ namespace AZ
 
         void CommandList::SetRasterizerState(const RasterizerState& rastState)
         {
-            id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-            [renderEncoder setCullMode: rastState.m_cullMode];
-            [renderEncoder setDepthBias: rastState.m_depthBias slopeScale: rastState.m_depthSlopeScale clamp: rastState.m_depthBiasClamp];
-            [renderEncoder setFrontFacingWinding: rastState.m_frontFaceWinding];
-            [renderEncoder setTriangleFillMode: rastState.m_triangleFillMode];
-            [renderEncoder setDepthClipMode: rastState.m_depthClipMode];
+            if (m_state.m_rasterizerStateHash != rastState.m_hash)
+            {
+                m_state.m_rasterizerStateHash = rastState.m_hash;
+                id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
+                [renderEncoder setCullMode: rastState.m_cullMode];
+                [renderEncoder setDepthBias: rastState.m_depthBias slopeScale: rastState.m_depthSlopeScale clamp: rastState.m_depthBiasClamp];
+                [renderEncoder setFrontFacingWinding: rastState.m_frontFaceWinding];
+                [renderEncoder setTriangleFillMode: rastState.m_triangleFillMode];
+                [renderEncoder setDepthClipMode: rastState.m_depthClipMode];
+            }
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Draw>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
@@ -887,13 +899,34 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
 
-        void CommandList::BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas)
+        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::QueryBlasCompactionSizes(
+            const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::CompactBottomLevelAccelerationStructure(
+            const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::BuildTopLevelAccelerationStructure(
+            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

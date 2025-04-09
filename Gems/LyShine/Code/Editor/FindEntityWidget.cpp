@@ -31,7 +31,7 @@ namespace
 {
     bool AppearsInUiComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
-        return AzToolsFramework::AppearsInAddComponentMenu(classData, AZ_CRC("UI", 0x27ff46b0));
+        return AzToolsFramework::AppearsInAddComponentMenu(classData, AZ_CRC_CE("UI"));
     }
 }
 
@@ -62,7 +62,7 @@ FindEntityWidget::FindEntityWidget(AZ::EntityId canvasEntityId, QWidget* pParent
 
         AzToolsFramework::ComponentPaletteUtil::ComponentDataTable componentDataTable;
         AzToolsFramework::ComponentPaletteUtil::ComponentIconTable componentIconTable;
-        AZStd::vector<AZ::ComponentServiceType> serviceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
 
         AzToolsFramework::ComponentPaletteUtil::BuildComponentTables(serializeContext, AppearsInUiComponentMenu, serviceFilter, componentDataTable, componentIconTable);
 

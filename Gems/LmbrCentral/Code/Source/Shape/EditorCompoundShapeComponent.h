@@ -34,7 +34,7 @@ namespace LmbrCentral
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             EditorBaseShapeComponent::GetProvidedServices(provided);
-            provided.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
+            provided.push_back(AZ_CRC_CE("CompoundShapeService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
@@ -43,13 +43,13 @@ namespace LmbrCentral
 
     private:
         // CompoundShapeComponentRequestsBus::Handler
-        CompoundShapeConfiguration GetCompoundShapeConfiguration() override
+        const CompoundShapeConfiguration& GetCompoundShapeConfiguration() const override
         {
             return m_configuration;
         }
 
         // CompoundShapeComponentHierarchyRequestsBus::Handler
-        bool HasChildId(const AZ::EntityId& entityId) override;
+        bool HasChildId(const AZ::EntityId& entityId) const override;
 
         bool ValidateChildIds() override;
 

@@ -298,7 +298,7 @@ namespace AzFramework
         }
         
         // don't create component if an incompatible component exists on the entity
-        AZStd::vector<AZ::Component*> incompatibleComponents;
+        AZ::Entity::ComponentArrayType incompatibleComponents;
         entity->IsComponentReadyToAdd(componentTypeId, nullptr, &incompatibleComponents);
         if (!incompatibleComponents.empty())
         {

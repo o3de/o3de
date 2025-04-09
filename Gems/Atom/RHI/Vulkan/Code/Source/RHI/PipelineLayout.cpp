@@ -76,6 +76,7 @@ namespace AZ
                 return srgLayoutList.front();
             }
 
+            AZStd::string layoutName = "[Merged]";
             RHI::Ptr<RHI::ShaderResourceGroupLayout> mergedLayout = RHI::ShaderResourceGroupLayout::Create();
             mergedLayout->SetBindingSlot(srgLayoutList.front()->GetBindingSlot());
             for (const RHI::ShaderResourceGroupLayout* srgLayout : srgLayoutList)
@@ -104,6 +105,7 @@ namespace AZ
 
                     mergedLayout->AddShaderInput(constantsBufferDesc);
                 }
+                layoutName = AZStd::string::format("%s;%s", layoutName.c_str(), srgLayout->GetName().GetCStr());
             }
 
             if (!mergedLayout->Finalize())
@@ -111,7 +113,7 @@ namespace AZ
                 AZ_Assert(false, "Failed to merge SRG layouts");
                 return nullptr;
             }
-
+            mergedLayout->SetName(AZ::Name(layoutName));
             return mergedLayout;
         }
 

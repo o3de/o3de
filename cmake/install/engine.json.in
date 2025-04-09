@@ -11,5 +11,6 @@
     "gem_names": [@O3DE_INSTALL_ENGINE_GEMS@],
     "projects": [@O3DE_INSTALL_PROJECTS@],
     "repos": [@O3DE_INSTALL_REPOS@],
-    "templates": [@O3DE_INSTALL_TEMPLATES@]
+    "templates": [@O3DE_INSTALL_TEMPLATES@],
+    "sdk_engine": true
 }

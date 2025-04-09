@@ -30,7 +30,7 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS;
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_loadSettingsRegistry = false;
@@ -126,7 +126,7 @@ namespace UnitTest
         AZ::Crc32 resultCRC = {};
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             resultCRC, entity->GetId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetShapeType);
-        EXPECT_EQ(AZ_CRC("TestShape", 0x856ca50c), resultCRC);
+        EXPECT_EQ(AZ_CRC_CE("TestShape"), resultCRC);
 
         testShape.m_localBounds = AZ::Aabb::CreateFromPoint(AZ::Vector3(1.0f, 21.0f, 31.0f));
         testShape.m_localTransform = AZ::Transform::CreateTranslation(testShape.m_localBounds.GetCenter());

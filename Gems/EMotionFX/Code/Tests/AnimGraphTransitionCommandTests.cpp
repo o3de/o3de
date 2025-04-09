@@ -71,6 +71,12 @@ namespace EMotionFX
 
         void TearDown() override
         {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->Destroy();
+                m_animGraphInstance = nullptr;
+            }
+            m_motionNodeAnimGraph.reset();
             AnimGraphFixture::TearDown();
         }
 

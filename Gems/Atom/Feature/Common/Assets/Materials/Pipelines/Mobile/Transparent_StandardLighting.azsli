@@ -1,0 +1,54 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
+
+// TODO(MaterialPipeline): In the end, after all refactoring and rearranging of our shader code is done, some of these flags might become unnecessary and should be re-evaluated.
+// Some of these setting used to be in ShaderQualityOptions.azsli as a basic/limited solution for multiple pipelines.
+// TODO(MaterialPipeline), instead of UNIFIED_FORWARD_OUTPUT, fork ForwardPassOutput.azsli
+#define UNIFIED_FORWARD_OUTPUT          1
+#define FORCE_IBL_IN_FORWARD_PASS       1
+#define ENABLE_AREA_LIGHT_VALIDATION    0
+#define FORCE_EARLY_DEPTH_STENCIL 1
+#define FORCE_OPAQUE 0
+#define OUTPUT_SUBSURFACE 0
+#define ENABLE_TRANSMISSION 0
+#define ENABLE_SHADER_DEBUGGING 0
+#define ENABLE_CLEAR_COAT 0
+#define ENABLE_SHADOWS 1
+#define ENABLE_FULLSCREEN_SHADOW 0
+#define ENABLE_LIGHT_CULLING 0
+#define ENABLE_AREA_LIGHTS 0
+#define ENABLE_PHYSICAL_SKY 0
+#define ENABLE_MERGE_FILMIC_TONEMAP 0
+#define ENABLE_DECALS_CAP 5
+#define ENABLE_SIMPLE_SPOTLIGHTS_CAP 5
+#define ENABLE_SIMPLE_POINTLIGHTS_CAP 5
+#define ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION 0
+#define ENABLE_REFLECTIONPROBE_BLENDING 0
+#define ENABLE_SPECULARAA 0
+#define ENABLE_PARALLAX 0
+#define ENABLE_MOBILEBRDF 1
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include MATERIAL_TYPE_AZSLI_FILE_PATH
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+
+// TODO(MaterialPipeline): I don't like how this file #includes something from BasePBR. I'd rather it include a file
+// called StandardPBR_LightingData.azsli which just #includes the BasePBR file. Otherwise this looks suspicious like
+// a mistake of some kind.
+#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
+#include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli"
+#include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli"
+
+#include "../Common/TransparentPassVertexAndPixel.azsli"
+

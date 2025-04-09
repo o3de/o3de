@@ -2007,6 +2007,43 @@ namespace AZStd::ranges
         constexpr Internal::transform_fn transform{};
     }
 
+    namespace Internal
+    {
+        struct reverse_fn
+        {
+            template<class I, class S>
+            constexpr auto operator()(I first, S last) const
+                ->enable_if_t<conjunction_v<
+                bool_constant<bidirectional_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<permutable<I>>
+                >, I>
+            {
+                for (iter_difference_t<I> i{}; i < ranges::distance(first, last) / 2; ++i)
+                {
+                    ranges::iter_swap(first + i, (last - i) - 1);
+                }
+
+                return last;
+            }
+
+            template<class R>
+            constexpr auto operator()(R&& r) const
+                ->enable_if_t<conjunction_v<
+                bool_constant<bidirectional_range<R>>,
+                bool_constant<permutable<iterator_t<R>>>
+                >, borrowed_iterator_t<R>>
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r));
+            }
+        };
+    }
+
+    inline namespace customization_point_object
+    {
+        constexpr Internal::reverse_fn reverse{};
+    }
+
     // ranges::contains
     // ranges::contains_subrange
     namespace Internal

@@ -20,6 +20,8 @@ namespace CompressionLZ4
         CompressorLZ4();
         //! Retrieves the 32-bit compression algorithm ID associated with this interface
         Compression::CompressionAlgorithmId GetCompressionAlgorithmId() const override;
+        //! Retrieves the human readable associated with the LZ4 compressor
+        AZStd::string_view GetCompressionAlgorithmName() const override;
         //! Compresses the uncompressed data into the compressed buffer
         //! @return a CompressionResultData instance to indicate if compression operation has succeeded
         [[nodiscard]] Compression::CompressionResultData CompressBlock(

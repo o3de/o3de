@@ -71,7 +71,8 @@ namespace AZ::SceneAPI
         bool AddEditorMeshComponent(
             const AZ::EntityId& entityId,
             const AZStd::string& relativeSourcePath,
-            const AZStd::string& meshGroupName) const;
+            const AZStd::string& meshGroupName,
+            const AZStd::string& sourceFileExtension) const;
 
         bool CreateMeshGroupAndComponents(
             ManifestUpdates& manifestUpdates,

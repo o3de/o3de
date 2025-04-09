@@ -1,0 +1,36 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SimpleMeshPipelineTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    // The Slot name must be exactly "PipelineOutput" because this the Parent Pass that
+                    // Describes a Render Pipeline and the C++ code looks for a PassSlotBinding
+                    // with this name, which will be connected to the SwapChain.
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [     
+                {
+                    "Name": "SimpleMeshPass",
+                    "TemplateName": "SimpleMeshPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "LightingOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

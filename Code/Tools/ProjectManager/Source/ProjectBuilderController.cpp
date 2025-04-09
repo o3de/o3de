@@ -12,6 +12,7 @@
 #include <SettingsInterface.h>
 
 #include <QMessageBox>
+#include <QDebug>
 #include <QDesktopServices>
 #include <QUrl>
 
@@ -55,7 +56,7 @@ namespace O3DE::ProjectManager
         if (projectButton)
         {
             projectButton->SetProjectButtonAction(tr("Cancel"), [this] { HandleCancel(); });
-            projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
+            projectButton->SetBuildLogsLink(QUrl::fromLocalFile(m_worker->GetLogFilePath()));
             projectButton->SetState(ProjectButtonState::Building);
 
             if (!m_lastLine.isEmpty())
@@ -95,11 +96,14 @@ namespace O3DE::ProjectManager
                 if (openLog == QMessageBox::Yes)
                 {
                     // Open application assigned to this file type
-                    QDesktopServices::openUrl(QUrl("file:///" + m_worker->GetLogFilePath()));
+                    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(m_worker->GetLogFilePath())))
+                    {
+                        qDebug() << "QDesktopServices::openUrl failed to open " << m_projectInfo.m_logUrl.toString() << "\n";
+                    }
                 }
 
                 m_projectInfo.m_buildFailed = true;
-                m_projectInfo.m_logUrl = QUrl("file:///" + m_worker->GetLogFilePath());
+                m_projectInfo.m_logUrl = QUrl::fromLocalFile(m_worker->GetLogFilePath());
                 emit NotifyBuildProject(m_projectInfo);
             }
             else
@@ -107,7 +111,7 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(m_parent, tr("Project Failed to Build!"), result);
 
                 m_projectInfo.m_buildFailed = true;
-                m_projectInfo.m_logUrl = QUrl("file:///" + m_worker->GetLogFilePath());
+                m_projectInfo.m_logUrl = QUrl::fromLocalFile(m_worker->GetLogFilePath());
                 emit NotifyBuildProject(m_projectInfo);
             }
 

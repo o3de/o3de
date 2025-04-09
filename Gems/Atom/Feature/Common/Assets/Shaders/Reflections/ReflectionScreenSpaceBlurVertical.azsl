@@ -6,31 +6,15 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
-
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
-#include <Atom/Features/SrgSemantics.azsli>
-#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include "ReflectionScreenSpaceBlurCommon.azsli"
-
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_input;
-    float m_invOutputScale;
-}
-
-// Pixel Shader
-struct PSOutput
-{    
-    float4 m_color  : SV_Target0;
-};
 
 PSOutput MainPS(VSOutput IN)
 {
-    // vertical blur uses coordinates from the mip0 input image
-    uint2 halfResCoords = IN.m_position.xy * PassSrg::m_invOutputScale;
-    float4 result = GaussianFilter(halfResCoords, TexelOffsetsV, PassSrg::m_input);
+    // vertical blur uses coordinates from the full-res mip0 input image
+    uint2 fullScreenCoords = IN.m_position.xy * PassSrg::m_invOutputScale;
+    float4 result = GaussianFilter(fullScreenCoords, IN.m_position.xy, TexelOffsetsV);
 
     PSOutput OUT;
     OUT.m_color = result;

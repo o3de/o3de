@@ -24,14 +24,14 @@ namespace Vegetation
                 return false;
             }
 
-            if (!classElement.FindSubElementAndGetData(AZ_CRC("Configuration", 0xa5e2a5d7), configData))
+            if (!classElement.FindSubElementAndGetData(AZ_CRC_CE("Configuration"), configData))
             {
                 return false;
             }
 
-            if (!oldEditorAreaComponentBaseElement.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735))
-                || !classElement.RemoveElementByName(AZ_CRC("Configuration", 0xa5e2a5d7))
-                || !classElement.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735)))
+            if (!oldEditorAreaComponentBaseElement.RemoveElementByName(AZ_CRC_CE("BaseClass1"))
+                || !classElement.RemoveElementByName(AZ_CRC_CE("Configuration"))
+                || !classElement.RemoveElementByName(AZ_CRC_CE("BaseClass1")))
             {
                 return false;
             }
@@ -52,8 +52,8 @@ namespace Vegetation
                 return false;
             }
 
-            auto* editorComponentBaseElement = editorWrappedComponentBase->FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
-            auto* configElement = editorWrappedComponentBase->FindSubElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            auto* editorComponentBaseElement = editorWrappedComponentBase->FindSubElement(AZ_CRC_CE("BaseClass1"));
+            auto* configElement = editorWrappedComponentBase->FindSubElement(AZ_CRC_CE("Configuration"));
 
             if (!editorComponentBaseElement || !configElement)
             {

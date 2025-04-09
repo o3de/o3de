@@ -82,6 +82,7 @@ namespace Terrain
                         EditorTerrainMacroMaterialComponent::s_componentName, EditorTerrainMacroMaterialComponent::s_componentDescription)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, EditorTerrainMacroMaterialComponent::s_icon)
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/terrain/terrain-macro-material/")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, EditorTerrainMacroMaterialComponent::s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, EditorTerrainMacroMaterialComponent::s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, EditorTerrainMacroMaterialComponent::s_categoryName)
@@ -264,13 +265,11 @@ namespace Terrain
 
             // If the asset status changed and the image asset property is visible, refresh the entire tree so
             // that the label change is picked up.
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
         }
         else
         {
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
         }
     }
 

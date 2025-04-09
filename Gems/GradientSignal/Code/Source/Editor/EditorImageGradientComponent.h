@@ -41,6 +41,7 @@ namespace GradientSignal
     public:
         AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(EditorImageGradientComponent);
         AZ_COMPONENT_BASE(EditorImageGradientComponent);
+        AZ_CLASS_ALLOCATOR(EditorImageGradientComponent, AZ::ComponentAllocator);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* context);

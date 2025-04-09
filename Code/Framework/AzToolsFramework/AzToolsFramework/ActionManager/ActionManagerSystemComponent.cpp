@@ -123,7 +123,7 @@ namespace AzToolsFramework
         // The ActionManagerSystemComponent could be created in a tooling context
         // where a QGuiApplication does not exist such as the SerializeContextTools
         auto qAppInstance = QApplication::instance();
-        if (IsNewActionManagerEnabled() && qAppInstance != nullptr)
+        if (qAppInstance != nullptr)
         {
             m_defaultParentObject = new QWidget();
 

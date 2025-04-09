@@ -18,12 +18,6 @@ namespace BarrierInput
     using namespace AzFramework;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceKeyboard::Implementation* InputDeviceKeyboardBarrier::Create(InputDeviceKeyboard& inputDevice)
-    {
-        return aznew InputDeviceKeyboardBarrier(inputDevice);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceKeyboardBarrier::InputDeviceKeyboardBarrier(InputDeviceKeyboard& inputDevice)
         : InputDeviceKeyboard::Implementation(inputDevice)
         , m_threadAwareRawKeyEventQueuesById()
@@ -257,4 +251,10 @@ namespace BarrierInput
                                            (activeModifiers & ModifierMask_CapsLock);
         return shiftOrCapsLockActive ? it->second.second : it->second.first;
     }
+
+    AZStd::unique_ptr<AzFramework::InputDeviceKeyboard::Implementation> InputDeviceKeyboardBarrierImplFactory::Create(AzFramework::InputDeviceKeyboard& inputDevice)
+    {
+        return AZStd::make_unique<InputDeviceKeyboardBarrier>(inputDevice);
+    }
+
 } // namespace BarrierInput

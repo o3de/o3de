@@ -383,12 +383,22 @@ namespace AssetProcessor
         if (results.isEmpty())
         {
             // nothing found
-            Q_EMIT CompileGroupCreated(groupID, AzFramework::AssetSystem::AssetStatus_Unknown);
+            AZ_Info(
+                AssetProcessor::DebugChannel,
+                "OnRequestCompileGroup:  %s - %s requested, but no matching source assets found.\n",
+                searchTerm.toUtf8().constData(),
+                assetId.ToString<AZStd::string>().c_str());
 
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "OnRequestCompileGroup:  %s - %s requested, but no matching source assets found.\n", searchTerm.toUtf8().constData(), assetId.ToString<AZStd::string>().c_str());
+            Q_EMIT CompileGroupCreated(groupID, AzFramework::AssetSystem::AssetStatus_Unknown);
         }
         else
         {
+            AZ_Info(
+                AssetProcessor::DebugChannel,
+                "GetAssetStatus: OnRequestCompileGroup:  %s - %s requested and queued, found %d results.\n",
+                searchTerm.toUtf8().constData(),
+                assetId.ToFixedString().c_str(), results.size());
+
             // it is not necessary to denote the search terms or list of results here because
             // PerformHeursticSearch already prints out the results.
             m_RCQueueSortModel.OnEscalateJobs(escalationList);

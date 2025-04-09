@@ -11,6 +11,9 @@
 #include <TestImpactTestSequenceNotificationHandler.h>
 #include <TestImpactConsoleUtils.h>
 
+#include <AzCore/IO/AnsiTerminalUtils.h>
+#include <AzCore/IO/SystemFile.h>
+
 #include <iostream>
 
 namespace TestImpact
@@ -32,11 +35,18 @@ namespace TestImpact
 
             void ImpactAnalysisTestSelection(size_t numSelectedTests, size_t numDiscardedTests, size_t numExcludedTests, size_t numDraftedTests)
             {
-                const float totalTests = static_cast<float>(numSelectedTests + numDiscardedTests);
-                const float saving = (1.0f - (numSelectedTests / totalTests)) * 100.0f;
+                if (const size_t totalTests = numSelectedTests + numDiscardedTests;
+                    totalTests > 0)
+                {
+                    const float saving = (1.0f - float(numSelectedTests) / totalTests) * 100.0f;
 
-                std::cout << numSelectedTests << " tests selected, " << numDiscardedTests << " tests discarded (" << saving << "% test saving)\n";
-                std::cout << "Of which " << numExcludedTests << " tests have been excluded and " << numDraftedTests << " tests have been drafted.\n";
+                    std::cout << numSelectedTests << " tests selected, " << numDiscardedTests << " tests discarded (" << saving << "% test saving)\n";
+                    std::cout << "Of which " << numExcludedTests << " tests have been excluded and " << numDraftedTests << " tests have been drafted.\n";
+                }
+                else
+                {
+                    std::cout << "There are 0 total tests\n";
+                }
             }
 
             void FailureReport(const Client::TestRunReport& testRunReport)
@@ -119,9 +129,10 @@ namespace TestImpact
             : m_consoleOutputMode(consoleOutputMode)
         {
             TestSequenceNotificationsBaseBus::Handler::BusConnect();
+            // Enable Virtual Terminal Processing, so that ANSI color sequences can be used
+            AZ::IO::Posix::EnableVirtualTerminalProcessing(AZ::IO::Posix::Fileno(stdout));
         }
 
-        
         TestSequenceNotificationHandlerBase::~TestSequenceNotificationHandlerBase()
         {
             TestSequenceNotificationsBaseBus::Handler::BusDisconnect();

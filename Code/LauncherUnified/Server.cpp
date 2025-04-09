@@ -23,4 +23,9 @@ namespace O3DELauncher
     {
         return "@log@/Server.log";
     }
+
+    const char* GetLauncherTypeSpecialization()
+    {
+        return "server";
+    }
 }

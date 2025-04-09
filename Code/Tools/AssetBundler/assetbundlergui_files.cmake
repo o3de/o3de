@@ -64,4 +64,5 @@ set(FILES
     source/ui/SeedTabWidget.ui
     source/utils/GUIApplicationManager.h
     source/utils/GUIApplicationManager.cpp
+    source/utils/AssetBundlerBuildTarget.cpp
 )

@@ -21,7 +21,10 @@
                 {
                     "Name": "Output",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
                 }
             ],
             "ImageAttachments": [
@@ -59,7 +62,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/LookModificationTransform.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

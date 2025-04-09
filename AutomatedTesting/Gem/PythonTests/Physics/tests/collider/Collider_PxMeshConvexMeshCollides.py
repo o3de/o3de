@@ -72,7 +72,7 @@ def Collider_PxMeshConvexMeshCollides():
     import azlmbr.legacy.general as general
 
     # Constants
-    MESH_ASSET_PATH = os.path.join("assets", "Physics", "Collider_PxMeshConvexMeshCollides", "spherebot", "r0-b_body.pxmesh")
+    MESH_ASSET_PATH = os.path.join("assets", "Physics", "Collider_PxMeshConvexMeshCollides", "spherebot", "r0-b_body.fbx.pxmesh")
     TIMEOUT = 2.0
 
     # 1) Load the level

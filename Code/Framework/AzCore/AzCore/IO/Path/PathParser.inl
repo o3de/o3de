@@ -626,6 +626,46 @@ namespace AZ::IO::parser
         return string_view_pair{ srcView.substr(0, pos), srcView.substr(pos) };
     }
 
+    // path part decomposition
+    enum class PathPartKind : uint8_t
+    {
+        PK_None,
+        PK_RootName,
+        PK_RootSep,
+        PK_Filename,
+        PK_Dot,
+        PK_DotDot,
+    };
+
+    constexpr PathPartKind ClassifyPathPart(const PathParser& parser)
+    {
+        // Check each parser state to determine the PathPartKind
+        if (parser.m_parser_state == PS_InRootDir)
+        {
+            return PathPartKind::PK_RootSep;
+        }
+        if (parser.m_parser_state == PS_InRootName)
+        {
+            return PathPartKind::PK_RootName;
+        }
+
+        // Fallback to checking parser pathEntry view value
+        // to determine if the special "." or ".." values are being used
+        AZStd::string_view pathPart = *parser;
+        if (pathPart == ".")
+        {
+            return PathPartKind::PK_Dot;
+        }
+        if (pathPart == "..")
+        {
+            return PathPartKind::PK_DotDot;
+        }
+
+        // Return PathPartKind of PK_Filename if the parser state doesn't match
+        // the states of InRootDir or InRootName and the filename
+        // isn't made up of the special directory values of "." and ".."
+        return PathPartKind::PK_Filename;
+    }
 
     // path part consumption
     constexpr bool ConsumeRootName(PathParser* pathParser)
@@ -695,6 +735,32 @@ namespace AZ::IO::parser
             || rhsPathParser.m_preferred_separator == PosixPathSeparator;
         while (lhsPathParser && rhsPathParser)
         {
+            bool leftDotPathSkipped{};
+            for (PathPartKind lhsPartKind = ClassifyPathPart(lhsPathParser); lhsPathParser && lhsPartKind == PathPartKind::PK_Dot;
+                lhsPartKind = ClassifyPathPart(lhsPathParser))
+            {
+                ++lhsPathParser;
+                leftDotPathSkipped = true;
+            }
+
+            if (leftDotPathSkipped)
+            {
+                continue;
+            }
+
+            bool rightDotPathSkipped{};
+            for (PathPartKind rhsPartKind = ClassifyPathPart(rhsPathParser); rhsPathParser && rhsPartKind == PathPartKind::PK_Dot;
+                rhsPartKind = ClassifyPathPart(rhsPathParser))
+            {
+                ++rhsPathParser;
+                rightDotPathSkipped = true;
+            }
+
+            if (rightDotPathSkipped)
+            {
+                continue;
+            }
+
             if (int res = Internal::ComparePathSegment(*lhsPathParser, *rhsPathParser, exactCaseCompare);
                 res != 0)
             {
@@ -702,6 +768,29 @@ namespace AZ::IO::parser
             }
             ++lhsPathParser;
             ++rhsPathParser;
+        }
+
+        // Advance past any trailing single dot segements of a path
+        // Such as /foo/bar/.
+        // This make sure that paths that end with a dot('.')
+        // will properly advance to the PS_AtEnd state
+        for (; lhsPathParser; ++lhsPathParser)
+        {
+            if (PathPartKind lhsPartKind = ClassifyPathPart(lhsPathParser);
+                lhsPartKind != PathPartKind::PK_Dot)
+            {
+                break;
+            }
+        }
+
+        // Advance logic for the right path argument
+        for (; rhsPathParser; ++rhsPathParser)
+        {
+            if (PathPartKind rhsPartKind = ClassifyPathPart(rhsPathParser);
+                rhsPartKind != PathPartKind::PK_Dot)
+            {
+                break;
+            }
         }
         return 0;
     }
@@ -787,45 +876,5 @@ namespace AZ::IO::parser
             }
         }
         return count;
-    }
-
-    enum class PathPartKind : uint8_t
-    {
-        PK_None,
-        PK_RootName,
-        PK_RootSep,
-        PK_Filename,
-        PK_Dot,
-        PK_DotDot,
-    };
-
-    constexpr PathPartKind ClassifyPathPart(const PathParser& parser)
-    {
-        // Check each parser state to determine the PathPartKind
-        if (parser.m_parser_state == PS_InRootDir)
-        {
-            return PathPartKind::PK_RootSep;
-        }
-        if (parser.m_parser_state == PS_InRootName)
-        {
-            return PathPartKind::PK_RootName;
-        }
-
-        // Fallback to checking parser pathEntry view value
-        // to determine if the special "." or ".." values are being used
-        AZStd::string_view pathPart = *parser;
-        if (pathPart == ".")
-        {
-            return PathPartKind::PK_Dot;
-        }
-        if (pathPart == "..")
-        {
-            return PathPartKind::PK_DotDot;
-        }
-
-        // Return PathPartKind of PK_ilename if the parser state doesn't match
-        // the states of InRootDir or InRootName and the filename
-        // isn't made up of the special directory values of "." and ".."
-        return PathPartKind::PK_Filename;
     }
 }

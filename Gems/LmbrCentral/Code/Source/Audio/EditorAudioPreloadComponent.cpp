@@ -25,6 +25,11 @@ namespace LmbrCentral
                 ->Field("Load Type", &EditorAudioPreloadComponent::m_loadType)
                 ;
 
+            serializeContext->Enum<AudioPreloadComponent::LoadType>()
+                ->Value("Auto", AudioPreloadComponent::LoadType::Auto)
+                ->Value("Manual", AudioPreloadComponent::LoadType::Manual)
+                ;
+
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Enum<AudioPreloadComponent::LoadType>("Load Type", "Automatic or Manual loading and unloading")
@@ -37,7 +42,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioPreload.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioPreload.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                         // Icon todo:

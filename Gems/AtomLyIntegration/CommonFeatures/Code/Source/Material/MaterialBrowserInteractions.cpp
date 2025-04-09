@@ -57,7 +57,7 @@ namespace AZ
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::ShaderExtensionWithDot))
             {
-                openers.push_back({ "Material_Canvas", "Open in Material Canvas (Preview)...", QIcon(":/Menu/material_canvas.svg"),
+                openers.push_back({ "Material_Canvas", "Open in Material Canvas...", QIcon(":/Menu/material_canvas.svg"),
                     [&](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                     {
                         EditorMaterialSystemComponentRequestBus::Broadcast(
@@ -91,7 +91,7 @@ namespace AZ
                       CreateDocumentDialog dialog(
                           QObject::tr("Create Material"),
                           QObject::tr("Select Material Type"),
-                          QObject::tr("Select Material Path"),
+                          fullSourceFolderNameInCallback.empty() ? QObject::tr("Select Material Path") : QString(),
                           fullSourceFolderNameInCallback.c_str(),
                           { "material" },
                           defaultMaterialType.c_str(),
@@ -146,7 +146,7 @@ namespace AZ
                       CreateDocumentDialog dialog(
                           QObject::tr("Create Material Graph"),
                           QObject::tr("Select Material Graph Template"),
-                          QObject::tr("Select Path"),
+                          fullSourceFolderNameInCallback.empty() ? QObject::tr("Select Material Path") : QString(),
                           fullSourceFolderNameInCallback.c_str(),
                           { "materialgraph" },
                           defaultMaterialGraphTemplate.c_str(),

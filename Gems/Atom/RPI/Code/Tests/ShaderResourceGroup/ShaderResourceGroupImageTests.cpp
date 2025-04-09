@@ -73,7 +73,7 @@ namespace UnitTest
 
             RHI::ImageViewDescriptor imageViewDescC = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 3, 3);
             m_imageViewC = m_whiteImage->GetRHIImage()->GetImageView(imageViewDescC);
-            
+
             m_threeImageViews = { m_imageViewA.get(), m_imageViewB.get(), m_imageViewC.get() };
         }
 
@@ -146,8 +146,8 @@ namespace UnitTest
         EXPECT_EQ(m_blackImage, m_testSrg->GetImage(m_indexImageB));
 
         m_testSrg->Compile();
-        EXPECT_EQ(m_whiteImage->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageA, 0));
-        EXPECT_EQ(m_blackImage->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageB, 0));
+        EXPECT_EQ(m_whiteImage->GetImageView(), m_testSrg->GetImageView(m_indexImageA, 0));
+        EXPECT_EQ(m_blackImage->GetImageView(), m_testSrg->GetImageView(m_indexImageB, 0));
 
         // Test changing back to null...
 
@@ -156,7 +156,7 @@ namespace UnitTest
         EXPECT_TRUE(m_testSrg->SetImage(m_indexImageA, nullptr));
         m_testSrg->Compile();
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageA));
-        EXPECT_EQ(nullptr, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageA, 0));
+        EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageA, 0));
     }
 
     TEST_F(ShaderResourceGroupImageTests, TestSetGetImageAtOffset)
@@ -171,9 +171,9 @@ namespace UnitTest
         EXPECT_EQ(m_greyImage, m_testSrg->GetImage(m_indexImageArray, 2));
 
         m_testSrg->Compile();
-        EXPECT_EQ(m_whiteImage->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 0));
-        EXPECT_EQ(m_blackImage->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 1));
-        EXPECT_EQ(m_greyImage->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 2));
+        EXPECT_EQ(m_whiteImage->GetImageView(), m_testSrg->GetImageView(m_indexImageArray, 0));
+        EXPECT_EQ(m_blackImage->GetImageView(), m_testSrg->GetImageView(m_indexImageArray, 1));
+        EXPECT_EQ(m_greyImage->GetImageView(), m_testSrg->GetImageView(m_indexImageArray, 2));
 
         // Test changing back to null...
 
@@ -182,7 +182,7 @@ namespace UnitTest
         EXPECT_TRUE(m_testSrg->SetImage(m_indexImageArray, nullptr, 1));
         m_testSrg->Compile();
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageArray, 1));
-        EXPECT_EQ(nullptr, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 1));
+        EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 1));
     }
 
     TEST_F(ShaderResourceGroupImageTests, TestSetGetImageArray)
@@ -199,9 +199,9 @@ namespace UnitTest
         EXPECT_EQ(m_threeImages[0], m_testSrg->GetImage(m_indexImageArray, 0));
         EXPECT_EQ(m_threeImages[1], m_testSrg->GetImage(m_indexImageArray, 1));
         EXPECT_EQ(m_threeImages[2], m_testSrg->GetImage(m_indexImageArray, 2));
-        EXPECT_EQ(m_threeImages[0]->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 0));
-        EXPECT_EQ(m_threeImages[1]->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 1));
-        EXPECT_EQ(m_threeImages[2]->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 2));
+        EXPECT_EQ(m_threeImages[0]->GetImageView(), m_testSrg->GetImageView(m_indexImageArray, 0));
+        EXPECT_EQ(m_threeImages[1]->GetImageView(), m_testSrg->GetImageView(m_indexImageArray, 1));
+        EXPECT_EQ(m_threeImages[2]->GetImageView(), m_testSrg->GetImageView(m_indexImageArray, 2));
 
         // Test replacing just two images including changing one image back to null...
 
@@ -253,9 +253,9 @@ namespace UnitTest
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageArray, 0));
         EXPECT_EQ(twoImages[0], m_testSrg->GetImage(m_indexImageArray, 1));
         EXPECT_EQ(twoImages[1], m_testSrg->GetImage(m_indexImageArray, 2));
-        EXPECT_EQ(nullptr, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 0));
-        EXPECT_EQ(twoImages[0]->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 1));
-        EXPECT_EQ(twoImages[1]->GetImageView(), m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 2));
+        EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 0));
+        EXPECT_EQ(twoImages[0]->GetImageView(), m_testSrg->GetImageView(m_indexImageArray, 1));
+        EXPECT_EQ(twoImages[1]->GetImageView(), m_testSrg->GetImageView(m_indexImageArray, 2));
     }
 
     TEST_F(ShaderResourceGroupImageTests, TestSetImageArrayAtOffset_ValidationFailure)
@@ -294,10 +294,10 @@ namespace UnitTest
 
         EXPECT_EQ(m_imageViewA, m_testSrg->GetImageView(m_indexImageA));
         EXPECT_EQ(m_imageViewB, m_testSrg->GetImageView(m_indexImageB));
-        EXPECT_EQ(m_imageViewA, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageA, 0));
-        EXPECT_EQ(m_imageViewB, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageB, 0));
+        EXPECT_EQ(m_imageViewA, m_testSrg->GetImageView(m_indexImageA, 0));
+        EXPECT_EQ(m_imageViewB, m_testSrg->GetImageView(m_indexImageB, 0));
 
-        // The RPI::Image should get cleared when you set a RHI::ImageView directly
+        // The RPI::Image should get cleared when you set a RHI::DeviceImageView directly
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageA));
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageB));
     }
@@ -321,11 +321,11 @@ namespace UnitTest
         EXPECT_EQ(m_imageViewA, m_testSrg->GetImageView(m_indexImageArray, 0));
         EXPECT_EQ(m_imageViewB, m_testSrg->GetImageView(m_indexImageArray, 1));
         EXPECT_EQ(m_imageViewC, m_testSrg->GetImageView(m_indexImageArray, 2));
-        EXPECT_EQ(m_imageViewA, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 0));
-        EXPECT_EQ(m_imageViewB, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 1));
-        EXPECT_EQ(m_imageViewC, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 2));
+        EXPECT_EQ(m_imageViewA, m_testSrg->GetImageView(m_indexImageArray, 0));
+        EXPECT_EQ(m_imageViewB, m_testSrg->GetImageView(m_indexImageArray, 1));
+        EXPECT_EQ(m_imageViewC, m_testSrg->GetImageView(m_indexImageArray, 2));
 
-        // The RPI::Image should get cleared when you set a RHI::ImageView directly
+        // The RPI::Image should get cleared when you set a RHI::DeviceImageView directly
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageArray, 0));
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageArray, 1));
         EXPECT_EQ(nullptr, m_testSrg->GetImage(m_indexImageArray, 2));
@@ -345,9 +345,9 @@ namespace UnitTest
         EXPECT_EQ(m_threeImageViews[0], m_testSrg->GetImageView(m_indexImageArray, 0));
         EXPECT_EQ(m_threeImageViews[1], m_testSrg->GetImageView(m_indexImageArray, 1));
         EXPECT_EQ(m_threeImageViews[2], m_testSrg->GetImageView(m_indexImageArray, 2));
-        EXPECT_EQ(m_threeImageViews[0], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 0));
-        EXPECT_EQ(m_threeImageViews[1], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 1));
-        EXPECT_EQ(m_threeImageViews[2], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 2));
+        EXPECT_EQ(m_threeImageViews[0], m_testSrg->GetImageView(m_indexImageArray, 0));
+        EXPECT_EQ(m_threeImageViews[1], m_testSrg->GetImageView(m_indexImageArray, 1));
+        EXPECT_EQ(m_threeImageViews[2], m_testSrg->GetImageView(m_indexImageArray, 2));
 
         // Test replacing just two image views including changing one back to null...
 
@@ -395,9 +395,9 @@ namespace UnitTest
         EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 0));
         EXPECT_EQ(twoImageViews[0], m_testSrg->GetImageView(m_indexImageArray, 1));
         EXPECT_EQ(twoImageViews[1], m_testSrg->GetImageView(m_indexImageArray, 2));
-        EXPECT_EQ(nullptr, m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 0));
-        EXPECT_EQ(twoImageViews[0], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 1));
-        EXPECT_EQ(twoImageViews[1], m_testSrg->GetRHIShaderResourceGroup()->GetData().GetImageView(m_indexImageArray, 2));
+        EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 0));
+        EXPECT_EQ(twoImageViews[0], m_testSrg->GetImageView(m_indexImageArray, 1));
+        EXPECT_EQ(twoImageViews[1], m_testSrg->GetImageView(m_indexImageArray, 2));
     }
 
     TEST_F(ShaderResourceGroupImageTests, TestSetImageViewArrayAtOffset_ValidationFailure)
@@ -414,5 +414,58 @@ namespace UnitTest
         EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 0));
         EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 1));
         EXPECT_EQ(nullptr, m_testSrg->GetImageView(m_indexImageArray, 2));
+    }
+
+    TEST_F(ShaderResourceGroupImageTests, TestCopyShaderResourceGroupDataImage)
+    {
+        EXPECT_TRUE(m_testSrg->SetImageArray(m_indexImageArray, m_threeImages));
+        auto testSrg2 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
+
+        EXPECT_TRUE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(3, testSrg2->GetImageArray(m_indexImageArray).size());
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[0], testSrg2->GetImageArray(m_indexImageArray)[0]);
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[1], testSrg2->GetImageArray(m_indexImageArray)[1]);
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[2], testSrg2->GetImageArray(m_indexImageArray)[2]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[0], testSrg2->GetImageViewArray(m_indexImageArray)[0]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[1], testSrg2->GetImageViewArray(m_indexImageArray)[1]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[2], testSrg2->GetImageViewArray(m_indexImageArray)[2]);
+    }
+
+    TEST_F(ShaderResourceGroupImageTests, TestCopyShaderResourceGroupDataImageView)
+    {
+        EXPECT_TRUE(m_testSrg->SetImageViewArray(m_indexImageArray, m_threeImageViews));
+        auto testSrg2 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
+
+        EXPECT_TRUE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(3, testSrg2->GetImageViewArray(m_indexImageArray).size());
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[0], testSrg2->GetImageArray(m_indexImageArray)[0]);
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[1], testSrg2->GetImageArray(m_indexImageArray)[1]);
+        EXPECT_EQ(m_testSrg->GetImageArray(m_indexImageArray)[2], testSrg2->GetImageArray(m_indexImageArray)[2]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[0], testSrg2->GetImageViewArray(m_indexImageArray)[0]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[1], testSrg2->GetImageViewArray(m_indexImageArray)[1]);
+        EXPECT_EQ(m_testSrg->GetImageViewArray(m_indexImageArray)[2], testSrg2->GetImageViewArray(m_indexImageArray)[2]);
+    }
+
+
+    TEST_F(ShaderResourceGroupImageTests, TestPartilCopyShaderResourceGroupData)
+    {
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout2 = RHI::ShaderResourceGroupLayout::Create();
+        srgLayout2->SetName(Name("partial"));
+        srgLayout2->SetBindingSlot(0);
+        srgLayout2->AddShaderInput(RHI::ShaderInputImageDescriptor{
+            Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1 });
+        srgLayout2->AddShaderInput(RHI::ShaderInputImageDescriptor{
+            Name{ "MyImageC" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1 });
+        srgLayout2->Finalize();
+
+        auto testSrgShaderAsset2 = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout2);
+        auto testSrg2 = ShaderResourceGroup::Create(testSrgShaderAsset2, AZ::RPI::DefaultSupervariantIndex, srgLayout2->GetName());
+
+        EXPECT_TRUE(m_testSrg->SetImage(m_indexImageA, m_whiteImage));
+        EXPECT_TRUE(m_testSrg->SetImage(m_indexImageB, m_blackImage));
+
+        EXPECT_FALSE(testSrg2->CopyShaderResourceGroupData(*m_testSrg));
+        EXPECT_EQ(m_testSrg->GetImage(m_indexImageB), testSrg2->GetImage(RHI::ShaderInputImageIndex{ 0 }));
+        EXPECT_EQ(m_testSrg->GetImageView(m_indexImageB), testSrg2->GetImageView(RHI::ShaderInputImageIndex{ 0 }));
     }
 }

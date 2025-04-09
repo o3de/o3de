@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME EMotionFX_Atom.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         emotionfx_atom_files.cmake
@@ -22,14 +22,13 @@ ly_add_target(
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common
             Gem::Atom_Feature_Common.Public
-            Gem::Atom_Feature_Common.Static
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Reflect
-            Gem::AtomLyIntegration_CommonFeatures.Public
+            Gem::CommonFeaturesAtom.Public
 )
 
 ly_add_target(
-    NAME EMotionFX_Atom ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         emotionfxatom_shared_files.cmake
@@ -39,14 +38,23 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            Gem::EMotionFX_Atom.Static
+            Gem::${gem_name}.Static
     RUNTIME_DEPENDENCIES
         Gem::EMotionFX
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/ActorModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME EMotionFX_Atom.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
         AUTORCC
@@ -61,13 +69,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AzCore
                 AZ::AzFramework
-                Gem::EMotionFX_Atom.Static
+                Gem::${gem_name}.Static
                 Gem::EMotionFX.Editor.Static
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
                 Gem::Atom_Component_DebugCamera.Static
-                Gem::Atom_Feature_Common.Static
-                Gem::AtomLyIntegration_CommonFeatures.Static
+                Gem::Atom_Feature_Common.Public
+                Gem::CommonFeaturesAtom.Static
         RUNTIME_DEPENDENCIES
             Gem::EMotionFX.Editor
         COMPILE_DEFINITIONS

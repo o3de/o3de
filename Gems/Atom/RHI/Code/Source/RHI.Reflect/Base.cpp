@@ -8,10 +8,7 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        bool Validation::s_isEnabled = BuildOptions::IsDebugBuild || BuildOptions::IsProfileBuild;
-    }
+    bool Validation::s_isEnabled = BuildOptions::IsDebugBuild || BuildOptions::IsProfileBuild;
 }

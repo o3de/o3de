@@ -190,7 +190,7 @@ namespace LmbrCentral
         return AZ::Quaternion::CreateIdentity();
     }
 
-    AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()
+    AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds() const
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::Aabb aabb = AZ::Aabb::CreateNull();

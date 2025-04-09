@@ -11,7 +11,6 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/std/function/function_template.h>
 
 #include <Utils/AssetHelper.h>
 
@@ -117,14 +116,9 @@ namespace NvCloth
         // it's unnecessary for the clients using ClothConfiguration.
         friend class EditorClothComponent;
 
-        // Callback functions set by the EditorClothComponent.
-        AZStd::function<MeshNodeList()> m_populateMeshNodeListCallback;
-        AZStd::function<bool()> m_hasBackstopDataCallback;
-        AZStd::function<AZ::EntityId()> m_getEntityIdCallback;
-
         // Used by data elements in EditorClothComponent edit context.
-        MeshNodeList PopulateMeshNodeList();
-        bool HasBackstopData();
-        AZ::EntityId GetEntityId();
+        MeshNodeList m_meshNodeList;
+        bool m_hasBackstopData = false;
+        AZ::EntityId m_entityId;
     };
 } // namespace NvCloth

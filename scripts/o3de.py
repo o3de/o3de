@@ -32,10 +32,10 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     o3de_package_dir = (script_dir / 'o3de').resolve()
     # add the scripts/o3de directory to the front of the sys.path
     sys.path.insert(0, str(o3de_package_dir))
-    from o3de import engine_properties, engine_template, gem_properties, \
+    from o3de import android, engine_properties, engine_template, gem_properties, \
         global_project, register, print_registration, get_registration, \
         enable_gem, disable_gem, project_properties, sha256, download, \
-        export_project, repo
+        export_project, repo, repo_properties
     # Remove the temporarily added path
     sys.path = sys.path[1:]
 
@@ -80,6 +80,12 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     
     # repo
     repo.add_args(subparsers)
+
+    # modify remote repo
+    repo_properties.add_args(subparsers)
+
+    # Android
+    android.add_args(subparsers)
 
 
 if __name__ == "__main__":

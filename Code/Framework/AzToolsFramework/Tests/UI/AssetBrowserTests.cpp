@@ -22,6 +22,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesManager.h>
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
@@ -116,6 +117,7 @@ namespace UnitTest
     void AssetBrowserTest::TearDownEditorFixtureImpl()
     {
         AzToolsFramework::AssetBrowser::EntryCache::DestroyInstance();
+        AzToolsFramework::AssetBrowser::AssetBrowserFavoritesManager::DestroyInstance();
         EXPECT_EQ(m_fileIOMock.get(), AZ::IO::FileIOBase::GetInstance());
         AZ::IO::FileIOBase::SetInstance(nullptr);
         AZ::IO::FileIOBase::SetInstance(m_prevFileIO);

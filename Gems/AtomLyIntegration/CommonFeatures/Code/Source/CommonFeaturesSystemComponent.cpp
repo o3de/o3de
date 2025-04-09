@@ -42,17 +42,17 @@ namespace AZ
 
         void AtomLyIntegrationCommonFeaturesSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("LyIntegrationCommonFeaturesService", 0x9083ee7d));
+            provided.push_back(AZ_CRC_CE("LyIntegrationCommonFeaturesService"));
         }
 
         void AtomLyIntegrationCommonFeaturesSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("LyIntegrationCommonFeaturesService", 0x9083ee7d));
+            incompatible.push_back(AZ_CRC_CE("LyIntegrationCommonFeaturesService"));
         }
 
         void AtomLyIntegrationCommonFeaturesSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("CommonService", 0x6398eec4));
+            required.push_back(AZ_CRC_CE("CommonService"));
         }
 
         void AtomLyIntegrationCommonFeaturesSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)

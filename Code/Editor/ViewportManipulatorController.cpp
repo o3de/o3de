@@ -76,7 +76,7 @@ namespace SandboxEditor
 
                 AzFramework::WindowSize windowSize;
                 AzFramework::WindowRequestBus::EventResult(
-                    windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+                    windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetRenderResolution);
 
                 const auto screenPoint = AzFramework::ScreenPoint(
                     aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),

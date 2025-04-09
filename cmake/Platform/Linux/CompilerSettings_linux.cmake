@@ -7,26 +7,14 @@
 #
 
 if(NOT CMAKE_C_COMPILER AND NOT CMAKE_CXX_COMPILER AND NOT "$ENV{CC}" AND NOT "$ENV{CXX}")
-    if ($ENV{O3DE_SNAP})
-        set(path_search
-            $ENV{SNAP}/bin
-            $ENV{SNAP}/usr/bin
-            $ENV{SNAP}/usr/local/bin
-            $ENV{SNAP}/sbin
-            $ENV{SNAP}/usr/sbin
-            $ENV{SNAP}/usr/local/sbin
-        )
-    else()
-        set(path_search
-            /bin
-            /usr/bin
-            /usr/local/bin
-            /sbin
-            /usr/sbin
-            /usr/local/sbin
-        )
-
-    endif()
+    set(path_search
+        /bin
+        /usr/bin
+        /usr/local/bin
+        /sbin
+        /usr/sbin
+        /usr/local/sbin
+    )
     list(TRANSFORM path_search APPEND "/clang-[0-9]*" OUTPUT_VARIABLE path_with_version_search)
     file(GLOB clang_versions ${path_with_version_search})
     unset(compiler_found)

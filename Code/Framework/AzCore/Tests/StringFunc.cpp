@@ -1031,14 +1031,14 @@ namespace AZ
 
 #if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathWithSingleDotSubFolders,
         StringPathFuncTest, 
         ::testing::Values(
             TestPathStringArgs("F:\\test\\to\\get\\.\\drive\\", "F:\\test\\to\\get\\drive\\")
         ));
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathWithDoubleDotSubFolders,
         StringPathFuncTest, 
         ::testing::Values(
@@ -1053,13 +1053,13 @@ namespace AZ
             TestPathStringArgs("F:\\..\\",                                                           "F:\\")
    ));
 #else
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathWithSingleDotSubFolders,
         StringPathFuncTest, ::testing::Values(
             TestPathStringArgs("/test/to/get/./drive/", "/test/to/get/drive/")
         ));
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         PathWithDoubleDotSubFolders,
         StringPathFuncTest, 
         ::testing::Values(

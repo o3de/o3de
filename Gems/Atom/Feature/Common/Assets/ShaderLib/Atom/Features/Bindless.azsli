@@ -21,8 +21,8 @@
 
 #include "SrgSemantics.azsli"
 
-// The structure of this SRG must exactly match the code that refers to in the each of the RHI API implementations.
-// Todo: Find a way to make the bindless SRG structure data driven in code https://github.com/o3de/o3de/issues/13324
+// Bindless SRG where all the views related to the following resource types (read only textures, read write textures,
+// read only buffers, read write buffers and read only cube map textures) reside and can be accessed indirectly by any shader
 partial ShaderResourceGroup Bindless : SRG_Bindless
 {
     // UNBOUNDED_SIZE is used to approximate unbounded arrays on platforms that have issues with their

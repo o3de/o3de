@@ -100,6 +100,7 @@ namespace Multiplayer
         AZ::TimeMs GetFrameTimeMs();
 
         void AddReplicatorToPendingSend(const EntityReplicator& entityReplicator);
+        void RemoveReplicatorFromPendingSend(const EntityReplicator& entityReplicator);
         
         bool IsUpdateModeToServerClient();
 
@@ -147,7 +148,8 @@ namespace Multiplayer
             NetEntityId netEntityId,
             NetEntityRole netEntityRole,
             AzNetworking::ISerializer& serializer,
-            const PrefabEntityId& prefabEntityId
+            const PrefabEntityId& prefabEntityId,
+            bool isDeleted
         );
 
         void AddReplicatorToPendingRemoval(const EntityReplicator& replicator);

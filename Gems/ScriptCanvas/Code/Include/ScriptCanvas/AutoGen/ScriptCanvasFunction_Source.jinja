@@ -1,0 +1,178 @@
+{#
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+#}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Source.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
+{%- macro CheckFunctionBranchResult(function) -%}
+{% set branch = function.attrib['Branch'] %}
+{% if branch is defined and branch %}
+true
+{% else %}
+false
+{% endif %}
+{%- endmacro -%}
+
+{%- macro SetBranchExecution(function) -%}
+{% set outs = function.findall('Out') %}
+{%- if outs and outs|length() > 0 %}
+{%     if outs|length() == 2 %}
+{%         set definitionName = outs[0].attrib['Name']%}
+{%         if definitionName is defined and definitionName %}
+                    branchResultInfo.m_trueName = "{{definitionName}}";
+{%         endif %}
+{%         set definitionDescription = outs[0].attrib['Description'] %}
+{%         if definitionDescription is defined and definitionDescription %}
+                    branchResultInfo.m_trueToolTip = "{{definitionDescription}}";
+{%         endif %}
+{%         set definitionName = outs[1].attrib['Name']%}
+{%         if definitionName is defined and definitionName %}
+                    branchResultInfo.m_falseName = "{{definitionName}}";
+{%         endif %}
+{%         set definitionDescription = outs[1].attrib['Description'] %}
+{%         if definitionDescription is defined and definitionDescription %}
+                    branchResultInfo.m_falseToolTip = "{{definitionDescription}}";
+{%         endif %}
+{%     else %}
+{{         macros.AddError(function, "There should be only two branches per function.") }}
+{%     endif %}
+{% endif -%}
+{%- endmacro -%}
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+#include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
+
+{% set includeFile = "{0}.h".format(((outputFile|basename)|splitext)[0]) %}
+#include "{{ includeFile }}"
+
+{% for ScriptCanvas in dataFiles %}
+{%  for Library in ScriptCanvas %}
+
+{% if Library.attrib['Name'] is defined %}
+{% set className = Library.attrib['Name'] %}
+{% endif %}
+
+{% set qualifiedNamespace = Library.attrib['Namespace'] %}
+{% set parts = qualifiedNamespace.split("::") %}
+{% set className = parts[-1] %}
+
+{% if Library.attrib['Name'] is defined %}
+{% set className = Library.attrib['Name'] %}
+{% endif %}
+
+{% set namespaceName = Library.attrib['Namespace'] %}
+{% set sanitizedNamespaceName = macros.CleanName(namespaceName.replace('::', '_')) %}
+
+{% set categoryName = Library.attrib['Category'] %}
+
+
+namespace {{ namespaceName }}
+{
+
+SCRIPTCANVAS_REGISTER({{className}}_Reflection)
+{
+    ScriptCanvasModel::Instance().RegisterReflection( "{{className}}_Reflection", [] (AZ::ReflectContext* context) { {{className}}_Reflection::Reflect(context); });
+}
+
+
+void {{ className }}_Reflection::Reflect(AZ::ReflectContext* context)
+{
+    // Reflect all functions to BC
+
+    if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+    {
+        {# Reflect Functions to Behavior Context #}
+        {% for function in Library.findall('Function') %}
+        {
+{%- set hasbranch = CheckFunctionBranchResult(function) -%}
+{% if hasbranch|booleanTrue == true %}
+{% set branchfunction = function.attrib['Branch'] %}
+                AZ::BranchOnResultInfo branchResultInfo;
+{% if branchfunction is defined and branchfunction and not branchfunction == "Boolean" %}
+{% set sanitizedBranchFunctionName = macros.CleanName(branchfunction).replace('::', '_') %}
+                branchResultInfo.m_nonBooleanResultCheckName = "{{sanitizedNamespaceName}}_{{sanitizedBranchFunctionName}}";
+{% endif -%}
+{% set branchwithvalue = function.attrib['BranchWithValue'] %}
+{%- if branchwithvalue is defined and branchwithvalue.lower() == "true" %}
+                branchResultInfo.m_returnResultInBranches = true;
+{% endif -%}
+{{SetBranchExecution(function)}}
+{%- endif -%}
+
+
+            {% set functionName = macros.CleanName(function.attrib['Name']) %}
+            {% set sanitizedFunctionName = macros.CleanName(function.attrib['Name']).replace('::', '_') %}
+            {
+             behaviorContext->Method("{{sanitizedNamespaceName}}_{{sanitizedFunctionName}}", &{{className}}::{{functionName}},
+{{macros.GenerateFunctionMetaData(function)}})
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+{% if categoryName %}
+                    ->Attribute(AZ::Script::Attributes::Category, "{{categoryName}}")
+{% endif %}
+{% if hasbranch|booleanTrue == true %}
+                    ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, branchResultInfo)
+{% endif %};
+            }
+        }
+        {% endfor %}
+
+
+
+        {# Reflect Data Types to Behavior Context #}
+{%      if Library.tag == "Data" %}
+{%         set dataName = Library.attrib['Name'] %}
+{%         set namespaceName = '' %}
+{%         set sanitizedNamespaceName = '' %}
+{%         if Library.attrib['Namespace'] is defined and Library.attrib['Namespace'] %}
+{%             set namespaceName = Library.attrib['Namespace'] + '::' %}
+{%             set sanitizedNamespaceName = macros.CleanName(Library.attrib['Namespace'].replace('::', '_')) + '_' %}
+{%         endif %}
+            behaviorContext->Class<ContainerTypeReflection::BehaviorClassReflection<{{namespaceName}}{{dataName}}>>("ScriptCanvas_{{sanitizedNamespaceName}}{{dataName}}")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::Ignore, true)
+                ->Method("ScriptCanvas_ReflectVector", [](const AZStd::vector<{{namespaceName}}{{dataName}}>&) {})
+                ->Method("ScriptCanvas_ReflectStringMap", [](const AZStd::unordered_map<AZStd::string, {{namespaceName}}{{dataName}}>&) {})
+                ->Method("ScrtptCanvas_ReflectNumberMap", [](const AZStd::unordered_map<double, {{namespaceName}}{{dataName}}>&) {});
+
+{%     endif %}
+
+
+    }
+
+
+    {# Reflect Data Types to Containers in Behavior Context #}
+{%      if Library.tag == "Data" %}
+{%         set dataName = Library.attrib['Name'] %}
+{%         set namespaceName = '' %}
+{%         if Library.attrib['Namespace'] is defined and Library.attrib['Namespace'] %}
+{%             set namespaceName = Library.attrib['Namespace'] + '::' %}
+{%         endif %}
+        ContainerTypeReflection::HashContainerReflector<{{namespaceName}}{{dataName}}>::Reflect(context);
+
+{%     endif %}
+
+
+}
+
+
+
+
+
+} // namespace {{ namespaceName }}
+
+{%  endfor %}
+{% endfor %}

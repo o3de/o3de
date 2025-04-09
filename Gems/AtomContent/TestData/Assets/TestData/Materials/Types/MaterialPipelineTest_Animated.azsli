@@ -7,8 +7,8 @@
  */
 
  
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/VertexUtility.azsli>
@@ -32,6 +32,8 @@ void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out 
 }
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+#define MATERIAL_HAS_UVS 0
 
     struct VsInput
     {

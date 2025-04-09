@@ -26,5 +26,5 @@ ly_add_target(
             AZ::AzCore
             AZ::AzToolsFramework
         PUBLIC
-            3rdParty::assimplib
+            3rdParty::assimp
 )

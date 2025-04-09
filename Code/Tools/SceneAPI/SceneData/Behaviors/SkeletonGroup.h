@@ -46,8 +46,8 @@ namespace AZ
                 Events::ProcessingResult UpdateSkeletonGroups(Containers::Scene& scene) const;
 
                 bool SceneHasSkeletonGroup(const Containers::Scene& scene) const;
-                
-                static const int s_rigsPreferredTabOrder;
+
+                static constexpr int s_rigsPreferredTabOrder{ 1 };
                 bool m_isDefaultConstructing{ false };
             };
         } // namespace Behaviors

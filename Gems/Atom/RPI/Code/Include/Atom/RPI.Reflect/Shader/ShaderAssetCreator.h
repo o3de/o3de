@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 #include <AzCore/std/containers/map.h>
@@ -21,7 +22,7 @@ namespace AZ
 
     namespace RPI
     {
-        class ShaderAssetCreator
+        class ATOM_RPI_REFLECT_API ShaderAssetCreator
             : public AssetCreator<ShaderAsset>
         {
         public:
@@ -72,6 +73,9 @@ namespace AZ
 
             //! [Required] There's always a root variant for each supervariant.
             void SetRootShaderVariantAsset(Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+
+            //! Set if the supervariant uses specialization constants for shader options.
+            void SetUseSpecializationConstants(bool value);
 
             bool EndSupervariant();
 

@@ -183,7 +183,7 @@ namespace AZ
                 arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
             }
 
-            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas (Preview)");
+            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas");
             AtomToolsFramework::LaunchTool("MaterialCanvas", arguments);
         }
 
@@ -376,7 +376,7 @@ namespace AZ
             }
             if (path.ends_with(AZ::RPI::MaterialTypeSourceData::Extension))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/materialtype.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/MaterialType_80.svg");
             }
             if (path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphNodeExtensionWithDot) ||
@@ -419,12 +419,12 @@ namespace AZ
                 );
                 AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialEditorActionIdentifier.data());
 
-                hotKeyManagerInterface->SetActionHotKey(MaterialEditorActionIdentifier, "M");
+                hotKeyManagerInterface->SetActionHotKey(MaterialEditorActionIdentifier, "Ctrl+M");
             }
 
             {
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Material Canvas (Preview)";
+                actionProperties.m_name = "Material Canvas";
                 actionProperties.m_iconPath = ":/Menu/material_canvas.svg";
 
                 auto outcome = actionManagerInterface->RegisterAction(

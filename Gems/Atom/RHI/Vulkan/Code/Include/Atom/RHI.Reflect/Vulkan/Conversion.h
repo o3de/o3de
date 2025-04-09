@@ -25,6 +25,7 @@
 #include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RHI.Reflect/VariableRateShadingEnums.h>
+#include <Atom/RHI.Reflect/Vulkan/ImageViewDescriptor.h>
 
 namespace AZ
 {
@@ -36,6 +37,7 @@ namespace AZ
         VkFormat ConvertFormat(RHI::Format format, bool raiseAsserts = true);
         VkImageAspectFlagBits ConvertImageAspect(RHI::ImageAspect imageAspect);
         VkImageAspectFlags ConvertImageAspectFlags(RHI::ImageAspectFlags aspectFlagMask);
+        RHI::ImageAspectFlags ConvertImageAspectFlags(VkImageAspectFlags aspectFlagMask);
         VkPrimitiveTopology ConvertTopology(RHI::PrimitiveTopology topology);
         VkQueueFlags ConvertQueueClass(RHI::HardwareQueueClass queueClass);
         VkMemoryPropertyFlags ConvertHeapMemoryLevel(RHI::HeapMemoryLevel heapMemoryLevel);
@@ -47,8 +49,6 @@ namespace AZ
         VkBlendOp ConvertBlendOp(const RHI::BlendOp blendOp);
         VkColorComponentFlags ConvertComponentFlags(uint8_t flags);
         VkSampleCountFlagBits ConvertSampleCount(uint16_t samples);
-        VkAttachmentLoadOp ConvertAttachmentLoadAction(RHI::AttachmentLoadAction loadAction);
-        VkAttachmentStoreOp ConvertAttachmentStoreAction(RHI::AttachmentStoreAction storeAction);
         void FillClearValue(const RHI::ClearValue& rhiClearValue, VkClearValue& vulkanClearValue);
         VkFilter ConvertFilterMode(RHI::FilterMode filterMode);
         VkSamplerAddressMode ConvertAddressMode(RHI::AddressMode addressMode);
@@ -65,6 +65,10 @@ namespace AZ
         RHI::ShadingRate ConvertFragmentShadingRate(const VkExtent2D rate);
         VkImageUsageFlags ImageUsageFlagsOfFormatFeatureFlags(VkFormatFeatureFlags formatFeatureFlags);
         VkAccessFlags GetSupportedAccessFlags(VkPipelineStageFlags pipelineStageFlags);
-        bool ShouldApplyDeviceAddressBit(RHI::BufferBindFlags bindFlags);
+        VkComponentSwizzle ConvertComponentSwizzle(const ImageComponentMapping::Swizzle swizzle);
+        VkComponentMapping ConvertComponentMapping(const ImageComponentMapping& mapping);
+        RHI::ImageSubresourceRange ConvertSubresourceRange(const VkImageSubresourceRange& range);
+        VkImageSubresourceRange ConvertSubresourceRange(const RHI::ImageSubresourceRange& range);
+        VkPipelineStageFlags ConvertScopeAttachmentStage(const RHI::ScopeAttachmentStage& stage);
     }
 }

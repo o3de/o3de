@@ -29,8 +29,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
-    
     OUT.m_color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord);
-
     return OUT;
 }

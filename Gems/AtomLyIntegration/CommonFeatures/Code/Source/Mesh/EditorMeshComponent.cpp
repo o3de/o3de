@@ -44,7 +44,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Mesh.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mesh.svg")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/mesh/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
@@ -82,6 +82,9 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isRayTracingEnabled, "Use ray tracing",
                                 "Includes this mesh in ray tracing calculations.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_enableRayIntersection, "Support ray intersection",
+                                "Set to true when the entity has UiCanvasOnMeshComponent")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_isAlwaysDynamic, "Always Moving", "Forces this mesh to be considered to always be moving, even if the transform didn't update. Useful for meshes with vertex shader animation.")
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodType, "Lod Type", "Determines how level of detail (LOD) will be selected during rendering.")
                                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "LOD Type")
@@ -89,6 +92,8 @@ namespace AZ
                                 ->EnumAttribute(RPI::Cullable::LodType::ScreenCoverage, "Screen Coverage")
                                 ->EnumAttribute(RPI::Cullable::LodType::SpecificLod, "Specific LOD")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::EntireTree)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_lightingChannelConfig, "Lighting Channels", "")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Lod Configuration")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "LOD Configuration")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
@@ -128,6 +133,7 @@ namespace AZ
 
         void EditorMeshComponent::Activate()
         {
+            m_controller.m_configuration.m_editorRayIntersection = true;
             BaseClass::Activate();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
@@ -241,18 +247,22 @@ namespace AZ
                 EditorMeshStatsForLod stats;
                 const auto& meshes = lodAsset->GetMeshes();
                 stats.m_meshCount = static_cast<AZ::u32>(meshes.size());
+                stats.m_subMeshStatsForLod.reserve(stats.m_meshCount);
                 for (const auto& mesh : meshes)
                 {
-                    stats.m_vertCount += mesh.GetVertexCount();
-                    stats.m_triCount += mesh.GetIndexCount() / 3;
+                    const auto vertexCount = mesh.GetVertexCount();
+                    const auto triCount = mesh.GetIndexCount() / 3;
+                    stats.m_subMeshStatsForLod.push_back({});
+                    stats.m_subMeshStatsForLod.back().m_vertCount = vertexCount;
+                    stats.m_subMeshStatsForLod.back().m_triCount = triCount;
+                    stats.m_vertCount += vertexCount;
+                    stats.m_triCount += triCount;
                 }
                 m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
             }
 
             // Refresh the tree when the model loads to update UI based on the model.
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
 
         }
 

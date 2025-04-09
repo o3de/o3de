@@ -27,7 +27,7 @@
 
 // include required headers
 #include <EMotionFX/Source/PhysicsSetup.h>
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "Pose.h"
 #include "Skeleton.h"
 

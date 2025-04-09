@@ -306,7 +306,7 @@ mayapy2 -m pip install -r C:\Depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\
 
 ![image](https://user-images.githubusercontent.com/23222931/155037710-79bee421-1355-484b-8c96-f672157da40a.png)
 
-### Maya 2022 (Python 3.10.5)
+### Maya 2022 (Python 3.10.13)
 
 This also is not very different, you just need to modify some of the commands. Also because O3DE is also on a version of py3.10.x, we can re-use the requirements.txt file that is in the root of the DccScriptingInterface gem folder.
 

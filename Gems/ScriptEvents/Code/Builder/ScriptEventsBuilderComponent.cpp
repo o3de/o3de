@@ -16,7 +16,7 @@ namespace ScriptEventsBuilder
 {
     void ScriptEventsBuilderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptEventsBuilderService", 0x049e945c));
+        provided.push_back(AZ_CRC_CE("ScriptEventsBuilderService"));
     }
     
     void ScriptEventsBuilderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -26,7 +26,7 @@ namespace ScriptEventsBuilder
     
     void ScriptEventsBuilderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
     
     void ScriptEventsBuilderComponent::Activate()

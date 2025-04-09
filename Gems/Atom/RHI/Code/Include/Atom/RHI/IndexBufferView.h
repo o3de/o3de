@@ -8,54 +8,51 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI/DeviceIndexBufferView.h>
 #include <AzCore/Utils/TypeHash.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class Buffer;
+
+    uint32_t GetIndexFormatSize(IndexFormat indexFormat);
+
+    //! A multi-device class representing a view onto a Buffer holding indices, distinct from
+    //! actual view classes (like DeviceBufferView), there is no representation on the API level.
+    //! Its device-specific buffers are provided to the RHI back-end at draw time.
+    class alignas(8) IndexBufferView
     {
-        class Buffer;
+    public:
+        IndexBufferView() = default;
 
-        enum class IndexFormat : uint32_t
-        {
-            Uint16 = 0,
-            Uint32
-        };
+        IndexBufferView(const Buffer& buffer, uint32_t byteOffset, uint32_t byteCount, IndexFormat format);
 
-        uint32_t GetIndexFormatSize(IndexFormat indexFormat);
+        //! Returns the device-specific DeviceIndexBufferView for the given index
+        DeviceIndexBufferView GetDeviceIndexBufferView(int deviceIndex) const;
 
-        class alignas(8) IndexBufferView
-        {
-        public:
-            IndexBufferView() = default;
+        //! Returns the hash of the view. This hash is precomputed at creation time.
+        HashValue64 GetHash() const;
 
-            IndexBufferView(
-                const Buffer& buffer,
-                uint32_t byteOffset,
-                uint32_t byteCount,
-                IndexFormat format);
+        //! Returns the buffer associated with the data in the view.
+        const Buffer* GetBuffer() const;
 
-            /// Returns the hash of the view. This hash is precomputed at creation time.
-            HashValue64 GetHash() const;
+        //! Returns the byte offset into the buffer returned by GetBuffer
+        uint32_t GetByteOffset() const;
 
-            /// Returns the buffer associated with the data in the view.
-            const Buffer* GetBuffer() const;
+        //! Returns the number of bytes in the view.
+        uint32_t GetByteCount() const;
 
-            /// Returns the byte offset into the buffer returned by GetBuffer
-            uint32_t GetByteOffset() const;
+        //! Returns the format of each index in the view.
+        IndexFormat GetIndexFormat() const;
 
-            /// Returns the number of bytes in the view.
-            uint32_t GetByteCount() const;
+        //! Returns whether the view is valid and points to a buffer
+        bool IsValid() const { return m_buffer != nullptr; }
 
-            /// Returns the format of each index in the view.
-            IndexFormat GetIndexFormat() const;
-
-        private:
-            HashValue64 m_hash = HashValue64{ 0 };
-            const Buffer* m_buffer = nullptr;
-            uint32_t m_byteOffset = 0;
-            uint32_t m_byteCount = 0;
-            IndexFormat m_format = IndexFormat::Uint32;
-        };
-    }
-}
+    private:
+        HashValue64 m_hash = HashValue64{ 0 };
+        const Buffer* m_buffer = nullptr;
+        uint32_t m_byteOffset = 0;
+        uint32_t m_byteCount = 0;
+        IndexFormat m_format = IndexFormat::Uint32;
+    };
+} // namespace AZ::RHI

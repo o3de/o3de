@@ -70,7 +70,7 @@ namespace UnitTest
         EXPECT_THAT(m_cameraState.m_side, IsCloseTolerance(AZ::Vector3::CreateAxisX(), 0.01f));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CameraState,
         Translation,
         testing::Combine(
@@ -120,7 +120,7 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(expectedErrors);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CameraState,
         Rotation,
         testing::Combine(
@@ -148,7 +148,7 @@ namespace UnitTest
         EXPECT_NEAR(rotationDelta, 0.f, 0.01f);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CameraState,
         WorldFromViewMatrix,
         testing::Combine(
@@ -172,7 +172,7 @@ namespace UnitTest
         EXPECT_NEAR(m_cameraState.m_fovOrZoom, fovY, 0.01f);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CameraState,
         PerspectiveMatrix,
         testing::Combine(

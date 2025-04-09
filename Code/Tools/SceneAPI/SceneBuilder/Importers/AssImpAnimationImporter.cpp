@@ -414,8 +414,8 @@ namespace AZ
                         const aiMeshMorphAnim* nodeAnim = animation->mMorphMeshChannels[channelIndex];
                         // Morph animations need a regular animation on the node, as well.
                         // If there is no bone animation on the current node, then generate one here.
-                        AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
-                            AZStd::make_shared<SceneData::GraphData::AnimationData>();
+                        AZStd::shared_ptr<AZ::SceneData::GraphData::AnimationData> createdAnimationData =
+                            AZStd::make_shared<AZ::SceneData::GraphData::AnimationData>();
 
                         const size_t numKeyframes = GetNumKeyFrames(
                             nodeAnim->mNumKeys,
@@ -565,8 +565,8 @@ namespace AZ
                         animation->mDuration,
                         animation->mTicksPerSecond);
 
-                    AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
-                       AZStd::make_shared<SceneData::GraphData::AnimationData>();
+                    AZStd::shared_ptr<AZ::SceneData::GraphData::AnimationData> createdAnimationData =
+                       AZStd::make_shared<AZ::SceneData::GraphData::AnimationData>();
                     createdAnimationData->ReserveKeyFrames(numKeyFrames);
                     createdAnimationData->SetTimeStepBetweenFrames(s_defaultTimeStepBetweenFrames);
 
@@ -663,8 +663,8 @@ namespace AZ
                             mesh->mName.C_Str(), meshIdx, mesh->mNumAnimMeshes);
                         continue;
                     }
-                    AZStd::shared_ptr<SceneData::GraphData::BlendShapeAnimationData> morphAnimNode =
-                        AZStd::make_shared<SceneData::GraphData::BlendShapeAnimationData>();
+                    AZStd::shared_ptr<AZ::SceneData::GraphData::BlendShapeAnimationData> morphAnimNode =
+                        AZStd::make_shared<AZ::SceneData::GraphData::BlendShapeAnimationData>();
 
                     const size_t numKeyFrames = GetNumKeyFrames(static_cast<AZ::u32>(keys.size()), animation->mDuration, animation->mTicksPerSecond);
                     morphAnimNode->ReserveKeyFrames(numKeyFrames);

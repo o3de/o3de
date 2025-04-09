@@ -34,6 +34,9 @@ namespace AZ
 
             /// A set of user fences to signal after executing the command lists.
             AZStd::vector<Fence*> m_userFencesToSignal;
+
+            /// A set of user fences to wait for before executing the command lists.
+            AZStd::vector<Fence*> m_userFencesToWaitFor;
         };
 
         enum class HardwareQueueSubclass
@@ -66,6 +69,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             void CalibrateClock();
+            AZStd::pair<uint64_t, uint64_t> GetClockCalibration();
 
             ID3D12CommandQueue* GetPlatformQueue() const;
 

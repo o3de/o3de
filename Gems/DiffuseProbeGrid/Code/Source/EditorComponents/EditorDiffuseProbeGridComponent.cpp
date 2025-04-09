@@ -62,7 +62,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/diffuse-probe-grid/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
@@ -154,13 +154,12 @@ namespace AZ
                                 ->EnumAttribute(DiffuseProbeGridMode::RealTime, "Real Time (Ray-Traced)")
                                 ->EnumAttribute(DiffuseProbeGridMode::Baked, "Baked")
                                 ->EnumAttribute(DiffuseProbeGridMode::AutoSelect, "Auto Select")
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Bake Textures")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
-                                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                                ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
+                        ->EndGroup()
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
+                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
                         ;
 
                     editContext->Class<DiffuseProbeGridComponentController>(
@@ -197,11 +196,9 @@ namespace AZ
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
-            m_boxChangedByGridHandler = AZ::Event<bool>::Handler([]([[maybe_unused]] bool value)
+            m_boxChangedByGridHandler = AZ::Event<bool>::Handler([this]([[maybe_unused]] bool value)
                 {
-                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                        &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                        AzToolsFramework::Refresh_EntireTree);
+                    this->InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
                 });
             m_controller.RegisterBoxChangedByGridHandler(m_boxChangedByGridHandler);
 
@@ -514,6 +511,17 @@ namespace AZ
                     QApplication::activeWindow(),
                     "Diffuse Probe Grid",
                     "This Diffuse Probe Grid entity is hidden, it must be visible in order to bake textures.",
+                    QMessageBox::Ok);
+
+                return AZ::Edit::PropertyRefreshLevels::None;
+            }
+
+            if (!m_controller.CanBakeTextures())
+            {
+                QMessageBox::information(
+                    QApplication::activeWindow(),
+                    "Diffuse Probe Grid",
+                    "Can't bake the textures. Diffuse probe calculations require GPU raytracing support",
                     QMessageBox::Ok);
 
                 return AZ::Edit::PropertyRefreshLevels::None;

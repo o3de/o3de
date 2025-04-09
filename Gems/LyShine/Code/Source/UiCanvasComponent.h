@@ -114,6 +114,7 @@ public: // member functions
     const AZ::Matrix4x4& GetCanvasToViewportMatrix() override;
     void GetViewportToCanvasMatrix(AZ::Matrix4x4& matrix) override;
     AZ::Vector2 GetCanvasSize() override;
+    AZ::Vector2 GetAuthoredCanvasSize() override;
     void SetCanvasSize(const AZ::Vector2& canvasSize) override;
     void SetTargetCanvasSize(bool isInGame, const AZ::Vector2& targetCanvasSize) override;
     AZ::Vector2 GetDeviceScale() override;
@@ -295,12 +296,12 @@ public: // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiCanvasService", 0x2c8e8f87));
+        provided.push_back(AZ_CRC_CE("UiCanvasService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiCanvasService", 0x2c8e8f87));
+        incompatible.push_back(AZ_CRC_CE("UiCanvasService"));
     }
 
     static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)

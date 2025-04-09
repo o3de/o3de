@@ -16,7 +16,6 @@
 #include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/typetraits/has_member_function.h>
-#include <AzCore/Memory/AllocatorWrappers.h>
 
 #if defined(HAVE_BENCHMARK)
 #include <benchmark/benchmark.h>
@@ -1235,7 +1234,7 @@ namespace UnitTest
         , HashedSetConfig<AZStd::unordered_set<MoveOnlyIntType, MoveOnlyIntTypeHasher>>
         , HashedSetConfig<AZStd::unordered_multiset<MoveOnlyIntType, MoveOnlyIntTypeHasher>>
     >;
-    TYPED_TEST_CASE(HashedSetContainers, SetContainerConfigs);
+    TYPED_TEST_SUITE(HashedSetContainers, SetContainerConfigs);
 
     TYPED_TEST(HashedSetContainers, ExtractNodeHandleByKeySucceeds)
     {
@@ -1404,11 +1403,11 @@ namespace UnitTest
     template<template <typename, typename, typename, typename> class ContainerTemplate>
     struct HashedSetWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AllocatorPointerWrapper>;
+        using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorSet(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
+            ContainerType allocatorSet(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
         }
     };
@@ -1416,8 +1415,8 @@ namespace UnitTest
     using SetTemplateConfigs = ::testing::Types<
         HashedSetWithCustomAllocatorConfig<AZStd::unordered_set>
         , HashedSetWithCustomAllocatorConfig<AZStd::unordered_multiset>
-        >;
-    TYPED_TEST_CASE(HashedSetDifferentAllocatorFixture, SetTemplateConfigs);
+    >;
+    TYPED_TEST_SUITE(HashedSetDifferentAllocatorFixture, SetTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
 #if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
@@ -1478,7 +1477,7 @@ namespace UnitTest
         , HashedMapConfig<AZStd::unordered_map<MoveOnlyIntType, int32_t, MoveOnlyIntTypeHasher>>
         , HashedMapConfig<AZStd::unordered_multimap<MoveOnlyIntType, int32_t, MoveOnlyIntTypeHasher>>
     >;
-    TYPED_TEST_CASE(HashedMapContainers, MapContainerConfigs);
+    TYPED_TEST_SUITE(HashedMapContainers, MapContainerConfigs);
 
     TYPED_TEST(HashedMapContainers, ExtractNodeHandleByKeySucceeds)
     {
@@ -1904,11 +1903,11 @@ namespace UnitTest
     template<template <typename, typename, typename, typename, typename> class ContainerTemplate>
     struct HashedMapWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AllocatorPointerWrapper>;
+        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorMap(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
+            ContainerType allocatorMap(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;
         }
     };
@@ -1917,7 +1916,7 @@ namespace UnitTest
         HashedMapWithCustomAllocatorConfig<AZStd::unordered_map>
         , HashedMapWithCustomAllocatorConfig<AZStd::unordered_multimap>
     >;
-    TYPED_TEST_CASE(HashedMapDifferentAllocatorFixture, MapTemplateConfigs);
+    TYPED_TEST_SUITE(HashedMapDifferentAllocatorFixture, MapTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
 #if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
@@ -2051,7 +2050,7 @@ namespace UnitTest
         >
     >;
 
-    TYPED_TEST_CASE(HashedContainerTransparentFixture, HashedContainerConfigs);
+    TYPED_TEST_SUITE(HashedContainerTransparentFixture, HashedContainerConfigs);
 
     TYPED_TEST(HashedContainerTransparentFixture, FindDoesNotConstructKeyForTransparentHashEqual_NoKeyConstructed_Succeeds)
     {

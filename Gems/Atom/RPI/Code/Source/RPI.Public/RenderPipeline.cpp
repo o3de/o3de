@@ -6,9 +6,9 @@
  *
  */
 
-
 #include <Atom/RHI/DrawListTagRegistry.h>
 
+#include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
@@ -172,10 +172,13 @@ namespace AZ
             pipeline->m_nameId = desc.m_name.data();
             pipeline->m_materialPipelineTagName = Name{desc.m_materialPipelineTag};
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
+            pipeline->m_activeAAMethod = GetAAMethodByName(desc.m_defaultAAMethod);
+            pipeline->m_allowSubpassMerging = desc.m_allowSubpassMerging && RHI::RHISystemInterface::Get()->CanMergeSubpasses();
             pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
             pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
             pipeline->m_passTree.m_rootPass->ManualPipelineBuildAndInitialize();
-
+            
+            pipeline->SetActiveAAMethod(desc.m_defaultAAMethod);
             pipeline->UpdateViewportScissor();
         }
 
@@ -206,6 +209,11 @@ namespace AZ
             }
         }
 
+        bool RenderPipeline::SubpassMergingSupported() const
+        {
+            return m_allowSubpassMerging;
+        }
+
         RenderPipeline::~RenderPipeline()
         {
             if (m_passTree.m_rootPass)
@@ -228,6 +236,9 @@ namespace AZ
             // Use a new list for building pipeline views since we may need information from the previous list in m_views in the process
             PipelineViewMap newViewsByTag;
 
+            // re-register only views where the view-tag still exists after rebuilding.
+            m_persistentViewsByViewTag.clear();
+
             for (const auto& tag : viewTags)
             {
                 PipelineViews pipelineViews;
@@ -240,6 +251,16 @@ namespace AZ
                     {
                         pipelineViews.m_views.clear();
                     }
+                    else if (pipelineViews.m_type == PipelineViewType::Persistent)
+                    {
+                        for (auto& view : pipelineViews.m_views)
+                        {
+                            if (view)
+                            {
+                                m_persistentViewsByViewTag[view.get()] = pipelineViews.m_viewTag;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -251,6 +272,9 @@ namespace AZ
             }
 
             m_pipelineViewsByTag = AZStd::move(newViewsByTag);
+
+            // transient views are re-registered every frame anyway
+            m_transientViewsByViewTag.clear();
         }
 
         void RenderPipeline::CollectDrawListMaskForViews(PipelineViews& views)
@@ -319,7 +343,7 @@ namespace AZ
                 }
                 if (pipelineViews.m_views.empty())
                 {
-                    m_pipelineViewsByTag.erase(viewTag);
+                    pipelineViews.m_type = PipelineViewType::Unknown;
                 }
             }
         }
@@ -350,10 +374,13 @@ namespace AZ
                     pipelineViews.m_views[0]->GetName().GetCStr(),
                     viewTag.GetCStr());
 
+                // persistent views always have exactly one view
                 pipelineViews.m_views[0]->SetPassesByDrawList(nullptr);
                 m_persistentViewsByViewTag.erase(pipelineViews.m_views[0].get());
-                m_pipelineViewsByTag.erase(viewTag);
+
+                // we are removing the only view, so we have to set the type to Unknown or the engine assumes m_views[0] is valid
                 pipelineViews.m_views.clear();
+                pipelineViews.m_type = PipelineViewType::Unknown;
 
                 if (m_scene)
                 {
@@ -381,23 +408,37 @@ namespace AZ
             {
                 PipelineViews& pipelineViews = viewItr->second;
 
+                ViewPtr previousView{ nullptr };
+
                 if (pipelineViews.m_type == PipelineViewType::Transient)
                 {
                     AZ_Assert(false, "View [%s] was set as transient view. Use AddTransientView function to add a view for this tag.", viewTag.GetCStr());
                     return;
                 }
-                if (pipelineViews.m_type == PipelineViewType::Unknown)
+                else if (pipelineViews.m_type == PipelineViewType::Unknown) // first time registering a view for this viewTag
                 {
                     pipelineViews.m_type = PipelineViewType::Persistent;
-                    pipelineViews.m_views.resize(1);
+                    pipelineViews.m_views.resize(1, nullptr);
                 }
-                ViewPtr previousView = pipelineViews.m_views[0];
+                else if (pipelineViews.m_type == PipelineViewType::Persistent) // re-registering a view
+                {
+                    AZ_Assert(
+                        pipelineViews.m_views.size() == 1, "SetPersistentView(): PipelineViewType::Persistent needs exactly one view.");
+                    AZ_Assert(pipelineViews.m_views[0] != nullptr, "SetPersistentView(): previous view is invalid.");
+                    previousView = pipelineViews.m_views[0];
+                }
+
                 if (view)
                 {
                     view->OnAddToRenderPipeline();
+                    pipelineViews.m_views[0] = view;
+                    m_persistentViewsByViewTag[view.get()] = viewTag;
                 }
-                pipelineViews.m_views[0] = view;
-                m_persistentViewsByViewTag[view.get()] = viewTag;
+                else { // view == nullptr
+                    // we are removing the view, so we have to set the type to Unknown or the engine assumes m_views[0] is valid
+                    pipelineViews.m_views.clear();
+                    pipelineViews.m_type = PipelineViewType::Unknown;
+                }
 
                 if (previousView)
                 {
@@ -423,13 +464,17 @@ namespace AZ
 
         ViewPtr RenderPipeline::GetDefaultView()
         {
-            ViewPtr defaultView;
-            const AZStd::vector<ViewPtr>& views = GetViews(m_mainViewTag);
+            return GetFirstView(m_mainViewTag);
+        }
+
+        ViewPtr RenderPipeline::GetFirstView(const PipelineViewTag& viewTag)
+        {
+            const AZStd::vector<ViewPtr>& views = GetViews(viewTag);
             if (!views.empty())
             {
-                defaultView = views[0];
+                return views[0];
             }
-            return defaultView;
+            return {};
         }
 
         void RenderPipeline::SetDefaultViewFromEntity(EntityId entityId)
@@ -454,6 +499,7 @@ namespace AZ
 
         void RenderPipeline::AddTransientView(const PipelineViewTag& viewTag, ViewPtr view)
         {
+            AZ_Assert(view, "Transient View for ViewTag [%s] is invalid.", viewTag.GetCStr());
             // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever
             // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
             // here if the view is already registered with another viewTag.
@@ -489,7 +535,7 @@ namespace AZ
             return m_pipelineViewsByTag.find(viewTag) != m_pipelineViewsByTag.end();
         }
 
-        PipelineViewTag RenderPipeline::GetMainViewTag() const
+        const PipelineViewTag& RenderPipeline::GetMainViewTag() const
         {
             return m_mainViewTag;
         }
@@ -558,6 +604,7 @@ namespace AZ
                 Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_passTree.m_rootPass->Recreate().get());
                 newRoot->SetRenderPipeline(this);
                 newRoot->m_flags.m_isPipelineRoot = true;
+                newRoot->SetDeviceIndex(m_passTree.m_rootPass->GetDeviceIndex());
                 newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root
@@ -586,6 +633,8 @@ namespace AZ
                     newRoot->DebugPrint();
 #endif
                 }
+                
+                SetAAMethod(this, m_activeAAMethod);
             }
 
             // Build and initialize any queued passes
@@ -613,9 +662,7 @@ namespace AZ
                         SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);
                     }
                 }
-                                
                 UpdateViewportScissor();
-
                 // Reset change flags
                 m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
 
@@ -682,6 +729,7 @@ namespace AZ
             {
                 params.m_viewportState = m_viewport;
                 params.m_scissorState = m_scissor;
+                m_passTree.m_rootPass->UpdateConnectedBindings();
                 m_passTree.m_rootPass->FrameBegin(params);
             }
         }
@@ -909,6 +957,96 @@ namespace AZ
         ViewType RenderPipeline::GetViewType() const
         {
             return m_viewType;
+        }
+
+        // ---------------------------- Anti-aliasing
+
+        bool RenderPipeline::SetActiveAAMethod(AZStd::string aaMethodName)
+        {
+            AntiAliasingMode antiAliasingMode = GetAAMethodByName(aaMethodName);
+            if (antiAliasingMode == AntiAliasingMode::Default)
+            {
+                return false;
+            }
+            m_activeAAMethod = antiAliasingMode;
+            return SetAAMethod(this, m_activeAAMethod);
+        }
+
+        AntiAliasingMode RenderPipeline::GetActiveAAMethod()
+        {
+            return m_activeAAMethod;
+        }
+
+        AntiAliasingMode RenderPipeline::GetAAMethodByName(AZStd::string aaMethodName)
+        {
+            const AZStd::unordered_map<AZStd::string, AntiAliasingMode> AAMethodsLookup = {
+                {"MSAA", AntiAliasingMode::MSAA}, {"SMAA", AntiAliasingMode::SMAA}, 
+                {"TAA", AntiAliasingMode::TAA}
+            };
+ 
+            auto findIt = AAMethodsLookup.find(aaMethodName);
+            if (findIt != AAMethodsLookup.end())
+            {
+                return findIt->second;
+            }
+            return AntiAliasingMode::Default;
+        }        
+
+        AZStd::string RenderPipeline::GetAAMethodNameByIndex(AntiAliasingMode aaMethodIndex)
+        {
+            const AZStd::unordered_map<AntiAliasingMode, AZStd::string> AAMethodNameLookup = {
+                {AntiAliasingMode::MSAA, "MSAA"}, {AntiAliasingMode::SMAA, "SMAA"}, 
+                {AntiAliasingMode::TAA, "TAA"}
+            };
+ 
+            auto findIt = AAMethodNameLookup.find(aaMethodIndex);
+            if (findIt != AAMethodNameLookup.end())
+            {
+                return findIt->second;
+            }
+            return "MSAA";
+        }
+
+        bool RenderPipeline::EnablePass(RenderPipeline* pipeline, Name& passName, bool enable)
+        {
+            PassFilter passFilter = PassFilter::CreateWithPassName(passName, pipeline);
+            Ptr<Pass> aaPass = PassSystemInterface::Get()->FindFirstPass(passFilter);
+            if (!aaPass)
+            {
+                return false;
+            }
+            if (aaPass->IsEnabled() != enable)
+            {
+                aaPass->SetEnabled(enable);
+            }
+            return true;
+        }
+
+        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AZStd::string aaMethodName)
+        {
+            AntiAliasingMode antiAliasingMode = GetAAMethodByName(aaMethodName);
+            return SetAAMethod(pipeline, antiAliasingMode);
+        }
+
+        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AntiAliasingMode antiAliasingMode)
+        {
+            if (antiAliasingMode == AntiAliasingMode::Default)
+            {
+                return false;
+            }
+
+            const AZStd::unordered_map<AntiAliasingMode, AZStd::vector<Name>> AAPassNamesLookup = {
+                {AntiAliasingMode::SMAA, {Name("SMAA1xApplyLinearHDRColorPass")}}, 
+                {AntiAliasingMode::TAA, {Name("TaaPass"), Name("ContrastAdaptiveSharpeningPass")}}
+            };
+
+            for (auto& aaPassMap : AAPassNamesLookup)
+            {
+                AZStd::for_each(aaPassMap.second.begin(), aaPassMap.second.end(), [&pipeline, &aaPassMap, &antiAliasingMode](Name passName){
+                    EnablePass(pipeline, passName, aaPassMap.first == antiAliasingMode);
+                });
+            }
+            return true;
         }
     }
 }

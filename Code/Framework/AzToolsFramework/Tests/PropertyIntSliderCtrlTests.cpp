@@ -16,7 +16,7 @@ namespace UnitTest
     template <typename ValueType>
     using PropertySliderCtrlFixture = PropertyCtrlFixture<ValueType, PropertyIntSliderCtrl, IntSliderHandler>;
 
-    TYPED_TEST_CASE(PropertySliderCtrlFixture, IntegerPrimtitiveTestConfigs);
+    TYPED_TEST_SUITE(PropertySliderCtrlFixture, IntegerPrimtitiveTestConfigs);
 
     TYPED_TEST(PropertySliderCtrlFixture, PropertySliderCtrlHandlersCreated)
     {

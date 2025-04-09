@@ -29,6 +29,8 @@ public class APKHandler
 
         try
         {
+            // Asset manager doesn't handle '.' as a directory expression, so replace it with '' if it is encountered
+            path = (path.equals( ".")) ? "" : path;
             filelist = s_assetManager.list(path);
         }
         catch (IOException e)

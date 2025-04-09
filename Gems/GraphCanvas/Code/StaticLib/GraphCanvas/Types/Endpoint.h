@@ -46,8 +46,8 @@ namespace GraphCanvas
         static void Reflect(AZ::ReflectContext* reflection);
         bool IsValid() const { return m_nodeId.IsValid() && m_slotId.IsValid(); }
 
-        const AZ::EntityId& GetNodeId() const { return m_nodeId; }
-        const AZ::EntityId& GetSlotId() const { return m_slotId; }
+        constexpr const AZ::EntityId& GetNodeId() const { return m_nodeId; }
+        constexpr const AZ::EntityId& GetSlotId() const { return m_slotId; }
 
         constexpr operator size_t() const
         {

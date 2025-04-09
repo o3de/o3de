@@ -10,29 +10,27 @@
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! Describes the binding of an image attachment to a scope.
+    struct ImageScopeAttachmentDescriptor
+        : public ScopeAttachmentDescriptor
     {
-        /**
-         * Describes the binding of an image attachment to a scope.
-         */
-        struct ImageScopeAttachmentDescriptor
-            : public ScopeAttachmentDescriptor
-        {
-            AZ_TYPE_INFO(ImageScopeAttachmentDescriptor, "{66523EB6-9D3A-4633-A708-ADD57FDD5CE2}");
+        AZ_TYPE_INFO(ImageScopeAttachmentDescriptor, "{66523EB6-9D3A-4633-A708-ADD57FDD5CE2}");
 
-            static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            ImageScopeAttachmentDescriptor() = default;
+        ImageScopeAttachmentDescriptor() = default;
 
-            explicit ImageScopeAttachmentDescriptor(
-                const AttachmentId& attachmentId,
-                const ImageViewDescriptor& imageViewDescriptor = ImageViewDescriptor(),
-                const AttachmentLoadStoreAction& imageScopeLoadStoreAction = AttachmentLoadStoreAction());
+        explicit ImageScopeAttachmentDescriptor(
+            const AttachmentId& attachmentId,
+            const ImageViewDescriptor& imageViewDescriptor = ImageViewDescriptor(),
+            const AttachmentLoadStoreAction& imageScopeLoadStoreAction = AttachmentLoadStoreAction());
 
-            /// The image view associated with the binding.
-            ImageViewDescriptor m_imageViewDescriptor;
-        };
-    }
+        /// Returns the descriptor for the ImageView
+        const ImageViewDescriptor& GetViewDescriptor() const;
+
+        /// The image view associated with the binding.
+        ImageViewDescriptor m_imageViewDescriptor;
+    };
 }

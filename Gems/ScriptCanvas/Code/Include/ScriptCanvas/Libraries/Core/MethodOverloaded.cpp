@@ -44,10 +44,10 @@ namespace ScriptCanvas
             {
                 if (classElement.GetVersion() <= MethodOverloadedCpp::DataDrivingOverloads)
                 {
-                    classElement.RemoveElementByName(AZ_CRC("activeIndex", 0x333685ca));
-                    classElement.RemoveElementByName(AZ_CRC("activePrototype", 0x77266e5b));
-                    classElement.RemoveElementByName(AZ_CRC("overloadSelectionTriggerSlotIds", 0x58b2b75d));
-                    classElement.RemoveElementByName(AZ_CRC("overloadSelectionTriggerIndices", 0x17fbdf12));
+                    classElement.RemoveElementByName(AZ_CRC_CE("activeIndex"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("activePrototype"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("overloadSelectionTriggerSlotIds"));
+                    classElement.RemoveElementByName(AZ_CRC_CE("overloadSelectionTriggerIndices"));
                 }
 
                 return true;
@@ -436,7 +436,9 @@ namespace ScriptCanvas
 
                     if (m_overloadSelection.m_availableIndexes.empty())
                     {
-                        AZ_Warning("ScriptCanvas", false, "Method Overloaded[%s] to an invalid configuration.", GetRawMethodName().c_str());
+                        AZ_Warning(
+                            "ScriptCanvas", false, "Method [%s] is overloaded with an invalid configuration.",
+                            lookUpMethod->m_name.c_str());
 
                         /* Debug information to spew out the non-found configuration. Useful in debugging, and kind of tedious to write.
                            Keeping here as a quick ref commented out, since not useful in the general case.

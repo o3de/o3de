@@ -77,7 +77,6 @@ namespace AZ::Render
         RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
         AZStd::array<Data::Instance<RPI::PassAttachment>, 2> m_accumulationAttachments;
-        AZStd::array<Data::Instance<RPI::AttachmentImage>, 2> m_attachmentImages;
 
         RPI::PassAttachmentBinding* m_inputColorBinding = nullptr;
         RPI::PassAttachmentBinding* m_lastFrameAccumulationBinding = nullptr;

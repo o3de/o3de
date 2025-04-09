@@ -23,7 +23,6 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
-#include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
 
 namespace AZ
 {
@@ -53,19 +52,19 @@ namespace AZ
             m_horizontalBlurChildPasses.clear();
 
             // load shaders
-            AZStd::string verticalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurVertical.azshader";
+            constexpr const char* verticalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurVertical.azshader";
             Data::Instance<AZ::RPI::Shader> verticalBlurShader = RPI::LoadCriticalShader(verticalBlurShaderFilePath);
             if (verticalBlurShader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), verticalBlurShaderFilePath.c_str());
+                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), verticalBlurShaderFilePath);
                 return;
             }
 
-            AZStd::string horizontalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurHorizontal.azshader";
+            constexpr const char* horizontalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurHorizontal.azshader";
             Data::Instance<AZ::RPI::Shader> horizontalBlurShader = RPI::LoadCriticalShader(horizontalBlurShaderFilePath);
             if (horizontalBlurShader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), horizontalBlurShaderFilePath.c_str());
+                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), horizontalBlurShaderFilePath);
                 return;
             }
 
@@ -157,6 +156,8 @@ namespace AZ
                 // mipN transient output
                 RPI::PassAttachmentBinding& outputAttachmentBinding = verticalBlurChildPass->GetOutputBinding(0);
                 outputAttachmentBinding.SetAttachment(transientPassAttachments[attachmentIndex]);
+
+                verticalBlurChildPass->UpdateConnectedBindings();
 
                 attachmentIndex++;
             }

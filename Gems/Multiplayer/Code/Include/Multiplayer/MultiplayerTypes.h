@@ -234,6 +234,7 @@ namespace Multiplayer
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &NetworkSpawnable::m_spawnableAsset, "Network Spawnable Asset", "")
+                        ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Network Spawnable Asset")
                         ->Attribute(AZ::Edit::Attributes::ChangeValidate, &NetworkSpawnable::ValidatePotentialSpawnableAsset)
                     ;
             }
@@ -249,14 +250,17 @@ namespace Multiplayer
         }
 
         const auto potentialNetworkSpawnable = reinterpret_cast<AZ::Data::Asset<AzFramework::Spawnable>*>(newValue);
-        if (!potentialNetworkSpawnable->GetHint().ends_with(NetworkSpawnableFileExtension))
+        const auto& hint = potentialNetworkSpawnable->GetHint();
+
+        if (hint.empty() || hint.ends_with(NetworkSpawnableFileExtension))
         {
-            return AZ::Failure(AZStd::string::format(
-                "Non-network spawnable (%s) was selected! Please select a network spawnable with a %s file extension.",
-                potentialNetworkSpawnable->GetHint().c_str(), NetworkSpawnableFileExtension.data()));
+            return AZ::Success();
         }
 
-        return AZ::Success();
+        return AZ::Failure(AZStd::string::format(
+            "Non-network spawnable (%s) was selected! Please select a network spawnable with a %s file extension.",
+            hint.c_str(),
+            NetworkSpawnableFileExtension.data()));
     }
 
     inline bool EntityMigrationMessage::operator!=(const EntityMigrationMessage& rhs) const

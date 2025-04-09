@@ -9,23 +9,61 @@ REM
 
 SETLOCAL EnableDelayedExpansion
 
-IF NOT EXIST "%LY_3RDPARTY_PATH%" (
-    ECHO [ci_build] LY_3RDPARTY_PATH is invalid or not set
+SET CURRENT_DIR=%cd%
+
+REM Calculate the path of the engine based on the relative position of this script
+SET CMD_DIR=%~dp0
+SET CMD_DIR=%CMD_DIR:~0,-1%
+SET O3DE_PATH_REL=%CMD_DIR%\..\..\..\..\
+for %%i in ("%O3DE_PATH_REL%") do SET "O3DE_PATH=%%~fi"
+
+ECHO Using O3DE Engine at '%O3DE_PATH%'
+
+REM Validate the Android SDK is set
+IF "%ANDROID_SDK_ROOT%" == "" (
+    ECHO Environment key ANDROID_SDK_ROOT not set
     GOTO :error
 )
-
-IF NOT EXIST "%GRADLE_BUILD_HOME%" (
-    REM This is the default for developers
-    SET GRADLE_BUILD_HOME=C:\Gradle\gradle-7.0
-)
-IF NOT EXIST "%GRADLE_BUILD_HOME%" (
-    ECHO [ci_build] FAIL: GRADLE_BUILD_HOME=%GRADLE_BUILD_HOME%
+IF NOT EXIST "%ANDROID_SDK_ROOT%" (
+    ECHO Environment key value for ANDROID_SDK_ROOT '%ANDROID_SDK_ROOT%' does not exist
     GOTO :error
 )
+ECHO Using Android SDK at '%ANDROID_SDK_ROOT%'
+CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value sdk.root="%ANDROID_SDK_ROOT%" --global
 
-IF NOT "%ANDROID_GRADLE_PLUGIN%" == "" (
-    set ANDROID_GRADLE_PLUGIN_OPTION=--gradle-plugin-version=%ANDROID_GRADLE_PLUGIN%
+
+REM Validate that gradle home path was set
+IF "%GRADLE_BUILD_HOME%" == "" (
+    ECHO Environment key GRADLE_BUILD_HOME not set
+    GOTO :error
 )
+IF NOT EXIST "%GRADLE_BUILD_HOME%" (
+    ECHO Environment key value for ANDROID_SDK_ROOT '%GRADLE_BUILD_HOME%' does not exist
+    GOTO :error
+)
+ECHO Using Gradle Build at '%GRADLE_BUILD_HOME%'
+CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value gradle.home="%GRADLE_BUILD_HOME%" --global
+
+
+REM Optionally override the gradle plugin version, otherwise default to 8.1.4
+IF "%ANDROID_GRADLE_PLUGIN%" == "" (
+    ECHO Using [default] Android gradle plugin version 8.1.4
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value android.gradle.plugin=8.1.4 --global
+) else (
+    ECHO Using [default] Android gradle plugin version 
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value android.gradle.plugin=%ANDROID_GRADLE_PLUGIN% --global
+)
+
+
+REM Optionally override the version of the android NDK to use, otherwise default to 25
+IF "%ANDROID_NDK_VERSION%" == "" (
+    ECHO Using [default] Android NDK Version 25
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value ndk.version=25.*
+) else (
+    ECHO Using [default] Android NDK Version %ANDROID_NDK_VERSION%
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value ndk.version=%ANDROID_NDK_VERSION%
+)
+
 
 IF NOT EXIST %OUTPUT_DIRECTORY% (
     mkdir %OUTPUT_DIRECTORY%
@@ -35,7 +73,6 @@ IF NOT EXIST %OUTPUT_DIRECTORY% (
     RMDIR /S /Q %OUTPUT_DIRECTORY%
     mkdir %OUTPUT_DIRECTORY%
 )
-
 REM Jenkins does not defined TMP
 IF "%TMP%"=="" (
     IF "%WORKSPACE%"=="" (
@@ -50,15 +87,14 @@ IF "%TMP%"=="" (
         )
     )
 )
-
 REM Create a minimal project for the native build process
 IF EXIST "%TMP%\o3de_gradle_ar" (
     DEL /S /F /Q "%TMP%\o3de_gradle_ar"
     RMDIR /S /Q "%TMP%\o3de_gradle_ar"
 )
 ECHO Creating a minimal project for the native build process
-ECHO %PYTHON% scripts\o3de.py create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
-CALL %PYTHON% scripts\o3de.py create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
+ECHO %PYTHON% %O3DE_PATH%\scripts\o3de.bat create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
+CALL %PYTHON% %O3DE_PATH%\scripts\o3de.bat create-project -pp "%TMP%\o3de_gradle_ar" -pn GradleTest -tn MinimalProject
 
 REM Optionally sign the APK if we are generating an APK 
 SET GENERATE_SIGNED_APK=false
@@ -68,42 +104,57 @@ IF "%SIGN_APK%"=="true" (
     )
 )
 
-SET PYTHON=python\python.cmd
+SET PYTHON=%O3DE_PATH%\python\python.cmd
 
-REM Regardless of whether or not we generate a signing key, apparently we must set variables outside of 
-REM an IF clause otherwise it will not work.
+IF "%JDK_PATH%" == "" (
 
-REM First look for the JDK HOME in the environment variable
-IF EXIST "%JDK_HOME%" (
-    ECHO JDK Home found in Environment: !JDK_HOME!
-    GOTO JDK_FOUND
+    IF "%JAVA_HOME%" == "" (
+        REM First look in the windowsregistry
+        FOR /F "skip=2 tokens=1,2*" %%A IN ('REG QUERY "HKEY_LOCAL_MACHINE\SOFTWARE\JavaSoft\Java Development Kit\1.8" /v "JavaHome" 2^>nul') DO (
+            SET JDK_REG_VALUE=%%C
+        )
+        IF EXIST "%JDK_REG_VALUE%" (
+            SET JAVA_HOME=!JDK_REG_VALUE!
+            ECHO JAVA_HOME found in registry: !JAVA_HOME!
+            GOTO JDK_FOUND
+        ) ELSE (
+            REM Next, look for the JDK HOME in the environment variable
+            IF EXIST "%JAVA_HOME%" (
+                ECHO JDK Home found in Environment: !JAVA_HOME!
+                GOTO JDK_FOUND
+            )
+        )
+    ) else (
+        echo Using Java from JAVA_HOME at '%JAVA_HOME%'
+        IF EXIST "%JAVA_HOME%" (
+            GOTO :JDK_FOUND
+        )
+        echo JAVA_HOME set to an invalid path '%JAVA_HOME%'
+    )
+) else (
+    echo Using Java from JDK_PATH at '%JDK_PATH%'
+    IF EXIST "%JDK_PATH%" (
+        SET JAVA_HOME=%JDK_PATH%
+        GOTO :JDK_FOUND
+    )
+    echo JDK_PATH set to an invalid path '%JDK_PATH%'
 )
 
-REM Next, look in the registry
-FOR /F "skip=2 tokens=1,2*" %%A IN ('REG QUERY "HKEY_LOCAL_MACHINE\SOFTWARE\JavaSoft\Java Development Kit\1.8" /v "JavaHome" 2^>nul') DO (
-    SET JDK_REG_VALUE=%%C
-)
-IF EXIST "%JDK_REG_VALUE%" (
-    SET JDK_HOME=!JDK_REG_VALUE!
-    ECHO JDK Home found in registry: !JDK_HOME!
-    GOTO JDK_FOUND
-)
-
-ECHO Unable to locate JDK_HOME
+ECHO Unable to locate JAVA_HOME
 GOTO error
 
 :JDK_FOUND
 
-SET JDK_BIN=%JDK_HOME%\bin
-IF NOT EXIST "%JDK_BIN%" (
-    ECHO The environment variable JDK_HOME is not set to a valid JDK 1.8 folder %JDK_BIN%
+SET JAVA_BIN=%JAVA_HOME%\bin
+IF NOT EXIST "%JAVA_BIN%" (
+    ECHO The environment variable JAVA_HOME is not set to a valid JDK 1.8 folder %JAVA_BIN%
     ECHO Make sure the variable is set to your local JDK 1.8 installation
     GOTO error
 )
 
-SET KEYTOOL_PATH=%JDK_BIN%\keytool.exe
+SET KEYTOOL_PATH=%JAVA_BIN%\keytool.exe
 IF NOT EXIST "%KEYTOOL_PATH%" (
-    ECHO The environment variable JDK_HOME is not set to a valid JDK 1.8 folder. Cannot find keytool at %JDK_BIN%\keytool.exe
+    ECHO The environment variable JAVA_HOME is not set to a valid JDK 1.8 folder. Cannot find keytool at %JAVA_BIN%\keytool.exe
     ECHO Make sure the variable is set to your local JDK 1.8 installation
     GOTO error
 )
@@ -117,7 +168,6 @@ SET CI_KEYSTORE_CERT_DN=cn=LY Developer, ou=Lumberyard, o=Amazon, c=US
 
 REM Clear out any existing keystore file since the password/alias may have changed
 SET CI_ANDROID_KEYSTORE_FILE_ABS=%cd%\%OUTPUT_DIRECTORY%\%CI_ANDROID_KEYSTORE_FILE%
-
 
 IF "%GENERATE_SIGNED_APK%"=="true" (
 
@@ -137,12 +187,19 @@ IF "%GENERATE_SIGNED_APK%"=="true" (
         ECHO Using keystore file at %CI_ANDROID_KEYSTORE_FILE_ABS%
     )
 
-    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build --android-sdk-path=%ANDROID_HOME% %ANDROID_GRADLE_PLUGIN_OPTION% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
-    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build --android-sdk-path=%ANDROID_HOME% %ANDROID_GRADLE_PLUGIN_OPTION% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
-) ELSE (
-    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" %GRADLE_OVERRIDE_OPTION% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%ANDROID_HOME% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
-    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g "%TMP%\o3de_gradle_ar" --gradle-install-path=%GRADLE_BUILD_HOME% --third-party-path=%LY_3RDPARTY_PATH% --enable-unity-build %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%ANDROID_HOME% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
-)
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value signconfig.store.file=%CI_ANDROID_KEYSTORE_FILE_ABS% 
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value signconfig.key.alias=%CI_ANDROID_KEYSTORE_ALIAS% 
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value signconfig.key.password=%CI_ANDROID_KEYSTORE_PASSWORD%
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value signconfig.store.password=%CI_ANDROID_KEYSTORE_PASSWORD%
+
+) 
+
+CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value asset.mode=NONE
+
+cd "%TMP%\o3de_gradle_ar"
+
+ECHO %O3DE_PATH%\scripts\o3de.bat android-generate -p %TMP%\o3de_gradle_ar -B %OUTPUT_DIRECTORY%
+CALL %O3DE_PATH%\scripts\o3de.bat android-generate -p %TMP%\o3de_gradle_ar -B %OUTPUT_DIRECTORY%
 
 SET CMAKE_BUILD_PARALLEL_LEVEL=!NUMBER_OF_PROCESSORS!
 
@@ -188,6 +245,7 @@ CALL gradlew --stop
 
 POPD
 
+cd %CURRENT_DIR%
 EXIT /b 0
 
 :popd_error
@@ -195,4 +253,5 @@ POPD
 
 :error
 
+cd %CURRENT_DIR%
 EXIT /b 1

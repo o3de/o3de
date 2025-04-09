@@ -70,6 +70,10 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<uint8_t>::min())
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<uint8_t>::max())
 
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &DecalComponentConfig::m_decalColor, "Decal Color", "Decal Color can be applied as a multiplier")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_decalColorFactor, "Decal Color Factor", "The factor associated with decal color which also acts as a multiplier. ")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 5.f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentConfig::m_materialAsset, "Material", "The material of the decal.")
                         ;
                 }
@@ -176,7 +180,7 @@ namespace AZ
             return hitResult;
         }
 
-        AZ::Aabb EditorDecalComponent::GetWorldBounds()
+        AZ::Aabb EditorDecalComponent::GetWorldBounds() const
         {
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -184,7 +188,7 @@ namespace AZ
             return GetLocalBounds().GetTransformedAabb(transform);
         }
 
-        AZ::Aabb EditorDecalComponent::GetLocalBounds()
+        AZ::Aabb EditorDecalComponent::GetLocalBounds() const
         {
             AZ::Aabb bbox = AZ::Aabb::CreateNull();
             bbox.AddPoint(AZ::Vector3(-1, -1, 0));

@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
 # Path to test instrumentation binary
 set(O3DE_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
 

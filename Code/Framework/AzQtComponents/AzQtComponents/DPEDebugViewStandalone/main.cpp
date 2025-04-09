@@ -60,6 +60,11 @@ namespace DPEDebugView
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
+    AZStd::string GetButtonText()
+    {
+        return "Button 2 (should be at bottom)";
+    }
+
     class TestContainer
     {
     public:
@@ -155,9 +160,13 @@ namespace DPEDebugView
             return enumValuesList;
         }
 
+        bool m_groupToggle = false;
+        int m_subToggleInt = 16;
+        bool m_toggle = false;
         int m_simpleInt = 5;
         int m_readOnlyInt = 33;
         double m_doubleSlider = 3.25;
+        AZStd::string m_simpleString = "test";
         AZStd::vector<AZStd::string> m_vector;
         AZStd::vector<AZStd::vector<int>> m_vectorOfVectors;
         AZStd::map<AZStd::string, float> m_map;
@@ -183,13 +192,45 @@ namespace DPEDebugView
             return true;
         }
 
+        bool IsGroupToggleOff() const
+        {
+            return !m_groupToggle;
+        }
+
+        AZ::Crc32 IsToggleEnabled() const
+        {
+            return m_toggle ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        double DoubleMin() const
+        {
+            return -9.0;
+        }
+
+        double DoubleMax() const
+        {
+            return 9.0;
+        }
+
+        int IntMin() const
+        {
+            return -8;
+        }
+
+        int IntMax() const
+        {
+            return 8;
+        }
+
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<TestContainer>()
+                    ->Field("toggle", &TestContainer::m_toggle)
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
+                    ->Field("simpleString", &TestContainer::m_simpleString)
                     ->Field("vector", &TestContainer::m_vector)
                     ->Field("vectorOfVectors", &TestContainer::m_vectorOfVectors)
                     ->Field("map", &TestContainer::m_map)
@@ -208,7 +249,9 @@ namespace DPEDebugView
                     ->Field("enumValuesInGenericValueListFormat", &TestContainer::m_enumValuesInGenericValueListFormat)
                     ->Field("entityId", &TestContainer::m_entityId)
                     ->Field("readonlyInt", &TestContainer::m_readOnlyInt)
-                    ->Field("map", &TestContainer::m_readOnlyMap);
+                    ->Field("map", &TestContainer::m_readOnlyMap)
+                    ->Field("groupToggle", &TestContainer::m_groupToggle)
+                    ->Field("subToggleInt", &TestContainer::m_subToggleInt);
 
                 serializeContext->Enum<EnumType>()
                     ->Value("Value1", EnumType::Value1)
@@ -222,10 +265,16 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 1 (should be at top)")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Simple Types")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_toggle, "toggle switch", "")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleInt, "simple int", "")
+                        ->Attribute(AZ::Edit::Attributes::Min, &TestContainer::IntMin)
+                        ->Attribute(AZ::Edit::Attributes::Max, &TestContainer::IntMax)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &TestContainer::m_doubleSlider, "double slider", "")
-                        ->Attribute(AZ::Edit::Attributes::Min, -10.0)
-                        ->Attribute(AZ::Edit::Attributes::Max, 10.0)
+                        ->Attribute(AZ::Edit::Attributes::Min, &TestContainer::DoubleMin)
+                        ->Attribute(AZ::Edit::Attributes::Max, &TestContainer::DoubleMax)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleString, "simple string", "")
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &TestContainer::IsToggleEnabled)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Containers")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_vector, "vector<string>", "")
@@ -276,14 +325,25 @@ namespace DPEDebugView
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 2 (should be at bottom)")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, &GetButtonText)
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
+                        ->UIElement(AZ::Edit::UIHandlers::Label, "")
+                        ->Attribute(
+                            AZ::Edit::Attributes::ValueText,
+                            "<h2>Label UIElement</h2>This is a test of a UIElement label<br>that can handle multiple lines of text that "
+                            "also can be wrapped onto newlines<br>and can also support <a "
+                            "href='https://doc.qt.io/qt-5/richtext-html-subset.html'>rich text</a>")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TestContainer::IsDataReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyMap, "readonly map<string, float>", "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->GroupElementToggle("Group Toggle", &TestContainer::m_groupToggle)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_subToggleInt, "sub-toggle int", "")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TestContainer::IsGroupToggleOff);
                 }
 
                 GenericValueTestType::Reflect(context);

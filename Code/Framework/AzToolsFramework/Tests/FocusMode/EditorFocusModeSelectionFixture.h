@@ -25,6 +25,7 @@
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 
 namespace UnitTest
 {
@@ -33,8 +34,18 @@ namespace UnitTest
     public:
         void SetUpEditorFixtureImpl() override
         {
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            m_formerOutlinerOverrideSetting = AzToolsFramework::Prefab::IsOutlinerOverrideManagementEnabled();
+            registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableOutlinerOverrideManagement", true);
             IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>::SetUpEditorFixtureImpl();
             m_viewportManipulatorInteraction->GetViewportInteraction().SetIconsVisible(false);
+        }
+
+        void TearDownEditorFixtureImpl() override
+        {
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>::TearDownEditorFixtureImpl();
+            registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableOutlinerOverrideManagement", m_formerOutlinerOverrideSetting);
         }
 
         void ClickAtWorldPositionOnViewport(const AZ::Vector3& worldPosition)
@@ -60,5 +71,8 @@ namespace UnitTest
                 ->MousePosition(endingPositionWorldBoxSelect)
                 ->MouseLButtonUp();
         }
+
+    protected:
+        bool m_formerOutlinerOverrideSetting = false;
     };
 } // namespace UnitTest

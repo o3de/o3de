@@ -12,6 +12,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -41,11 +42,12 @@ namespace AZ
         //! an error is emitted and the call returns false without performing the requested operation. Likewise, if 
         //! a getter method fails, an error is emitted and an empty value is returned. If validation is disabled, the 
         //! operation is always performed.
-        class Material
+        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+        class ATOM_RPI_PUBLIC_API Material
             : public Data::InstanceData
-            , Data::AssetBus::Handler
             , public ShaderReloadNotificationBus::MultiHandler
         {
+            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class MaterialSystem;
         public:
             AZ_INSTANCE_DATA(Material, "{C99F75B2-8BD5-4CD8-8672-1E01EF0A04CF}");
@@ -55,7 +57,7 @@ namespace AZ
             using ChangeId = size_t;
 
             //! GetCurrentChangeId() will never return this value, so client code can use this to initialize a ChangeId that is immediately dirty
-            static const ChangeId DEFAULT_CHANGE_ID = 0;
+            static constexpr ChangeId DEFAULT_CHANGE_ID = 0;
 
             static Data::Instance<Material> FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset);
             static Data::Instance<Material> Create(const Data::Asset<MaterialAsset>& materialAsset);
@@ -132,6 +134,8 @@ namespace AZ
             //! Do not set this in the shipping runtime unless you know what you are doing.
             void SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride);
 
+            Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
+
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             const Data::Asset<MaterialAsset>& GetAsset() const;
@@ -142,15 +146,17 @@ namespace AZ
             //! Returns whether the material has property changes that have not been compiled yet.
             bool NeedsCompile() const;
 
+            using OnMaterialShaderVariantReadyEvent = AZ::Event<>;
+            //! Connect a handler to listen to the event that a shader variant asset of the shaders used by this material is ready.
+            //! This is a thread safe function.
+            void ConnectEvent(OnMaterialShaderVariantReadyEvent::Handler& handler);
+
         private:
-            Material() = default;
+            Material();
 
             //! Standard init path from asset data.
             static Data::Instance<Material> CreateInternal(MaterialAsset& materialAsset);
             RHI::ResultCode Init(MaterialAsset& materialAsset);
-
-            // AssetBus overrides...
-            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...
@@ -158,6 +164,9 @@ namespace AZ
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
             ///////////////////////////////////////////////////////////////////
+
+            //! Helper function to reinitialize the material while preserving property values.
+            void ReInitKeepPropertyValues();
 
             //! Helper function for setting the value of a shader constant input, allowing for specialized handling of specific types,
             //! converting to the native type before passing to the ShaderResourceGroup.
@@ -190,7 +199,7 @@ namespace AZ
             // version of the function when a private overload is present, just based on a lambda signature.
             void ForAllShaderItemsWriteable(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback);
 
-            static const char* s_debugTraceName;
+            static constexpr const char* s_debugTraceName = "Material";
 
             //! The corresponding material asset that provides material type data and initial property values.
             Data::Asset<MaterialAsset> m_materialAsset;
@@ -219,6 +228,11 @@ namespace AZ
             bool m_isInitializing = false;
 
             MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
+
+            //! AZ::Event is not thread safe, so we have to do our own thread safe code
+            //! because MeshDrawPacket can connect to this event from different threads.
+            AZStd::recursive_mutex m_shaderVariantReadyEventMutex;
+            OnMaterialShaderVariantReadyEvent m_shaderVariantReadyEvent;
         };
 
     } // namespace RPI

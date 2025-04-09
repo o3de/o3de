@@ -23,7 +23,7 @@ namespace AZ
             return m_signature.get();
         }
 
-        RHI::ResultCode IndirectBufferSignature::InitInternal(RHI::Device& deviceBase, const RHI::IndirectBufferSignatureDescriptor& descriptor)
+        RHI::ResultCode IndirectBufferSignature::InitInternal(RHI::Device& deviceBase, const RHI::DeviceIndirectBufferSignatureDescriptor& descriptor)
         {
             auto& device = static_cast<Device&>(deviceBase);
             auto commands = descriptor.m_layout.GetCommands();
@@ -52,6 +52,10 @@ namespace AZ
                 case RHI::IndirectCommandType::Dispatch:
                     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
                     m_stride += sizeof(D3D12_DISPATCH_ARGUMENTS);
+                    break;
+                case RHI::IndirectCommandType::DispatchRays:
+                    argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_RAYS;
+                    m_stride += sizeof(D3D12_DISPATCH_RAYS_DESC);
                     break;
                 case RHI::IndirectCommandType::VertexBufferView:
                     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;

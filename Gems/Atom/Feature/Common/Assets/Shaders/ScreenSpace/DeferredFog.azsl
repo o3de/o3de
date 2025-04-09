@@ -11,16 +11,30 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
 
-#include <scenesrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#ifndef ENABLE_FOG_LAYER
+#define ENABLE_FOG_LAYER    1
+#endif
+
+#ifndef HAS_LINEAR_DEPTH
+#define HAS_LINEAR_DEPTH    1
+#endif
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    Texture2D<float2>   m_depthStencilTexture;
+    [[input_attachment_index(0)]]
+    SubpassInputDS      m_depthStencilTexture;  // Need to use SubpassInputDS to signal that we are reading from a depth/stencil texture
+                                                // since some platforms don't support reading from it.
     Texture2D<float>    m_linearDepthTexture;
-    Texture2D           m_noiseTexture;     // Defines fog pattern 
     float3              m_fogColor;
     float               m_fogStartDistance; // Distance at which the fog starts to appear
     float               m_fogEndDistance;   // Distance for complete fog color taking over
+    float               m_fogDensity;
+    float               m_fogDensityClamp;
+
+#if ENABLE_FOG_LAYER
     float               m_fogMinHeight;     // Minmum and Maximum fog layer heights
     float               m_fogMaxHeight;
 
@@ -33,11 +47,26 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
     float               m_octavesBlendFactor;
 
+    Texture2D           m_noiseTexture;     // Defines fog pattern 
+
+    float2              m_depthTextureDimentions;
+#endif //ENABLE_FOG_LAYER
+
     Sampler DepthSampler
     {
         MinFilter = Linear;
         MagFilter = Linear;
         MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
         AddressU = Clamp;
         AddressV = Clamp;
         AddressW = Clamp;
@@ -56,28 +85,36 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
 option bool o_useNoiseTexture = true;
 option bool o_enableFogLayer = true;
+// "Linear" is a reserved keyword, so we change it to "LinearMode"
+option enum class FogMode { LinearMode, ExponentialMode, ExponentialSquaredMode } o_fogMode = FogMode::LinearMode;
 
+#if ENABLE_FOG_LAYER
 float CalculateFogDensity(float3 surfacePosWS, float depthInLayer)
 {
-    // Noise pattern across the XY plane - first octave
-    float2 noiseUV = surfacePosWS.xy * PassSrg::m_noiseScaleUV + PassSrg::m_noiseVelocityUV * SceneSrg::m_time;
-    float  fogDensity = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV).r;
+    if (o_useNoiseTexture)
+    {
+        // Noise pattern across the XY plane - first octave
+        float2 noiseUV = surfacePosWS.xy * PassSrg::m_noiseScaleUV + PassSrg::m_noiseVelocityUV * SceneSrg::m_time;
+        float  fogDensity = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV).r;
 
-    // second noise octave 
-    float2 noiseUV2 = surfacePosWS.xy * PassSrg::m_noiseScaleUV2 + PassSrg::m_noiseVelocityUV2 * SceneSrg::m_time;
-    float fogDensity2 = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV2).r;
+        // second noise octave 
+        float2 noiseUV2 = surfacePosWS.xy * PassSrg::m_noiseScaleUV2 + PassSrg::m_noiseVelocityUV2 * SceneSrg::m_time;
+        float fogDensity2 = PassSrg::m_noiseTexture.Sample(PassSrg::LinearMirrorSampler, noiseUV2).r;
 
-    // Overall fog density in this xy position
-    fogDensity = lerp(fogDensity, fogDensity2, PassSrg::m_octavesBlendFactor);
+        // Overall fog density in this xy position
+        fogDensity = lerp(fogDensity, fogDensity2, PassSrg::m_octavesBlendFactor);
 
-    // Apply height attenuation at location xy based on the density amount.  This is a heuristic 
-    // in order to avoid using 3D texture yet have height deviation near the layer's edge.
-    const float fadeStartHeight = 0.8;  // relative fog layer height at which point we start to fade
-    // The fade will be gradual from the end of the noise location 
-    float fogRelativeHeight = 1.0 - smoothstep( fadeStartHeight, 1.0, depthInLayer );
+        // Apply height attenuation at location xy based on the density amount.  This is a heuristic 
+        // in order to avoid using 3D texture yet have height deviation near the layer's edge.
+        const float fadeStartHeight = 0.8;  // relative fog layer height at which point we start to fade
+        // The fade will be gradual from the end of the noise location 
+        float fogRelativeHeight = 1.0 - smoothstep( fadeStartHeight, 1.0, depthInLayer );
 
-    return fogDensity * fogRelativeHeight;
+        return fogDensity * fogRelativeHeight;
+    }
+    return 0;
 }
+#endif //ENABLE_FOG_LAYER
 
 // An optimized version of deferred fog with ability to have height layer.
 // It is optimized to reduce almost all edge cases by using ray intersection logic 
@@ -85,26 +122,35 @@ PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
     
-    float linearDepth = PassSrg::m_linearDepthTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
-    float zDepth = PassSrg::m_depthStencilTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
-    float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_depthStencilTexture, zDepth, IN.m_position.xy).xyz;
+    float linearDepth;
+    
+#if HAS_LINEAR_DEPTH
+    linearDepth = PassSrg::m_linearDepthTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
+#else
+    linearDepth = PassSrg::m_depthStencilTexture.SubpassLoad(int3(IN.m_position.x, IN.m_position.y, 0)).r;
+    linearDepth = abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * linearDepth - ViewSrg::GetFarZ()))); 
+#endif
 
-    // Fog layer deltas
-    const float layerThickness = PassSrg::m_fogMaxHeight - PassSrg::m_fogMinHeight;
-    const float dViewMax = ViewSrg::m_worldPosition.z - PassSrg::m_fogMaxHeight;
-    const float dViewMin = ViewSrg::m_worldPosition.z - PassSrg::m_fogMinHeight;
-    const float3 surfaceViewVec = surfacePosWS - ViewSrg::m_worldPosition;
-    const float3 surfaceViewDir = normalize(surfaceViewVec);
-    float dSurfaceView = surfaceViewVec.z;
-
-    // When set to 0, indicate that View and surface hit point are outside the 
-    // fog layer / ray start-end point
-    float fogTraversalRelLength = 0;    // length of the traversal within the fog layer / ray length
-    float distToFogLayer = 0;
-    float fogDensity = 1.0;            // accumulated fog density along the ray traversal
-
+#if ENABLE_FOG_LAYER
     if (o_enableFogLayer)
     {
+        float zDepth = PassSrg::m_depthStencilTexture.SubpassLoad(int3(IN.m_position.x, IN.m_position.y, 0)).r;
+        float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_depthTextureDimentions, zDepth, IN.m_position.xy).xyz;
+
+        // Fog layer deltas
+        const float layerThickness = PassSrg::m_fogMaxHeight - PassSrg::m_fogMinHeight;
+        const float dViewMax = ViewSrg::m_worldPosition.z - PassSrg::m_fogMaxHeight;
+        const float dViewMin = ViewSrg::m_worldPosition.z - PassSrg::m_fogMinHeight;
+        const float3 surfaceViewVec = surfacePosWS - ViewSrg::m_worldPosition;
+        const float3 surfaceViewDir = normalize(surfaceViewVec);
+        float dSurfaceView = surfaceViewVec.z;
+
+        // When set to 0, indicate that View and surface hit point are outside the 
+        // fog layer / ray start-end point
+        float fogTraversalRelLength = 0;    // length of the traversal within the fog layer / ray length
+        float distToFogLayer = 0;
+        float fogDensity = 1.0;            // accumulated fog density along the ray traversal
+
         if (abs(dSurfaceView) < EPSILON)
             dSurfaceView = EPSILON;
 
@@ -160,16 +206,32 @@ PSOutput MainPS(VSOutput IN)
         linearDepth *= lerp(1.0, fogDensity, fogDistanceDeviationRatio);
 
         // The following line is the linear depth traversing the layer
-        linearDepth = fogTraversalRelLength * linearDepth - max( 0, PassSrg::m_fogStartDistance - distToFogLayer * linearDepth);
+        linearDepth = max(0, fogTraversalRelLength * linearDepth - max( 0, PassSrg::m_fogStartDistance - distToFogLayer * linearDepth));
     }
     else
+#endif // ENABLE_FOG_LAYER
     {
         linearDepth = max( 0, linearDepth - PassSrg::m_fogStartDistance );
     }
  
-    float layerFogAmountWithStartDist = saturate(linearDepth / (PassSrg::m_fogEndDistance - PassSrg::m_fogStartDistance));
+    float density = 0.0f;
+    switch(o_fogMode)
+    {
+        case FogMode::LinearMode:
+            density = saturate(linearDepth / (PassSrg::m_fogEndDistance - PassSrg::m_fogStartDistance));
+            break;
+        case FogMode::ExponentialMode:
+            density = 1.0 - exp(-linearDepth * PassSrg::m_fogDensity); 
+            break;
+        case FogMode::ExponentialSquaredMode:
+            density = 1.0 - exp(-pow(linearDepth * PassSrg::m_fogDensity, 2));
+            break;
+        default:
+            break;
+    }
 
-    OUT.m_color = float4(PassSrg::m_fogColor, layerFogAmountWithStartDist);
+    density = clamp(density, 0.0, PassSrg::m_fogDensityClamp);
+    OUT.m_color = float4(PassSrg::m_fogColor, density);
 
     return OUT;
 }

@@ -37,4 +37,8 @@ namespace EMotionFX::MotionMatching
     };
 }// namespace EMotionFX::MotionMatching
 
-AZ_DECLARE_MODULE_CLASS(Gem_MotionMatching, EMotionFX::MotionMatching::MotionMatchingEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), EMotionFX::MotionMatching::MotionMatchingEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_MotionMatching_Editor, EMotionFX::MotionMatching::MotionMatchingEditorModule)
+#endif

@@ -34,12 +34,12 @@ namespace Audio
 
     void MicrophoneSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MicrophoneService", 0xa3a5c9d0));
+        provided.push_back(AZ_CRC_CE("MicrophoneService"));
     }
 
     void MicrophoneSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MicrophoneService", 0xa3a5c9d0));
+        incompatible.push_back(AZ_CRC_CE("MicrophoneService"));
     }
 
     void MicrophoneSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

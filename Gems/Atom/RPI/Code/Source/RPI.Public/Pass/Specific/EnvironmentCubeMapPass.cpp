@@ -24,6 +24,19 @@ namespace AZ
 {
     namespace RPI
     {
+        namespace
+        {
+            // camera basis vectors for each cubemap face
+            const Vector3 CameraBasis[EnvironmentCubeMapPass::NumCubeMapFaces][3] = {
+                { Vector3(0.0f, 1.0f, 0.0f), Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f) },
+                { Vector3(0.0f, -1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f) },
+                { Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f) },
+                { Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f) },
+                { Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f) },
+                { Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f) },
+            };
+        } // namespace
+
         Ptr<EnvironmentCubeMapPass> EnvironmentCubeMapPass::Create(const PassDescriptor& passDescriptor)
         {
             Ptr<EnvironmentCubeMapPass> pass = aznew EnvironmentCubeMapPass(passDescriptor);
@@ -125,7 +138,7 @@ namespace AZ
             outputAttachment.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
             outputAttachment.SetAttachment(m_passAttachment);
 
-            m_attachmentBindings.push_back(outputAttachment);
+            AddAttachmentBinding(outputAttachment);
 
             ParentPass::BuildInternal();
         }
@@ -189,7 +202,8 @@ namespace AZ
 
         void EnvironmentCubeMapPass::AttachmentReadbackCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
         {
-            RHI::ImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format);
+            RHI::DeviceImageSubresourceLayout imageLayout =
+                RHI::GetImageSubresourceLayout(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format);
 
             delete [] m_textureData[m_renderFace];
 

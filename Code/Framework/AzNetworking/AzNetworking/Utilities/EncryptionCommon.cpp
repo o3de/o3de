@@ -537,7 +537,13 @@ namespace AzNetworking
         SSL_CTX_set_cookie_verify_cb(context, VerifyCookieCallback);
 
         // Automatically generate parameters for elliptic-curve diffie-hellman (i.e. curve type and coefficients).
+
+        // note that the below generates a warning depending on your version of openssl - on some, these functions
+        // are deprecated and do nothing, causing a warning
+
+        AZ_PUSH_DISABLE_WARNING(, "-Wunused-value", "-Wunused-value")
         SSL_CTX_set_ecdh_auto(context, 1);
+        AZ_POP_DISABLE_WARNING
 
         scopedFree.ReleaseSslContextWithoutFree();
         return context;

@@ -8,55 +8,112 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI/DeviceIndirectBufferView.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/IndirectBufferSignature.h>
 #include <AzCore/Utils/TypeHash.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class Buffer;
+    class IndirectBufferSignature;
+
+    //! Provides a view into a multi-device buffer, to be used as an indirect buffer. The content of the view is a contiguous
+    //! list of commands sequences. Its device-specific buffers are provided to the RHI back-end at draw time.
+    class alignas(8) IndirectBufferView
     {
-        class Buffer;
-        class IndirectBufferSignature;
+    public:
+        IndirectBufferView() = default;
 
-        //! Provides a view into a buffer, to be used as an indirect buffer. The content of the view is a contiguous
-        //! list of commands sequences. It is provided to the RHI back-end at draw time.
-        class alignas(8) IndirectBufferView
+        IndirectBufferView(
+            const Buffer& buffer,
+            const IndirectBufferSignature& signature,
+            uint32_t byteOffset,
+            uint32_t byteCount,
+            uint32_t byteStride);
+
+        //! The mutex stops the default generation
+        IndirectBufferView(const IndirectBufferView& other)
+            : m_hash{ other.m_hash }
+            , m_buffer{ other.m_buffer }
+            , m_signature{ other.m_signature }
+            , m_byteOffset{ other.m_byteOffset }
+            , m_byteCount{ other.m_byteCount }
+            , m_byteStride{ other.m_byteStride }
         {
-        public:
-            IndirectBufferView() = default;
+        }
 
-            IndirectBufferView(
-                const Buffer& buffer,
-                const IndirectBufferSignature& signature,
-                uint32_t byteOffset,
-                uint32_t byteCount,
-                uint32_t byteStride);
+        IndirectBufferView& operator=(const IndirectBufferView& other)
+        {
+            this->m_hash = other.m_hash;
+            this->m_buffer = other.m_buffer;
+            this->m_signature = other.m_signature;
+            this->m_byteOffset = other.m_byteOffset;
+            this->m_byteCount = other.m_byteCount;
+            this->m_byteStride = other.m_byteStride;
 
-            /// Returns the hash of the view. This hash is precomputed at creation time.
-            HashValue64 GetHash() const;
+            m_cache.clear();
 
-            /// Returns the buffer associated with the view.
-            const Buffer* GetBuffer() const;
+            return *this;
+        }
 
-            /// Returns the byte offset into the buffer.
-            uint32_t GetByteOffset() const;
+        //! Returns the device-specific DeviceIndirectBufferView for the given index
+        const DeviceIndirectBufferView& GetDeviceIndirectBufferView(int deviceIndex) const
+        {
+            AZ_Error("IndirectBufferView", m_signature, "No IndirectBufferSignature available\n");
+            AZ_Error("IndirectBufferView", m_buffer, "No Buffer available\n");
 
-            /// Returns the number of bytes in the view.
-            uint32_t GetByteCount() const;
+            AZStd::lock_guard lock(m_bufferViewMutex);
+            auto iterator{ m_cache.find(deviceIndex) };
+            if (iterator == m_cache.end())
+            {
+                //! Buffer view is not yet in the cache
+                auto [new_iterator, inserted]{ m_cache.insert(AZStd::make_pair(
+                    deviceIndex,
+                    DeviceIndirectBufferView(
+                        *m_buffer->GetDeviceBuffer(deviceIndex),
+                        *m_signature->GetDeviceIndirectBufferSignature(deviceIndex),
+                        m_byteOffset,
+                        m_byteCount,
+                        m_byteStride))) };
+                if (inserted)
+                {
+                    return new_iterator->second;
+                }
+            }
 
-            /// Returns the distance in bytes between consecutive commands sequences.
-            /// This must be larger or equal than the stride specify by the signature.
-            uint32_t GetByteStride() const;
+            return iterator->second;
+        }
 
-            /// Returns the signature of the indirect buffer that is associated with the view.
-            const IndirectBufferSignature* GetSignature() const;
+        //! Returns the hash of the view. This hash is precomputed at creation time.
+        HashValue64 GetHash() const;
 
-        private:
-            HashValue64 m_hash = HashValue64{ 0 };
-            const IndirectBufferSignature* m_signature = nullptr;
-            const Buffer* m_buffer = nullptr;
-            uint32_t m_byteOffset = 0;
-            uint32_t m_byteCount = 0;
-            uint32_t m_byteStride = 0;
-        };
-    }
-}
+        //! Returns the buffer associated with the view.
+        const Buffer* GetBuffer() const;
+
+        //! Returns the byte offset into the buffer.
+        uint32_t GetByteOffset() const;
+
+        //! Returns the number of bytes in the view.
+        uint32_t GetByteCount() const;
+
+        //! Returns the distance in bytes between consecutive commands sequences.
+        //! This must be larger or equal than the stride specify by the signature.
+        uint32_t GetByteStride() const;
+
+        //! Returns the signature of the indirect buffer that is associated with the view.
+        const IndirectBufferSignature* GetSignature() const;
+
+    private:
+        HashValue64 m_hash = HashValue64{ 0 };
+        const IndirectBufferSignature* m_signature = nullptr;
+        const Buffer* m_buffer = nullptr;
+        uint32_t m_byteOffset = 0;
+        uint32_t m_byteCount = 0;
+        uint32_t m_byteStride = 0;
+
+        //! Safe-guard access to DeviceIndirectBufferView cache during parallel access
+        mutable AZStd::mutex m_bufferViewMutex{};
+        mutable AZStd::unordered_map<int, DeviceIndirectBufferView> m_cache;
+    };
+} // namespace AZ::RHI

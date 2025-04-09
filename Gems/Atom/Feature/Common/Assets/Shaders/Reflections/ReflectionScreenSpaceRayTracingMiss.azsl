@@ -22,7 +22,7 @@ void Miss(inout PayloadData payload)
         return;
     }
 
-    if (RayTracingGlobalSrg::m_rayTraceFallbackData)
+    if (IsRayTracingFallbackEnabled())
     {
         // query mip0 of the global cubemap for the fallback color
         float3 sampleDir = mul(WorldRayDirection(), (float3x3)SceneSrg::m_cubemapRotationMatrix);

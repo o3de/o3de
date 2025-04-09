@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
@@ -36,9 +37,9 @@ namespace AZ
             float m_affectsGIFactor = 1.0f;
 
             bool m_affectsGI = true;
+            uint32_t m_lightingChannelMask = 1;
             float m_padding0 = 0.0f;
             float m_padding1 = 0.0f;
-            float m_padding2 = 0.0f;
         };
 
         //! PointLightFeatureProcessorInterface provides an interface to acquire, release, and update a point light.
@@ -87,8 +88,14 @@ namespace AZ
             virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
             //! Specifies the contribution of this light to the diffuse global illumination in the scene.
             virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
             //! Sets all of the the point data for the provided LightHandle.
             virtual void SetPointData(LightHandle handle, const PointLightData& data) = 0;
+            //! Returns the buffer containing the light data for all point lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the number of point lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

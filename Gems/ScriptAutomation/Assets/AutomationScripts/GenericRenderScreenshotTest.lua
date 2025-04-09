@@ -9,9 +9,10 @@
 function GetRequiredStringValue(valueKey, prettyName)
     value = g_SettingsRegistry:GetString(valueKey)
     if (not value:has_value()) then
-        Print('FrameTime script missing ' .. tostring(prettyName) .. ' settings registry entry, ending script early')
+        Print('GenricRenderScreenshotTest script missing ' .. tostring(prettyName) .. ' settings registry entry, ending script early')
         return false, nil
     end
+    Print('GenricRenderScreenshotTest script found ' .. prettyName .. ' settings registry entry, ' .. value:value())
     return true, value:value()
 end
 
@@ -26,8 +27,7 @@ end
 local LevelPathRegistryKey <const> = "/O3DE/ScriptAutomation/ImageCapture/LevelPath"
 local TestGroupNameRegistryKey <const> = "/O3DE/ScriptAutomation/ImageCapture/TestGroupName" -- used as part of capture filepath, no whitespace or other invalid characters
 local ImageNameRegistryKey <const> = "/O3DE/ScriptAutomation/ImageCapture/ImageName"
-
--- optional settings
+local CaptureCameraNameKey <const> = "/O3DE/ScriptAutomation/ImageCapture/CaptureCameraName"
 local ImageComparisonLevelRegistryKey <const> = "/O3DE/ScriptAutomation/ImageCapture/ImageComparisonLevel"
 
 -- check for SettingsRegistry values that must exist
@@ -35,13 +35,24 @@ succeeded, levelPath = GetRequiredStringValue(LevelPathRegistryKey, "Image Captu
 if (not succeeded) then return end
 succeeded, testGroupName = GetRequiredStringValue(TestGroupNameRegistryKey, "Test Group Name")
 if (not succeeded) then return end
-succeeded, imageName = GetRequiredStringValue(ImageNameRegistryKey, "Image Capture Name")
+succeeded, imageNameStr = GetRequiredStringValue(ImageNameRegistryKey, "Image Capture Name")
 if (not succeeded) then return end
-local imageComparisonLevel = GetOptionalStringValue(ImageComparisonLevelRegistryKey, "Level A") -- default to most strict comparison
+succeeded, imageComparisonLevelStr = GetRequiredStringValue(ImageComparisonLevelRegistryKey, "Image Comparison Level")
+if (not succeeded) then return end
+succeeded, cameraNameStr = GetRequiredStringValue(CaptureCameraNameKey, "Camera Entity Names")
+if (not succeeded) then return end
 
+splitterChar = ","
+imageNames = SplitString(imageNameStr, splitterChar)
+imageComparisonLevels = SplitString(imageComparisonLevelStr, splitterChar)
+cameraNames = SplitString(cameraNameStr, splitterChar)
+
+if (imageNames:Size() ~= imageComparisonLevels:Size() or imageNames:Size() ~= cameraNames:Size()) then
+    Error("Invalid number of arguments received")
+    return
+end
 
 RunScript("@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericImageComparisonTestEnvironment.lua")
-captureName = testGroupName .. "/" .. imageName
 
 IdleFrames(3) -- tick 3 frames to allow tick delta to settle
 
@@ -50,8 +61,15 @@ LoadLevel(levelPath) -- waits for the engine to say the level is finished loadin
 
 IdleSeconds(2) -- Wait for assets to finish loading.
 
-Print("Saving screenshots to " .. ResolvePath(g_screenshotOutputFolder .. "/" .. g_testEnv .. "/" .. testGroupName))
+for index=1, imageNames:Size() do
+    SetCamera(cameraNames[index])
+    captureName = testGroupName .. "/" .. imageNames[index]
 
-CaptureScreenshot(captureName)
+    IdleFrames(10) -- Wait for camera transition to happen
 
-CompareScreenshotToBaseline(testGroupName .. "/" .. g_testEnv, imageComparisonLevel, captureName, g_imperceptibleImageDiffLevel)
+    Print("Saving screenshots to " .. ResolvePath(g_screenshotOutputFolder .. "/" .. g_testEnv .. "/" .. testGroupName))
+
+    CaptureScreenshot(captureName)
+
+    CompareScreenshotToBaseline(testGroupName .. "/" .. g_testEnv, imageComparisonLevels[index], captureName, g_imperceptibleImageDiffLevel)
+end

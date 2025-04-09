@@ -1,0 +1,77 @@
+//Step 1 -> Use CreateShaderVariantListDocumentFromShader via SMC to crawl the DeferredFogMobile shader and create variants for shader options.
+//Step 2 -> Use ExpandOptionsFullCombinatorials via SMC and apply o_enableFogLayer with value "false", and o_fogMode with all values. Generation Method 'Append'.
+//Step 3 -> Use ExpandOptionsFullCombinatorials via SMC and apply o_enableFogLayer with value "true", o_useNoiseTexture with values "true", "false", and o_fogMode with all values. Generation Method 'Append'.
+{
+    "Shader": "Shaders/ScreenSpace/MobileDeferredFog.shader",
+    "Variants": [
+        {
+            "StableId": 1,
+            "Options": {
+                "o_enableFogLayer": "false",
+                "o_fogMode": "FogMode::LinearMode"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options": {
+                "o_enableFogLayer": "false",
+                "o_fogMode": "FogMode::ExponentialMode"
+            }
+        },
+        {
+            "StableId": 3,
+            "Options": {
+                "o_enableFogLayer": "false",
+                "o_fogMode": "FogMode::ExponentialSquaredMode"
+            }
+        },
+        {
+            "StableId": 4,
+            "Options": {
+                "o_enableFogLayer": "true",
+                "o_fogMode": "FogMode::LinearMode",
+                "o_useNoiseTexture": "false"
+            }
+        },
+        {
+            "StableId": 5,
+            "Options": {
+                "o_enableFogLayer": "true",
+                "o_fogMode": "FogMode::LinearMode",
+                "o_useNoiseTexture": "true"
+            }
+        },
+        {
+            "StableId": 6,
+            "Options": {
+                "o_enableFogLayer": "true",
+                "o_fogMode": "FogMode::ExponentialMode",
+                "o_useNoiseTexture": "false"
+            }
+        },
+        {
+            "StableId": 7,
+            "Options": {
+                "o_enableFogLayer": "true",
+                "o_fogMode": "FogMode::ExponentialMode",
+                "o_useNoiseTexture": "true"
+            }
+        },
+        {
+            "StableId": 8,
+            "Options": {
+                "o_enableFogLayer": "true",
+                "o_fogMode": "FogMode::ExponentialSquaredMode",
+                "o_useNoiseTexture": "false"
+            }
+        },
+        {
+            "StableId": 9,
+            "Options": {
+                "o_enableFogLayer": "true",
+                "o_fogMode": "FogMode::ExponentialSquaredMode",
+                "o_useNoiseTexture": "true"
+            }
+        }
+    ]
+}

@@ -207,7 +207,7 @@ function(resolve_gem_dependencies object_type object_path)
         set(user_external_subdir_option -ed "${user_external_subdirs}")
     endif()
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" --engine-path "${LY_ROOT_FOLDER}" ${user_external_subdir_option}
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" "resolve-gem-dependencies" --${object_type_lower}-path "${object_path}" --engine-path "${LY_ROOT_FOLDER}" ${user_external_subdir_option}
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}
         RESULT_VARIABLE O3DE_CLI_RESULT
         OUTPUT_VARIABLE resolved_gem_dependency_output 
@@ -215,7 +215,7 @@ function(resolve_gem_dependencies object_type object_path)
         )
 
     if(O3DE_CLI_RESULT)
-        message(WARNING "Dependecy resolution failed.\n  If needed, set the O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION variable to bypass dependency resolution.\n  Error: ${O3DE_CLI_OUT}")
+        message(WARNING "Dependency resolution failed.\n  If needed, set the O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION variable to bypass dependency resolution.\n  Error: ${O3DE_CLI_OUT}")
         return()
     endif()
 

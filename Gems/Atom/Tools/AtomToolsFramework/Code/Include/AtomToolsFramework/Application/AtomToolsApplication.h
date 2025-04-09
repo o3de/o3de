@@ -45,6 +45,7 @@ namespace AtomToolsFramework
         using Base = AzFramework::Application;
 
         AtomToolsApplication(const char* targetName, int* argc, char*** argv);
+        AtomToolsApplication(const char* targetName, int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         ~AtomToolsApplication();
 
         virtual bool LaunchLocalServer();

@@ -225,7 +225,7 @@ namespace AZ
          *   redirectStdout.Stop(StdoutVisitor); // Invokes visitor 0 or more times with captured data
          *   EXPECT_TRUE(testWasOutput);
          */
-        class FileDescriptorCapturer 
+        class FileDescriptorCapturer
         {
         public:
 
@@ -237,7 +237,7 @@ namespace AZ
 
             //! Redirects file descriptor to a visitor callback
             //! Internally a pipe is used to send output to the visitor
-            //! 
+            //!
             //! NOTE: This function will be called on a different thread than the one used to invoke Start()
             //! The caller is responsible for ensuring thread safety with the callback function
             using OutputRedirectVisitor = AZStd::function<void(AZStd::span<AZStd::byte>)>;
@@ -296,4 +296,10 @@ namespace AZ
             OutputRedirectVisitor m_redirectCallback;
         };
     }
+}
+
+namespace AZ::IO::Posix
+{
+    // Returns file descriptor from C FILE* struct
+    int Fileno(FILE* stream);
 }

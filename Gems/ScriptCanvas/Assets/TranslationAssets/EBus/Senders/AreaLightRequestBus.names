@@ -44,13 +44,43 @@
                     },
                     "details": {
                         "name": "Set Intensity",
-                        "tooltip": "Sets an area light's intensity and intensity mode. This value is indepedent from its color"
+                        "tooltip": "Sets an area light's intensity and intensity mode. This value is independent from its color"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Intensity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIntensityAndMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Intensity And Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Intensity And Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Set Intensity And Mode",
+                        "tooltip": "Sets an area light's intensity and intensity mode. This value is independent from its color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Intensity"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Intensity Mode",
+                                "tooltip": "0: Lumen (Total amount of luminous power emitted. Since a unit sphere is 4 pi steradians, 1 candela emitting uniformly in all directions is 4 pi lumens)\n1: Candela (Base unit of luminous intensity; luminous power per unit solid angle)\n2: Lux (One lux is one lumen per square meter. The same lux emitting from larger areas emits more lumens than smaller areas)\n3: Nit (Nits are candela per square meter. It can be calculated as Lux / Pi)\n4: Ev100Luminance (Exposure value for luminance - Similar to nits, A measurement of illuminance that grows exponentially. See https://en.wikipedia.org/wiki/Exposure_value)\n5: Ev100Illuminance (Exposure value for illuminance - Similar to lux, A measurement of illuminance that grows exponentially. See https://en.wikipedia.org/wiki/Exposure_value)"
                             }
                         }
                     ]

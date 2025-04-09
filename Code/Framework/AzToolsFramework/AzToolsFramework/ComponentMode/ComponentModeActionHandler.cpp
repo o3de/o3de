@@ -23,24 +23,18 @@ namespace AzToolsFramework
 {
     ComponentModeActionHandler::ComponentModeActionHandler()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-            ActionManagerRegistrationNotificationBus::Handler::BusConnect();
-            ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(editorEntityContextId);
-            ViewportEditorModeNotificationsBus::Handler::BusConnect(editorEntityContextId);
-        }
+        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(editorEntityContextId);
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(editorEntityContextId);
     }
 
     ComponentModeActionHandler::~ComponentModeActionHandler()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
-            ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
-        }
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 
     void ComponentModeActionHandler::OnActionContextModeRegistrationHook()

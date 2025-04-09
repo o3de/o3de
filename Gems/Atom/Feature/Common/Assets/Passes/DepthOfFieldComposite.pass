@@ -96,7 +96,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DepthOfFieldComposite.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

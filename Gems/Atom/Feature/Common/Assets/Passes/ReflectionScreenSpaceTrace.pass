@@ -91,23 +91,6 @@
                         },
                         "LoadAction": "Clear"
                     }
-                },
-                {
-                    "Name": "DownsampledDepthOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "DepthStencil",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Type": "DepthStencil",
-                            "Value": [
-                                1.0,
-                                {},
-                                {},
-                                {}
-                            ]
-                        },
-                        "LoadAction": "Clear"
-                    }
                 }
             ],
             "ImageAttachments": [
@@ -125,7 +108,6 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "MipLevels": 4,
                         "SharedQueueMask": "Graphics",
                         "BindFlags": [
                             "ShaderReadWrite",
@@ -147,27 +129,6 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "SharedQueueMask": "Graphics"
-                    }
-                },
-                {
-                    "Name": "DownsampledDepthImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "DepthStencilInput"
-                        },
-                        "Multipliers": {
-                            "WidthMultiplier": 0.5,
-                            "HeightMultiplier": 0.5
-                        }
-                    },
-                    "FormatSource": {
-                        "Pass": "Parent",
-                        "Attachment": "DepthStencilInput"
-                    },
-                    "ImageDescriptor": {
-                        "MipLevels": 4,
                         "SharedQueueMask": "Graphics"
                     }
                 },
@@ -201,13 +162,6 @@
                     }
                 },
                 {
-                    "LocalSlot": "DownsampledDepthOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "DownsampledDepthImage"
-                    }
-                },
-                {
                     "LocalSlot": "PreviousFrameInputOutput",
                     "AttachmentRef": {
                         "Pass": "This",
@@ -220,7 +174,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionScreenSpaceTrace.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

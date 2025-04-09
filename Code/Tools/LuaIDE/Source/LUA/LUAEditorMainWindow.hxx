@@ -113,7 +113,7 @@ namespace LUAEditor
         void OnMenuCloseCurrentWindow();
 
         //file menu
-        void assetBrowserPressed();
+        void OnFileMenuOpen();
         void OnFileMenuNew();
         void OnFileMenuSave();
         void OnFileMenuSaveAs();
@@ -209,10 +209,13 @@ namespace LUAEditor
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_filterModel;
         QSharedPointer<AzToolsFramework::AssetBrowser::CompositeFilter> CreateFilter();
 
+        QAction* m_actionClearRecentFiles;
+
         void LogLineSelectionChanged(const AzToolsFramework::Logging::LogLine& logLine);
 
         void OnOptionsMenuRequested();
 
+        void UpdateOpenRecentMenu();
     public:
 
         void SetupLuaFilesPanel();
@@ -399,6 +402,7 @@ namespace LUAEditor
         void SetCurrentFindListWidget(int index);
         LUAViewWidget* GetCurrentView();
         AZStd::vector<LUAViewWidget*> GetAllViews();
+        bool HasAtLeastOneFileOpen() const;
     };
 
     class LUAEditorMainWindowLayout : public QLayout

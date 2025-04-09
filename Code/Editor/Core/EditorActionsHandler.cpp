@@ -8,8 +8,6 @@
 
 #include <Core/EditorActionsHandler.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
-
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
@@ -48,6 +46,7 @@
 
 #include <QDesktopServices>
 #include <QDir>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
@@ -235,15 +234,6 @@ void EditorActionsHandler::OnActionUpdaterRegistrationHook()
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::RecentFilesChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::UndoRedoUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::ViewportDisplayInfoStateChangedUpdaterIdentifier);
-
-    // If the Prefab system is not enabled, have a backup to update actions based on level loading.
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        m_isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!m_isPrefabSystemEnabled)
-    {
-        m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
-    }
 }
 
 void EditorActionsHandler::OnActionRegistrationHook()
@@ -1427,21 +1417,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
         );
     }
 
-    // GameLift Documentation
-    {
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "GameLift Documentation";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.documentation.gamelift", actionProperties,
-            [cryEdit = m_cryEditApp]
-            {
-                cryEdit->OnDocumentationGamelift();
-            }
-        );
-    }
-
     // Release Notes
     {
         AzToolsFramework::ActionProperties actionProperties;
@@ -1483,21 +1458,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
             [cryEdit = m_cryEditApp]
             {
                 cryEdit->OnDocumentationForums();
-            }
-        );
-    }
-
-    // AWS Support
-    {
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "AWS Support";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.resources.awssupport", actionProperties,
-            [cryEdit = m_cryEditApp]
-            {
-                cryEdit->OnDocumentationAWSSupport();
             }
         );
     }
@@ -1977,7 +1937,6 @@ void EditorActionsHandler::OnMenuBindingHook()
         {
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.gamedevblog", 100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.forums", 200);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.awssupport", 300);
         }
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::HelpMenuIdentifier, 500);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
@@ -2166,14 +2125,6 @@ void EditorActionsHandler::OnStopPlayInEditor()
             actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier);
         }
     );
-}
-
-void EditorActionsHandler::OnEntityStreamLoadSuccess()
-{
-    if (!m_isPrefabSystemEnabled)
-    {
-        m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
-    }
 }
 
 void EditorActionsHandler::AfterEntitySelectionChanged(

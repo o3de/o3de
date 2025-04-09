@@ -50,7 +50,7 @@
                 {
                     // This buffer is used as the render target and should be at non-MSAA screen resolution
                     // to make sure no overwork is done.
-                    "Name": "InverseAlphaRTOutput",
+                    "Name": "InverseAlphaRTImage",
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
@@ -86,10 +86,19 @@
                     }
                 }
             ],
+             "Connections": [
+                {
+                    "LocalSlot": "InverseAlphaRTOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "InverseAlphaRTImage"
+                    }
+                }
+            ],
             "PassData": {
                 "$type": "RasterPassData",
                 "DrawListTag": "HairGeometryDepthAlphaDrawList",
-                "PipelineViewTag": "MainCamera",
+                "BindViewSrg": true,
                 "PassSrgShaderAsset": {
                     // Looking for it in the Shaders directory relative to the Assets directory
                     "FilePath": "Shaders/HairShortCutGeometryDepthAlpha.shader"

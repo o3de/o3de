@@ -10,9 +10,13 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <Atom/RHI/Device.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <Atom/RHI.Reflect/Limits.h>
 
 namespace UnitTest
 {
+    static constexpr auto DeviceCount{8};
+    static constexpr AZ::RHI::MultiDevice::DeviceMask DeviceMask{AZ::RHI::MultiDevice::AllDevices};
+
     class PhysicalDevice
         : public AZ::RHI::PhysicalDevice
     {
@@ -36,6 +40,7 @@ namespace UnitTest
     private:
 
         AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
+        AZ::RHI::ResultCode InitInternalBindlessSrg([[maybe_unused]] const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc) override { return AZ::RHI::ResultCode::Success;}
 
         void ShutdownInternal() override {}
 
@@ -52,6 +57,11 @@ namespace UnitTest
         AZStd::chrono::microseconds GpuTimestampToMicroseconds([[maybe_unused]] uint64_t gpuTimestamp, [[maybe_unused]] AZ::RHI::HardwareQueueClass queueClass) const override
         {
             return AZStd::chrono::microseconds();
+        }
+
+        AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp([[maybe_unused]] AZ::RHI::HardwareQueueClass queueClass) override
+        {
+            return { 0ull, AZStd::chrono::microseconds().count() };
         }
 
         void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override {}

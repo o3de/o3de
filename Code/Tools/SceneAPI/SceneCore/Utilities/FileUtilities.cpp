@@ -17,16 +17,35 @@ namespace AZ
     {
         namespace Utilities
         {
-            AZStd::string FileUtilities::CreateOutputFileName(const AZStd::string& groupName, const AZStd::string& outputDirectory, const AZStd::string& extension)
+            AZStd::string FileUtilities::CreateOutputFileName(
+                const AZStd::string& groupName, const AZStd::string& outputDirectory, const AZStd::string& extension,
+                const AZStd::string& sourceFileExtension)
             {
-                AZStd::string result;
+                // Create an initial name that looks like 'directory/groupName'
+                AZ::IO::Path result(outputDirectory);
+                result /= groupName;
 
-                if (!AzFramework::StringFunc::Path::ConstructFull(outputDirectory.c_str(), groupName.c_str(), extension.c_str(), result, true))
+                // Either add an extension or replace the existing one with the source file extension. This will typically
+                // add the extension since most group names don't have an extension already.
+                // This will ensure that final file name is unique based on the source file extension.
+                // For example, 'model.fbx' and 'model.stl' would both have a groupName of 'model', and would then produce
+                // 'model.azmodel' for example as the product asset for both. By appending the original source extension here,
+                // we end up with the unique names of 'model.fbx.azmodel' and 'model.stl.azmodel'.
+                // This could theoretically be fixed in the groupName generation, but that requires changes in many more places to the
+                // code, along with knock-off effects that come from preserving the '.' which is also used by the SceneAPI to
+                // separate node names. By adding it to the end file name, we avoid all of the negative effects and can centralize
+                // the change to this one place.
+                result.ReplaceExtension(AZ::IO::PathView(sourceFileExtension));
+
+                // Append product extension to the file path by manipulating the string directly
+                if (!extension.starts_with('.'))
                 {
-                    return "";
+                    result.Native() += '.';
                 }
+                result.Native() += extension;
 
-                return result;
+                // Return the final file name.
+                return result.LexicallyNormal().Native();
             }
 
             bool FileUtilities::EnsureTargetFolderExists(const AZStd::string& path)

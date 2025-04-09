@@ -50,10 +50,14 @@ namespace AZ
             const Color& GetColor() const override;
             void SetColor(const Color& color) override;
             float GetIntensity() const override;
+            PhotometricUnit GetIntensityMode() const override;
+            void SetIntensityMode(PhotometricUnit unit) override;
             void SetIntensity(float intensity, PhotometricUnit unit) override;
             void SetIntensity(float intensity) override;
             float GetAngularDiameter() const override;
             void SetAngularDiameter(float angularDiameter) override;
+            void SetShadowEnabled(bool enable) override;
+            bool GetShadowEnabled() const override;
             ShadowmapSize GetShadowmapSize() const override;
             void SetShadowmapSize(ShadowmapSize size) override;
             uint32_t GetCascadeCount() const override;
@@ -93,6 +97,9 @@ namespace AZ
             void SetAffectsGI(bool affectsGI) override;
             float GetAffectsGIFactor() const override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
+            void BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler) override;
+            uint32_t GetLightingChannelMask() const override;
+            void SetLightingChannelMask(const uint32_t mask) override;
 
         private:
             friend class EditorDirectionalLightComponent;
@@ -123,6 +130,9 @@ namespace AZ
             //! Updates current directional light color and intensity.
             void ColorIntensityChanged();
 
+            //! Updates light channel mask.
+            void LightingChannelMaskChanged();
+
             DirectionalLightComponentConfig m_configuration;
             EntityId m_entityId{ EntityId::InvalidEntityId };
             Transform m_lastCameraTransform = Transform::CreateTranslation(AZ::Vector3(std::numeric_limits<float>::max()));
@@ -131,6 +141,9 @@ namespace AZ
 
             DirectionalLightFeatureProcessorInterface* m_featureProcessor = nullptr;
             DirectionalLightFeatureProcessorInterface::LightHandle m_lightHandle;
+
+            //! Event used to signal when at least one of the properties changes.
+            DirectionalLightConfigurationChangedEvent m_configurationChangedEvent;
         };
 
     } // namespace Render

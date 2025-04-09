@@ -10,7 +10,11 @@
                 {
                     "Name": "Shadowmap",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
                 },
                 {
                     "Name": "SkinnedMeshes",

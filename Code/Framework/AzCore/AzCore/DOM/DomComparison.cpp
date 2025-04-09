@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/DOM/DomComparison.h>
+#include <AzCore/DOM/DomUtils.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/unordered_set.h>
 
@@ -78,13 +79,13 @@ namespace AZ::Dom
             const size_t afterSize = after.ArraySize();
 
             // If more than replaceThreshold values differ, do a replace operation instead
-            if (params.m_replaceThreshold != DeltaPatchGenerationParameters::NoReplace)
+            if (params.m_replaceThreshold != DeltaPatchGenerationParameters::NoReplace && (!params.m_allowReplacement || params.m_allowReplacement(before, after)))
             {
                 size_t changedValueCount = 0;
                 const size_t entriesToEnumerate = AZStd::min(beforeSize, afterSize);
                 for (size_t i = 0; i < entriesToEnumerate; ++i)
                 {
-                    if (before[i] != after[i])
+                    if (!Utils::DeepCompareIsEqual(before[i], after[i]))
                     {
                         ++changedValueCount;
                         if (changedValueCount >= params.m_replaceThreshold)

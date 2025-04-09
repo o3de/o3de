@@ -55,7 +55,7 @@ def _edit_gem_names(proj_json: dict,
                 new_gem_name = new_gem_name if isinstance(new_gem_name,str) else new_gem_name['name']
                 gem_name_only, _ = utils.get_object_name_and_optional_version_specifier(new_gem_name)
                 proj_json['gem_names'] = [gem for gem in proj_json['gem_names'] if not is_version_of_gem(gem, gem_name_only)]
-            
+
         proj_json.setdefault('gem_names', []).extend(add_list)
 
     if delete_gem_names:
@@ -64,7 +64,7 @@ def _edit_gem_names(proj_json: dict,
             def in_list(gem: str or dict, remove_list: list) -> bool:
                 gem_name_with_specifier = gem.get('name', '') if isinstance(gem, dict) else gem
                 gem_name, _ = utils.get_object_name_and_optional_version_specifier(gem_name_with_specifier)
-                return gem_name_with_specifier in remove_list or gem_name in remove_list 
+                return gem_name_with_specifier in remove_list or gem_name in remove_list
 
             proj_json['gem_names'] = [gem for gem in proj_json['gem_names'] if not in_list(gem, removal_list)]
 
@@ -74,6 +74,10 @@ def _edit_gem_names(proj_json: dict,
 
     # Remove duplicates from list
     proj_json['gem_names'] = utils.remove_gem_duplicates(proj_json.get('gem_names', []))
+    # sort the gem name list so that is written to the project.json in order
+    proj_json['gem_names'] = sorted(proj_json['gem_names'],
+                                    key=lambda gem_name: gem_name.get('name') if isinstance(gem_name, dict)
+                                    else gem_name)
 
 
 def edit_project_props(proj_path: pathlib.Path = None,
@@ -106,13 +110,13 @@ def edit_project_props(proj_path: pathlib.Path = None,
     """
     Edits and modifies the project properties for the project located at 'proj_path' or with the name 'proj_name'.
     :param proj_path: The path to the project folder
-    :param proj_name: The name of the project 
+    :param proj_name: The name of the project
     :param new_name: The new name for the project
     :param new_id: The new ID for the project
     :param new_origin: The new origin for the project
     :param new_display: The new display name for the project
     :param new_summary: The new gem summary text
-    :param new_icon: The new path to the gem's icon file 
+    :param new_icon: The new path to the gem's icon file
     :param new_tags: New tags to add to 'user_tags'
     :param delete_tags: Tags to remove from 'user_tags'
     :param replace_tags: Tags to replace 'user_tags' with
@@ -122,7 +126,7 @@ def edit_project_props(proj_path: pathlib.Path = None,
     :param new_engine_name: The new engine name this project is registered with
     :param new_compatible_engines: Compatible engine version specifiers to add e.g. o3de==1.2.3
     :param delete_compatible_engines: Engine version specifiers to remove from 'compatible_engines'
-    :param replace_compatible_engines: Engine version specifiers to replace everything in'compatible_engines' 
+    :param replace_compatible_engines: Engine version specifiers to replace everything in'compatible_engines'
     :param new_version: The new project version e.g. 1.2.3
     :param is_optional_gem: Only applies to new_gem_names, when true will add an 'optional' property to the gem(s)
     :param new_engine_api_dependencies: Engine API version specifiers to add e.g. launcher==1.2.3
@@ -156,9 +160,9 @@ def edit_project_props(proj_path: pathlib.Path = None,
         if not user:
             logger.error('Setting the engine_path in the shared project.json is not allowed to prevent adding local paths.  Run the command again with the --user argument to set the engine_path locally only.')
             return 1
-        
+
         if new_engine_path and new_engine_path.name:
-            # engine_path is absolute or relative to the project folder to simulate overriding the shared project.json 
+            # engine_path is absolute or relative to the project folder to simulate overriding the shared project.json
             engine_path_absolute = proj_path / new_engine_path
             engine_manifest_data = manifest.get_engine_json_data(engine_path=new_engine_path.resolve())
             if not engine_manifest_data:
@@ -183,7 +187,7 @@ def edit_project_props(proj_path: pathlib.Path = None,
            (replace_compatible_engines and not utils.validate_version_specifier_list(replace_compatible_engines)):
             return 1
 
-        proj_json['compatible_engines'] = utils.update_values_in_key_list(proj_json.get('compatible_engines', []), 
+        proj_json['compatible_engines'] = utils.update_values_in_key_list(proj_json.get('compatible_engines', []),
                                             new_compatible_engines, delete_compatible_engines, replace_compatible_engines)
 
     if new_engine_api_dependencies or delete_engine_api_dependencies or replace_engine_api_dependencies != None:
@@ -192,7 +196,7 @@ def edit_project_props(proj_path: pathlib.Path = None,
            (replace_engine_api_dependencies and not utils.validate_version_specifier_list(replace_engine_api_dependencies)):
             return 1
 
-        proj_json['engine_api_dependencies'] = utils.update_values_in_key_list(proj_json.get('engine_api_dependencies', []), 
+        proj_json['engine_api_dependencies'] = utils.update_values_in_key_list(proj_json.get('engine_api_dependencies', []),
                                                 new_engine_api_dependencies, delete_engine_api_dependencies, replace_engine_api_dependencies)
 
     if user:
@@ -201,7 +205,7 @@ def edit_project_props(proj_path: pathlib.Path = None,
         for key in keys:
             if proj_json.get(key,'') == '':
                 del proj_json[key]
-         
+
     proj_json_path = pathlib.Path(proj_path) if not user else pathlib.Path(proj_path) / 'user'
     return 0 if manifest.save_o3de_manifest(proj_json, proj_json_path / 'project.json') else 1
 

@@ -117,7 +117,8 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT} });
     m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
         | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState);
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::DepthState
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
     // Use scene as output scope (will render to the UiCanvas child pass of the LyShine pass)
     m_dynamicDraw->SetOutputScope(scene);
     m_dynamicDraw->InitDrawListTag(uiCanvasPass->GetDrawListTag());
@@ -756,7 +757,7 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
@@ -817,7 +818,7 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
@@ -893,7 +894,7 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture

@@ -132,8 +132,6 @@ private:
     bool m_bFullscreen;
 
     CViewportTitleDlg* m_viewportTitleDlg;
-    ViewportTitleExpanderWatcher* m_expanderWatcher;
-
     int m_id;
     int m_nBorder;
 

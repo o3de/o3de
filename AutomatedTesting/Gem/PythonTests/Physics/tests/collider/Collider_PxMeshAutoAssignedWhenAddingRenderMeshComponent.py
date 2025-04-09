@@ -58,9 +58,9 @@ def Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent():
     import editor_python_test_tools.hydra_editor_utils as hydra
 
     # Asset paths
-    STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshAutoAssigned", "spherebot", "r0-b_body.azmodel")
+    STATIC_MESH = os.path.join("assets", "Physics", "Collider_PxMeshAutoAssigned", "spherebot", "r0-b_body.fbx.azmodel")
     PHYSX_MESH = os.path.join(
-        "assets", "Physics", "Collider_PxMeshAutoAssigned", "spherebot", "r0-b_body.pxmesh"
+        "assets", "Physics", "Collider_PxMeshAutoAssigned", "spherebot", "r0-b_body.fbx.pxmesh"
     )
 
     # 1) Load the empty level

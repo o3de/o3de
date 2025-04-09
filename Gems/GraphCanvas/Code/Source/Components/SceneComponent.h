@@ -291,14 +291,14 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_SceneService", 0x8ec010e7));
-            provided.push_back(AZ_CRC("GraphCanvas_MimeDataHandlerService", 0x7a6beb5a));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_SceneService"));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_MimeDataHandlerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incombatible)
         {
-            incombatible.push_back(AZ_CRC("GraphCanvas_SceneService", 0x8ec010e7));
-            incombatible.push_back(AZ_CRC("GraphCanvas_MimeDataHandlerService", 0x7a6beb5a));
+            incombatible.push_back(AZ_CRC_CE("GraphCanvas_SceneService"));
+            incombatible.push_back(AZ_CRC_CE("GraphCanvas_MimeDataHandlerService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)

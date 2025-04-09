@@ -166,47 +166,4 @@ namespace ScriptCanvasEditor
     };
 
     // </CustomNode>
-
-    // <DataDrivenNode>
-    class CreateDataDrivenNodeMimeEvent : public CreateNodeMimeEvent
-    {
-    public:
-        AZ_RTTI(CreateDataDrivenNodeMimeEvent, "{AD78B758-2F30-4379-B1fD-7AD17F16975F}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateDataDrivenNodeMimeEvent, AZ::SystemAllocator);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        CreateDataDrivenNodeMimeEvent() = default;
-        CreateDataDrivenNodeMimeEvent(const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData& nodeData);
-        ~CreateDataDrivenNodeMimeEvent() = default;
-
-    protected:
-        ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
-
-    private:
-        ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData m_nodeData;
-    };
-
-    class DataDrivenNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(DataDrivenNodePaletteTreeItem, AZ::SystemAllocator);
-        AZ_RTTI(DataDrivenNodePaletteTreeItem, "{0A9BC500-D4A9-4B86-8804-96F576CDF0FC}", GraphCanvas::DraggableNodePaletteTreeItem);
-
-        explicit DataDrivenNodePaletteTreeItem(const ScriptCanvasEditor::DataDrivenNodeModelInformation&);
-        ~DataDrivenNodePaletteTreeItem() = default;
-
-        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
-
-        const ScriptCanvasEditor::DataDrivenNodeModelInformation& GetInfo() const
-        {
-            return m_nodeModelInformation;
-        }
-
-    private:
-        ScriptCanvasEditor::DataDrivenNodeModelInformation m_nodeModelInformation;
-
-    };
-
-    // </CustomNode>
 }

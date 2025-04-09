@@ -33,6 +33,8 @@ namespace AzToolsFramework
             bool GetShowSearchResultsMode() const;
             void SetShowSearchResultsMode(bool searchMode);
 
+            void SetSearchString(const QString& searchString);
+
              //////////////////////////////////////////////////////////////////////////
             // QAbstractTableModel
             //////////////////////////////////////////////////////////////////////////
@@ -43,7 +45,8 @@ namespace AzToolsFramework
             QStringList mimeTypes() const override;
         private:
             QPersistentModelIndex m_rootIndex;
-            bool m_searchResultsMode;
+            bool m_searchResultsMode{ false };
+            QString m_searchString;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

@@ -39,6 +39,7 @@ namespace AzToolsFramework
             ~AssetBrowserListView() override;
 
             void setModel(QAbstractItemModel *model) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
             void SetName(const QString& name);
             QString& GetName();
             void SetIsAssetBrowserMainView();
@@ -80,6 +81,7 @@ namespace AzToolsFramework
             QPointer<AssetBrowserListModel> m_listModel;
             QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
             SearchEntryDelegate* m_delegate = nullptr;
+            bool m_updateRequested = false;
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);

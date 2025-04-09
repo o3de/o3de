@@ -7,6 +7,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import os
 import sys
+import tempfile
+import json
 
 import pytest
 
@@ -31,11 +33,20 @@ unexpected_lines = [
 
 atom_feature_test_list = [
     pytest.param(
-        "Atom_DepthOfField", 
-        "depth_of_field_screenshot1.png", 
-        "@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericRenderScreenshotTest.lua", 
-        "levels/atomscreenshottests/feature/depthoffield/depthoffield.spawnable", 
-        "Level D"
+        "Atom_DepthOfField", # test name
+        "depth_of_field_screenshot1.png", # names to capture the screenshots to, also the names of the comparison images. Comma separated list
+        "@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericRenderScreenshotTest.lua", # test control script
+        "levels/atomscreenshottests/feature/depthoffield/depthoffield.spawnable", # level to load
+        "Level D", # image comparison tolerance level. Comma separated list
+        "Camera" # camera names for the screenshots. Comma separated list
+    ),
+    pytest.param(
+        "Atom_AreaLights", # test name
+        "sphere_screenshot.png,disk_screenshot.png", # names to capture the screenshots to, also the names of the comparison images. Comma separated list
+        "@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericRenderScreenshotTest.lua", # test control script
+        "levels/atomscreenshottests/feature/arealight/arealight.spawnable", # level to load
+        "Level E,Level E", # image comparison tolerance level. Comma separated list
+        "TestCameraPointLights,TestCameraDiskLights" # camera names for the screenshots. Comma separated list
     )
 ]
 
@@ -56,16 +67,38 @@ if LINUX:
     ap_name = "AssetProcessor"
 
 
-def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline):
+def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path, compare_tolerance, camera_name, render_pipeline):
+        # build SettingRegistry patch for the test
+        run_settings= {
+             "O3DE" : {
+                  "ScriptAutomation" : {
+                       "ImageCapture" : {
+                            "LevelPath" : level_path,
+                            "TestGroupName" : test_name,
+                            "ImageName" : screenshot_name,
+                            "ImageComparisonLevel" : compare_tolerance,
+                            "CaptureCameraName" : camera_name
+                       }
+                  }
+             }
+        }
+        run_json = json.dumps(run_settings, indent=4)
+
+        # Generate a temp file
+        setreg_file = tempfile.NamedTemporaryFile('w+t', delete=False, suffix='.setreg')
+
+        # write the json to the settings registry patch file
+        setreg_file.write(run_json)
+        setreg_file.flush()
+        setreg_file.close()
+
+        # launch the test
         game_launcher = launcher_helper.create_game_launcher(workspace)
         game_launcher.args.extend([ f'--rhi={rhi} ',
                                     f'--run-automation-suite={test_script} ',
                                     '--exit-on-automation-end ',
-                                    f'--r_default_pipeline_name={render_pipeline}',
-                                    f'--regset="/O3DE/ScriptAutomation/ImageCapture/LevelPath={level_path}" ',
-                                    f'--regset="/O3DE/ScriptAutomation/ImageCapture/TestGroupName={test_name}" ',
-                                    f'--regset="/O3DE/ScriptAutomation/ImageCapture/ImageName={screenshot_name}" ',
-                                    f'--regset="/O3DE/ScriptAutomation/ImageCapture/ImageComparisonLevel={compare_tolerance}" '])
+                                    f'--r_renderPipelinePath={render_pipeline}',
+                                    f'--regset-file={setreg_file.name}'])
         game_launcher.start()
         waiter.wait_for(lambda: process_utils.process_exists(launcher_name, ignore_extensions=True))
 
@@ -79,7 +112,7 @@ def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path
 
 
 
-@pytest.mark.SUITE_periodic
+@pytest.mark.SUITE_smoke
 @pytest.mark.REQUIRES_gpu
 @pytest.mark.skipif(not WINDOWS, reason="DX12 is only supported on windows")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -87,15 +120,15 @@ def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path
 @pytest.mark.parametrize("render_pipeline", atom_render_pipeline_list)
 class TestPeriodicSuite_DX12_GPU(object):
 
-    @pytest.mark.parametrize("test_name, screenshot_name, test_script, level_path, compare_tolerance", atom_feature_test_list)
+    @pytest.mark.parametrize("test_name, screenshot_name, test_script, level_path, compare_tolerance, camera_name", atom_feature_test_list)
     def test_Atom_FeatureTests_DX12(
-            self, workspace, launcher_platform, test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline):
+            self, workspace, launcher_platform, test_name, screenshot_name, test_script, level_path, compare_tolerance, camera_name, render_pipeline):
         """
         Run Atom on DX12 and screen capture tests on parameterised levels
         """
-        run_test(workspace, "dx12", test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline)
+        run_test(workspace, "dx12", test_name, screenshot_name, test_script, level_path, compare_tolerance, camera_name, render_pipeline)
 
-@pytest.mark.SUITE_periodic
+@pytest.mark.SUITE_smoke
 @pytest.mark.REQUIRES_gpu
 @pytest.mark.skipif(not WINDOWS and not LINUX, reason="Vulkan is only supported on windows, linux, & android")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -103,10 +136,10 @@ class TestPeriodicSuite_DX12_GPU(object):
 @pytest.mark.parametrize("render_pipeline", atom_render_pipeline_list)
 class TestPeriodicSuite_Vulkan_GPU(object):
 
-    @pytest.mark.parametrize("test_name, screenshot_name, test_script, level_path, compare_tolerance", atom_feature_test_list)
+    @pytest.mark.parametrize("test_name, screenshot_name, test_script, level_path, compare_tolerance, camera_name", atom_feature_test_list)
     def test_Atom_FeatureTests_Vulkan(
-            self, workspace, launcher_platform, test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline):
+            self, workspace, launcher_platform, test_name, screenshot_name, test_script, level_path, compare_tolerance, camera_name, render_pipeline):
         """
         Run Atom on Vulkan and screen capture tests on parameterised levels
         """
-        run_test(workspace, "vulkan", test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline)
+        run_test(workspace, "vulkan", test_name, screenshot_name, test_script, level_path, compare_tolerance, camera_name, render_pipeline)

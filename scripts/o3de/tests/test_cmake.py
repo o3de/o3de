@@ -9,6 +9,7 @@
 import io
 import pytest
 import pathlib
+import string
 from unittest.mock import patch
 
 from o3de import cmake, manifest
@@ -143,7 +144,7 @@ class TestResolveGemDependencyPaths:
                     {"gem_name":"gemA", "version":"1.2.3", "path":pathlib.Path('gemA1Path')},
                     {"gem_name":"gemA", "version":"2.3.4", "path":pathlib.Path('gemA2Path')},
                 ]
-            }, 'gemA;gemA1Path', 0) 
+            }, 'gemA;gemA1Path', 0)
         ]
     )
     def test_resolve_gem_dependency_paths(self, engine_gem_names, project_gem_names, all_gems_json_data, expected_gem_paths, expected_result):
@@ -161,7 +162,7 @@ class TestResolveGemDependencyPaths:
             return {
                 "engine_name":"o3de",
                 "gem_names": engine_gem_names
-            } 
+            }
 
         def get_project_json_data(project_name: str = None,
                                 project_path: str or pathlib.Path = None,
@@ -170,7 +171,7 @@ class TestResolveGemDependencyPaths:
                 "project_name":"o3de_project",
                 "engine":"o3de",
                 "gem_names": project_gem_names
-            } 
+            }
 
         class StringBufferIOWrapper(io.StringIO):
             def __exit__(self, exc_type, exc_val, exc_tb):
@@ -181,13 +182,13 @@ class TestResolveGemDependencyPaths:
         def get_enabled_gem_cmake_file(project_name: str = None,
                                 project_path: str or pathlib.Path = None,
                                 platform: str = 'Common'):
-            return pathlib.Path() 
+            return pathlib.Path()
 
         def get_enabled_gems(cmake_file: pathlib.Path) -> set:
-            return set() 
+            return set()
 
-        def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
-                                       project_path: pathlib.Path = None, 
+        def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
+                                       project_path: pathlib.Path = None,
                                        include_manifest_gems: bool = False,
                                        include_engine_gems: bool = False,
                                        external_subdirectories: list = None
@@ -205,10 +206,71 @@ class TestResolveGemDependencyPaths:
                 patch('o3de.manifest.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
                 patch('pathlib.Path.open', side_effect=lambda mode: StringBufferIOWrapper()) as pathlib_open_mock:
             result = cmake.resolve_gem_dependency_paths(
-                                        engine_path=engine_path if engine_gem_names else None, 
+                                        engine_path=engine_path if engine_gem_names else None,
                                         project_path=project_path if project_gem_names else None,
                                         external_subdirectories=None,
                                         resolved_gem_dependencies_output_path=pathlib.Path('out'))
 
         assert result == expected_result
         assert resolved_gem_paths == expected_gem_paths
+
+
+class TestUpdateCMakePresetsJson:
+    @pytest.mark.parametrize(
+        "preset_path, engine_name, engine_version, preset_json_content, expected_result",
+        [
+            # This should create the cmakepresets file and add the registered 'o3de' engine to it
+            pytest.param('user/CMakePresets.json', 'o3de', '', '', cmake.UpdatePresetResult.EnginePathAdded),
+            # This should create the cmake-presets file and add the registered 'o3de==1.0.0' engine to it
+            pytest.param('user/CMakePresets.json', 'o3de', '1.0.0', '',cmake.UpdatePresetResult.EnginePathAdded),
+            # This should fail to create the cmake-presets file as 'o3de==2.0.0' is not registered
+            pytest.param('user/CMakePresets.json', 'o3de', '2.0.0', '', cmake.UpdatePresetResult.Error),
+            # This should fail to create the cmake-presets file as 'o3de-not-registered' is not registered
+            pytest.param('user/CMakePresets.json', 'o3de-not-registered', '', '', cmake.UpdatePresetResult.Error),
+            # This should fail to create the cmake-presets file as the file path does not exist
+            pytest.param('', 'o3de', '1.0.0', '', cmake.UpdatePresetResult.Error),
+            # This should update an existing cmake-presets file
+            pytest.param('user/CMakePresets.json', 'o3de', '',
+                          string.Template(cmake.TEMPLATE_CMAKE_PRESETS_INCLUDE_JSON).safe_substitute(CMakePresetsInclude='<other-engine-root>/CMakePresets.json'),
+                          cmake.UpdatePresetResult.EnginePathAdded),
+            # This should update an existing cmake-presets file
+            pytest.param('user/CMakePresets.json', 'o3de', '',
+                          string.Template(cmake.TEMPLATE_CMAKE_PRESETS_INCLUDE_JSON).safe_substitute(CMakePresetsInclude='<engine-root>/CMakePresets.json'),
+                          cmake.UpdatePresetResult.EnginePathAlreadyIncluded)
+        ]
+    )
+    def test_update_cmake_presets_for_project(self, preset_path, engine_name, engine_version,
+                                              preset_json_content, expected_result):
+        class StringBufferIOWrapper(io.StringIO):
+            def __init__(self):
+                nonlocal preset_json_content
+                super().__init__(preset_json_content)
+            def __enter__(self):
+                return super().__enter__()
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                nonlocal preset_json_content
+                preset_json_content = super().getvalue()
+                super().__exit__(exc_tb, exc_val, exc_tb)
+
+        def preset_json_open(mode):
+            if preset_path:
+                return StringBufferIOWrapper()
+            raise OSError('Cannot Open file "{preset_path}"')
+
+        # patch the manifest.get_registered method to return a placeholder path
+        # to the engine CMakePresets.json
+        def get_registered(engine_name) -> pathlib.PurePath or None:
+            if engine_name == 'o3de':
+                return pathlib.PurePath("<engine-root>")
+            elif engine_name == 'o3de==1.0.0':
+                return pathlib.PurePath("<engine-root2>")
+            return None
+
+
+        with patch('pathlib.Path.open', side_effect=preset_json_open) as pathlib_open_mock, \
+            patch('pathlib.Path.mkdir', return_value=True) as pathlib_mkdir_mock, \
+            patch('o3de.manifest.get_registered', side_effect=get_registered) as get_registered_mock:
+            result = cmake.update_cmake_presets_for_project(preset_path=preset_path,
+                                                   engine_name=engine_name,
+                                                   engine_version=engine_version)
+        assert result == expected_result

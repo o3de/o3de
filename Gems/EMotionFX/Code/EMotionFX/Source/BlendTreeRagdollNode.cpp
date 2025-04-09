@@ -407,13 +407,13 @@ namespace EMotionFX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ_CRC("ActorRagdollJoints", 0xed1cae00), &BlendTreeRagdollNode::m_simulatedJointNames, "Simulated Joints", "The selected joints will be simulated as part of the ragdoll.")
+                    ->DataElement(AZ_CRC_CE("ActorRagdollJoints"), &BlendTreeRagdollNode::m_simulatedJointNames, "Simulated Joints", "The selected joints will be simulated as part of the ragdoll.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeRagdollNode::Reinit)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &BlendTreeRagdollNode::GetSimulatedJointName)
-                        ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("ActorJointElement", 0xedc8946c))
+                        ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC_CE("ActorJointElement"))
                 ;
             }
         }

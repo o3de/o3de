@@ -28,7 +28,7 @@ namespace AZ
         static Data::Instance<RPI::Material> CreateMaskMaterial()
         {
             const AZStd::string path = "shaders/editormodemask.azmaterial";
-            const auto materialAsset = GetAssetFromPath<RPI::MaterialAsset>(path, Data::AssetLoadBehavior::PreLoad, true);
+            const auto materialAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::MaterialAsset>(path);
             const auto maskMaterial = RPI::Material::FindOrCreate(materialAsset);
             return maskMaterial;
         }

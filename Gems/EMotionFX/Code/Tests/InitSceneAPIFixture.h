@@ -35,7 +35,7 @@ namespace EMotionFX
             {
                 AZStd::unique_ptr<AZ::DynamicModuleHandle> module = AZ::DynamicModuleHandle::Create(moduleName.c_str());
                 ASSERT_TRUE(module) << "EMotionFX Editor unit tests failed to create " << moduleName.c_str() << " module.";
-                const bool loaded = module->Load(false);
+                const bool loaded = module->Load();
                 ASSERT_TRUE(loaded) << "EMotionFX Editor unit tests failed to load " << moduleName.c_str() << " module.";
                 auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
                 ASSERT_TRUE(init) << "EMotionFX Editor unit tests failed to find the initialization function the " << moduleName.c_str() << " module.";
@@ -49,22 +49,10 @@ namespace EMotionFX
 
         ~InitSceneAPIFixture() override
         {
-            // Deactivate the system entity first, releasing references to SceneAPI
-            if (this->GetSystemEntity()->GetState() == AZ::Entity::State::Active)
-            {
-                this->GetSystemEntity()->Deactivate();
-            }
-
-            // Remove SceneAPI components before the DLL is uninitialized
-            (([&]() {
-                auto component = this->GetSystemEntity()->template FindComponent<Components>();
-                if (component)
-                {
-                    this->GetSystemEntity()->RemoveComponent(component);
-                    delete component;
-                }
-            })(), ...);
-
+            // Note to maintainers:
+            // The System entity is automatically deactivated, cleared, and destroyed, as well as all components in it,
+            // as part of app.stop(), which is called by the baseclass.  It is not necessary to manually tear them down here.
+            
             // Now tear down SceneAPI
             for (DynamicModuleHandlePtr& module : m_modules)
             {
