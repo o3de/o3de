@@ -117,6 +117,7 @@ namespace AZ::Internal
 
     private:
         void HandlerImpl(BehaviorMethod* createHandler, BehaviorMethod* destroyHandler);
+        void EventWithBusImpl(const char* name, const char* deprecatedName, AZStd::unordered_map<AZStd::string, BehaviorEBusEventSender>::iterator& insertIt);
     };
 }
 
@@ -149,36 +150,7 @@ namespace AZ::Internal
             }
             else
             {
-                // do we have a deprecated name for this event?
-                if (deprecatedName != nullptr)
-                {
-                    // ensure deprecated name is not in use as a existing name
-                    auto itr = m_ebus->m_events.find(deprecatedName);
-
-                    if (itr != m_ebus->m_events.end())
-                    {
-                        AZ_Warning("BehaviorContext", false, "Event %s is attempting to use %s as a deprecated name, but the deprecated name is already in use! The deprecated name is ignored!", name, deprecatedName);
-                    }
-                    else
-                    {
-                        // ensure that we won't have a duplicate deprecated name
-                        bool isDuplicated = false;
-                        for (const auto& i : m_ebus->m_events)
-                        {
-                            if (i.second.m_deprecatedName == deprecatedName)
-                            {
-                                isDuplicated = true;
-                                AZ_Warning("BehaviorContext", false, "Event %s is attempting to use %s as a deprecated name, but the deprecated name is already used as a deprecated name for the Event %s! The deprecated name is ignored!", name, deprecatedName, i.first.c_str());
-                                break;
-                            }
-                        }
-
-                        if (!isDuplicated)
-                        {
-                            insertIt.first->second.m_deprecatedName = deprecatedName;
-                        }
-                    }
-                }
+                EventWithBusImpl(name, deprecatedName, insertIt.first);
 
                 for (BehaviorMethod* method : { ebusEvent.m_event, ebusEvent.m_broadcast })
                 {
@@ -194,9 +166,6 @@ namespace AZ::Internal
                         }
                     }
                 }
-
-                Base::m_currentAttributes = &insertIt.first->second.m_attributes;
-                Base::SetEBusEventSender(&insertIt.first->second);
             }
         }
 
