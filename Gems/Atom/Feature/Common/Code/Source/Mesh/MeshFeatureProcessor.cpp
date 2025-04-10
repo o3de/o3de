@@ -2129,6 +2129,16 @@ namespace AZ
                         AZ_Warning("MeshFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
                         continue;
                     }
+                    // Set the material-Id and materialInstance-Id
+                    {
+                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialTypeId"));
+                        meshObjectSrg->SetConstant(nameIndex, material->GetMaterialTypeId());
+                    }
+                    {
+                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialInstanceId"));
+                        meshObjectSrg->SetConstant(nameIndex, material->GetMaterialInstanceId());
+                    }
+
                     m_objectSrgCreatedEvent.Signal(meshObjectSrg);
                     m_objectSrgList.push_back(meshObjectSrg);
                 }

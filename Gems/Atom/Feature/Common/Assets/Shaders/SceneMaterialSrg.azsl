@@ -19,7 +19,7 @@ struct MaterialParameters {
 };
 
 // needed for GetMaterialParameters()
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 
 #include <Atom/Features/Materials/SceneMaterialSrg.azsli>
 #include <Atom/RPI/DummyEntryFunctions.azsli>

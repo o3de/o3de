@@ -434,16 +434,6 @@ namespace AZ
                         drawSrg->SetConstant(nameIndex, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
                     {
-                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
-                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialTypeId"));
-                        drawSrg->SetConstant(nameIndex, m_material->GetMaterialTypeId());
-                    }
-                    {
-                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
-                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialInstanceId"));
-                        drawSrg->SetConstant(nameIndex, m_material->GetMaterialInstanceId());
-                    }
-                    {
                         // To enable this shader constant in DrawSrg, a shader must:
                         // #define USE_DRAWSRG_MESHLOD_MESHINDEX 1
                         // By default it is NOT defined.
