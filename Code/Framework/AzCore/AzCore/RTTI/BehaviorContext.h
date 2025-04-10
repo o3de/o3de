@@ -2202,7 +2202,7 @@ namespace AZ
             typename SetterFunctionTraits::function_object_signature*>;
         m_setter = aznew AZ::Internal::BehaviorMethodImpl(static_cast<SetterCastType>(setter), context, setterPropertyName);
 
-        return SetSetterImpl(isClassType);
+        return SetSetterImpl(isClassType, currentClass);
     }
 
     //////////////////////////////////////////////////////////////////////////
