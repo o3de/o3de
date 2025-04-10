@@ -107,6 +107,30 @@ namespace AZ::Internal
         return this;
     }
 
+    void EBusBuilderBase::HandlerImpl(BehaviorMethod* createHandler, BehaviorMethod* destroyHandler)
+    {
+        // check than the handler returns the expected type
+        if (createHandler->GetResult()->m_typeId != AzTypeInfo<BehaviorEBusHandler>::Uuid() ||
+            destroyHandler->GetArgument(0)->m_typeId != AzTypeInfo<BehaviorEBusHandler>::Uuid())
+        {
+            AZ_Assert(
+                false,
+                "HandlerCreator my return a BehaviorEBusHandler* object and HandlerDestrcutor should have an argument that can handle "
+                "BehaviorEBusHandler!");
+            delete createHandler;
+            delete destroyHandler;
+            createHandler = nullptr;
+            destroyHandler = nullptr;
+        }
+        else
+        {
+            Base::m_currentAttributes = &createHandler->m_attributes;
+            Base::SetEBusEventSender(nullptr);
+        }
+        m_ebus->m_createHandler = createHandler;
+        m_ebus->m_destroyHandler = destroyHandler;
+    }
+
     EBusAttributes::EBusAttributes(BehaviorContext* context)
         : Base(context)
     {
