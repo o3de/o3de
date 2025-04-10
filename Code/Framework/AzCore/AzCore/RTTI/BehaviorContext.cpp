@@ -835,6 +835,80 @@ namespace AZ
         }
     }
 
+    BehaviorEBus* BehaviorContext::BuildBehaviorEBus(const char* name, const char* deprecatedName, const char* toolTip)
+    {
+        // should we require AzTypeInfo for EBus, technically we should if we want to work around the compiler issue that made us to do it
+        // in first place
+        if (IsRemovingReflection())
+        {
+            auto ebusIt = m_ebuses.find(name);
+            if (ebusIt != m_ebuses.end())
+            {
+                BehaviorContextBus::Event(this, &BehaviorContextBus::Events::OnRemoveEBus, name, ebusIt->second);
+
+                // Erase the deprecated name as well
+                auto deprecatedIt = m_ebuses.find(ebusIt->second->m_deprecatedName);
+                if (deprecatedIt != m_ebuses.end())
+                {
+                    m_ebuses.erase(deprecatedIt);
+                }
+
+                delete ebusIt->second;
+                m_ebuses.erase(ebusIt);
+            }
+
+            return nullptr;
+        }
+        else
+        {
+            AZ_Error(
+                "BehaviorContext",
+                m_ebuses.find(name) == m_ebuses.end(),
+                "You shouldn't reflect an EBus multiple times (%s), subsequent reflections will not be registered!",
+                name);
+
+            BehaviorEBus* behaviorEBus = aznew BehaviorEBus();
+            behaviorEBus->m_name = name;
+
+            if (toolTip != nullptr)
+            {
+                behaviorEBus->m_toolTip = toolTip;
+            }
+
+            /*
+            ** If we have a deprecated name, lets make sure the its not in use as an existing bus.
+            */
+
+            if (deprecatedName != nullptr)
+            {
+                if (*deprecatedName == '\0')
+                {
+                    AZ_Warning("BehaviorContext", false, "Deprecated name can't be a empty string!", deprecatedName);
+                }
+                else if (m_ebuses.find(deprecatedName) != m_ebuses.end())
+                {
+                    AZ_Warning(
+                        "BehaviorContext",
+                        false,
+                        "EBus %s is attempting to use the deprecated name (%s) that is already used! Ignored!",
+                        name,
+                        deprecatedName);
+                }
+                else
+                {
+                    behaviorEBus->m_deprecatedName = deprecatedName;
+                }
+            }
+
+            // Switch to Set (we store the name in the class)
+            m_ebuses.insert(AZStd::make_pair(behaviorEBus->m_name, behaviorEBus));
+            if (!behaviorEBus->m_deprecatedName.empty())
+            {
+                m_ebuses.insert(AZStd::make_pair(behaviorEBus->m_deprecatedName, behaviorEBus));
+            }
+            return behaviorEBus;
+        }
+    }
 
     //=========================================================================
     // BehaviorClass

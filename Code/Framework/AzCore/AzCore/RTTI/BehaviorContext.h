@@ -1568,6 +1568,7 @@ namespace AZ
         BehaviorClass* ClassImpl(const char* name, const AZ::TypeId& typeUuid, AZ::IRttiHelper* rttiHelper, size_t alignment, size_t size);
         bool MethodImpl(BehaviorMethod* method, const char* name, const BehaviorParameterOverrides* args, size_t argsSize, const char* deprecatedName);
         void InitializeParameterOverrides(BehaviorValues* defaultValues, BehaviorParameterOverrides* paramOverrides, size_t paramOverridesCount);
+        BehaviorEBus* BuildBehaviorEBus(const char* name, const char* deprecatedName = nullptr, const char* toolTip = nullptr);
     };
 
     //////////////////////////////////////////////////////////////////////////
