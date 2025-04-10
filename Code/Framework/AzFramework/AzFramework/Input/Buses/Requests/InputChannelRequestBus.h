@@ -98,7 +98,7 @@ namespace AzFramework
         //! \param[in] channelId Id of the input channel to find
         //! \param[in] deviceIndex Index of the device that owns the input channel
         //! \return Pointer to the input channel if it was found, nullptr if it was not
-        AZF_API static const InputChannel* FindInputChannel(const InputChannelId& channelId,
+        static const InputChannel* FindInputChannel(const InputChannelId& channelId,
                                                     AZ::u32 deviceIndex = 0);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
