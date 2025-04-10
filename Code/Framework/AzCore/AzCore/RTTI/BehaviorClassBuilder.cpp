@@ -98,4 +98,45 @@ namespace AZ::Internal
         }
         return this;
     }
+    void ClassBuilderBase::SetDeprecatedName(const char* name, const char* deprecatedName)
+    {
+        /*
+         ** check to see if the deprecated name is used, and ensure its not duplicated.
+         */
+
+        if (deprecatedName != nullptr)
+        {
+            auto itr = m_class->m_methods.find(name);
+            if (itr != m_class->m_methods.end())
+            {
+                // now check to make sure that the deprecated name is not being used as a identical deprecated name for another method.
+                bool isDuplicate = false;
+                for (const auto& i : m_class->m_methods)
+                {
+                    if (i.second->GetDeprecatedName() == deprecatedName)
+                    {
+                        AZ_Warning(
+                            "BehaviorContext",
+                            false,
+                            "Method %s is attempting to use a deprecated name of %s which is already in use for method %s! Deprecated name "
+                            "is ignored!",
+                            name,
+                            deprecatedName,
+                            i.first.c_str());
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate)
+                {
+                    itr->second->SetDeprecatedName(deprecatedName);
+                }
+            }
+            else
+            {
+                AZ_Warning("BehaviorContext", false, "Method %s does not exist, so the deprecated name is ignored!", name, deprecatedName);
+            }
+        }
+    }
 } // namespace AZ
