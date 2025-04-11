@@ -17,6 +17,10 @@
 #include <RHI/PipelineLibrary.h>
 #include <AzCore/std/algorithm.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Time/ITime.h>
+#endif
+
 namespace AZ
 {
     namespace Metal
@@ -85,7 +89,9 @@ namespace AZ
             {
                 loadFromByteCode = true;
             }
-            
+#if defined(CARBONATED)
+            const int64_t startTime = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
+#endif
             const uint8_t* shaderByteCode = reinterpret_cast<const uint8_t*>(shaderFunction->GetByteCode().data());
             const int byteCodeLength = static_cast<int>(shaderFunction->GetByteCode().size());
             if(byteCodeLength > 0 && loadFromByteCode)
@@ -112,7 +118,13 @@ namespace AZ
                     AZ_Assert(false, "Shader source is not added by default. It can be added by enabling /O3DE/Atom/RHI/GraphicsDevMode via settings registry and re-building the shader.");
                 }
             }
-            
+#if defined(CARBONATED)
+            const int64_t dt = static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) - startTime;
+            if (dt > 1)
+            {
+                AZ_Info("PrimitiveLoadTime", "Shader created in %d ms",  dt);
+            }
+#endif
             if (error)
             {
                 // Error code 4 is warning, but sometimes a 3 (compile error) is returned on warnings only.
@@ -205,7 +217,18 @@ namespace AZ
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);
             if (pipelineLibrary && pipelineLibrary->IsInitialized())
             {
+#if defined(CARBONATED)
+                const int64_t startTime = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
                 m_graphicsPipelineState = pipelineLibrary->CreateGraphicsPipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_renderPipelineDesc, &error);
+
+                const int64_t dt = static_cast<int64_t>(AZ::GetRealElapsedTimeMs()) - startTime;
+                if (dt > 100)
+                {
+                    AZ_Info("PrimitiveLoadTime", "Pipeline state created in %d ms",  dt);
+                }
+#else
+                m_graphicsPipelineState = pipelineLibrary->CreateGraphicsPipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_renderPipelineDesc, &error);
+#endif
             }
             else
             {
